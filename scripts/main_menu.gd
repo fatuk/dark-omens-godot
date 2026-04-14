@@ -316,9 +316,12 @@ func _auto_connect() -> void:
 		_show_status("Подключено · %s" % _nm.my_name, UIStyle.OK)
 		_nm.list_rooms()
 		return
-	if _nm.has_session():
+	if _nm.is_reconnecting():
+		# NetworkManager уже активно пытается переподключиться — ждём сигнала
 		_show_status("Переподключение...", UIStyle.WARN)
+		_rooms_panel.modulate.a = 0.4
 		return
+	# Либо первый заход, либо все попытки исчерпаны — стартуем заново
 	var pname: String = _auth.current_user.get("name", "Player")
 	_show_status("Подключение к %s..." % _relay_url, UIStyle.WARN)
 	_rooms_panel.modulate.a = 0.4
@@ -337,6 +340,10 @@ func _on_logout_pressed() -> void:
 
 
 func _on_refresh_pressed() -> void:
+	if not _nm.is_connected_to_relay():
+		_show_status("Нет соединения — переподключение...", UIStyle.WARN)
+		_auto_connect()
+		return
 	_nm.list_rooms()
 	_show_status("Обновление...", UIStyle.DIM)
 

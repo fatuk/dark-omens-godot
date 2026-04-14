@@ -44,6 +44,10 @@ var _reconnect_attempts: int = 0
 var _saved_room_id: String = ""
 var _saved_room_pass: String = ""   # пароль храним только в памяти на сессию
 
+# Keepalive: app-level пинг каждые 20с, чтобы сервер не кикнул по heartbeat
+const KEEPALIVE_INTERVAL := 20.0
+var _keepalive_timer: float = KEEPALIVE_INTERVAL
+
 
 # ── API ────────────────────────────────────────────────────────────────────────
 
@@ -164,6 +168,13 @@ func _process(delta: float) -> void:
 					_on_ws_closed()
 		_prev_state = cur_state
 
+	# Keepalive: app-level пинг, чтобы сервер не кикнул по heartbeat
+	if cur_state == WebSocketPeer.STATE_OPEN:
+		_keepalive_timer -= delta
+		if _keepalive_timer <= 0.0:
+			_keepalive_timer = KEEPALIVE_INTERVAL
+			_send({"type": "ping"})
+
 	# Чтение пакетов
 	while _ws.get_available_packet_count() > 0:
 		var raw: PackedByteArray = _ws.get_packet()
@@ -177,6 +188,7 @@ func _process(delta: float) -> void:
 
 func _on_ws_open() -> void:
 	_reconnect_attempts = 0
+	_keepalive_timer = KEEPALIVE_INTERVAL
 	var hello: Dictionary = {"type": "hello", "name": my_name}
 	var auth: Node = get_node_or_null("/root/AuthManager")
 	if auth and not (auth as Node).get("session_token").is_empty():
@@ -230,6 +242,9 @@ func _do_connect() -> Error:
 func _handle_message(msg: Dictionary) -> void:
 	var msg_type: String = msg.get("type", "")
 	match msg_type:
+
+		"pong":
+			pass  # keepalive acknowledged
 
 		"welcome":
 			my_id = msg.get("your_id", "")
