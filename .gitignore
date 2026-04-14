@@ -1,0 +1,10 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# MCP (локальная конфигурация и dev-инструменты, у каждого разработчика свои)
+.mcp.json
+addons/godot_mcp/
+
+# Claude Code (локальные настройки редактора)
+.claude/

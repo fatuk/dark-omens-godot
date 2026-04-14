@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://buxo6le3jeepc"]
+
+[ext_resource type="Script" uid="uid://iflg6egts45l" path="res://scripts/login.gd" id="1_pymad"]
+
+[node name="login" type="Control" unique_id=851655376]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_pymad")
