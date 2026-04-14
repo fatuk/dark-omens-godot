@@ -1,14 +1,17 @@
 extends Control
 
+const SETTINGS_FILE := "user://settings.cfg"
+const DEFAULT_URL   := "ws://localhost:3030"
+
 # ── Узлы ───────────────────────────────────────────────────────────────────────
 var _nm:   Node
 var _auth: Node
 
-var _relay_url_input: LineEdit
-var _connect_button:  Button
-var _player_label:    Label
+var _server_label:  Label
+var _player_label:  Label
+var _settings_popup: Control   # nil пока не открыт
+var _url_input:     LineEdit
 
-var _connect_panel: Control
 var _rooms_panel:   Control
 
 var _create_name_input: LineEdit
@@ -19,9 +22,10 @@ var _rooms_list:       VBoxContainer
 var _selected_room_id: String = ""
 var _join_pass_input:  LineEdit
 var _join_btn:         Button
-var _refresh_btn:      Button
 
 var _status_label: Label
+
+var _relay_url: String = DEFAULT_URL
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
@@ -36,8 +40,10 @@ func _ready() -> void:
 	_nm.relay_error.connect(_on_relay_error)
 	_nm.rejoin_failed.connect(_on_rejoin_failed_in_menu)
 	_nm.room_deleted.connect(_on_room_deleted_in_menu)
+
+	_relay_url = _load_url()
 	_build_ui()
-	_restore_session_state()
+	_auto_connect()
 
 
 # ── Построение UI ──────────────────────────────────────────────────────────────
@@ -49,10 +55,10 @@ func _build_ui() -> void:
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
 
-	var root_vbox := VBoxContainer.new()
-	root_vbox.custom_minimum_size = Vector2(720, 0)
-	root_vbox.add_theme_constant_override("separation", 14)
-	center.add_child(root_vbox)
+	var root := VBoxContainer.new()
+	root.custom_minimum_size = Vector2(720, 0)
+	root.add_theme_constant_override("separation", 14)
+	center.add_child(root)
 
 	# Заголовок
 	var title := Label.new()
@@ -63,92 +69,87 @@ func _build_ui() -> void:
 	title.add_theme_color_override("font_shadow_color", UIStyle.RED)
 	title.add_theme_constant_override("shadow_offset_x", 3)
 	title.add_theme_constant_override("shadow_offset_y", 3)
-	root_vbox.add_child(title)
+	root.add_child(title)
 
 	var sub := Label.new()
 	sub.text = "по мотивам настольной игры «Древний Ужас»"
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.add_theme_font_size_override("font_size", 14)
 	sub.add_theme_color_override("font_color", UIStyle.DIM)
-	root_vbox.add_child(sub)
+	root.add_child(sub)
 
-	UIStyle.separator(root_vbox)
+	UIStyle.separator(root)
 
-	_connect_panel = _build_connect_panel()
-	root_vbox.add_child(_connect_panel)
+	# ── Хедер: игрок · сервер · кнопки ───────────────────────────────────────
+	root.add_child(_build_header())
 
+	UIStyle.separator(root)
+
+	# ── Панель комнат ─────────────────────────────────────────────────────────
 	_rooms_panel = _build_rooms_panel()
-	_rooms_panel.visible = false
-	root_vbox.add_child(_rooms_panel)
+	root.add_child(_rooms_panel)
 
-	UIStyle.separator(root_vbox)
+	UIStyle.separator(root)
 
 	_status_label = Label.new()
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status_label.add_theme_font_size_override("font_size", 14)
 	_status_label.add_theme_color_override("font_color", UIStyle.DIM)
-	_status_label.text = "Введите имя и подключитесь к серверу"
-	root_vbox.add_child(_status_label)
+	_status_label.text = "Подключение..."
+	root.add_child(_status_label)
 
 
-func _build_connect_panel() -> Control:
-	var p := UIStyle.panel()
+func _build_header() -> Control:
+	var hbox := HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 10)
 
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 12)
-	p.add_child(vbox)
-
-	# Заголовок + кнопка выйти
-	var hdr_row := HBoxContainer.new()
-	hdr_row.add_theme_constant_override("separation", 8)
-	vbox.add_child(hdr_row)
-
-	var hdr := Label.new()
-	hdr.text = "  ПОДКЛЮЧЕНИЕ К СЕРВЕРУ"
-	hdr.add_theme_font_size_override("font_size", 16)
-	hdr.add_theme_color_override("font_color", UIStyle.GOLD)
-	hdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hdr_row.add_child(hdr)
-
-	var logout_btn := UIStyle.button("Выйти", UIStyle.DIM)
-	logout_btn.custom_minimum_size = Vector2(80, 0)
-	logout_btn.add_theme_font_size_override("font_size", 12)
-	logout_btn.pressed.connect(_on_logout_pressed)
-	hdr_row.add_child(logout_btn)
-
-	UIStyle.separator(vbox)
-
-	# Имя игрока (из AuthManager)
-	var name_row := HBoxContainer.new()
-	name_row.add_theme_constant_override("separation", 8)
-	vbox.add_child(name_row)
-
-	var name_lbl := Label.new()
-	name_lbl.text = "Игрок:"
-	name_lbl.custom_minimum_size.x = 120
-	name_lbl.add_theme_font_size_override("font_size", 14)
-	name_lbl.add_theme_color_override("font_color", UIStyle.TEXT)
-	name_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	name_row.add_child(name_lbl)
+	# Имя игрока
+	var user_icon := Label.new()
+	user_icon.text = "👤"
+	user_icon.add_theme_font_size_override("font_size", 14)
+	hbox.add_child(user_icon)
 
 	_player_label = Label.new()
 	_player_label.add_theme_font_size_override("font_size", 14)
 	_player_label.add_theme_color_override("font_color", UIStyle.OK)
-	_player_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_player_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	name_row.add_child(_player_label)
+	_player_label.text = _auth.current_user.get("name", "")
+	hbox.add_child(_player_label)
 
-	var url_row := UIStyle.labeled_input("Сервер:", "ws://localhost:3030", 120)
-	_relay_url_input = url_row[1] as LineEdit
-	_relay_url_input.text = "ws://localhost:3030"
-	_relay_url_input.custom_minimum_size.x = 300
-	vbox.add_child(url_row[0])
+	# Разделитель
+	var sep_lbl := Label.new()
+	sep_lbl.text = "·"
+	sep_lbl.add_theme_color_override("font_color", UIStyle.DIM)
+	sep_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sep_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hbox.add_child(sep_lbl)
 
-	_connect_button = UIStyle.button("ПОДКЛЮЧИТЬСЯ")
-	_connect_button.pressed.connect(_on_connect_pressed)
-	vbox.add_child(_connect_button)
+	# Сервер
+	var srv_icon := Label.new()
+	srv_icon.text = "🌐"
+	srv_icon.add_theme_font_size_override("font_size", 14)
+	hbox.add_child(srv_icon)
 
-	return p
+	_server_label = Label.new()
+	_server_label.text = _relay_url
+	_server_label.add_theme_font_size_override("font_size", 13)
+	_server_label.add_theme_color_override("font_color", UIStyle.DIM)
+	hbox.add_child(_server_label)
+
+	# Кнопка настроек
+	var settings_btn := UIStyle.button("⚙", UIStyle.DIM)
+	settings_btn.custom_minimum_size = Vector2(34, 0)
+	settings_btn.add_theme_font_size_override("font_size", 14)
+	settings_btn.pressed.connect(_on_settings_pressed)
+	hbox.add_child(settings_btn)
+
+	# Кнопка выйти
+	var logout_btn := UIStyle.button("Выйти", UIStyle.DIM)
+	logout_btn.custom_minimum_size = Vector2(80, 0)
+	logout_btn.add_theme_font_size_override("font_size", 12)
+	logout_btn.pressed.connect(_on_logout_pressed)
+	hbox.add_child(logout_btn)
+
+	return hbox
 
 
 func _build_rooms_panel() -> Control:
@@ -204,10 +205,10 @@ func _build_rooms_panel() -> Control:
 	lhdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	lhdr_row.add_child(lhdr)
 
-	_refresh_btn = UIStyle.button("↻")
-	_refresh_btn.custom_minimum_size = Vector2(36, 0)
-	_refresh_btn.pressed.connect(_on_refresh_pressed)
-	lhdr_row.add_child(_refresh_btn)
+	var refresh_btn := UIStyle.button("↻")
+	refresh_btn.custom_minimum_size = Vector2(36, 0)
+	refresh_btn.pressed.connect(_on_refresh_pressed)
+	lhdr_row.add_child(refresh_btn)
 
 	UIStyle.separator(lvbox)
 
@@ -235,40 +236,99 @@ func _build_rooms_panel() -> Control:
 	return hbox
 
 
-# ── Восстановление состояния ───────────────────────────────────────────────────
+# ── Попап настроек (смена URL сервера) ────────────────────────────────────────
 
-func _restore_session_state() -> void:
-	var uname: String = _auth.current_user.get("name", _nm.my_name)
-	_player_label.text = uname if not uname.is_empty() else "—"
+func _on_settings_pressed() -> void:
+	if is_instance_valid(_settings_popup):
+		_settings_popup.queue_free()
+		_settings_popup = null
+		return
 
+	# Затемнение
+	_settings_popup = ColorRect.new()
+	(_settings_popup as ColorRect).color = Color(0, 0, 0, 0.6)
+	_settings_popup.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_settings_popup.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_settings_popup)
+
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_settings_popup.add_child(center)
+
+	var p := UIStyle.panel(20)
+	p.custom_minimum_size = Vector2(440, 0)
+	center.add_child(p)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	p.add_child(vbox)
+
+	var hdr := Label.new()
+	hdr.text = "  НАСТРОЙКИ СЕРВЕРА"
+	hdr.add_theme_font_size_override("font_size", 16)
+	hdr.add_theme_color_override("font_color", UIStyle.GOLD)
+	vbox.add_child(hdr)
+
+	UIStyle.separator(vbox)
+
+	var url_row := UIStyle.labeled_input("Relay URL:", DEFAULT_URL, 100)
+	_url_input = url_row[1] as LineEdit
+	_url_input.text = _relay_url
+	vbox.add_child(url_row[0])
+
+	var btns := HBoxContainer.new()
+	btns.add_theme_constant_override("separation", 8)
+	vbox.add_child(btns)
+
+	var save_btn := UIStyle.button("СОХРАНИТЬ", UIStyle.GOLD)
+	save_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	save_btn.pressed.connect(_on_settings_save)
+	btns.add_child(save_btn)
+
+	var cancel_btn := UIStyle.button("ОТМЕНА", UIStyle.DIM)
+	cancel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cancel_btn.pressed.connect(func() -> void:
+		_settings_popup.queue_free()
+		_settings_popup = null
+	)
+	btns.add_child(cancel_btn)
+
+
+func _on_settings_save() -> void:
+	var new_url := _url_input.text.strip_edges()
+	if new_url.is_empty():
+		new_url = DEFAULT_URL
+	_relay_url = new_url
+	_server_label.text = _relay_url
+	_save_url(_relay_url)
+	_settings_popup.queue_free()
+	_settings_popup = null
+	# Переподключаемся если URL изменился
 	if _nm.is_connected_to_relay():
-		_connect_panel.visible = false
-		_rooms_panel.visible = true
+		_nm.disconnect_from_relay()
+	_auto_connect()
+
+
+# ── Авто-подключение ──────────────────────────────────────────────────────────
+
+func _auto_connect() -> void:
+	if _nm.is_connected_to_relay():
 		_show_status("Подключено · %s" % _nm.my_name, UIStyle.OK)
 		_nm.list_rooms()
-	elif _nm.has_session():
-		_connect_panel.visible = false
-		_rooms_panel.visible = true
+		return
+	if _nm.has_session():
 		_show_status("Переподключение...", UIStyle.WARN)
+		return
+	var pname: String = _auth.current_user.get("name", "Player")
+	_show_status("Подключение к %s..." % _relay_url, UIStyle.WARN)
+	_rooms_panel.modulate.a = 0.4
+	var err: Error = _nm.connect_to_relay(pname, _relay_url)
+	if err != OK:
+		_show_status("Ошибка подключения: %s" % error_string(err), UIStyle.ERROR)
+		_rooms_panel.modulate.a = 1.0
 
 
 # ── Обработчики кнопок ─────────────────────────────────────────────────────────
-
-func _on_connect_pressed() -> void:
-	var pname: String = _auth.current_user.get("name", _nm.my_name)
-	if pname.is_empty():
-		pname = "Player"
-	var url := _relay_url_input.text.strip_edges()
-	if url.is_empty():
-		url = "ws://localhost:3030"
-
-	_connect_button.disabled = true
-	_show_status("Подключение к %s..." % url, UIStyle.WARN)
-	var err: Error = _nm.connect_to_relay(pname, url)
-	if err != OK:
-		_connect_button.disabled = false
-		_show_status("Ошибка: %s" % error_string(err), UIStyle.ERROR)
-
 
 func _on_logout_pressed() -> void:
 	_nm.disconnect_from_relay()
@@ -278,7 +338,7 @@ func _on_logout_pressed() -> void:
 
 func _on_refresh_pressed() -> void:
 	_nm.list_rooms()
-	_show_status("Обновление списка комнат...", UIStyle.DIM)
+	_show_status("Обновление...", UIStyle.DIM)
 
 
 func _on_create_pressed() -> void:
@@ -286,9 +346,8 @@ func _on_create_pressed() -> void:
 	if rname.is_empty():
 		_show_status("Введите название комнаты!", UIStyle.ERROR)
 		return
-	var rpass := _create_pass_input.text
 	_create_btn.disabled = true
-	_nm.create_room(rname, rpass)
+	_nm.create_room(rname, _create_pass_input.text)
 	_show_status("Создание комнаты \"%s\"..." % rname, UIStyle.WARN)
 
 
@@ -296,25 +355,21 @@ func _on_join_pressed() -> void:
 	if _selected_room_id.is_empty():
 		_show_status("Выберите комнату из списка", UIStyle.ERROR)
 		return
-	var jpass := _join_pass_input.text
 	_join_btn.disabled = true
-	_nm.join_room(_selected_room_id, jpass)
+	_nm.join_room(_selected_room_id, _join_pass_input.text)
 	_show_status("Подключение к комнате...", UIStyle.WARN)
 
 
 # ── Обработчики сигналов NetworkManager ───────────────────────────────────────
 
 func _on_connected() -> void:
-	_connect_panel.visible = false
-	_rooms_panel.visible = true
-	_show_status("Подключено · Имя: %s" % _nm.my_name, UIStyle.OK)
+	_rooms_panel.modulate.a = 1.0
+	_show_status("Подключено · %s" % _nm.my_name, UIStyle.OK)
 	_nm.list_rooms()
 
 
 func _on_disconnected() -> void:
-	_connect_panel.visible = true
-	_rooms_panel.visible = false
-	_connect_button.disabled = false
+	_rooms_panel.modulate.a = 0.4
 	_show_status("Отключено от сервера", UIStyle.ERROR)
 
 
@@ -369,15 +424,13 @@ func _on_joined_room(_rid: String, _rname: String, _is_host: bool, _players: Arr
 
 
 func _on_rejoin_failed_in_menu() -> void:
-	_connect_panel.visible = false
-	_rooms_panel.visible = true
+	_rooms_panel.modulate.a = 1.0
 	_show_status("Комната не найдена — возможно, сервер перезапускался", UIStyle.WARN)
 	_nm.list_rooms()
 
 
 func _on_room_deleted_in_menu(reason: String) -> void:
-	_connect_panel.visible = false
-	_rooms_panel.visible = true
+	_rooms_panel.modulate.a = 1.0
 	_show_status("Комната закрыта: %s" % reason, UIStyle.WARN)
 	_nm.list_rooms()
 
@@ -388,14 +441,29 @@ func _on_relay_error(message: String) -> void:
 	_show_status("Ошибка: %s" % message, UIStyle.ERROR)
 
 
+# ── Сохранение URL ────────────────────────────────────────────────────────────
+
+func _load_url() -> String:
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS_FILE) == OK:
+		return cfg.get_value("relay", "url", DEFAULT_URL)
+	return DEFAULT_URL
+
+
+func _save_url(url: String) -> void:
+	var cfg := ConfigFile.new()
+	cfg.load(SETTINGS_FILE)   # не критично если нет файла
+	cfg.set_value("relay", "url", url)
+	cfg.save(SETTINGS_FILE)
+
+
 # ── Вспомогательные ───────────────────────────────────────────────────────────
 
 func _make_room_row(room: Dictionary) -> Button:
-	var rname: String  = room.get("name", "???")
-	var count: int     = room.get("playerCount", 0)
-	var max_p: int     = room.get("maxPlayers", 8)
-	var locked: bool   = room.get("locked", false)
-	var lock_icon: String = " 🔒" if locked else ""
+	var rname: String = room.get("name", "???")
+	var count: int    = room.get("playerCount", 0)
+	var max_p: int    = room.get("maxPlayers", 8)
+	var locked: bool  = room.get("locked", false)
 
 	var style_n := StyleBoxFlat.new()
 	style_n.bg_color = Color(0.10, 0.09, 0.18)
@@ -412,7 +480,7 @@ func _make_room_row(room: Dictionary) -> Button:
 	style_h.set_content_margin_all(8)
 
 	var btn := Button.new()
-	btn.text = "%s%s   [%d/%d]" % [rname, lock_icon, count, max_p]
+	btn.text = "%s%s   [%d/%d]" % [rname, " 🔒" if locked else "", count, max_p]
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.add_theme_stylebox_override("normal",  style_n)
