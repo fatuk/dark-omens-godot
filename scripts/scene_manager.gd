@@ -8,6 +8,7 @@ extends Node
 const SCENES: Dictionary = {
 	"login":      "res://scenes/login.tscn",
 	"main_menu":  "res://scenes/main_menu.tscn",
+	"lobby":      "res://scenes/lobby.tscn",
 	"world_map":  "res://scenes/world_map.tscn",
 }
 

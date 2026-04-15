@@ -283,16 +283,21 @@ func _handle_message(msg: Dictionary) -> void:
 			var p: Dictionary = msg.get("player", {})
 			var pid: String = p.get("id", "")
 			players[pid] = {"id": pid, "name": p.get("name", ""), "ready": false}
+			GameConsole.log("%s зашёл в комнату" % p.get("name", pid))
 			player_joined.emit(p)
 			player_connected.emit(pid, players[pid])
 
 		"player_left":
 			var pid: String = msg.get("player_id", "")
 			var new_host: String = msg.get("new_host_id", "")
+			var pname: String = players.get(pid, {}).get("name", pid)
 			if players.has(pid):
 				players.erase(pid)
 			if not new_host.is_empty() and new_host == my_id:
 				_is_host_flag = true
+				GameConsole.log("%s вышел  ·  вы стали ведущим" % pname)
+			else:
+				GameConsole.log("%s вышел из комнаты" % pname)
 			player_left.emit(pid, new_host)
 			player_disconnected.emit(pid)
 

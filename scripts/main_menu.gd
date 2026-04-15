@@ -484,7 +484,7 @@ func _on_room_selected(room_id: String, row: Button) -> void:
 
 
 func _on_joined_room(_rid: String, _rname: String, _is_host: bool, _players: Array) -> void:
-	SceneManager.go("world_map")
+	SceneManager.go("lobby")
 
 
 func _on_rejoin_failed_in_menu() -> void:

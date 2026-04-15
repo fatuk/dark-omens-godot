@@ -24,6 +24,7 @@ MCPInputService="*res://addons/godot_mcp/mcp_input_service.gd"
 MCPGameInspector="*res://addons/godot_mcp/mcp_game_inspector_service.gd"
 AuthManager="*res://scripts/auth_manager.gd"
 SceneManager="*res://scripts/scene_manager.gd"
+GameConsole="*res://scripts/game_console.gd"
 
 [editor_plugins]
 
