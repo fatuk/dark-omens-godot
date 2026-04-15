@@ -100,6 +100,38 @@ static func labeled_input(
 	return [hbox, le]
 
 
+# ── Выпадающий список ─────────────────────────────────────────────────────────
+
+## Создаёт стилизованный OptionButton.
+static func option_button(items: Array[String] = []) -> OptionButton:
+	var style_n := StyleBoxFlat.new()
+	style_n.bg_color    = Color(0.12, 0.10, 0.20)
+	style_n.border_color = UIColors.BORDER
+	style_n.set_border_width_all(1)
+	style_n.set_corner_radius_all(5)
+	style_n.set_content_margin_all(10)
+
+	var style_h := StyleBoxFlat.new()
+	style_h.bg_color    = Color(0.20, 0.16, 0.30)
+	style_h.border_color = UIColors.ACCENT
+	style_h.set_border_width_all(1)
+	style_h.set_corner_radius_all(5)
+	style_h.set_content_margin_all(10)
+
+	var ob := OptionButton.new()
+	ob.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ob.add_theme_stylebox_override("normal",  style_n)
+	ob.add_theme_stylebox_override("hover",   style_h)
+	ob.add_theme_stylebox_override("pressed", style_h)
+	ob.add_theme_stylebox_override("focus",   style_h)
+	ob.add_theme_color_override("font_color",       UIColors.TEXT)
+	ob.add_theme_color_override("font_hover_color", Color.WHITE)
+	ob.add_theme_font_size_override("font_size", 14)
+	for item in items:
+		ob.add_item(item)
+	return ob
+
+
 # ── Разделитель ────────────────────────────────────────────────────────────────
 
 ## Создаёт горизонтальный разделитель и добавляет его в parent.

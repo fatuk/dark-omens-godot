@@ -3,6 +3,14 @@ extends Control
 const SETTINGS_FILE := "user://settings.cfg"
 const DEFAULT_URL   := "ws://localhost:3030"
 
+const RESOLUTIONS: Array[Vector2i] = [
+	Vector2i(1280,  720),
+	Vector2i(1366,  768),
+	Vector2i(1600,  900),
+	Vector2i(1920, 1080),
+	Vector2i(2560, 1440),
+]
+
 # ── Узлы ───────────────────────────────────────────────────────────────────────
 var _nm:   Node
 var _auth: Node
@@ -10,9 +18,15 @@ var _auth: Node
 var _server_label:  Label
 var _player_label:  Label
 var _settings_popup: Control   # nil пока не открыт
-var _url_input:     LineEdit
+var _url_input:      LineEdit
+var _res_option:     OptionButton
+var _fs_check:       CheckBox
 
 var _rooms_panel:   Control
+
+# ── Состояние настроек ────────────────────────────────────────────────────────
+var _res_idx:     int  = 3      # 1920×1080 по умолчанию
+var _fullscreen:  bool = false
 
 var _create_name_input: LineEdit
 var _create_pass_input: LineEdit
@@ -41,7 +55,8 @@ func _ready() -> void:
 	_nm.rejoin_failed.connect(_on_rejoin_failed_in_menu)
 	_nm.room_deleted.connect(_on_room_deleted_in_menu)
 
-	_relay_url = _load_url()
+	_load_settings()
+	_apply_display()
 	_build_ui()
 	_auto_connect()
 
@@ -244,12 +259,71 @@ func _on_settings_pressed() -> void:
 		_settings_popup = null
 		return
 
-	_settings_popup = UIStyle.modal(self, "НАСТРОЙКИ СЕРВЕРА", func(vbox: VBoxContainer) -> void:
-		var url_row := UIStyle.labeled_input("Relay URL:", DEFAULT_URL, 100)
+	_settings_popup = UIStyle.modal(self, "НАСТРОЙКИ", func(vbox: VBoxContainer) -> void:
+
+		# ── Сервер ────────────────────────────────────────────────────────────
+		var srv_lbl := Label.new()
+		srv_lbl.text = "СЕРВЕР"
+		srv_lbl.add_theme_font_size_override("font_size", 12)
+		srv_lbl.add_theme_color_override("font_color", UIColors.MUTED)
+		vbox.add_child(srv_lbl)
+
+		var url_row := UIStyle.labeled_input("Relay URL:", DEFAULT_URL, 90)
 		_url_input = url_row[1] as LineEdit
 		_url_input.text = _relay_url
 		vbox.add_child(url_row[0])
 
+		UIStyle.separator(vbox)
+
+		# ── Дисплей ───────────────────────────────────────────────────────────
+		var disp_lbl := Label.new()
+		disp_lbl.text = "ДИСПЛЕЙ"
+		disp_lbl.add_theme_font_size_override("font_size", 12)
+		disp_lbl.add_theme_color_override("font_color", UIColors.MUTED)
+		vbox.add_child(disp_lbl)
+
+		var res_row := HBoxContainer.new()
+		res_row.add_theme_constant_override("separation", 8)
+		vbox.add_child(res_row)
+
+		var res_lbl := Label.new()
+		res_lbl.text = "Разрешение:"
+		res_lbl.custom_minimum_size.x = 100
+		res_lbl.add_theme_font_size_override("font_size", 14)
+		res_lbl.add_theme_color_override("font_color", UIColors.TEXT)
+		res_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		res_row.add_child(res_lbl)
+
+		var res_names: Array[String] = []
+		for r: Vector2i in RESOLUTIONS:
+			res_names.append("%d × %d" % [r.x, r.y])
+		_res_option = UIStyle.option_button(res_names)
+		_res_option.selected = _res_idx
+		_res_option.disabled = _fullscreen
+		res_row.add_child(_res_option)
+
+		var fs_row := HBoxContainer.new()
+		fs_row.add_theme_constant_override("separation", 10)
+		vbox.add_child(fs_row)
+
+		_fs_check = CheckBox.new()
+		_fs_check.button_pressed = _fullscreen
+		_fs_check.add_theme_color_override("font_color", UIColors.TEXT)
+		_fs_check.add_theme_font_size_override("font_size", 14)
+		_fs_check.toggled.connect(func(on: bool) -> void:
+			_res_option.disabled = on
+		)
+		fs_row.add_child(_fs_check)
+
+		var fs_lbl := Label.new()
+		fs_lbl.text = "Полный экран"
+		fs_lbl.add_theme_font_size_override("font_size", 14)
+		fs_lbl.add_theme_color_override("font_color", UIColors.TEXT)
+		fs_row.add_child(fs_lbl)
+
+		UIStyle.separator(vbox)
+
+		# ── Кнопки ────────────────────────────────────────────────────────────
 		var btns := HBoxContainer.new()
 		btns.add_theme_constant_override("separation", 8)
 		vbox.add_child(btns)
@@ -273,15 +347,23 @@ func _on_settings_save() -> void:
 	var new_url := _url_input.text.strip_edges()
 	if new_url.is_empty():
 		new_url = DEFAULT_URL
-	_relay_url = new_url
+	var url_changed := new_url != _relay_url
+
+	_relay_url   = new_url
+	_res_idx     = _res_option.selected
+	_fullscreen  = _fs_check.button_pressed
+
 	_server_label.text = _relay_url
-	_save_url(_relay_url)
+	_save_settings()
+	_apply_display()
+
 	_settings_popup.queue_free()
 	_settings_popup = null
-	# Переподключаемся если URL изменился
-	if _nm.is_connected_to_relay():
-		_nm.disconnect_from_relay()
-	_auto_connect()
+
+	if url_changed:
+		if _nm.is_connected_to_relay():
+			_nm.disconnect_from_relay()
+		_auto_connect()
 
 
 # ── Авто-подключение ──────────────────────────────────────────────────────────
@@ -423,20 +505,42 @@ func _on_relay_error(message: String) -> void:
 	_show_status("Ошибка: %s" % message, UIColors.ERROR)
 
 
-# ── Сохранение URL ────────────────────────────────────────────────────────────
+# ── Настройки: загрузка / сохранение / применение ────────────────────────────
 
-func _load_url() -> String:
+func _load_settings() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(SETTINGS_FILE) == OK:
-		return cfg.get_value("relay", "url", DEFAULT_URL)
-	return DEFAULT_URL
+	if cfg.load(SETTINGS_FILE) != OK:
+		return
+	_relay_url  = cfg.get_value("relay",   "url",        DEFAULT_URL)
+	_fullscreen = cfg.get_value("display", "fullscreen",  false)
+	var res_str: String = cfg.get_value("display", "resolution", "1920x1080")
+	for i: int in range(RESOLUTIONS.size()):
+		var r: Vector2i = RESOLUTIONS[i]
+		if "%dx%d" % [r.x, r.y] == res_str:
+			_res_idx = i
+			return
 
 
-func _save_url(url: String) -> void:
+func _save_settings() -> void:
 	var cfg := ConfigFile.new()
-	cfg.load(SETTINGS_FILE)   # не критично если нет файла
-	cfg.set_value("relay", "url", url)
+	cfg.load(SETTINGS_FILE)
+	cfg.set_value("relay",   "url",        _relay_url)
+	cfg.set_value("display", "fullscreen",  _fullscreen)
+	var r: Vector2i = RESOLUTIONS[_res_idx]
+	cfg.set_value("display", "resolution", "%dx%d" % [r.x, r.y])
 	cfg.save(SETTINGS_FILE)
+
+
+func _apply_display() -> void:
+	if _fullscreen:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		DisplayServer.window_set_size(RESOLUTIONS[_res_idx])
+		DisplayServer.window_set_position(
+			DisplayServer.screen_get_position() +
+			(DisplayServer.screen_get_size() - RESOLUTIONS[_res_idx]) / 2
+		)
 
 
 # ── Вспомогательные ───────────────────────────────────────────────────────────
