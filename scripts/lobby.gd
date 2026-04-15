@@ -48,13 +48,13 @@ func _build_ui() -> void:
 	title.text = "ТЁМНЫЕ ЗНАМЕНИЯ"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 36)
-	title.add_theme_color_override("font_color", UIStyle.GOLD)
+	title.add_theme_color_override("font_color", UIColors.ACCENT)
 	root_vbox.add_child(title)
 
 	_room_label = Label.new()
 	_room_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_room_label.add_theme_font_size_override("font_size", 14)
-	_room_label.add_theme_color_override("font_color", UIStyle.DIM)
+	_room_label.add_theme_color_override("font_color", UIColors.MUTED)
 	_update_room_label()
 	root_vbox.add_child(_room_label)
 
@@ -71,7 +71,7 @@ func _build_ui() -> void:
 	var list_header := Label.new()
 	list_header.text = "ИГРОКИ В ЛОББИ"
 	list_header.add_theme_font_size_override("font_size", 14)
-	list_header.add_theme_color_override("font_color", UIStyle.DIM)
+	list_header.add_theme_color_override("font_color", UIColors.MUTED)
 	panel_vbox.add_child(list_header)
 
 	UIStyle.separator(panel_vbox)
@@ -88,12 +88,12 @@ func _build_ui() -> void:
 	buttons_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	root_vbox.add_child(buttons_row)
 
-	var back_btn := UIStyle.button("  ПОКИНУТЬ", UIStyle.RED)
+	var back_btn := UIStyle.button("  ПОКИНУТЬ", UIColors.DANGER)
 	back_btn.pressed.connect(_on_back_pressed)
 	buttons_row.add_child(back_btn)
 
 	if _nm.is_host():
-		var delete_btn := UIStyle.button("  ЗАКРЫТЬ КОМНАТУ", UIStyle.RED)
+		var delete_btn := UIStyle.button("  ЗАКРЫТЬ КОМНАТУ", UIColors.DANGER)
 		delete_btn.pressed.connect(_on_delete_room_pressed)
 		buttons_row.add_child(delete_btn)
 
@@ -104,7 +104,7 @@ func _build_ui() -> void:
 	buttons_row.add_child(_ready_button)
 
 	if _nm.is_host():
-		_start_button = UIStyle.button("  НАЧАТЬ ИГРУ", UIStyle.GOLD)
+		_start_button = UIStyle.button("  НАЧАТЬ ИГРУ", UIColors.ACCENT)
 		_start_button.pressed.connect(_on_start_pressed)
 		_start_button.disabled = true
 		buttons_row.add_child(_start_button)
@@ -112,7 +112,7 @@ func _build_ui() -> void:
 	_status_label = Label.new()
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status_label.add_theme_font_size_override("font_size", 13)
-	_status_label.add_theme_color_override("font_color", UIStyle.DIM)
+	_status_label.add_theme_color_override("font_color", UIColors.MUTED)
 	root_vbox.add_child(_status_label)
 
 	_refresh_start_button()
@@ -146,7 +146,7 @@ func _add_player_row(id: String, info: Dictionary) -> void:
 	var crown := Label.new()
 	crown.text = "♛" if is_me_host else "◆"
 	crown.add_theme_font_size_override("font_size", 14)
-	crown.add_theme_color_override("font_color", UIStyle.GOLD if is_me_host else UIStyle.DIM)
+	crown.add_theme_color_override("font_color", UIColors.ACCENT if is_me_host else UIColors.MUTED)
 	crown.custom_minimum_size.x = 24
 	row.add_child(crown)
 
@@ -154,7 +154,7 @@ func _add_player_row(id: String, info: Dictionary) -> void:
 	name_lbl.text = info.get("name", "???")
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_lbl.add_theme_font_size_override("font_size", 16)
-	name_lbl.add_theme_color_override("font_color", UIStyle.TEXT)
+	name_lbl.add_theme_color_override("font_color", UIColors.TEXT)
 	row.add_child(name_lbl)
 
 	var tag := Label.new()
@@ -162,13 +162,13 @@ func _add_player_row(id: String, info: Dictionary) -> void:
 	tag.custom_minimum_size.x = 90
 	if is_me_host:
 		tag.text = "Ведущий"
-		tag.add_theme_color_override("font_color", UIStyle.GOLD)
+		tag.add_theme_color_override("font_color", UIColors.ACCENT)
 	elif info.get("ready", false):
 		tag.text = "Готов"
-		tag.add_theme_color_override("font_color", UIStyle.GREEN)
+		tag.add_theme_color_override("font_color", UIColors.READY)
 	else:
 		tag.text = "Ожидает..."
-		tag.add_theme_color_override("font_color", UIStyle.DIM)
+		tag.add_theme_color_override("font_color", UIColors.MUTED)
 	row.add_child(tag)
 
 	_player_list.add_child(row)
@@ -188,26 +188,26 @@ func _update_row_ready(id: String, is_ready: bool) -> void:
 	var tag  := row.get_child(2) as Label
 	if is_ready:
 		tag.text = "Готов"
-		tag.add_theme_color_override("font_color", UIStyle.GREEN)
+		tag.add_theme_color_override("font_color", UIColors.READY)
 	else:
 		tag.text = "Ожидает..."
-		tag.add_theme_color_override("font_color", UIStyle.DIM)
+		tag.add_theme_color_override("font_color", UIColors.MUTED)
 
 
 func _refresh_start_button() -> void:
 	if not _nm.is_host() or not is_instance_valid(_start_button):
 		if is_instance_valid(_status_label) and not _nm.is_host():
 			_status_label.text = "Ожидайте решения ведущего"
-			_status_label.modulate = UIStyle.DIM
+			_status_label.modulate = UIColors.MUTED
 		return
 	var non_host: int = _nm.players.size() - 1
 	_start_button.disabled = non_host < 1
 	if non_host < 1:
 		_status_label.text = "Для начала игры нужен хотя бы 1 игрок"
-		_status_label.modulate = UIStyle.WARN
+		_status_label.modulate = UIColors.WARNING
 	else:
 		_status_label.text = "Игроков: %d  •  Можно начинать!" % _nm.players.size()
-		_status_label.modulate = UIStyle.GREEN
+		_status_label.modulate = UIColors.READY
 
 
 # ── Обработчики сигналов ──────────────────────────────────────────────────────

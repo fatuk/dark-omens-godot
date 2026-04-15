@@ -65,8 +65,8 @@ func _build_ui() -> void:
 	title.text = "DARK OMENS"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 52)
-	title.add_theme_color_override("font_color",        UIStyle.GOLD)
-	title.add_theme_color_override("font_shadow_color", UIStyle.RED)
+	title.add_theme_color_override("font_color",        UIColors.ACCENT)
+	title.add_theme_color_override("font_shadow_color", UIColors.DANGER)
 	title.add_theme_constant_override("shadow_offset_x", 3)
 	title.add_theme_constant_override("shadow_offset_y", 3)
 	root.add_child(title)
@@ -75,7 +75,7 @@ func _build_ui() -> void:
 	sub.text = "по мотивам настольной игры «Древний Ужас»"
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.add_theme_font_size_override("font_size", 14)
-	sub.add_theme_color_override("font_color", UIStyle.DIM)
+	sub.add_theme_color_override("font_color", UIColors.MUTED)
 	root.add_child(sub)
 
 	UIStyle.separator(root)
@@ -94,7 +94,7 @@ func _build_ui() -> void:
 	_status_label = Label.new()
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status_label.add_theme_font_size_override("font_size", 14)
-	_status_label.add_theme_color_override("font_color", UIStyle.DIM)
+	_status_label.add_theme_color_override("font_color", UIColors.MUTED)
 	_status_label.text = "Подключение..."
 	root.add_child(_status_label)
 
@@ -111,14 +111,14 @@ func _build_header() -> Control:
 
 	_player_label = Label.new()
 	_player_label.add_theme_font_size_override("font_size", 14)
-	_player_label.add_theme_color_override("font_color", UIStyle.OK)
+	_player_label.add_theme_color_override("font_color", UIColors.SUCCESS)
 	_player_label.text = _auth.current_user.get("name", "")
 	hbox.add_child(_player_label)
 
 	# Разделитель
 	var sep_lbl := Label.new()
 	sep_lbl.text = "·"
-	sep_lbl.add_theme_color_override("font_color", UIStyle.DIM)
+	sep_lbl.add_theme_color_override("font_color", UIColors.MUTED)
 	sep_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sep_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hbox.add_child(sep_lbl)
@@ -132,18 +132,18 @@ func _build_header() -> Control:
 	_server_label = Label.new()
 	_server_label.text = _relay_url
 	_server_label.add_theme_font_size_override("font_size", 13)
-	_server_label.add_theme_color_override("font_color", UIStyle.DIM)
+	_server_label.add_theme_color_override("font_color", UIColors.MUTED)
 	hbox.add_child(_server_label)
 
 	# Кнопка настроек
-	var settings_btn := UIStyle.button("⚙", UIStyle.DIM)
+	var settings_btn := UIStyle.button("⚙", UIColors.MUTED)
 	settings_btn.custom_minimum_size = Vector2(34, 0)
 	settings_btn.add_theme_font_size_override("font_size", 14)
 	settings_btn.pressed.connect(_on_settings_pressed)
 	hbox.add_child(settings_btn)
 
 	# Кнопка выйти
-	var logout_btn := UIStyle.button("Выйти", UIStyle.DIM)
+	var logout_btn := UIStyle.button("Выйти", UIColors.MUTED)
 	logout_btn.custom_minimum_size = Vector2(80, 0)
 	logout_btn.add_theme_font_size_override("font_size", 12)
 	logout_btn.pressed.connect(_on_logout_pressed)
@@ -168,7 +168,7 @@ func _build_rooms_panel() -> Control:
 	var chdr := Label.new()
 	chdr.text = "  СОЗДАТЬ КОМНАТУ"
 	chdr.add_theme_font_size_override("font_size", 16)
-	chdr.add_theme_color_override("font_color", UIStyle.GOLD)
+	chdr.add_theme_color_override("font_color", UIColors.ACCENT)
 	cvbox.add_child(chdr)
 
 	UIStyle.separator(cvbox)
@@ -181,7 +181,7 @@ func _build_rooms_panel() -> Control:
 	_create_pass_input = cpass_row[1] as LineEdit
 	cvbox.add_child(cpass_row[0])
 
-	_create_btn = UIStyle.button("СОЗДАТЬ", UIStyle.RED)
+	_create_btn = UIStyle.button("СОЗДАТЬ", UIColors.DANGER)
 	_create_btn.pressed.connect(_on_create_pressed)
 	cvbox.add_child(_create_btn)
 
@@ -201,7 +201,7 @@ func _build_rooms_panel() -> Control:
 	var lhdr := Label.new()
 	lhdr.text = "  ОТКРЫТЫЕ КОМНАТЫ"
 	lhdr.add_theme_font_size_override("font_size", 16)
-	lhdr.add_theme_color_override("font_color", UIStyle.GOLD)
+	lhdr.add_theme_color_override("font_color", UIColors.ACCENT)
 	lhdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	lhdr_row.add_child(lhdr)
 
@@ -254,12 +254,12 @@ func _on_settings_pressed() -> void:
 		btns.add_theme_constant_override("separation", 8)
 		vbox.add_child(btns)
 
-		var save_btn := UIStyle.button("СОХРАНИТЬ", UIStyle.GOLD)
+		var save_btn := UIStyle.button("СОХРАНИТЬ", UIColors.ACCENT)
 		save_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		save_btn.pressed.connect(_on_settings_save)
 		btns.add_child(save_btn)
 
-		var cancel_btn := UIStyle.button("ОТМЕНА", UIStyle.DIM)
+		var cancel_btn := UIStyle.button("ОТМЕНА", UIColors.MUTED)
 		cancel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cancel_btn.pressed.connect(func() -> void:
 			_settings_popup.queue_free()
@@ -288,21 +288,21 @@ func _on_settings_save() -> void:
 
 func _auto_connect() -> void:
 	if _nm.is_connected_to_relay():
-		_show_status("Подключено · %s" % _nm.my_name, UIStyle.OK)
+		_show_status("Подключено · %s" % _nm.my_name, UIColors.SUCCESS)
 		_nm.list_rooms()
 		return
 	if _nm.is_reconnecting():
 		# NetworkManager уже активно пытается переподключиться — ждём сигнала
-		_show_status("Переподключение...", UIStyle.WARN)
+		_show_status("Переподключение...", UIColors.WARNING)
 		_rooms_panel.modulate.a = 0.4
 		return
 	# Либо первый заход, либо все попытки исчерпаны — стартуем заново
 	var pname: String = _auth.current_user.get("name", "Player")
-	_show_status("Подключение к %s..." % _relay_url, UIStyle.WARN)
+	_show_status("Подключение к %s..." % _relay_url, UIColors.WARNING)
 	_rooms_panel.modulate.a = 0.4
 	var err: Error = _nm.connect_to_relay(pname, _relay_url)
 	if err != OK:
-		_show_status("Ошибка подключения: %s" % error_string(err), UIStyle.ERROR)
+		_show_status("Ошибка подключения: %s" % error_string(err), UIColors.ERROR)
 		_rooms_panel.modulate.a = 1.0
 
 
@@ -316,43 +316,43 @@ func _on_logout_pressed() -> void:
 
 func _on_refresh_pressed() -> void:
 	if not _nm.is_connected_to_relay():
-		_show_status("Нет соединения — переподключение...", UIStyle.WARN)
+		_show_status("Нет соединения — переподключение...", UIColors.WARNING)
 		_auto_connect()
 		return
 	_nm.list_rooms()
-	_show_status("Обновление...", UIStyle.DIM)
+	_show_status("Обновление...", UIColors.MUTED)
 
 
 func _on_create_pressed() -> void:
 	var rname := _create_name_input.text.strip_edges()
 	if rname.is_empty():
-		_show_status("Введите название комнаты!", UIStyle.ERROR)
+		_show_status("Введите название комнаты!", UIColors.ERROR)
 		return
 	_create_btn.disabled = true
 	_nm.create_room(rname, _create_pass_input.text)
-	_show_status("Создание комнаты \"%s\"..." % rname, UIStyle.WARN)
+	_show_status("Создание комнаты \"%s\"..." % rname, UIColors.WARNING)
 
 
 func _on_join_pressed() -> void:
 	if _selected_room_id.is_empty():
-		_show_status("Выберите комнату из списка", UIStyle.ERROR)
+		_show_status("Выберите комнату из списка", UIColors.ERROR)
 		return
 	_join_btn.disabled = true
 	_nm.join_room(_selected_room_id, _join_pass_input.text)
-	_show_status("Подключение к комнате...", UIStyle.WARN)
+	_show_status("Подключение к комнате...", UIColors.WARNING)
 
 
 # ── Обработчики сигналов NetworkManager ───────────────────────────────────────
 
 func _on_connected() -> void:
 	_rooms_panel.modulate.a = 1.0
-	_show_status("Подключено · %s" % _nm.my_name, UIStyle.OK)
+	_show_status("Подключено · %s" % _nm.my_name, UIColors.SUCCESS)
 	_nm.list_rooms()
 
 
 func _on_disconnected() -> void:
 	_rooms_panel.modulate.a = 0.4
-	_show_status("Отключено от сервера", UIStyle.ERROR)
+	_show_status("Отключено от сервера", UIColors.ERROR)
 
 
 func _on_rooms_updated(rooms: Array) -> void:
@@ -366,10 +366,10 @@ func _on_rooms_updated(rooms: Array) -> void:
 		var empty_lbl := Label.new()
 		empty_lbl.text = "Нет активных комнат"
 		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		empty_lbl.add_theme_color_override("font_color", UIStyle.DIM)
+		empty_lbl.add_theme_color_override("font_color", UIColors.MUTED)
 		empty_lbl.add_theme_font_size_override("font_size", 13)
 		_rooms_list.add_child(empty_lbl)
-		_show_status("Активных комнат нет — создайте свою!", UIStyle.DIM)
+		_show_status("Активных комнат нет — создайте свою!", UIColors.MUTED)
 		return
 
 	for i in range(rooms.size()):
@@ -379,7 +379,7 @@ func _on_rooms_updated(rooms: Array) -> void:
 		row.pressed.connect(_on_room_selected.bind(rid, row))
 		_rooms_list.add_child(row)
 
-	_show_status("Найдено комнат: %d" % rooms.size(), UIStyle.OK)
+	_show_status("Найдено комнат: %d" % rooms.size(), UIColors.SUCCESS)
 
 
 func _on_room_selected(room_id: String, row: Button) -> void:
@@ -391,10 +391,10 @@ func _on_room_selected(room_id: String, row: Button) -> void:
 			var style := StyleBoxFlat.new()
 			if child == row:
 				style.bg_color = Color(0.15, 0.12, 0.28)
-				style.border_color = UIStyle.GOLD
+				style.border_color = UIColors.ACCENT
 			else:
 				style.bg_color = Color(0.10, 0.09, 0.18)
-				style.border_color = UIStyle.BORDER
+				style.border_color = UIColors.BORDER
 			style.set_border_width_all(1)
 			style.set_corner_radius_all(4)
 			style.set_content_margin_all(8)
@@ -407,20 +407,20 @@ func _on_joined_room(_rid: String, _rname: String, _is_host: bool, _players: Arr
 
 func _on_rejoin_failed_in_menu() -> void:
 	_rooms_panel.modulate.a = 1.0
-	_show_status("Комната не найдена — возможно, сервер перезапускался", UIStyle.WARN)
+	_show_status("Комната не найдена — возможно, сервер перезапускался", UIColors.WARNING)
 	_nm.list_rooms()
 
 
 func _on_room_deleted_in_menu(reason: String) -> void:
 	_rooms_panel.modulate.a = 1.0
-	_show_status("Комната закрыта: %s" % reason, UIStyle.WARN)
+	_show_status("Комната закрыта: %s" % reason, UIColors.WARNING)
 	_nm.list_rooms()
 
 
 func _on_relay_error(message: String) -> void:
 	_create_btn.disabled = false
 	_join_btn.disabled = _selected_room_id.is_empty()
-	_show_status("Ошибка: %s" % message, UIStyle.ERROR)
+	_show_status("Ошибка: %s" % message, UIColors.ERROR)
 
 
 # ── Сохранение URL ────────────────────────────────────────────────────────────
@@ -449,14 +449,14 @@ func _make_room_row(room: Dictionary) -> Button:
 
 	var style_n := StyleBoxFlat.new()
 	style_n.bg_color = Color(0.10, 0.09, 0.18)
-	style_n.border_color = UIStyle.BORDER
+	style_n.border_color = UIColors.BORDER
 	style_n.set_border_width_all(1)
 	style_n.set_corner_radius_all(4)
 	style_n.set_content_margin_all(8)
 
 	var style_h := StyleBoxFlat.new()
 	style_h.bg_color = Color(0.15, 0.12, 0.25)
-	style_h.border_color = UIStyle.GOLD
+	style_h.border_color = UIColors.ACCENT
 	style_h.set_border_width_all(1)
 	style_h.set_corner_radius_all(4)
 	style_h.set_content_margin_all(8)
@@ -468,12 +468,12 @@ func _make_room_row(room: Dictionary) -> Button:
 	btn.add_theme_stylebox_override("normal",  style_n)
 	btn.add_theme_stylebox_override("hover",   style_h)
 	btn.add_theme_stylebox_override("pressed", style_h)
-	btn.add_theme_color_override("font_color", UIStyle.TEXT)
+	btn.add_theme_color_override("font_color", UIColors.TEXT)
 	btn.add_theme_font_size_override("font_size", 14)
 	return btn
 
 
-func _show_status(msg: String, color: Color = UIStyle.TEXT) -> void:
+func _show_status(msg: String, color: Color = UIColors.TEXT) -> void:
 	if is_instance_valid(_status_label):
 		_status_label.text = msg
 		_status_label.modulate = color

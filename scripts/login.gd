@@ -58,8 +58,8 @@ func _build_ui() -> void:
 	title.text = "DARK OMENS"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 52)
-	title.add_theme_color_override("font_color",        UIStyle.GOLD)
-	title.add_theme_color_override("font_shadow_color", UIStyle.RED)
+	title.add_theme_color_override("font_color",        UIColors.ACCENT)
+	title.add_theme_color_override("font_shadow_color", UIColors.DANGER)
 	title.add_theme_constant_override("shadow_offset_x", 3)
 	title.add_theme_constant_override("shadow_offset_y", 3)
 	root.add_child(title)
@@ -68,7 +68,7 @@ func _build_ui() -> void:
 	sub.text = "по мотивам настольной игры «Древний Ужас»"
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.add_theme_font_size_override("font_size", 14)
-	sub.add_theme_color_override("font_color", UIStyle.DIM)
+	sub.add_theme_color_override("font_color", UIColors.MUTED)
 	root.add_child(sub)
 
 	UIStyle.separator(root)
@@ -83,7 +83,7 @@ func _build_ui() -> void:
 	check_lbl.text = "Проверка сессии..."
 	check_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	check_lbl.add_theme_font_size_override("font_size", 16)
-	check_lbl.add_theme_color_override("font_color", UIStyle.WARN)
+	check_lbl.add_theme_color_override("font_color", UIColors.WARNING)
 	check_vbox.add_child(check_lbl)
 
 	root.add_child(_check_panel)
@@ -97,7 +97,7 @@ func _build_ui() -> void:
 	var email_hdr := Label.new()
 	email_hdr.text = "  ВХОД / РЕГИСТРАЦИЯ"
 	email_hdr.add_theme_font_size_override("font_size", 16)
-	email_hdr.add_theme_color_override("font_color", UIStyle.GOLD)
+	email_hdr.add_theme_color_override("font_color", UIColors.ACCENT)
 	email_vbox.add_child(email_hdr)
 
 	UIStyle.separator(email_vbox)
@@ -123,7 +123,7 @@ func _build_ui() -> void:
 	var code_hdr := Label.new()
 	code_hdr.text = "  ВВЕДИТЕ КОД ИЗ ПИСЬМА"
 	code_hdr.add_theme_font_size_override("font_size", 16)
-	code_hdr.add_theme_color_override("font_color", UIStyle.GOLD)
+	code_hdr.add_theme_color_override("font_color", UIColors.ACCENT)
 	code_vbox.add_child(code_hdr)
 
 	UIStyle.separator(code_vbox)
@@ -132,7 +132,7 @@ func _build_ui() -> void:
 	_code_label.text = "Код отправлен на ..."
 	_code_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_code_label.add_theme_font_size_override("font_size", 13)
-	_code_label.add_theme_color_override("font_color", UIStyle.DIM)
+	_code_label.add_theme_color_override("font_color", UIColors.MUTED)
 	code_vbox.add_child(_code_label)
 
 	var code_row := UIStyle.labeled_input("Код:", "123456", 90)
@@ -142,11 +142,11 @@ func _build_ui() -> void:
 	_code_input.text_submitted.connect(_on_verify_pressed.unbind(1))
 	code_vbox.add_child(code_row[0])
 
-	_verify_btn = UIStyle.button("ВОЙТИ", UIStyle.RED)
+	_verify_btn = UIStyle.button("ВОЙТИ", UIColors.DANGER)
 	_verify_btn.pressed.connect(_on_verify_pressed)
 	code_vbox.add_child(_verify_btn)
 
-	_back_btn = UIStyle.button("← Изменить email", UIStyle.DIM)
+	_back_btn = UIStyle.button("← Изменить email", UIColors.MUTED)
 	_back_btn.pressed.connect(_on_back_pressed)
 	code_vbox.add_child(_back_btn)
 
@@ -157,7 +157,7 @@ func _build_ui() -> void:
 	_status_label = Label.new()
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status_label.add_theme_font_size_override("font_size", 13)
-	_status_label.add_theme_color_override("font_color", UIStyle.DIM)
+	_status_label.add_theme_color_override("font_color", UIColors.MUTED)
 	_status_label.text = "Войдите через email — пароль не нужен"
 	root.add_child(_status_label)
 
@@ -167,28 +167,28 @@ func _build_ui() -> void:
 func _on_send_pressed() -> void:
 	var email: String = _email_input.text.strip_edges().to_lower()
 	if email.is_empty() or not "@" in email:
-		_show_status("Введите корректный email", UIStyle.ERROR)
+		_show_status("Введите корректный email", UIColors.ERROR)
 		return
 	_current_email = email
 	_send_btn.disabled = true
-	_show_status("Отправляем код на %s..." % email, UIStyle.WARN)
+	_show_status("Отправляем код на %s..." % email, UIColors.WARNING)
 	_auth.request_otp(email)
 
 
 func _on_verify_pressed() -> void:
 	var code: String = _code_input.text.strip_edges()
 	if code.length() != 6:
-		_show_status("Код должен содержать 6 цифр", UIStyle.ERROR)
+		_show_status("Код должен содержать 6 цифр", UIColors.ERROR)
 		return
 	_verify_btn.disabled = true
-	_show_status("Проверяем код...", UIStyle.WARN)
+	_show_status("Проверяем код...", UIColors.WARNING)
 	_auth.verify_otp(_current_email, code)
 
 
 func _on_back_pressed() -> void:
 	_code_input.text = ""
 	_show_panel("email")
-	_show_status("Введите email, чтобы получить новый код", UIStyle.DIM)
+	_show_status("Введите email, чтобы получить новый код", UIColors.MUTED)
 
 
 # ── Обработчики сигналов AuthManager ──────────────────────────────────────────
@@ -197,28 +197,28 @@ func _on_otp_sent() -> void:
 	_send_btn.disabled = false
 	_code_label.text = "Код отправлен на %s" % _current_email
 	_show_panel("code")
-	_show_status("Проверьте почту — код действителен 15 минут", UIStyle.OK)
+	_show_status("Проверьте почту — код действителен 15 минут", UIColors.SUCCESS)
 	_code_input.grab_focus()
 
 
 func _on_otp_failed(error: String) -> void:
 	_send_btn.disabled = false
-	_show_status("Ошибка: %s" % error, UIStyle.ERROR)
+	_show_status("Ошибка: %s" % error, UIColors.ERROR)
 
 
 func _on_login_succeeded(_user: Dictionary) -> void:
-	_show_status("Вход выполнен!", UIStyle.OK)
+	_show_status("Вход выполнен!", UIColors.SUCCESS)
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 
 func _on_login_failed(error: String) -> void:
 	_verify_btn.disabled = false
-	_show_status("Ошибка: %s" % error, UIStyle.ERROR)
+	_show_status("Ошибка: %s" % error, UIColors.ERROR)
 
 
 func _on_session_invalid() -> void:
 	_show_panel("email")
-	_show_status("Сессия истекла — войдите снова", UIStyle.WARN)
+	_show_status("Сессия истекла — войдите снова", UIColors.WARNING)
 
 
 # ── Вспомогательные ───────────────────────────────────────────────────────────
@@ -232,7 +232,7 @@ func _show_panel(which: String) -> void:
 		_email_input.grab_focus()
 
 
-func _show_status(msg: String, color: Color = UIStyle.TEXT) -> void:
+func _show_status(msg: String, color: Color = UIColors.TEXT) -> void:
 	if is_instance_valid(_status_label):
 		_status_label.text = msg
 		_status_label.modulate = color
