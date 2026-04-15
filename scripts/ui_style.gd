@@ -125,6 +125,48 @@ static func separator(parent: Control, color: Color = BORDER) -> void:
 	parent.add_child(sep)
 
 
+# ── Модальное окно ─────────────────────────────────────────────────────────────
+
+## Создаёт модальное окно: затемнение + панель с заголовком.
+## content_builder(vbox: VBoxContainer) вызывается для наполнения контента.
+## Возвращает корневой ColorRect — вызови queue_free() чтобы закрыть.
+static func modal(
+	parent:          Control,
+	title:           String,
+	content_builder: Callable,
+	min_width:       int = 440,
+) -> ColorRect:
+	var backdrop := ColorRect.new()
+	backdrop.color = Color(0, 0, 0, 0.6)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
+	parent.add_child(backdrop)
+
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	backdrop.add_child(center)
+
+	var p := panel(20)
+	p.custom_minimum_size.x = min_width
+	center.add_child(p)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	p.add_child(vbox)
+
+	var hdr := Label.new()
+	hdr.text = "  " + title
+	hdr.add_theme_font_size_override("font_size", 16)
+	hdr.add_theme_color_override("font_color", GOLD)
+	vbox.add_child(hdr)
+
+	separator(vbox)
+
+	content_builder.call(vbox)
+
+	return backdrop
+
+
 # ── Оверлей переподключения ────────────────────────────────────────────────────
 
 ## Создаёт полупрозрачный оверлей с текстом и добавляет его в parent.

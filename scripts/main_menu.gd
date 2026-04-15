@@ -244,54 +244,29 @@ func _on_settings_pressed() -> void:
 		_settings_popup = null
 		return
 
-	# Затемнение
-	_settings_popup = ColorRect.new()
-	(_settings_popup as ColorRect).color = Color(0, 0, 0, 0.6)
-	_settings_popup.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_settings_popup.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(_settings_popup)
+	_settings_popup = UIStyle.modal(self, "НАСТРОЙКИ СЕРВЕРА", func(vbox: VBoxContainer) -> void:
+		var url_row := UIStyle.labeled_input("Relay URL:", DEFAULT_URL, 100)
+		_url_input = url_row[1] as LineEdit
+		_url_input.text = _relay_url
+		vbox.add_child(url_row[0])
 
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_settings_popup.add_child(center)
+		var btns := HBoxContainer.new()
+		btns.add_theme_constant_override("separation", 8)
+		vbox.add_child(btns)
 
-	var p := UIStyle.panel(20)
-	p.custom_minimum_size = Vector2(440, 0)
-	center.add_child(p)
+		var save_btn := UIStyle.button("СОХРАНИТЬ", UIStyle.GOLD)
+		save_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		save_btn.pressed.connect(_on_settings_save)
+		btns.add_child(save_btn)
 
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 12)
-	p.add_child(vbox)
-
-	var hdr := Label.new()
-	hdr.text = "  НАСТРОЙКИ СЕРВЕРА"
-	hdr.add_theme_font_size_override("font_size", 16)
-	hdr.add_theme_color_override("font_color", UIStyle.GOLD)
-	vbox.add_child(hdr)
-
-	UIStyle.separator(vbox)
-
-	var url_row := UIStyle.labeled_input("Relay URL:", DEFAULT_URL, 100)
-	_url_input = url_row[1] as LineEdit
-	_url_input.text = _relay_url
-	vbox.add_child(url_row[0])
-
-	var btns := HBoxContainer.new()
-	btns.add_theme_constant_override("separation", 8)
-	vbox.add_child(btns)
-
-	var save_btn := UIStyle.button("СОХРАНИТЬ", UIStyle.GOLD)
-	save_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	save_btn.pressed.connect(_on_settings_save)
-	btns.add_child(save_btn)
-
-	var cancel_btn := UIStyle.button("ОТМЕНА", UIStyle.DIM)
-	cancel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	cancel_btn.pressed.connect(func() -> void:
-		_settings_popup.queue_free()
-		_settings_popup = null
+		var cancel_btn := UIStyle.button("ОТМЕНА", UIStyle.DIM)
+		cancel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cancel_btn.pressed.connect(func() -> void:
+			_settings_popup.queue_free()
+			_settings_popup = null
+		)
+		btns.add_child(cancel_btn)
 	)
-	btns.add_child(cancel_btn)
 
 
 func _on_settings_save() -> void:
