@@ -23,10 +23,16 @@ var _zoom_target: float = 0.5
 
 @onready var _camera: Camera2D = $Camera2D
 
+var _map_layer: MapLayer
+
 
 func _ready() -> void:
 	_camera.position = Vector2(TILE_W / 2.0, TILE_H / 2.0)
 	_zoom_target = _camera.zoom.x
+	_map_layer = MapLayer.new()
+	add_child(_map_layer)
+	_map_layer.camera = _camera
+	_map_layer.load_from_file("res://data/locations.json")
 
 
 func _process(delta: float) -> void:

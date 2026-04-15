@@ -1,0 +1,370 @@
+[
+  {
+    "name": "1",
+    "type": "city",
+    "coordinates": [61.227792875451016, -149.89633610734984],
+    "connections": [
+      {"to": "19", "type": "ship"},
+      {"to": "San Francisco", "type": "ship"},
+      {"to": "4", "type": "uncharted"}
+    ]
+  },
+  {
+    "name": "2",
+    "type": "sea",
+    "coordinates": [22.1214049371853, -159.60190400831087],
+    "connections": [
+      {"to": "San Francisco", "type": "ship"},
+      {"to": "Tokyo", "type": "ship"}
+    ]
+  },
+  {
+    "name": "3",
+    "type": "sea",
+    "coordinates": [-82.03326119742952, 55.08441823026488],
+    "connections": [
+      {"to": "Buenos Aires", "type": "ship"},
+      {"to": "Sydney", "type": "ship"}
+    ]
+  },
+  {
+    "name": "4",
+    "type": "wilderness",
+    "coordinates": [61.36354395281137, -117.65928769719235],
+    "connections": [
+      {"to": "1", "type": "uncharted"},
+      {"to": "5", "type": "uncharted"}
+    ]
+  },
+  {
+    "name": "5",
+    "type": "city",
+    "coordinates": [41.25474870429752, -95.9412306930459],
+    "connections": [
+      {"to": "Arkham", "type": "train"},
+      {"to": "San Francisco", "type": "train"},
+      {"to": "4", "type": "uncharted"}
+    ]
+  },
+  {
+    "name": "6",
+    "type": "city",
+    "coordinates": [32.78708209137895, -96.79610937882182],
+    "connections": [
+      {"to": "Arkham", "type": "train"},
+      {"to": "San Francisco", "type": "train"},
+      {"to": "7", "type": "train"}
+    ]
+  },
+  {
+    "name": "7",
+    "type": "city",
+    "coordinates": [8.987118555703058, -79.51700973797024],
+    "connections": [
+      {"to": "The Amazon", "type": "uncharted"},
+      {"to": "Buenos Aires", "type": "ship"},
+      {"to": "San Francisco", "type": "ship"},
+      {"to": "6", "type": "train"},
+      {"to": "8", "type": "ship"}
+    ]
+  },
+  {
+    "name": "8",
+    "type": "sea",
+    "coordinates": [25.000971604318792, -71.00034337451198],
+    "connections": [
+      {"to": "Arkham", "type": "ship"},
+      {"to": "Buenos Aires", "type": "ship"},
+      {"to": "7", "type": "ship"},
+      {"to": "10", "type": "ship"}
+    ]
+  },
+  {
+    "name": "9",
+    "type": "wilderness",
+    "coordinates": [69.83843709705985, -53.478957686177644],
+    "connections": [
+      {"to": "Arkham", "type": "ship"}
+    ]
+  },
+  {
+    "name": "10",
+    "type": "wilderness",
+    "coordinates": [14.719322360246661, -17.466855845462135],
+    "connections": [
+      {"to": "The Pyramids", "type": "uncharted"},
+      {"to": "Rome", "type": "ship"},
+      {"to": "8", "type": "ship"},
+      {"to": "15", "type": "ship"}
+    ]
+  },
+  {
+    "name": "11",
+    "type": "sea",
+    "coordinates": [-37.0921834019556, -12.276158854542762],
+    "connections": [
+      {"to": "Buenos Aires", "type": "ship"},
+      {"to": "15", "type": "ship"}
+    ]
+  },
+  {
+    "name": "12",
+    "type": "sea",
+    "coordinates": [-54.386598291739524, -36.56236684775685],
+    "connections": [
+      {"to": "Antarctica", "type": "ship"},
+      {"to": "Buenos Aires", "type": "ship"}
+    ]
+  },
+  {
+    "name": "13",
+    "type": "sea",
+    "coordinates": [80.80387348723677, 55.23775033629281],
+    "connections": [
+      {"to": "London", "type": "ship"}
+    ]
+  },
+  {
+    "name": "14",
+    "type": "city",
+    "coordinates": [65.02952632509181, 25.47020942432892],
+    "connections": [
+      {"to": "Rome", "type": "train"},
+      {"to": "16", "type": "train"}
+    ]
+  },
+  {
+    "name": "15",
+    "type": "city",
+    "coordinates": [-33.92193657953176, 18.45001774955841],
+    "connections": [
+      {"to": "The Heart of Africa", "type": "uncharted"},
+      {"to": "10", "type": "ship"},
+      {"to": "11", "type": "ship"},
+      {"to": "17", "type": "ship"},
+      {"to": "18", "type": "ship"}
+    ]
+  },
+  {
+    "name": "16",
+    "type": "city",
+    "coordinates": [56.01664205186383, 92.87396586875244],
+    "connections": [
+      {"to": "Istanbul", "type": "train"},
+      {"to": "Tunguska", "type": "train"},
+      {"to": "14", "type": "train"}
+    ]
+  },
+  {
+    "name": "17",
+    "type": "city",
+    "coordinates": [19.08736875314356, 72.87911242100995],
+    "connections": [
+      {"to": "The Himalayas", "type": "uncharted"},
+      {"to": "Istanbul", "type": "train"},
+      {"to": "Shanghai", "type": "train"},
+      {"to": "15", "type": "ship"},
+      {"to": "20", "type": "ship"}
+    ]
+  },
+  {
+    "name": "18",
+    "type": "sea",
+    "coordinates": [-49.348778234980756, 70.21903095525244],
+    "connections": [
+      {"to": "Sydney", "type": "ship"},
+      {"to": "15", "type": "ship"}
+    ]
+  },
+  {
+    "name": "19",
+    "type": "wilderness",
+    "coordinates": [63.06111582982855, 179.34788798353154],
+    "connections": [
+      {"to": "Shanghai", "type": "train"},
+      {"to": "Tokyo", "type": "ship"},
+      {"to": "Tunguska", "type": "train"},
+      {"to": "1", "type": "ship"}
+    ]
+  },
+  {
+    "name": "20",
+    "type": "city",
+    "coordinates": [-5.126530191940272, 119.40571383096034],
+    "connections": [
+      {"to": "Shanghai", "type": "ship"},
+      {"to": "Sydney", "type": "ship"},
+      {"to": "Tokyo", "type": "ship"},
+      {"to": "17", "type": "ship"}
+    ]
+  },
+  {
+    "name": "21",
+    "type": "wilderness",
+    "coordinates": [-25.343795226988536, 131.03444213186447],
+    "connections": [
+      {"to": "Sydney", "type": "uncharted"}
+    ]
+  },
+  {
+    "name": "The Amazon",
+    "type": "wilderness",
+    "coordinates": [-3.306826895501358, -60.66516385371958],
+    "connections": [
+      {"to": "Buenos Aires", "type": "uncharted"},
+      {"to": "7", "type": "uncharted"}
+    ]
+  },
+  {
+    "name": "The Pyramids",
+    "type": "wilderness",
+    "coordinates": [29.978410443405625, 31.134240924147104],
+    "connections": [
+      {"to": "The Heart of Africa", "type": "uncharted"},
+      {"to": "Istanbul", "type": "train"},
+      {"to": "Rome", "type": "ship"},
+      {"to": "10", "type": "uncharted"}
+    ]
+  },
+  {
+    "name": "The Heart of Africa",
+    "type": "wilderness",
+    "coordinates": [-5.769438870624468, 29.591824435107082],
+    "connections": [
+      {"to": "The Pyramids", "type": "uncharted"},
+      {"to": "15", "type": "uncharted"}
+    ]
+  },
+  {
+    "name": "The Himalayas",
+    "type": "wilderness",
+    "coordinates": [31.068124001330755, 81.31185852035169],
+    "connections": [
+      {"to": "Shanghai", "type": "uncharted"},
+      {"to": "17", "type": "uncharted"}
+    ]
+  },
+  {
+    "name": "Tunguska",
+    "type": "wilderness",
+    "coordinates": [61.96724334590143, 92.4734163596077],
+    "connections": [
+      {"to": "16", "type": "uncharted"},
+      {"to": "19", "type": "uncharted"}
+    ]
+  },
+  {
+    "name": "Antarctica",
+    "type": "sea",
+    "coordinates": [-70.92480077627484, 23.838543681281152],
+    "connections": [
+      {"to": "Sydney", "type": "ship"},
+      {"to": "12", "type": "ship"}
+    ]
+  },
+  {
+    "name": "San Francisco",
+    "type": "city",
+    "coordinates": [37.7526711391998, -122.44807205755828],
+    "connections": [
+      {"to": "1", "type": "ship"},
+      {"to": "2", "type": "ship"},
+      {"to": "5", "type": "train"},
+      {"to": "6", "type": "train"},
+      {"to": "7", "type": "ship"}
+    ]
+  },
+  {
+    "name": "Arkham",
+    "type": "city",
+    "coordinates": [42.60436531512155, -70.8914825742486],
+    "connections": [
+      {"to": "London", "type": "ship"},
+      {"to": "5", "type": "train"},
+      {"to": "6", "type": "train"},
+      {"to": "8", "type": "ship"},
+      {"to": "9", "type": "ship"}
+    ]
+  },
+  {
+    "name": "Buenos Aires",
+    "type": "city",
+    "coordinates": [-34.60152552612713, -58.38951620583458],
+    "connections": [
+      {"to": "The Amazon", "type": "uncharted"},
+      {"to": "3", "type": "ship"},
+      {"to": "7", "type": "ship"},
+      {"to": "8", "type": "ship"},
+      {"to": "11", "type": "ship"},
+      {"to": "12", "type": "ship"}
+    ]
+  },
+  {
+    "name": "London",
+    "type": "city",
+    "coordinates": [51.51022041119061, -0.12847910579949792],
+    "connections": [
+      {"to": "Arkham", "type": "ship"},
+      {"to": "Rome", "type": "ship"},
+      {"to": "13", "type": "ship"}
+    ]
+  },
+  {
+    "name": "Rome",
+    "type": "city",
+    "coordinates": [41.89472846070195, 12.48250216644515],
+    "connections": [
+      {"to": "Istanbul", "type": "train"},
+      {"to": "London", "type": "ship"},
+      {"to": "The Pyramids", "type": "ship"},
+      {"to": "10", "type": "ship"},
+      {"to": "14", "type": "train"}
+    ]
+  },
+  {
+    "name": "Istanbul",
+    "type": "city",
+    "coordinates": [41.0113148309421, 28.968200786684598],
+    "connections": [
+      {"to": "Rome", "type": "train"},
+      {"to": "The Pyramids", "type": "train"},
+      {"to": "16", "type": "train"},
+      {"to": "17", "type": "train"}
+    ]
+  },
+  {
+    "name": "Shanghai",
+    "type": "city",
+    "coordinates": [31.243890715788996, 121.47120993258858],
+    "connections": [
+      {"to": "The Himalayas", "type": "uncharted"},
+      {"to": "Tokyo", "type": "ship"},
+      {"to": "17", "type": "train"},
+      {"to": "19", "type": "train"},
+      {"to": "20", "type": "ship"}
+    ]
+  },
+  {
+    "name": "Sydney",
+    "type": "city",
+    "coordinates": [-33.86808819938728, 151.20722012133496],
+    "connections": [
+      {"to": "Antarctica", "type": "ship"},
+      {"to": "3", "type": "ship"},
+      {"to": "18", "type": "ship"},
+      {"to": "20", "type": "ship"},
+      {"to": "21", "type": "uncharted"}
+    ]
+  },
+  {
+    "name": "Tokyo",
+    "type": "city",
+    "coordinates": [35.69227237330765, 139.76811267408797],
+    "connections": [
+      {"to": "Shanghai", "type": "ship"},
+      {"to": "2", "type": "ship"},
+      {"to": "19", "type": "ship"},
+      {"to": "20", "type": "ship"}
+    ]
+  }
+]
