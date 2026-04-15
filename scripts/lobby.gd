@@ -249,13 +249,13 @@ func _on_reconnected() -> void:
 func _on_rejoin_failed() -> void:
 	_show_reconnect_overlay("Комната не найдена\nВозврат в главное меню...")
 	await get_tree().create_timer(2.0).timeout
-	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	SceneManager.go("main_menu")
 
 
 func _on_connection_lost() -> void:
 	_show_reconnect_overlay("Нет связи с сервером\nВозврат в главное меню...")
 	await get_tree().create_timer(3.0).timeout
-	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	SceneManager.go("main_menu")
 
 
 func _on_server_disconnected() -> void:
@@ -269,25 +269,25 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 			_update_row_ready(pid, true)
 			_refresh_start_button()
 		"start_game":
-			get_tree().change_scene_to_file("res://board.tscn")
+			SceneManager.go("world_map")
 
 
 # ── Обработчики кнопок ────────────────────────────────────────────────────────
 
 func _on_back_pressed() -> void:
 	_nm.leave_room()
-	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	SceneManager.go("main_menu")
 
 
 func _on_delete_room_pressed() -> void:
 	_nm.delete_room()
-	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	SceneManager.go("main_menu")
 
 
 func _on_room_deleted(reason: String) -> void:
 	_show_reconnect_overlay("Комната закрыта: %s\nВозврат в меню..." % reason)
 	await get_tree().create_timer(1.5).timeout
-	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	SceneManager.go("main_menu")
 
 
 func _on_ready_pressed() -> void:
@@ -305,7 +305,7 @@ func _on_start_pressed() -> void:
 	if not _nm.is_host():
 		return
 	_nm.relay_all({"action": "start_game"})
-	get_tree().change_scene_to_file("res://board.tscn")
+	SceneManager.go("world_map")
 
 
 # ── Оверлей ───────────────────────────────────────────────────────────────────

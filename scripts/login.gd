@@ -208,7 +208,7 @@ func _on_otp_failed(error: String) -> void:
 
 func _on_login_succeeded(_user: Dictionary) -> void:
 	_show_status("Вход выполнен!", UIColors.SUCCESS)
-	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	SceneManager.go("main_menu")
 
 
 func _on_login_failed(error: String) -> void:

@@ -393,7 +393,7 @@ func _auto_connect() -> void:
 func _on_logout_pressed() -> void:
 	_nm.disconnect_from_relay()
 	_auth.logout()
-	get_tree().change_scene_to_file("res://scenes/login.tscn")
+	SceneManager.go("login")
 
 
 func _on_refresh_pressed() -> void:
@@ -484,7 +484,7 @@ func _on_room_selected(room_id: String, row: Button) -> void:
 
 
 func _on_joined_room(_rid: String, _rname: String, _is_host: bool, _players: Array) -> void:
-	get_tree().change_scene_to_file("res://scenes/lobby.tscn")
+	SceneManager.go("world_map")
 
 
 func _on_rejoin_failed_in_menu() -> void:

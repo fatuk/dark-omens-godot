@@ -306,7 +306,7 @@ func _handle_message(msg: Dictionary) -> void:
 				if players.has(pid):
 					players[pid]["ready"] = true
 			elif action == "start_game":
-				get_tree().change_scene_to_file("res://board.tscn")
+				SceneManager.go("world_map")
 
 		"room_deleted":
 			room_id = ""
