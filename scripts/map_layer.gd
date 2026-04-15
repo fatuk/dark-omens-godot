@@ -25,8 +25,8 @@ const GC_STEPS:       int   = 48
 ## Желаемый экранный размер маркера в пикселях (не зависит от зума).
 const MARKER_SCREEN:  float = 100.0
 ## Расстояние от центра маркера до верха подписи в экранных пикселях.
-const LABEL_SCREEN_Y: float = 36.0
-const LABEL_FONT:     int   = 13    # шрифт в экранных пикселях
+const LABEL_SCREEN_Y: float = 50.0
+const LABEL_FONT:     int   = 14    # шрифт в экранных пикселях
 
 # ── Зависимости ───────────────────────────────────────────────────────────────
 
@@ -122,25 +122,28 @@ func _spawn_markers() -> void:
 		var loc: Dictionary = _locs[loc_name]
 		var tex: Texture2D  = _textures.get(loc.type, _textures["city"]) as Texture2D
 
-		var sprite := Sprite2D.new()
-		sprite.texture  = tex
-		sprite.position = loc.pos
-		add_child(sprite)
+		for dx: int in [-TILE_W, 0, TILE_W]:
+			var world_pos: Vector2 = loc.pos + Vector2(dx, 0)
 
-		var lbl := Label.new()
-		lbl.text = loc_name
-		lbl.add_theme_font_size_override("font_size", LABEL_FONT)
-		lbl.add_theme_color_override("font_color", Color.WHITE)
-		var bg := StyleBoxFlat.new()
-		bg.bg_color = Color(0.05, 0.05, 0.08, 0.82)
-		bg.set_corner_radius_all(6)
-		bg.set_content_margin_all(4)
-		bg.content_margin_left  = 10.0
-		bg.content_margin_right = 10.0
-		lbl.add_theme_stylebox_override("normal", bg)
-		add_child(lbl)
+			var sprite := Sprite2D.new()
+			sprite.texture  = tex
+			sprite.position = world_pos
+			add_child(sprite)
 
-		_markers.append({"sprite": sprite, "label": lbl, "pos": loc.pos})
+			var lbl := Label.new()
+			lbl.text = loc_name
+			lbl.add_theme_font_size_override("font_size", LABEL_FONT)
+			lbl.add_theme_color_override("font_color", Color.WHITE)
+			var bg := StyleBoxFlat.new()
+			bg.bg_color = Color(0.05, 0.05, 0.08, 0.82)
+			bg.set_corner_radius_all(6)
+			bg.set_content_margin_all(4)
+			bg.content_margin_left  = 10.0
+			bg.content_margin_right = 10.0
+			lbl.add_theme_stylebox_override("normal", bg)
+			add_child(lbl)
+
+			_markers.append({"sprite": sprite, "label": lbl, "pos": world_pos})
 
 
 # ── Рёбра ─────────────────────────────────────────────────────────────────────
@@ -174,9 +177,12 @@ func _build_edges() -> void:
 # ── Отрисовка дуг ─────────────────────────────────────────────────────────────
 
 func _draw() -> void:
-	for i: int in range(_edges.size()):
-		var e: Dictionary = _edges[i]
-		_draw_great_circle(e.lat0, e.lon0, e.lat1, e.lon1, _conn_color(e.ctype))
+	for dx: int in [-TILE_W, 0, TILE_W]:
+		draw_set_transform(Vector2(dx, 0))
+		for i: int in range(_edges.size()):
+			var e: Dictionary = _edges[i]
+			_draw_great_circle(e.lat0, e.lon0, e.lat1, e.lon1, _conn_color(e.ctype))
+	draw_set_transform(Vector2.ZERO)
 
 
 func _draw_great_circle(lat0: float, lon0: float, lat1: float, lon1: float, color: Color) -> void:
