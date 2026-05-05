@@ -50,20 +50,31 @@ func _unhandled_input(event: InputEvent) -> void:
 # ── Построение UI ─────────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
+	# Корневой Control — даёт якорную точку для всех дочерних нод
+	var root := Control.new()
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(root)
+
+	# Backdrop — блокирует клики к игровой сцене снизу
 	var backdrop := ColorRect.new()
 	backdrop.color = Color(0, 0, 0, 0.65)
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(backdrop)
+	root.add_child(backdrop)
+
+	# Единственный CenterContainer — брат backdrop, не его дочерний элемент.
+	# Оба дочерних панели в нём: одна видима, другая скрыта.
+	# mouse_filter = PASS чтобы клики доходили до кнопок внутри панелей.
+	var cc := CenterContainer.new()
+	cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	cc.mouse_filter = Control.MOUSE_FILTER_PASS
+	root.add_child(cc)
 
 	_main_panel = _build_main_panel()
 	_sett_panel = _build_sett_panel()
-
-	for panel: Control in [_main_panel, _sett_panel]:
-		var cc := CenterContainer.new()
-		cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		cc.add_child(panel)
-		backdrop.add_child(cc)
+	cc.add_child(_main_panel)
+	cc.add_child(_sett_panel)
 
 
 func _build_main_panel() -> Control:
