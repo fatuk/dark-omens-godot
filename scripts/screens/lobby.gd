@@ -340,7 +340,7 @@ func _refresh_start_button() -> void:
 			_status_label.modulate = UIColors.MUTED
 		return
 
-	var non_host: int = _nm.players.size() - 1
+	var _non_host: int = _nm.players.size() - 1
 	if selected.is_empty():
 		_start_button.disabled = true
 		_status_label.text     = "Выберите своего сыщика"
@@ -410,7 +410,7 @@ func _on_server_disconnected() -> void:
 	pass  # ждём reconnecting/reconnected/rejoin_failed/connection_lost
 
 
-func _on_relay_received(from_id: String, data: Dictionary) -> void:
+func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 	match data.get("action", ""):
 		"set_ready":
 			var pid: String      = data.get("player_id", "")
