@@ -140,10 +140,15 @@ func _on_request_completed(
 			if response_code == 200:
 				current_user = json
 				login_succeeded.emit(current_user)
-			else:
+			elif response_code == 401:
+				# Токен явно инвалидирован сервером — стираем
 				session_token = ""
 				current_user  = {}
 				_save_session()
+				session_invalid.emit()
+			else:
+				# 500 / сетевая ошибка / сервер не ответил — токен НЕ трогаем,
+				# чтобы следующий запуск не требовал повторного логина
 				session_invalid.emit()
 
 		"logout":

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b4xlobby2dark"]
 
-[ext_resource type="Script" path="res://scripts/lobby.gd" id="1_lobby"]
+[ext_resource type="Script" path="res://scripts/screens/lobby.gd" id="1_lobby"]
 
 [node name="Lobby" type="Control"]
 layout_mode = 3

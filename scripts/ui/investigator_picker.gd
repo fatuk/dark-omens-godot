@@ -13,6 +13,7 @@ var _selected_inv:    String       = ""
 var _inv_cards:       Dictionary   = {}   # name -> Button
 var _inv_data:        Dictionary   = {}   # name -> Dictionary
 var _placeholder_tex: ImageTexture = null
+var _taken_overlays:  Dictionary   = {}   # name -> Control (оверлей "занято")
 
 # ── Ноды детальной панели ─────────────────────────────────────────────────────
 
@@ -37,6 +38,36 @@ func clear_selection() -> void:
 		(_inv_cards[_selected_inv] as Button).add_theme_stylebox_override("normal", _card_style(false))
 	_selected_inv = ""
 	_reset_detail()
+	investigator_selected.emit("")
+
+
+## Пометить сыщика как занятого другим игроком.
+func mark_taken(inv_name: String, taker_name: String) -> void:
+	if inv_name.is_empty() or not _inv_cards.has(inv_name):
+		return
+	var card := _inv_cards[inv_name] as Button
+	card.disabled = true
+	card.add_theme_stylebox_override("normal",   _card_style_taken())
+	card.add_theme_stylebox_override("disabled", _card_style_taken())
+	if _taken_overlays.has(inv_name):
+		var ov := _taken_overlays[inv_name] as Control
+		ov.visible = true
+		(ov.get_child(0) as Label).text = taker_name
+	# Если этот сыщик был выбран нами — сбрасываем выбор
+	if _selected_inv == inv_name:
+		clear_selection()
+
+
+## Освободить сыщика (игрок вышел).
+func mark_available(inv_name: String) -> void:
+	if inv_name.is_empty() or not _inv_cards.has(inv_name):
+		return
+	var card := _inv_cards[inv_name] as Button
+	card.disabled = false
+	card.add_theme_stylebox_override("normal",   _card_style(false))
+	card.add_theme_stylebox_override("disabled", _card_style(false))
+	if _taken_overlays.has(inv_name):
+		(_taken_overlays[inv_name] as Control).visible = false
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
@@ -232,6 +263,11 @@ func _make_inv_card(inv: Dictionary) -> Button:
 	btn.add_theme_stylebox_override("disabled", _card_style(false))
 	btn.pressed.connect(func() -> void: _on_card_pressed(inv_name))
 
+	# Оверлей «занято» — скрыт по умолчанию
+	var taken_ov := _make_taken_overlay()
+	btn.add_child(taken_ov)
+	_taken_overlays[inv_name] = taken_ov
+
 	var vbox := VBoxContainer.new()
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -257,6 +293,37 @@ func _make_inv_card(inv: Dictionary) -> Button:
 	vbox.add_child(name_lbl)
 
 	return btn
+
+
+func _make_taken_overlay() -> Control:
+	var ov := Panel.new()
+	ov.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ov.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ov.visible      = false
+	var sty := StyleBoxFlat.new()
+	sty.bg_color = Color(0.04, 0.03, 0.08, 0.78)
+	ov.add_theme_stylebox_override("panel", sty)
+
+	var lbl := Label.new()
+	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+	lbl.mouse_filter         = Control.MOUSE_FILTER_IGNORE
+	lbl.autowrap_mode        = TextServer.AUTOWRAP_WORD_SMART
+	lbl.add_theme_font_size_override("font_size", 18)
+	lbl.add_theme_color_override("font_color", UIColors.MUTED)
+	ov.add_child(lbl)
+	return ov
+
+
+static func _card_style_taken() -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color     = Color(0.07, 0.06, 0.10)
+	s.border_color = Color(0.25, 0.20, 0.35)
+	s.set_border_width_all(1)
+	s.set_corner_radius_all(4)
+	s.set_content_margin_all(0)
+	return s
 
 
 static func _card_style(selected: bool) -> StyleBoxFlat:

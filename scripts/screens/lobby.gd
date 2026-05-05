@@ -29,8 +29,9 @@ const _PREFS_SECTION := "lobby"
 func _save_ready_state() -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(_PREFS_PATH)
-	cfg.set_value(_PREFS_SECTION, "room_id",   _nm.room_id)
-	cfg.set_value(_PREFS_SECTION, "was_ready", true)
+	cfg.set_value(_PREFS_SECTION, "room_id",     _nm.room_id)
+	cfg.set_value(_PREFS_SECTION, "was_ready",   true)
+	cfg.set_value(_PREFS_SECTION, "player_name", _nm.my_name)
 	cfg.save(_PREFS_PATH)
 
 
@@ -45,22 +46,28 @@ func _check_auto_ready() -> void:
 	var cfg := ConfigFile.new()
 	if cfg.load(_PREFS_PATH) != OK:
 		return
-	var saved_room:  String = cfg.get_value(_PREFS_SECTION, "room_id",   "")
-	var saved_ready: bool   = cfg.get_value(_PREFS_SECTION, "was_ready", false)
-	if not saved_ready or saved_room != _nm.room_id:
+	var saved_room:   String = cfg.get_value(_PREFS_SECTION, "room_id",     "")
+	var saved_ready:  bool   = cfg.get_value(_PREFS_SECTION, "was_ready",   false)
+	var saved_player: String = cfg.get_value(_PREFS_SECTION, "player_name", "")
+	if not saved_ready or saved_room != _nm.room_id or saved_player != _nm.my_name:
 		return
 	if not is_instance_valid(_picker):
 		return
 	var selected: String = _picker.get_selected()
 	if selected.is_empty():
 		return
-	# Уже были готовы в этой комнате — сообщаем статус остальным и сразу на карту
+	# Уже были готовы в этой комнате — восстанавливаем статус,
+	# но НЕ переходим сразу: ждём start_game от хоста (или сами нажмём «Начать»)
 	_was_ready = true
 	if _nm.players.has(_nm.my_id):
 		_nm.players[_nm.my_id]["ready"]       = true
 		_nm.players[_nm.my_id]["investigator"] = selected
+	_update_row_ready(_nm.my_id, true, selected)
+	if is_instance_valid(_ready_button):
+		_ready_button.disabled = true
+		_ready_button.text     = "  ГОТОВ  ✓"
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
-	SceneManager.go("world_map")
+	_refresh_start_button()
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
@@ -84,6 +91,10 @@ func _ready() -> void:
 		"ведущий" if _nm.is_host() else "игрок"
 	])
 	_check_auto_ready()
+	# Если игра уже идёт (мы переподключились mid-game) — сразу на карту
+	if _nm.game_started:
+		GameConsole.log("Игра уже идёт — переходим на карту")
+		SceneManager.go("world_map")
 
 
 # ── Построение UI ──────────────────────────────────────────────────────────────
@@ -201,9 +212,9 @@ func _build_ui() -> void:
 
 # ── Выбор сыщика ─────────────────────────────────────────────────────────────
 
-func _on_investigator_selected(_inv_name: String) -> void:
+func _on_investigator_selected(inv_name: String) -> void:
 	if is_instance_valid(_ready_button) and not _was_ready:
-		_ready_button.disabled = false
+		_ready_button.disabled = inv_name.is_empty()
 	_refresh_start_button()
 
 
@@ -219,12 +230,20 @@ func _update_room_label() -> void:
 
 
 func _populate_players() -> void:
+	GameConsole.log("[DEBUG] players при загрузке лобби: %s" % JSON.stringify(_nm.players))
 	for pid: String in _nm.players:
 		var info: Dictionary = _nm.players[pid]
 		_add_player_row(pid, info)
-		# Логируем всех кроме себя — они уже были в комнате до нашего входа
 		if pid != _nm.my_id:
 			GameConsole.log("%s уже в комнате" % info.get("name", pid))
+		# Применяем ready-стейт, который пришёл с сервера в joined_room
+		if pid != _nm.my_id:
+			var inv: String  = info.get("investigator", "")
+			var rdy: bool    = info.get("ready", false)
+			if rdy:
+				_update_row_ready(pid, true, inv)
+				if not inv.is_empty() and is_instance_valid(_picker):
+					_picker.mark_taken(inv, info.get("name", pid))
 	_refresh_start_button()
 
 
@@ -281,6 +300,11 @@ func _add_player_row(id: String, info: Dictionary) -> void:
 
 
 func _remove_player_row(id: String) -> void:
+	# Освобождаем сыщика ушедшего игрока
+	if is_instance_valid(_picker) and _nm.players.has(id):
+		var inv: String = _nm.players[id].get("investigator", "")
+		if not inv.is_empty():
+			_picker.mark_available(inv)
 	if _player_rows.has(id):
 		(_player_rows[id] as Node).queue_free()
 		_player_rows.erase(id)
@@ -336,12 +360,6 @@ func _refresh_start_button() -> void:
 func _on_player_connected(id: String, info: Dictionary) -> void:
 	_add_player_row(id, info)
 	_refresh_start_button()
-	# Если уже нажали «Готов» — сообщаем новому игроку наш статус напрямую,
-	# он мог зайти уже после того как мы отправили relay_all
-	if _was_ready and is_instance_valid(_picker):
-		var selected: String = _picker.get_selected()
-		if not selected.is_empty():
-			_nm.relay_to(id, {"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
 
 
 func _on_player_disconnected(id: String) -> void:
@@ -392,7 +410,7 @@ func _on_server_disconnected() -> void:
 	pass  # ждём reconnecting/reconnected/rejoin_failed/connection_lost
 
 
-func _on_relay_received(_from_id: String, data: Dictionary) -> void:
+func _on_relay_received(from_id: String, data: Dictionary) -> void:
 	match data.get("action", ""):
 		"set_ready":
 			var pid: String      = data.get("player_id", "")
@@ -405,7 +423,11 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 			_refresh_start_button()
 			var pname: String = _player_names.get(pid, pid)
 			GameConsole.log("%s готов  ·  сыщик: %s" % [pname, inv_name])
+			# Блокируем сыщика для остальных
+			if pid != _nm.my_id and is_instance_valid(_picker):
+				_picker.mark_taken(inv_name, pname)
 		"start_game":
+			_clear_ready_state()
 			SceneManager.go("world_map")
 
 
@@ -471,6 +493,7 @@ func _on_start_pressed() -> void:
 	if _nm.players.has(_nm.my_id):
 		_nm.players[_nm.my_id]["investigator"] = selected
 	GameConsole.log("Игра началась! Игроков: %d" % _nm.players.size())
+	_clear_ready_state()
 	_nm.relay_all({"action": "start_game"})
 	SceneManager.go("world_map")
 
