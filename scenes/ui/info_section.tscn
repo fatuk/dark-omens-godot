@@ -1,0 +1,35 @@
+[gd_scene load_steps=3 format=3 uid="uid://ciyvmfk1qmmgu"]
+
+[ext_resource type="Script" uid="uid://btauem5vjchgt" path="res://scripts/ui/info_section.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dj7j1gnfs2byc" path="res://assets/game-panel/game-info-bg.png" id="2_bg"]
+
+[node name="InfoSection" type="Control"]
+custom_minimum_size = Vector2(110, 110)
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Bg" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 4.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 20
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1

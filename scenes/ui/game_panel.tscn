@@ -1,0 +1,113 @@
+[gd_scene load_steps=6 format=3 uid="uid://bpen78tdd33ii"]
+
+[ext_resource type="Script" uid="uid://dqjcfu2ayh25k" path="res://scripts/ui/game_panel.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://djufhrjv6wk32" path="res://assets/game-panel/game-panel-bg.png" id="2_bg"]
+[ext_resource type="PackedScene" uid="uid://dqtqoovr22q4d" path="res://scenes/ui/omens_counter.tscn" id="3_omens"]
+[ext_resource type="PackedScene" uid="uid://ciyvmfk1qmmgu" path="res://scenes/ui/info_section.tscn" id="4_info"]
+[ext_resource type="PackedScene" uid="uid://c0b2tsiyiml1h" path="res://scenes/ui/doom_track.tscn" id="5_doom"]
+
+[node name="GamePanel" type="CanvasLayer"]
+layer = 50
+script = ExtResource("1_script")
+
+; Корень: 790×110, по центру сверху. Панель НЕ растягивается во всю ширину
+; (как в React-прототипе) — фиксированная ширина, дочерние орбы выступают
+; за края через отрицательные offset'ы.
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -395.0
+offset_right = 395.0
+offset_top = 0.0
+offset_bottom = 110.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="Bg" type="TextureRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 0
+
+; Компасный диск слева — выступает за левый край панели на ~47px.
+; React: `left: 8px; transform: translateX(-50%)` → центр диска на x=8,
+; ширина 110 → x = [-47, 63].
+[node name="OmensDial" parent="Root" instance=ExtResource("3_omens")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+offset_left = -47.0
+offset_top = 0.0
+offset_right = 63.0
+offset_bottom = 110.0
+
+; Зелёный орб справа с числом — выступает за правый край панели на ~55px.
+; React: `right: 0; transform: translateX(50%)` → левый край орба на x=panel_w,
+; ширина 110 → x = [panel_w-55, panel_w+55].
+[node name="InfoOrb" parent="Root" instance=ExtResource("4_info")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -55.0
+offset_top = 0.0
+offset_right = 55.0
+offset_bottom = 110.0
+label_text = "12"
+
+; Doom-track снизу по центру, нижний край свешивается на 10px ниже панели.
+; React: `bottom: -10px; left: 50%; translateX(-50%)`.
+[node name="DoomTrack" parent="Root" instance=ExtResource("5_doom")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -173.75
+offset_top = -15.0
+offset_right = 173.75
+offset_bottom = 10.0
+filled = 7
+
+; Лейбл фазы слева (после диска омен).
+; React: `top: 10px; left: 115px; width: 100px; font-size: 16px; color: #000`.
+[node name="PhaseLabel" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+offset_left = 115.0
+offset_top = 10.0
+offset_right = 215.0
+offset_bottom = 32.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Encounters"
+horizontal_alignment = 1
+
+; Лейбл текущего игрока справа (перед info-орбом).
+; React: `top: 10px; right: 100px; width: 130px`.
+[node name="PlayerLabel" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -230.0
+offset_top = 10.0
+offset_right = -100.0
+offset_bottom = 32.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Lola Haze"
+horizontal_alignment = 1

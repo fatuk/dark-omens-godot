@@ -1,0 +1,83 @@
+[gd_scene load_steps=7 format=3 uid="uid://dqtqoovr22q4d"]
+
+[ext_resource type="Script" uid="uid://dwy2v8dq0l374" path="res://scripts/ui/omens_counter.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cmb8oule0ory1" path="res://assets/game-panel/omens/omens-circle.png" id="2_circle"]
+[ext_resource type="Texture2D" uid="uid://ck62rwdip4h13" path="res://assets/game-panel/omens/omens-lense.png" id="3_lense"]
+[ext_resource type="Texture2D" uid="uid://bps5pbg7mhxhp" path="res://assets/game-panel/omens/omens-frame.png" id="4_frame"]
+
+; Шейдер круглой маски: discard фрагменты, если их экранная позиция (FRAGCOORD)
+; дальше mask_radius_px от mask_center_px. Координаты обновляются скриптом
+; и не зависят от вращения узла — маска остаётся неподвижной.
+[sub_resource type="Shader" id="circle_mask_shader"]
+code = "shader_type canvas_item;
+
+uniform vec2 mask_center_px = vec2(0.0);
+uniform float mask_radius_px : hint_range(0.0, 200.0) = 46.0;
+
+void fragment() {
+	if (distance(FRAGCOORD.xy, mask_center_px) > mask_radius_px) {
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="circle_mask_mat"]
+shader = SubResource("circle_mask_shader")
+shader_parameter/mask_center_px = Vector2(0, 0)
+shader_parameter/mask_radius_px = 46.0
+
+[sub_resource type="CanvasItemMaterial" id="lense_mat"]
+blend_mode = 1
+
+[node name="OmensCounter" type="Control"]
+custom_minimum_size = Vector2(110, 110)
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 0
+script = ExtResource("1_script")
+
+; Внутренний диск 253×250 — выходит за границы контейнера, но шейдер
+; обрезает по кругу относительно экранного центра. Вращается через узел.
+[node name="Circle" type="TextureRect" parent="."]
+unique_name_in_owner = true
+material = SubResource("circle_mask_mat")
+layout_mode = 0
+offset_left = -13.0
+offset_top = -1.0
+offset_right = 240.0
+offset_bottom = 249.0
+pivot_offset = Vector2(126.5, 125.0)
+mouse_filter = 2
+texture = ExtResource("2_circle")
+expand_mode = 1
+stretch_mode = 0
+
+; Линза-блик 66×66 в центре. ADD blend = стеклянный эффект.
+[node name="Lense" type="TextureRect" parent="."]
+material = SubResource("lense_mat")
+modulate = Color(1, 1, 1, 0.6)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -33.0
+offset_top = -33.0
+offset_right = 33.0
+offset_bottom = 33.0
+mouse_filter = 2
+texture = ExtResource("3_lense")
+expand_mode = 1
+stretch_mode = 0
+
+; Латунная рамка 110×110 поверх всего.
+[node name="Frame" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("4_frame")
+expand_mode = 1
+stretch_mode = 0

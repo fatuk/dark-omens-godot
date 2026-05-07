@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://diiss2g0befi6" path="res://scripts/screens/world_map.gd" id="1_oru6e"]
 [ext_resource type="Texture2D" uid="uid://cb6u8vwfb1jla" path="res://assets/map.png" id="2_maptex"]
 [ext_resource type="Script" uid="uid://bp20jobt76yse" path="res://scripts/ui/investigator_panel.gd" id="3_u82pb"]
+[ext_resource type="PackedScene" uid="uid://bpen78tdd33ii" path="res://scenes/ui/game_panel.tscn" id="4_6a477"]
 
 [node name="WorldMap" type="Node2D" unique_id=400240817]
 script = ExtResource("1_oru6e")
@@ -26,3 +27,5 @@ zoom = Vector2(0.5, 0.5)
 
 [node name="InvestigatorPanel" type="CanvasLayer" parent="." unique_id=648634468]
 script = ExtResource("3_u82pb")
+
+[node name="GamePanel" parent="." unique_id=978194652 instance=ExtResource("4_6a477")]
