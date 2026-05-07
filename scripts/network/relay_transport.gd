@@ -27,6 +27,13 @@ var _reconnect_timer    : float = 0.0
 var _keepalive_timer    : float = KEEPALIVE_INTERVAL
 
 
+# ── Lifecycle ──────────────────────────────────────────────────────────────────
+
+func _ready() -> void:
+	# WebSocket polling должен продолжаться, даже когда дерево на паузе
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+
 # ── Публичный API ──────────────────────────────────────────────────────────────
 
 ## Установить соединение. Включает автопереподключение.

@@ -44,7 +44,7 @@ func _process(delta: float) -> void:
 		_apply_bounds()
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		match mb.button_index:

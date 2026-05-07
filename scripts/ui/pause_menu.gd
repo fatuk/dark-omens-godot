@@ -27,6 +27,8 @@ var _fs_check:    CheckBox     = null
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
+	# ALWAYS — меню должно работать, пока дерево на паузе
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer   = 100
 	visible = false
 	_load_settings()
@@ -204,6 +206,7 @@ func _build_sett_panel() -> Control:
 func _toggle() -> void:
 	_open = not _open
 	visible = _open
+	get_tree().paused = _open
 	if _open:
 		_show_main()
 
@@ -233,6 +236,7 @@ func _save_and_back() -> void:
 func _go_main_menu() -> void:
 	_open   = false
 	visible = false
+	get_tree().paused = false
 	var nm: Node = get_node_or_null("/root/NetworkManager")
 	if nm:
 		(nm as Node).call("leave_room")
@@ -240,6 +244,7 @@ func _go_main_menu() -> void:
 
 
 func _quit_game() -> void:
+	get_tree().paused = false
 	get_tree().quit()
 
 
@@ -267,6 +272,7 @@ func _save_settings() -> void:
 	cfg.save(SETTINGS_FILE)
 
 
+@warning_ignore("integer_division")
 func _apply_display() -> void:
 	if _fullscreen:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)

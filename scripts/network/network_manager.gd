@@ -43,6 +43,8 @@ var _saved_investigator: String = ""
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
+	# Должен обрабатывать сетевые события, даже когда дерево на паузе
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	var t := _transport()
 	t.ws_opened.connect(_on_ws_open)
 	t.ws_closed.connect(_on_ws_closed)
