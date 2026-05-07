@@ -2,7 +2,7 @@ extends Control
 
 ## Компасный диск «омен» — слева на главной панели.
 ## Внутренний Circle вращается через rotation_degrees (показывая разные омены),
-## но виден только через круглую маску в шейдере (привязана к экранному центру
+## но виден только через круглую маску в шейдере (привязана к canvas-центру
 ## контейнера, не вращается с диском).
 ##
 ## current_step — текущее состояние из игры. При наведении мышью диск
@@ -13,6 +13,7 @@ const STEP_DEG:        float = 45.0
 const START_ANGLE_DEG: float = -82.0   # как в React-прототипе
 const PEEK_AMOUNT:     float = 0.3
 const TWEEN_TIME:      float = 0.3     # секунды
+const MASK_RADIUS:     float = 46.0    # радиус видимого окошка в canvas-координатах
 
 @export var current_step: float = 0.0:
 	set(v):
@@ -22,16 +23,21 @@ const TWEEN_TIME:      float = 0.3     # секунды
 @onready var _circle: TextureRect = %Circle
 
 var _tween: Tween = null
+var _last_center: Vector2 = Vector2.INF
 
 
 func _ready() -> void:
 	mouse_entered.connect(_on_hover)
 	mouse_exited.connect(_on_unhover)
-	resized.connect(_update_mask_center)
-	# Дожидаемся первого layout-pass, потом ставим маску и поворот.
+	# Первый layout-pass для корректных global_position/size
 	await get_tree().process_frame
 	_update_mask_center()
 	_circle.rotation_degrees = _angle_for(current_step)
+
+
+func _process(_delta: float) -> void:
+	# Если позиция компонента поменялась (resize окна и т.д.) — пересчитываем.
+	_update_mask_center()
 
 
 func _on_hover() -> void:
@@ -55,8 +61,6 @@ func _angle_for(step_value: float) -> float:
 	return START_ANGLE_DEG + step_value * STEP_DEG
 
 
-# Перерасчёт центра круглой маски — на ресайз (когда меняется глобальная
-# позиция компонента, например при resize окна).
 func _update_mask_center() -> void:
 	if not is_instance_valid(_circle):
 		return
@@ -64,4 +68,8 @@ func _update_mask_center() -> void:
 	if mat == null:
 		return
 	var center: Vector2 = global_position + size * 0.5
-	mat.set_shader_parameter("mask_center_px", center)
+	if center == _last_center:
+		return
+	_last_center = center
+	mat.set_shader_parameter("mask_center", center)
+	mat.set_shader_parameter("mask_radius", MASK_RADIUS)

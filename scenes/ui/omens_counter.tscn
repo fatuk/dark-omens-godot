@@ -11,11 +11,20 @@
 [sub_resource type="Shader" id="circle_mask_shader"]
 code = "shader_type canvas_item;
 
-uniform vec2 mask_center_px = vec2(0.0);
-uniform float mask_radius_px : hint_range(0.0, 200.0) = 46.0;
+// mask_center и mask_radius в canvas-координатах (то же пространство, что
+// Control.global_position). MODEL_MATRIX переводит pre-transform VERTEX
+// в canvas — это надёжно работает при любом stretch-режиме.
+uniform vec2 mask_center = vec2(0.0);
+uniform float mask_radius : hint_range(0.0, 500.0) = 46.0;
+
+varying vec2 v_canvas_pos;
+
+void vertex() {
+	v_canvas_pos = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy;
+}
 
 void fragment() {
-	if (distance(FRAGCOORD.xy, mask_center_px) > mask_radius_px) {
+	if (distance(v_canvas_pos, mask_center) > mask_radius) {
 		discard;
 	}
 }
@@ -23,8 +32,8 @@ void fragment() {
 
 [sub_resource type="ShaderMaterial" id="circle_mask_mat"]
 shader = SubResource("circle_mask_shader")
-shader_parameter/mask_center_px = Vector2(0, 0)
-shader_parameter/mask_radius_px = 46.0
+shader_parameter/mask_center = Vector2(0, 0)
+shader_parameter/mask_radius = 46.0
 
 [sub_resource type="CanvasItemMaterial" id="lense_mat"]
 blend_mode = 1
