@@ -90,10 +90,16 @@ func _ready() -> void:
 		_nm.room_name,
 		"ведущий" if _nm.is_host() else "игрок"
 	])
-	_check_auto_ready()
-	# Если игра уже идёт (мы переподключились mid-game) — сразу на карту
-	if _nm.game_started:
-		GameConsole.log("Игра уже идёт — переходим на карту")
+	# Откладываем: picker сам откладывает автовыбор сохранённого сыщика,
+	# чтобы успели расставиться mark_taken. Auto-ready должен бежать после.
+	call_deferred("_check_auto_ready")
+	# Прыгаем на карту только если игра уже идёт И мы УЖЕ были в этой сессии
+	# (сервер восстановил наш investigator из game_players). Иначе — новый
+	# поздний игрок без сыщика; пусть выберет в лобби.
+	var my_pdata: Dictionary = _nm.players.get(_nm.my_id, {})
+	var my_inv:   String     = my_pdata.get("investigator", "")
+	if _nm.game_started and not my_inv.is_empty():
+		GameConsole.log("Игра уже идёт, у нас есть сыщик — переходим на карту")
 		SceneManager.go("world_map")
 
 
@@ -215,7 +221,27 @@ func _build_ui() -> void:
 func _on_investigator_selected(inv_name: String) -> void:
 	if is_instance_valid(_ready_button) and not _was_ready:
 		_ready_button.disabled = inv_name.is_empty()
+	# Локальное состояние + броадкаст: остальные игроки сразу видят
+	# нашего сыщика как занятого, не дожидаясь нажатия «Готов».
+	if _nm.players.has(_nm.my_id):
+		_nm.players[_nm.my_id]["investigator"] = inv_name
+	_nm.relay_all({"action": "picking", "player_id": _nm.my_id, "investigator": inv_name})
 	_refresh_start_button()
+
+
+# Пересчитать занятость карточек по данным NetworkManager.players.
+# Вызывается при получении picking от других и при изменении состава лобби.
+func _recompute_taken() -> void:
+	if not is_instance_valid(_picker):
+		return
+	var taken: Dictionary = {}
+	for pid: String in _nm.players:
+		if pid == _nm.my_id:
+			continue
+		var inv: String = _nm.players[pid].get("investigator", "")
+		if not inv.is_empty():
+			taken[inv] = _nm.players[pid].get("name", pid)
+	_picker.sync_taken(taken)
 
 
 # ── Список игроков ────────────────────────────────────────────────────────────
@@ -412,6 +438,12 @@ func _on_server_disconnected() -> void:
 
 func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 	match data.get("action", ""):
+		"picking":
+			var pid: String = data.get("player_id", "")
+			var inv: String = data.get("investigator", "")
+			if _nm.players.has(pid):
+				_nm.players[pid]["investigator"] = inv
+			_recompute_taken()
 		"set_ready":
 			var pid: String      = data.get("player_id", "")
 			var inv_name: String = data.get("investigator", "")
@@ -471,6 +503,12 @@ func _on_ready_pressed() -> void:
 	# Хост тоже рассылает — другие игроки увидят его статус и сыщика
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
 	_refresh_start_button()
+	# Если игра уже идёт (мы поздний игрок) — хост не нажмёт «Начать», он уже
+	# на карте. Прыгаем на карту сами, как только подтвердили выбор сыщика.
+	if _nm.game_started:
+		GameConsole.log("Игра уже идёт — присоединяемся на карте")
+		_clear_ready_state()
+		SceneManager.go("world_map")
 
 
 func _resend_ready() -> void:

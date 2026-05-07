@@ -58,6 +58,16 @@ func mark_taken(inv_name: String, taker_name: String) -> void:
 		clear_selection()
 
 
+## Синхронизировать состояние занятости с данными из сети.
+## taken_map: inv_name -> taker_name. Сыщики не в map'е становятся доступными.
+func sync_taken(taken_map: Dictionary) -> void:
+	for inv_name: String in _inv_cards.keys():
+		if taken_map.has(inv_name):
+			mark_taken(inv_name, taken_map[inv_name])
+		else:
+			mark_available(inv_name)
+
+
 ## Освободить сыщика (игрок вышел).
 func mark_available(inv_name: String) -> void:
 	if inv_name.is_empty() or not _inv_cards.has(inv_name):
@@ -79,7 +89,9 @@ func _ready() -> void:
 	custom_minimum_size.y = 280  # минимум, чтобы не схлопнулся
 	_load_investigators()
 	_build_ui()
-	_preselect_saved()
+	# Откладываем автовыбор: лобби успевает вызвать mark_taken на других
+	# игроках до того, как мы решим, что выбрать из сохранённого.
+	call_deferred("_preselect_saved")
 
 
 # ── Данные ────────────────────────────────────────────────────────────────────
@@ -368,12 +380,15 @@ func _load_saved_selection() -> String:
 
 func _preselect_saved() -> void:
 	var saved: String = _load_saved_selection()
-	if not saved.is_empty() and _inv_data.has(saved):
-		_on_card_pressed(saved)
-		# Прокручиваем карточку в видимую зону
-		var card: Button = _inv_cards.get(saved, null) as Button
-		if is_instance_valid(card):
-			card.grab_focus()
+	if saved.is_empty() or not _inv_data.has(saved):
+		return
+	# Сеть — источник истины. Файл с последним выбором — только фолбек:
+	# если сохранённый сыщик уже занят другим игроком в этой комнате,
+	# не делаем автовыбор — пусть пользователь выберет руками.
+	var card: Button = _inv_cards.get(saved, null) as Button
+	if is_instance_valid(card) and card.disabled:
+		return
+	_on_card_pressed(saved)
 
 
 # ── Логика выбора ──────────────────────────────────────────────────────────────
