@@ -4,7 +4,9 @@ extends Node
 ## Autoload-синглтон: /root/AuthManager
 
 # ── Настройки ──────────────────────────────────────────────────────────────────
-var api_base: String = "http://localhost:3031"   # можно переопределить до _ready
+## ВАЖНО: 127.0.0.1, а не localhost. На Windows localhost резолвится в ::1 (IPv6),
+## а Docker Desktop не пробрасывает IPv6-порты — запросы виснут до таймаута.
+var api_base: String = "http://127.0.0.1:3031"
 const SAVE_FILE := "user://auth.cfg"
 
 # ── Сигналы ────────────────────────────────────────────────────────────────────
@@ -27,6 +29,9 @@ var _pending: String = ""   # "otp_request" | "otp_verify" | "check_session" | "
 
 func _ready() -> void:
 	_http = HTTPRequest.new()
+	# Таймаут на сетевой запрос: если сервер завис, не висим вечно
+	# (Docker port-forwarding на Windows иногда «икает», TCP не закрывается).
+	_http.timeout = 10.0
 	add_child(_http)
 	_http.request_completed.connect(_on_request_completed)
 	_load_session()
@@ -45,13 +50,14 @@ func check_session() -> void:
 		session_invalid.emit()
 		return
 	if _pending != "":
-		return   # уже ждём другой запрос
+		return
 	_pending = "check_session"
-	_http.request(
-		api_base + "/auth/me",
-		["Authorization: Bearer " + session_token],
-		HTTPClient.METHOD_GET
-	)
+	var err := _http.request(api_base + "/auth/me",
+		["Authorization: Bearer " + session_token], HTTPClient.METHOD_GET)
+	if err != OK:
+		push_warning("AuthManager: HTTPRequest.request failed (err=%d)" % err)
+		_pending = ""
+		session_invalid.emit()
 
 
 ## Запросить OTP-код на email.
@@ -59,12 +65,13 @@ func request_otp(email: String) -> void:
 	if _pending != "":
 		return
 	_pending = "otp_request"
-	_http.request(
-		api_base + "/auth/request",
-		["Content-Type: application/json"],
-		HTTPClient.METHOD_POST,
-		JSON.stringify({"email": email})
-	)
+	var err := _http.request(api_base + "/auth/request",
+		["Content-Type: application/json"], HTTPClient.METHOD_POST,
+		JSON.stringify({"email": email}))
+	if err != OK:
+		push_warning("AuthManager: HTTPRequest.request failed (err=%d)" % err)
+		_pending = ""
+		otp_failed.emit("Не удалось отправить запрос (err %d)" % err)
 
 
 ## Подтвердить OTP-код.
@@ -110,6 +117,9 @@ func _on_request_completed(
 	_pending = ""
 
 	if result != HTTPRequest.RESULT_SUCCESS:
+		push_warning("AuthManager: %s failed — %s (http=%d)" % [
+			pending, _result_name(result), response_code,
+		])
 		match pending:
 			"otp_request":   otp_failed.emit("Нет соединения с сервером")
 			"otp_verify":    login_failed.emit("Нет соединения с сервером")
@@ -153,6 +163,25 @@ func _on_request_completed(
 
 		"logout":
 			pass   # уже обработано в logout()
+
+
+func _result_name(r: int) -> String:
+	match r:
+		HTTPRequest.RESULT_SUCCESS:           return "SUCCESS"
+		HTTPRequest.RESULT_CHUNKED_BODY_SIZE_MISMATCH: return "CHUNKED_BODY_SIZE_MISMATCH"
+		HTTPRequest.RESULT_CANT_CONNECT:      return "CANT_CONNECT"
+		HTTPRequest.RESULT_CANT_RESOLVE:      return "CANT_RESOLVE"
+		HTTPRequest.RESULT_CONNECTION_ERROR:  return "CONNECTION_ERROR"
+		HTTPRequest.RESULT_TLS_HANDSHAKE_ERROR: return "TLS_HANDSHAKE_ERROR"
+		HTTPRequest.RESULT_NO_RESPONSE:       return "NO_RESPONSE"
+		HTTPRequest.RESULT_BODY_SIZE_LIMIT_EXCEEDED: return "BODY_SIZE_LIMIT_EXCEEDED"
+		HTTPRequest.RESULT_BODY_DECOMPRESS_FAILED: return "BODY_DECOMPRESS_FAILED"
+		HTTPRequest.RESULT_REQUEST_FAILED:    return "REQUEST_FAILED"
+		HTTPRequest.RESULT_DOWNLOAD_FILE_CANT_OPEN: return "DOWNLOAD_FILE_CANT_OPEN"
+		HTTPRequest.RESULT_DOWNLOAD_FILE_WRITE_ERROR: return "DOWNLOAD_FILE_WRITE_ERROR"
+		HTTPRequest.RESULT_REDIRECT_LIMIT_REACHED: return "REDIRECT_LIMIT_REACHED"
+		HTTPRequest.RESULT_TIMEOUT:           return "TIMEOUT"
+	return "UNKNOWN"
 
 
 # ── Сохранение токена ─────────────────────────────────────────────────────────

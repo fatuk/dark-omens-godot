@@ -1,7 +1,7 @@
 extends Control
 
 const SETTINGS_FILE := "user://settings.cfg"
-const DEFAULT_URL   := "ws://localhost:3030"
+const DEFAULT_URL   := "ws://127.0.0.1:3030"
 
 const RESOLUTIONS: Array[Vector2i] = [
 	Vector2i(1280,  720),
@@ -512,6 +512,10 @@ func _load_settings() -> void:
 	if cfg.load(SETTINGS_FILE) != OK:
 		return
 	_relay_url  = cfg.get_value("relay",   "url",        DEFAULT_URL)
+	# Миграция: localhost резолвится в IPv6 ::1, а Docker Desktop на Windows
+	# не пробрасывает IPv6 — соединение виснет. Переписываем на IPv4.
+	if "://localhost:" in _relay_url:
+		_relay_url = _relay_url.replace("://localhost:", "://127.0.0.1:")
 	_fullscreen = cfg.get_value("display", "fullscreen",  false)
 	var res_str: String = cfg.get_value("display", "resolution", "1920x1080")
 	for i: int in range(RESOLUTIONS.size()):
@@ -531,6 +535,7 @@ func _save_settings() -> void:
 	cfg.save(SETTINGS_FILE)
 
 
+@warning_ignore("integer_division")
 func _apply_display() -> void:
 	if _fullscreen:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
@@ -547,8 +552,8 @@ func _apply_display() -> void:
 
 func _make_room_row(room: Dictionary) -> Button:
 	var rname: String = room.get("name", "???")
-	var count: int    = room.get("playerCount", 0)
-	var max_p: int    = room.get("maxPlayers", 8)
+	var count: int    = int(room.get("playerCount", 0))
+	var max_p: int    = int(room.get("maxPlayers", 8))
 	var locked: bool  = room.get("locked", false)
 
 	var style_n := StyleBoxFlat.new()

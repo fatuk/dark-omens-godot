@@ -55,7 +55,7 @@ func _ready() -> void:
 
 # ── Публичный API ──────────────────────────────────────────────────────────────
 
-func connect_to_relay(player_name: String, relay_url: String = "ws://localhost:3030") -> Error:
+func connect_to_relay(player_name: String, relay_url: String = "ws://127.0.0.1:3030") -> Error:
 	my_name    = player_name.strip_edges()
 	my_id      = ""
 	room_id    = ""
