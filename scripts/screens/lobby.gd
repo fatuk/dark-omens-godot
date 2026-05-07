@@ -1,30 +1,111 @@
 extends Control
 
-const InvestigatorPickerScene = preload("res://scenes/investigator_picker.tscn")
-
-# ── Ссылки ─────────────────────────────────────────────────────────────────────
-var _nm: Node
-var _player_list:      VBoxContainer
-var _start_button:     Button
-var _ready_button:     Button
-var _status_label:     Label
-var _room_label:       Label
-var _player_rows:      Dictionary = {}  # pid -> HBoxContainer
-var _player_tags:      Dictionary = {}  # pid -> Label (статус)
-var _player_inv_lbls:  Dictionary = {}  # pid -> Label (сыщик)
-var _player_names:     Dictionary = {}  # pid -> String  (для лога при выходе)
-var _reconnect_overlay: Control
-
-# Нетипизированная переменная — class_name убран из пикера во избежание
-# конфликта "hides a global script class" при preload + class_name
-var _picker     = null   # InvestigatorPicker instance
-var _was_ready: bool = false
-
-# ── Персистентность состояния лобби ───────────────────────────────────────────
+## Лобби комнаты: список игроков, выбор сыщика, кнопки готовности.
+## Разметка статичной части в scenes/lobby.tscn, тут только поведение,
+## стилизация и динамические строки игроков.
 
 const _PREFS_PATH    := "user://dark_omens_prefs.cfg"
 const _PREFS_SECTION := "lobby"
 
+# ── Узлы ──────────────────────────────────────────────────────────────────────
+@onready var _bg:           ColorRect      = $Bg
+@onready var _room_label:   Label          = %RoomLabel
+@onready var _players_panel: PanelContainer = %PlayersPanel
+@onready var _player_list:  VBoxContainer  = %PlayerList
+@onready var _picker:       Node           = %Picker
+@onready var _back_btn:     Button         = %BackBtn
+@onready var _delete_btn:   Button         = %DeleteBtn
+@onready var _ready_button: Button         = %ReadyBtn
+@onready var _start_button: Button         = %StartBtn
+@onready var _status_label: Label          = %StatusLabel
+
+# ── Состояние ─────────────────────────────────────────────────────────────────
+var _nm: Node
+var _was_ready: bool = false
+var _reconnect_overlay: Control
+
+# Дин. словари по pid
+var _player_rows:     Dictionary = {}   # pid -> HBoxContainer
+var _player_tags:     Dictionary = {}   # pid -> Label (статус)
+var _player_inv_lbls: Dictionary = {}   # pid -> Label (сыщик)
+var _player_names:    Dictionary = {}   # pid -> String  (для лога при выходе)
+
+
+# ── Lifecycle ──────────────────────────────────────────────────────────────────
+
+func _ready() -> void:
+	_apply_styles()
+
+	_nm = get_node("/root/NetworkManager")
+	_nm.player_connected.connect(_on_player_connected)
+	_nm.player_disconnected.connect(_on_player_disconnected)
+	_nm.server_disconnected.connect(_on_server_disconnected)
+	_nm.player_left.connect(_on_player_left_relay)
+	_nm.relay_received.connect(_on_relay_received)
+	_nm.reconnecting.connect(_on_reconnecting)
+	_nm.reconnected.connect(_on_reconnected)
+	_nm.rejoin_failed.connect(_on_rejoin_failed)
+	_nm.connection_lost.connect(_on_connection_lost)
+	_nm.room_deleted.connect(_on_room_deleted)
+
+	_picker.investigator_selected.connect(_on_investigator_selected)
+
+	# Кнопки видимы по роли
+	_delete_btn.visible = _nm.is_host()
+	_start_button.visible = _nm.is_host()
+
+	_wire_handlers()
+	_update_room_label()
+	_populate_players()
+	_refresh_start_button()
+
+	GameConsole.log("Комната «%s» — вы вошли (%s)" % [
+		_nm.room_name,
+		"ведущий" if _nm.is_host() else "игрок"
+	])
+	# Откладываем: picker сам откладывает автовыбор сохранённого сыщика,
+	# чтобы успели расставиться mark_taken. Auto-ready должен бежать после.
+	call_deferred("_check_auto_ready")
+	# Прыгаем на карту только если игра уже идёт И мы УЖЕ были в этой сессии
+	# (сервер восстановил наш investigator из game_players). Иначе — новый
+	# поздний игрок без сыщика; пусть выберет в лобби.
+	var my_pdata: Dictionary = _nm.players.get(_nm.my_id, {})
+	var my_inv:   String     = my_pdata.get("investigator", "")
+	if _nm.game_started and not my_inv.is_empty():
+		GameConsole.log("Игра уже идёт, у нас есть сыщик — переходим на карту")
+		SceneManager.go("world_map")
+
+
+# ── Стили ─────────────────────────────────────────────────────────────────────
+
+func _apply_styles() -> void:
+	_bg.color = UIColors.BG
+
+	($Margin/Root/Title as Label).add_theme_color_override("font_color", UIColors.ACCENT)
+	_room_label.add_theme_color_override("font_color", UIColors.MUTED)
+
+	UIStyle.style_panel(_players_panel, 16)
+	($Margin/Root/PlayersPanel/VBox/Header as Label) \
+		.add_theme_color_override("font_color", UIColors.MUTED)
+
+	($Margin/Root/PickerHeader as Label).add_theme_color_override("font_color", UIColors.MUTED)
+
+	UIStyle.style_button(_back_btn,     UIColors.DANGER)
+	UIStyle.style_button(_delete_btn,   UIColors.DANGER)
+	UIStyle.style_button(_ready_button)
+	UIStyle.style_button(_start_button, UIColors.ACCENT)
+
+	_status_label.add_theme_color_override("font_color", UIColors.MUTED)
+
+
+func _wire_handlers() -> void:
+	_back_btn.pressed.connect(_on_back_pressed)
+	_delete_btn.pressed.connect(_on_delete_room_pressed)
+	_ready_button.pressed.connect(_on_ready_pressed)
+	_start_button.pressed.connect(_on_start_pressed)
+
+
+# ── Персистентность состояния лобби ───────────────────────────────────────────
 
 func _save_ready_state() -> void:
 	var cfg := ConfigFile.new()
@@ -70,152 +151,6 @@ func _check_auto_ready() -> void:
 	_refresh_start_button()
 
 
-# ── Lifecycle ──────────────────────────────────────────────────────────────────
-
-func _ready() -> void:
-	_nm = get_node("/root/NetworkManager")
-	_nm.player_connected.connect(_on_player_connected)
-	_nm.player_disconnected.connect(_on_player_disconnected)
-	_nm.server_disconnected.connect(_on_server_disconnected)
-	_nm.player_left.connect(_on_player_left_relay)
-	_nm.relay_received.connect(_on_relay_received)
-	_nm.reconnecting.connect(_on_reconnecting)
-	_nm.reconnected.connect(_on_reconnected)
-	_nm.rejoin_failed.connect(_on_rejoin_failed)
-	_nm.connection_lost.connect(_on_connection_lost)
-	_nm.room_deleted.connect(_on_room_deleted)
-	_build_ui()
-	_populate_players()
-	GameConsole.log("Комната «%s» — вы вошли (%s)" % [
-		_nm.room_name,
-		"ведущий" if _nm.is_host() else "игрок"
-	])
-	# Откладываем: picker сам откладывает автовыбор сохранённого сыщика,
-	# чтобы успели расставиться mark_taken. Auto-ready должен бежать после.
-	call_deferred("_check_auto_ready")
-	# Прыгаем на карту только если игра уже идёт И мы УЖЕ были в этой сессии
-	# (сервер восстановил наш investigator из game_players). Иначе — новый
-	# поздний игрок без сыщика; пусть выберет в лобби.
-	var my_pdata: Dictionary = _nm.players.get(_nm.my_id, {})
-	var my_inv:   String     = my_pdata.get("investigator", "")
-	if _nm.game_started and not my_inv.is_empty():
-		GameConsole.log("Игра уже идёт, у нас есть сыщик — переходим на карту")
-		SceneManager.go("world_map")
-
-
-# ── Построение UI ──────────────────────────────────────────────────────────────
-
-func _build_ui() -> void:
-	UIStyle.apply_bg(self)
-
-	# Заполняем весь экран с отступами — без ScrollContainer,
-	# чтобы пикер мог получить SIZE_EXPAND_FILL по вертикали
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left",   80)
-	margin.add_theme_constant_override("margin_right",  80)
-	margin.add_theme_constant_override("margin_top",    24)
-	margin.add_theme_constant_override("margin_bottom", 24)
-	add_child(margin)
-
-	var root_vbox := VBoxContainer.new()
-	root_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	root_vbox.size_flags_vertical   = Control.SIZE_EXPAND_FILL
-	root_vbox.add_theme_constant_override("separation", 14)
-	margin.add_child(root_vbox)
-
-	# ── Заголовок ──
-	var title := Label.new()
-	title.text = "ТЁМНЫЕ ЗНАМЕНИЯ"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 36)
-	title.add_theme_color_override("font_color", UIColors.ACCENT)
-	root_vbox.add_child(title)
-
-	_room_label = Label.new()
-	_room_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_room_label.add_theme_font_size_override("font_size", 14)
-	_room_label.add_theme_color_override("font_color", UIColors.MUTED)
-	_update_room_label()
-	root_vbox.add_child(_room_label)
-
-	UIStyle.separator(root_vbox)
-
-	# ── Список игроков ──
-	var players_panel := UIStyle.panel(16)
-	root_vbox.add_child(players_panel)
-
-	var panel_vbox := VBoxContainer.new()
-	panel_vbox.add_theme_constant_override("separation", 8)
-	players_panel.add_child(panel_vbox)
-
-	var list_header := Label.new()
-	list_header.text = "ИГРОКИ В ЛОББИ"
-	list_header.add_theme_font_size_override("font_size", 13)
-	list_header.add_theme_color_override("font_color", UIColors.MUTED)
-	panel_vbox.add_child(list_header)
-
-	UIStyle.separator(panel_vbox)
-
-	_player_list = VBoxContainer.new()
-	_player_list.add_theme_constant_override("separation", 6)
-	panel_vbox.add_child(_player_list)
-
-	UIStyle.separator(root_vbox)
-
-	# ── Выбор сыщика ──
-	var picker_header := Label.new()
-	picker_header.text = "ВЫБЕРИТЕ СЫЩИКА"
-	picker_header.add_theme_font_size_override("font_size", 13)
-	picker_header.add_theme_color_override("font_color", UIColors.MUTED)
-	root_vbox.add_child(picker_header)
-
-	_picker = InvestigatorPickerScene.instantiate()
-	_picker.investigator_selected.connect(_on_investigator_selected)
-	_picker.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root_vbox.add_child(_picker)
-
-	UIStyle.separator(root_vbox)
-
-	# ── Кнопки ──
-	var buttons_row := HBoxContainer.new()
-	buttons_row.add_theme_constant_override("separation", 12)
-	buttons_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	root_vbox.add_child(buttons_row)
-
-	var back_btn := UIStyle.button("  ПОКИНУТЬ", UIColors.DANGER)
-	back_btn.pressed.connect(_on_back_pressed)
-	buttons_row.add_child(back_btn)
-
-	if _nm.is_host():
-		var delete_btn := UIStyle.button("  ЗАКРЫТЬ КОМНАТУ", UIColors.DANGER)
-		delete_btn.pressed.connect(_on_delete_room_pressed)
-		buttons_row.add_child(delete_btn)
-
-	_ready_button = UIStyle.button("  ГОТОВ")
-	_ready_button.disabled = true
-	_ready_button.pressed.connect(_on_ready_pressed)
-	buttons_row.add_child(_ready_button)
-
-	if _nm.is_host():
-		_start_button = UIStyle.button("  НАЧАТЬ ИГРУ", UIColors.ACCENT)
-		_start_button.pressed.connect(_on_start_pressed)
-		_start_button.disabled = true
-		buttons_row.add_child(_start_button)
-
-	_status_label = Label.new()
-	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status_label.add_theme_font_size_override("font_size", 13)
-	_status_label.add_theme_color_override("font_color", UIColors.MUTED)
-	root_vbox.add_child(_status_label)
-
-	var bottom_pad := Control.new()
-	bottom_pad.custom_minimum_size.y = 24
-	root_vbox.add_child(bottom_pad)
-
-	_refresh_start_button()
-
-
 # ── Выбор сыщика ─────────────────────────────────────────────────────────────
 
 func _on_investigator_selected(inv_name: String) -> void:
@@ -230,7 +165,6 @@ func _on_investigator_selected(inv_name: String) -> void:
 
 
 # Пересчитать занятость карточек по данным NetworkManager.players.
-# Вызывается при получении picking от других и при изменении состава лобби.
 func _recompute_taken() -> void:
 	if not is_instance_valid(_picker):
 		return
@@ -264,13 +198,12 @@ func _populate_players() -> void:
 			GameConsole.log("%s уже в комнате" % info.get("name", pid))
 		# Применяем ready-стейт, который пришёл с сервера в joined_room
 		if pid != _nm.my_id:
-			var inv: String  = info.get("investigator", "")
-			var rdy: bool    = info.get("ready", false)
+			var inv: String = info.get("investigator", "")
+			var rdy: bool   = info.get("ready", false)
 			if rdy:
 				_update_row_ready(pid, true, inv)
 				if not inv.is_empty() and is_instance_valid(_picker):
 					_picker.mark_taken(inv, info.get("name", pid))
-	_refresh_start_button()
 
 
 func _add_player_row(id: String, info: Dictionary) -> void:
@@ -278,10 +211,12 @@ func _add_player_row(id: String, info: Dictionary) -> void:
 		return
 
 	var row := HBoxContainer.new()
+	row.name = "Player_" + id
 	row.add_theme_constant_override("separation", 10)
 
 	var is_me_host: bool = id == _nm.my_id and _nm.is_host()
 	var crown := Label.new()
+	crown.name = "Crown"
 	crown.text = "♛" if is_me_host else "◆"
 	crown.add_theme_font_size_override("font_size", 14)
 	crown.add_theme_color_override("font_color", UIColors.ACCENT if is_me_host else UIColors.MUTED)
@@ -289,23 +224,27 @@ func _add_player_row(id: String, info: Dictionary) -> void:
 	row.add_child(crown)
 
 	var name_vbox := VBoxContainer.new()
+	name_vbox.name = "NameVBox"
 	name_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_vbox.add_theme_constant_override("separation", 2)
 	row.add_child(name_vbox)
 
 	var name_lbl := Label.new()
+	name_lbl.name = "Name"
 	name_lbl.text = info.get("name", "???")
 	name_lbl.add_theme_font_size_override("font_size", 16)
 	name_lbl.add_theme_color_override("font_color", UIColors.TEXT)
 	name_vbox.add_child(name_lbl)
 
 	var inv_lbl := Label.new()
+	inv_lbl.name = "Investigator"
 	inv_lbl.add_theme_font_size_override("font_size", 11)
 	inv_lbl.add_theme_color_override("font_color", UIColors.ACCENT)
 	name_vbox.add_child(inv_lbl)
 	_player_inv_lbls[id] = inv_lbl
 
 	var tag := Label.new()
+	tag.name = "Tag"
 	tag.add_theme_font_size_override("font_size", 13)
 	tag.custom_minimum_size.x = 90
 	if is_me_host:
@@ -355,18 +294,16 @@ func _update_row_ready(id: String, is_ready: bool, inv_name: String = "") -> voi
 func _refresh_start_button() -> void:
 	var selected: String = _picker.get_selected() if is_instance_valid(_picker) else ""
 
-	if not _nm.is_host() or not is_instance_valid(_start_button):
-		if is_instance_valid(_status_label) and not _nm.is_host():
-			if selected.is_empty():
-				_status_label.text = "Выберите сыщика, затем нажмите «Готов»"
-			elif not _was_ready:
-				_status_label.text = "Нажмите «Готов», чтобы подтвердить выбор"
-			else:
-				_status_label.text = "Ожидайте решения ведущего"
-			_status_label.modulate = UIColors.MUTED
+	if not _nm.is_host():
+		if selected.is_empty():
+			_status_label.text = "Выберите сыщика, затем нажмите «Готов»"
+		elif not _was_ready:
+			_status_label.text = "Нажмите «Готов», чтобы подтвердить выбор"
+		else:
+			_status_label.text = "Ожидайте решения ведущего"
+		_status_label.modulate = UIColors.MUTED
 		return
 
-	var _non_host: int = _nm.players.size() - 1
 	if selected.is_empty():
 		_start_button.disabled = true
 		_status_label.text     = "Выберите своего сыщика"
@@ -381,7 +318,7 @@ func _refresh_start_button() -> void:
 		_status_label.modulate = UIColors.READY
 
 
-# ── Обработчики сигналов ──────────────────────────────────────────────────────
+# ── Обработчики сигналов NetworkManager ───────────────────────────────────────
 
 func _on_player_connected(id: String, info: Dictionary) -> void:
 	_add_player_row(id, info)
@@ -536,7 +473,7 @@ func _on_start_pressed() -> void:
 	SceneManager.go("world_map")
 
 
-# ── Оверлей ───────────────────────────────────────────────────────────────────
+# ── Оверлей переподключения ──────────────────────────────────────────────────
 
 func _show_reconnect_overlay(text: String) -> void:
 	if is_instance_valid(_reconnect_overlay):

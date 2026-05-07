@@ -1,7 +1,8 @@
 extends CanvasLayer
 
 ## Меню паузы — открывается/закрывается по Escape в игровых сценах.
-## Autoload-синглтон: /root/PauseMenu
+## Autoload-синглтон: /root/PauseMenu (см. project.godot).
+## Разметка в scenes/ui/pause_menu.tscn, тут только поведение и стилизация.
 
 const SETTINGS_FILE := "user://settings.cfg"
 
@@ -12,27 +13,34 @@ const RESOLUTIONS: Array[Vector2i] = [
 	Vector2i(2560, 1440),
 ]
 
+# ── Узлы (через unique_name_in_owner) ──────────────────────────────────────────
+@onready var _backdrop:    ColorRect      = $Root/Backdrop
+@onready var _main_panel:  PanelContainer = %MainPanel
+@onready var _sett_panel:  PanelContainer = %SettPanel
+
+@onready var _continue_btn: Button = %ContinueBtn
+@onready var _settings_btn: Button = %SettingsBtn
+@onready var _menu_btn:     Button = %MenuBtn
+@onready var _quit_btn:     Button = %QuitBtn
+
+@onready var _res_option: OptionButton = %ResOption
+@onready var _fs_check:   CheckBox     = %FsCheck
+@onready var _save_btn:   Button       = %SaveBtn
+@onready var _back_btn:   Button       = %BackBtn
+
 # ── Состояние ─────────────────────────────────────────────────────────────────
-
-var _open:        bool = false
-var _main_panel:  Control = null
-var _sett_panel:  Control = null
-
-var _fullscreen:  bool         = false
-var _res_idx:     int          = 2        # 1920 × 1080
-var _res_option:  OptionButton = null
-var _fs_check:    CheckBox     = null
+var _open:       bool = false
+var _fullscreen: bool = false
+var _res_idx:    int  = 2     # индекс в RESOLUTIONS — дефолт 1920×1080
 
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
-	# ALWAYS — меню должно работать, пока дерево на паузе
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	layer   = 100
-	visible = false
 	_load_settings()
-	_build_ui()
+	_apply_styles()
+	_populate_resolutions()
+	_wire_handlers()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -49,156 +57,59 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-# ── Построение UI ─────────────────────────────────────────────────────────────
+# ── Применение Dark Omens-стилей к нодам из .tscn ─────────────────────────────
 
-func _build_ui() -> void:
-	# Корневой Control — даёт якорную точку для всех дочерних нод
-	var root := Control.new()
-	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(root)
+func _apply_styles() -> void:
+	UIStyle.style_panel(_main_panel, 28)
+	UIStyle.style_panel(_sett_panel, 24)
 
-	# Backdrop — блокирует клики к игровой сцене снизу
-	var backdrop := ColorRect.new()
-	backdrop.color = Color(0, 0, 0, 0.65)
-	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
-	root.add_child(backdrop)
+	# Заголовки панелей
+	for title_path in [
+		"Root/Center/MainPanel/VBox/Title",
+		"Root/Center/SettPanel/VBox/Title",
+	]:
+		(get_node(title_path) as Label).add_theme_color_override("font_color", UIColors.ACCENT)
 
-	# Единственный CenterContainer — брат backdrop, не его дочерний элемент.
-	# Оба дочерних панели в нём: одна видима, другая скрыта.
-	# mouse_filter = PASS чтобы клики доходили до кнопок внутри панелей.
-	var cc := CenterContainer.new()
-	cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	cc.mouse_filter = Control.MOUSE_FILTER_PASS
-	root.add_child(cc)
+	# Подзаголовок «ДИСПЛЕЙ»
+	(get_node("Root/Center/SettPanel/VBox/DispLabel") as Label) \
+		.add_theme_color_override("font_color", UIColors.MUTED)
 
-	_main_panel = _build_main_panel()
-	_sett_panel = _build_sett_panel()
-	cc.add_child(_main_panel)
-	cc.add_child(_sett_panel)
+	# Лейблы строк настроек
+	for path in [
+		"Root/Center/SettPanel/VBox/ResRow/ResLabel",
+		"Root/Center/SettPanel/VBox/FsRow/FsLabel",
+	]:
+		(get_node(path) as Label).add_theme_color_override("font_color", UIColors.TEXT)
 
+	_fs_check.add_theme_color_override("font_color", UIColors.TEXT)
 
-func _build_main_panel() -> Control:
-	var p := UIStyle.panel(28)
-	p.custom_minimum_size = Vector2(320, 0)
+	UIStyle.style_option_button(_res_option)
 
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 10)
-	p.add_child(vbox)
-
-	var title := Label.new()
-	title.text = "  ПАУЗА"
-	title.add_theme_font_size_override("font_size", 22)
-	title.add_theme_color_override("font_color", UIColors.ACCENT)
-	vbox.add_child(title)
-
-	UIStyle.separator(vbox)
-
-	var continue_btn := UIStyle.button("▶   ПРОДОЛЖИТЬ")
-	continue_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	continue_btn.pressed.connect(_toggle)
-	vbox.add_child(continue_btn)
-
-	var settings_btn := UIStyle.button("⚙   НАСТРОЙКИ")
-	settings_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	settings_btn.pressed.connect(_show_settings)
-	vbox.add_child(settings_btn)
-
-	UIStyle.separator(vbox)
-
-	var menu_btn := UIStyle.button("⌂   ГЛАВНОЕ МЕНЮ", UIColors.WARNING)
-	menu_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	menu_btn.pressed.connect(_go_main_menu)
-	vbox.add_child(menu_btn)
-
-	var quit_btn := UIStyle.button("✕   ВЫЙТИ ИЗ ИГРЫ", UIColors.DANGER)
-	quit_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	quit_btn.pressed.connect(_quit_game)
-	vbox.add_child(quit_btn)
-
-	return p
+	UIStyle.style_button(_continue_btn)
+	UIStyle.style_button(_settings_btn)
+	UIStyle.style_button(_menu_btn,  UIColors.WARNING)
+	UIStyle.style_button(_quit_btn,  UIColors.DANGER)
+	UIStyle.style_button(_save_btn,  UIColors.ACCENT)
+	UIStyle.style_button(_back_btn,  UIColors.MUTED)
 
 
-func _build_sett_panel() -> Control:
-	var p := UIStyle.panel(24)
-	p.custom_minimum_size = Vector2(360, 0)
-	p.visible = false
-
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 12)
-	p.add_child(vbox)
-
-	var title := Label.new()
-	title.text = "  НАСТРОЙКИ"
-	title.add_theme_font_size_override("font_size", 22)
-	title.add_theme_color_override("font_color", UIColors.ACCENT)
-	vbox.add_child(title)
-
-	UIStyle.separator(vbox)
-
-	# ── Дисплей ──
-	var disp_lbl := Label.new()
-	disp_lbl.text = "ДИСПЛЕЙ"
-	disp_lbl.add_theme_font_size_override("font_size", 11)
-	disp_lbl.add_theme_color_override("font_color", UIColors.MUTED)
-	vbox.add_child(disp_lbl)
-
-	var res_row := HBoxContainer.new()
-	res_row.add_theme_constant_override("separation", 8)
-	vbox.add_child(res_row)
-
-	var res_lbl := Label.new()
-	res_lbl.text = "Разрешение:"
-	res_lbl.custom_minimum_size.x = 110
-	res_lbl.add_theme_font_size_override("font_size", 14)
-	res_lbl.add_theme_color_override("font_color", UIColors.TEXT)
-	res_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	res_row.add_child(res_lbl)
-
-	var res_names: Array[String] = []
+func _populate_resolutions() -> void:
+	_res_option.clear()
 	for r: Vector2i in RESOLUTIONS:
-		res_names.append("%d × %d" % [r.x, r.y])
-	_res_option = UIStyle.option_button(res_names)
+		_res_option.add_item("%d × %d" % [r.x, r.y])
 	_res_option.selected = _res_idx
 	_res_option.disabled = _fullscreen
-	_res_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	res_row.add_child(_res_option)
-
-	var fs_row := HBoxContainer.new()
-	fs_row.add_theme_constant_override("separation", 10)
-	vbox.add_child(fs_row)
-
-	_fs_check = CheckBox.new()
 	_fs_check.button_pressed = _fullscreen
-	_fs_check.add_theme_color_override("font_color", UIColors.TEXT)
-	_fs_check.add_theme_font_size_override("font_size", 14)
+
+
+func _wire_handlers() -> void:
+	_continue_btn.pressed.connect(_toggle)
+	_settings_btn.pressed.connect(_show_settings)
+	_menu_btn.pressed.connect(_go_main_menu)
+	_quit_btn.pressed.connect(_quit_game)
+	_save_btn.pressed.connect(_save_and_back)
+	_back_btn.pressed.connect(_show_main)
 	_fs_check.toggled.connect(func(on: bool) -> void: _res_option.disabled = on)
-	fs_row.add_child(_fs_check)
-
-	var fs_lbl := Label.new()
-	fs_lbl.text = "Полный экран"
-	fs_lbl.add_theme_font_size_override("font_size", 14)
-	fs_lbl.add_theme_color_override("font_color", UIColors.TEXT)
-	fs_row.add_child(fs_lbl)
-
-	UIStyle.separator(vbox)
-
-	var btns := HBoxContainer.new()
-	btns.add_theme_constant_override("separation", 8)
-	vbox.add_child(btns)
-
-	var save_btn := UIStyle.button("СОХРАНИТЬ", UIColors.ACCENT)
-	save_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	save_btn.pressed.connect(_save_and_back)
-	btns.add_child(save_btn)
-
-	var back_btn := UIStyle.button("ОТМЕНА", UIColors.MUTED)
-	back_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	back_btn.pressed.connect(_show_main)
-	btns.add_child(back_btn)
-
-	return p
 
 
 # ── Логика переключения ───────────────────────────────────────────────────────

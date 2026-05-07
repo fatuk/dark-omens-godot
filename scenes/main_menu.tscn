@@ -1,12 +1,235 @@
-[gd_scene format=3 uid="uid://b4xmenu1dark"]
+[gd_scene load_steps=2 format=3 uid="uid://b4xmenu1dark"]
 
 [ext_resource type="Script" uid="uid://b1ui0ug8ta76x" path="res://scripts/screens/main_menu.gd" id="1_mainmenu"]
 
-[node name="MainMenu" type="Control" unique_id=1302667231]
+[node name="MainMenu" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 script = ExtResource("1_mainmenu")
+
+[node name="Bg" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Root" type="VBoxContainer" parent="Center"]
+custom_minimum_size = Vector2(720, 0)
+layout_mode = 2
+theme_override_constants/separation = 14
+
+; ── Заголовок ──
+[node name="Title" type="Label" parent="Center/Root"]
+layout_mode = 2
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 52
+text = "DARK OMENS"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Center/Root"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "по мотивам настольной игры «Древний Ужас»"
+horizontal_alignment = 1
+
+[node name="Sep1" type="HSeparator" parent="Center/Root"]
+layout_mode = 2
+
+; ── Header: игрок · сервер · кнопки ──
+[node name="Header" type="HBoxContainer" parent="Center/Root"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="UserIcon" type="Label" parent="Center/Root/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "👤"
+
+[node name="PlayerLabel" type="Label" parent="Center/Root/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+
+[node name="DotSep" type="Label" parent="Center/Root/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "·"
+horizontal_alignment = 1
+
+[node name="SrvIcon" type="Label" parent="Center/Root/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "🌐"
+
+[node name="ServerLabel" type="Label" parent="Center/Root/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+
+[node name="SettingsBtn" type="Button" parent="Center/Root/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(34, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "⚙"
+
+[node name="LogoutBtn" type="Button" parent="Center/Root/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Выйти"
+
+[node name="Sep2" type="HSeparator" parent="Center/Root"]
+layout_mode = 2
+
+; ── Панель комнат: create + list ──
+[node name="RoomsPanel" type="HBoxContainer" parent="Center/Root"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 14
+
+; ── Создать комнату ──
+[node name="CreatePanel" type="PanelContainer" parent="Center/Root/RoomsPanel"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/Root/RoomsPanel/CreatePanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="Label" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "  СОЗДАТЬ КОМНАТУ"
+
+[node name="Sep" type="HSeparator" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
+layout_mode = 2
+
+[node name="NameRow" type="HBoxContainer" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="Center/Root/RoomsPanel/CreatePanel/VBox/NameRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Название:"
+vertical_alignment = 1
+
+[node name="CreateNameInput" type="LineEdit" parent="Center/Root/RoomsPanel/CreatePanel/VBox/NameRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Моя игра..."
+
+[node name="PassRow" type="HBoxContainer" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PassLabel" type="Label" parent="Center/Root/RoomsPanel/CreatePanel/VBox/PassRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Пароль:"
+vertical_alignment = 1
+
+[node name="CreatePassInput" type="LineEdit" parent="Center/Root/RoomsPanel/CreatePanel/VBox/PassRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+secret = true
+placeholder_text = "(необязательно)"
+
+[node name="CreateBtn" type="Button" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "СОЗДАТЬ"
+
+; ── Список комнат ──
+[node name="ListPanel" type="PanelContainer" parent="Center/Root/RoomsPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBox" type="VBoxContainer" parent="Center/Root/RoomsPanel/ListPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HeaderRow" type="HBoxContainer" parent="Center/Root/RoomsPanel/ListPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="Label" parent="Center/Root/RoomsPanel/ListPanel/VBox/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "  ОТКРЫТЫЕ КОМНАТЫ"
+
+[node name="RefreshBtn" type="Button" parent="Center/Root/RoomsPanel/ListPanel/VBox/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+text = "↻"
+
+[node name="Sep1" type="HSeparator" parent="Center/Root/RoomsPanel/ListPanel/VBox"]
+layout_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="Center/Root/RoomsPanel/ListPanel/VBox"]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RoomsList" type="VBoxContainer" parent="Center/Root/RoomsPanel/ListPanel/VBox/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Sep2" type="HSeparator" parent="Center/Root/RoomsPanel/ListPanel/VBox"]
+layout_mode = 2
+
+[node name="JoinPassRow" type="HBoxContainer" parent="Center/Root/RoomsPanel/ListPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="JoinPassLabel" type="Label" parent="Center/Root/RoomsPanel/ListPanel/VBox/JoinPassRow"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Пароль:"
+vertical_alignment = 1
+
+[node name="JoinPassInput" type="LineEdit" parent="Center/Root/RoomsPanel/ListPanel/VBox/JoinPassRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+secret = true
+placeholder_text = "(если требуется)"
+
+[node name="JoinBtn" type="Button" parent="Center/Root/RoomsPanel/ListPanel/VBox"]
+unique_name_in_owner = true
+disabled = true
+layout_mode = 2
+text = "ВОЙТИ В КОМНАТУ"
+
+[node name="Sep3" type="HSeparator" parent="Center/Root"]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="Center/Root"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Подключение..."
+horizontal_alignment = 1

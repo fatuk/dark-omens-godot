@@ -15,11 +15,8 @@ static func apply_bg(control: Control) -> void:
 
 # ── Кнопка ─────────────────────────────────────────────────────────────────────
 
-## Создаёт стилизованную кнопку.
-## border_color задаёт цвет рамки в нормальном состоянии.
-static func button(label: String, border_color: Color = UIColors.BORDER) -> Button:
-	var btn := Button.new()
-	btn.text = label
+## Применяет стили Dark Omens к существующей кнопке (например из .tscn).
+static func style_button(btn: Button, border_color: Color = UIColors.BORDER) -> void:
 	btn.add_theme_stylebox_override("normal",   _btn_style(Color(0.12, 0.10, 0.20), border_color))
 	btn.add_theme_stylebox_override("hover",    _btn_style(Color(0.20, 0.16, 0.30), UIColors.ACCENT))
 	btn.add_theme_stylebox_override("pressed",  _btn_style(Color(0.08, 0.06, 0.14), UIColors.DANGER))
@@ -28,28 +25,38 @@ static func button(label: String, border_color: Color = UIColors.BORDER) -> Butt
 	btn.add_theme_color_override("font_hover_color",    Color.WHITE)
 	btn.add_theme_color_override("font_disabled_color", UIColors.MUTED)
 	btn.add_theme_font_size_override("font_size", 15)
+
+## Создаёт стилизованную кнопку (legacy API для динамического UI).
+static func button(label: String, border_color: Color = UIColors.BORDER) -> Button:
+	var btn := Button.new()
+	btn.text = label
+	style_button(btn, border_color)
 	return btn
 
 
 # ── Панель ─────────────────────────────────────────────────────────────────────
 
-## Создаёт PanelContainer с тёмным фоном и золотой рамкой.
-static func panel(padding: int = 16) -> PanelContainer:
+## Применяет стили Dark Omens к существующему PanelContainer.
+static func style_panel(p: PanelContainer, padding: int = 16) -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color = UIColors.SURFACE
 	style.border_color = UIColors.BORDER
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(6)
 	style.set_content_margin_all(padding)
-	var p := PanelContainer.new()
 	p.add_theme_stylebox_override("panel", style)
+
+## Создаёт PanelContainer с тёмным фоном (legacy API).
+static func panel(padding: int = 16) -> PanelContainer:
+	var p := PanelContainer.new()
+	style_panel(p, padding)
 	return p
 
 
 # ── Поле ввода ─────────────────────────────────────────────────────────────────
 
-## Создаёт стилизованный LineEdit.
-static func input(placeholder: String = "", secret: bool = false) -> LineEdit:
+## Применяет стили Dark Omens к существующему LineEdit.
+static func style_input(le: LineEdit) -> void:
 	var style_n := StyleBoxFlat.new()
 	style_n.bg_color = Color(0.10, 0.09, 0.18)
 	style_n.border_color = UIColors.BORDER
@@ -64,15 +71,19 @@ static func input(placeholder: String = "", secret: bool = false) -> LineEdit:
 	style_f.set_corner_radius_all(4)
 	style_f.set_content_margin_all(8)
 
-	var le := LineEdit.new()
-	le.placeholder_text = placeholder
-	le.secret = secret
-	le.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	le.add_theme_stylebox_override("normal", style_n)
 	le.add_theme_stylebox_override("focus",  style_f)
 	le.add_theme_color_override("font_color",             UIColors.TEXT)
 	le.add_theme_color_override("font_placeholder_color", UIColors.MUTED)
 	le.add_theme_font_size_override("font_size", 14)
+
+## Создаёт стилизованный LineEdit (legacy API).
+static func input(placeholder: String = "", secret: bool = false) -> LineEdit:
+	var le := LineEdit.new()
+	le.placeholder_text = placeholder
+	le.secret = secret
+	le.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	style_input(le)
 	return le
 
 
@@ -102,8 +113,8 @@ static func labeled_input(
 
 # ── Выпадающий список ─────────────────────────────────────────────────────────
 
-## Создаёт стилизованный OptionButton.
-static func option_button(items: Array[String] = []) -> OptionButton:
+## Применяет стили Dark Omens к существующему OptionButton.
+static func style_option_button(ob: OptionButton) -> void:
 	var style_n := StyleBoxFlat.new()
 	style_n.bg_color    = Color(0.12, 0.10, 0.20)
 	style_n.border_color = UIColors.BORDER
@@ -118,8 +129,6 @@ static func option_button(items: Array[String] = []) -> OptionButton:
 	style_h.set_corner_radius_all(5)
 	style_h.set_content_margin_all(10)
 
-	var ob := OptionButton.new()
-	ob.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ob.add_theme_stylebox_override("normal",  style_n)
 	ob.add_theme_stylebox_override("hover",   style_h)
 	ob.add_theme_stylebox_override("pressed", style_h)
@@ -127,6 +136,12 @@ static func option_button(items: Array[String] = []) -> OptionButton:
 	ob.add_theme_color_override("font_color",       UIColors.TEXT)
 	ob.add_theme_color_override("font_hover_color", Color.WHITE)
 	ob.add_theme_font_size_override("font_size", 14)
+
+## Создаёт стилизованный OptionButton (legacy API).
+static func option_button(items: Array[String] = []) -> OptionButton:
+	var ob := OptionButton.new()
+	ob.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	style_option_button(ob)
 	for item in items:
 		ob.add_item(item)
 	return ob

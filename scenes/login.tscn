@@ -1,8 +1,164 @@
-[gd_scene format=3 uid="uid://buxo6le3jeepc"]
+[gd_scene load_steps=2 format=3 uid="uid://buxo6le3jeepc"]
 
 [ext_resource type="Script" uid="uid://iflg6egts45l" path="res://scripts/screens/login.gd" id="1_pymad"]
 
-[node name="login" type="Control" unique_id=851655376]
+[node name="Login" type="Control"]
 layout_mode = 3
-anchors_preset = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 script = ExtResource("1_pymad")
+
+[node name="Bg" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+
+[node name="Root" type="VBoxContainer" parent="Center"]
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Center/Root"]
+layout_mode = 2
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 52
+text = "DARK OMENS"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Center/Root"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "по мотивам настольной игры «Древний Ужас»"
+horizontal_alignment = 1
+
+[node name="Sep1" type="HSeparator" parent="Center/Root"]
+layout_mode = 2
+
+; ── Панель «проверка сессии» ───────────────────────────────────────────────
+[node name="CheckPanel" type="PanelContainer" parent="Center/Root"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/Root/CheckPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CheckLabel" type="Label" parent="Center/Root/CheckPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Проверка сессии..."
+horizontal_alignment = 1
+
+; ── Панель email ───────────────────────────────────────────────────────────
+[node name="EmailPanel" type="PanelContainer" parent="Center/Root"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/Root/EmailPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="Label" parent="Center/Root/EmailPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "  ВХОД / РЕГИСТРАЦИЯ"
+
+[node name="Sep" type="HSeparator" parent="Center/Root/EmailPanel/VBox"]
+layout_mode = 2
+
+[node name="EmailRow" type="HBoxContainer" parent="Center/Root/EmailPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EmailLabel" type="Label" parent="Center/Root/EmailPanel/VBox/EmailRow"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Email:"
+vertical_alignment = 1
+
+[node name="EmailInput" type="LineEdit" parent="Center/Root/EmailPanel/VBox/EmailRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "your@email.com"
+
+[node name="SendBtn" type="Button" parent="Center/Root/EmailPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ОТПРАВИТЬ КОД"
+
+; ── Панель кода ────────────────────────────────────────────────────────────
+[node name="CodePanel" type="PanelContainer" parent="Center/Root"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/Root/CodePanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="Label" parent="Center/Root/CodePanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "  ВВЕДИТЕ КОД ИЗ ПИСЬМА"
+
+[node name="Sep" type="HSeparator" parent="Center/Root/CodePanel/VBox"]
+layout_mode = 2
+
+[node name="CodeLabel" type="Label" parent="Center/Root/CodePanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Код отправлен на ..."
+horizontal_alignment = 1
+
+[node name="CodeRow" type="HBoxContainer" parent="Center/Root/CodePanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CodeRowLabel" type="Label" parent="Center/Root/CodePanel/VBox/CodeRow"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Код:"
+vertical_alignment = 1
+
+[node name="CodeInput" type="LineEdit" parent="Center/Root/CodePanel/VBox/CodeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+max_length = 6
+placeholder_text = "123456"
+
+[node name="VerifyBtn" type="Button" parent="Center/Root/CodePanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ВОЙТИ"
+
+[node name="BackBtn" type="Button" parent="Center/Root/CodePanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "← Изменить email"
+
+[node name="Sep2" type="HSeparator" parent="Center/Root"]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="Center/Root"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Войдите через email — пароль не нужен"
+horizontal_alignment = 1

@@ -1,0 +1,149 @@
+[gd_scene load_steps=2 format=3 uid="uid://dpause0menu0root"]
+
+[ext_resource type="Script" uid="uid://du8h1uh1cqekw" path="res://scripts/ui/pause_menu.gd" id="1_script"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+process_mode = 3
+layer = 100
+visible = false
+script = ExtResource("1_script")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Backdrop" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+color = Color(0, 0, 0, 0.65)
+
+[node name="Center" type="CenterContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+
+; ── Главная панель ─────────────────────────────────────────────────────────
+[node name="MainPanel" type="PanelContainer" parent="Root/Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Root/Center/MainPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Root/Center/MainPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "  ПАУЗА"
+
+[node name="Sep1" type="HSeparator" parent="Root/Center/MainPanel/VBox"]
+layout_mode = 2
+
+[node name="ContinueBtn" type="Button" parent="Root/Center/MainPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "▶   ПРОДОЛЖИТЬ"
+
+[node name="SettingsBtn" type="Button" parent="Root/Center/MainPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "⚙   НАСТРОЙКИ"
+
+[node name="Sep2" type="HSeparator" parent="Root/Center/MainPanel/VBox"]
+layout_mode = 2
+
+[node name="MenuBtn" type="Button" parent="Root/Center/MainPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "⌂   ГЛАВНОЕ МЕНЮ"
+
+[node name="QuitBtn" type="Button" parent="Root/Center/MainPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "✕   ВЫЙТИ ИЗ ИГРЫ"
+
+; ── Панель настроек ────────────────────────────────────────────────────────
+[node name="SettPanel" type="PanelContainer" parent="Root/Center"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Root/Center/SettPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Root/Center/SettPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "  НАСТРОЙКИ"
+
+[node name="Sep1" type="HSeparator" parent="Root/Center/SettPanel/VBox"]
+layout_mode = 2
+
+[node name="DispLabel" type="Label" parent="Root/Center/SettPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "ДИСПЛЕЙ"
+
+[node name="ResRow" type="HBoxContainer" parent="Root/Center/SettPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ResLabel" type="Label" parent="Root/Center/SettPanel/VBox/ResRow"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Разрешение:"
+vertical_alignment = 1
+
+[node name="ResOption" type="OptionButton" parent="Root/Center/SettPanel/VBox/ResRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FsRow" type="HBoxContainer" parent="Root/Center/SettPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="FsCheck" type="CheckBox" parent="Root/Center/SettPanel/VBox/FsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+
+[node name="FsLabel" type="Label" parent="Root/Center/SettPanel/VBox/FsRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Полный экран"
+
+[node name="Sep2" type="HSeparator" parent="Root/Center/SettPanel/VBox"]
+layout_mode = 2
+
+[node name="BtnRow" type="HBoxContainer" parent="Root/Center/SettPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SaveBtn" type="Button" parent="Root/Center/SettPanel/VBox/BtnRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "СОХРАНИТЬ"
+
+[node name="BackBtn" type="Button" parent="Root/Center/SettPanel/VBox/BtnRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ОТМЕНА"

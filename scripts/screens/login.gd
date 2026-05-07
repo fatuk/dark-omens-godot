@@ -1,36 +1,44 @@
 extends Control
 
-# ── Узлы ───────────────────────────────────────────────────────────────────────
+## Экран входа: проверка сохранённой сессии → email → OTP-код.
+## Разметка в scenes/login.tscn, тут только поведение и стилизация.
+
+# ── Узлы (через unique_name_in_owner) ──────────────────────────────────────────
+@onready var _bg:           ColorRect = $Bg
+@onready var _title:        Label     = $Center/Root/Title
+@onready var _subtitle:     Label     = $Center/Root/Subtitle
+
+@onready var _check_panel:  PanelContainer = %CheckPanel
+@onready var _email_panel:  PanelContainer = %EmailPanel
+@onready var _code_panel:   PanelContainer = %CodePanel
+
+@onready var _email_input:  LineEdit  = %EmailInput
+@onready var _send_btn:     Button    = %SendBtn
+
+@onready var _code_label:   Label     = %CodeLabel
+@onready var _code_input:   LineEdit  = %CodeInput
+@onready var _verify_btn:   Button    = %VerifyBtn
+@onready var _back_btn:     Button    = %BackBtn
+
+@onready var _status_label: Label     = %StatusLabel
+
+# ── Состояние ──────────────────────────────────────────────────────────────────
 var _auth: Node
-
-var _email_panel: Control
-var _code_panel:  Control
-var _check_panel: Control
-
-var _email_input: LineEdit
-var _send_btn:    Button
-
-var _code_label:  Label
-var _code_input:  LineEdit
-var _verify_btn:  Button
-var _back_btn:    Button
-
-var _status_label: Label
-
 var _current_email: String = ""
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
+	_apply_styles()
+	_wire_handlers()
+
 	_auth = get_node("/root/AuthManager")
 	_auth.otp_sent.connect(_on_otp_sent)
 	_auth.otp_failed.connect(_on_otp_failed)
 	_auth.login_succeeded.connect(_on_login_succeeded)
 	_auth.login_failed.connect(_on_login_failed)
 	_auth.session_invalid.connect(_on_session_invalid)
-
-	_build_ui()
 
 	if not _auth.session_token.is_empty():
 		_show_panel("check")
@@ -39,127 +47,56 @@ func _ready() -> void:
 		_show_panel("email")
 
 
-# ── Построение UI ──────────────────────────────────────────────────────────────
+# ── Применение Dark Omens-стилей к нодам из .tscn ─────────────────────────────
 
-func _build_ui() -> void:
-	UIStyle.apply_bg(self)
+func _apply_styles() -> void:
+	_bg.color = UIColors.BG
 
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
+	_title.add_theme_color_override("font_color",        UIColors.ACCENT)
+	_title.add_theme_color_override("font_shadow_color", UIColors.DANGER)
 
-	var root := VBoxContainer.new()
-	root.custom_minimum_size = Vector2(480, 0)
-	root.add_theme_constant_override("separation", 16)
-	center.add_child(root)
+	_subtitle.add_theme_color_override("font_color", UIColors.MUTED)
 
-	# Заголовок
-	var title := Label.new()
-	title.text = "DARK OMENS"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 52)
-	title.add_theme_color_override("font_color",        UIColors.ACCENT)
-	title.add_theme_color_override("font_shadow_color", UIColors.DANGER)
-	title.add_theme_constant_override("shadow_offset_x", 3)
-	title.add_theme_constant_override("shadow_offset_y", 3)
-	root.add_child(title)
+	UIStyle.style_panel(_check_panel)
+	UIStyle.style_panel(_email_panel)
+	UIStyle.style_panel(_code_panel)
 
-	var sub := Label.new()
-	sub.text = "по мотивам настольной игры «Древний Ужас»"
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sub.add_theme_font_size_override("font_size", 14)
-	sub.add_theme_color_override("font_color", UIColors.MUTED)
-	root.add_child(sub)
+	# Заголовки внутри панелей
+	for hdr_path in [
+		"Center/Root/EmailPanel/VBox/Header",
+		"Center/Root/CodePanel/VBox/Header",
+	]:
+		var hdr: Label = get_node(hdr_path)
+		hdr.add_theme_color_override("font_color", UIColors.ACCENT)
 
-	UIStyle.separator(root)
+	(get_node("Center/Root/CheckPanel/VBox/CheckLabel") as Label) \
+		.add_theme_color_override("font_color", UIColors.WARNING)
 
-	# ── Панель «проверка сессии» ───────────────────────────────────────────────
-	_check_panel = UIStyle.panel()
-	var check_vbox := VBoxContainer.new()
-	check_vbox.add_theme_constant_override("separation", 12)
-	_check_panel.add_child(check_vbox)
+	# Лейблы строк ввода и подпись «Код отправлен на ...»
+	for label_path in [
+		"Center/Root/EmailPanel/VBox/EmailRow/EmailLabel",
+		"Center/Root/CodePanel/VBox/CodeRow/CodeRowLabel",
+	]:
+		(get_node(label_path) as Label).add_theme_color_override("font_color", UIColors.TEXT)
 
-	var check_lbl := Label.new()
-	check_lbl.text = "Проверка сессии..."
-	check_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	check_lbl.add_theme_font_size_override("font_size", 16)
-	check_lbl.add_theme_color_override("font_color", UIColors.WARNING)
-	check_vbox.add_child(check_lbl)
-
-	root.add_child(_check_panel)
-
-	# ── Панель email ───────────────────────────────────────────────────────────
-	_email_panel = UIStyle.panel()
-	var email_vbox := VBoxContainer.new()
-	email_vbox.add_theme_constant_override("separation", 12)
-	_email_panel.add_child(email_vbox)
-
-	var email_hdr := Label.new()
-	email_hdr.text = "  ВХОД / РЕГИСТРАЦИЯ"
-	email_hdr.add_theme_font_size_override("font_size", 16)
-	email_hdr.add_theme_color_override("font_color", UIColors.ACCENT)
-	email_vbox.add_child(email_hdr)
-
-	UIStyle.separator(email_vbox)
-
-	var email_row := UIStyle.labeled_input("Email:", "your@email.com", 90)
-	_email_input = email_row[1] as LineEdit
-	_email_input.custom_minimum_size.x = 280
-	_email_input.text_submitted.connect(_on_send_pressed.unbind(1))
-	email_vbox.add_child(email_row[0])
-
-	_send_btn = UIStyle.button("ОТПРАВИТЬ КОД")
-	_send_btn.pressed.connect(_on_send_pressed)
-	email_vbox.add_child(_send_btn)
-
-	root.add_child(_email_panel)
-
-	# ── Панель кода ────────────────────────────────────────────────────────────
-	_code_panel = UIStyle.panel()
-	var code_vbox := VBoxContainer.new()
-	code_vbox.add_theme_constant_override("separation", 12)
-	_code_panel.add_child(code_vbox)
-
-	var code_hdr := Label.new()
-	code_hdr.text = "  ВВЕДИТЕ КОД ИЗ ПИСЬМА"
-	code_hdr.add_theme_font_size_override("font_size", 16)
-	code_hdr.add_theme_color_override("font_color", UIColors.ACCENT)
-	code_vbox.add_child(code_hdr)
-
-	UIStyle.separator(code_vbox)
-
-	_code_label = Label.new()
-	_code_label.text = "Код отправлен на ..."
-	_code_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_code_label.add_theme_font_size_override("font_size", 13)
 	_code_label.add_theme_color_override("font_color", UIColors.MUTED)
-	code_vbox.add_child(_code_label)
 
-	var code_row := UIStyle.labeled_input("Код:", "123456", 90)
-	_code_input = code_row[1] as LineEdit
-	_code_input.max_length = 6
-	_code_input.custom_minimum_size.x = 160
-	_code_input.text_submitted.connect(_on_verify_pressed.unbind(1))
-	code_vbox.add_child(code_row[0])
+	UIStyle.style_input(_email_input)
+	UIStyle.style_input(_code_input)
 
-	_verify_btn = UIStyle.button("ВОЙТИ", UIColors.DANGER)
-	_verify_btn.pressed.connect(_on_verify_pressed)
-	code_vbox.add_child(_verify_btn)
+	UIStyle.style_button(_send_btn)
+	UIStyle.style_button(_verify_btn, UIColors.DANGER)
+	UIStyle.style_button(_back_btn,   UIColors.MUTED)
 
-	_back_btn = UIStyle.button("← Изменить email", UIColors.MUTED)
-	_back_btn.pressed.connect(_on_back_pressed)
-	code_vbox.add_child(_back_btn)
-
-	root.add_child(_code_panel)
-
-	UIStyle.separator(root)
-
-	_status_label = Label.new()
-	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status_label.add_theme_font_size_override("font_size", 13)
 	_status_label.add_theme_color_override("font_color", UIColors.MUTED)
-	_status_label.text = "Войдите через email — пароль не нужен"
-	root.add_child(_status_label)
+
+
+func _wire_handlers() -> void:
+	_email_input.text_submitted.connect(_on_send_pressed.unbind(1))
+	_code_input.text_submitted.connect(_on_verify_pressed.unbind(1))
+	_send_btn.pressed.connect(_on_send_pressed)
+	_verify_btn.pressed.connect(_on_verify_pressed)
+	_back_btn.pressed.connect(_on_back_pressed)
 
 
 # ── Обработчики кнопок ─────────────────────────────────────────────────────────

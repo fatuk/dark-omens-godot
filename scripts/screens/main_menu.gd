@@ -1,5 +1,11 @@
 extends Control
 
+## Главное меню: подключение к relay, создание/просмотр/вход в комнаты,
+## модальное окно настроек.
+##
+## Разметка статичной части в scenes/main_menu.tscn, тут только поведение,
+## стилизация, динамика (карточки комнат, попап настроек).
+
 const SETTINGS_FILE := "user://settings.cfg"
 const DEFAULT_URL   := "ws://127.0.0.1:3030"
 
@@ -11,40 +17,50 @@ const RESOLUTIONS: Array[Vector2i] = [
 	Vector2i(2560, 1440),
 ]
 
-# ── Узлы ───────────────────────────────────────────────────────────────────────
+# ── Узлы ──────────────────────────────────────────────────────────────────────
+@onready var _bg:           ColorRect = $Bg
+@onready var _player_label: Label     = %PlayerLabel
+@onready var _server_label: Label     = %ServerLabel
+@onready var _settings_btn: Button    = %SettingsBtn
+@onready var _logout_btn:   Button    = %LogoutBtn
+
+@onready var _rooms_panel:  HBoxContainer  = %RoomsPanel
+@onready var _create_panel: PanelContainer = %CreatePanel
+@onready var _list_panel:   PanelContainer = %ListPanel
+
+@onready var _create_name_input: LineEdit = %CreateNameInput
+@onready var _create_pass_input: LineEdit = %CreatePassInput
+@onready var _create_btn:        Button   = %CreateBtn
+
+@onready var _refresh_btn:   Button       = %RefreshBtn
+@onready var _rooms_list:    VBoxContainer = %RoomsList
+@onready var _join_pass_input: LineEdit   = %JoinPassInput
+@onready var _join_btn:      Button       = %JoinBtn
+
+@onready var _status_label:  Label        = %StatusLabel
+
+# ── Состояние ─────────────────────────────────────────────────────────────────
 var _nm:   Node
 var _auth: Node
+var _relay_url: String = DEFAULT_URL
+var _res_idx:    int   = 3      # 1920×1080
+var _fullscreen: bool  = false
+var _selected_room_id: String = ""
 
-var _server_label:  Label
-var _player_label:  Label
-var _settings_popup: Control   # nil пока не открыт
+# Настроечный попап (создаётся динамически)
+var _settings_popup: Control = null
 var _url_input:      LineEdit
 var _res_option:     OptionButton
 var _fs_check:       CheckBox
-
-var _rooms_panel:   Control
-
-# ── Состояние настроек ────────────────────────────────────────────────────────
-var _res_idx:     int  = 3      # 1920×1080 по умолчанию
-var _fullscreen:  bool = false
-
-var _create_name_input: LineEdit
-var _create_pass_input: LineEdit
-var _create_btn:        Button
-
-var _rooms_list:       VBoxContainer
-var _selected_room_id: String = ""
-var _join_pass_input:  LineEdit
-var _join_btn:         Button
-
-var _status_label: Label
-
-var _relay_url: String = DEFAULT_URL
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
+	_load_settings()
+	_apply_display()
+	_apply_styles()
+
 	_nm   = get_node("/root/NetworkManager")
 	_auth = get_node("/root/AuthManager")
 	_nm.connected_to_relay.connect(_on_connected)
@@ -55,203 +71,69 @@ func _ready() -> void:
 	_nm.rejoin_failed.connect(_on_rejoin_failed_in_menu)
 	_nm.room_deleted.connect(_on_room_deleted_in_menu)
 
-	_load_settings()
-	_apply_display()
-	_build_ui()
+	_player_label.text = _auth.current_user.get("name", "")
+	_server_label.text = _relay_url
+
+	_wire_handlers()
 	_auto_connect()
 
 
-# ── Построение UI ──────────────────────────────────────────────────────────────
+# ── Стили ─────────────────────────────────────────────────────────────────────
 
-func _build_ui() -> void:
-	UIStyle.apply_bg(self)
+func _apply_styles() -> void:
+	_bg.color = UIColors.BG
 
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
-
-	var root := VBoxContainer.new()
-	root.custom_minimum_size = Vector2(720, 0)
-	root.add_theme_constant_override("separation", 14)
-	center.add_child(root)
-
-	# Заголовок
-	var title := Label.new()
-	title.text = "DARK OMENS"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 52)
+	var title := $Center/Root/Title as Label
 	title.add_theme_color_override("font_color",        UIColors.ACCENT)
 	title.add_theme_color_override("font_shadow_color", UIColors.DANGER)
-	title.add_theme_constant_override("shadow_offset_x", 3)
-	title.add_theme_constant_override("shadow_offset_y", 3)
-	root.add_child(title)
 
-	var sub := Label.new()
-	sub.text = "по мотивам настольной игры «Древний Ужас»"
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sub.add_theme_font_size_override("font_size", 14)
-	sub.add_theme_color_override("font_color", UIColors.MUTED)
-	root.add_child(sub)
+	($Center/Root/Subtitle as Label).add_theme_color_override("font_color", UIColors.MUTED)
 
-	UIStyle.separator(root)
-
-	# ── Хедер: игрок · сервер · кнопки ───────────────────────────────────────
-	root.add_child(_build_header())
-
-	UIStyle.separator(root)
-
-	# ── Панель комнат ─────────────────────────────────────────────────────────
-	_rooms_panel = _build_rooms_panel()
-	root.add_child(_rooms_panel)
-
-	UIStyle.separator(root)
-
-	_status_label = Label.new()
-	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status_label.add_theme_font_size_override("font_size", 14)
-	_status_label.add_theme_color_override("font_color", UIColors.MUTED)
-	_status_label.text = "Подключение..."
-	root.add_child(_status_label)
-
-
-func _build_header() -> Control:
-	var hbox := HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 10)
-
-	# Имя игрока
-	var user_icon := Label.new()
-	user_icon.text = "👤"
-	user_icon.add_theme_font_size_override("font_size", 14)
-	hbox.add_child(user_icon)
-
-	_player_label = Label.new()
-	_player_label.add_theme_font_size_override("font_size", 14)
 	_player_label.add_theme_color_override("font_color", UIColors.SUCCESS)
-	_player_label.text = _auth.current_user.get("name", "")
-	hbox.add_child(_player_label)
-
-	# Разделитель
-	var sep_lbl := Label.new()
-	sep_lbl.text = "·"
-	sep_lbl.add_theme_color_override("font_color", UIColors.MUTED)
-	sep_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sep_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hbox.add_child(sep_lbl)
-
-	# Сервер
-	var srv_icon := Label.new()
-	srv_icon.text = "🌐"
-	srv_icon.add_theme_font_size_override("font_size", 14)
-	hbox.add_child(srv_icon)
-
-	_server_label = Label.new()
-	_server_label.text = _relay_url
-	_server_label.add_theme_font_size_override("font_size", 13)
 	_server_label.add_theme_color_override("font_color", UIColors.MUTED)
-	hbox.add_child(_server_label)
+	($Center/Root/Header/DotSep as Label).add_theme_color_override("font_color", UIColors.MUTED)
 
-	# Кнопка настроек
-	var settings_btn := UIStyle.button("⚙", UIColors.MUTED)
-	settings_btn.custom_minimum_size = Vector2(34, 0)
-	settings_btn.add_theme_font_size_override("font_size", 14)
-	settings_btn.pressed.connect(_on_settings_pressed)
-	hbox.add_child(settings_btn)
+	UIStyle.style_button(_settings_btn, UIColors.MUTED)
+	UIStyle.style_button(_logout_btn,   UIColors.MUTED)
 
-	# Кнопка выйти
-	var logout_btn := UIStyle.button("Выйти", UIColors.MUTED)
-	logout_btn.custom_minimum_size = Vector2(80, 0)
-	logout_btn.add_theme_font_size_override("font_size", 12)
-	logout_btn.pressed.connect(_on_logout_pressed)
-	hbox.add_child(logout_btn)
+	UIStyle.style_panel(_create_panel)
+	UIStyle.style_panel(_list_panel)
 
-	return hbox
+	# Заголовки панелей
+	for path in [
+		"Center/Root/RoomsPanel/CreatePanel/VBox/Header",
+		"Center/Root/RoomsPanel/ListPanel/VBox/HeaderRow/Header",
+	]:
+		(get_node(path) as Label).add_theme_color_override("font_color", UIColors.ACCENT)
+
+	# Лейблы строк ввода
+	for path in [
+		"Center/Root/RoomsPanel/CreatePanel/VBox/NameRow/NameLabel",
+		"Center/Root/RoomsPanel/CreatePanel/VBox/PassRow/PassLabel",
+		"Center/Root/RoomsPanel/ListPanel/VBox/JoinPassRow/JoinPassLabel",
+	]:
+		(get_node(path) as Label).add_theme_color_override("font_color", UIColors.TEXT)
+
+	UIStyle.style_input(_create_name_input)
+	UIStyle.style_input(_create_pass_input)
+	UIStyle.style_input(_join_pass_input)
+
+	UIStyle.style_button(_create_btn, UIColors.DANGER)
+	UIStyle.style_button(_refresh_btn)
+	UIStyle.style_button(_join_btn)
+
+	_status_label.add_theme_color_override("font_color", UIColors.MUTED)
 
 
-func _build_rooms_panel() -> Control:
-	var hbox := HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 14)
-
-	# ── Левая: Создать комнату ─────────────────────────────────────────────────
-	var create_panel := UIStyle.panel()
-	create_panel.custom_minimum_size = Vector2(260, 0)
-	hbox.add_child(create_panel)
-
-	var cvbox := VBoxContainer.new()
-	cvbox.add_theme_constant_override("separation", 10)
-	create_panel.add_child(cvbox)
-
-	var chdr := Label.new()
-	chdr.text = "  СОЗДАТЬ КОМНАТУ"
-	chdr.add_theme_font_size_override("font_size", 16)
-	chdr.add_theme_color_override("font_color", UIColors.ACCENT)
-	cvbox.add_child(chdr)
-
-	UIStyle.separator(cvbox)
-
-	var cname_row := UIStyle.labeled_input("Название:", "Моя игра...", 100)
-	_create_name_input = cname_row[1] as LineEdit
-	cvbox.add_child(cname_row[0])
-
-	var cpass_row := UIStyle.labeled_input("Пароль:", "(необязательно)", 100, true)
-	_create_pass_input = cpass_row[1] as LineEdit
-	cvbox.add_child(cpass_row[0])
-
-	_create_btn = UIStyle.button("СОЗДАТЬ", UIColors.DANGER)
+func _wire_handlers() -> void:
+	_settings_btn.pressed.connect(_on_settings_pressed)
+	_logout_btn.pressed.connect(_on_logout_pressed)
 	_create_btn.pressed.connect(_on_create_pressed)
-	cvbox.add_child(_create_btn)
-
-	# ── Правая: Список комнат ──────────────────────────────────────────────────
-	var list_panel := UIStyle.panel()
-	list_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox.add_child(list_panel)
-
-	var lvbox := VBoxContainer.new()
-	lvbox.add_theme_constant_override("separation", 8)
-	list_panel.add_child(lvbox)
-
-	var lhdr_row := HBoxContainer.new()
-	lhdr_row.add_theme_constant_override("separation", 10)
-	lvbox.add_child(lhdr_row)
-
-	var lhdr := Label.new()
-	lhdr.text = "  ОТКРЫТЫЕ КОМНАТЫ"
-	lhdr.add_theme_font_size_override("font_size", 16)
-	lhdr.add_theme_color_override("font_color", UIColors.ACCENT)
-	lhdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	lhdr_row.add_child(lhdr)
-
-	var refresh_btn := UIStyle.button("↻")
-	refresh_btn.custom_minimum_size = Vector2(36, 0)
-	refresh_btn.pressed.connect(_on_refresh_pressed)
-	lhdr_row.add_child(refresh_btn)
-
-	UIStyle.separator(lvbox)
-
-	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(0, 140)
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	lvbox.add_child(scroll)
-
-	_rooms_list = VBoxContainer.new()
-	_rooms_list.add_theme_constant_override("separation", 4)
-	_rooms_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(_rooms_list)
-
-	UIStyle.separator(lvbox)
-
-	var jpass_row := UIStyle.labeled_input("Пароль:", "(если требуется)", 90, true)
-	_join_pass_input = jpass_row[1] as LineEdit
-	lvbox.add_child(jpass_row[0])
-
-	_join_btn = UIStyle.button("ВОЙТИ В КОМНАТУ")
-	_join_btn.disabled = true
+	_refresh_btn.pressed.connect(_on_refresh_pressed)
 	_join_btn.pressed.connect(_on_join_pressed)
-	lvbox.add_child(_join_btn)
-
-	return hbox
 
 
-# ── Попап настроек (смена URL сервера) ────────────────────────────────────────
+# ── Попап настроек ────────────────────────────────────────────────────────────
 
 func _on_settings_pressed() -> void:
 	if is_instance_valid(_settings_popup):
@@ -260,7 +142,6 @@ func _on_settings_pressed() -> void:
 		return
 
 	_settings_popup = UIStyle.modal(self, "НАСТРОЙКИ", func(vbox: VBoxContainer) -> void:
-
 		# ── Сервер ────────────────────────────────────────────────────────────
 		var srv_lbl := Label.new()
 		srv_lbl.text = "СЕРВЕР"
@@ -446,6 +327,7 @@ func _on_rooms_updated(rooms: Array) -> void:
 
 	if rooms.is_empty():
 		var empty_lbl := Label.new()
+		empty_lbl.name = "EmptyLabel"
 		empty_lbl.text = "Нет активных комнат"
 		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty_lbl.add_theme_color_override("font_color", UIColors.MUTED)
@@ -458,6 +340,7 @@ func _on_rooms_updated(rooms: Array) -> void:
 		var room: Dictionary = rooms[i]
 		var rid: String = room.get("id", "")
 		var row := _make_room_row(room)
+		row.name = "Room_" + rid
 		row.pressed.connect(_on_room_selected.bind(rid, row))
 		_rooms_list.add_child(row)
 
