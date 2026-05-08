@@ -469,8 +469,44 @@ func _on_start_pressed() -> void:
 		_nm.players[_nm.my_id]["investigator"] = selected
 	GameConsole.log("Игра началась! Игроков: %d" % _nm.players.size())
 	_clear_ready_state()
+	# Инициализируем игровое состояние ДО рассылки start_game и перехода —
+	# game_sync от хоста уйдёт раньше, чем не-хосты получат start_game и
+	# переключатся на world_map (WebSocket FIFO).
+	GameState.start_game(_build_players_init())
 	_nm.relay_all({"action": "start_game"})
 	SceneManager.go("world_map")
+
+
+func _build_players_init() -> Array:
+	# Читаем investigators.json для HP/Sanity max каждого выбранного сыщика.
+	var inv_data: Dictionary = _load_investigators_index()
+	var arr: Array = []
+	for pid: String in _nm.players:
+		var info: Dictionary = _nm.players[pid]
+		var inv_name: String = info.get("investigator", "")
+		var inv: Dictionary  = inv_data.get(inv_name, {})
+		arr.append({
+			"pid":          pid,
+			"user_id":      pid,
+			"name":         info.get("name", "???"),
+			"investigator": inv_name,
+			"hp_max":       int(inv.get("health", 5)),
+			"sanity_max":   int(inv.get("sanity", 5)),
+		})
+	return arr
+
+
+func _load_investigators_index() -> Dictionary:
+	var text: String = FileAccess.get_file_as_string("res://data/investigators.json")
+	if text.is_empty():
+		return {}
+	var arr: Variant = JSON.parse_string(text)
+	if not arr is Array:
+		return {}
+	var idx: Dictionary = {}
+	for inv: Dictionary in arr:
+		idx[inv.get("name", "")] = inv
+	return idx
 
 
 # ── Оверлей переподключения ──────────────────────────────────────────────────
