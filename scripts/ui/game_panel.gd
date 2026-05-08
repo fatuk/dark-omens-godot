@@ -22,6 +22,11 @@ func set_doom(filled: int) -> void:
 	_doom.filled = filled
 
 
+## Максимальное значение Doom — зависит от Древнего. По умолчанию 12.
+func set_max_doom(value: int) -> void:
+	_doom.max_doom = value
+
+
 ## Поворот компасного диска слева (0..N, где каждая «ступень» — 45°).
 ## Анимируется плавно (~300 мс).
 func set_omens_step(step: float) -> void:

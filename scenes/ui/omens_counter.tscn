@@ -45,6 +45,17 @@ anchors_preset = 0
 mouse_filter = 0
 script = ExtResource("1_script")
 
+; Чёрная круглая подложка под диском — без неё через прозрачные части
+; рамки виден орнамент панели. Использует ту же ShaderMaterial, что Circle.
+[node name="BlackBg" type="ColorRect" parent="."]
+material = SubResource("circle_mask_mat")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
 ; Внутренний диск 253×250 — выходит за границы контейнера, но шейдер
 ; обрезает по кругу относительно экранного центра. Вращается через узел.
 [node name="Circle" type="TextureRect" parent="."]

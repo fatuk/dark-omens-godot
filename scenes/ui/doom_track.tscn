@@ -1,10 +1,34 @@
-[gd_scene load_steps=6 format=3 uid="uid://c0b2tsiyiml1h"]
+[gd_scene load_steps=8 format=3 uid="uid://c0b2tsiyiml1h"]
 
 [ext_resource type="Script" uid="uid://bciiqqq4svuvb" path="res://scripts/ui/doom_track.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://mm4gf0kj05r4" path="res://assets/game-panel/doom-track/doom-track-bg.png" id="2_bg"]
 [ext_resource type="Texture2D" uid="uid://c8kk6uf68gidf" path="res://assets/game-panel/doom-track/doom-track-active-bar.png" id="3_active"]
 [ext_resource type="Texture2D" uid="uid://bwu0yieqx6te1" path="res://assets/game-panel/doom-track/doom-track-frame.png" id="4_frame"]
 [ext_resource type="Texture2D" uid="uid://din3p3stiku2b" path="res://assets/game-panel/doom-track/doom-track-tail.png" id="5_tail"]
+
+; Шейдер: обрезает под форму закруглённого прямоугольника (как у латунной
+; рамки внутри). rect_size и radius_px обновляются скриптом.
+[sub_resource type="Shader" id="rounded_mask_shader"]
+code = "shader_type canvas_item;
+
+uniform vec2 rect_size  = vec2(347.5, 25.0);
+uniform float radius_px = 12.0;
+
+void fragment() {
+	vec2 p = (UV - 0.5) * rect_size;
+	vec2 hsize = rect_size * 0.5;
+	vec2 d = abs(p) - hsize + vec2(radius_px);
+	float dist = min(max(d.x, d.y), 0.0) + length(max(d, vec2(0.0))) - radius_px;
+	if (dist > 0.0) {
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="rounded_mask_mat"]
+shader = SubResource("rounded_mask_shader")
+shader_parameter/rect_size = Vector2(347.5, 25)
+shader_parameter/radius_px = 12.0
 
 [node name="DoomTrack" type="Control"]
 custom_minimum_size = Vector2(347.5, 25)
@@ -15,6 +39,7 @@ script = ExtResource("1_script")
 
 [node name="Progress" type="TextureProgressBar" parent="."]
 unique_name_in_owner = true
+material = SubResource("rounded_mask_mat")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,15 +52,14 @@ nine_patch_stretch = true
 texture_under = ExtResource("2_bg")
 texture_progress = ExtResource("3_active")
 
-[node name="Frame" type="TextureRect" parent="."]
+; Дивайдеры между ячейками — заполняются программно (count = max_doom - 1).
+[node name="Dividers" type="Control" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-texture = ExtResource("4_frame")
-expand_mode = 1
-stretch_mode = 0
 
 [node name="Tail" type="TextureRect" parent="."]
 unique_name_in_owner = true
@@ -51,5 +75,16 @@ offset_right = 11.0
 offset_bottom = 7.0
 mouse_filter = 2
 texture = ExtResource("5_tail")
+expand_mode = 1
+stretch_mode = 0
+
+; Латунная рамка поверх всего — даёт окантовку и закруглённые концы.
+[node name="Frame" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("4_frame")
 expand_mode = 1
 stretch_mode = 0
