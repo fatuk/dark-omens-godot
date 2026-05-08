@@ -45,6 +45,8 @@ var _nm: Node = null
 func _ready() -> void:
 	_nm = get_node("/root/NetworkManager")
 	_nm.relay_received.connect(_on_relay_received)
+	_nm.player_left.connect(_on_player_left)
+	_nm.game_state_received.connect(_apply_snapshot)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -180,10 +182,10 @@ func _advance_turn() -> void:
 
 func _enter_encounter() -> void:
 	phase       = "encounter"
-	current_idx = 0
+	current_idx = 0   # первый игрок начинает встречу, остальные ждут своей очереди
 	for pid: String in players:
 		players[pid]["encounter_done"] = false
-	GameConsole.log("[Game] Фаза: встречи")
+	GameConsole.log("[Game] Фаза: встречи · ход: %s" % _name_of(_current_pid()))
 	phase_changed.emit(phase)
 
 
@@ -204,18 +206,20 @@ func _apply_finish_encounter(pid: String) -> bool:
 		return false
 	if players[pid].get("encounter_done", false):
 		return false
+	# Встречи проходят по очереди — только активный игрок может завершить.
+	if turn_order.is_empty() or turn_order[current_idx] != pid:
+		GameConsole.warn("[Game] %s завершает встречу не в свой ход" % _name_of(pid))
+		return false
 
 	players[pid]["encounter_done"] = true
 	GameConsole.log("[Game] %s завершил встречу" % _name_of(pid))
 
-	# Все ли закончили?
-	var all_done: bool = true
-	for q: Dictionary in players.values():
-		if not q.get("encounter_done", false):
-			all_done = false
-			break
-	if all_done:
+	# Передаём ход на встречу следующему игроку
+	current_idx += 1
+	if current_idx >= turn_order.size():
 		_run_mythos()
+	else:
+		GameConsole.log("[Game] Встреча: ход → %s" % _name_of(_current_pid()))
 
 	_broadcast_sync()
 	_emit_changed()
@@ -246,22 +250,72 @@ func _start_new_round() -> void:
 	phase_changed.emit(phase)
 
 
+# ── Уход игрока ──────────────────────────────────────────────────────────────
+
+# Игрок покинул комнату (закрыл клиент, вышел кнопкой, kicked).
+# Только хост (после возможного промоута) чистит стейт и рассылает sync.
+# Иначе оставшиеся игроки видят «сейчас ходит несуществующий игрок».
+func _on_player_left(player_id: String, _new_host_id: String) -> void:
+	if not active:
+		return
+	if not _is_host():
+		return
+	if not players.has(player_id):
+		return
+
+	var name_left: String = _name_of(player_id)
+	players.erase(player_id)
+
+	var idx: int = turn_order.find(player_id)
+	if idx >= 0:
+		turn_order.remove_at(idx)
+		if turn_order.is_empty():
+			active = false
+			GameConsole.warn("[Game] Все игроки покинули игру")
+		elif phase == "action":
+			# Action: ход у turn_order[current_idx]. Сжимаем индекс если нужно.
+			if idx < current_idx:
+				current_idx -= 1
+			elif idx == current_idx and current_idx >= turn_order.size():
+				# Активный игрок ушёл и был последним — переходим в encounter
+				_enter_encounter()
+		elif phase == "encounter":
+			# Encounter: тоже последовательно. Если ушёл идущий — current_idx
+			# теперь указывает на следующего (после remove_at). Если был
+			# последним — Mythos.
+			if idx < current_idx:
+				current_idx -= 1
+			if current_idx >= turn_order.size():
+				_run_mythos()
+
+	GameConsole.log("[Game] %s покинул игру (осталось: %d)" % [name_left, turn_order.size()])
+	_broadcast_sync()
+	_emit_changed()
+
+
+# ── Применить снапшот (от хоста через relay ИЛИ от сервера через joined_room) ─
+
+func _apply_snapshot(data: Dictionary) -> void:
+	round_num   = int(data.get("round_num",   0))
+	phase       = String(data.get("phase",    ""))
+	current_idx = int(data.get("current_idx", 0))
+	turn_order  = data.get("turn_order",  [])
+	doom        = int(data.get("doom",        0))
+	omens_step  = int(data.get("omens_step",  0))
+	players     = data.get("players",     {})
+	active      = bool(data.get("active",     false))
+	_emit_changed()
+	phase_changed.emit(phase)
+
+
 # ── Не-хост: приём от relay ──────────────────────────────────────────────────
 
 func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 	match data.get("action", ""):
 		"game_sync":
-			# Хост прислал полный стейт — заменяем локальный
-			round_num   = int(data.get("round_num",   0))
-			phase       = String(data.get("phase",    ""))
-			current_idx = int(data.get("current_idx", 0))
-			turn_order  = data.get("turn_order",  [])
-			doom        = int(data.get("doom",        0))
-			omens_step  = int(data.get("omens_step",  0))
-			players     = data.get("players",     {})
-			active      = bool(data.get("active",     false))
-			_emit_changed()
-			phase_changed.emit(phase)
+			# Хост прислал полный стейт — применяем тем же путём, что снапшот
+			# с сервера (joined_room.game_state).
+			_apply_snapshot(data)
 
 		"game_action":
 			# Не-хост попросил выполнить действие — хост валидирует и применяет
@@ -292,6 +346,14 @@ func _name_of(pid: String) -> String:
 ## Узнать, мой ли ход сейчас (только для phase=action).
 func is_my_turn() -> bool:
 	return active and phase == "action" and _current_pid() == _nm.my_id
+
+
+## Узнать, моя ли очередь на встречу (только для phase=encounter).
+## Встречи проходят последовательно по turn_order.
+func is_my_encounter_turn() -> bool:
+	return active and phase == "encounter" \
+		and _current_pid() == _nm.my_id \
+		and not have_finished_encounter()
 
 
 ## Узнать, я ли уже завершил встречу (только для phase=encounter).

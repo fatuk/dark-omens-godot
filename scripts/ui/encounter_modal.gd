@@ -24,7 +24,6 @@ func _ready() -> void:
 
 
 func _refresh() -> void:
-	# Видна только если сейчас фаза encounter и я ещё не завершил свою
-	var should_show: bool = GameState.active and GameState.phase == "encounter" \
-		and not GameState.have_finished_encounter()
-	_root.visible = should_show
+	# Модалка видна только когда наступила МОЯ очередь на встречу
+	# (встречи проходят последовательно по turn_order).
+	_root.visible = GameState.is_my_encounter_turn()

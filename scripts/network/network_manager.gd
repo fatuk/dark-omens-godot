@@ -11,6 +11,7 @@ signal joined_room(room_id: String, room_name: String, is_host: bool, players: A
 signal player_joined(player: Dictionary)
 signal player_left(player_id: String, new_host_id: String)
 signal relay_received(from_id: String, data: Dictionary)
+signal game_state_received(state: Dictionary)   # снапшот стейта от сервера
 signal relay_error(message: String)
 signal reconnecting(attempt: int)
 signal reconnected
@@ -198,6 +199,11 @@ func _handle_message(msg: Dictionary) -> void:
 						"investigator": _saved_investigator,
 					}})
 			joined_room.emit(room_id, room_name, _is_host_flag, raw_players)
+			# Снапшот игрового стейта (если сервер прислал) — кладём в GameState.
+			# GameState инициализируется до перехода в world_map.
+			var snapshot: Variant = msg.get("game_state", null)
+			if snapshot is Dictionary:
+				game_state_received.emit(snapshot)
 
 		"player_joined":
 			var p: Dictionary = msg.get("player", {})

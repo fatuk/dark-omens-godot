@@ -58,7 +58,8 @@ func _phase_label_for(p: String) -> String:
 
 
 func _current_player_name() -> String:
-	if GameState.phase != "action":
+	# Активный игрок есть в action и encounter фазах (обе последовательные)
+	if GameState.phase != "action" and GameState.phase != "encounter":
 		return ""
 	if GameState.turn_order.is_empty():
 		return ""
