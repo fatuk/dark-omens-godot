@@ -98,6 +98,11 @@ func delete_room() -> void:
 	_clear_room_state()
 
 
+## Удалить любую ПУСТУЮ комнату из списка (для чистки тестовых).
+func delete_any_room(target_room_id: String) -> void:
+	_send({"type": "delete_any_room", "room_id": target_room_id})
+
+
 func relay_all(data: Dictionary) -> void:
 	if data.get("action", "") == "set_ready":
 		_saved_ready       = true

@@ -341,29 +341,36 @@ func _on_rooms_updated(rooms: Array) -> void:
 		var rid: String = room.get("id", "")
 		var row := _make_room_row(room)
 		row.name = "Room_" + rid
-		row.pressed.connect(_on_room_selected.bind(rid, row))
+		# pressed уже подключён внутри _make_room_row
 		_rooms_list.add_child(row)
 
 	_show_status("Найдено комнат: %d" % rooms.size(), UIColors.SUCCESS)
 
 
-func _on_room_selected(room_id: String, row: Button) -> void:
+func _on_room_selected(room_id: String, row_btn: Button) -> void:
 	_selected_room_id = room_id
 	_join_btn.disabled = false
 	for child in _rooms_list.get_children():
-		if child is Button:
-			var btn := child as Button
-			var style := StyleBoxFlat.new()
-			if child == row:
-				style.bg_color = Color(0.15, 0.12, 0.28)
-				style.border_color = UIColors.ACCENT
-			else:
-				style.bg_color = Color(0.10, 0.09, 0.18)
-				style.border_color = UIColors.BORDER
-			style.set_border_width_all(1)
-			style.set_corner_radius_all(4)
-			style.set_content_margin_all(8)
-			btn.add_theme_stylebox_override("normal", style)
+		var room_btn: Button = child.get_node_or_null("RoomBtn") as Button
+		if room_btn == null:
+			continue
+		var style := StyleBoxFlat.new()
+		if room_btn == row_btn:
+			style.bg_color = Color(0.15, 0.12, 0.28)
+			style.border_color = UIColors.ACCENT
+		else:
+			style.bg_color = Color(0.10, 0.09, 0.18)
+			style.border_color = UIColors.BORDER
+		style.set_border_width_all(1)
+		style.set_corner_radius_all(4)
+		style.set_content_margin_all(8)
+		room_btn.add_theme_stylebox_override("normal", style)
+
+
+func _on_delete_room_btn(room_id: String) -> void:
+	_nm.delete_any_room(room_id)
+	# Список обновится автоматом — сервер пришлёт rooms_list инициатору
+	# (плюс relay_error если что-то не так).
 
 
 func _on_joined_room(_rid: String, _rname: String, _is_host: bool, _players: Array) -> void:
@@ -433,11 +440,16 @@ func _apply_display() -> void:
 
 # ── Вспомогательные ───────────────────────────────────────────────────────────
 
-func _make_room_row(room: Dictionary) -> Button:
-	var rname: String = room.get("name", "???")
-	var count: int    = int(room.get("playerCount", 0))
-	var max_p: int    = int(room.get("maxPlayers", 8))
-	var locked: bool  = room.get("locked", false)
+func _make_room_row(room: Dictionary) -> Control:
+	var rname:  String = room.get("name", "???")
+	var count:  int    = int(room.get("playerCount", 0))
+	var max_p:  int    = int(room.get("maxPlayers", 8))
+	var locked: bool   = room.get("locked", false)
+	var empty:  bool   = room.get("empty", false)
+	var rid:    String = room.get("id", "")
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
 
 	var style_n := StyleBoxFlat.new()
 	style_n.bg_color = Color(0.10, 0.09, 0.18)
@@ -453,16 +465,32 @@ func _make_room_row(room: Dictionary) -> Button:
 	style_h.set_corner_radius_all(4)
 	style_h.set_content_margin_all(8)
 
-	var btn := Button.new()
-	btn.text = "%s%s   [%d/%d]" % [rname, " 🔒" if locked else "", count, max_p]
-	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn.add_theme_stylebox_override("normal",  style_n)
-	btn.add_theme_stylebox_override("hover",   style_h)
-	btn.add_theme_stylebox_override("pressed", style_h)
-	btn.add_theme_color_override("font_color", UIColors.TEXT)
-	btn.add_theme_font_size_override("font_size", 14)
-	return btn
+	var room_btn := Button.new()
+	room_btn.name = "RoomBtn"
+	room_btn.text = "%s%s   [%d/%d]" % [rname, " 🔒" if locked else "", count, max_p]
+	room_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	room_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	room_btn.add_theme_stylebox_override("normal",  style_n)
+	room_btn.add_theme_stylebox_override("hover",   style_h)
+	room_btn.add_theme_stylebox_override("pressed", style_h)
+	room_btn.add_theme_color_override("font_color", UIColors.TEXT)
+	room_btn.add_theme_font_size_override("font_size", 14)
+	room_btn.pressed.connect(_on_room_selected.bind(rid, room_btn))
+	row.add_child(room_btn)
+
+	# ✕ только для пустых комнат — не пустые удаляются хостом из лобби.
+	if empty:
+		var del_btn := Button.new()
+		del_btn.name = "DeleteBtn"
+		del_btn.text = "✕"
+		del_btn.tooltip_text = "Удалить пустую комнату"
+		del_btn.custom_minimum_size = Vector2(36, 0)
+		del_btn.focus_mode = Control.FOCUS_NONE
+		UIStyle.style_button(del_btn, UIColors.DANGER)
+		del_btn.pressed.connect(_on_delete_room_btn.bind(rid))
+		row.add_child(del_btn)
+
+	return row
 
 
 func _show_status(msg: String, color: Color = UIColors.TEXT) -> void:
