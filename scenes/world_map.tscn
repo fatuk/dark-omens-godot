@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://0kgoahny8047"]
+[gd_scene load_steps=7 format=3 uid="uid://0kgoahny8047"]
 
 [ext_resource type="Script" uid="uid://diiss2g0befi6" path="res://scripts/screens/world_map.gd" id="1_oru6e"]
 [ext_resource type="Texture2D" uid="uid://cb6u8vwfb1jla" path="res://assets/map.png" id="2_maptex"]
 [ext_resource type="PackedScene" uid="uid://dinvestpanel0001" path="res://scenes/ui/investigator_panel.tscn" id="3_invpanel"]
 [ext_resource type="PackedScene" uid="uid://bpen78tdd33ii" path="res://scenes/ui/game_panel.tscn" id="4_6a477"]
+[ext_resource type="PackedScene" uid="uid://daction0panel0001" path="res://scenes/ui/action_panel.tscn" id="5_action"]
+[ext_resource type="PackedScene" uid="uid://dencount0modal0001" path="res://scenes/ui/encounter_modal.tscn" id="6_encmod"]
 
 [node name="WorldMap" type="Node2D" unique_id=400240817]
 script = ExtResource("1_oru6e")
@@ -28,3 +30,8 @@ zoom = Vector2(0.5, 0.5)
 [node name="InvestigatorPanel" parent="." unique_id=648634468 instance=ExtResource("3_invpanel")]
 
 [node name="GamePanel" parent="." unique_id=978194652 instance=ExtResource("4_6a477")]
+unique_name_in_owner = true
+
+[node name="ActionPanel" parent="." instance=ExtResource("5_action")]
+
+[node name="EncounterModal" parent="." instance=ExtResource("6_encmod")]

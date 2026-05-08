@@ -21,7 +21,8 @@ var _zoom_target: float = 0.5
 
 # ── Ноды ──────────────────────────────────────────────────────────────────────
 
-@onready var _camera: Camera2D = $Camera2D
+@onready var _camera:     Camera2D = $Camera2D
+@onready var _game_panel: CanvasLayer = $GamePanel
 
 var _map_layer: MapLayer
 
@@ -33,6 +34,39 @@ func _ready() -> void:
 	add_child(_map_layer)
 	_map_layer.camera = _camera
 	_map_layer.load_from_file("res://data/locations.json")
+
+	# Привязка GamePanel к глобальному GameState
+	GameState.state_changed.connect(_refresh_game_panel)
+	_refresh_game_panel()
+
+
+# Обновляем верхний HUD по текущему стейту игры.
+func _refresh_game_panel() -> void:
+	_game_panel.set_phase(_phase_label_for(GameState.phase))
+	_game_panel.set_player(_current_player_name())
+	_game_panel.set_doom(GameState.doom)
+	_game_panel.set_omens_step(float(GameState.omens_step))
+	_game_panel.set_info(str(GameState.round_num))
+
+
+func _phase_label_for(p: String) -> String:
+	match p:
+		"action":    return "Действия"
+		"encounter": return "Встречи"
+		"mythos":    return "Мифы"
+	return ""
+
+
+func _current_player_name() -> String:
+	if GameState.phase != "action":
+		return ""
+	if GameState.turn_order.is_empty():
+		return ""
+	var pid: String = GameState.turn_order[GameState.current_idx]
+	if not GameState.players.has(pid):
+		return ""
+	# Показываем имя сыщика (не username игрока)
+	return GameState.players[pid].get("investigator", "???")
 
 
 func _process(delta: float) -> void:

@@ -1,0 +1,58 @@
+[gd_scene load_steps=2 format=3 uid="uid://dencount0modal0001"]
+
+[ext_resource type="Script" path="res://scripts/ui/encounter_modal.gd" id="1_script"]
+
+[node name="EncounterModal" type="CanvasLayer"]
+layer = 80
+script = ExtResource("1_script")
+
+[node name="Root" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+
+[node name="Backdrop" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+color = Color(0, 0, 0, 0.55)
+
+[node name="Center" type="CenterContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+
+[node name="Panel" type="PanelContainer" parent="Root/Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Root/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "  ВСТРЕЧА"
+
+[node name="Body" type="Label" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "У вас встреча на этой локации.\n\n(Заглушка — содержание встреч добавим позже.)"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="FinishBtn" type="Button" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ЗАВЕРШИТЬ"
