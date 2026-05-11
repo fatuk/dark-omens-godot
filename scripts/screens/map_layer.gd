@@ -35,10 +35,11 @@ var camera: Camera2D = null
 
 # ── Данные ────────────────────────────────────────────────────────────────────
 
-var _locs:     Dictionary = {}
-var _edges:    Array      = []
-var _markers:  Array      = []   # [{sprite, label, pos}]
-var _textures: Dictionary = {}
+var _locs:          Dictionary = {}
+var _edges:         Array      = []
+var _markers:       Array      = []   # [{sprite, label, indicator, pos, loc_name}]
+var _textures:      Dictionary = {}
+var _selected_name: String     = ""
 
 
 # ── Загрузка ──────────────────────────────────────────────────────────────────
@@ -76,11 +77,13 @@ func load_from_file(path: String) -> void:
 		var lat: float = float(coords[0])
 		var lon: float = float(coords[1])
 		_locs[loc_name] = {
-			"pos":         _geo_to_pixel(lat, lon),
-			"lat":         lat,
-			"lon":         lon,
-			"type":        loc.get("type", "city"),
-			"connections": loc.get("connections", []),
+			"pos":               _geo_to_pixel(lat, lon),
+			"lat":               lat,
+			"lon":               lon,
+			"type":              loc.get("type", "city"),
+			"connections":       loc.get("connections", []),
+			"realWorldLocation": loc.get("realWorldLocation", ""),
+			"description":       loc.get("description", ""),
 		}
 
 	_build_edges()
@@ -98,14 +101,19 @@ func _process(_delta: float) -> void:
 
 	# Мировой размер = желаемый экранный размер / зум
 	var sp_scale: Vector2 = Vector2.ONE * (MARKER_SCREEN / 150.0) * inv
+	var ui_scale: Vector2 = Vector2.ONE * inv
 
 	for i: int in range(_markers.size()):
-		var m: Dictionary = _markers[i]
-		var sp: Sprite2D  = m.sprite as Sprite2D
-		var lb: Label     = m.label  as Label
+		var m: Dictionary       = _markers[i]
+		var sp: Sprite2D        = m.sprite    as Sprite2D
+		var lb: Label           = m.label     as Label
+		var ind: Node2D         = m.indicator as Node2D
 
 		if is_instance_valid(sp):
 			sp.scale = sp_scale
+
+		if is_instance_valid(ind) and ind.visible:
+			ind.scale = ui_scale
 
 		if is_instance_valid(lb) and lb.size.x > 0.0:
 			lb.scale    = Vector2.ONE * inv
@@ -143,7 +151,18 @@ func _spawn_markers() -> void:
 			lbl.add_theme_stylebox_override("normal", bg)
 			add_child(lbl)
 
-			_markers.append({"sprite": sprite, "label": lbl, "pos": world_pos})
+			var indicator := SelectionIndicator.new()
+			indicator.position = world_pos
+			indicator.visible  = false
+			add_child(indicator)
+
+			_markers.append({
+				"sprite":    sprite,
+				"label":     lbl,
+				"indicator": indicator,
+				"pos":       world_pos,
+				"loc_name":  loc_name,
+			})
 
 
 # ── Рёбра ─────────────────────────────────────────────────────────────────────
@@ -241,3 +260,54 @@ func _conn_color(ctype: String) -> Color:
 		"train":     return COLOR_TRAIN
 		"uncharted": return COLOR_UNCHARTED
 	return COLOR_SHIP
+
+
+# ── Пик и подсветка ───────────────────────────────────────────────────────────
+
+## Возвращает имя локации под мировой позицией world_pos, либо "" если промах.
+## Радиус пика берётся равным экранному размеру маркера (с учётом текущего зума).
+func try_pick(world_pos: Vector2) -> String:
+	if not is_instance_valid(camera):
+		return ""
+	var inv_z: float = 1.0 / camera.zoom.x
+	var pick_r: float = MARKER_SCREEN * 0.5 * inv_z
+	var best: float = INF
+	var best_name: String = ""
+	for i: int in range(_markers.size()):
+		var m: Dictionary = _markers[i]
+		var d: float = m.pos.distance_to(world_pos)
+		if d < pick_r and d < best:
+			best = d
+			best_name = m.loc_name
+	return best_name
+
+
+## Возвращает данные локации в формате для LocationSidebar.show_location().
+func get_location(loc_name: String) -> Dictionary:
+	if not _locs.has(loc_name):
+		return {}
+	var loc: Dictionary = _locs[loc_name]
+	return {
+		"name":              loc_name,
+		"type":              loc.get("type", "city"),
+		"realWorldLocation": loc.get("realWorldLocation", ""),
+		"description":       loc.get("description", ""),
+		"connections":       loc.get("connections", []),
+	}
+
+
+## Подсвечивает все 3 копии маркера с этим именем (или снимает подсветку, если "").
+func set_selected(loc_name: String) -> void:
+	if loc_name == _selected_name:
+		return
+	_selected_name = loc_name
+	var inv: float = 1.0 / camera.zoom.x if is_instance_valid(camera) else 1.0
+	for i: int in range(_markers.size()):
+		var m: Dictionary = _markers[i]
+		var ind: Node2D = m.indicator as Node2D
+		if not is_instance_valid(ind):
+			continue
+		var on: bool = (m.loc_name == loc_name)
+		ind.visible = on
+		if on:
+			ind.scale = Vector2.ONE * inv  # сразу нужный размер до первого _process
