@@ -1,0 +1,72 @@
+[gd_scene format=3 uid="uid://544omj8f3st1"]
+
+[ext_resource type="Script" path="res://scripts/ui/modal_dialog.gd" id="1_script"]
+
+[node name="ModalDialog" type="CanvasLayer"]
+layer = 90
+script = ExtResource("1_script")
+
+[node name="Root" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+
+[node name="Backdrop" type="ColorRect" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+color = Color(0, 0, 0, 0)
+
+[node name="Center" type="CenterContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+
+[node name="Panel" type="PanelContainer" parent="Root/Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Root/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderRow" type="HBoxContainer" parent="Root/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Root/Center/Panel/VBox/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 18
+text = ""
+vertical_alignment = 1
+
+[node name="CloseBtn" type="Button" parent="Root/Center/Panel/VBox/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+text = "×"
+
+[node name="HeaderSep" type="HSeparator" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
