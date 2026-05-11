@@ -2,19 +2,16 @@ extends Control
 
 ## Дискретный прогресс-бар «следа Рока».
 ## Показывает max_doom ячеек, заполнено `filled` штук слева.
-## Tail (наконечник) сидит на границе заполненной/пустой части.
 ##
-## Прогресс (фон+заливка) обрезается шейдером по форме закруглённого
-## прямоугольника, чтобы не вылезать за латунные «капсы» рамки.
-## Дивайдеры между ячейками рисуются программно, max_doom настраивается
-## под Древнего.
+## BG (фон) и Fill (зелёная заливка) — два TextureRect. Заливка использует
+## шейдер с fill_pct + fade_width: правый край плавно фейдится до прозрачного,
+## так что вместо «тейла-набалдашника» получается мягкое затухание прогресса.
+## Дивайдеры между ячейками рисуются программно, max_doom настраивается под Древнего.
 
-const TAIL_HALF_W:    float = 11.0      # tail 22 px wide, half для центрирования
-const TAIL_INSET:     float = 12.0      # отступ Tail от внешних краёв (под латунь)
-const TWEEN_TIME:     float = 0.3
-const DIVIDER_WIDTH:  float = 2.0
+const TWEEN_TIME:    float = 0.3
+const DIVIDER_WIDTH: float = 2.0
 # Цвет из React-прототипа: #2b941161 (тёмно-зелёный с alpha ~0.38).
-const DIVIDER_COLOR:  Color = Color(0.169, 0.580, 0.067, 0.380)
+const DIVIDER_COLOR: Color = Color(0.169, 0.580, 0.067, 0.380)
 
 @export var max_doom: int = 12:
 	set(v):
@@ -28,12 +25,12 @@ const DIVIDER_COLOR:  Color = Color(0.169, 0.580, 0.067, 0.380)
 		filled = clampi(v, 0, max_doom)
 		_animate_to(_pct_for(filled))
 
-@onready var _progress: TextureProgressBar = %Progress
-@onready var _tail:     TextureRect        = %Tail
-@onready var _dividers: Control            = %Dividers
+@onready var _bg:       TextureRect = $Bg
+@onready var _fill:     TextureRect = %Fill
+@onready var _dividers: Control     = %Dividers
 
 var _displayed_pct: float = 0.0
-var _tween: Tween = null
+var _tween:         Tween = null
 
 
 func _ready() -> void:
@@ -50,9 +47,10 @@ func _on_resized() -> void:
 
 
 func _update_mask_size() -> void:
-	var mat: ShaderMaterial = _progress.material as ShaderMaterial
-	if mat:
-		mat.set_shader_parameter("rect_size", size)
+	for tr: TextureRect in [_bg, _fill]:
+		var mat: ShaderMaterial = tr.material as ShaderMaterial
+		if mat:
+			mat.set_shader_parameter("rect_size", size)
 
 
 func _pct_for(value: int) -> float:
@@ -72,13 +70,9 @@ func _apply_pct(pct: float) -> void:
 	_displayed_pct = pct
 	if not is_node_ready():
 		return
-	_progress.value = pct * _progress.max_value
-	# Tail: позицию ограничиваем зоной [TAIL_INSET, size.x - TAIL_INSET],
-	# чтобы половинка наконечника не торчала за латунные капсы.
-	var inner_w: float = size.x - 2.0 * TAIL_INSET
-	var x: float = TAIL_INSET + pct * inner_w
-	_tail.offset_left  = x - TAIL_HALF_W
-	_tail.offset_right = x + TAIL_HALF_W
+	var mat: ShaderMaterial = _fill.material as ShaderMaterial
+	if mat:
+		mat.set_shader_parameter("fill_pct", pct)
 
 
 # ── Дивайдеры между ячейками ──────────────────────────────────────────────────
