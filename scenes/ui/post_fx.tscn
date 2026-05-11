@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://cfflpahaxv721"]
+
+[ext_resource type="Script" uid="uid://bfdqth8cspca7" path="res://scripts/ui/post_fx.gd" id="1_script"]
+[ext_resource type="Shader" uid="uid://doj7lg0tksk6l" path="res://scripts/ui/old_film.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="post_fx_mat"]
+shader = ExtResource("2_shader")
+shader_parameter/sepia_amount = 0.22
+
+[node name="PostFx" type="CanvasLayer" unique_id=978864604]
+process_mode = 3
+layer = 200
+script = ExtResource("1_script")
+
+[node name="Overlay" type="ColorRect" parent="." unique_id=1680415073]
+unique_name_in_owner = true
+material = SubResource("post_fx_mat")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

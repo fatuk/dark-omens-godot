@@ -25,6 +25,7 @@ const RESOLUTIONS: Array[Vector2i] = [
 
 @onready var _res_option: OptionButton = %ResOption
 @onready var _fs_check:   CheckBox     = %FsCheck
+@onready var _fx_check:   CheckBox     = %FxCheck
 @onready var _save_btn:   Button       = %SaveBtn
 @onready var _back_btn:   Button       = %BackBtn
 
@@ -82,6 +83,9 @@ func _apply_styles() -> void:
 		(get_node(path) as Label).add_theme_color_override("font_color", UIColors.TEXT)
 
 	_fs_check.add_theme_color_override("font_color", UIColors.TEXT)
+	_fx_check.add_theme_color_override("font_color", UIColors.TEXT)
+	(get_node("Root/Center/SettPanel/VBox/FxRow/FxLabel") as Label) \
+		.add_theme_color_override("font_color", UIColors.TEXT)
 
 	UIStyle.style_option_button(_res_option)
 
@@ -100,6 +104,7 @@ func _populate_resolutions() -> void:
 	_res_option.selected = _res_idx
 	_res_option.disabled = _fullscreen
 	_fs_check.button_pressed = _fullscreen
+	_fx_check.button_pressed = PostFx.is_enabled()
 
 
 func _wire_handlers() -> void:
@@ -141,6 +146,7 @@ func _save_and_back() -> void:
 	_fullscreen = _fs_check.button_pressed
 	_save_settings()
 	_apply_display()
+	PostFx.set_enabled(_fx_check.button_pressed)
 	_show_main()
 
 

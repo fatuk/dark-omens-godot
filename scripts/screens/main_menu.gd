@@ -52,6 +52,7 @@ var _settings_popup: Control = null
 var _url_input:      LineEdit
 var _res_option:     OptionButton
 var _fs_check:       CheckBox
+var _fx_check:       CheckBox
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
@@ -202,6 +203,23 @@ func _on_settings_pressed() -> void:
 		fs_lbl.add_theme_color_override("font_color", UIColors.TEXT)
 		fs_row.add_child(fs_lbl)
 
+		# Эффект «старой плёнки»
+		var fx_row := HBoxContainer.new()
+		fx_row.add_theme_constant_override("separation", 10)
+		vbox.add_child(fx_row)
+
+		_fx_check = CheckBox.new()
+		_fx_check.button_pressed = PostFx.is_enabled()
+		_fx_check.add_theme_color_override("font_color", UIColors.TEXT)
+		_fx_check.add_theme_font_size_override("font_size", 14)
+		fx_row.add_child(_fx_check)
+
+		var fx_lbl := Label.new()
+		fx_lbl.text = "Эффект старой плёнки"
+		fx_lbl.add_theme_font_size_override("font_size", 14)
+		fx_lbl.add_theme_color_override("font_color", UIColors.TEXT)
+		fx_row.add_child(fx_lbl)
+
 		UIStyle.separator(vbox)
 
 		# ── Кнопки ────────────────────────────────────────────────────────────
@@ -237,6 +255,7 @@ func _on_settings_save() -> void:
 	_server_label.text = _relay_url
 	_save_settings()
 	_apply_display()
+	PostFx.set_enabled(_fx_check.button_pressed)
 
 	_settings_popup.queue_free()
 	_settings_popup = null
