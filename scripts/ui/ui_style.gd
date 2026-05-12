@@ -5,12 +5,63 @@ class_name UIStyle
 
 # ── Фон сцены ──────────────────────────────────────────────────────────────────
 
+## Бесшовная фоновая текстура для всех экранов. PNG в @2× (734×790),
+## отображается тайлами в половину натурального размера = 367×395.
+const BG_TEX: Texture2D = preload("res://assets/main-gb.png")
+
 ## Добавляет тёмный фон на всю область родительского контрола.
 static func apply_bg(control: Control) -> void:
 	var bg := ColorRect.new()
 	bg.color = UIColors.BG
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	control.add_child(bg)
+
+
+## Создаёт TextureRect с шейдером, тайлирующим texture с указанным scale'ом.
+## Тайл = texture.get_size() * scale. UV пересчитывается так, чтобы получить
+## фиксированный размер тайла независимо от размера rect'а.
+## Caller отвечает за добавление в дерево.
+static func make_tiled_texture_rect(
+		texture: Texture2D = BG_TEX,
+		scale:   float     = 0.5
+) -> TextureRect:
+	var tr := TextureRect.new()
+	tr.texture        = texture
+	tr.mouse_filter   = Control.MOUSE_FILTER_IGNORE
+	tr.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	tr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	var sh := Shader.new()
+	sh.code = """
+shader_type canvas_item;
+uniform vec2 tile_size_px;
+uniform vec2 rect_size_px;
+void fragment() {
+	vec2 uv = UV * rect_size_px / tile_size_px;
+	COLOR = texture(TEXTURE, uv);
+}
+"""
+	var mat := ShaderMaterial.new()
+	mat.shader = sh
+	mat.set_shader_parameter("tile_size_px", texture.get_size() * scale)
+	mat.set_shader_parameter("rect_size_px", Vector2(1920, 1080))   # init guess
+	tr.material = mat
+
+	tr.resized.connect(func() -> void:
+		mat.set_shader_parameter("rect_size_px", tr.size)
+	)
+	return tr
+
+
+## Convenience: применяет main-bg.png как тайлированный фон родителя.
+## Добавляется первым ребёнком, чтобы оказаться за всем UI.
+## Парент может быть Control (тогда занимает его size) или CanvasLayer/Node
+## (тогда расстилается по всему viewport'у через PRESET_FULL_RECT).
+static func apply_main_bg(parent: Node) -> TextureRect:
+	var tr := make_tiled_texture_rect()
+	parent.add_child(tr)
+	parent.move_child(tr, 0)
+	return tr
 
 
 # ── Кнопка ─────────────────────────────────────────────────────────────────────

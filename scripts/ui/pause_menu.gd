@@ -14,7 +14,6 @@ const RESOLUTIONS: Array[Vector2i] = [
 ]
 
 # ── Узлы (через unique_name_in_owner) ──────────────────────────────────────────
-@onready var _backdrop:    ColorRect      = $Root/Backdrop
 @onready var _main_panel:  PanelContainer = %MainPanel
 @onready var _sett_panel:  PanelContainer = %SettPanel
 

@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://inv_picker_dark"]
-
-[ext_resource type="Script" path="res://scripts/ui/investigator_picker.gd" id="1_picker"]
-
-[node name="InvestigatorPicker" type="HBoxContainer"]
-script = ExtResource("1_picker")

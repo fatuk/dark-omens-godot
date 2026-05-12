@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://cghcyqtcydism"]
+
+[ext_resource type="Script" uid="uid://vj4u8ud7elch" path="res://scripts/ui/investigator_picker.gd" id="1_script"]
+
+[node name="Picker" type="Control" unique_id=1565506948]
+custom_minimum_size = Vector2(0, 720)
+layout_mode = 3
+anchors_preset = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_script")

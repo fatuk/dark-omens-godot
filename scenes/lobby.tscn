@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://b4xlobby2dark"]
 
 [ext_resource type="Script" path="res://scripts/screens/lobby.gd" id="1_lobby"]
-[ext_resource type="PackedScene" uid="uid://inv_picker_dark" path="res://scenes/investigator_picker.tscn" id="2_picker"]
+[ext_resource type="PackedScene" uid="uid://cghcyqtcydism" path="res://scenes/ui/investigator_picker.tscn" id="2_picker"]
 
 [node name="Lobby" type="Control"]
 layout_mode = 3
@@ -10,118 +10,11 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_lobby")
 
-[node name="Bg" type="ColorRect" parent="."]
+; Picker — full-screen overlay (CanvasLayer внутри). Сам себя выкладывает,
+; lobby.tscn содержит только бизнес-обвязку через скрипт.
+[node name="Picker" parent="." instance=ExtResource("2_picker")]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-mouse_filter = 2
-
-[node name="Margin" type="MarginContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme_override_constants/margin_left = 80
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 80
-theme_override_constants/margin_bottom = 24
-
-[node name="Root" type="VBoxContainer" parent="Margin"]
-layout_mode = 2
-theme_override_constants/separation = 14
-
-; ── Заголовок ──
-[node name="Title" type="Label" parent="Margin/Root"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 36
-text = "APP_TITLE"
-horizontal_alignment = 1
-
-[node name="RoomLabel" type="Label" parent="Margin/Root"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-horizontal_alignment = 1
-
-[node name="Sep1" type="HSeparator" parent="Margin/Root"]
-layout_mode = 2
-
-; ── Список игроков ──
-[node name="PlayersPanel" type="PanelContainer" parent="Margin/Root"]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="VBox" type="VBoxContainer" parent="Margin/Root/PlayersPanel"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Header" type="Label" parent="Margin/Root/PlayersPanel/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "LOBBY_PLAYERS_HEADER"
-
-[node name="Sep" type="HSeparator" parent="Margin/Root/PlayersPanel/VBox"]
-layout_mode = 2
-
-[node name="PlayerList" type="VBoxContainer" parent="Margin/Root/PlayersPanel/VBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="Sep2" type="HSeparator" parent="Margin/Root"]
-layout_mode = 2
-
-; ── Выбор сыщика ──
-[node name="PickerHeader" type="Label" parent="Margin/Root"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "LOBBY_PICK_HEADER"
-
-[node name="Picker" parent="Margin/Root" instance=ExtResource("2_picker")]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="Sep3" type="HSeparator" parent="Margin/Root"]
-layout_mode = 2
-
-; ── Кнопки ──
-[node name="ButtonsRow" type="HBoxContainer" parent="Margin/Root"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 12
-
-[node name="BackBtn" type="Button" parent="Margin/Root/ButtonsRow"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "LOBBY_BTN_LEAVE"
-
-[node name="DeleteBtn" type="Button" parent="Margin/Root/ButtonsRow"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-text = "LOBBY_BTN_CLOSE_ROOM"
-
-[node name="ReadyBtn" type="Button" parent="Margin/Root/ButtonsRow"]
-unique_name_in_owner = true
-disabled = true
-layout_mode = 2
-text = "LOBBY_BTN_READY"
-
-[node name="StartBtn" type="Button" parent="Margin/Root/ButtonsRow"]
-unique_name_in_owner = true
-visible = false
-disabled = true
-layout_mode = 2
-text = "LOBBY_BTN_START_GAME"
-
-[node name="StatusLabel" type="Label" parent="Margin/Root"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-horizontal_alignment = 1
-
-[node name="BottomPad" type="Control" parent="Margin/Root"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2

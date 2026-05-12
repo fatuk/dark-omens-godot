@@ -50,7 +50,9 @@ func _ready() -> void:
 # ── Применение Dark Omens-стилей к нодам из .tscn ─────────────────────────────
 
 func _apply_styles() -> void:
-	_bg.color = UIColors.BG
+	# Старый ColorRect фон заменяем на тайлированную main-gb.png.
+	_bg.queue_free()
+	UIStyle.apply_main_bg(self)
 
 	_title.add_theme_color_override("font_color",        UIColors.ACCENT)
 	_title.add_theme_color_override("font_shadow_color", UIColors.DANGER)

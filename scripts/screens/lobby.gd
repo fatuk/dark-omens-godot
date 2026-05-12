@@ -1,41 +1,39 @@
 extends Control
 
-## Лобби комнаты: список игроков, выбор сыщика, кнопки готовности.
-## Разметка статичной части в scenes/lobby.tscn, тут только поведение,
-## стилизация и динамические строки игроков.
+## Лобби комнаты — тонкая обвязка над investigator_picker.
+##
+## После рефакторинга весь UI лобби живёт в picker'е (full-screen overlay):
+##   • выбор сыщика (карусель)
+##   • заголовок с именем комнаты + ролью
+##   • краткий список игроков (crown + имя), плюс модалка «Подробнее»
+##   • кнопки «Назад / Готов / Начать игру»
+##
+## Этот скрипт держит только бизнес-логику:
+##   • перс-стейт «уже нажал готов» (для авто-восстановления при перезаходе)
+##   • рассылка picking/set_ready/start_game через NetworkManager.relay_all
+##   • переходы между сценами при старте/выходе
+##   • картинка переподключения при потере связи
+##
+## Никакого UI здесь больше нет — picker сам строит и обновляет всё своё
+## поверх NetworkManager.players (он подписан на те же сигналы).
 
 const _PREFS_PATH    := "user://dark_omens_prefs.cfg"
 const _PREFS_SECTION := "lobby"
 
-# ── Узлы ──────────────────────────────────────────────────────────────────────
-@onready var _bg:           ColorRect      = $Bg
-@onready var _room_label:   Label          = %RoomLabel
-@onready var _players_panel: PanelContainer = %PlayersPanel
-@onready var _player_list:  VBoxContainer  = %PlayerList
-@onready var _picker:       Node           = %Picker
-@onready var _back_btn:     Button         = %BackBtn
-@onready var _delete_btn:   Button         = %DeleteBtn
-@onready var _ready_button: Button         = %ReadyBtn
-@onready var _start_button: Button         = %StartBtn
-@onready var _status_label: Label          = %StatusLabel
+@onready var _picker: Node = %Picker
 
 # ── Состояние ─────────────────────────────────────────────────────────────────
 var _nm: Node
 var _was_ready: bool = false
 var _reconnect_overlay: Control
 
-# Дин. словари по pid
-var _player_rows:     Dictionary = {}   # pid -> HBoxContainer
-var _player_tags:     Dictionary = {}   # pid -> Label (статус)
-var _player_inv_lbls: Dictionary = {}   # pid -> Label (сыщик)
-var _player_names:    Dictionary = {}   # pid -> String  (для лога при выходе)
+# pid → имя (для красивого лога при выходе игрока)
+var _player_names: Dictionary = {}
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
-	_apply_styles()
-
 	_nm = get_node("/root/NetworkManager")
 	_nm.player_connected.connect(_on_player_connected)
 	_nm.player_disconnected.connect(_on_player_disconnected)
@@ -49,14 +47,26 @@ func _ready() -> void:
 	_nm.room_deleted.connect(_on_room_deleted)
 
 	_picker.investigator_selected.connect(_on_investigator_selected)
+	# Picker — это весь UI лобби; его кнопки дёргают здешние обработчики.
+	if _picker.has_signal("back_pressed"):
+		_picker.back_pressed.connect(_on_back_pressed)
+	if _picker.has_signal("confirm_pressed"):
+		_picker.confirm_pressed.connect(_on_ready_pressed)
+	if _picker.has_signal("start_pressed"):
+		_picker.start_pressed.connect(_on_start_pressed)
 
-	# Кнопки видимы по роли
-	_delete_btn.visible = _nm.is_host()
-	_start_button.visible = _nm.is_host()
+	# Восстановим имена игроков (нужны при логе ухода).
+	for pid: String in _nm.players.keys():
+		_player_names[pid] = _nm.players[pid].get("name", pid)
 
-	_wire_handlers()
-	_update_room_label()
-	_populate_players()
+	# Восстановим occupancy сыщиков для уже готовых игроков.
+	for pid: String in _nm.players.keys():
+		var info: Dictionary = _nm.players[pid]
+		if pid != _nm.my_id and info.get("ready", false):
+			var inv: String = info.get("investigator", "")
+			if not inv.is_empty():
+				_picker.mark_taken(inv, info.get("name", pid))
+
 	_refresh_start_button()
 
 	GameConsole.log("Комната «%s» — вы вошли (%s)" % [
@@ -67,42 +77,12 @@ func _ready() -> void:
 	# чтобы успели расставиться mark_taken. Auto-ready должен бежать после.
 	call_deferred("_check_auto_ready")
 	# Прыгаем на карту только если игра уже идёт И мы УЖЕ были в этой сессии
-	# (сервер восстановил наш investigator из game_players). Иначе — новый
-	# поздний игрок без сыщика; пусть выберет в лобби.
+	# (сервер восстановил наш investigator из game_players).
 	var my_pdata: Dictionary = _nm.players.get(_nm.my_id, {})
 	var my_inv:   String     = my_pdata.get("investigator", "")
 	if _nm.game_started and not my_inv.is_empty():
 		GameConsole.log("Игра уже идёт, у нас есть сыщик — переходим на карту")
 		SceneManager.go("world_map")
-
-
-# ── Стили ─────────────────────────────────────────────────────────────────────
-
-func _apply_styles() -> void:
-	_bg.color = UIColors.BG
-
-	($Margin/Root/Title as Label).add_theme_color_override("font_color", UIColors.ACCENT)
-	_room_label.add_theme_color_override("font_color", UIColors.MUTED)
-
-	UIStyle.style_panel(_players_panel, 16)
-	($Margin/Root/PlayersPanel/VBox/Header as Label) \
-		.add_theme_color_override("font_color", UIColors.MUTED)
-
-	($Margin/Root/PickerHeader as Label).add_theme_color_override("font_color", UIColors.MUTED)
-
-	UIStyle.style_button(_back_btn,     UIColors.DANGER)
-	UIStyle.style_button(_delete_btn,   UIColors.DANGER)
-	UIStyle.style_button(_ready_button)
-	UIStyle.style_button(_start_button, UIColors.ACCENT)
-
-	_status_label.add_theme_color_override("font_color", UIColors.MUTED)
-
-
-func _wire_handlers() -> void:
-	_back_btn.pressed.connect(_on_back_pressed)
-	_delete_btn.pressed.connect(_on_delete_room_pressed)
-	_ready_button.pressed.connect(_on_ready_pressed)
-	_start_button.pressed.connect(_on_start_pressed)
 
 
 # ── Персистентность состояния лобби ───────────────────────────────────────────
@@ -138,15 +118,12 @@ func _check_auto_ready() -> void:
 	if selected.is_empty():
 		return
 	# Уже были готовы в этой комнате — восстанавливаем статус,
-	# но НЕ переходим сразу: ждём start_game от хоста (или сами нажмём «Начать»)
+	# но НЕ переходим сразу: ждём start_game от хоста (или сами нажмём «Начать»).
 	_was_ready = true
 	if _nm.players.has(_nm.my_id):
-		_nm.players[_nm.my_id]["ready"]       = true
+		_nm.players[_nm.my_id]["ready"]        = true
 		_nm.players[_nm.my_id]["investigator"] = selected
-	_update_row_ready(_nm.my_id, true, selected)
-	if is_instance_valid(_ready_button):
-		_ready_button.disabled = true
-		_ready_button.text     = "LOBBY_BTN_READY_DONE"
+	_picker.lock_confirm()
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
 	_refresh_start_button()
 
@@ -154,8 +131,6 @@ func _check_auto_ready() -> void:
 # ── Выбор сыщика ─────────────────────────────────────────────────────────────
 
 func _on_investigator_selected(inv_name: String) -> void:
-	if is_instance_valid(_ready_button) and not _was_ready:
-		_ready_button.disabled = inv_name.is_empty()
 	# Локальное состояние + броадкаст: остальные игроки сразу видят
 	# нашего сыщика как занятого, не дожидаясь нажатия «Готов».
 	if _nm.players.has(_nm.my_id):
@@ -178,164 +153,40 @@ func _recompute_taken() -> void:
 	_picker.sync_taken(taken)
 
 
-# ── Список игроков ────────────────────────────────────────────────────────────
-
-func _update_room_label() -> void:
-	if not is_instance_valid(_room_label):
-		return
-	# Форматированная строка — биндим через LocaleBinder, чтобы при смене локали
-	# tr() пересчитывалось.
-	LocaleBinder.bind(_room_label, func() -> String:
-		var key: String = "LOBBY_ROOM_HOST_FMT" if _nm.is_host() else "LOBBY_ROOM_GUEST_FMT"
-		return tr(key) % _nm.room_name)
-
-
-func _populate_players() -> void:
-	GameConsole.log("[DEBUG] players при загрузке лобби: %s" % JSON.stringify(_nm.players))
-	for pid: String in _nm.players:
-		var info: Dictionary = _nm.players[pid]
-		_add_player_row(pid, info)
-		if pid != _nm.my_id:
-			GameConsole.log("%s уже в комнате" % info.get("name", pid))
-		# Применяем ready-стейт, который пришёл с сервера в joined_room
-		if pid != _nm.my_id:
-			var inv: String = info.get("investigator", "")
-			var rdy: bool   = info.get("ready", false)
-			if rdy:
-				_update_row_ready(pid, true, inv)
-				if not inv.is_empty() and is_instance_valid(_picker):
-					_picker.mark_taken(inv, info.get("name", pid))
-
-
-func _add_player_row(id: String, info: Dictionary) -> void:
-	if _player_rows.has(id):
-		return
-
-	var row := HBoxContainer.new()
-	row.name = "Player_" + id
-	row.add_theme_constant_override("separation", 10)
-
-	var is_me_host: bool = id == _nm.my_id and _nm.is_host()
-	var crown := Label.new()
-	crown.name = "Crown"
-	crown.text = "♛" if is_me_host else "◆"
-	crown.add_theme_font_size_override("font_size", 14)
-	crown.add_theme_color_override("font_color", UIColors.ACCENT if is_me_host else UIColors.MUTED)
-	crown.custom_minimum_size.x = 24
-	row.add_child(crown)
-
-	var name_vbox := VBoxContainer.new()
-	name_vbox.name = "NameVBox"
-	name_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_vbox.add_theme_constant_override("separation", 2)
-	row.add_child(name_vbox)
-
-	var name_lbl := Label.new()
-	name_lbl.name = "Name"
-	name_lbl.text = info.get("name", "???")
-	name_lbl.add_theme_font_size_override("font_size", 16)
-	name_lbl.add_theme_color_override("font_color", UIColors.TEXT)
-	name_vbox.add_child(name_lbl)
-
-	var inv_lbl := Label.new()
-	inv_lbl.name = "Investigator"
-	inv_lbl.add_theme_font_size_override("font_size", 11)
-	inv_lbl.add_theme_color_override("font_color", UIColors.ACCENT)
-	name_vbox.add_child(inv_lbl)
-	_player_inv_lbls[id] = inv_lbl
-
-	var tag := Label.new()
-	tag.name = "Tag"
-	tag.add_theme_font_size_override("font_size", 13)
-	tag.custom_minimum_size.x = 90
-	if is_me_host:
-		tag.text = "LOBBY_TAG_HOST"
-		tag.add_theme_color_override("font_color", UIColors.ACCENT)
-	elif info.get("ready", false):
-		tag.text = "LOBBY_TAG_READY"
-		tag.add_theme_color_override("font_color", UIColors.READY)
-	else:
-		tag.text = "LOBBY_TAG_WAITING"
-		tag.add_theme_color_override("font_color", UIColors.MUTED)
-	row.add_child(tag)
-	_player_tags[id] = tag
-
-	_player_list.add_child(row)
-	_player_rows[id] = row
-	_player_names[id] = info.get("name", id)
-
-
-func _remove_player_row(id: String) -> void:
-	# Освобождаем сыщика ушедшего игрока
-	if is_instance_valid(_picker) and _nm.players.has(id):
-		var inv: String = _nm.players[id].get("investigator", "")
-		if not inv.is_empty():
-			_picker.mark_available(inv)
-	if _player_rows.has(id):
-		(_player_rows[id] as Node).queue_free()
-		_player_rows.erase(id)
-		_player_tags.erase(id)
-		_player_inv_lbls.erase(id)
-		_player_names.erase(id)
-
-
-func _update_row_ready(id: String, is_ready: bool, inv_name: String = "") -> void:
-	if _player_tags.has(id):
-		var tag := _player_tags[id] as Label
-		if is_ready:
-			tag.text = "LOBBY_TAG_READY"
-			tag.add_theme_color_override("font_color", UIColors.READY)
-		else:
-			tag.text = "LOBBY_TAG_WAITING"
-			tag.add_theme_color_override("font_color", UIColors.MUTED)
-	if not inv_name.is_empty() and _player_inv_lbls.has(id):
-		(_player_inv_lbls[id] as Label).text = Investigators.display_name(inv_name)
-
-
+# Хост: разрешать «Начать», когда выбрал сыщика и подтвердил.
 func _refresh_start_button() -> void:
-	var selected: String = _picker.get_selected() if is_instance_valid(_picker) else ""
-
-	if not _nm.is_host():
-		if selected.is_empty():
-			_status_label.text = "LOBBY_HINT_PICK_THEN_READY"
-		elif not _was_ready:
-			_status_label.text = "LOBBY_HINT_READY_TO_CONFIRM"
-		else:
-			_status_label.text = "LOBBY_STATUS_WAIT_HOST"
-		_status_label.modulate = UIColors.MUTED
+	if not _nm.is_host() or not is_instance_valid(_picker):
 		return
-
-	if selected.is_empty():
-		_start_button.disabled = true
-		_status_label.text     = "LOBBY_STATUS_PICK"
-		_status_label.modulate = UIColors.WARNING
-	elif not _was_ready:
-		_start_button.disabled = true
-		_status_label.text     = "LOBBY_HINT_HOST"
-		_status_label.modulate = UIColors.WARNING
-	else:
-		_start_button.disabled = false
-		_status_label.text     = "Игроков: %d  •  Можно начинать!" % _nm.players.size()
-		_status_label.modulate = UIColors.READY
+	var selected: String = _picker.get_selected()
+	_picker.set_start_enabled(not selected.is_empty() and _was_ready)
 
 
 # ── Обработчики сигналов NetworkManager ───────────────────────────────────────
 
 func _on_player_connected(id: String, info: Dictionary) -> void:
-	_add_player_row(id, info)
+	_player_names[id] = info.get("name", id)
 	_refresh_start_button()
 
 
 func _on_player_disconnected(id: String) -> void:
-	_remove_player_row(id)
+	_release_player_investigator(id)
+	_player_names.erase(id)
 	_refresh_start_button()
 
 
-func _on_player_left_relay(player_id: String, new_host_id: String) -> void:
-	_remove_player_row(player_id)
-	if new_host_id == _nm.my_id:
-		_update_room_label()
+func _on_player_left_relay(player_id: String, _new_host_id: String) -> void:
+	_release_player_investigator(player_id)
+	_player_names.erase(player_id)
 	_refresh_start_button()
+
+
+# Освобождаем сыщика ушедшего игрока, чтобы он стал доступен другим.
+func _release_player_investigator(id: String) -> void:
+	if not is_instance_valid(_picker) or not _nm.players.has(id):
+		return
+	var inv: String = _nm.players[id].get("investigator", "")
+	if not inv.is_empty():
+		_picker.mark_available(inv)
 
 
 func _on_reconnecting(attempt: int) -> void:
@@ -346,14 +197,9 @@ func _on_reconnecting(attempt: int) -> void:
 func _on_reconnected() -> void:
 	GameConsole.log("Переподключились к комнате «%s»" % _nm.room_name)
 	_hide_reconnect_overlay()
-	for pid: String in _player_rows.keys():
-		if not _nm.players.has(pid):
-			_remove_player_row(pid)
-	for pid: String in _nm.players:
-		if not _player_rows.has(pid):
-			_add_player_row(pid, _nm.players[pid])
+	# Картинка игроков обновится сама — picker подписан на NM.player_connected/left.
 	_refresh_start_button()
-	# Если до разрыва уже нажали «Готов» — повторно отправляем серверу
+	# Если до разрыва уже нажали «Готов» — повторно отправляем серверу.
 	if _was_ready:
 		_resend_ready()
 
@@ -389,31 +235,23 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 				_nm.players[pid]["ready"] = true
 				if not inv_name.is_empty():
 					_nm.players[pid]["investigator"] = inv_name
-			_update_row_ready(pid, true, inv_name)
-			_refresh_start_button()
 			var pname: String = _player_names.get(pid, pid)
 			GameConsole.log("%s готов  ·  сыщик: %s" % [pname, inv_name])
 			# Блокируем сыщика для остальных
 			if pid != _nm.my_id and is_instance_valid(_picker):
 				_picker.mark_taken(inv_name, pname)
+			_refresh_start_button()
 		"start_game":
 			_clear_ready_state()
 			SceneManager.go("world_map")
 
 
-# ── Обработчики кнопок ────────────────────────────────────────────────────────
+# ── Обработчики сигналов picker'а ─────────────────────────────────────────────
 
 func _on_back_pressed() -> void:
 	GameConsole.log("Вы покинули комнату «%s»" % _nm.room_name)
 	_clear_ready_state()
 	_nm.leave_room()
-	SceneManager.go("main_menu")
-
-
-func _on_delete_room_pressed() -> void:
-	GameConsole.log("Комната «%s» закрыта ведущим" % _nm.room_name)
-	_clear_ready_state()
-	_nm.delete_room()
 	SceneManager.go("main_menu")
 
 
@@ -431,14 +269,11 @@ func _on_ready_pressed() -> void:
 	_was_ready = true
 	_save_ready_state()
 	GameConsole.log("Вы готовы  ·  сыщик: %s" % selected)
-	if is_instance_valid(_ready_button):
-		_ready_button.disabled = true
-		_ready_button.text     = "LOBBY_BTN_READY_DONE"
-	_update_row_ready(_nm.my_id, true, selected)
+	_picker.lock_confirm()
 	if _nm.players.has(_nm.my_id):
-		_nm.players[_nm.my_id]["ready"]       = true
+		_nm.players[_nm.my_id]["ready"]        = true
 		_nm.players[_nm.my_id]["investigator"] = selected
-	# Хост тоже рассылает — другие игроки увидят его статус и сыщика
+	# Хост тоже рассылает — другие игроки увидят его статус и сыщика.
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
 	_refresh_start_button()
 	# Если игра уже идёт (мы поздний игрок) — хост не нажмёт «Начать», он уже
@@ -454,9 +289,8 @@ func _resend_ready() -> void:
 	if selected.is_empty():
 		return
 	if _nm.players.has(_nm.my_id):
-		_nm.players[_nm.my_id]["ready"]       = true
+		_nm.players[_nm.my_id]["ready"]        = true
 		_nm.players[_nm.my_id]["investigator"] = selected
-	_update_row_ready(_nm.my_id, true, selected)
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
 
 

@@ -83,7 +83,9 @@ func _ready() -> void:
 # ── Стили ─────────────────────────────────────────────────────────────────────
 
 func _apply_styles() -> void:
-	_bg.color = UIColors.BG
+	# Старый ColorRect фон заменяем на тайлированную main-gb.png.
+	_bg.queue_free()
+	UIStyle.apply_main_bg(self)
 
 	var title := $Center/Root/Title as Label
 	title.add_theme_color_override("font_color",        UIColors.ACCENT)

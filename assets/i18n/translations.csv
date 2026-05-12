@@ -399,3 +399,13 @@ STATUS_CONNECTING_TO_ROOM,Подключение к комнате...,Connecting
 MENU_STATUS_NO_ROOMS_HINT,Активных комнат нет — создайте свою!,No active rooms — create your own!
 MENU_ERR_ROOM_NOT_FOUND,"Комната не найдена — возможно, сервер перезапускался",Room not found — server may have restarted
 MENU_STATUS_FOUND_ROOMS_FMT,Найдено комнат: %d,Found rooms: %d
+
+PICKER_TAKEN,ЗАНЯТО,TAKEN
+PICKER_CONFIRM,ПОДТВЕРДИТЬ ВЫБОР,CONFIRM SELECTION
+STATS_HEALTH,Здоровье,Health
+STATS_SANITY,Рассудок,Sanity
+STATS_TICKETS,Билеты  ·  —,Tickets  ·  —
+SECTION_ATTRIBUTES,АТРИБУТЫ,ATTRIBUTES
+SECTION_STARTING_ITEMS,СТАРТОВЫЕ ПРЕДМЕТЫ,STARTING ITEMS
+LOBBY_BTN_DETAILS,Подробнее,Details
+LOBBY_PLAYERS_DETAILS_TITLE,Состояние игроков,Players state
