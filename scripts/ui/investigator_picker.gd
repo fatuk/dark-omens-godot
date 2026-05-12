@@ -98,7 +98,7 @@ var _next_btn:       Button
 var _carousel_area:  Control          # SubViewportContainer + 3D scene
 var _world_vp:       SubViewport      # 3D scene SubViewport
 var _camera:         Camera3D
-var _animating:      bool = false
+# Анимации прерываемы (см. _animated_shift), без блокирующего флага _animating.
 
 var _hp_bar:        ProgressBar
 var _hp_label:      Label
@@ -889,8 +889,6 @@ func _on_carousel_gui_input(event: InputEvent) -> void:
 	var mb := event as InputEventMouseButton
 	if not mb.pressed or mb.button_index != MOUSE_BUTTON_LEFT:
 		return
-	if _animating:
-		return
 	var slot: int = _hit_test_card(mb.position)
 	if slot < 0:
 		return
@@ -945,18 +943,24 @@ func _hit_test_card(local_click_pos: Vector2) -> int:
 
 
 # Сдвиг карусели на delta позиций (знаковый). delta=+1/-1 — соседний шаг,
-# delta=±2 — прыжок через одну (например, при клике по дальней боковой карточке).
-# 3D-версия: тwееним position/rotation/scale у MeshInstance3D и albedo_color
-# у StandardMaterial3D. Карточки, выходящие за пределы [0..VISIBLE_SLOTS),
-# уезжают за край и появляются с противоположной стороны с новыми данными.
+# delta=±2 — прыжок через одну (клик по дальней боковой карточке).
+#
+# Анимации ПРЕРЫВАЕМЫ: если предыдущий shift ещё играет, мы убиваем все
+# активные tween'ы, мгновенно снапаем каждый меш в его текущий logical_slot
+# (с правильными данными), и от этого состояния запускаем новую анимацию.
+# Это даёт мгновенную отзывчивость на клики при быстром перематывании.
 func _animated_shift(delta: int) -> void:
-	if _animating or _investigators.is_empty() or delta == 0:
+	if _investigators.is_empty() or delta == 0:
 		return
-	_animating = true
+
+	# Прерываем любую незаконченную анимацию: kill tween'ов + snap к logical_slot.
+	for m: MeshInstance3D in _card_meshes:
+		_kill_mesh_tween(m)
+
 	var n: int = _investigators.size()
 	var step: int = delta                       # знаковая величина (±1, ±2, …)
 	var step_sign: int = 1 if step > 0 else -1
-	_index = ((_index + step) % n + n) % n      # модуль для отрицательных тоже
+	_index = ((_index + step) % n + n) % n
 
 	for i: int in range(_card_meshes.size()):
 		var mesh: MeshInstance3D = _card_meshes[i]
@@ -966,20 +970,38 @@ func _animated_shift(delta: int) -> void:
 			_animate_mesh_to_slot(mesh, new_slot)
 			mesh.set_meta("logical_slot", new_slot)
 		else:
-			# Wrap: выпавший индекс заворачиваем по модулю VISIBLE_SLOTS.
 			var wrap_slot: int = (new_slot + VISIBLE_SLOTS) if new_slot < 0 \
 				else (new_slot - VISIBLE_SLOTS)
-			_wrap_mesh_async(mesh, i, step_sign, wrap_slot)
+			_wrap_mesh(mesh, i, step_sign, wrap_slot)
 			mesh.set_meta("logical_slot", wrap_slot)
 
-	# Ждём ровно длительность анимации, потом разблокируем.
-	await get_tree().create_timer(ANIM_DURATION + 0.02).timeout
-	_animating = false
 	_refresh_borders()
 	_refresh_info_bar()
 
 
+# Прерывает активный tween у меша (если есть) и снапает меш в его текущий
+# logical_slot с правильными данными — гарантирует консистентное состояние,
+# от которого корректно стартует новая анимация.
+func _kill_mesh_tween(mesh: MeshInstance3D) -> void:
+	if mesh.has_meta("__tween"):
+		var t = mesh.get_meta("__tween")
+		if t and (t as Tween).is_valid():
+			(t as Tween).kill()
+		mesh.remove_meta("__tween")
+	# Снап позиции/поворота/яркости + актуализация данных карточки.
+	var phys_idx: int = _card_meshes.find(mesh)
+	if phys_idx < 0:
+		return
+	var slot: int = int(mesh.get_meta("logical_slot", phys_idx))
+	_apply_3d_slot(mesh, slot)
+	if not _investigators.is_empty():
+		var n: int = _investigators.size()
+		var data_idx: int = (_index + slot - CENTER_SLOT + n) % n
+		_populate_card(phys_idx, _investigators[data_idx])
+
+
 # Плавно переводит mesh в позицию/поворот/масштаб/яркость указанного слота.
+# Tween сохраняется в meta, чтобы прерывание извне могло его убить.
 func _animate_mesh_to_slot(mesh: MeshInstance3D, slot: int) -> void:
 	var target_pos: Vector3 = SLOT_3D_POSITIONS[slot]
 	var target_rot: Vector3 = Vector3(0.0, deg_to_rad(SLOT_3D_ROTATIONS_DEG[slot]), 0.0)
@@ -988,21 +1010,24 @@ func _animate_mesh_to_slot(mesh: MeshInstance3D, slot: int) -> void:
 	var b: float = SLOT_BRIGHTNESS[slot]
 	var target_color: Color = Color(b, b, b, 1.0)
 	var mat := mesh.material_override as StandardMaterial3D
-	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tw.tween_property(mesh, "position", target_pos, ANIM_DURATION)
-	tw.tween_property(mesh, "rotation", target_rot, ANIM_DURATION)
+	var tw := mesh.create_tween().set_parallel(true) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(mesh, "position", target_pos,   ANIM_DURATION)
+	tw.tween_property(mesh, "rotation", target_rot,   ANIM_DURATION)
 	tw.tween_property(mesh, "scale",    target_scale, ANIM_DURATION)
 	if mat:
 		tw.tween_property(mat, "albedo_color", target_color, ANIM_DURATION)
+	mesh.set_meta("__tween", tw)
 
 
-# Wrap-анимация: карточка улетает за один край (выцветая), за кадром
-# подменяются данные + телепорт на противоположный край, затем въезжает в слот.
-func _wrap_mesh_async(mesh: MeshInstance3D, phys_idx: int, direction: int,
+# Wrap-анимация одним прерываемым tween-чейном: phase 1 (вылет+fade out) →
+# callback (data swap + teleport на entry side) → phase 2 (въезд+fade in).
+# Без await — иначе при kill'е промежуточный код повиснет.
+func _wrap_mesh(mesh: MeshInstance3D, phys_idx: int, direction: int,
 		wrap_slot: int) -> void:
 	var off_dist: float = 7.0
-	# direction>0 — карусель «прокручивается вперёд», карточка должна вылететь
-	# слева и появиться справа (т.е. wrap_slot=4). И наоборот для direction<0.
+	# direction>0 — карусель прокручивается вперёд: карточка вылетает влево,
+	# появляется справа (wrap_slot=VISIBLE_SLOTS-1). Зеркально для direction<0.
 	var off_x:   float = -off_dist if direction > 0 else  off_dist
 	var entry_x: float =  off_dist if direction > 0 else -off_dist
 
@@ -1013,32 +1038,36 @@ func _wrap_mesh_async(mesh: MeshInstance3D, phys_idx: int, direction: int,
 	var b: float = SLOT_BRIGHTNESS[wrap_slot]
 	var target_color: Color = Color(b, b, b, 1.0)
 	var mat := mesh.material_override as StandardMaterial3D
+	var off_pos   := Vector3(off_x,   mesh.position.y, mesh.position.z)
+	var entry_pos := Vector3(entry_x, target_pos.y,    target_pos.z)
 
-	# Фаза 1: улетаем за край, выцветая в alpha=0.
-	var off_pos := Vector3(off_x, mesh.position.y, mesh.position.z)
-	var tw1 := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	tw1.tween_property(mesh, "position", off_pos, ANIM_DURATION * 0.5)
+	var tw := mesh.create_tween().set_trans(Tween.TRANS_CUBIC)
+
+	# Phase 1 (parallel): вылет за край + alpha→0.
+	tw.tween_property(mesh, "position", off_pos, ANIM_DURATION * 0.5).set_ease(Tween.EASE_IN)
 	if mat:
 		var fade := mat.albedo_color
 		fade.a = 0.0
-		tw1.tween_property(mat, "albedo_color", fade, ANIM_DURATION * 0.5)
-	await tw1.finished
+		tw.parallel().tween_property(mat, "albedo_color", fade, ANIM_DURATION * 0.5).set_ease(Tween.EASE_IN)
 
-	# За кадром: новые данные + телепорт на entry side, поворот/масштаб финальные.
-	var n: int = _investigators.size()
-	var data_idx: int = (_index + wrap_slot - CENTER_SLOT + n) % n
-	_populate_card(phys_idx, _investigators[data_idx])
-	mesh.position = Vector3(entry_x, target_pos.y, target_pos.z)
-	mesh.rotation = target_rot
-	mesh.scale = target_scale
-	if mat:
-		mat.albedo_color = Color(b, b, b, 0.0)
+	# Mid (sequential after phase 1): подменяем данные + телепорт на entry side.
+	tw.chain().tween_callback(func() -> void:
+		var n: int = _investigators.size()
+		var data_idx: int = (_index + wrap_slot - CENTER_SLOT + n) % n
+		_populate_card(phys_idx, _investigators[data_idx])
+		mesh.position = entry_pos
+		mesh.rotation = target_rot
+		mesh.scale    = target_scale
+		if mat:
+			mat.albedo_color = Color(b, b, b, 0.0)
+	)
 
-	# Фаза 2: въезжаем в слот, проявляясь.
-	var tw2 := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tw2.tween_property(mesh, "position", target_pos, ANIM_DURATION * 0.5)
+	# Phase 2 (parallel): въезд в слот + alpha→target_brightness.
+	tw.tween_property(mesh, "position", target_pos, ANIM_DURATION * 0.5).set_ease(Tween.EASE_OUT)
 	if mat:
-		tw2.tween_property(mat, "albedo_color", target_color, ANIM_DURATION * 0.5)
+		tw.parallel().tween_property(mat, "albedo_color", target_color, ANIM_DURATION * 0.5).set_ease(Tween.EASE_OUT)
+
+	mesh.set_meta("__tween", tw)
 
 
 func _refresh_info_bar() -> void:
