@@ -1,0 +1,401 @@
+keys,ru,en
+
+LANG_RU,Русский,Russian
+LANG_EN,Английский,English
+
+SETTINGS_TITLE,НАСТРОЙКИ,Settings
+SETTINGS_LANGUAGE,Язык,Language
+SETTINGS_FULLSCREEN,Полный экран,Fullscreen
+SETTINGS_FX_OLD_FILM,Эффект старой плёнки,Old film effect
+SETTINGS_RESOLUTION,Разрешение,Resolution
+SETTINGS_SERVER,Сервер,Server
+
+BTN_SAVE,Сохранить,Save
+BTN_CANCEL,Отмена,Cancel
+BTN_BACK,Назад,Back
+BTN_CLOSE,Закрыть,Close
+BTN_RESET,Сбросить,Reset
+BTN_OK,OK,OK
+BTN_YES,Да,Yes
+BTN_NO,Нет,No
+
+PHASE_ACTION,Действия,Actions
+PHASE_ENCOUNTER,Встречи,Encounters
+PHASE_MYTHOS,Мифы,Mythos
+
+SIDEBAR_NEIGHBORS,СОСЕДНИЕ ЛОКАЦИИ,Neighboring Locations
+SIDEBAR_NO_NEIGHBORS,—,—
+LOC_TYPE_CITY,ГОРОД,City
+LOC_TYPE_SEA,МОРЕ,Sea
+LOC_TYPE_WILDERNESS,ДИКАЯ ЗЕМЛЯ,Wilderness
+CONN_SHIP,морем,by ship
+CONN_TRAIN,поездом,by train
+CONN_UNCHARTED,путь,uncharted
+
+PAUSE_RESUME,Продолжить,Resume
+PAUSE_SETTINGS,Настройки,Settings
+PAUSE_LEAVE,Выйти из игры,Leave game
+
+MAIN_PLAY,Играть,Play
+MAIN_SETTINGS,Настройки,Settings
+MAIN_QUIT,Выйти,Quit
+
+SHADER_DEBUG_TITLE,SHADER DEBUG  ·  Ctrl+M,SHADER DEBUG  ·  Ctrl+M
+SHADER_POST_FX,POST FX,POST FX
+SHADER_SELECTION,ВЫДЕЛЕНИЕ ЛОКАЦИИ,Selection
+SHADER_SEPIA,Сепия,Sepia
+SHADER_RADIUS,Радиус,Radius
+SHADER_THICKNESS,Толщина,Thickness
+SHADER_HALO_INNER,Halo внутр.,Halo inner
+SHADER_HALO_OUTER,Halo внеш.,Halo outer
+SHADER_HALO_STRENGTH,Сила halo,Halo strength
+SHADER_HALO_FALLOFF,Спад halo,Halo falloff
+SHADER_OFFSET_X,Сдвиг X,Offset X
+SHADER_OFFSET_Y,Сдвиг Y,Offset Y
+SHADER_PULSE_SPEED,Пульс скор.,Pulse speed
+SHADER_PULSE_AMOUNT,Пульс размах,Pulse amount
+
+INV_SILAS_MARSH_NAME,Сайлас Марш,Silas Marsh
+INV_SILAS_MARSH_OCC,Моряк,The Sailor
+INV_SILAS_MARSH_QUOTE,"«Оставьте свои страхи на причале, парни. Я не повезу этот груз. Ветер крепчает — поднять все паруса!»","«Leave your fears on the docks, lads. I'll not carry that cargo. The wind is up! Full sail!»"
+INV_MONTEREY_JACK_NAME,Монтерей Джек,Monterey Jack
+INV_MONTEREY_JACK_OCC,Археолог,The Archaeologist
+INV_MONTEREY_JACK_QUOTE,«Ради такого сокровища я готов рискнуть парой отравленных дротиков.»,"«To find a treasure like that, I'll risk a few poison darts.»"
+INV_DARRELL_SIMMONS_NAME,Даррелл Симмонс,Darrell Simmons
+INV_DARRELL_SIMMONS_OCC,Фотограф,The Photographer
+INV_DARRELL_SIMMONS_QUOTE,"«Правда темнее, чем кто-либо из нас способен представить.»",«The truth is darker than any of us know.»
+INV_TRISH_SCARBOROUGH_NAME,Триш Скарборо,Trish Scarborough
+INV_TRISH_SCARBOROUGH_OCC,Шпионка,The Spy
+INV_TRISH_SCARBOROUGH_QUOTE,«Мы лжём постоянно. Но истина существует. Просто нужно уметь людей расшифровывать.»,«We lie all the time. But the truth is in there. You just have to know how to decode people.»
+INV_ZOEY_SAMARAS_NAME,Зои Самарас,Zoey Samaras
+INV_ZOEY_SAMARAS_OCC,Шеф-повар,The Chef
+INV_ZOEY_SAMARAS_QUOTE,«Господь сказал своё слово. Я исполню Его волю без колебаний.»,«God has spoken. I will do His work without hesitation.»
+INV_JACQUELINE_FINE_NAME,Жаклин Файн,Jacqueline Fine
+INV_JACQUELINE_FINE_OCC,Ясновидящая,The Psychic
+INV_JACQUELINE_FINE_QUOTE,«Видения — это предостережение. Будущее можно переписать.»,«The visions are a warning. The future can be rewritten.»
+INV_DEXTER_DRAKE_NAME,Декстер Дрейк,Dexter Drake
+INV_DEXTER_DRAKE_OCC,Маг,The Magician
+INV_DEXTER_DRAKE_QUOTE,"«Не бойтесь. Я всю свою жизнь только и делал, что невозможное.»",«Do not be afraid. I have spent my entire life doing the impossible.»
+INV_DIANA_STANLEY_NAME,Диана Стэнли,Diana Stanley
+INV_DIANA_STANLEY_OCC,Раскаявшаяся культистка,The Redeemed Cultist
+INV_DIANA_STANLEY_QUOTE,"«Ложа не столь невинна, какой притворяется. Я усвоила, что ничто не таково, каким кажется, — включая меня саму.»","«The Lodge is not as innocent as they pretend. I have learned that nothing is ever as it seems, myself included.»"
+INV_AMANDA_SHARPE_NAME,Аманда Шарп,Amanda Sharpe
+INV_AMANDA_SHARPE_OCC,Студентка,The Student
+INV_AMANDA_SHARPE_QUOTE,«Истина разума усмиряет даже самые дикие заблуждения. Я не сделаюсь жертвой подобного безумия.»,«The truth of reason tempers even the wildest delusions. I will not fall prey to such madness.»
+INV_GLORIA_GOLDBERG_NAME,Глория Голдберг,Gloria Goldberg
+INV_GLORIA_GOLDBERG_OCC,Писательница,The Author
+INV_GLORIA_GOLDBERG_QUOTE,«Никогда не недооценивайте силу написанного слова.»,«Never underestimate the power of the written word.»
+INV_KATE_WINTHROP_NAME,Кейт Уинтроп,Kate Winthrop
+INV_KATE_WINTHROP_OCC,Учёная,The Scientist
+INV_KATE_WINTHROP_QUOTE,"«Профессор Янг учила меня, что всё проще, чем кажется. Связь обнаружится, если её искать.»",«Professor Young taught me that everything is simpler than it seems. The connection is there if you look for it.»
+INV_MINH_THI_PHAN_NAME,Минь Тхи Фан,Minh Thi Phan
+INV_MINH_THI_PHAN_OCC,Секретарь,The Secretary
+INV_MINH_THI_PHAN_QUOTE,«Можете положиться на меня — я проведу вас сквозь неведомое.»,«You can depend on me to guide you through the unknown.»
+INV_RITA_YOUNG_NAME,Рита Янг,Rita Young
+INV_RITA_YOUNG_OCC,Спортсменка,The Athlete
+INV_RITA_YOUNG_QUOTE,"«Имеешь ко мне счёт? Прекрасно. Мне не нужно твоё разрешение, чтобы оставить тебя глотать пыль.»",«You got a bone to pick? Fine by me. I don't need your permission to leave you in the dust.»
+INV_JOE_DIAMOND_NAME,Джо Даймонд,Joe Diamond
+INV_JOE_DIAMOND_OCC,Частный детектив,The Private Eye
+INV_JOE_DIAMOND_QUOTE,"«Меня наняли на работу. Злые боги или нет, я намерен её закончить.»","«I was hired for a job. Evil gods or no, I aim to finish it.»"
+INV_WILLIAM_YORICK_NAME,Уильям Йорик,William Yorick
+INV_WILLIAM_YORICK_OCC,Могильщик,The Gravedigger
+INV_WILLIAM_YORICK_QUOTE,"«Хоть это и безумие, но в нём есть система.»","«Though this be madness, yet there is method in't.»"
+INV_AGATHA_CRANE_NAME,Агата Крейн,Agatha Crane
+INV_AGATHA_CRANE_OCC,Парапсихолог,The Parapsychologist
+INV_AGATHA_CRANE_QUOTE,"«Доказательство, как говорится, познаётся в деле.»","«The proof, as they say, is in the pudding.»"
+INV_DANIELA_REYES_NAME,Даниэла Рейес,Daniela Reyes
+INV_DANIELA_REYES_OCC,Механик,The Mechanic
+INV_DANIELA_REYES_QUOTE,"«Расслабься, крутыш. Я разберусь. А ты постой вон там и сделай красивое лицо.»","«Relax, tough guy. I'll handle this. You stand over there and look pretty.»"
+INV_ASHCAN_PETE_NAME,«Помоечник» Пит,"""Ashcan"" Pete"
+INV_ASHCAN_PETE_OCC,Бродяга,The Drifter
+INV_ASHCAN_PETE_QUOTE,"«Где-то там, может, и опасности водятся, да некоторым душам просто нужно бродить.»","«There may be dangers out there, but some souls just have to roam.»"
+INV_MICHAEL_MCGLEN_NAME,Майкл Макглен,Michael McGlen
+INV_MICHAEL_MCGLEN_OCC,Гангстер,The Gangster
+INV_MICHAEL_MCGLEN_QUOTE,"«Плевать, бог это или нет. Кто мне поперёк дороги — тот пожалеет.»","«Don't care if it's a god. If it crosses me, it's gonna regret it.»"
+INV_TOMMY_MULDOON_NAME,Томми Малдун,Tommy Muldoon
+INV_TOMMY_MULDOON_OCC,Полицейский-новобранец,The Rookie Cop
+INV_TOMMY_MULDOON_QUOTE,«Я принёс присягу следить за исполнением закона. Этим я и занят.»,«I took an oath to enforce the law. That's what I'm doing.»
+INV_SEFINA_ROUSSEAU_NAME,Сефина Руссо,Sefina Rousseau
+INV_SEFINA_ROUSSEAU_OCC,Художница,The Painter
+INV_SEFINA_ROUSSEAU_QUOTE,"«Искусство — окно в реальность, нам не ведомую.»",«Art is a window into a reality beyond our knowing.»
+INV_HARVEY_WALTERS_NAME,Харви Уолтерс,Harvey Walters
+INV_HARVEY_WALTERS_OCC,Профессор,The Professor
+INV_HARVEY_WALTERS_QUOTE,«У меня есть опыт обращения с подобными кошмарами.»,«I have experience dealing with these sorts of horrors.»
+INV_MARIE_LAMBEAU_NAME,Мари Ламбо,Marie Lambeau
+INV_MARIE_LAMBEAU_OCC,Артистка,The Entertainer
+INV_MARIE_LAMBEAU_QUOTE,"«Я певала, когда grand-mère варила зелья и плела заговоры.»",«I used to sing as grand-mère made potions and charms.»
+INV_GEORGE_BARNABY_NAME,Джордж Барнаби,George Barnaby
+INV_GEORGE_BARNABY_OCC,Адвокат,The Lawyer
+INV_GEORGE_BARNABY_QUOTE,«Я верю в высший закон. Я верю в истинное правосудие.»,«I believe in a higher law. I believe in true justice.»
+INV_WENDY_ADAMS_NAME,Венди Адамс,Wendy Adams
+INV_WENDY_ADAMS_OCC,Беспризорница,The Urchin
+INV_WENDY_ADAMS_QUOTE,«Мелочи важны. Взрослые этого не видят.»,«The little things are important. Grown-ups don't see that.»
+INV_LOLA_HAYES_NAME,Лола Хейс,Lola Hayes
+INV_LOLA_HAYES_OCC,Актриса,The Actress
+INV_LOLA_HAYES_QUOTE,«Я переиграла столько ролей. Безумие — закономерно.»,«I've played so many roles. Madness is to be expected.»
+INV_REX_MURPHY_NAME,Рекс Мёрфи,Rex Murphy
+INV_REX_MURPHY_OCC,Репортёр,The Reporter
+INV_REX_MURPHY_QUOTE,"«Источники сообщают, что миру конец. Как раз моё везение.»",«My sources tell me that the world is ending. Just my luck.»
+INV_LILY_CHEN_NAME,Лили Чэнь,Lily Chen
+INV_LILY_CHEN_OCC,Мастер боевых искусств,The Martial Artist
+INV_LILY_CHEN_QUOTE,«Я готовилась противостоять этому злу всю свою жизнь. Моя сосредоточенность должна быть безупречной.»,«I have been preparing to confront this evil for my entire life. My focus must be absolute.»
+INV_BOB_JENKINS_NAME,Боб Дженкинс,Bob Jenkins
+INV_BOB_JENKINS_OCC,Коммивояжёр,The Salesman
+INV_BOB_JENKINS_QUOTE,«Реальность — лишь предмет переговоров.»,«Reality is just a matter of negotiation.»
+INV_JIM_CULVER_NAME,Джим Калвер,Jim Culver
+INV_JIM_CULVER_OCC,Музыкант,The Musician
+INV_JIM_CULVER_QUOTE,"«Покойнички совсем шалеют, когда я берусь за свой рожок.»",«Dead folks get downright rambunctious when I play my horn.»
+INV_JENNY_BARNES_NAME,Дженни Барнс,Jenny Barnes
+INV_JENNY_BARNES_OCC,Дилетантка,The Dilettante
+INV_JENNY_BARNES_QUOTE,"«Мою сестру забрали. Я заплачу любую сумму, чтобы её спасти.»",«My sister was taken. I will pay any amount to save her.»
+INV_URSULA_DOWNS_NAME,Урсула Даунс,Ursula Downs
+INV_URSULA_DOWNS_OCC,Путешественница,The Explorer
+INV_URSULA_DOWNS_QUOTE,"«Открытие — дело нелёгкое, но это единственный путь, что стоит труда.»","«Discovery isn't easy, but it's the only worthwhile path.»"
+INV_WILSON_RICHARDS_NAME,Уилсон Ричардс,Wilson Richards
+INV_WILSON_RICHARDS_OCC,Мастер на все руки,The Handyman
+INV_WILSON_RICHARDS_QUOTE,"«Нет ничего, чего не починили бы хороший план да упорный труд.»",«It's nothing a good plan and some hard work can't fix.»
+INV_LUKE_ROBINSON_NAME,Люк Робинсон,Luke Robinson
+INV_LUKE_ROBINSON_OCC,Сновидец,The Dreamer
+INV_LUKE_ROBINSON_QUOTE,«Ключ к Странам снов лежит внутри каждого из нас.»,«The key to the Dreamlands lies within us all.»
+INV_LEO_ANDERSON_NAME,Лео Андерсон,Leo Anderson
+INV_LEO_ANDERSON_OCC,Глава экспедиции,The Expedition Leader
+INV_LEO_ANDERSON_QUOTE,«Не останавливайся. Помрёшь в своё свободное время.»,«Keep moving. You can die on your own time.»
+INV_PRESTON_FAIRMONT_NAME,Престон Фэрмонт,Preston Fairmont
+INV_PRESTON_FAIRMONT_OCC,Миллионер,The Millionaire
+INV_PRESTON_FAIRMONT_QUOTE,"«Мои деньги, моё наследие, моя забота. Позвольте мне разобраться по-своему.»","«My money, my legacy, my problem. Let me handle it in my own way.»"
+INV_NORMAN_WITHERS_NAME,Норман Уизерс,Norman Withers
+INV_NORMAN_WITHERS_OCC,Астроном,The Astronomer
+INV_NORMAN_WITHERS_QUOTE,"«Пусть зовут меня сумасбродом! Со звёздами что-то происходит, и это не игра моего воображения.»","«Let them call me a crackpot! Something is happening to the stars, and I am not imagining it.»"
+INV_FATHER_MATEO_NAME,Отец Матео,Father Mateo
+INV_FATHER_MATEO_OCC,Священник,The Priest
+INV_FATHER_MATEO_QUOTE,"«Тебе довольно заглянуть в собственное сердце, чтобы найти доказательство божественного.»",«You need only look in your heart to find proof of the divine.»
+INV_CHARLIE_KANE_NAME,Чарли Кейн,Charlie Kane
+INV_CHARLIE_KANE_OCC,Политик,The Politician
+INV_CHARLIE_KANE_QUOTE,«Это можно устроить. Вопрос лишь в приемлемых условиях.»,«It can be arranged. It's just a matter of acceptable terms.»
+INV_AKACHI_ONYELE_NAME,Акачи Оньеле,Akachi Onyele
+INV_AKACHI_ONYELE_OCC,Шаманка,The Shaman
+INV_AKACHI_ONYELE_QUOTE,"«Я отправлюсь в земли, лежащие за пределом. Я их не боюсь.»",«I will journey to the lands beyond. I do not fear them.»
+INV_MARK_HARRIGAN_NAME,Марк Харриган,Mark Harrigan
+INV_MARK_HARRIGAN_OCC,Солдат,The Soldier
+INV_MARK_HARRIGAN_QUOTE,"«Я выхожу за эту дверь, и я забираю эту книгу. Кто хочет меня остановить — милости прошу попробовать.»","«I'm walking out that door, and I'm taking this book. Anyone who wants to stop me is welcome to try.»"
+INV_CALVIN_WRIGHT_NAME,Кэлвин Райт,Calvin Wright
+INV_CALVIN_WRIGHT_OCC,Одержимый,The Haunted
+INV_CALVIN_WRIGHT_QUOTE,"«Я могу удержать эту тьму внутри себя. Я знаю, что могу.»",«I can contain this darkness within me. I know I can.»
+INV_MANDY_THOMPSON_NAME,Мэнди Томпсон,Mandy Thompson
+INV_MANDY_THOMPSON_OCC,Исследовательница,The Researcher
+INV_MANDY_THOMPSON_QUOTE,«Я найду способ положить конец этому ужасу. Я не прекращу поиски.»,«I will find a way to end this horror. I will not stop searching.»
+INV_DAISY_WALKER_NAME,Дейзи Уокер,Daisy Walker
+INV_DAISY_WALKER_OCC,Библиотекарь,The Librarian
+INV_DAISY_WALKER_QUOTE,"«Я знаю о книгах настолько могущественных, что они способны переписать реальность.»","«I know of books so powerful, they can rewrite reality.»"
+INV_ROLAND_BANKS_NAME,Роланд Бэнкс,Roland Banks
+INV_ROLAND_BANKS_OCC,Федерал,The Fed
+INV_ROLAND_BANKS_QUOTE,"«Всё по букве закона, до последней запятой.»","«Every 'i' dotted, every 't' crossed.»"
+INV_HANK_SAMSON_NAME,Хэнк Сэмсон,Hank Samson
+INV_HANK_SAMSON_OCC,Батрак,The Farmhand
+INV_HANK_SAMSON_QUOTE,"«У людей беда. Не надо быть гением, чтоб помочь.»",«Folks are in trouble. I don't gotta be a genius to help out.»
+INV_SKIDS_O_TOOLE_NAME,«Скользкий» О'Тул,"""Skids"" O'Toole"
+INV_SKIDS_O_TOOLE_OCC,Бывший заключённый,The Ex-Convict
+INV_SKIDS_O_TOOLE_QUOTE,"«Я не для того вышел из тюряги, чтоб смотреть, как мир катится в тартарары.»",«I didn't get out of the joint just to watch the world end.»
+INV_CAROLYN_FERN_NAME,Кэролин Ферн,Carolyn Fern
+INV_CAROLYN_FERN_OCC,Психолог,The Psychologist
+INV_CAROLYN_FERN_QUOTE,"«Безумцы заслуживают покоя разума, а не гибели духа.»","«The mad deserve peace of mind, not death of the spirit.»"
+INV_VINCENT_LEE_NAME,Винсент Ли,Vincent Lee
+INV_VINCENT_LEE_OCC,Врач,The Doctor
+INV_VINCENT_LEE_QUOTE,"«Я найду ответы, даже если это меня убьёт.»","«I will find the answers, even if it kills me.»"
+INV_AGNES_BAKER_NAME,Агнес Бейкер,Agnes Baker
+INV_AGNES_BAKER_OCC,Официантка,The Waitress
+INV_AGNES_BAKER_QUOTE,«Я помню иную жизнь — жизнь чародейства и завоеваний.»,"«I remember another life, one of sorcery and conquest.»"
+INV_FINN_EDWARDS_NAME,Финн Эдвардс,Finn Edwards
+INV_FINN_EDWARDS_OCC,Бутлегер,The Bootlegger
+INV_FINN_EDWARDS_QUOTE,"«Никогда не теряй из виду ни выход, ни товар.»",«Never lose track of the exit or the merchandise.»
+INV_PATRICE_HATHAWAY_NAME,Патрис Хэтэуэй,Patrice Hathaway
+INV_PATRICE_HATHAWAY_OCC,Скрипачка,The Violinist
+INV_PATRICE_HATHAWAY_QUOTE,"«Когда я играю на скрипке, музыка отзывается в иных мирах.»","«When I play the violin, the music echoes in other worlds.»"
+INV_CARSON_SINCLAIR_NAME,Карсон Синклер,Carson Sinclair
+INV_CARSON_SINCLAIR_OCC,Дворецкий,The Butler
+INV_CARSON_SINCLAIR_QUOTE,«Подумайте о детях.»,«Think of the children.»
+INV_TONY_MORGAN_NAME,Тони Морган,Tony Morgan
+INV_TONY_MORGAN_OCC,Охотник за головами,The Bounty Hunter
+INV_TONY_MORGAN_QUOTE,"«Когда я отыщу эту тварь, я её поймаю или прикончу раз и навсегда.»","«When I find the beast, I'll trap it or put it down for good.»"
+INV_SISTER_MARY_NAME,Сестра Мэри,Sister Mary
+INV_SISTER_MARY_OCC,Монахиня,The Nun
+INV_SISTER_MARY_QUOTE,«Господь хранит мой путь. Я облачена в броню веры.»,«The Lord watches over my path. I am armored in faith.»
+INV_SET_CORE,Базовая игра,Core
+INV_SET_UNDER_THE_PYRAMIDS,Под пирамидами,Under the Pyramids
+INV_SET_THE_DREAMLANDS,Страны снов,The Dreamlands
+INV_SET_STRANGE_REMNANTS,Странные останки,Strange Remnants
+INV_SET_SIGNS_OF_CARCOSA,Знаки Каркозы,Signs of Carcosa
+INV_SET_CITIES_IN_RUIN,Города в руинах,Cities in Ruin
+INV_SET_MASKS_OF_NYARLATHOTEP,Маски Ньярлатхотепа,Masks of Nyarlathotep
+INV_SET_MOUNTAINS_OF_MADNESS,Хребты безумия,Mountains of Madness
+INV_ROLE_ALL_ROUNDER,Универсал,All-Rounder
+INV_ROLE_EXPEDITION,Экспедиция,Expedition
+INV_ROLE_RESEARCH,Исследование,Research
+INV_ROLE_COMBAT,Бой,Combat
+INV_ROLE_SUPPORT,Поддержка,Support
+INV_ROLE_MAGIC,Магия,Magic
+INV_ROLE_GATE_CLOSER,Закрывающая врата,Gate Closer
+LOC_1_REAL,"Анкоридж, Аляска, США","Anchorage, Alaska, USA"
+LOC_1_DESC,"Жители этой последней гавани рассказывают о северном сиянии, что мерцает в геометриях, не дарованных честным атмосферам, — узорах, какие узнали бы — и устрашились бы — древние астрономы забытого Ломара. За городом дорога истончается в снег и тишину, и из той тишины доносится свирель, тонкая и далёкая, в каденциях, что древнее людского дыхания. Туземцы этого побережья, пережившие три переселения звёзд, не называют то, что сходит с ледника в равноденствие; они лишь выставляют свои подношения, обращают лица внутрь и не смотрят до утра.","Frontiersmen of this last harbour speak of an aurora that flickers in geometries not granted to honest atmospheres — patterns the old astronomers of forgotten Lomar would have recognised, and feared. Beyond the city the road dwindles into snow and silence, and from that silence comes a piping, thin and distant, in cadences that pre-date the breath of men. The natives of this coast, who have outlived three migrations of stars, will not name what shuffles down from the glacier at the equinox; they only set out their offerings, turn their faces inward, and do not look until morning."
+LOC_2_REAL,"К северо-востоку от Гавайев, США","Northeast of Hawaii, USA"
+LOC_2_DESC,"Команды этих широт прижимают свои карты железом, ибо одной бумаги уже недостаточно — чернила блуждают, промеры расходятся сами с собой, а в иные часы секстант настаивает на звезде, которой там нет. Под долгой тихоокеанской зыбью покоятся кости архитектуры, что старше любого острова, и в тихие ночи, когда луна оказывает услугу, рыбаки слышали хор, восходящий слогами рассола и базальта. Те, кто напевает этот мотив на берегу, обнаруживают, что родные собираются от них вдалеке, медленно, словно песнь несёт с собою собственную погоду.","The crews of these latitudes pin their charts with iron, for paper alone is no longer enough — the ink wanders, the soundings disagree with themselves, and at certain hours the sextant insists upon a star that is not there. Beneath the long Pacific roll the bones of an architecture older than any island, and on calm nights, when the moon obliges, fishermen have heard a chorus rising in syllables of brine and basalt. Those who hum the tune ashore find their families gathering away from them, slowly, as though the song carried a weather all its own."
+LOC_3_REAL,Океанский полюс недоступности,Oceanic pole of inacessibility
+LOC_3_DESC,"Здесь великие звёзды поворачиваются в выстраивание, какое календарям людей не было дозволено предсказать. Моряки, чьи суда уклоняются в эти одинокие воды, доносят о тяжести, словно бездонная кладка давит снизу сквозь корпус, и о сне — общем, одинаковом, неотклонимом — о городе под зелёным светом, чья геометрия отказывается признавать глаз. Там спит нечто ни мёртвое, ни терпеливое — лишь отложенное; и дата его пробуждения, хотя пока не внесена ни в один альманах, тем не менее приближается с равномерностью прилива, что не советуется с луной.","Here the great stars wheel into an alignment that the calendars of men were never permitted to predict. Sailors whose vessels stray over this lonely water report a heaviness as of fathomless masonry pressing upward through the hull, and a dream — shared, identical, unrefusable — of a green-litten city whose geometry refuses the eye. There sleeps something neither dead nor patient, only postponed; and the date of its waking, while not yet entered into any almanac, is nevertheless approaching with the steadiness of a tide that does not consult the moon."
+LOC_4_REAL,"Форт-Провиденс, Канада","Fort Providence, Canada"
+LOC_4_DESC,"В этой тайге чёрной ели и стоячей воды карты топографов имеют обыкновение переписывать себя между изданиями. Звероловы доносят о хижинах на координатах, какие предыдущие экспедиции оставили пустыми, и о следах, что возникают из ниоткуда и обрываются посреди нетронутого сугроба. Северная тишь — не молчание, но внимание — давнее, терпеливое, какому не нужно дышать. Путникам, проходящим здесь под долгими синими сумерками, советуют пересчитывать своих спутников дважды на каждой лиге и не делать замечаний, когда счёт расходится.","In this taiga of black spruce and standing water, the maps of the surveyors have a habit of revising themselves between printings. Trappers report cabins at coordinates earlier expeditions left empty, and footprints that emerge from nowhere and cease in the middle of an unbroken drift. The boreal hush is not silence but attention — the old patient kind, that does not need to breathe. Travellers passing through under the long blue dusk are advised to count their companions twice each league, and not to remark when the count differs."
+LOC_5_REAL,Американский Средний Запад,The American Midwest
+LOC_5_DESC,"Кукуруза здесь терпелива, а то, что лежит под ней, — ещё терпеливее. Старые фермеры по речным низинам держат иные двери заколоченными, иные колодцы засыпанными, иные альманахи несожжёнными — по причинам, о которых их внуки уже не трудятся спрашивать. Был, скажут они вам уклончиво, такой сезон, когда небо имело неверный вкус и скот не пил, и с луга, с тех пор распаханного в ничто, поднялся малый серый огонёк, и ушёл куда-то ещё, и был — на поколение — темой, какую местная пресса отказывалась печатать.","The corn here is patient, and what lies beneath it is more patient still. Old farmers along the river bottoms keep certain doors nailed, certain wells filled, certain almanacs unburned, for reasons their grandsons no longer trouble to ask. There was once, they will tell you obliquely, a season when the sky tasted wrong and the cattle would not drink, and from a meadow since ploughed into nothing a small grey light rose, and went elsewhere, and was — for a generation — a topic the local press declined to print."
+LOC_6_REAL,"Даллас, Техас, США","Dallas, Texas, USA"
+LOC_6_DESC,"Вышки этого степного города поднимают нефть, что в смутный час перед очисткой обнаруживает вязкость, какой геологи не могут объяснить, — и, в иные безветренные ночи, слабое свечение, словно она помнит, что была в ином месте. Стеклянные башни, выросшие над старыми прериями, стоят в выстраиваниях, каких ни один землемер не предлагал; они просто здесь, в расположениях, угодных геометрии, что не советовалась с городским советом. Кто впервые разметил эту сетку — вопрос, на который городские архивы не отвечают, а архивариусы, если на них надавить, советуют иные вопросы.","The derricks of this prairie city draw up oil that, in the dim hour before refining, exhibits a viscosity the geologists cannot account for — and, on certain windless nights, a faint phosphorescence as though it remembered being elsewhere. The towers of glass that have grown over the old plains stand in alignments no surveyor proposed; they are merely there, in arrangements pleasing to a geometry that did not consult the city council. Who first laid out this grid is a question the city archives do not answer, and the archivists, when pressed, recommend other questions."
+LOC_7_REAL,"Панама, Панама","Panama City, Panama"
+LOC_7_DESC,"Канал ведёт свой тоннаж по прилежным гроссбухам, но третья сторона — древнее шлюзов, древнее континентов — ведёт параллельный реестр внизу. Лоцманы говорят, отойдя достаточно далеко от конторы, о судах, что входят по одному календарю и выходят по другому, с командами невредимыми, но изменёнными в некой частности, какую всякий узнаёт в других и отказывается называть. Два океана здесь обмениваются большим, нежели солью; то, что переходит между ними в тёмные часы перехода, есть учтивость, какой ни один из них пока официально не запрашивал.","The canal counts its tonnage with diligent ledgers, but a third party — older than locks, older than continents — keeps a parallel register beneath. Pilots speak, when sufficiently far from the office, of vessels that enter on one calendar and emerge upon another, their crews intact but altered in some particular each man recognises in the others and refuses to name. The two oceans here exchange more than salt; what passes between them, in the dark hours of transit, is a courtesy that has not yet been formally requested by either."
+LOC_8_REAL,Бермудский треугольник,The Bermuda Triangle
+LOC_8_DESC,"В военные годы говорили, будто германская подводная лодка опустилась ненадолго на храм из бледного камня, восставший без приглашения из этих глубин, — его светильники зажжены незнакомым пламенем, его надписи в алфавите, какой филологи Рейха в конце концов отказались расшифровать. Был ли тот рапорт правдив — теперь не имеет значения; море здесь возвращает своих пропавших лишь обрывками, и никогда — одним и тем же обрывком дважды. Компас под этой водой признаёт полюс, не разрешённый картографами, и поворачивается к нему с учтивостью, что приводит в смятение всякого капитана, какой это заметил.","In the war years a German submarine was said to have settled, briefly, upon a temple of pale stone risen unbidden from these depths — its lamps lit by no familiar flame, its inscriptions in an alphabet the Reich's philologists declined, in the end, to decode. Whether the report was true is moot; the sea here returns its missing in fragments only, and never the same fragment twice. The compass, beneath this water, recognises a pole the cartographers have not authorised, and turns toward it with a politeness that disquiets every captain who has noticed."
+LOC_9_REAL,"Остров Диско, Гренландия","Disko Island, Greenland"
+LOC_9_DESC,"На этих чёрно-песчаных пляжах айсберги откалываются в очертаниях слишком намеренных, чтобы быть одним лишь льдом, — длинные колоннады, полупогружённые, чьи пропорции напоминают обречённые города Ломара, какие древнейшие саги помещают под полярной звездой. Старейшины-инуиты хранят песнь, какую не споют в виду воды; песнь, говорят они, для слушающего, а не для поющего, и слушающий приближался с первой оттепели нового века. Морякам, что бросают здесь якорь после осеннего равноденствия, следует учитывать одну лишнюю тень при фонарной вахте и кормить её, как кормили бы гостя.","On these black-sand beaches the bergs calve in profiles too deliberate to be ice alone — long colonnades, half-submerged, whose proportions recall the doomed cities of Lomar that the older sagas place beneath the polar star. The Inuit elders have a song they will not sing within sight of the water; the song, they say, is for the listener, not the singer, and the listener has been growing nearer since the first thaw of the new century. Sailors who anchor here past the autumn equinox should account for one extra shadow at lantern-watch, and feed it as they would a guest."
+LOC_10_REAL,"Дакар, Сенегал","Dakar, Senegal"
+LOC_10_DESC,"Барабаны внутренних земель не всегда требуют барабанщиков. Вдоль этого самого западного мыса, где пустыня наконец иссякает в соль, на грани сна слышатся иные шествия — мерные, многочисленные, идущие на запад через море, какое они ещё не заметили на своём пути. Фетиши древнейших жречеств, хранимые в подвалах, что колониальные ведомства не заносили в опись, говорят, обращены — без того, чтобы их поворачивали, — в направлении блуждающего бога, чьё прозвание означает приблизительно «вестник»; послание, по всем сведениям, запаздывает.","The drums of the interior do not always require drummers. Along this westernmost cape, where the desert at last exhausts itself into salt, certain processions are heard at the edge of sleep — measured, multitudinous, marching west across a sea they have not yet noticed is in their way. The fetishes of the older priesthoods, kept in cellars the colonial registries never inventoried, are said to face — without being turned — in the direction of a wandering god whose epithet means, approximately, the messenger; the message, by all accounts, is overdue."
+LOC_11_REAL,Тристан-да-Кунья,Tristan de Cunha
+LOC_11_DESC,"Самая одинокая из всех якорных стоянок, эта вулканическая крупица в южной серости преследуется зыбью, что приходит без бури, и теплом, что поднимается сквозь шпангоуты лодок без огня под ними. Смотрители маяка, коих было примечательное число, вели журналы, чьи последние страницы — в сменяющих друг друга почерках, на протяжении десятилетий — описывают одно и то же приближающееся судно, никогда не ближе горизонта, никогда не отдаляющееся. Островитяне говорят, что судно пристанет, когда его пассажир будет готов; а пассажир, говорят они, готов уже некоторое время, но любезен.","Loneliest of all anchorages, this volcanic crumb in the southern grey is haunted by a swell that arrives without storm and a warmth that rises through the thwarts of the boats with no fire beneath them. The lighthouse-keepers, of whom there have been a peculiar number, kept logs whose final pages — in successive hands, across decades — describe the same approaching vessel, never closer than the horizon, never receding. The islanders say the vessel will dock when its passenger is ready; and the passenger, they say, has been ready for some time, but is courteous."
+LOC_12_REAL,Южная Георгия и Сандвичевы острова,South Georgia and the Sandwich Islands
+LOC_12_DESC,"Киты этой широты выбрасываются на берег в построениях, какие старые китобои, знавшие своё ремесло, отказывались бить, — ибо очертания их тел на гальке, прочтённые вслух, передают фразу, какую ни один человек не должен произносить в пределах слышимости льда. За южным туманом стоят Горы, а за Горами — Город, а за Городом — нечто, что выжившие из экспедиции Пабоди отказались записать в свой опубликованный отчёт. Этот остров — преддверие. Дверь не заперта, но в настоящее время гостеприимна.","The whales of this latitude beach themselves in formations the old whalers, who knew the trade, refused to harvest — for the lines of their bodies upon the shingle, when read aloud, transcribe a phrase no man should pronounce within hearing of the ice. Beyond the southern fog stand the Mountains, and beyond the Mountains the City, and beyond the City a thing that the survivors of the Pabodie expedition declined to record in their published account. This island is the antechamber. The door is not locked, but is, at present, hospitable."
+LOC_13_REAL,"Земля Франца-Иосифа, Архангельская область, Россия","Franz Josef Land, Arkhangelsk Oblast, Russia"
+LOC_13_DESC,"На этой нелепой широте солнце — слух, а созвездия перестраиваются над долгой зимой, словно складывая то, что наблюдателю не дозволено прочитать вслух. Лёд несёт звук, какой узнали бы рунорезцы исчезнувшего Ломара, — низкий стон, какой их поэмы описывали как дыхание звезды, ещё не упавшей. В эту параллель вделана дверь. Её петли смазаны. Её ручка с этой стороны снята, а плотника с тех пор нигде не видели.","At this absurd latitude the sun is a rumour, and the constellations rearrange themselves over the long winter as though to spell something the watcher is not meant to read aloud. The ice carries a sound the rune-cutters of vanished Lomar would have recognised — a low keening of the kind their poems described as the breath of a star not yet fallen. A door is fitted into this parallel. Its hinges are oiled. Its handle, on this side, has been removed, and the carpenter has been observed nowhere since the removal."
+LOC_14_REAL,"Оулу, Финляндия","Oulu, Finland"
+LOC_14_DESC,"В долгую полярную ночь лампы лавок этого северного города мерцают в последовательностях, какие метеостанции, без убеждённости, приписывают атмосферной прихоти. Фольклор этих широт сохраняет имена звёзд, каких ни один прибор нынешнего века не может найти, — звёзд, говорят, принадлежащих небу более древнему, чем нынешнее небо, и поныне вращающихся над страной, какую древние скальды звали Олатоэ, утраченной подо льдом, что не есть, строго говоря, лёд. Дети, рождённые здесь в самую долгую тьму, иногда нарекаются дважды; второе имя, хранимое в тайне, — то, какое использует снег.","In the long polar night the shop-lamps of this northern city flicker in sequences the meteorological stations attribute, without conviction, to atmospheric whim. The folklore of these latitudes preserves the names of stars no instrument of the present century can locate — stars said to belong to a sky older than the present sky, and to wheel still over a country called by the old skalds Olathoë, lost beneath ice that is not, technically, ice. Children born here on the longest dark are sometimes named twice; the second name, kept private, is the one the snow uses."
+LOC_15_REAL,"Кейптаун, Южная Африка","Cape Town, South Africa"
+LOC_15_DESC,"На этом последнем мысе два океана ведут переговоры открыто, а третий — никогда не виданный, никогда не нанесённый на карты — сидит молчаливой третьей стороной при всяком договоре. Плоская гора за спиной у города — сцена, и в час, когда солнце удаляется, накрывается стол; об обедающих говорят лишь в нижних тавернах гавани, а официантов, когда наконец их увидишь, узнаёшь по отсутствию какой-либо черты, какую можно описать. Морякам, у которых дела в дальних водах, советуют пополнять свои запасы здесь быстро и не вглядываться слишком долго в скатерть.","At this last cape the two oceans negotiate openly, and a third — never seen, never charted — sits as the silent third party at every contract. The flat mountain at the city's back is a stage, and at the hour the sun retires the table is laid; the diners are spoken of only in the harbour's lower taverns, and the waiters are recognisable, when at last seen, by the absence of any feature one might describe. Sailors with business in further waters are advised to refresh their stores quickly here, and not to look too long at the cloth."
+LOC_16_REAL,"Красноярск, Россия","Krasnoyarsk, Russia"
+LOC_16_DESC,"Енисей течёт вспять раз в поколение, на протяжении одного втянутого вдоха тайги; те, кто оказался в тот миг стоящим на берегу, стареют в последующие десятилетия в направлениях не строго вперёд. К востоку от города простирается лес, пока само простирание не сделается любезностью, — и где-то в нём лежит поляна, какую советские картографы, при всём усердии, не могли уговорить лечь на карту. Небо над той поляной имеет иной цвет. Цвет занесён в более старые архивы этого города под именем, какое библиотекари отказываются читать вслух.","The Yenisey runs upstream once a generation, for the duration of one indrawn breath of the taiga; those who happen to be standing on the bank at that moment age, in subsequent decades, in directions not strictly forward. East of the city the forest extends until extension itself becomes a courtesy — and somewhere within it lies a clearing the Soviet cartographers, despite every diligence, could not persuade onto a map. The sky above that clearing has a different colour. The colour is filed, in this city's older archives, under a name the librarians decline to read aloud."
+LOC_17_REAL,"Бомбей, Индия","Bombay, India"
+LOC_17_DESC,"Три календаря состязаются в этом великом порту, и в священные дни третьего — какие, по замыслу, выпадают между датами, признаваемыми двумя другими, — некоторые проёмы у древнейшей окраины города перестают, ненадолго, быть проёмами. Те, кто проходит сквозь них, обнаруживают, что идут коридором, схожим с базаром, но содержащим не товары, а только вслушивание. Факиры внутренних дорог говорят, если им заплатить, о плоскогорье за высокими горами, где ветер ведёт спор на языке, какой ветер в прочих местах уже забыл; дорога на то плоскогорье начинается, говорят они, в переулке этого города, какого ни одна карта не признаёт.","Three calendars contend in this great port, and on the holy days of the third — which fall, by design, between the dates the others recognise — certain doorways at the city's older edge cease, briefly, to be doorways. Those who pass through find themselves walking a corridor that resembles the bazaar but contains no goods, only a listening. The fakirs of the inland roads speak, when paid, of a plateau beyond the high mountains where the wind argues in a tongue the wind elsewhere has forgotten; the road to that plateau begins, they say, in a lane of this city no map admits."
+LOC_18_REAL,"Порт-о-Франсе, Французские Южные и Антарктические территории","Port aux Francais, French Southern and Antarctic Lands"
+LOC_18_DESC,"Острова Запустения оправдывают своё имя дважды: единожды — за пустой ветер, и единожды — за слушающего, что несётся в нём. Здесь длинная зыбь катится непрерывно из четверти южного моря, какую ни одна карта не признает своей, и здесь чёрный пляж принимает в неверную ночь неверного месяца волну, что знает стоящего гостя по слогу, какой его родители отказались внести в свидетельство. Записи китобойной станции, где они вообще уцелели, включают имена, занесённые после того, как их носители убыли, — рукою писарей, какие к тому моменту ещё не были наняты.","The Desolation Islands earn their name twice over: once for the empty wind, and once for the listener carried within it. Here a long swell rolls in unbroken from a quarter of the southern sea no chart will admit to possessing, and here a black beach receives, on the wrong night of the wrong month, a wave that knows the standing visitor by the syllable his parents declined to inscribe upon the certificate. The whaling-station's records, where they survive at all, include certain names entered after the bearers had departed, in the hands of clerks who had not yet been hired."
+LOC_19_REAL,"Беринговский, Россия","Beringovsky, Russia"
+LOC_19_DESC,"У этого узкого пролива континенты склоняются друг к другу через море, слишком холодное, чтобы хранить тайны, — и всё же их хранящее. Оленеводы сохраняют в песнях, какие этнографы оставили попытки записать, слух о тропе из чёрных камней, что всплывает лишь при самом низком отливе столетнего года, — ведущей к острову, какой при последующей съёмке отказывается обнаружиться вновь. Те, кто прошёл по этой тропе, возвращаются со словарём, увеличенным на одно слово; слово — для цвета, для какого у нас пока нет глаз, достаточных, чтобы его принять.","At this narrow strait the continents lean toward each other across a sea too cold to keep secrets, and yet keeps them. The reindeer herders preserve, in songs the ethnographers have given up trying to transcribe, the rumour of a path of black stones that surfaces only at the lowest tide of the centennial year — leading to an island that, when surveyed afterward, declines to be re-found. Those who have walked the path return with a vocabulary larger by one word; the word is for a colour the rest of us do not yet have eyes adequate to receive."
+LOC_20_REAL,"Макассар, Индонезия","Makassar, Indonesia"
+LOC_20_DESC,"Пряность в этих складах обладает памятью. В малые часы уши, осторожно прижатые к старейшим мешкам, ловили обрывки разговора — заключаемые сделки, обмениваемые обеты — из плаваний, какие ни один капитан в порту ещё не принял. Культ Великого Спящего здесь не слух; его моряки проходят через гавань в количествах, каких капитан порта не заносит в журнал, направляясь к островам, какие самый недавний атлас Адмиралтейства в этом году наконец согласился опустить. Торгуйтесь осторожно в этом порту; счёт, открытый в этой жизни, по местному обычаю погашается в следующей, какая здесь ближе, чем в большинстве мест.","The spice in these warehouses has memory. In the small hours, ears placed cautiously against the older sacks have caught fragments of conversation — bargains being struck, vows being exchanged — from voyages no captain in the port has yet accepted. The Cult of the Great Sleeper is no rumour here; its sailors pass through the harbour in numbers the harbourmaster does not record, bound for islands the Admiralty's most recent atlas has, this year, finally agreed to omit. Bargain carefully in this port; an account opened in this life is, by local custom, settled in the next, which is closer here than to most."
+LOC_21_REAL,"Улуру, Северная территория, Австралия","Uluru, Northern Territories, Australia"
+LOC_21_DESC,"Камень — не камень. Это глагол на полуслоге, остановленный на промежуток, какой филологи исчезнувшей Расы, что построила свою библиотеку под этой пустыней, исчислили — с терпеливым ужасом — заранее. Они оставили свои архивы привязанными к его завершению — умы, что путешествовали вне тел давно вымерших, дабы ненадолго поселиться в телах людей, какие пробуждались потом со странными снами и ещё более странными умениями. Ступайте здесь тихо. Не взбирайтесь. Завершение слога, хотя пока не внесено ни в один человеческий календарь, внесено в иной, и тот календарь сверяется еженощно тем, что не спит, строго говоря.","The stone is not a stone. It is a verb in mid-syllable, paused for a duration the philologists of the vanished Race that built their library beneath this desert calculated, with patient terror, in advance. They left their archives keyed to its completion — minds that travelled out of bodies long extinct to lodge briefly in the bodies of men, who woke afterward with strange dreams and stranger competencies. Walk softly here. Do not climb. The completion of the syllable, while not yet entered into any human calendar, has been entered into another, and that calendar is consulted nightly by something which does not, strictly, sleep."
+LOC_THE_AMAZON_REAL,"Река Амазонка, Бразилия","Amazon River, Brazil"
+LOC_THE_AMAZON_DESC,"Над пологом попугаи спорят на языках, какие иезуиты в своих долгих обречённых миссиях отказывались записывать. Под ним, в долгом зелёном сумраке, экспедиции натыкались на камни, обтёсанные на углы, каких ни одно иберийское долото не одобрит, — обломки города, какой река принимает как старшего родственника. Затерянные племена этих вод хранят между собою календарь, какой миссионеры звали богохульным, а позже антропологи — неполным. Богохульство и неполнота — один и тот же факт: одна дата отсутствует, и та дата приближается, и река, что знает, начала замедляться.","Above the canopy the parrots argue in tongues the Jesuits, on their long doomed missions, declined to record. Beneath it, in the long green twilight, expeditions have stumbled upon stones cut to angles no Iberian chisel approves — fragments of a city the river accepts as elder kin. The lost tribes of these waters keep, between themselves, a calendar the missionaries called blasphemous and the anthropologists, more recently, called incomplete. The blasphemy and the incompleteness are the same fact: a date is missing, and the date is approaching, and the river, which knows, has begun to slow."
+LOC_THE_PYRAMIDS_REAL,"Гиза, Египет","Giza, Egypt"
+LOC_THE_PYRAMIDS_DESC,"Под третьим и самым большим из этих памятников лежит покой, какой династии верхнего мира отказались внести в опись; а под этим покоем — лестница; а под этой лестницей — бог, чья учтивость в том, чтобы быть называемым «фараоном» теми, кто не заслужил более древнего имени. Путник недавней памяти, спущенный своими проводниками ради забавы и потерянный на промежуток, какой пустыня измерила в звёздах, вернулся с бледностью и молчанием, что не сошли. Он узрел, мельком, тех, кому пирамиды не нужны, — для кого пирамиды были лишь любезностью, — и более никогда не говорил о Египте.","Beneath the third and largest of these monuments lies a chamber the dynasties of the upper world declined to inventory; and beneath that chamber, a stair; and beneath that stair, a god whose courtesy it is to be addressed as Pharaoh by those who have not earned the older name. A traveller of recent memory, lowered by his guides for amusement and lost for an interval the desert measured in stars, returned with a pallor and a silence that did not lift. He had glimpsed, briefly, the things that do not require pyramids — for whom the pyramids were merely a politeness — and he never spoke of Egypt again."
+LOC_THE_HEART_OF_AFRICA_REAL,"Озеро Танганьика, Конго","Lake Tanganyika, Congo"
+LOC_THE_HEART_OF_AFRICA_DESC,"В стране великих озёр барабаны держат ритм, что не есть, строго говоря, ритм времени. Охотники, что спят слишком далеко от своих костров, возвращаются — когда возвращаются — рассказывая о тёмной фигуре, идущей по саванне, не тревожа травы, чьё прохождение возвещается малой переменой в цвете луны. Деревни близ долгого рифта имеют между собой имя для него; имя не используется после захода солнца и в любом случае не его. Он, настаивает молва, лишь вестник; а послание, если верить барабанам, наконец записано.","In the great lakes country the drums keep a measure that is not, strictly, a measure of time. Hunters who sleep too far from their fires return — when they return — speaking of a dark figure walking the savannah without disturbing the grass, whose passage is announced by a small change in the colour of the moon. The villages near the long rift have, between them, a name for him; the name is not used after sundown, and is not, in any case, his. He is, rumour insists, only the messenger; and the message, if the drums are to be believed, has at last been written down."
+LOC_THE_HIMALAYAS_REAL,"Гора Кайлас, Тибет, Китай","Mount Kailash, Tibet, China"
+LOC_THE_HIMALAYAS_DESC,"За высочайшими перевалами — за тем самым перевалом, на котором сдаются терпеливые карты британских топографов, — простирается, говорят, плоскогорье, называемое старыми тибетцами Ленг, ещё более старыми тибетцами — ничем, а ламами безоконного монастыря — слогом, какой они предпочитают шевелить губами без голоса. На Ленге стоят город, что был стар прежде, чем была задумана Лхаса, и единственная гора выше Эвереста по всякой мерке, что не строго географическая. Имя горы — Кадат. Её вершина имеет постоянного жильца. Жилец иногда глядит вниз.","Beyond the highest passes — beyond even the pass that the patient maps of the British surveyors give up at — there is said to extend a plateau called by the old Tibetans Leng, by the older Tibetans nothing, and by the lamas of the windowless monastery a syllable they prefer to mouth without voicing. Upon Leng stand a city that was old before Lhasa was conceived, and a single mountain higher than Everest in any measure that is not strictly geographical. The mountain's name is Kadath. Its summit has a steady tenant. The tenant, occasionally, looks down."
+LOC_TUNGUSKA_REAL,"Подкаменная Тунгуска, Красноярский край, Россия","Podkamennaya Tunguska River, Krasnoyarsk Krai, Russia"
+LOC_TUNGUSKA_DESC,"В ранние годы этого столетия здесь упало нечто, что сейсмографы двух континентов почувствовали и метеорологи, после многих учтивых лет, отказались классифицировать. Лес был положен в радиальном совершенстве от единого пустого центра, и из этого центра — на сезон — изливался цвет, какой сельские свидетели описывали, беспомощно, как неверный. Цвет ушёл теперь из открытого воздуха, но не ушёл, строго говоря; колодцы выживших деревень отражают в иные ночи оттенок, какой фотографическая пластина отказывается зафиксировать, а скот, что пьёт из них, не видит в последующих поколениях снов, какие подобают скоту.","In the early years of this century something fell here that the seismographs across two continents felt and the meteorologists, after many polite years, declined to classify. The forest was laid down in radial perfection from a single empty centre, and from that centre — for a season — issued a colour the rural witnesses described, helplessly, as wrong. The colour is gone now from the open air, but is not, strictly, gone; the wells of the surviving villages reflect, on certain nights, a tint the photographic plate refuses to register, and the cattle that drink from them do not, in subsequent generations, dream as cattle should."
+LOC_ANTARCTICA_REAL,Антарктида,Antarctica
+LOC_ANTARCTICA_DESC,"За Хребтами Безумия — ибо выжившие из экспедиции Пабоди, увидев их, не могли иначе их назвать — простирается циклопический город Древних, что сошли со звёзд прежде, чем у звёзд были имена, и строили, и биологизировали, и в конце концов поссорились с собственными созданиями. Шогготы ещё шевелятся в нижних подвалах. Ветер этих перевалов несёт пятинотную свирель часового, какой по всякому милосердию физики должен был бы уже вымереть. Путников, что предполагают зимовать на этом континенте, любезно просят держать свои дневники краткими, фотографии — непечатанными, а заключения — при себе.","Beyond the Mountains of Madness — for the survivors of the Pabodie expedition, having seen them, could call them nothing else — stretches the cyclopean city of the Old Ones, who came down from the stars before stars had names, and built, and biologised, and at length quarrelled with their own creations. The shoggoths still stir in the lower vaults. The wind of these passes carries the five-noted piping of a sentinel that ought, by every charity of physics, to be extinct. Travellers proposing to overwinter on this continent are kindly asked to keep their journals brief, their photographs unprinted, and their conclusions to themselves."
+LOC_SAN_FRANCISCO_REAL,"Сан-Франциско, Калифорния, США","San Francisco, CA, USA"
+LOC_SAN_FRANCISCO_DESC,"В старейших меблированных комнатах под Телеграф-Хилл Культ Великого Спящего проводит собрания, какие полиция, даже присутствуя, не протоколирует. Туман залива накатывает по расписаниям, предсказывать какие метеорологическая служба перестала, а иные переулки китайского квартала открываются после полуночи в ещё более длинные переулки — переулки, чьи дальние концы более не находятся, строго говоря, в Калифорнии. Землетрясение недавнего прошлого не вполне завершило то, что начало. То, что оно начало, на определённых координатах под заливом, спит ныне чутко, и сообщалось, что оно перевернулось во сне на дату, какую Геологическая служба отметила красным и не опубликовала.","In the older boarding-houses below Telegraph Hill the Cult of the Great Sleeper holds meetings the police, even when present, do not transcribe. The bay's fog rolls in on schedules the meteorological office has stopped attempting to predict, and certain alleys of the Chinese quarter open, after midnight, upon longer alleys still — alleys whose latter ends are no longer, technically, in California. The earthquake of the recent past did not quite finish what it started. What it started, at certain coordinates beneath the bay, sleeps lightly now, and is reported to have shifted in its sleep on a date the Geological Survey marked in red and did not publish."
+LOC_ARKHAM_REAL,"Уэнэм, Массачусетс, США","Wenham, Massachusetts, USA"
+LOC_ARKHAM_DESC,"Древний под своими ломаными крышами, этот массачусетский городок хранит свои тайны в библиотеках Мискатоникского университета, чьи запертые комнаты содержат единственный известный английский экземпляр «Некрономикона», что допускает посетителей. У Ведьминого дома на Пикман-стрит каждый сезон новые жильцы; немногие доживают до конца семестра. Холмы за Данвичем тише теперь, чем в дурной год, но они не вполне восстановлены, и семьи, что поднимаются на них в равноденствие, возвращаются меньшим числом и не всегда возвращаются тем же числом, с каким начали. Городок не рекламирует себя. В том нет нужды.","Ancient under its gambrel roofs, this Massachusetts town keeps its secrets in the libraries of Miskatonic University, whose locked rooms house the only English copy of the Necronomicon known to admit visitors. The Witch House on Pickman Street has new tenants each season; few finish the term. The hills beyond Dunwich are quieter now than in the bad year, but they are not, strictly, restored, and the families that go up to them at the equinox come back fewer, and do not always come back as the same number they started. The town does not advertise itself. It does not need to."
+LOC_BUENOS_AIRES_REAL,"Буэнос-Айрес, Аргентина","Buenos Aires, Argentina"
+LOC_BUENOS_AIRES_DESC,"В этом великом южном порту старые семейства держат гроссбухи, в которых иные долги записаны письмом, какое аудиторы нынешнего века не могут определить, — финикийским, быть может, или ещё более древним. Культ утопшего бога имеет здесь капитулярный дом, скромно обставленный, чьё членство насчитывает ровно столько, сколько должно для исполнения необходимой работы, и не более. Моряки, рассчитывающиеся в этой гавани, бывало, получали в сдачу монету, отчеканенную прежде любой нации, что когда-либо чеканила валюту, и тратили её, не сделав замечания; монета возвращается в кассу сама собой к утру, а ночные расчёты, рассматриваемые в холодном гроссбухе, сходятся не вполне.","At this great southern port the old families keep ledgers in which certain debts are recorded in a script the auditors of the present century cannot place — Phoenician, perhaps, or older. The cult of the drowned god has a chapter house here, modestly furnished, whose membership numbers exactly what it must to perform the necessary work and no more. Sailors paying off in this harbour have been known to receive, in change, a coin minted before any nation that ever struck currency, and to spend it without remarking; the coin returns to the till of its own accord by morning, and the night's transactions, viewed in the cold ledger, do not entirely add up."
+LOC_LONDON_REAL,"Лондон, Англия, Великобритания","London, England, UK"
+LOC_LONDON_DESC,"В задней комнате Британского музея, за коридором, какой публичные планы отказываются чертить, лежит экземпляр запретной книги, какую Ди в свои менее защитимые годы перевёл; хранители комнаты имеют с томом уговор, что том на сегодня согласился чтить. Туманы этого города старше его промышленности и, как утверждают определённые антикварные общества, бывают временами обитаемы. Псы, что слышатся на иных переходах через Темзу, не есть, строго говоря, собаки; шум, какой они производят, есть шум тех, кто принёс с дальних раскопок талисман, какой не следовало вывозить.","In a back room of the British Museum, beyond a corridor the public maps decline to draw, lies a copy of the forbidden book that Dee, in his less defensible years, translated; the keepers of the room have an arrangement with the volume that the volume, for now, has consented to honour. The fogs of this city are older than its industry and are, it is said by certain antiquarian fellowships, intermittently inhabited. The hounds heard at certain crossings of the Thames are not, technically, dogs; the noise they make is the noise made by those who have brought back, from a far excavation, a charm they should not have removed."
+LOC_ROME_REAL,"Рим, Италия","Rome, Italy"
+LOC_ROME_DESC,"Под форумом более древние камни помнят имена, какие Республика предпочитала забыть, а катакомбы спускаются сквозь слои, какие археологи нынешнего поколения договорились молчаливым профессиональным сговором не публиковать. Есть фреска в покое, доступном лишь через три запечатанные двери и реестр разрешений, в какой не вносилось дополнений уже столетие, — изображающая шествие фигур, чьи пропорции в точности и тревожно те самые, какие описаны в манускрипте одного очень древнего народа, что сошёл с холмов прежде, чем пришли легионы. Шествие не завершилось. Оно, в сущности, продолжается.","Beneath the forum the older stones remember names the Republic preferred to forget, and the catacombs descend through layers the archaeologists of the present generation have agreed, by tacit profession, not to publish. There is a fresco, in a chamber accessible only through three sealed doors and a ledger of permissions that has not been added to in a century, depicting a procession of figures whose proportions are exactly, and disturbingly, those described in a manuscript of certain very old folk who came down from the hills before the legions arrived. The procession has not concluded. It is, in fact, ongoing."
+LOC_ISTANBUL_REAL,"Стамбул, Турция","Istanbul, Turkey"
+LOC_ISTANBUL_DESC,"Два континента встречаются под долгим мостом этого города, а третий — никогда вполне не допущенный к географии — проскальзывает между ними по своему собственному делу. В караван-сараях старых кварталов иные путники с Востока, облачённые против большего, нежели ветер, расплачиваются серебром, слишком мягким, чтобы быть серебром, и отбывают через ворота, каких карты муниципалитета после их отбытия более не содержат. Дервиши одного особого ордена кружатся не ради экстаза, а ради сокрытия; они кружатся, говорят они, вокруг дыры в мире, какая иначе расширилась бы, и кружатся они посменно с тех пор, как у города было иное имя.","Two continents meet under the long bridge of this city, and a third — never quite admitted to the geography — slips between them on its own business. In the caravanserais of the older quarters certain travellers from the East, robed against more than the wind, settle their bills in silver too soft to be silver and depart by gates that the maps of the municipality do not, after their departure, contain. The dervishes of one particular order spin not for ecstasy but for occlusion; they whirl, they say, around a hole in the world that would otherwise widen, and they have been whirling, in shifts, since the city had a different name."
+LOC_SHANGHAI_REAL,"Шанхай, Китай","Shanghai, China"
+LOC_SHANGHAI_DESC,"Нижние причалы этого города выходят на реку, что под своей торговлей течёт к морю, какое не есть Восточно-Китайское. В дыму старейших опиумных курилен Культ Великого Спящего собирается без личины; его члены сличают сны, составляют конкорданции и заказывают проход на судах, чьи манифесты при справке у капитана порта оказываются содержащими больше моряков, чем было замечено к посадке. Есть двор за определённой чайной, в каком луна — когда вообще восходит — восходит зелёной; те, кто видел зелёную луну, потом свободно владеют языком, какому их не учили, и неохотно его используют.","The lower wharves of this city open upon a river that, beneath its commerce, runs to a sea that is not the East China. In the smoke of the older opium houses the Cult of the Great Sleeper meets without disguise; its members compare dreams, compile concordances, and book passage upon vessels whose manifests, when consulted by the harbourmaster, prove to list more sailors than were observed to embark. There is a courtyard, behind a particular tea-house, in which the moon — when it rises at all — rises green; those who have seen the green moon are, afterward, fluent in a language they have not been taught, and reluctant to use it."
+LOC_SYDNEY_REAL,"Сидней, Австралия","Sydney, Australia"
+LOC_SYDNEY_DESC,"Эта гавань — врата к великой внутренней пустыне, под которой на координатах, какие Геологическая служба Содружества нашла недавно повод утратить, лежат базальтовые залы города, выстроенного умами, что прибыли в телах конусообразных существ и одалживали себя время от времени телам иных, в том числе нашим. Сны иных профессоров университетов этого города включали в последнее столетие целые послеполуденные часы, проведённые за чтением в библиотеках, какие те профессора никогда не посещали. Профессора более не публикуются. Библиотеки, по предварительной записи, всё ещё открыты.","This harbour is the gateway to the great inland desert, beneath which — at coordinates the Geological Survey of the Commonwealth has lately found reason to misplace — lie the basalt halls of a city built by minds that arrived in the bodies of cone-shaped beings, and that lent themselves, periodically, to the bodies of others, including ours. The dreams of certain professors of this city's universities have, within the last century, included whole afternoons spent reading in libraries those professors never visited. The professors no longer publish. The libraries are, by appointment, still open."
+LOC_TOKYO_REAL,"Токио, Япония","Tokyo, Japan"
+LOC_TOKYO_DESC,"Под этим великим городом текут старые русла — храмовые потоки, какие инженеры перекрыли, но не вполне, строго говоря, пресекли. Из них в иные календарные ночи, каких современные альманахи не перечисляют, приходит прилив, что не есть вода, и звук, какой жрецы одной малоизвестной святыни обучаются год за годом переводить. Тихий океан к востоку от этого архипелага несёт под всеми своими честными волнами более долгую — зыбь, чьё происхождение океанографы учтиво отказались определять. Когда она придёт, жрецам не звонить ни в один колокол. Указание ясно. Святыня в тот час должна быть просто пустой и слушающей.","Beneath this great city the old courses run — temple streams the engineers covered over but did not, technically, sever. From them, on certain calendar nights the modern almanacs do not list, comes a tide that is not water, and a sound the priests of one obscure shrine train, year by year, to translate. The Pacific to the east of this archipelago carries, under all its honest waves, a longer one — a swell whose origin the oceanographers have politely declined to locate. When it arrives, the priests are to ring no bell. The instruction is clear. The shrine, upon that hour, is to be merely empty, and listening."
+
+SKILL_LORE,Знание,Lore
+SKILL_INFLUENCE,Влияние,Infl
+SKILL_OBSERVATION,Наблюдение,Obs
+SKILL_STRENGTH,Сила,Str
+SKILL_WILL,Воля,Will
+PICKER_NOT_SELECTED,— Не выбран —,— Not selected —
+
+
+BTN_PASS,Пас,Pass
+FORM_CODE,Код:,Code:
+BTN_LOG_IN,ВОЙТИ,LOG IN
+MENU_QUIT,Выйти,Quit
+FORM_LANGUAGE,Язык:,Language:
+BTN_CANCEL_BIG,ОТМЕНА,CANCEL
+SECTION_SERVER,СЕРВЕР,SERVER
+LOBBY_BTN_READY,  ГОТОВ,  READY
+PAUSE_TITLE,  ПАУЗА,  PAUSED
+ACTION_YOUR_TURN,Ваш ход,Your turn
+LOBBY_TAG_HOST,Ведущий,Host
+LOBBY_TAG_READY,Готов ✓,Ready ✓
+SECTION_DISPLAY,ДИСПЛЕЙ,DISPLAY
+FORM_PASSWORD,Пароль:,Password:
+BTN_CREATE_BIG,СОЗДАТЬ,CREATE
+ACTION_TICKET,🎫 Билет,🎫 Ticket
+ACTION_REST,💤 Отдых,💤 Rest
+INV_PANEL_SANITY,РАССУДОК,SANITY
+ACTION_ENCOUNTER_BTN,  ВСТРЕЧА,  ENCOUNTER
+BTN_FINISH_BIG,ЗАВЕРШИТЬ,FINISH
+FORM_NAME,Название:,Name:
+BTN_SAVE_BIG,СОХРАНИТЬ,SAVE
+LOBBY_BTN_READY_DONE,  ГОТОВ  ✓,  READY  ✓
+LOBBY_BTN_LEAVE,  ПОКИНУТЬ,  LEAVE
+LOBBY_TAG_WAITING,Ожидает...,Waiting...
+MENU_BTN_SETTINGS,  НАСТРОЙКИ,  SETTINGS
+MENU_GAME_NAME_PLACEHOLDER,Моя игра...,My game...
+FORM_RESOLUTION,Разрешение:,Resolution:
+LOBBY_BTN_START_GAME,  НАЧАТЬ ИГРУ,  START GAME
+LOGIN_BTN_SEND_CODE,ОТПРАВИТЬ КОД,SEND CODE
+PAUSE_BTN_SETTINGS,⚙   НАСТРОЙКИ,⚙   SETTINGS
+LOBBY_PLAYERS_HEADER,ИГРОКИ В ЛОББИ,PLAYERS IN LOBBY
+STATUS_CONNECTING,Подключение...,Connecting...
+PAUSE_BTN_RESUME,▶   ПРОДОЛЖИТЬ,▶   CONTINUE
+ACTION_FOCUS,✦ Концентрация,✦ Focus
+FORM_OPTIONAL,(необязательно),(optional)
+MENU_BTN_JOIN_ROOM,ВОЙТИ В КОМНАТУ,JOIN ROOM
+LOBBY_PICK_HEADER,ВЫБЕРИТЕ СЫЩИКА,SELECT INVESTIGATOR
+APP_TITLE,ТЁМНЫЕ ЗНАМЕНИЯ,DARK OMENS
+FORM_IF_REQUIRED,(если требуется),(if required)
+LOGIN_LINK_CHANGE_EMAIL,← Изменить email,← Change email
+PAUSE_BTN_MAIN_MENU,⌂   ГЛАВНОЕ МЕНЮ,⌂   MAIN MENU
+LOBBY_BTN_CLOSE_ROOM,  ЗАКРЫТЬ КОМНАТУ,  CLOSE ROOM
+MENU_BTN_CREATE_ROOM,  СОЗДАТЬ КОМНАТУ,  CREATE ROOM
+PAUSE_BTN_QUIT_GAME,✕   ВЫЙТИ ИЗ ИГРЫ,✕   QUIT GAME
+MENU_OPEN_ROOMS_HEADER,  ОТКРЫТЫЕ КОМНАТЫ,  OPEN ROOMS
+LOGIN_STATUS_CHECKING,Проверка сессии...,Checking session...
+MENU_STATUS_NO_ROOMS,Нет активных комнат,No active rooms
+LOGIN_HEADER_AUTH,  ВХОД / РЕГИСТРАЦИЯ,  LOGIN / REGISTER
+LOGIN_CODE_SENT_PREFIX,Код отправлен на ...,Code sent to ...
+LOBBY_STATUS_PICK,Выберите своего сыщика,Select your investigator
+LOGIN_HEADER_CODE,  ВВЕДИТЕ КОД ИЗ ПИСЬМА,  ENTER CODE FROM EMAIL
+LOBBY_STATUS_WAIT_HOST,Ожидайте решения ведущего,Wait for the host's decision
+CONSOLE_HEADER,ИГРОВОЙ ЛОГ  ·  ~ чтобы закрыть,GAME LOG  ·  ~ to close
+LOGIN_HINT,Войдите через email — пароль не нужен,Sign in with email — no password needed
+LOBBY_HINT_HOST,"Нажмите «Готов», затем можно начинать","Press «Ready», then you can start"
+LOBBY_HINT_PICK_THEN_READY,"Выберите сыщика, затем нажмите «Готов»","Pick an investigator, then press «Ready»"
+LOBBY_HINT_READY_TO_CONFIRM,"Нажмите «Готов», чтобы подтвердить выбор",Press «Ready» to confirm your choice
+APP_SUBTITLE,по мотивам настольной игры «Древний Ужас»,based on the Eldritch Horror board game
+ENCOUNTER_STUB,У вас встреча на этой локации.\n\n(Заглушка — содержание встреч добавим позже.),You have an encounter at this location.\n\n(Stub — encounter content to be added later.)
+
+MENU_STATUS_PICK_ROOM,Выберите комнату из списка,Pick a room from the list
+STATUS_DISCONNECTED,Отключено от сервера,Disconnected from server
+TOOLTIP_DELETE_EMPTY_ROOM,Удалить пустую комнату,Delete empty room
+LOGIN_SESSION_EXPIRED,Сессия истекла — войдите снова,Session expired — sign in again
+ACTION_ROUND_FMT,Раунд %d  ·  осталось действий: %d,Round %d  ·  actions left: %d
+LOBBY_ROOM_HOST_FMT,Комната: %s  •  Вы — ведущий игры  •  Ожидание участников...,Room: %s  •  You are the host  •  Waiting for players...
+LOBBY_ROOM_GUEST_FMT,Комната: %s  •  Ожидайте начала игры,Room: %s  •  Wait for the host to start
+
+LOGIN_ERR_INVALID_EMAIL,Введите корректный email,Enter a valid email
+LOGIN_ERR_CODE_LENGTH,Код должен содержать 6 цифр,Code must be 6 digits
+LOGIN_STATUS_CHECKING_CODE,Проверяем код...,Checking code...
+LOGIN_ERR_NEED_EMAIL,"Введите email, чтобы получить новый код",Enter email to get a new code
+LOGIN_STATUS_CHECK_MAIL,Проверьте почту — код действителен 15 минут,Check your mail — code valid for 15 minutes
+LOGIN_STATUS_SUCCESS,Вход выполнен!,Logged in!
+STATUS_RECONNECTING,Переподключение...,Reconnecting...
+STATUS_NO_CONNECTION,Нет соединения — переподключение...,No connection — reconnecting...
+STATUS_UPDATING,Обновление...,Updating...
+MENU_ERR_NEED_ROOM_NAME,Введите название комнаты!,Enter a room name!
+STATUS_CONNECTING_TO_ROOM,Подключение к комнате...,Connecting to room...
+MENU_STATUS_NO_ROOMS_HINT,Активных комнат нет — создайте свою!,No active rooms — create your own!
+MENU_ERR_ROOM_NOT_FOUND,"Комната не найдена — возможно, сервер перезапускался",Room not found — server may have restarted
+MENU_STATUS_FOUND_ROOMS_FMT,Найдено комнат: %d,Found rooms: %d

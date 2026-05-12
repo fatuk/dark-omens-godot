@@ -21,13 +21,14 @@ config/icon="res://icon.svg"
 NetworkManager="*res://scripts/network/network_manager.gd"
 AuthManager="*res://scripts/core/auth_manager.gd"
 SceneManager="*res://scripts/core/scene_manager.gd"
-GameState="*res://scripts/core/game_state.gd"
 GameConsole="*res://scripts/core/game_console.gd"
 RelayTransport="*res://scripts/network/relay_transport.gd"
 PauseMenu="*res://scenes/ui/pause_menu.tscn"
+GameState="*res://scripts/core/game_state.gd"
 PostFx="*res://scenes/ui/post_fx.tscn"
 PostFxDebug="*res://scenes/ui/post_fx_debug.tscn"
 CustomCursor="*res://scenes/ui/custom_cursor.tscn"
+I18n="*res://scripts/core/i18n.gd"
 MCPScreenshot="*res://addons/godot_mcp/mcp_screenshot_service.gd"
 MCPInputService="*res://addons/godot_mcp/mcp_input_service.gd"
 MCPGameInspector="*res://addons/godot_mcp/mcp_game_inspector_service.gd"
@@ -42,6 +43,15 @@ window/stretch/aspect="expand"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+
+[gui]
+
+theme/custom_font="res://assets/fonts/serif.tres"
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://assets/i18n/translations.ru.translation", "res://assets/i18n/translations.en.translation")
+locale/fallback="ru"
 
 [physics]
 
