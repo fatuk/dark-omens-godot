@@ -42,7 +42,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_panel.custom_minimum_size.x = float(panel_min_width)
 	UIStyle.style_panel(_panel, 20)
-	UIStyle.style_button(_close_btn, UIColors.DANGER)
+	UIStyle.style_icon_button(_close_btn, UIColors.DANGER)
 	_close_btn.add_theme_font_size_override("font_size", 18)
 	_title.add_theme_color_override("font_color", UIColors.ACCENT)
 	_close_btn.pressed.connect(close)

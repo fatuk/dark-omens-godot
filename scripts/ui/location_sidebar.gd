@@ -108,7 +108,8 @@ func _make_neighbor_row(to_name: String, ctype: String) -> Button:
 	btn.text = to_name
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	UIStyle.style_button(btn, CONN_COLORS.get(ctype, UIColors.BORDER))
+	# List item, не «обычная» кнопка — оставляем компактный stylebox-стиль.
+	UIStyle.style_icon_button(btn, CONN_COLORS.get(ctype, UIColors.BORDER))
 	btn.add_theme_font_size_override("font_size", 13)
 	# Подпись «морем/поездом/путь» в правом углу — храним ключ, Godot переведёт.
 	var hint := Label.new()
@@ -152,7 +153,7 @@ func _apply_offsets(hide_panel: bool) -> void:
 
 
 func _style_close_button() -> void:
-	UIStyle.style_button(_close_btn, UIColors.DANGER)
+	UIStyle.style_icon_button(_close_btn, UIColors.DANGER)
 	_close_btn.add_theme_font_size_override("font_size", 18)
 
 
