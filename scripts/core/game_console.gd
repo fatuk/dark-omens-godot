@@ -86,7 +86,7 @@ func _build_ui() -> void:
 	_panel.add_child(vbox)
 
 	var header := Label.new()
-	header.text = "ИГРОВОЙ ЛОГ  ·  ~ чтобы закрыть"
+	header.text = "CONSOLE_HEADER"
 	header.add_theme_font_size_override("font_size", HEADER_SIZE)
 	header.add_theme_color_override("font_color", Color(0.45, 0.40, 0.65))
 	vbox.add_child(header)

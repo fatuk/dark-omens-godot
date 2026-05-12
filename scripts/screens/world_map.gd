@@ -63,6 +63,8 @@ func _ready() -> void:
 	_sidebar.closed.connect(func() -> void: _map_layer.set_selected(""))
 	# Клик по соседу в списке — открываем его как если бы кликнули по карте
 	_sidebar.neighbor_selected.connect(_on_neighbor_selected)
+	# Смена языка не требует здесь обработки: данные локаций/сыщиков содержат
+	# translation keys, лейблы Godot переводит автоматически при смене локали.
 
 
 # Обновляем верхний HUD по текущему стейту игры.
@@ -75,10 +77,11 @@ func _refresh_game_panel() -> void:
 
 
 func _phase_label_for(p: String) -> String:
+	# Возвращаем translation key — Godot сам переводит при присваивании в text.
 	match p:
-		"action":    return "Действия"
-		"encounter": return "Встречи"
-		"mythos":    return "Мифы"
+		"action":    return "PHASE_ACTION"
+		"encounter": return "PHASE_ENCOUNTER"
+		"mythos":    return "PHASE_MYTHOS"
 	return ""
 
 
@@ -91,8 +94,9 @@ func _current_player_name() -> String:
 	var pid: String = GameState.turn_order[GameState.current_idx]
 	if not GameState.players.has(pid):
 		return ""
-	# Показываем имя сыщика (не username игрока)
-	return GameState.players[pid].get("investigator", "???")
+	# Показываем имя сыщика (не username игрока), локализованное.
+	var inv_id: String = GameState.players[pid].get("investigator", "???")
+	return Investigators.display_name(inv_id)
 
 
 func _process(delta: float) -> void:

@@ -34,8 +34,11 @@ func _refresh() -> void:
 	_root.visible = visible_now
 	if not visible_now:
 		return
-	var me: Dictionary = GameState.my_player()
-	_hint_label.text = "Раунд %d · осталось действий: %d" % [
-		GameState.round_num,
-		int(me.get("actions_left", 0)),
-	]
+	# Биндим через LocaleBinder — строка форматированная (%d), при смене локали
+	# нужно перевычислить tr() с актуальным шаблоном.
+	LocaleBinder.bind(_hint_label, func() -> String:
+		var me: Dictionary = GameState.my_player()
+		return tr("ACTION_ROUND_FMT") % [
+			GameState.round_num,
+			int(me.get("actions_left", 0)),
+		])

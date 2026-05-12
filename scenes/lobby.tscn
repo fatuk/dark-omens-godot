@@ -35,7 +35,7 @@ theme_override_constants/separation = 14
 [node name="Title" type="Label" parent="Margin/Root"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
-text = "ТЁМНЫЕ ЗНАМЕНИЯ"
+text = "APP_TITLE"
 horizontal_alignment = 1
 
 [node name="RoomLabel" type="Label" parent="Margin/Root"]
@@ -59,7 +59,7 @@ theme_override_constants/separation = 8
 [node name="Header" type="Label" parent="Margin/Root/PlayersPanel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
-text = "ИГРОКИ В ЛОББИ"
+text = "LOBBY_PLAYERS_HEADER"
 
 [node name="Sep" type="HSeparator" parent="Margin/Root/PlayersPanel/VBox"]
 layout_mode = 2
@@ -76,7 +76,7 @@ layout_mode = 2
 [node name="PickerHeader" type="Label" parent="Margin/Root"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
-text = "ВЫБЕРИТЕ СЫЩИКА"
+text = "LOBBY_PICK_HEADER"
 
 [node name="Picker" parent="Margin/Root" instance=ExtResource("2_picker")]
 unique_name_in_owner = true
@@ -95,26 +95,26 @@ theme_override_constants/separation = 12
 [node name="BackBtn" type="Button" parent="Margin/Root/ButtonsRow"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "  ПОКИНУТЬ"
+text = "LOBBY_BTN_LEAVE"
 
 [node name="DeleteBtn" type="Button" parent="Margin/Root/ButtonsRow"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-text = "  ЗАКРЫТЬ КОМНАТУ"
+text = "LOBBY_BTN_CLOSE_ROOM"
 
 [node name="ReadyBtn" type="Button" parent="Margin/Root/ButtonsRow"]
 unique_name_in_owner = true
 disabled = true
 layout_mode = 2
-text = "  ГОТОВ"
+text = "LOBBY_BTN_READY"
 
 [node name="StartBtn" type="Button" parent="Margin/Root/ButtonsRow"]
 unique_name_in_owner = true
 visible = false
 disabled = true
 layout_mode = 2
-text = "  НАЧАТЬ ИГРУ"
+text = "LOBBY_BTN_START_GAME"
 
 [node name="StatusLabel" type="Label" parent="Margin/Root"]
 unique_name_in_owner = true

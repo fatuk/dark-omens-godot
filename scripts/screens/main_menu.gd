@@ -53,6 +53,7 @@ var _url_input:      LineEdit
 var _res_option:     OptionButton
 var _fs_check:       CheckBox
 var _fx_check:       CheckBox
+var _lang_option:    OptionButton
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
@@ -142,10 +143,10 @@ func _on_settings_pressed() -> void:
 		_settings_popup = null
 		return
 
-	_settings_popup = UIStyle.modal(self, "НАСТРОЙКИ", func(vbox: VBoxContainer) -> void:
+	_settings_popup = UIStyle.modal(self, "SETTINGS_TITLE", func(vbox: VBoxContainer) -> void:
 		# ── Сервер ────────────────────────────────────────────────────────────
 		var srv_lbl := Label.new()
-		srv_lbl.text = "СЕРВЕР"
+		srv_lbl.text = "SECTION_SERVER"
 		srv_lbl.add_theme_font_size_override("font_size", 12)
 		srv_lbl.add_theme_color_override("font_color", UIColors.MUTED)
 		vbox.add_child(srv_lbl)
@@ -159,7 +160,7 @@ func _on_settings_pressed() -> void:
 
 		# ── Дисплей ───────────────────────────────────────────────────────────
 		var disp_lbl := Label.new()
-		disp_lbl.text = "ДИСПЛЕЙ"
+		disp_lbl.text = "SECTION_DISPLAY"
 		disp_lbl.add_theme_font_size_override("font_size", 12)
 		disp_lbl.add_theme_color_override("font_color", UIColors.MUTED)
 		vbox.add_child(disp_lbl)
@@ -169,7 +170,7 @@ func _on_settings_pressed() -> void:
 		vbox.add_child(res_row)
 
 		var res_lbl := Label.new()
-		res_lbl.text = "Разрешение:"
+		res_lbl.text = "FORM_RESOLUTION"
 		res_lbl.custom_minimum_size.x = 100
 		res_lbl.add_theme_font_size_override("font_size", 14)
 		res_lbl.add_theme_color_override("font_color", UIColors.TEXT)
@@ -198,7 +199,7 @@ func _on_settings_pressed() -> void:
 		fs_row.add_child(_fs_check)
 
 		var fs_lbl := Label.new()
-		fs_lbl.text = "Полный экран"
+		fs_lbl.text = "SETTINGS_FULLSCREEN"
 		fs_lbl.add_theme_font_size_override("font_size", 14)
 		fs_lbl.add_theme_color_override("font_color", UIColors.TEXT)
 		fs_row.add_child(fs_lbl)
@@ -215,10 +216,30 @@ func _on_settings_pressed() -> void:
 		fx_row.add_child(_fx_check)
 
 		var fx_lbl := Label.new()
-		fx_lbl.text = "Эффект старой плёнки"
+		fx_lbl.text = tr("SETTINGS_FX_OLD_FILM")
 		fx_lbl.add_theme_font_size_override("font_size", 14)
 		fx_lbl.add_theme_color_override("font_color", UIColors.TEXT)
 		fx_row.add_child(fx_lbl)
+
+		# Язык
+		var lang_row := HBoxContainer.new()
+		lang_row.add_theme_constant_override("separation", 8)
+		vbox.add_child(lang_row)
+
+		var lang_lbl := Label.new()
+		lang_lbl.text = tr("SETTINGS_LANGUAGE") + ":"
+		lang_lbl.custom_minimum_size.x = 100
+		lang_lbl.add_theme_font_size_override("font_size", 14)
+		lang_lbl.add_theme_color_override("font_color", UIColors.TEXT)
+		lang_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lang_row.add_child(lang_lbl)
+
+		var lang_names: Array[String] = []
+		for code: String in I18n.SUPPORTED:
+			lang_names.append(tr("LANG_" + code.to_upper()))
+		_lang_option = UIStyle.option_button(lang_names)
+		_lang_option.selected = I18n.SUPPORTED.find(I18n.get_locale())
+		lang_row.add_child(_lang_option)
 
 		UIStyle.separator(vbox)
 
@@ -227,12 +248,12 @@ func _on_settings_pressed() -> void:
 		btns.add_theme_constant_override("separation", 8)
 		vbox.add_child(btns)
 
-		var save_btn := UIStyle.button("СОХРАНИТЬ", UIColors.ACCENT)
+		var save_btn := UIStyle.button("BTN_SAVE_BIG", UIColors.ACCENT)
 		save_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		save_btn.pressed.connect(_on_settings_save)
 		btns.add_child(save_btn)
 
-		var cancel_btn := UIStyle.button("ОТМЕНА", UIColors.MUTED)
+		var cancel_btn := UIStyle.button("BTN_CANCEL_BIG", UIColors.MUTED)
 		cancel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cancel_btn.pressed.connect(func() -> void:
 			_settings_popup.queue_free()
@@ -256,6 +277,8 @@ func _on_settings_save() -> void:
 	_save_settings()
 	_apply_display()
 	PostFx.set_enabled(_fx_check.button_pressed)
+	if _lang_option and _lang_option.selected >= 0:
+		I18n.set_locale(I18n.SUPPORTED[_lang_option.selected])
 
 	_settings_popup.queue_free()
 	_settings_popup = null
@@ -275,7 +298,7 @@ func _auto_connect() -> void:
 		return
 	if _nm.is_reconnecting():
 		# NetworkManager уже активно пытается переподключиться — ждём сигнала
-		_show_status("Переподключение...", UIColors.WARNING)
+		_show_status("STATUS_RECONNECTING", UIColors.WARNING)
 		_rooms_panel.modulate.a = 0.4
 		return
 	# Либо первый заход, либо все попытки исчерпаны — стартуем заново
@@ -298,17 +321,17 @@ func _on_logout_pressed() -> void:
 
 func _on_refresh_pressed() -> void:
 	if not _nm.is_connected_to_relay():
-		_show_status("Нет соединения — переподключение...", UIColors.WARNING)
+		_show_status("STATUS_NO_CONNECTION", UIColors.WARNING)
 		_auto_connect()
 		return
 	_nm.list_rooms()
-	_show_status("Обновление...", UIColors.MUTED)
+	_show_status("STATUS_UPDATING", UIColors.MUTED)
 
 
 func _on_create_pressed() -> void:
 	var rname := _create_name_input.text.strip_edges()
 	if rname.is_empty():
-		_show_status("Введите название комнаты!", UIColors.ERROR)
+		_show_status("MENU_ERR_NEED_ROOM_NAME", UIColors.ERROR)
 		return
 	_create_btn.disabled = true
 	_nm.create_room(rname, _create_pass_input.text)
@@ -317,11 +340,11 @@ func _on_create_pressed() -> void:
 
 func _on_join_pressed() -> void:
 	if _selected_room_id.is_empty():
-		_show_status("Выберите комнату из списка", UIColors.ERROR)
+		_show_status("MENU_STATUS_PICK_ROOM", UIColors.ERROR)
 		return
 	_join_btn.disabled = true
 	_nm.join_room(_selected_room_id, _join_pass_input.text)
-	_show_status("Подключение к комнате...", UIColors.WARNING)
+	_show_status("STATUS_CONNECTING_TO_ROOM", UIColors.WARNING)
 
 
 # ── Обработчики сигналов NetworkManager ───────────────────────────────────────
@@ -334,7 +357,7 @@ func _on_connected() -> void:
 
 func _on_disconnected() -> void:
 	_rooms_panel.modulate.a = 0.4
-	_show_status("Отключено от сервера", UIColors.ERROR)
+	_show_status("STATUS_DISCONNECTED", UIColors.ERROR)
 
 
 func _on_rooms_updated(rooms: Array) -> void:
@@ -347,12 +370,12 @@ func _on_rooms_updated(rooms: Array) -> void:
 	if rooms.is_empty():
 		var empty_lbl := Label.new()
 		empty_lbl.name = "EmptyLabel"
-		empty_lbl.text = "Нет активных комнат"
+		empty_lbl.text = "MENU_STATUS_NO_ROOMS"
 		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty_lbl.add_theme_color_override("font_color", UIColors.MUTED)
 		empty_lbl.add_theme_font_size_override("font_size", 13)
 		_rooms_list.add_child(empty_lbl)
-		_show_status("Активных комнат нет — создайте свою!", UIColors.MUTED)
+		_show_status("MENU_STATUS_NO_ROOMS_HINT", UIColors.MUTED)
 		return
 
 	for i in range(rooms.size()):
@@ -363,7 +386,7 @@ func _on_rooms_updated(rooms: Array) -> void:
 		# pressed уже подключён внутри _make_room_row
 		_rooms_list.add_child(row)
 
-	_show_status("Найдено комнат: %d" % rooms.size(), UIColors.SUCCESS)
+	_show_status(tr("MENU_STATUS_FOUND_ROOMS_FMT") % rooms.size(), UIColors.SUCCESS)
 
 
 func _on_room_selected(room_id: String, row_btn: Button) -> void:
@@ -398,7 +421,7 @@ func _on_joined_room(_rid: String, _rname: String, _is_host: bool, _players: Arr
 
 func _on_rejoin_failed_in_menu() -> void:
 	_rooms_panel.modulate.a = 1.0
-	_show_status("Комната не найдена — возможно, сервер перезапускался", UIColors.WARNING)
+	_show_status("MENU_ERR_ROOM_NOT_FOUND", UIColors.WARNING)
 	_nm.list_rooms()
 
 
@@ -502,7 +525,7 @@ func _make_room_row(room: Dictionary) -> Control:
 		var del_btn := Button.new()
 		del_btn.name = "DeleteBtn"
 		del_btn.text = "✕"
-		del_btn.tooltip_text = "Удалить пустую комнату"
+		del_btn.tooltip_text = "TOOLTIP_DELETE_EMPTY_ROOM"
 		del_btn.custom_minimum_size = Vector2(36, 0)
 		del_btn.focus_mode = Control.FOCUS_NONE
 		UIStyle.style_button(del_btn, UIColors.DANGER)

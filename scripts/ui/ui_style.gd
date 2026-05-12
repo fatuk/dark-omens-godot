@@ -189,7 +189,7 @@ static func modal(
 	p.add_child(vbox)
 
 	var hdr := Label.new()
-	hdr.text = "  " + title
+	hdr.text = title   # ожидается translation key — Godot переводит сам
 	hdr.add_theme_font_size_override("font_size", 16)
 	hdr.add_theme_color_override("font_color", UIColors.ACCENT)
 	vbox.add_child(hdr)

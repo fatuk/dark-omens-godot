@@ -97,14 +97,10 @@ func _ready() -> void:
 # ── Данные ────────────────────────────────────────────────────────────────────
 
 func _load_investigators() -> void:
-	var text: String = FileAccess.get_file_as_string("res://data/investigators.json")
-	if text.is_empty():
+	_investigators = DataLoader.load_array("res://data/investigators.json")
+	if _investigators.is_empty():
 		push_error("InvestigatorPicker: не удалось прочитать investigators.json")
 		return
-	var data: Variant = JSON.parse_string(text)
-	if not data is Array:
-		return
-	_investigators = data as Array
 	for i: int in range(_investigators.size()):
 		var inv: Dictionary = _investigators[i]
 		_inv_data[inv.get("name", "")] = inv
@@ -161,7 +157,7 @@ func _build_detail_panel() -> PanelContainer:
 	vbox.add_child(_detail_portrait)
 
 	_detail_name = Label.new()
-	_detail_name.text = "— Не выбран —"
+	_detail_name.text = "PICKER_NOT_SELECTED"
 	_detail_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_detail_name.add_theme_font_size_override("font_size", 28)
 	_detail_name.add_theme_color_override("font_color", UIColors.TEXT)
@@ -262,7 +258,8 @@ func _build_cards_panel() -> ScrollContainer:
 # ── Карточки ──────────────────────────────────────────────────────────────────
 
 func _make_inv_card(inv: Dictionary) -> Button:
-	var inv_name: String = inv.get("name", "")
+	var inv_name:    String = inv.get("name", "")             # структурный ID для портретов / сети / сейва
+	var display_key: String = inv.get("displayName", inv_name) # translation key для имени
 
 	var btn := Button.new()
 	btn.custom_minimum_size = Vector2(200, 296)
@@ -296,13 +293,16 @@ func _make_inv_card(inv: Dictionary) -> Button:
 
 	var name_lbl := Label.new()
 	name_lbl.mouse_filter            = Control.MOUSE_FILTER_IGNORE
-	name_lbl.text                    = inv_name.split(" ")[0].replace("\"", "")
 	name_lbl.horizontal_alignment    = HORIZONTAL_ALIGNMENT_CENTER
 	name_lbl.vertical_alignment      = VERTICAL_ALIGNMENT_CENTER
 	name_lbl.custom_minimum_size.y   = 60
 	name_lbl.add_theme_font_size_override("font_size", 26)
 	name_lbl.add_theme_color_override("font_color", UIColors.TEXT)
 	vbox.add_child(name_lbl)
+	# Имя на карточке = первое слово переведённого имени. Биндим через
+	# LocaleBinder чтобы при смене локали тоже пересчиталось.
+	LocaleBinder.bind(name_lbl, func() -> String:
+		return tr(display_key).split(" ")[0].replace("\"", ""))
 
 	return btn
 
@@ -413,25 +413,37 @@ func _update_detail() -> void:
 	var inv: Dictionary = _inv_data[_selected_inv]
 
 	_detail_portrait.texture  = _load_portrait(_selected_inv)
-	_detail_name.text         = inv.get("name", "")
+	_detail_name.text         = inv.get("displayName", inv.get("name", ""))
 	_detail_occupation.text   = inv.get("occupation", "")
 	_detail_hp_val.text       = str(inv.get("health", 0))
 	_detail_san_val.text      = str(inv.get("sanity", 0))
 
+	# Скиллы — форматированная строка с цифрами, локаль может поменять подписи.
 	var sk: Dictionary = inv.get("skills", {})
-	_detail_skills.text = "Lore %d  ·  Infl %d  ·  Obs %d\nStr %d  ·  Will %d" % [
-		int(sk.get("lore", 0)), int(sk.get("influence", 0)),
-		int(sk.get("observation", 0)), int(sk.get("strength", 0)),
-		int(sk.get("will", 0)),
-	]
+	LocaleBinder.bind(_detail_skills, func() -> String:
+		return "%s %d  ·  %s %d  ·  %s %d\n%s %d  ·  %s %d" % [
+			tr("SKILL_LORE"),        int(sk.get("lore", 0)),
+			tr("SKILL_INFLUENCE"),   int(sk.get("influence", 0)),
+			tr("SKILL_OBSERVATION"), int(sk.get("observation", 0)),
+			tr("SKILL_STRENGTH"),    int(sk.get("strength", 0)),
+			tr("SKILL_WILL"),        int(sk.get("will", 0)),
+		])
 
-	_detail_roles.text = "  ·  ".join(inv.get("role", []))
-	_detail_quote.text = "«%s»" % inv.get("quote", "")
+	# Роли: массив ключей, склеиваем переведённые значения. На смене локали — биндом.
+	var roles: Array = inv.get("role", [])
+	LocaleBinder.bind(_detail_roles, func() -> String:
+		var translated: Array = []
+		for r: String in roles:
+			translated.append(tr(r))
+		return "  ·  ".join(translated))
+
+	# quote — translation key, в CSV уже включены «...», просто присваиваем.
+	_detail_quote.text = inv.get("quote", "")
 
 
 func _reset_detail() -> void:
 	_detail_portrait.texture  = _placeholder_texture()
-	_detail_name.text         = "— Не выбран —"
+	_detail_name.text         = "PICKER_NOT_SELECTED"
 	_detail_occupation.text   = ""
 	_detail_hp_val.text       = "-"
 	_detail_san_val.text      = "-"

@@ -104,7 +104,7 @@ func _wire_handlers() -> void:
 func _on_send_pressed() -> void:
 	var email: String = _email_input.text.strip_edges().to_lower()
 	if email.is_empty() or not "@" in email:
-		_show_status("Введите корректный email", UIColors.ERROR)
+		_show_status("LOGIN_ERR_INVALID_EMAIL", UIColors.ERROR)
 		return
 	_current_email = email
 	_send_btn.disabled = true
@@ -115,17 +115,17 @@ func _on_send_pressed() -> void:
 func _on_verify_pressed() -> void:
 	var code: String = _code_input.text.strip_edges()
 	if code.length() != 6:
-		_show_status("Код должен содержать 6 цифр", UIColors.ERROR)
+		_show_status("LOGIN_ERR_CODE_LENGTH", UIColors.ERROR)
 		return
 	_verify_btn.disabled = true
-	_show_status("Проверяем код...", UIColors.WARNING)
+	_show_status("LOGIN_STATUS_CHECKING_CODE", UIColors.WARNING)
 	_auth.verify_otp(_current_email, code)
 
 
 func _on_back_pressed() -> void:
 	_code_input.text = ""
 	_show_panel("email")
-	_show_status("Введите email, чтобы получить новый код", UIColors.MUTED)
+	_show_status("LOGIN_ERR_NEED_EMAIL", UIColors.MUTED)
 
 
 # ── Обработчики сигналов AuthManager ──────────────────────────────────────────
@@ -134,7 +134,7 @@ func _on_otp_sent() -> void:
 	_send_btn.disabled = false
 	_code_label.text = "Код отправлен на %s" % _current_email
 	_show_panel("code")
-	_show_status("Проверьте почту — код действителен 15 минут", UIColors.SUCCESS)
+	_show_status("LOGIN_STATUS_CHECK_MAIL", UIColors.SUCCESS)
 	_code_input.grab_focus()
 
 
@@ -144,7 +144,7 @@ func _on_otp_failed(error: String) -> void:
 
 
 func _on_login_succeeded(_user: Dictionary) -> void:
-	_show_status("Вход выполнен!", UIColors.SUCCESS)
+	_show_status("LOGIN_STATUS_SUCCESS", UIColors.SUCCESS)
 	SceneManager.go("main_menu")
 
 
@@ -155,7 +155,7 @@ func _on_login_failed(error: String) -> void:
 
 func _on_session_invalid() -> void:
 	_show_panel("email")
-	_show_status("Сессия истекла — войдите снова", UIColors.WARNING)
+	_show_status("LOGIN_SESSION_EXPIRED", UIColors.WARNING)
 
 
 # ── Вспомогательные ───────────────────────────────────────────────────────────

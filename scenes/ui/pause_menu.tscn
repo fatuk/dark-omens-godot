@@ -43,7 +43,7 @@ theme_override_constants/separation = 10
 [node name="Title" type="Label" parent="Root/Center/MainPanel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "  ПАУЗА"
+text = "PAUSE_TITLE"
 
 [node name="Sep1" type="HSeparator" parent="Root/Center/MainPanel/VBox"]
 layout_mode = 2
@@ -52,13 +52,13 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "▶   ПРОДОЛЖИТЬ"
+text = "PAUSE_BTN_RESUME"
 
 [node name="SettingsBtn" type="Button" parent="Root/Center/MainPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "⚙   НАСТРОЙКИ"
+text = "PAUSE_BTN_SETTINGS"
 
 [node name="Sep2" type="HSeparator" parent="Root/Center/MainPanel/VBox"]
 layout_mode = 2
@@ -67,13 +67,13 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "⌂   ГЛАВНОЕ МЕНЮ"
+text = "PAUSE_BTN_MAIN_MENU"
 
 [node name="QuitBtn" type="Button" parent="Root/Center/MainPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "✕   ВЫЙТИ ИЗ ИГРЫ"
+text = "PAUSE_BTN_QUIT_GAME"
 
 ; ── Панель настроек ────────────────────────────────────────────────────────
 [node name="SettPanel" type="PanelContainer" parent="Root/Center"]
@@ -89,7 +89,7 @@ theme_override_constants/separation = 12
 [node name="Title" type="Label" parent="Root/Center/SettPanel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "  НАСТРОЙКИ"
+text = "MENU_BTN_SETTINGS"
 
 [node name="Sep1" type="HSeparator" parent="Root/Center/SettPanel/VBox"]
 layout_mode = 2
@@ -97,7 +97,7 @@ layout_mode = 2
 [node name="DispLabel" type="Label" parent="Root/Center/SettPanel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
-text = "ДИСПЛЕЙ"
+text = "SECTION_DISPLAY"
 
 [node name="ResRow" type="HBoxContainer" parent="Root/Center/SettPanel/VBox"]
 layout_mode = 2
@@ -107,10 +107,26 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(110, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Разрешение:"
+text = "FORM_RESOLUTION"
 vertical_alignment = 1
 
 [node name="ResOption" type="OptionButton" parent="Root/Center/SettPanel/VBox/ResRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LangRow" type="HBoxContainer" parent="Root/Center/SettPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LangLabel" type="Label" parent="Root/Center/SettPanel/VBox/LangRow"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "FORM_LANGUAGE"
+vertical_alignment = 1
+
+[node name="LangOption" type="OptionButton" parent="Root/Center/SettPanel/VBox/LangRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -127,7 +143,7 @@ theme_override_font_sizes/font_size = 14
 [node name="FsLabel" type="Label" parent="Root/Center/SettPanel/VBox/FsRow"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Полный экран"
+text = "SETTINGS_FULLSCREEN"
 
 [node name="FxRow" type="HBoxContainer" parent="Root/Center/SettPanel/VBox"]
 layout_mode = 2
@@ -141,7 +157,7 @@ theme_override_font_sizes/font_size = 14
 [node name="FxLabel" type="Label" parent="Root/Center/SettPanel/VBox/FxRow"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Эффект старой плёнки"
+text = "SETTINGS_FX_OLD_FILM"
 
 [node name="Sep2" type="HSeparator" parent="Root/Center/SettPanel/VBox"]
 layout_mode = 2
@@ -154,10 +170,10 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "СОХРАНИТЬ"
+text = "BTN_SAVE_BIG"
 
 [node name="BackBtn" type="Button" parent="Root/Center/SettPanel/VBox/BtnRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "ОТМЕНА"
+text = "BTN_CANCEL_BIG"

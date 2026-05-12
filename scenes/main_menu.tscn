@@ -39,7 +39,7 @@ horizontal_alignment = 1
 [node name="Subtitle" type="Label" parent="Center/Root"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "по мотивам настольной игры «Древний Ужас»"
+text = "APP_SUBTITLE"
 horizontal_alignment = 1
 
 [node name="Sep1" type="HSeparator" parent="Center/Root"]
@@ -88,7 +88,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "Выйти"
+text = "MENU_QUIT"
 
 [node name="Sep2" type="HSeparator" parent="Center/Root"]
 layout_mode = 2
@@ -112,7 +112,7 @@ theme_override_constants/separation = 10
 [node name="Header" type="Label" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-text = "  СОЗДАТЬ КОМНАТУ"
+text = "MENU_BTN_CREATE_ROOM"
 
 [node name="Sep" type="HSeparator" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
 layout_mode = 2
@@ -125,14 +125,14 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Название:"
+text = "FORM_NAME"
 vertical_alignment = 1
 
 [node name="CreateNameInput" type="LineEdit" parent="Center/Root/RoomsPanel/CreatePanel/VBox/NameRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "Моя игра..."
+placeholder_text = "MENU_GAME_NAME_PLACEHOLDER"
 
 [node name="PassRow" type="HBoxContainer" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
 layout_mode = 2
@@ -142,7 +142,7 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Пароль:"
+text = "FORM_PASSWORD"
 vertical_alignment = 1
 
 [node name="CreatePassInput" type="LineEdit" parent="Center/Root/RoomsPanel/CreatePanel/VBox/PassRow"]
@@ -150,12 +150,12 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 secret = true
-placeholder_text = "(необязательно)"
+placeholder_text = "FORM_OPTIONAL"
 
 [node name="CreateBtn" type="Button" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "СОЗДАТЬ"
+text = "BTN_CREATE_BIG"
 
 ; ── Список комнат ──
 [node name="ListPanel" type="PanelContainer" parent="Center/Root/RoomsPanel"]
@@ -175,7 +175,7 @@ theme_override_constants/separation = 10
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
-text = "  ОТКРЫТЫЕ КОМНАТЫ"
+text = "MENU_OPEN_ROOMS_HEADER"
 
 [node name="RefreshBtn" type="Button" parent="Center/Root/RoomsPanel/ListPanel/VBox/HeaderRow"]
 unique_name_in_owner = true
@@ -208,7 +208,7 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Пароль:"
+text = "FORM_PASSWORD"
 vertical_alignment = 1
 
 [node name="JoinPassInput" type="LineEdit" parent="Center/Root/RoomsPanel/ListPanel/VBox/JoinPassRow"]
@@ -216,13 +216,13 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 secret = true
-placeholder_text = "(если требуется)"
+placeholder_text = "FORM_IF_REQUIRED"
 
 [node name="JoinBtn" type="Button" parent="Center/Root/RoomsPanel/ListPanel/VBox"]
 unique_name_in_owner = true
 disabled = true
 layout_mode = 2
-text = "ВОЙТИ В КОМНАТУ"
+text = "MENU_BTN_JOIN_ROOM"
 
 [node name="Sep3" type="HSeparator" parent="Center/Root"]
 layout_mode = 2
@@ -231,5 +231,5 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Подключение..."
+text = "STATUS_CONNECTING"
 horizontal_alignment = 1

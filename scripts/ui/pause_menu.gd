@@ -23,11 +23,12 @@ const RESOLUTIONS: Array[Vector2i] = [
 @onready var _menu_btn:     Button = %MenuBtn
 @onready var _quit_btn:     Button = %QuitBtn
 
-@onready var _res_option: OptionButton = %ResOption
-@onready var _fs_check:   CheckBox     = %FsCheck
-@onready var _fx_check:   CheckBox     = %FxCheck
-@onready var _save_btn:   Button       = %SaveBtn
-@onready var _back_btn:   Button       = %BackBtn
+@onready var _res_option:  OptionButton = %ResOption
+@onready var _lang_option: OptionButton = %LangOption
+@onready var _fs_check:    CheckBox     = %FsCheck
+@onready var _fx_check:    CheckBox     = %FxCheck
+@onready var _save_btn:    Button       = %SaveBtn
+@onready var _back_btn:    Button       = %BackBtn
 
 # ── Состояние ─────────────────────────────────────────────────────────────────
 var _open:       bool = false
@@ -41,7 +42,13 @@ func _ready() -> void:
 	_load_settings()
 	_apply_styles()
 	_populate_resolutions()
+	_populate_languages()
 	_wire_handlers()
+	# Локализация лейблов и кнопок — через translation keys в .tscn (BTN_SAVE_BIG,
+	# PAUSE_BTN_RESUME и т.д.). Godot сам переводит при рендере и обновляет при
+	# смене локали. Здесь только обновляем dropdown языков (его items нужно
+	# пересоздать на новых переводах).
+	I18n.locale_changed.connect(func(_locale: String) -> void: _populate_languages())
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -78,6 +85,7 @@ func _apply_styles() -> void:
 	# Лейблы строк настроек
 	for path in [
 		"Root/Center/SettPanel/VBox/ResRow/ResLabel",
+		"Root/Center/SettPanel/VBox/LangRow/LangLabel",
 		"Root/Center/SettPanel/VBox/FsRow/FsLabel",
 	]:
 		(get_node(path) as Label).add_theme_color_override("font_color", UIColors.TEXT)
@@ -88,6 +96,7 @@ func _apply_styles() -> void:
 		.add_theme_color_override("font_color", UIColors.TEXT)
 
 	UIStyle.style_option_button(_res_option)
+	UIStyle.style_option_button(_lang_option)
 
 	UIStyle.style_button(_continue_btn)
 	UIStyle.style_button(_settings_btn)
@@ -105,6 +114,13 @@ func _populate_resolutions() -> void:
 	_res_option.disabled = _fullscreen
 	_fs_check.button_pressed = _fullscreen
 	_fx_check.button_pressed = PostFx.is_enabled()
+
+
+func _populate_languages() -> void:
+	_lang_option.clear()
+	for code: String in I18n.SUPPORTED:
+		_lang_option.add_item(tr("LANG_" + code.to_upper()))
+	_lang_option.selected = I18n.SUPPORTED.find(I18n.get_locale())
 
 
 func _wire_handlers() -> void:
@@ -147,6 +163,9 @@ func _save_and_back() -> void:
 	_save_settings()
 	_apply_display()
 	PostFx.set_enabled(_fx_check.button_pressed)
+	# Язык: меняем через I18n — тот сам сохранит и эмитнет locale_changed.
+	if _lang_option.selected >= 0:
+		I18n.set_locale(I18n.SUPPORTED[_lang_option.selected])
 	_show_main()
 
 

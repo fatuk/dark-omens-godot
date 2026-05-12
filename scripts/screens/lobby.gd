@@ -146,7 +146,7 @@ func _check_auto_ready() -> void:
 	_update_row_ready(_nm.my_id, true, selected)
 	if is_instance_valid(_ready_button):
 		_ready_button.disabled = true
-		_ready_button.text     = "  ГОТОВ  ✓"
+		_ready_button.text     = "LOBBY_BTN_READY_DONE"
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
 	_refresh_start_button()
 
@@ -183,10 +183,11 @@ func _recompute_taken() -> void:
 func _update_room_label() -> void:
 	if not is_instance_valid(_room_label):
 		return
-	if _nm.is_host():
-		_room_label.text = "Комната: %s  •  Вы — ведущий игры  •  Ожидание участников..." % _nm.room_name
-	else:
-		_room_label.text = "Комната: %s  •  Ожидайте начала игры" % _nm.room_name
+	# Форматированная строка — биндим через LocaleBinder, чтобы при смене локали
+	# tr() пересчитывалось.
+	LocaleBinder.bind(_room_label, func() -> String:
+		var key: String = "LOBBY_ROOM_HOST_FMT" if _nm.is_host() else "LOBBY_ROOM_GUEST_FMT"
+		return tr(key) % _nm.room_name)
 
 
 func _populate_players() -> void:
@@ -248,13 +249,13 @@ func _add_player_row(id: String, info: Dictionary) -> void:
 	tag.add_theme_font_size_override("font_size", 13)
 	tag.custom_minimum_size.x = 90
 	if is_me_host:
-		tag.text = "Ведущий"
+		tag.text = "LOBBY_TAG_HOST"
 		tag.add_theme_color_override("font_color", UIColors.ACCENT)
 	elif info.get("ready", false):
-		tag.text = "Готов ✓"
+		tag.text = "LOBBY_TAG_READY"
 		tag.add_theme_color_override("font_color", UIColors.READY)
 	else:
-		tag.text = "Ожидает..."
+		tag.text = "LOBBY_TAG_WAITING"
 		tag.add_theme_color_override("font_color", UIColors.MUTED)
 	row.add_child(tag)
 	_player_tags[id] = tag
@@ -282,13 +283,13 @@ func _update_row_ready(id: String, is_ready: bool, inv_name: String = "") -> voi
 	if _player_tags.has(id):
 		var tag := _player_tags[id] as Label
 		if is_ready:
-			tag.text = "Готов ✓"
+			tag.text = "LOBBY_TAG_READY"
 			tag.add_theme_color_override("font_color", UIColors.READY)
 		else:
-			tag.text = "Ожидает..."
+			tag.text = "LOBBY_TAG_WAITING"
 			tag.add_theme_color_override("font_color", UIColors.MUTED)
 	if not inv_name.is_empty() and _player_inv_lbls.has(id):
-		(_player_inv_lbls[id] as Label).text = inv_name
+		(_player_inv_lbls[id] as Label).text = Investigators.display_name(inv_name)
 
 
 func _refresh_start_button() -> void:
@@ -296,21 +297,21 @@ func _refresh_start_button() -> void:
 
 	if not _nm.is_host():
 		if selected.is_empty():
-			_status_label.text = "Выберите сыщика, затем нажмите «Готов»"
+			_status_label.text = "LOBBY_HINT_PICK_THEN_READY"
 		elif not _was_ready:
-			_status_label.text = "Нажмите «Готов», чтобы подтвердить выбор"
+			_status_label.text = "LOBBY_HINT_READY_TO_CONFIRM"
 		else:
-			_status_label.text = "Ожидайте решения ведущего"
+			_status_label.text = "LOBBY_STATUS_WAIT_HOST"
 		_status_label.modulate = UIColors.MUTED
 		return
 
 	if selected.is_empty():
 		_start_button.disabled = true
-		_status_label.text     = "Выберите своего сыщика"
+		_status_label.text     = "LOBBY_STATUS_PICK"
 		_status_label.modulate = UIColors.WARNING
 	elif not _was_ready:
 		_start_button.disabled = true
-		_status_label.text     = "Нажмите «Готов», затем можно начинать"
+		_status_label.text     = "LOBBY_HINT_HOST"
 		_status_label.modulate = UIColors.WARNING
 	else:
 		_start_button.disabled = false
@@ -432,7 +433,7 @@ func _on_ready_pressed() -> void:
 	GameConsole.log("Вы готовы  ·  сыщик: %s" % selected)
 	if is_instance_valid(_ready_button):
 		_ready_button.disabled = true
-		_ready_button.text     = "  ГОТОВ  ✓"
+		_ready_button.text     = "LOBBY_BTN_READY_DONE"
 	_update_row_ready(_nm.my_id, true, selected)
 	if _nm.players.has(_nm.my_id):
 		_nm.players[_nm.my_id]["ready"]       = true
@@ -497,12 +498,7 @@ func _build_players_init() -> Array:
 
 
 func _load_investigators_index() -> Dictionary:
-	var text: String = FileAccess.get_file_as_string("res://data/investigators.json")
-	if text.is_empty():
-		return {}
-	var arr: Variant = JSON.parse_string(text)
-	if not arr is Array:
-		return {}
+	var arr: Array = DataLoader.load_array("res://data/investigators.json")
 	var idx: Dictionary = {}
 	for inv: Dictionary in arr:
 		idx[inv.get("name", "")] = inv

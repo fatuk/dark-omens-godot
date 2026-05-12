@@ -2,7 +2,11 @@
   {
 	"name": "1",
 	"type": "city",
-	"realWorldLocation": "Anchorage, Alaska, USA",
+	"realWorldLocation": "LOC_1_REAL",
+	"description": "LOC_1_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  61.227792875451016,
 	  -149.89633610734984
@@ -20,16 +24,19 @@
 		"to": "4",
 		"type": "uncharted"
 	  }
-	],
-	"description": "Frontiersmen of this last harbour speak of an aurora that flickers in geometries not granted to honest atmospheres — patterns the old astronomers of forgotten Lomar would have recognised, and feared. Beyond the city the road dwindles into snow and silence, and from that silence comes a piping, thin and distant, in cadences that pre-date the breath of men. The natives of this coast, who have outlived three migrations of stars, will not name what shuffles down from the glacier at the equinox; they only set out their offerings, turn their faces inward, and do not look until morning."
+	]
   },
   {
 	"name": "2",
 	"type": "sea",
-	"realWorldLocation": "Northeast of Hawaii, USA",
+	"realWorldLocation": "LOC_2_REAL",
+	"description": "LOC_2_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
-	  22.1214049371853,
-	  -159.60190400831087
+	  25.0,
+	  -150.0
 	],
 	"connections": [
 	  {
@@ -40,16 +47,19 @@
 		"to": "Tokyo",
 		"type": "ship"
 	  }
-	],
-	"description": "The crews of these latitudes pin their charts with iron, for paper alone is no longer enough — the ink wanders, the soundings disagree with themselves, and at certain hours the sextant insists upon a star that is not there. Beneath the long Pacific roll the bones of an architecture older than any island, and on calm nights, when the moon obliges, fishermen have heard a chorus rising in syllables of brine and basalt. Those who hum the tune ashore find their families gathering away from them, slowly, as though the song carried a weather all its own."
+	]
   },
   {
 	"name": "3",
 	"type": "sea",
-	"realWorldLocation": "Oceanic pole of inacessibility",
+	"realWorldLocation": "LOC_3_REAL",
+	"description": "LOC_3_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
-	  -82.03326119742952,
-	  55.08441823026488
+	  -48.87666666666667,
+	  -123.39333333333333
 	],
 	"connections": [
 	  {
@@ -60,13 +70,16 @@
 		"to": "Sydney",
 		"type": "ship"
 	  }
-	],
-	"description": "Here the great stars wheel into an alignment that the calendars of men were never permitted to predict. Sailors whose vessels stray over this lonely water report a heaviness as of fathomless masonry pressing upward through the hull, and a dream — shared, identical, unrefusable — of a green-litten city whose geometry refuses the eye. There sleeps something neither dead nor patient, only postponed; and the date of its waking, while not yet entered into any almanac, is nevertheless approaching with the steadiness of a tide that does not consult the moon."
+	]
   },
   {
 	"name": "4",
 	"type": "wilderness",
-	"realWorldLocation": "Fort Providence, Canada",
+	"realWorldLocation": "LOC_4_REAL",
+	"description": "LOC_4_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  61.36354395281137,
 	  -117.65928769719235
@@ -80,13 +93,16 @@
 		"to": "5",
 		"type": "uncharted"
 	  }
-	],
-	"description": "In this taiga of black spruce and standing water, the maps of the surveyors have a habit of revising themselves between printings. Trappers report cabins at coordinates earlier expeditions left empty, and footprints that emerge from nowhere and cease in the middle of an unbroken drift. The boreal hush is not silence but attention — the old patient kind, that does not need to breathe. Travellers passing through under the long blue dusk are advised to count their companions twice each league, and not to remark when the count differs."
+	]
   },
   {
 	"name": "5",
 	"type": "city",
-	"realWorldLocation": "The American Midwest",
+	"realWorldLocation": "LOC_5_REAL",
+	"description": "LOC_5_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  41.25474870429752,
 	  -95.9412306930459
@@ -104,13 +120,16 @@
 		"to": "4",
 		"type": "uncharted"
 	  }
-	],
-	"description": "The corn here is patient, and what lies beneath it is more patient still. Old farmers along the river bottoms keep certain doors nailed, certain wells filled, certain almanacs unburned, for reasons their grandsons no longer trouble to ask. There was once, they will tell you obliquely, a season when the sky tasted wrong and the cattle would not drink, and from a meadow since ploughed into nothing a small grey light rose, and went elsewhere, and was — for a generation — a topic the local press declined to print."
+	]
   },
   {
 	"name": "6",
 	"type": "city",
-	"realWorldLocation": "Dallas, Texas, USA",
+	"realWorldLocation": "LOC_6_REAL",
+	"description": "LOC_6_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  32.78708209137895,
 	  -96.79610937882182
@@ -128,13 +147,16 @@
 		"to": "7",
 		"type": "train"
 	  }
-	],
-	"description": "The derricks of this prairie city draw up oil that, in the dim hour before refining, exhibits a viscosity the geologists cannot account for — and, on certain windless nights, a faint phosphorescence as though it remembered being elsewhere. The towers of glass that have grown over the old plains stand in alignments no surveyor proposed; they are merely there, in arrangements pleasing to a geometry that did not consult the city council. Who first laid out this grid is a question the city archives do not answer, and the archivists, when pressed, recommend other questions."
+	]
   },
   {
 	"name": "7",
 	"type": "city",
-	"realWorldLocation": "Panama City, Panama",
+	"realWorldLocation": "LOC_7_REAL",
+	"description": "LOC_7_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  8.987118555703058,
 	  -79.51700973797024
@@ -160,13 +182,16 @@
 		"to": "8",
 		"type": "ship"
 	  }
-	],
-	"description": "The canal counts its tonnage with diligent ledgers, but a third party — older than locks, older than continents — keeps a parallel register beneath. Pilots speak, when sufficiently far from the office, of vessels that enter on one calendar and emerge upon another, their crews intact but altered in some particular each man recognises in the others and refuses to name. The two oceans here exchange more than salt; what passes between them, in the dark hours of transit, is a courtesy that has not yet been formally requested by either."
+	]
   },
   {
 	"name": "8",
 	"type": "sea",
-	"realWorldLocation": "The Bermuda Triangle",
+	"realWorldLocation": "LOC_8_REAL",
+	"description": "LOC_8_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  25.000971604318792,
 	  -71.00034337451198
@@ -188,13 +213,16 @@
 		"to": "10",
 		"type": "ship"
 	  }
-	],
-	"description": "In the war years a German submarine was said to have settled, briefly, upon a temple of pale stone risen unbidden from these depths — its lamps lit by no familiar flame, its inscriptions in an alphabet the Reich's philologists declined, in the end, to decode. Whether the report was true is moot; the sea here returns its missing in fragments only, and never the same fragment twice. The compass, beneath this water, recognises a pole the cartographers have not authorised, and turns toward it with a politeness that disquiets every captain who has noticed."
+	]
   },
   {
 	"name": "9",
 	"type": "wilderness",
-	"realWorldLocation": "Disko Island, Greenland",
+	"realWorldLocation": "LOC_9_REAL",
+	"description": "LOC_9_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  69.83843709705985,
 	  -53.478957686177644
@@ -204,13 +232,16 @@
 		"to": "Arkham",
 		"type": "ship"
 	  }
-	],
-	"description": "On these black-sand beaches the bergs calve in profiles too deliberate to be ice alone — long colonnades, half-submerged, whose proportions recall the doomed cities of Lomar that the older sagas place beneath the polar star. The Inuit elders have a song they will not sing within sight of the water; the song, they say, is for the listener, not the singer, and the listener has been growing nearer since the first thaw of the new century. Sailors who anchor here past the autumn equinox should account for one extra shadow at lantern-watch, and feed it as they would a guest."
+	]
   },
   {
 	"name": "10",
 	"type": "wilderness",
-	"realWorldLocation": "Dakar, Senegal",
+	"realWorldLocation": "LOC_10_REAL",
+	"description": "LOC_10_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  14.719322360246661,
 	  -17.466855845462135
@@ -232,13 +263,16 @@
 		"to": "15",
 		"type": "ship"
 	  }
-	],
-	"description": "The drums of the interior do not always require drummers. Along this westernmost cape, where the desert at last exhausts itself into salt, certain processions are heard at the edge of sleep — measured, multitudinous, marching west across a sea they have not yet noticed is in their way. The fetishes of the older priesthoods, kept in cellars the colonial registries never inventoried, are said to face — without being turned — in the direction of a wandering god whose epithet means, approximately, the messenger; the message, by all accounts, is overdue."
+	]
   },
   {
 	"name": "11",
 	"type": "sea",
-	"realWorldLocation": "Tristan de Cunha",
+	"realWorldLocation": "LOC_11_REAL",
+	"description": "LOC_11_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  -37.0921834019556,
 	  -12.276158854542762
@@ -252,13 +286,16 @@
 		"to": "15",
 		"type": "ship"
 	  }
-	],
-	"description": "Loneliest of all anchorages, this volcanic crumb in the southern grey is haunted by a swell that arrives without storm and a warmth that rises through the thwarts of the boats with no fire beneath them. The lighthouse-keepers, of whom there have been a peculiar number, kept logs whose final pages — in successive hands, across decades — describe the same approaching vessel, never closer than the horizon, never receding. The islanders say the vessel will dock when its passenger is ready; and the passenger, they say, has been ready for some time, but is courteous."
+	]
   },
   {
 	"name": "12",
 	"type": "sea",
-	"realWorldLocation": "South Georgia and the Sandwich Islands",
+	"realWorldLocation": "LOC_12_REAL",
+	"description": "LOC_12_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  -54.386598291739524,
 	  -36.56236684775685
@@ -272,13 +309,16 @@
 		"to": "Buenos Aires",
 		"type": "ship"
 	  }
-	],
-	"description": "The whales of this latitude beach themselves in formations the old whalers, who knew the trade, refused to harvest — for the lines of their bodies upon the shingle, when read aloud, transcribe a phrase no man should pronounce within hearing of the ice. Beyond the southern fog stand the Mountains, and beyond the Mountains the City, and beyond the City a thing that the survivors of the Pabodie expedition declined to record in their published account. This island is the antechamber. The door is not locked, but is, at present, hospitable."
+	]
   },
   {
 	"name": "13",
 	"type": "sea",
-	"realWorldLocation": "Franz Josef Land, Arkhangelsk Oblast, Russia",
+	"realWorldLocation": "LOC_13_REAL",
+	"description": "LOC_13_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  80.80387348723677,
 	  55.23775033629281
@@ -288,13 +328,16 @@
 		"to": "London",
 		"type": "ship"
 	  }
-	],
-	"description": "At this absurd latitude the sun is a rumour, and the constellations rearrange themselves over the long winter as though to spell something the watcher is not meant to read aloud. The ice carries a sound the rune-cutters of vanished Lomar would have recognised — a low keening of the kind their poems described as the breath of a star not yet fallen. A door is fitted into this parallel. Its hinges are oiled. Its handle, on this side, has been removed, and the carpenter has been observed nowhere since the removal."
+	]
   },
   {
 	"name": "14",
 	"type": "city",
-	"realWorldLocation": "Oulu, Finland",
+	"realWorldLocation": "LOC_14_REAL",
+	"description": "LOC_14_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  65.02952632509181,
 	  25.47020942432892
@@ -308,13 +351,16 @@
 		"to": "16",
 		"type": "train"
 	  }
-	],
-	"description": "In the long polar night the shop-lamps of this northern city flicker in sequences the meteorological stations attribute, without conviction, to atmospheric whim. The folklore of these latitudes preserves the names of stars no instrument of the present century can locate — stars said to belong to a sky older than the present sky, and to wheel still over a country called by the old skalds Olathoë, lost beneath ice that is not, technically, ice. Children born here on the longest dark are sometimes named twice; the second name, kept private, is the one the snow uses."
+	]
   },
   {
 	"name": "15",
 	"type": "city",
-	"realWorldLocation": "Cape Town, South Africa",
+	"realWorldLocation": "LOC_15_REAL",
+	"description": "LOC_15_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  -33.92193657953176,
 	  18.45001774955841
@@ -340,13 +386,16 @@
 		"to": "18",
 		"type": "ship"
 	  }
-	],
-	"description": "At this last cape the two oceans negotiate openly, and a third — never seen, never charted — sits as the silent third party at every contract. The flat mountain at the city's back is a stage, and at the hour the sun retires the table is laid; the diners are spoken of only in the harbour's lower taverns, and the waiters are recognisable, when at last seen, by the absence of any feature one might describe. Sailors with business in further waters are advised to refresh their stores quickly here, and not to look too long at the cloth."
+	]
   },
   {
 	"name": "16",
 	"type": "city",
-	"realWorldLocation": "Krasnoyarsk, Russia",
+	"realWorldLocation": "LOC_16_REAL",
+	"description": "LOC_16_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  56.01664205186383,
 	  92.87396586875244
@@ -364,13 +413,16 @@
 		"to": "14",
 		"type": "train"
 	  }
-	],
-	"description": "The Yenisey runs upstream once a generation, for the duration of one indrawn breath of the taiga; those who happen to be standing on the bank at that moment age, in subsequent decades, in directions not strictly forward. East of the city the forest extends until extension itself becomes a courtesy — and somewhere within it lies a clearing the Soviet cartographers, despite every diligence, could not persuade onto a map. The sky above that clearing has a different colour. The colour is filed, in this city's older archives, under a name the librarians decline to read aloud."
+	]
   },
   {
 	"name": "17",
 	"type": "city",
-	"realWorldLocation": "Bombay, India",
+	"realWorldLocation": "LOC_17_REAL",
+	"description": "LOC_17_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  19.08736875314356,
 	  72.87911242100995
@@ -396,13 +448,16 @@
 		"to": "20",
 		"type": "ship"
 	  }
-	],
-	"description": "Three calendars contend in this great port, and on the holy days of the third — which fall, by design, between the dates the others recognise — certain doorways at the city's older edge cease, briefly, to be doorways. Those who pass through find themselves walking a corridor that resembles the bazaar but contains no goods, only a listening. The fakirs of the inland roads speak, when paid, of a plateau beyond the high mountains where the wind argues in a tongue the wind elsewhere has forgotten; the road to that plateau begins, they say, in a lane of this city no map admits."
+	]
   },
   {
 	"name": "18",
 	"type": "sea",
-	"realWorldLocation": "Port aux Francais, French Southern and Antarctic Lands",
+	"realWorldLocation": "LOC_18_REAL",
+	"description": "LOC_18_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  -49.348778234980756,
 	  70.21903095525244
@@ -416,13 +471,16 @@
 		"to": "15",
 		"type": "ship"
 	  }
-	],
-	"description": "The Desolation Islands earn their name twice over: once for the empty wind, and once for the listener carried within it. Here a long swell rolls in unbroken from a quarter of the southern sea no chart will admit to possessing, and here a black beach receives, on the wrong night of the wrong month, a wave that knows the standing visitor by the syllable his parents declined to inscribe upon the certificate. The whaling-station's records, where they survive at all, include certain names entered after the bearers had departed, in the hands of clerks who had not yet been hired."
+	]
   },
   {
 	"name": "19",
 	"type": "wilderness",
-	"realWorldLocation": "Beringovsky, Russia",
+	"realWorldLocation": "LOC_19_REAL",
+	"description": "LOC_19_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  63.06111582982855,
 	  179.34788798353154
@@ -444,13 +502,16 @@
 		"to": "1",
 		"type": "ship"
 	  }
-	],
-	"description": "At this narrow strait the continents lean toward each other across a sea too cold to keep secrets, and yet keeps them. The reindeer herders preserve, in songs the ethnographers have given up trying to transcribe, the rumour of a path of black stones that surfaces only at the lowest tide of the centennial year — leading to an island that, when surveyed afterward, declines to be re-found. Those who have walked the path return with a vocabulary larger by one word; the word is for a colour the rest of us do not yet have eyes adequate to receive."
+	]
   },
   {
 	"name": "20",
 	"type": "city",
-	"realWorldLocation": "Makassar, Indonesia",
+	"realWorldLocation": "LOC_20_REAL",
+	"description": "LOC_20_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  -5.126530191940272,
 	  119.40571383096034
@@ -472,13 +533,16 @@
 		"to": "17",
 		"type": "ship"
 	  }
-	],
-	"description": "The spice in these warehouses has memory. In the small hours, ears placed cautiously against the older sacks have caught fragments of conversation — bargains being struck, vows being exchanged — from voyages no captain in the port has yet accepted. The Cult of the Great Sleeper is no rumour here; its sailors pass through the harbour in numbers the harbourmaster does not record, bound for islands the Admiralty's most recent atlas has, this year, finally agreed to omit. Bargain carefully in this port; an account opened in this life is, by local custom, settled in the next, which is closer here than to most."
+	]
   },
   {
 	"name": "21",
 	"type": "wilderness",
-	"realWorldLocation": "Uluru, Northern Territories, Australia",
+	"realWorldLocation": "LOC_21_REAL",
+	"description": "LOC_21_DESC",
+	"encounterTypes": [
+      "general"
+	],
 	"coordinates": [
 	  -25.343795226988536,
 	  131.03444213186447
@@ -488,13 +552,17 @@
 		"to": "Sydney",
 		"type": "uncharted"
 	  }
-	],
-	"description": "The stone is not a stone. It is a verb in mid-syllable, paused for a duration the philologists of the vanished Race that built their library beneath this desert calculated, with patient terror, in advance. They left their archives keyed to its completion — minds that travelled out of bodies long extinct to lodge briefly in the bodies of men, who woke afterward with strange dreams and stranger competencies. Walk softly here. Do not climb. The completion of the syllable, while not yet entered into any human calendar, has been entered into another, and that calendar is consulted nightly by something which does not, strictly, sleep."
+	]
   },
   {
 	"name": "The Amazon",
 	"type": "wilderness",
-	"realWorldLocation": "Amazon River, Brazil",
+	"realWorldLocation": "LOC_THE_AMAZON_REAL",
+	"description": "LOC_THE_AMAZON_DESC",
+	"encounterTypes": [
+	  "general",
+      "expedition"
+	],
 	"coordinates": [
 	  -3.306826895501358,
 	  -60.66516385371958
@@ -508,13 +576,17 @@
 		"to": "7",
 		"type": "uncharted"
 	  }
-	],
-	"description": "Above the canopy the parrots argue in tongues the Jesuits, on their long doomed missions, declined to record. Beneath it, in the long green twilight, expeditions have stumbled upon stones cut to angles no Iberian chisel approves — fragments of a city the river accepts as elder kin. The lost tribes of these waters keep, between themselves, a calendar the missionaries called blasphemous and the anthropologists, more recently, called incomplete. The blasphemy and the incompleteness are the same fact: a date is missing, and the date is approaching, and the river, which knows, has begun to slow."
+	]
   },
   {
 	"name": "The Pyramids",
 	"type": "wilderness",
-	"realWorldLocation": "Giza, Egypt",
+	"realWorldLocation": "LOC_THE_PYRAMIDS_REAL",
+	"description": "LOC_THE_PYRAMIDS_DESC",
+	"encounterTypes": [
+	  "general",
+      "expedition"
+	],
 	"coordinates": [
 	  29.978410443405625,
 	  31.134240924147104
@@ -536,13 +608,17 @@
 		"to": "10",
 		"type": "uncharted"
 	  }
-	],
-	"description": "Beneath the third and largest of these monuments lies a chamber the dynasties of the upper world declined to inventory; and beneath that chamber, a stair; and beneath that stair, a god whose courtesy it is to be addressed as Pharaoh by those who have not earned the older name. A traveller of recent memory, lowered by his guides for amusement and lost for an interval the desert measured in stars, returned with a pallor and a silence that did not lift. He had glimpsed, briefly, the things that do not require pyramids — for whom the pyramids were merely a politeness — and he never spoke of Egypt again."
+	]
   },
   {
 	"name": "The Heart of Africa",
 	"type": "wilderness",
-	"realWorldLocation": "Lake Tanganyika, Congo",
+	"realWorldLocation": "LOC_THE_HEART_OF_AFRICA_REAL",
+	"description": "LOC_THE_HEART_OF_AFRICA_DESC",
+	"encounterTypes": [
+	  "general",
+      "expedition"
+	],
 	"coordinates": [
 	  -5.769438870624468,
 	  29.591824435107082
@@ -556,13 +632,17 @@
 		"to": "15",
 		"type": "uncharted"
 	  }
-	],
-	"description": "In the great lakes country the drums keep a measure that is not, strictly, a measure of time. Hunters who sleep too far from their fires return — when they return — speaking of a dark figure walking the savannah without disturbing the grass, whose passage is announced by a small change in the colour of the moon. The villages near the long rift have, between them, a name for him; the name is not used after sundown, and is not, in any case, his. He is, rumour insists, only the messenger; and the message, if the drums are to be believed, has at last been written down."
+	]
   },
   {
 	"name": "The Himalayas",
 	"type": "wilderness",
-	"realWorldLocation": "Mount Kailash, Tibet, China",
+	"realWorldLocation": "LOC_THE_HIMALAYAS_REAL",
+	"description": "LOC_THE_HIMALAYAS_DESC",
+	"encounterTypes": [
+	  "general",
+      "expedition"
+	],
 	"coordinates": [
 	  31.068124001330755,
 	  81.31185852035169
@@ -576,13 +656,17 @@
 		"to": "17",
 		"type": "uncharted"
 	  }
-	],
-	"description": "Beyond the highest passes — beyond even the pass that the patient maps of the British surveyors give up at — there is said to extend a plateau called by the old Tibetans Leng, by the older Tibetans nothing, and by the lamas of the windowless monastery a syllable they prefer to mouth without voicing. Upon Leng stand a city that was old before Lhasa was conceived, and a single mountain higher than Everest in any measure that is not strictly geographical. The mountain's name is Kadath. Its summit has a steady tenant. The tenant, occasionally, looks down."
+	]
   },
   {
 	"name": "Tunguska",
 	"type": "wilderness",
-	"realWorldLocation": "Podkamennaya Tunguska River, Krasnoyarsk Krai, Russia",
+	"realWorldLocation": "LOC_TUNGUSKA_REAL",
+	"description": "LOC_TUNGUSKA_DESC",
+	"encounterTypes": [
+	  "general",
+      "expedition"
+	],
 	"coordinates": [
 	  61.96724334590143,
 	  92.4734163596077
@@ -596,13 +680,17 @@
 		"to": "19",
 		"type": "uncharted"
 	  }
-	],
-	"description": "In the early years of this century something fell here that the seismographs across two continents felt and the meteorologists, after many polite years, declined to classify. The forest was laid down in radial perfection from a single empty centre, and from that centre — for a season — issued a colour the rural witnesses described, helplessly, as wrong. The colour is gone now from the open air, but is not, strictly, gone; the wells of the surviving villages reflect, on certain nights, a tint the photographic plate refuses to register, and the cattle that drink from them do not, in subsequent generations, dream as cattle should."
+	]
   },
   {
 	"name": "Antarctica",
 	"type": "sea",
-	"realWorldLocation": "Antarctica",
+	"realWorldLocation": "LOC_ANTARCTICA_REAL",
+	"description": "LOC_ANTARCTICA_DESC",
+	"encounterTypes": [
+	  "general",
+      "expedition"
+	],
 	"coordinates": [
 	  -70.92480077627484,
 	  23.838543681281152
@@ -616,13 +704,17 @@
 		"to": "12",
 		"type": "ship"
 	  }
-	],
-	"description": "Beyond the Mountains of Madness — for the survivors of the Pabodie expedition, having seen them, could call them nothing else — stretches the cyclopean city of the Old Ones, who came down from the stars before stars had names, and built, and biologised, and at length quarrelled with their own creations. The shoggoths still stir in the lower vaults. The wind of these passes carries the five-noted piping of a sentinel that ought, by every charity of physics, to be extinct. Travellers proposing to overwinter on this continent are kindly asked to keep their journals brief, their photographs unprinted, and their conclusions to themselves."
+	]
   },
   {
 	"name": "San Francisco",
 	"type": "city",
-	"realWorldLocation": "San Francisco, CA, USA",
+	"realWorldLocation": "LOC_SAN_FRANCISCO_REAL",
+	"description": "LOC_SAN_FRANCISCO_DESC",
+	"encounterTypes": [
+	  "general",
+      "america"
+	],
 	"coordinates": [
 	  37.7526711391998,
 	  -122.44807205755828
@@ -648,13 +740,17 @@
 		"to": "7",
 		"type": "ship"
 	  }
-	],
-	"description": "In the older boarding-houses below Telegraph Hill the Cult of the Great Sleeper holds meetings the police, even when present, do not transcribe. The bay's fog rolls in on schedules the meteorological office has stopped attempting to predict, and certain alleys of the Chinese quarter open, after midnight, upon longer alleys still — alleys whose latter ends are no longer, technically, in California. The earthquake of the recent past did not quite finish what it started. What it started, at certain coordinates beneath the bay, sleeps lightly now, and is reported to have shifted in its sleep on a date the Geological Survey marked in red and did not publish."
+	]
   },
   {
 	"name": "Arkham",
 	"type": "city",
-	"realWorldLocation": "Wenham, Massachusetts, USA",
+	"realWorldLocation": "LOC_ARKHAM_REAL",
+	"description": "LOC_ARKHAM_DESC",
+	"encounterTypes": [
+	  "general",
+      "america"
+	],
 	"coordinates": [
 	  42.60436531512155,
 	  -70.8914825742486
@@ -680,13 +776,17 @@
 		"to": "9",
 		"type": "ship"
 	  }
-	],
-	"description": "Ancient under its gambrel roofs, this Massachusetts town keeps its secrets in the libraries of Miskatonic University, whose locked rooms house the only English copy of the Necronomicon known to admit visitors. The Witch House on Pickman Street has new tenants each season; few finish the term. The hills beyond Dunwich are quieter now than in the bad year, but they are not, strictly, restored, and the families that go up to them at the equinox come back fewer, and do not always come back as the same number they started. The town does not advertise itself. It does not need to."
+	]
   },
   {
 	"name": "Buenos Aires",
 	"type": "city",
-	"realWorldLocation": "Buenos Aires, Argentina",
+	"realWorldLocation": "LOC_BUENOS_AIRES_REAL",
+	"description": "LOC_BUENOS_AIRES_DESC",
+	"encounterTypes": [
+	  "general",
+      "america"
+	],
 	"coordinates": [
 	  -34.60152552612713,
 	  -58.38951620583458
@@ -716,13 +816,17 @@
 		"to": "12",
 		"type": "ship"
 	  }
-	],
-	"description": "At this great southern port the old families keep ledgers in which certain debts are recorded in a script the auditors of the present century cannot place — Phoenician, perhaps, or older. The cult of the drowned god has a chapter house here, modestly furnished, whose membership numbers exactly what it must to perform the necessary work and no more. Sailors paying off in this harbour have been known to receive, in change, a coin minted before any nation that ever struck currency, and to spend it without remarking; the coin returns to the till of its own accord by morning, and the night's transactions, viewed in the cold ledger, do not entirely add up."
+	]
   },
   {
 	"name": "London",
 	"type": "city",
-	"realWorldLocation": "London, England, UK",
+	"realWorldLocation": "LOC_LONDON_REAL",
+	"description": "LOC_LONDON_DESC",
+	"encounterTypes": [
+	  "general",
+      "europe"
+	],
 	"coordinates": [
 	  51.51022041119061,
 	  -0.12847910579949792
@@ -740,13 +844,17 @@
 		"to": "13",
 		"type": "ship"
 	  }
-	],
-	"description": "In a back room of the British Museum, beyond a corridor the public maps decline to draw, lies a copy of the forbidden book that Dee, in his less defensible years, translated; the keepers of the room have an arrangement with the volume that the volume, for now, has consented to honour. The fogs of this city are older than its industry and are, it is said by certain antiquarian fellowships, intermittently inhabited. The hounds heard at certain crossings of the Thames are not, technically, dogs; the noise they make is the noise made by those who have brought back, from a far excavation, a charm they should not have removed."
+	]
   },
   {
 	"name": "Rome",
 	"type": "city",
-	"realWorldLocation": "Rome, Italy",
+	"realWorldLocation": "LOC_ROME_REAL",
+	"description": "LOC_ROME_DESC",
+	"encounterTypes": [
+	  "general",
+      "europe"
+	],
 	"coordinates": [
 	  41.89472846070195,
 	  12.48250216644515
@@ -772,13 +880,17 @@
 		"to": "14",
 		"type": "train"
 	  }
-	],
-	"description": "Beneath the forum the older stones remember names the Republic preferred to forget, and the catacombs descend through layers the archaeologists of the present generation have agreed, by tacit profession, not to publish. There is a fresco, in a chamber accessible only through three sealed doors and a ledger of permissions that has not been added to in a century, depicting a procession of figures whose proportions are exactly, and disturbingly, those described in a manuscript of certain very old folk who came down from the hills before the legions arrived. The procession has not concluded. It is, in fact, ongoing."
+	]
   },
   {
 	"name": "Istanbul",
 	"type": "city",
-	"realWorldLocation": "Istanbul, Turkey",
+	"realWorldLocation": "LOC_ISTANBUL_REAL",
+	"description": "LOC_ISTANBUL_DESC",
+	"encounterTypes": [
+	  "general",
+      "europe"
+	],
 	"coordinates": [
 	  41.0113148309421,
 	  28.968200786684598
@@ -800,13 +912,17 @@
 		"to": "17",
 		"type": "train"
 	  }
-	],
-	"description": "Two continents meet under the long bridge of this city, and a third — never quite admitted to the geography — slips between them on its own business. In the caravanserais of the older quarters certain travellers from the East, robed against more than the wind, settle their bills in silver too soft to be silver and depart by gates that the maps of the municipality do not, after their departure, contain. The dervishes of one particular order spin not for ecstasy but for occlusion; they whirl, they say, around a hole in the world that would otherwise widen, and they have been whirling, in shifts, since the city had a different name."
+	]
   },
   {
 	"name": "Shanghai",
 	"type": "city",
-	"realWorldLocation": "Shanghai, China",
+	"realWorldLocation": "LOC_SHANGHAI_REAL",
+	"description": "LOC_SHANGHAI_DESC",
+	"encounterTypes": [
+	  "general",
+      "asiaAustralia"
+	],
 	"coordinates": [
 	  31.243890715788996,
 	  121.47120993258858
@@ -832,13 +948,17 @@
 		"to": "20",
 		"type": "ship"
 	  }
-	],
-	"description": "The lower wharves of this city open upon a river that, beneath its commerce, runs to a sea that is not the East China. In the smoke of the older opium houses the Cult of the Great Sleeper meets without disguise; its members compare dreams, compile concordances, and book passage upon vessels whose manifests, when consulted by the harbourmaster, prove to list more sailors than were observed to embark. There is a courtyard, behind a particular tea-house, in which the moon — when it rises at all — rises green; those who have seen the green moon are, afterward, fluent in a language they have not been taught, and reluctant to use it."
+	]
   },
   {
 	"name": "Sydney",
 	"type": "city",
-	"realWorldLocation": "Sydney, Australia",
+	"realWorldLocation": "LOC_SYDNEY_REAL",
+	"description": "LOC_SYDNEY_DESC",
+	"encounterTypes": [
+	  "general",
+      "asiaAustralia"
+	],
 	"coordinates": [
 	  -33.86808819938728,
 	  151.20722012133496
@@ -864,13 +984,17 @@
 		"to": "21",
 		"type": "uncharted"
 	  }
-	],
-	"description": "This harbour is the gateway to the great inland desert, beneath which — at coordinates the Geological Survey of the Commonwealth has lately found reason to misplace — lie the basalt halls of a city built by minds that arrived in the bodies of cone-shaped beings, and that lent themselves, periodically, to the bodies of others, including ours. The dreams of certain professors of this city's universities have, within the last century, included whole afternoons spent reading in libraries those professors never visited. The professors no longer publish. The libraries are, by appointment, still open."
+	]
   },
   {
 	"name": "Tokyo",
 	"type": "city",
-	"realWorldLocation": "Tokyo, Japan",
+	"realWorldLocation": "LOC_TOKYO_REAL",
+	"description": "LOC_TOKYO_DESC",
+	"encounterTypes": [
+	  "general",
+      "asiaAustralia"
+	],
 	"coordinates": [
 	  35.69227237330765,
 	  139.76811267408797
@@ -892,7 +1016,6 @@
 		"to": "20",
 		"type": "ship"
 	  }
-	],
-	"description": "Beneath this great city the old courses run — temple streams the engineers covered over but did not, technically, sever. From them, on certain calendar nights the modern almanacs do not list, comes a tide that is not water, and a sound the priests of one obscure shrine train, year by year, to translate. The Pacific to the east of this archipelago carries, under all its honest waves, a longer one — a swell whose origin the oceanographers have politely declined to locate. When it arrives, the priests are to ring no bell. The instruction is clear. The shrine, upon that hour, is to be merely empty, and listening."
+	]
   }
 ]

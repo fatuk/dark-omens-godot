@@ -79,9 +79,12 @@ func _apply_styles() -> void:
 func _populate_data() -> void:
 	# Портрет
 	_portrait_tex.texture = _load_portrait()
-	_name_label.text = _inv_data.get("name", _inv_name if not _inv_name.is_empty() else "???")
-	_occ_label.text  = _inv_data.get("occupation", "")
-	_quote_label.text = "«%s»" % _inv_data.get("quote", "…")
+	# displayName/occupation/quote — translation keys; Godot переводит автоматически.
+	# (Кавычки «...» теперь внутри переведённой строки в CSV.)
+	_name_label.text  = _inv_data.get("displayName",
+		_inv_data.get("name", _inv_name if not _inv_name.is_empty() else "???"))
+	_occ_label.text   = _inv_data.get("occupation", "")
+	_quote_label.text = _inv_data.get("quote", "")
 
 	# HP / Рассудок
 	_hp_value.text  = "%.1f" % float(_inv_data.get("health", 0))
@@ -211,11 +214,8 @@ func _load_data() -> void:
 			_inv_name = cfg.get_value(_PREFS_SECTION, "last_investigator", "")
 	if _inv_name.is_empty():
 		return
-	var text: String = FileAccess.get_file_as_string(_DATA_PATH)
-	if text.is_empty():
-		return
-	var arr: Variant = JSON.parse_string(text)
-	if not arr is Array:
+	var arr: Array = DataLoader.load_array(_DATA_PATH)
+	if arr.is_empty():
 		return
 	for inv: Dictionary in arr:
 		if inv.get("name", "") == _inv_name:

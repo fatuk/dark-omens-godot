@@ -35,11 +35,11 @@ var camera: Camera2D = null
 
 # ── Данные ────────────────────────────────────────────────────────────────────
 
-var _locs:          Dictionary = {}
-var _edges:         Array      = []
-var _markers:       Array      = []   # [{sprite, label, indicator, pos, loc_name}]
-var _textures:      Dictionary = {}
-var _selected_name: String     = ""
+var _locs:             Dictionary = {}
+var _edges:            Array      = []
+var _markers:          Array      = []   # [{sprite, label, indicator, pos, loc_name}]
+var _textures:         Dictionary = {}
+var _selected_name:    String     = ""
 
 
 # ── Загрузка ──────────────────────────────────────────────────────────────────
@@ -56,18 +56,15 @@ func load_from_file(path: String) -> void:
 	for child in get_children():
 		child.queue_free()
 	_markers.clear()
+	_locs.clear()
 
-	var text: String = FileAccess.get_file_as_string(path)
-	if text.is_empty():
-		push_error("MapLayer: не удалось прочитать %s" % path)
-		return
-	var data: Variant = JSON.parse_string(text)
-	if not data is Array:
-		push_error("MapLayer: JSON должен быть массивом в %s" % path)
+	var data: Array = DataLoader.load_array(path)
+	if data.is_empty():
+		push_error("MapLayer: пустые данные локаций (%s)" % path)
 		return
 
-	for i: int in range((data as Array).size()):
-		var loc: Dictionary = (data as Array)[i]
+	for i: int in range(data.size()):
+		var loc: Dictionary = data[i]
 		var loc_name: String = loc.get("name", "")
 		if loc_name.is_empty():
 			continue
@@ -294,6 +291,11 @@ func get_location(loc_name: String) -> Dictionary:
 		"description":       loc.get("description", ""),
 		"connections":       loc.get("connections", []),
 	}
+
+
+## Текущее имя выделенной локации (или "" если ничего не выделено).
+func get_selected_name() -> String:
+	return _selected_name
 
 
 ## Подсвечивает все 3 копии маркера с этим именем (или снимает подсветку, если "").

@@ -170,7 +170,7 @@ func _add_reset_button() -> void:
 	spacer.custom_minimum_size = Vector2(0, 6)
 	_vbox.add_child(spacer)
 	var btn := Button.new()
-	btn.text = "Сбросить"
+	btn.text = "BTN_RESET"
 	UIStyle.style_button(btn, UIColors.WARNING)
 	btn.pressed.connect(_on_reset)
 	_vbox.add_child(btn)

@@ -37,7 +37,7 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
-text = "Ваш ход"
+text = "ACTION_YOUR_TURN"
 horizontal_alignment = 1
 
 [node name="ButtonsRow" type="HBoxContainer" parent="Root/Panel/VBox"]
@@ -48,22 +48,22 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "🎫 Билет"
+text = "ACTION_TICKET"
 
 [node name="ConcentBtn" type="Button" parent="Root/Panel/VBox/ButtonsRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "✦ Концентрация"
+text = "ACTION_FOCUS"
 
 [node name="RestBtn" type="Button" parent="Root/Panel/VBox/ButtonsRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "💤 Отдых"
+text = "ACTION_REST"
 
 [node name="PassBtn" type="Button" parent="Root/Panel/VBox/ButtonsRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Пас"
+text = "BTN_PASS"

@@ -21,10 +21,11 @@ const CONN_COLORS: Dictionary = {
 	"train":     Color(0.627, 0.322, 0.176),
 	"uncharted": Color(1.000, 0.843, 0.000),
 }
-const CONN_LABELS: Dictionary = {
-	"ship":      "морем",
-	"train":     "поездом",
-	"uncharted": "путь",
+# Ключи переводов для типов связей — резолвятся через tr() при отрисовке.
+const CONN_TR_KEYS: Dictionary = {
+	"ship":      "CONN_SHIP",
+	"train":     "CONN_TRAIN",
+	"uncharted": "CONN_UNCHARTED",
 }
 
 @onready var _panel:         PanelContainer = %Panel
@@ -36,8 +37,8 @@ const CONN_LABELS: Dictionary = {
 @onready var _neighbors_hdr: Label          = %NeighborsHeader
 @onready var _neighbors:     VBoxContainer  = %NeighborsList
 
-var _is_open: bool   = false
-var _tween:   Tween  = null
+var _is_open:   bool       = false
+var _tween:     Tween      = null
 
 
 func _ready() -> void:
@@ -50,11 +51,15 @@ func _ready() -> void:
 	_neighbors_hdr.add_theme_color_override("font_color", UIColors.MUTED)
 	_close_btn.pressed.connect(_on_close_pressed)
 	_apply_offsets(true)
+	_neighbors_hdr.text = "SIDEBAR_NEIGHBORS"  # Godot auto-translate при рендере
 
 
 # ── Public ────────────────────────────────────────────────────────────────────
 
 func show_location(data: Dictionary) -> void:
+	# Поля realWorldLocation/description/type — это translation keys.
+	# Присваивание в Label.text оставляет ключ; Godot вызывает tr() при рендере
+	# и сам обновит при смене локали.
 	_title.text       = String(data.get("name", ""))
 	_subtitle.text    = String(data.get("realWorldLocation", ""))
 	_type_label.text  = _type_label_for(String(data.get("type", "city")))
@@ -85,7 +90,7 @@ func _populate_neighbors(conns: Array) -> void:
 
 	if conns.is_empty():
 		var none := Label.new()
-		none.text = "—"
+		none.text = "SIDEBAR_NO_NEIGHBORS"
 		none.add_theme_color_override("font_color", UIColors.MUTED)
 		none.add_theme_font_size_override("font_size", 13)
 		_neighbors.add_child(none)
@@ -105,9 +110,9 @@ func _make_neighbor_row(to_name: String, ctype: String) -> Button:
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	UIStyle.style_button(btn, CONN_COLORS.get(ctype, UIColors.BORDER))
 	btn.add_theme_font_size_override("font_size", 13)
-	# Подпись «морем/поездом/путь» в правом углу — добавим как дочерний Label.
+	# Подпись «морем/поездом/путь» в правом углу — храним ключ, Godot переведёт.
 	var hint := Label.new()
-	hint.text = String(CONN_LABELS.get(ctype, ctype))
+	hint.text = String(CONN_TR_KEYS.get(ctype, ctype))
 	hint.add_theme_font_size_override("font_size", 11)
 	hint.add_theme_color_override("font_color", CONN_COLORS.get(ctype, UIColors.MUTED))
 	hint.set_anchors_and_offsets_preset(Control.PRESET_RIGHT_WIDE)
@@ -152,8 +157,9 @@ func _style_close_button() -> void:
 
 
 func _type_label_for(t: String) -> String:
+	# Возвращаем translation key — Godot переводит автоматически.
 	match t:
-		"city":       return "ГОРОД"
-		"sea":        return "МОРЕ"
-		"wilderness": return "ДИКАЯ ЗЕМЛЯ"
+		"city":       return "LOC_TYPE_CITY"
+		"sea":        return "LOC_TYPE_SEA"
+		"wilderness": return "LOC_TYPE_WILDERNESS"
 	return t.to_upper()
