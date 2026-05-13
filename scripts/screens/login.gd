@@ -30,6 +30,7 @@ var _current_email: String = ""
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
+	MusicManager.play(MusicManager.TRACK_ELDER_SIGN)
 	_apply_styles()
 	_wire_handlers()
 

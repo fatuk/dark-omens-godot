@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://42l8bmjrtg3x"
+path="res://.godot/imported/Elder  sign.ogg-787c0c204467bfe939c332cddf716ec4.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/music/Elder  sign.ogg"
+dest_files=["res://.godot/imported/Elder  sign.ogg-787c0c204467bfe939c332cddf716ec4.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

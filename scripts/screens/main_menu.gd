@@ -6,16 +6,7 @@ extends Control
 ## Разметка статичной части в scenes/main_menu.tscn, тут только поведение,
 ## стилизация, динамика (карточки комнат, попап настроек).
 
-const SETTINGS_FILE := "user://settings.cfg"
-const DEFAULT_URL   := "ws://127.0.0.1:3030"
-
-const RESOLUTIONS: Array[Vector2i] = [
-	Vector2i(1280,  720),
-	Vector2i(1366,  768),
-	Vector2i(1600,  900),
-	Vector2i(1920, 1080),
-	Vector2i(2560, 1440),
-]
+const _SETTINGS_DIALOG := preload("res://scenes/ui/settings_dialog.tscn")
 
 # ── Узлы ──────────────────────────────────────────────────────────────────────
 @onready var _bg:           ColorRect = $Bg
@@ -42,25 +33,14 @@ const RESOLUTIONS: Array[Vector2i] = [
 # ── Состояние ─────────────────────────────────────────────────────────────────
 var _nm:   Node
 var _auth: Node
-var _relay_url: String = DEFAULT_URL
-var _res_idx:    int   = 3      # 1920×1080
-var _fullscreen: bool  = false
 var _selected_room_id: String = ""
-
-# Настроечный попап (создаётся динамически)
-var _settings_popup: Control = null
-var _url_input:      LineEdit
-var _res_option:     OptionButton
-var _fs_check:       CheckBox
-var _fx_check:       CheckBox
-var _lang_option:    OptionButton
+var _settings_dialog:  Control = null
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
-	_load_settings()
-	_apply_display()
+	MusicManager.play(MusicManager.TRACK_ELDER_SIGN)
 	_apply_styles()
 
 	_nm   = get_node("/root/NetworkManager")
@@ -73,8 +53,11 @@ func _ready() -> void:
 	_nm.rejoin_failed.connect(_on_rejoin_failed_in_menu)
 	_nm.room_deleted.connect(_on_room_deleted_in_menu)
 
+	# При смене URL в диалоге настроек — переподключаемся к новому relay.
+	SettingsStore.relay_url_changed.connect(_on_relay_url_changed)
+
 	_player_label.text = _auth.current_user.get("name", "")
-	_server_label.text = _relay_url
+	_server_label.text = SettingsStore.relay_url
 
 	_wire_handlers()
 	_auto_connect()
@@ -140,155 +123,23 @@ func _wire_handlers() -> void:
 # ── Попап настроек ────────────────────────────────────────────────────────────
 
 func _on_settings_pressed() -> void:
-	if is_instance_valid(_settings_popup):
-		_settings_popup.queue_free()
-		_settings_popup = null
+	if is_instance_valid(_settings_dialog):
+		# Повторный клик по «⚙» — симулируем Cancel (откат live-preview + close).
+		_settings_dialog.call("_on_cancel")
 		return
-
-	_settings_popup = UIStyle.modal(self, "SETTINGS_TITLE", func(vbox: VBoxContainer) -> void:
-		# ── Сервер ────────────────────────────────────────────────────────────
-		var srv_lbl := Label.new()
-		srv_lbl.text = "SECTION_SERVER"
-		srv_lbl.add_theme_font_size_override("font_size", 12)
-		srv_lbl.add_theme_color_override("font_color", UIColors.MUTED)
-		vbox.add_child(srv_lbl)
-
-		var url_row := UIStyle.labeled_input("Relay URL:", DEFAULT_URL, 90)
-		_url_input = url_row[1] as LineEdit
-		_url_input.text = _relay_url
-		vbox.add_child(url_row[0])
-
-		UIStyle.separator(vbox)
-
-		# ── Дисплей ───────────────────────────────────────────────────────────
-		var disp_lbl := Label.new()
-		disp_lbl.text = "SECTION_DISPLAY"
-		disp_lbl.add_theme_font_size_override("font_size", 12)
-		disp_lbl.add_theme_color_override("font_color", UIColors.MUTED)
-		vbox.add_child(disp_lbl)
-
-		var res_row := HBoxContainer.new()
-		res_row.add_theme_constant_override("separation", 8)
-		vbox.add_child(res_row)
-
-		var res_lbl := Label.new()
-		res_lbl.text = "FORM_RESOLUTION"
-		res_lbl.custom_minimum_size.x = 100
-		res_lbl.add_theme_font_size_override("font_size", 14)
-		res_lbl.add_theme_color_override("font_color", UIColors.TEXT)
-		res_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		res_row.add_child(res_lbl)
-
-		var res_names: Array[String] = []
-		for r: Vector2i in RESOLUTIONS:
-			res_names.append("%d × %d" % [r.x, r.y])
-		_res_option = UIStyle.option_button(res_names)
-		_res_option.selected = _res_idx
-		_res_option.disabled = _fullscreen
-		res_row.add_child(_res_option)
-
-		var fs_row := HBoxContainer.new()
-		fs_row.add_theme_constant_override("separation", 10)
-		vbox.add_child(fs_row)
-
-		_fs_check = CheckBox.new()
-		_fs_check.button_pressed = _fullscreen
-		_fs_check.add_theme_color_override("font_color", UIColors.TEXT)
-		_fs_check.add_theme_font_size_override("font_size", 14)
-		_fs_check.toggled.connect(func(on: bool) -> void:
-			_res_option.disabled = on
-		)
-		fs_row.add_child(_fs_check)
-
-		var fs_lbl := Label.new()
-		fs_lbl.text = "SETTINGS_FULLSCREEN"
-		fs_lbl.add_theme_font_size_override("font_size", 14)
-		fs_lbl.add_theme_color_override("font_color", UIColors.TEXT)
-		fs_row.add_child(fs_lbl)
-
-		# Эффект «старой плёнки»
-		var fx_row := HBoxContainer.new()
-		fx_row.add_theme_constant_override("separation", 10)
-		vbox.add_child(fx_row)
-
-		_fx_check = CheckBox.new()
-		_fx_check.button_pressed = PostFx.is_enabled()
-		_fx_check.add_theme_color_override("font_color", UIColors.TEXT)
-		_fx_check.add_theme_font_size_override("font_size", 14)
-		fx_row.add_child(_fx_check)
-
-		var fx_lbl := Label.new()
-		fx_lbl.text = tr("SETTINGS_FX_OLD_FILM")
-		fx_lbl.add_theme_font_size_override("font_size", 14)
-		fx_lbl.add_theme_color_override("font_color", UIColors.TEXT)
-		fx_row.add_child(fx_lbl)
-
-		# Язык
-		var lang_row := HBoxContainer.new()
-		lang_row.add_theme_constant_override("separation", 8)
-		vbox.add_child(lang_row)
-
-		var lang_lbl := Label.new()
-		lang_lbl.text = tr("SETTINGS_LANGUAGE") + ":"
-		lang_lbl.custom_minimum_size.x = 100
-		lang_lbl.add_theme_font_size_override("font_size", 14)
-		lang_lbl.add_theme_color_override("font_color", UIColors.TEXT)
-		lang_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lang_row.add_child(lang_lbl)
-
-		var lang_names: Array[String] = []
-		for code: String in I18n.SUPPORTED:
-			lang_names.append(tr("LANG_" + code.to_upper()))
-		_lang_option = UIStyle.option_button(lang_names)
-		_lang_option.selected = I18n.SUPPORTED.find(I18n.get_locale())
-		lang_row.add_child(_lang_option)
-
-		UIStyle.separator(vbox)
-
-		# ── Кнопки ────────────────────────────────────────────────────────────
-		var btns := HBoxContainer.new()
-		btns.add_theme_constant_override("separation", 8)
-		vbox.add_child(btns)
-
-		var save_btn := UIStyle.button("BTN_SAVE_BIG", UIColors.ACCENT)
-		save_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		save_btn.pressed.connect(_on_settings_save)
-		btns.add_child(save_btn)
-
-		var cancel_btn := UIStyle.button("BTN_CANCEL_BIG", UIColors.MUTED)
-		cancel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		cancel_btn.pressed.connect(func() -> void:
-			_settings_popup.queue_free()
-			_settings_popup = null
-		)
-		btns.add_child(cancel_btn)
-	)
+	_settings_dialog = _SETTINGS_DIALOG.instantiate()
+	_settings_dialog.show_server_url = true
+	add_child(_settings_dialog)
+	_settings_dialog.tree_exited.connect(func() -> void: _settings_dialog = null)
+	# SettingsStore сам обновит relay_url + эмитит relay_url_changed →
+	# _on_relay_url_changed подхватит и переподключится.
 
 
-func _on_settings_save() -> void:
-	var new_url := _url_input.text.strip_edges()
-	if new_url.is_empty():
-		new_url = DEFAULT_URL
-	var url_changed := new_url != _relay_url
-
-	_relay_url   = new_url
-	_res_idx     = _res_option.selected
-	_fullscreen  = _fs_check.button_pressed
-
-	_server_label.text = _relay_url
-	_save_settings()
-	_apply_display()
-	PostFx.set_enabled(_fx_check.button_pressed)
-	if _lang_option and _lang_option.selected >= 0:
-		I18n.set_locale(I18n.SUPPORTED[_lang_option.selected])
-
-	_settings_popup.queue_free()
-	_settings_popup = null
-
-	if url_changed:
-		if _nm.is_connected_to_relay():
-			_nm.disconnect_from_relay()
-		_auto_connect()
+func _on_relay_url_changed(new_url: String) -> void:
+	_server_label.text = new_url
+	if _nm.is_connected_to_relay():
+		_nm.disconnect_from_relay()
+	_auto_connect()
 
 
 # ── Авто-подключение ──────────────────────────────────────────────────────────
@@ -305,9 +156,9 @@ func _auto_connect() -> void:
 		return
 	# Либо первый заход, либо все попытки исчерпаны — стартуем заново
 	var pname: String = _auth.current_user.get("name", "Player")
-	_show_status("Подключение к %s..." % _relay_url, UIColors.WARNING)
+	_show_status("Подключение к %s..." % SettingsStore.relay_url, UIColors.WARNING)
 	_rooms_panel.modulate.a = 0.4
-	var err: Error = _nm.connect_to_relay(pname, _relay_url)
+	var err: Error = _nm.connect_to_relay(pname, SettingsStore.relay_url)
 	if err != OK:
 		_show_status("Ошибка подключения: %s" % error_string(err), UIColors.ERROR)
 		_rooms_panel.modulate.a = 1.0
@@ -437,49 +288,6 @@ func _on_relay_error(message: String) -> void:
 	_create_btn.disabled = false
 	_join_btn.disabled = _selected_room_id.is_empty()
 	_show_status("Ошибка: %s" % message, UIColors.ERROR)
-
-
-# ── Настройки: загрузка / сохранение / применение ────────────────────────────
-
-func _load_settings() -> void:
-	var cfg := ConfigFile.new()
-	if cfg.load(SETTINGS_FILE) != OK:
-		return
-	_relay_url  = cfg.get_value("relay",   "url",        DEFAULT_URL)
-	# Миграция: localhost резолвится в IPv6 ::1, а Docker Desktop на Windows
-	# не пробрасывает IPv6 — соединение виснет. Переписываем на IPv4.
-	if "://localhost:" in _relay_url:
-		_relay_url = _relay_url.replace("://localhost:", "://127.0.0.1:")
-	_fullscreen = cfg.get_value("display", "fullscreen",  false)
-	var res_str: String = cfg.get_value("display", "resolution", "1920x1080")
-	for i: int in range(RESOLUTIONS.size()):
-		var r: Vector2i = RESOLUTIONS[i]
-		if "%dx%d" % [r.x, r.y] == res_str:
-			_res_idx = i
-			return
-
-
-func _save_settings() -> void:
-	var cfg := ConfigFile.new()
-	cfg.load(SETTINGS_FILE)
-	cfg.set_value("relay",   "url",        _relay_url)
-	cfg.set_value("display", "fullscreen",  _fullscreen)
-	var r: Vector2i = RESOLUTIONS[_res_idx]
-	cfg.set_value("display", "resolution", "%dx%d" % [r.x, r.y])
-	cfg.save(SETTINGS_FILE)
-
-
-@warning_ignore("integer_division")
-func _apply_display() -> void:
-	if _fullscreen:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
-	else:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-		DisplayServer.window_set_size(RESOLUTIONS[_res_idx])
-		DisplayServer.window_set_position(
-			DisplayServer.screen_get_position() +
-			(DisplayServer.screen_get_size() - RESOLUTIONS[_res_idx]) / 2
-		)
 
 
 # ── Вспомогательные ───────────────────────────────────────────────────────────

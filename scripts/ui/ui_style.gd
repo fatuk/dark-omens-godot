@@ -390,6 +390,54 @@ static func option_button(items: Array[String] = []) -> OptionButton:
 	return ob
 
 
+# ── Слайдер громкости ──────────────────────────────────────────────────────────
+
+## Строка «Метка + HSlider + 0-100%». Слайдер 0..1 со step=0.01; при движении
+## вызывает `apply_fn.call(value)` для live-preview. Возвращает HSlider —
+## вызывающая сторона читает финальное значение при «Save».
+static func volume_slider_row(
+	parent:    Control,
+	label_key: String,
+	initial:   float,
+	apply_fn:  Callable,
+) -> HSlider:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	parent.add_child(row)
+
+	var lbl := Label.new()
+	lbl.text = label_key
+	lbl.custom_minimum_size.x = 110
+	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.add_theme_color_override("font_color", UIColors.TEXT)
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(lbl)
+
+	var slider := HSlider.new()
+	slider.min_value = 0.0
+	slider.max_value = 1.0
+	slider.step      = 0.01
+	slider.value     = initial
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.custom_minimum_size = Vector2(0, 22)
+	row.add_child(slider)
+
+	var pct := Label.new()
+	pct.text = "%d%%" % roundi(initial * 100.0)
+	pct.custom_minimum_size.x = 44
+	pct.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	pct.add_theme_font_size_override("font_size", 13)
+	pct.add_theme_color_override("font_color", UIColors.MUTED)
+	pct.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(pct)
+
+	slider.value_changed.connect(func(v: float) -> void:
+		apply_fn.call(v)
+		pct.text = "%d%%" % roundi(v * 100.0)
+	)
+	return slider
+
+
 # ── Разделитель ────────────────────────────────────────────────────────────────
 
 ## Создаёт горизонтальный разделитель и добавляет его в parent.

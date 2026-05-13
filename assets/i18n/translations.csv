@@ -9,6 +9,8 @@ SETTINGS_FULLSCREEN,Полный экран,Fullscreen
 SETTINGS_FX_OLD_FILM,Эффект старой плёнки,Old film effect
 SETTINGS_RESOLUTION,Разрешение,Resolution
 SETTINGS_SERVER,Сервер,Server
+SETTINGS_VOLUME_MUSIC,Музыка,Music
+SETTINGS_VOLUME_SFX,Эффекты,Sound effects
 
 BTN_SAVE,Сохранить,Save
 BTN_CANCEL,Отмена,Cancel
@@ -329,6 +331,7 @@ ACTION_YOUR_TURN,Ваш ход,Your turn
 LOBBY_TAG_HOST,Ведущий,Host
 LOBBY_TAG_READY,Готов ✓,Ready ✓
 SECTION_DISPLAY,ДИСПЛЕЙ,DISPLAY
+SECTION_AUDIO,ЗВУК,AUDIO
 FORM_PASSWORD,Пароль:,Password:
 BTN_CREATE_BIG,СОЗДАТЬ,CREATE
 ACTION_TICKET,🎫 Билет,🎫 Ticket
