@@ -28,8 +28,8 @@ const RESOLUTIONS: Array[Vector2i] = [
 var relay_url:      String = DEFAULT_URL
 var resolution_idx: int    = 3        # 1920×1080 по умолчанию
 var fullscreen:     bool   = false
-var music_volume:   float  = 1.0      # 0..1, читается Music/SfxManager на _ready
-var sfx_volume:     float  = 1.0
+var music_volume:   float  = 0.5      # 0..1, читается Music/SfxManager на _ready
+var sfx_volume:     float  = 0.5
 
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
@@ -103,5 +103,5 @@ func _load() -> void:
 		if "%dx%d" % [r.x, r.y] == res_str:
 			resolution_idx = i
 			break
-	music_volume = float(cfg.get_value("audio", "music", 1.0))
-	sfx_volume   = float(cfg.get_value("audio", "sfx",   1.0))
+	music_volume = float(cfg.get_value("audio", "music", 0.5))
+	sfx_volume   = float(cfg.get_value("audio", "sfx",   0.5))

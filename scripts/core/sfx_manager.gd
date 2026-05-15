@@ -15,7 +15,7 @@ const SFX_SLIDE: AudioStream = preload("res://assets/audio/sfx/slide.wav")
 const BUS_NAME := "Sfx"
 const _POOL_SIZE: int = 4
 
-var volume: float = 1.0   # 0.0..1.0, линейная шкала
+var volume: float = 0.5   # 0.0..1.0, линейная шкала (default override: SettingsStore.sfx_volume)
 
 var _pool: Array[AudioStreamPlayer] = []
 var _next: int = 0
@@ -27,7 +27,8 @@ func _ready() -> void:
 	AudioBuses.ensure_bus(BUS_NAME)
 	for i in range(_POOL_SIZE):
 		var p := AudioStreamPlayer.new()
-		p.bus = BUS_NAME
+		p.name = "Player_%d" % i
+		p.bus  = BUS_NAME
 		add_child(p)
 		_pool.append(p)
 	# SettingsStore зарегистрирован раньше — его поля уже загружены.

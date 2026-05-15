@@ -75,6 +75,7 @@ func _open_settings() -> void:
 		return   # уже открыт
 	_main_panel.visible = false
 	_settings_dialog = _SETTINGS_DIALOG.instantiate()
+	_settings_dialog.name = "SettingsDialog"
 	_settings_dialog.show_server_url = false   # в идущей игре сервер не меняется
 	$Root.add_child(_settings_dialog)
 	# По обоим сигналам (saved + cancelled) поведение одно — вернуться к

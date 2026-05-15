@@ -46,7 +46,7 @@ func _ready() -> void:
 	_nm.connection_lost.connect(_on_connection_lost)
 	_nm.room_deleted.connect(_on_room_deleted)
 
-	_picker.investigator_selected.connect(_on_investigator_selected)
+	_picker.selection_changed.connect(_on_selection_changed)
 	# Picker — это весь UI лобби; его кнопки дёргают здешние обработчики.
 	if _picker.has_signal("back_pressed"):
 		_picker.back_pressed.connect(_on_back_pressed)
@@ -130,7 +130,7 @@ func _check_auto_ready() -> void:
 
 # ── Выбор сыщика ─────────────────────────────────────────────────────────────
 
-func _on_investigator_selected(inv_name: String) -> void:
+func _on_selection_changed(inv_name: String) -> void:
 	# Локальное состояние + броадкаст: остальные игроки сразу видят
 	# нашего сыщика как занятого, не дожидаясь нажатия «Готов».
 	if _nm.players.has(_nm.my_id):

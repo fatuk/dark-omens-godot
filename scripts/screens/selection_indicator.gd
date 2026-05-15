@@ -163,6 +163,7 @@ func _ready() -> void:
 
 	var s: float = SPRITE_SIZE * 0.5
 	_glow = Polygon2D.new()
+	_glow.name    = "Glow"
 	_glow.texture = _get_shared_texture()
 	_glow.polygon = PackedVector2Array([
 		Vector2(-s, -s), Vector2( s, -s),

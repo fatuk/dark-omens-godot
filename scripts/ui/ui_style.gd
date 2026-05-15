@@ -234,7 +234,7 @@ static func _wire_button_hover(btn: Button, bg: Control) -> void:
 # на _PRESS_OFFSET_Y, на release возвращаем обратно. Базовая позиция
 # запоминается на каждый press_down (актуальна, даже если layout пересчитал
 # координаты между нажатиями), сбрасывается после возврата.
-static func _animate_press(btn: Button, down: bool) -> void:
+static func _animate_press(btn: BaseButton, down: bool) -> void:
 	var meta_tw   := "__press_tween"
 	var meta_base := "__base_pos_y"
 
@@ -255,6 +255,45 @@ static func _animate_press(btn: Button, down: bool) -> void:
 		# После возврата забываем базу — следующий press её перечитает заново.
 		tw.tween_callback(func() -> void: btn.remove_meta(meta_base))
 	btn.set_meta(meta_tw, tw)
+
+
+# ── Текстурная иконочная кнопка ─────────────────────────────────────────────
+
+## Создаёт TextureButton (иконка без текста) с hover-брайтенингом и press-
+## анимацией — аналог style_button для обычных Button'ов. По умолчанию scale=0.5
+## — стандартный @2× коэффициент проекта. Для @4× ассетов (carousel/) ставь 0.25.
+static func texture_icon_button(tex: Texture2D, scale: float = 0.5) -> TextureButton:
+	var btn := TextureButton.new()
+	btn.texture_normal           = tex
+	btn.ignore_texture_size      = true
+	btn.stretch_mode             = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+	btn.custom_minimum_size      = tex.get_size() * scale
+	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_wire_texture_button_hover(btn)
+	return btn
+
+
+# Hover/press feedback для TextureButton: modulate на наведении + press-tween.
+# Аналогично _wire_button_hover для Button, но без отдельного __TexturedBg —
+# для иконки modulate применяется прямо на саму кнопку.
+static func _wire_texture_button_hover(btn: TextureButton) -> void:
+	var c_normal   := Color(1.00, 1.00, 1.00, 1.00)
+	var c_hover    := Color(1.20, 1.18, 1.10, 1.00)   # тёплый брайтенинг
+	var c_disabled := Color(0.45, 0.45, 0.48, 1.00)
+
+	var apply_color := func() -> void:
+		if btn.disabled:
+			btn.modulate = c_disabled
+		elif Rect2(Vector2.ZERO, btn.size).has_point(btn.get_local_mouse_position()):
+			btn.modulate = c_hover
+		else:
+			btn.modulate = c_normal
+
+	btn.mouse_entered.connect(apply_color)
+	btn.mouse_exited.connect(apply_color)
+	btn.draw.connect(apply_color)
+	btn.button_down.connect(func() -> void: _animate_press(btn, true))
+	btn.button_up.connect(func() -> void: _animate_press(btn, false))
 
 
 ## Применяет компактный stylebox-стиль к маленьким иконочным кнопкам
@@ -402,10 +441,12 @@ static func volume_slider_row(
 	apply_fn:  Callable,
 ) -> HSlider:
 	var row := HBoxContainer.new()
+	row.name = "VolumeRow_%s" % label_key
 	row.add_theme_constant_override("separation", 8)
 	parent.add_child(row)
 
 	var lbl := Label.new()
+	lbl.name = "Label"
 	lbl.text = label_key
 	lbl.custom_minimum_size.x = 110
 	lbl.add_theme_font_size_override("font_size", 14)
@@ -414,6 +455,7 @@ static func volume_slider_row(
 	row.add_child(lbl)
 
 	var slider := HSlider.new()
+	slider.name = "Slider"
 	slider.min_value = 0.0
 	slider.max_value = 1.0
 	slider.step      = 0.01
@@ -423,6 +465,7 @@ static func volume_slider_row(
 	row.add_child(slider)
 
 	var pct := Label.new()
+	pct.name = "Percent"
 	pct.text = "%d%%" % roundi(initial * 100.0)
 	pct.custom_minimum_size.x = 44
 	pct.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -436,6 +479,24 @@ static func volume_slider_row(
 		pct.text = "%d%%" % roundi(v * 100.0)
 	)
 	return slider
+
+
+# ── Лейбл ──────────────────────────────────────────────────────────────────────
+
+## Однострочная фабрика стилизованного Label'а — заменяет 4-строчный паттерн
+## (Label.new + text + font_size + font_color) на один вызов.
+static func label(
+	text:     String,
+	size:     int,
+	color:    Color = UIColors.TEXT,
+	align:    int   = HORIZONTAL_ALIGNMENT_LEFT,
+) -> Label:
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.horizontal_alignment = align
+	lbl.add_theme_font_size_override("font_size", size)
+	lbl.add_theme_color_override("font_color", color)
+	return lbl
 
 
 # ── Разделитель ────────────────────────────────────────────────────────────────
@@ -462,24 +523,29 @@ static func modal(
 	min_width:       int = 440,
 ) -> ColorRect:
 	var backdrop := ColorRect.new()
+	backdrop.name = "ModalBackdrop"
 	backdrop.color = Color(0, 0, 0, 0.6)
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
 	parent.add_child(backdrop)
 
 	var center := CenterContainer.new()
+	center.name = "Center"
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	backdrop.add_child(center)
 
 	var p := panel(20)
+	p.name = "Panel"
 	p.custom_minimum_size.x = min_width
 	center.add_child(p)
 
 	var vbox := VBoxContainer.new()
+	vbox.name = "VBox"
 	vbox.add_theme_constant_override("separation", 12)
 	p.add_child(vbox)
 
 	var hdr := Label.new()
+	hdr.name = "Title"
 	hdr.text = title   # ожидается translation key — Godot переводит сам
 	hdr.add_theme_font_size_override("font_size", 16)
 	hdr.add_theme_color_override("font_color", UIColors.ACCENT)
@@ -498,11 +564,13 @@ static func modal(
 ## Возвращает ColorRect оверлея.
 static func reconnect_overlay(parent: Control, text: String) -> ColorRect:
 	var overlay := ColorRect.new()
+	overlay.name = "ReconnectOverlay"
 	overlay.color = Color(0.0, 0.0, 0.0, 0.75)
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var lbl := Label.new()
+	lbl.name = "Message"
 	lbl.text = text
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER

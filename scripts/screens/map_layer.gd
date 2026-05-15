@@ -129,13 +129,17 @@ func _spawn_markers() -> void:
 
 		for dx: int in [-TILE_W, 0, TILE_W]:
 			var world_pos: Vector2 = loc.pos + Vector2(dx, 0)
+			# tile_idx: -1 = слева, 0 = центр, 1 = справа (wraparound копии).
+			var tile_idx: int = sign(dx)
 
 			var sprite := Sprite2D.new()
+			sprite.name     = "Marker_%s_%d" % [loc_name, tile_idx]
 			sprite.texture  = tex
 			sprite.position = world_pos
 			add_child(sprite)
 
 			var lbl := Label.new()
+			lbl.name = "Label_%s_%d" % [loc_name, tile_idx]
 			lbl.text = loc_name
 			lbl.add_theme_font_size_override("font_size", LABEL_FONT)
 			lbl.add_theme_color_override("font_color", Color.WHITE)
@@ -149,6 +153,7 @@ func _spawn_markers() -> void:
 			add_child(lbl)
 
 			var indicator := SelectionIndicator.new()
+			indicator.name     = "Indicator_%s_%d" % [loc_name, tile_idx]
 			indicator.position = world_pos
 			indicator.visible  = false
 			add_child(indicator)

@@ -412,3 +412,6 @@ SECTION_ATTRIBUTES,АТРИБУТЫ,ATTRIBUTES
 SECTION_STARTING_ITEMS,СТАРТОВЫЕ ПРЕДМЕТЫ,STARTING ITEMS
 LOBBY_BTN_DETAILS,Подробнее,Details
 LOBBY_PLAYERS_DETAILS_TITLE,Состояние игроков,Players state
+LOBBY_DETAILS_ROOM_FMT,Комната: %s,Room: %s
+LOBBY_DETAILS_ROLE_HOST,Вы — ведущий игры,You are the host
+LOBBY_DETAILS_ROLE_GUEST,Ожидайте начала игры,Waiting for the game to start

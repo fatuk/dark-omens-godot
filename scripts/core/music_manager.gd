@@ -16,7 +16,7 @@ const TRACK_NO_CHOICE:  AudioStream = preload("res://assets/audio/music/No choic
 
 const BUS_NAME := "Music"
 
-var volume: float = 1.0   # 0.0..1.0, линейная шкала
+var volume: float = 0.5   # 0.0..1.0, линейная шкала (default override: SettingsStore.music_volume)
 
 var _player: AudioStreamPlayer
 # Web autoplay policy: AudioContext suspended до первого user gesture.
@@ -31,7 +31,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	AudioBuses.ensure_bus(BUS_NAME)
 	_player = AudioStreamPlayer.new()
-	_player.bus = BUS_NAME
+	_player.name = "Player"
+	_player.bus  = BUS_NAME
 	add_child(_player)
 	_ensure_loop(TRACK_ELDER_SIGN)
 	_ensure_loop(TRACK_NO_CHOICE)

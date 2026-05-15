@@ -52,6 +52,7 @@ func _input(event: InputEvent) -> void:
 
 func _build_ui() -> void:
 	_root = Control.new()
+	_root.name = "Root"
 	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.visible = false
@@ -59,6 +60,7 @@ func _build_ui() -> void:
 
 	# Панель: нижние 30% экрана, начальные смещения = 0
 	_panel = PanelContainer.new()
+	_panel.name = "Panel"
 	_panel.anchor_left   = 0.0
 	_panel.anchor_right  = 1.0
 	_panel.anchor_top    = 0.70
@@ -82,16 +84,19 @@ func _build_ui() -> void:
 	_root.add_child(_panel)
 
 	var vbox := VBoxContainer.new()
+	vbox.name = "VBox"
 	vbox.add_theme_constant_override("separation", 6)
 	_panel.add_child(vbox)
 
 	var header := Label.new()
+	header.name = "Header"
 	header.text = "CONSOLE_HEADER"
 	header.add_theme_font_size_override("font_size", HEADER_SIZE)
 	header.add_theme_color_override("font_color", Color(0.45, 0.40, 0.65))
 	vbox.add_child(header)
 
 	var sep := HSeparator.new()
+	sep.name = "Sep"
 	var sep_style := StyleBoxFlat.new()
 	sep_style.bg_color = Color(0.30, 0.24, 0.50, 0.35)
 	sep_style.content_margin_top    = 0
@@ -100,12 +105,14 @@ func _build_ui() -> void:
 	vbox.add_child(sep)
 
 	_scroll = ScrollContainer.new()
+	_scroll.name = "Scroll"
 	_scroll.size_flags_vertical    = Control.SIZE_EXPAND_FILL
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_scroll.vertical_scroll_mode   = ScrollContainer.SCROLL_MODE_AUTO
 	vbox.add_child(_scroll)
 
 	_log_box = VBoxContainer.new()
+	_log_box.name = "LogBox"
 	_log_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_log_box.add_theme_constant_override("separation", 2)
 	_scroll.add_child(_log_box)

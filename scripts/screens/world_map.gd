@@ -48,7 +48,14 @@ var _map_layer: MapLayer
 
 
 func _ready() -> void:
+	# На карте мира декоративная рамка лишняя (карта — основная игровая сцена,
+	# UI поверх неё в виде GamePanel/LocationSidebar). Возвращаем при выходе.
+	ScreenFrame.set_enabled(false)
 	_camera.position = Vector2(TILE_W / 2.0, TILE_H / 2.0)
+
+
+func _exit_tree() -> void:
+	ScreenFrame.set_enabled(true)
 	_zoom_target = _camera.zoom.x
 	_map_layer = MapLayer.new()
 	add_child(_map_layer)
