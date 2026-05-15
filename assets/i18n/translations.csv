@@ -310,11 +310,11 @@ LOC_SYDNEY_DESC,"Эта гавань — врата к великой внутр
 LOC_TOKYO_REAL,"Токио, Япония","Tokyo, Japan"
 LOC_TOKYO_DESC,"Под этим великим городом текут старые русла — храмовые потоки, какие инженеры перекрыли, но не вполне, строго говоря, пресекли. Из них в иные календарные ночи, каких современные альманахи не перечисляют, приходит прилив, что не есть вода, и звук, какой жрецы одной малоизвестной святыни обучаются год за годом переводить. Тихий океан к востоку от этого архипелага несёт под всеми своими честными волнами более долгую — зыбь, чьё происхождение океанографы учтиво отказались определять. Когда она придёт, жрецам не звонить ни в один колокол. Указание ясно. Святыня в тот час должна быть просто пустой и слушающей.","Beneath this great city the old courses run — temple streams the engineers covered over but did not, technically, sever. From them, on certain calendar nights the modern almanacs do not list, comes a tide that is not water, and a sound the priests of one obscure shrine train, year by year, to translate. The Pacific to the east of this archipelago carries, under all its honest waves, a longer one — a swell whose origin the oceanographers have politely declined to locate. When it arrives, the priests are to ring no bell. The instruction is clear. The shrine, upon that hour, is to be merely empty, and listening."
 
-SKILL_LORE,Знание,Lore
-SKILL_INFLUENCE,Влияние,Infl
-SKILL_OBSERVATION,Наблюдение,Obs
-SKILL_STRENGTH,Сила,Str
-SKILL_WILL,Воля,Will
+SKILL_LORE,ЗНАНИЕ,LORE
+SKILL_INFLUENCE,ВЛИЯНИЕ,INFLUENCE
+SKILL_OBSERVATION,НАБЛЮДЕНИЕ,OBSERVATION
+SKILL_STRENGTH,СИЛА,STRENGTH
+SKILL_WILL,ВОЛЯ,WILL
 PICKER_NOT_SELECTED,— Не выбран —,— Not selected —
 
 

@@ -41,11 +41,11 @@ const CARD_QUAD_SIZE := Vector2(1.8, 1.8)   # размер 3D-меша (миро
 # плоским (как в макете), а не глубоким cover-flow. Центр всё равно крупнее
 # за счёт SLOT_SCALES.
 const SLOT_3D_POSITIONS := [
-	Vector3(-3.5, 0.0, -0.4),  # far left
-	Vector3(-2.25, 0.0, -0.1),  # left
+	Vector3(-2.8, 0.0, -0.4),  # far left
+	Vector3(-1.7, 0.0, -0.1),  # left
 	Vector3( 0.0, 0.0,  0.3),  # center (немного вперёд)
-	Vector3( 2.25, 0.0, -0.1),  # right
-	Vector3( 3.5, 0.0, -0.4),  # far right
+	Vector3( 1.7, 0.0, -0.1),  # right
+	Vector3( 2.8, 0.0, -0.4),  # far right
 ]
 const SLOT_3D_ROTATIONS_DEG := [-20.0, -10.0, 0.0, 10.0, 20.0]
 # Half-width карточки = CARD_QUAD_SIZE.x/2 * scale. Сумма соседних half-width'ов
@@ -55,27 +55,32 @@ const SLOT_3D_ROTATIONS_DEG := [-20.0, -10.0, 0.0, 10.0, 20.0]
 const SLOT_SCALES     := [0.85, 1.05, 1.3, 1.05, 0.85]
 const SLOT_BRIGHTNESS := [0.45, 0.65, 1.00, 0.65, 0.45]
 
-# Глобальный сдвиг карточек по Y в 3D — съедает «воздух» в верхней части
-# карусели (camera FOV 30° оставляет ~70 px пустоты сверху/снизу карточек
-# в viewport'е 760 px). +0.3 world unit'а двигает карточки вверх примерно
-# на 70 px, прижимая их к нижней границе title. Заодно увеличивает свободное
-# пространство под карточками, но там info-bar — он его и забирает.
-const SLOT_Y_OFFSET: float = 0.35
+# Мягкая drop-тень под карточками — дочерний quad чуть больше карточки,
+# тёмный полупрозрачный, со сдвигом вниз. Как ребёнок меша наследует
+# трансформ — анимировать отдельно не нужно.
+const SHADOW_QUAD_SCALE: float = 1.35                    # размер тени относительно карточки
+const SHADOW_OFFSET     := Vector3(0.04, -0.16, -0.05)   # сдвиг: вправо-вниз + чуть назад
+const SHADOW_ALPHA:      float = 0.85
+
+# Глобальный сдвиг карточек по Y в 3D. 0 = карточки центрированы в viewport'е
+# (после увеличения FOV-зумом они почти заполняют его по высоте, сдвиг больше
+# не нужен). Положительное значение двигает вверх, отрицательное — вниз.
+const SLOT_Y_OFFSET: float = 0.0
 
 # Вертикально видимый размер мира в карусели на глубине карточек: 2 * cam.z *
-# tan(fov/2) при cam.z=6.2 и FOV=30°. Используется для перевода 3D-сдвига
+# tan(fov/2) при cam.z=6.2 и FOV=26°. Используется для перевода 3D-сдвига
 # карточек (SLOT_Y_OFFSET) в долю экрана — нужно стрелкам, чтобы их Y-якорь
-# следовал за карточками. При смене CAM_*/SLOT_Y_OFFSET — формула остаётся.
-const _VISIBLE_WORLD_HEIGHT: float = 3.32
+# следовал за карточками. При смене CAM_*/SLOT_Y_OFFSET — пересчитай.
+const _VISIBLE_WORLD_HEIGHT: float = 2.86
 const ARROW_Y_ANCHOR: float = 0.5 - SLOT_Y_OFFSET / _VISIBLE_WORLD_HEIGHT
 
 # Камера: длиннофокусная (узкий FOV) + дальше отодвинута — это «сплющивает»
 # перспективу, как телевик. При таком setup'е боковые карточки выглядят почти
 # одного размера с центром, а наклон читается, но без сильных трапеций.
-# Z подобрано так, чтобы карточки заполняли ~90% высоты viewport'а — иначе
-# сверху и снизу карусели остаются большие пустые поля.
+# FOV сужен с 30° до 26° — карточки крупнее (~+16%), плотнее заполняют viewport.
+# Чем уже FOV — тем больше карточки, но и боковые сильнее уезжают за край.
 const CAM_POSITION := Vector3(0.0, 0.0, 6.2)
-const CAM_FOV: float = 30.0
+const CAM_FOV: float = 23.0
 
 # Якоря для стрелок навигации: середина между внешней и соседней карточками
 # (3D-точки x=±3.1, z=-0.2). Значение получено через perspective unproject при
@@ -107,7 +112,8 @@ signal start_pressed   # host-only — «начать игру»
 var _investigators: Array      = []
 var _taken:         Dictionary = {}   # name -> taker_name
 var _index:         int        = 0    # центральный индекс
-var _placeholder_tex: ImageTexture = null   # кешируется в _ready, не плодим на каждый _populate
+var _placeholder_tex:  ImageTexture = null   # кешируется в _ready, не плодим на каждый _populate
+var _card_shadow_tex:  ImageTexture = null   # мягкая тень-подложка, общая на все карточки
 
 # ── UI ────────────────────────────────────────────────────────────────────────
 var _root: VBoxContainer = null   # создаётся в _ready()
@@ -140,6 +146,7 @@ func _ready() -> void:
 	MusicManager.play(MusicManager.TRACK_NO_CHOICE)
 	_nm = get_node_or_null("/root/NetworkManager")
 	_placeholder_tex = _build_placeholder_texture()
+	_card_shadow_tex = _build_card_shadow_texture()
 
 	# Полноэкранный overlay через CanvasLayer — независим от лобби-layout'а.
 	var canvas := CanvasLayer.new()
@@ -201,6 +208,23 @@ func _build_placeholder_texture() -> ImageTexture:
 	# не сливалась с фоном панели.
 	var img := Image.create(96, 96, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0.22, 0.20, 0.30))
+	return ImageTexture.create_from_image(img)
+
+
+# Текстура мягкой тени: чёрный прямоугольник с альфой, плавно затухающей
+# к краям (smoothstep). Низкое разрешение — тень размытая, детали не нужны.
+func _build_card_shadow_texture() -> ImageTexture:
+	var s: int = 128
+	# Узкий мягкий край: ядро почти сплошное, размывается только по контуру —
+	# тень получается «глубокой», а не блёклой.
+	var falloff: float = float(s) * 0.16
+	var img := Image.create(s, s, false, Image.FORMAT_RGBA8)
+	for y in range(s):
+		for x in range(s):
+			var edge: float = float(mini(mini(x, s - 1 - x), mini(y, s - 1 - y)))
+			var a: float = clampf(edge / falloff, 0.0, 1.0)
+			a = a * a * (3.0 - 2.0 * a)   # smoothstep — мягче на стыке
+			img.set_pixel(x, y, Color(0.0, 0.0, 0.0, a))
 	return ImageTexture.create_from_image(img)
 
 
@@ -287,7 +311,10 @@ func _make_chevron(tex: Texture2D) -> TextureRect:
 func _build_carousel() -> Control:
 	var area := Control.new()
 	area.name = "Carousel"
-	area.custom_minimum_size = Vector2(0, 760)
+	# Минимум намеренно невысокий: карусель и так SIZE_EXPAND_FILL — заберёт
+	# всё свободное место. Высокий минимум (был 760) при крупной InfoBar
+	# выдавливал action-bar за нижний край окна.
+	area.custom_minimum_size = Vector2(0, 480)
 	area.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	area.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_carousel_area = area
@@ -301,9 +328,13 @@ func _build_carousel() -> Control:
 	area.add_child(spvc)
 
 	# 3D SubViewport: камера + 5 квадов карточек.
+	# Разрешение 3840×1520 (аспект 2.526, как 1920×760 — проекция не меняется),
+	# вдвое выше «логического» — иначе при stretch'е на крупную карусель рендер
+	# апскейлится и текст карточек мылит. Аспект ОБЯЗАН остаться 2.526, иначе
+	# поедет горизонтальная раскладка слотов.
 	_world_vp = SubViewport.new()
 	_world_vp.name = "WorldVP"
-	_world_vp.size = Vector2i(1920, 760)
+	_world_vp.size = Vector2i(3840, 1520)
 	_world_vp.transparent_bg = true
 	_world_vp.handle_input_locally = false
 	# По умолчанию засыпаем — пока нет активных tween'ов меш-карточек, рендерить
@@ -333,6 +364,10 @@ func _build_carousel() -> Control:
 		_world_vp.add_child(mesh)
 		_card_meshes.append(mesh)
 		_apply_3d_slot(mesh, i)
+
+	# Виньетка по краям — поверх 3D-сцены, но ДО стрелок (стрелки остаются
+	# яркими сверху, дальние карточки мягко уходят в темноту).
+	area.add_child(_make_edge_vignette())
 
 	# Стрелки — TextureButton'ы на границе между внешней и соседней карточками
 	# (см. ARROW_X_ANCHOR_FROM_EDGE). Дети area, поэтому всегда поверх 3D.
@@ -392,7 +427,29 @@ func _make_3d_card_mesh(ui_vp: SubViewport) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.mesh = quad
 	mi.material_override = mat
+	mi.add_child(_make_card_shadow())
 	return mi
+
+
+# Мягкая drop-тень — дочерний quad чуть больше карточки. Ребёнок меша,
+# поэтому наследует его позицию/поворот/масштаб при анимациях слотов.
+func _make_card_shadow() -> MeshInstance3D:
+	var quad := QuadMesh.new()
+	quad.size = CARD_QUAD_SIZE * SHADOW_QUAD_SCALE
+
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode   = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.albedo_texture = _card_shadow_tex
+	mat.albedo_color   = Color(1.0, 1.0, 1.0, SHADOW_ALPHA)
+	mat.transparency   = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode      = BaseMaterial3D.CULL_DISABLED
+
+	var sh := MeshInstance3D.new()
+	sh.name = "CardShadow"
+	sh.mesh = quad
+	sh.material_override = mat
+	sh.position = SHADOW_OFFSET   # local: за карточкой (z<0), сдвинута вниз
+	return sh
 
 
 # Целевая трансформация для слота — pos/rot/scale/color. Используется как
@@ -408,6 +465,12 @@ func _slot_transform(slot: int) -> Dictionary:
 	}
 
 
+# Материал дочернего shadow-quad'а карточки (или null).
+func _card_shadow_mat(mesh: MeshInstance3D) -> StandardMaterial3D:
+	var sh := mesh.get_node_or_null("CardShadow") as MeshInstance3D
+	return (sh.material_override as StandardMaterial3D) if sh else null
+
+
 # Применяет position/rotation/scale/brightness к мешу для указанного слота (без анимации).
 func _apply_3d_slot(mesh: MeshInstance3D, slot: int) -> void:
 	var t := _slot_transform(slot)
@@ -417,6 +480,41 @@ func _apply_3d_slot(mesh: MeshInstance3D, slot: int) -> void:
 	var mat := mesh.material_override as StandardMaterial3D
 	if mat:
 		mat.albedo_color = t.color
+	# Снап тени к полной непрозрачности — на случай прерванного wrap-fade'а.
+	var smat := _card_shadow_mat(mesh)
+	if smat:
+		smat.albedo_color = Color(1.0, 1.0, 1.0, SHADOW_ALPHA)
+
+
+# Горизонтальная виньетка: непрозрачно-чёрная у левого/правого края,
+# плавно сходит в прозрачность к центру (16% ширины на затухание с каждой
+# стороны). Прячет жёсткий обрез дальних карточек.
+func _make_edge_vignette() -> TextureRect:
+	var grad := Gradient.new()
+	grad.offsets = PackedFloat32Array([0.0, 0.16, 0.84, 1.0])
+	grad.colors  = PackedColorArray([
+		Color(0.0, 0.0, 0.0, 1.0),
+		Color(0.0, 0.0, 0.0, 0.0),
+		Color(0.0, 0.0, 0.0, 0.0),
+		Color(0.0, 0.0, 0.0, 1.0),
+	])
+
+	var tex := GradientTexture2D.new()
+	tex.gradient  = grad
+	tex.width     = 512
+	tex.height    = 1
+	tex.fill      = GradientTexture2D.FILL_LINEAR
+	tex.fill_from = Vector2(0.0, 0.0)
+	tex.fill_to   = Vector2(1.0, 0.0)
+
+	var rect := TextureRect.new()
+	rect.name         = "EdgeVignette"
+	rect.texture      = tex
+	rect.expand_mode  = TextureRect.EXPAND_IGNORE_SIZE
+	rect.stretch_mode = TextureRect.STRETCH_SCALE
+	rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return rect
 
 
 func _make_arrow_btn(tex: Texture2D) -> TextureButton:
@@ -432,15 +530,15 @@ func _make_arrow_btn(tex: Texture2D) -> TextureButton:
 # проекта 0.5: PNG нарисован в более высоком разрешении (≈@4×), визуально на
 # 0.5 был в 2× крупнее макета.
 func _position_arrow(btn: TextureButton, x_anchor: float) -> void:
-	var size: Vector2 = btn.texture_normal.get_size() * 0.25
+	var tex_size: Vector2 = btn.texture_normal.get_size() * 0.25
 	btn.anchor_left   = x_anchor
 	btn.anchor_right  = x_anchor
 	btn.anchor_top    = ARROW_Y_ANCHOR
 	btn.anchor_bottom = ARROW_Y_ANCHOR
-	btn.offset_left   = -size.x * 0.5
-	btn.offset_right  =  size.x * 0.5
-	btn.offset_top    = -size.y * 0.5
-	btn.offset_bottom =  size.y * 0.5
+	btn.offset_left   = -tex_size.x * 0.5
+	btn.offset_right  =  tex_size.x * 0.5
+	btn.offset_top    = -tex_size.y * 0.5
+	btn.offset_bottom =  tex_size.y * 0.5
 	# Запоминаем «домашние» offset'ы — к ним возвращаемся после nudge'а
 	# (см. _animate_arrow_nudge).
 	btn.set_meta("rest_offset_left",  btn.offset_left)
@@ -789,19 +887,24 @@ func _wrap_mesh(mesh: MeshInstance3D, phys_idx: int, direction: int,
 
 	var t := _slot_transform(wrap_slot)
 	var mat := mesh.material_override as StandardMaterial3D
+	var smat := _card_shadow_mat(mesh)   # тень фейдится в ногу с карточкой
 	var off_pos   := Vector3(off_x,   mesh.position.y, mesh.position.z)
 	var entry_pos := Vector3(entry_x, t.pos.y,         t.pos.z)
 	var transparent_color: Color = t.color
 	transparent_color.a = 0.0
+	var shadow_hidden  := Color(1.0, 1.0, 1.0, 0.0)
+	var shadow_visible := Color(1.0, 1.0, 1.0, SHADOW_ALPHA)
 
 	var tw := mesh.create_tween().set_trans(Tween.TRANS_CUBIC)
 
-	# Phase 1 (parallel): вылет за край + alpha→0.
+	# Phase 1 (parallel): вылет за край + alpha→0 (карточка и тень).
 	tw.tween_property(mesh, "position", off_pos, ANIM_DURATION * 0.5).set_ease(Tween.EASE_IN)
 	if mat:
 		var fade := mat.albedo_color
 		fade.a = 0.0
 		tw.parallel().tween_property(mat, "albedo_color", fade, ANIM_DURATION * 0.5).set_ease(Tween.EASE_IN)
+	if smat:
+		tw.parallel().tween_property(smat, "albedo_color", shadow_hidden, ANIM_DURATION * 0.5).set_ease(Tween.EASE_IN)
 
 	# Mid: подменяем данные + телепорт на entry side.
 	tw.chain().tween_callback(func() -> void:
@@ -813,12 +916,16 @@ func _wrap_mesh(mesh: MeshInstance3D, phys_idx: int, direction: int,
 		mesh.scale    = t.scale
 		if mat:
 			mat.albedo_color = transparent_color
+		if smat:
+			smat.albedo_color = shadow_hidden
 	)
 
-	# Phase 2 (parallel): въезд в слот + alpha→target_brightness.
+	# Phase 2 (parallel): въезд в слот + alpha→target (карточка и тень).
 	tw.tween_property(mesh, "position", t.pos, ANIM_DURATION * 0.5).set_ease(Tween.EASE_OUT)
 	if mat:
 		tw.parallel().tween_property(mat, "albedo_color", t.color, ANIM_DURATION * 0.5).set_ease(Tween.EASE_OUT)
+	if smat:
+		tw.parallel().tween_property(smat, "albedo_color", shadow_visible, ANIM_DURATION * 0.5).set_ease(Tween.EASE_OUT)
 
 	tw.finished.connect(_on_mesh_tween_finished)
 	mesh.set_meta("__tween", tw)

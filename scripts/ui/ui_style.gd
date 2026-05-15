@@ -228,6 +228,23 @@ static func _wire_button_hover(btn: Button, bg: Control) -> void:
 
 	btn.button_down.connect(func() -> void: _animate_press(btn, true))
 	btn.button_up.connect(func() -> void: _animate_press(btn, false))
+	attach_click_sfx(btn)
+
+
+## Подключает звук клика к любой Button/TextureButton/BaseButton. Используется
+## внутри style_button / style_icon_button / texture_icon_button — добавлять
+## вручную нужно только для кастомных кнопок, которые не проходят через них.
+## Idempotent — повторный вызов на той же кнопке игнорируется (иначе сигнал
+## подключился бы дважды → двойной звук).
+##
+## Слушает button_down (а не pressed): звук играет сразу при нажатии, до
+## release — это даёт тактильный отклик; pressed бы запустил его уже на
+## отпускании, что ощущается заторможенно.
+static func attach_click_sfx(btn: BaseButton) -> void:
+	if btn.has_meta("__click_sfx_wired"):
+		return
+	btn.set_meta("__click_sfx_wired", true)
+	btn.button_down.connect(func() -> void: SfxManager.play(SfxManager.SFX_BTN_CLICK))
 
 
 # Press-анимация: двигаем сам Button (а с ним — и фон, и текст) по Y вниз
@@ -294,6 +311,7 @@ static func _wire_texture_button_hover(btn: TextureButton) -> void:
 	btn.draw.connect(apply_color)
 	btn.button_down.connect(func() -> void: _animate_press(btn, true))
 	btn.button_up.connect(func() -> void: _animate_press(btn, false))
+	attach_click_sfx(btn)
 
 
 ## Применяет компактный stylebox-стиль к маленьким иконочным кнопкам
@@ -306,6 +324,7 @@ static func style_icon_button(btn: Button, color: Color = UIColors.DANGER) -> vo
 	btn.add_theme_color_override("font_color",          color)
 	btn.add_theme_color_override("font_hover_color",    Color.WHITE)
 	btn.add_theme_color_override("font_disabled_color", UIColors.MUTED)
+	attach_click_sfx(btn)
 
 
 ## Создаёт стилизованную кнопку (legacy API для динамического UI).

@@ -10,7 +10,8 @@ extends Node
 ##   SfxManager.play(SfxManager.SFX_SLIDE)
 ##   SfxManager.set_volume(0.5)
 
-const SFX_SLIDE: AudioStream = preload("res://assets/audio/sfx/slide.wav")
+const SFX_SLIDE:     AudioStream = preload("res://assets/audio/sfx/slide.wav")
+const SFX_BTN_CLICK: AudioStream = preload("res://assets/audio/sfx/btn-click.wav")
 
 const BUS_NAME := "Sfx"
 const _POOL_SIZE: int = 4

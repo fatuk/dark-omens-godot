@@ -328,6 +328,7 @@ func _make_room_row(room: Dictionary) -> Control:
 	room_btn.add_theme_color_override("font_color", UIColors.TEXT)
 	room_btn.add_theme_font_size_override("font_size", 14)
 	room_btn.pressed.connect(_on_room_selected.bind(rid, room_btn))
+	UIStyle.attach_click_sfx(room_btn)
 	row.add_child(room_btn)
 
 	# ✕ только для пустых комнат — не пустые удаляются хостом из лобби.
