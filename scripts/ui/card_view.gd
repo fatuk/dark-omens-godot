@@ -183,15 +183,15 @@ func _build_taken_overlay() -> Control:
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-func _make_full_rect_texture(tex: Texture2D, material: Material) -> TextureRect:
+func _make_full_rect_texture(tex: Texture2D, mat: Material) -> TextureRect:
 	var r := TextureRect.new()
 	r.texture       = tex
 	r.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
 	r.stretch_mode  = TextureRect.STRETCH_SCALE
 	r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	r.mouse_filter  = Control.MOUSE_FILTER_IGNORE
-	if material:
-		r.material = material
+	if mat:
+		r.material = mat
 	return r
 
 

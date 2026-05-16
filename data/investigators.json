@@ -1,1111 +1,1111 @@
 [
   {
-    "name": "Silas Marsh",
-    "displayName": "INV_SILAS_MARSH_NAME",
-    "occupation": "INV_SILAS_MARSH_OCC",
-    "startingLocation": "Sydney",
-    "set": "INV_SET_CORE",
-    "quote": "INV_SILAS_MARSH_QUOTE",
-    "role": [
+	"name": "Silas Marsh",
+	"displayName": "INV_SILAS_MARSH_NAME",
+	"occupation": "INV_SILAS_MARSH_OCC",
+	"startingLocation": "Sydney",
+	"set": "INV_SET_CORE",
+	"quote": "INV_SILAS_MARSH_QUOTE",
+	"role": [
       "INV_ROLE_ALL_ROUNDER"
-    ],
-    "health": 8,
-    "sanity": 4,
-    "skills": {
-      "lore": 1,
-      "influence": 3,
-      "observation": 3,
-      "strength": 3,
-      "will": 3
-    }
+	],
+	"health": 8,
+	"sanity": 4,
+	"skills": {
+	  "lore": 1,
+	  "influence": 3,
+	  "observation": 3,
+	  "strength": 3,
+	  "will": 3
+	}
   },
   {
-    "name": "Monterey Jack",
-    "displayName": "INV_MONTEREY_JACK_NAME",
-    "occupation": "INV_MONTEREY_JACK_OCC",
-    "startingLocation": "The Pyramids",
-    "set": "INV_SET_UNDER_THE_PYRAMIDS",
-    "quote": "INV_MONTEREY_JACK_QUOTE",
-    "role": [
+	"name": "Monterey Jack",
+	"displayName": "INV_MONTEREY_JACK_NAME",
+	"occupation": "INV_MONTEREY_JACK_OCC",
+	"startingLocation": "The Pyramids",
+	"set": "INV_SET_UNDER_THE_PYRAMIDS",
+	"quote": "INV_MONTEREY_JACK_QUOTE",
+	"role": [
       "INV_ROLE_EXPEDITION"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 2,
-      "influence": 2,
-      "observation": 3,
-      "strength": 4,
-      "will": 2
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 2,
+	  "influence": 2,
+	  "observation": 3,
+	  "strength": 4,
+	  "will": 2
+	}
   },
   {
-    "name": "Darrell Simmons",
-    "displayName": "INV_DARRELL_SIMMONS_NAME",
-    "occupation": "INV_DARRELL_SIMMONS_OCC",
-    "startingLocation": "20",
-    "set": "INV_SET_THE_DREAMLANDS",
-    "quote": "INV_DARRELL_SIMMONS_QUOTE",
-    "role": [
+	"name": "Darrell Simmons",
+	"displayName": "INV_DARRELL_SIMMONS_NAME",
+	"occupation": "INV_DARRELL_SIMMONS_OCC",
+	"startingLocation": "20",
+	"set": "INV_SET_THE_DREAMLANDS",
+	"quote": "INV_DARRELL_SIMMONS_QUOTE",
+	"role": [
       "INV_ROLE_RESEARCH"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 1,
-      "influence": 3,
-      "observation": 4,
-      "strength": 2,
-      "will": 3
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 1,
+	  "influence": 3,
+	  "observation": 4,
+	  "strength": 2,
+	  "will": 3
+	}
   },
   {
-    "name": "Trish Scarborough",
-    "displayName": "INV_TRISH_SCARBOROUGH_NAME",
-    "occupation": "INV_TRISH_SCARBOROUGH_OCC",
-    "startingLocation": "16",
-    "set": "INV_SET_CORE",
-    "quote": "INV_TRISH_SCARBOROUGH_QUOTE",
-    "role": [
+	"name": "Trish Scarborough",
+	"displayName": "INV_TRISH_SCARBOROUGH_NAME",
+	"occupation": "INV_TRISH_SCARBOROUGH_OCC",
+	"startingLocation": "16",
+	"set": "INV_SET_CORE",
+	"quote": "INV_TRISH_SCARBOROUGH_QUOTE",
+	"role": [
       "INV_ROLE_RESEARCH"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 1,
-      "influence": 3,
-      "observation": 4,
-      "strength": 3,
-      "will": 2
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 1,
+	  "influence": 3,
+	  "observation": 4,
+	  "strength": 3,
+	  "will": 2
+	}
   },
   {
-    "name": "Zoey Samaras",
-    "displayName": "INV_ZOEY_SAMARAS_NAME",
-    "occupation": "INV_ZOEY_SAMARAS_OCC",
-    "startingLocation": "Rome",
-    "set": "INV_SET_STRANGE_REMNANTS",
-    "quote": "INV_ZOEY_SAMARAS_QUOTE",
-    "role": [
+	"name": "Zoey Samaras",
+	"displayName": "INV_ZOEY_SAMARAS_NAME",
+	"occupation": "INV_ZOEY_SAMARAS_OCC",
+	"startingLocation": "Rome",
+	"set": "INV_SET_STRANGE_REMNANTS",
+	"quote": "INV_ZOEY_SAMARAS_QUOTE",
+	"role": [
       "INV_ROLE_COMBAT"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 3,
-      "influence": 2,
-      "observation": 1,
-      "strength": 3,
-      "will": 4
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 3,
+	  "influence": 2,
+	  "observation": 1,
+	  "strength": 3,
+	  "will": 4
+	}
   },
   {
-    "name": "Jacqueline Fine",
-    "displayName": "INV_JACQUELINE_FINE_NAME",
-    "occupation": "INV_JACQUELINE_FINE_OCC",
-    "startingLocation": "5",
-    "set": "INV_SET_CORE",
-    "quote": "INV_JACQUELINE_FINE_QUOTE",
-    "role": [
-      "INV_ROLE_SUPPORT",
+	"name": "Jacqueline Fine",
+	"displayName": "INV_JACQUELINE_FINE_NAME",
+	"occupation": "INV_JACQUELINE_FINE_OCC",
+	"startingLocation": "5",
+	"set": "INV_SET_CORE",
+	"quote": "INV_JACQUELINE_FINE_QUOTE",
+	"role": [
+	  "INV_ROLE_SUPPORT",
       "INV_ROLE_RESEARCH"
-    ],
-    "health": 4,
-    "sanity": 8,
-    "skills": {
-      "lore": 4,
-      "influence": 2,
-      "observation": 3,
-      "strength": 1,
-      "will": 3
-    }
+	],
+	"health": 4,
+	"sanity": 8,
+	"skills": {
+	  "lore": 4,
+	  "influence": 2,
+	  "observation": 3,
+	  "strength": 1,
+	  "will": 3
+	}
   },
   {
-    "name": "Dexter Drake",
-    "displayName": "INV_DEXTER_DRAKE_NAME",
-    "occupation": "INV_DEXTER_DRAKE_OCC",
-    "startingLocation": "Tokyo",
-    "set": "INV_SET_SIGNS_OF_CARCOSA",
-    "quote": "INV_DEXTER_DRAKE_QUOTE",
-    "role": [
+	"name": "Dexter Drake",
+	"displayName": "INV_DEXTER_DRAKE_NAME",
+	"occupation": "INV_DEXTER_DRAKE_OCC",
+	"startingLocation": "Tokyo",
+	"set": "INV_SET_SIGNS_OF_CARCOSA",
+	"quote": "INV_DEXTER_DRAKE_QUOTE",
+	"role": [
       "INV_ROLE_MAGIC"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 4,
-      "influence": 2,
-      "observation": 2,
-      "strength": 2,
-      "will": 3
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 4,
+	  "influence": 2,
+	  "observation": 2,
+	  "strength": 2,
+	  "will": 3
+	}
   },
   {
-    "name": "Diana Stanley",
-    "displayName": "INV_DIANA_STANLEY_NAME",
-    "occupation": "INV_DIANA_STANLEY_OCC",
-    "startingLocation": "7",
-    "set": "INV_SET_CORE",
-    "quote": "INV_DIANA_STANLEY_QUOTE",
-    "role": [
-      "INV_ROLE_MAGIC",
+	"name": "Diana Stanley",
+	"displayName": "INV_DIANA_STANLEY_NAME",
+	"occupation": "INV_DIANA_STANLEY_OCC",
+	"startingLocation": "7",
+	"set": "INV_SET_CORE",
+	"quote": "INV_DIANA_STANLEY_QUOTE",
+	"role": [
+	  "INV_ROLE_MAGIC",
       "INV_ROLE_COMBAT"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 4,
-      "influence": 2,
-      "observation": 3,
-      "strength": 3,
-      "will": 1
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 4,
+	  "influence": 2,
+	  "observation": 3,
+	  "strength": 3,
+	  "will": 1
+	}
   },
   {
-    "name": "Amanda Sharpe",
-    "displayName": "INV_AMANDA_SHARPE_NAME",
-    "occupation": "INV_AMANDA_SHARPE_OCC",
-    "startingLocation": "Istanbul",
-    "set": "INV_SET_THE_DREAMLANDS",
-    "quote": "INV_AMANDA_SHARPE_QUOTE",
-    "role": [
+	"name": "Amanda Sharpe",
+	"displayName": "INV_AMANDA_SHARPE_NAME",
+	"occupation": "INV_AMANDA_SHARPE_OCC",
+	"startingLocation": "Istanbul",
+	"set": "INV_SET_THE_DREAMLANDS",
+	"quote": "INV_AMANDA_SHARPE_QUOTE",
+	"role": [
       "INV_ROLE_RESEARCH"
-    ],
-    "health": 6,
-    "sanity": 6,
-    "skills": {
-      "lore": 2,
-      "influence": 3,
-      "observation": 4,
-      "strength": 1,
-      "will": 3
-    }
+	],
+	"health": 6,
+	"sanity": 6,
+	"skills": {
+	  "lore": 2,
+	  "influence": 3,
+	  "observation": 4,
+	  "strength": 1,
+	  "will": 3
+	}
   },
   {
-    "name": "Gloria Goldberg",
-    "displayName": "INV_GLORIA_GOLDBERG_NAME",
-    "occupation": "INV_GLORIA_GOLDBERG_OCC",
-    "startingLocation": "Arkham",
-    "set": "INV_SET_THE_DREAMLANDS",
-    "quote": "INV_GLORIA_GOLDBERG_QUOTE",
-    "role": [
-      "INV_ROLE_SUPPORT",
+	"name": "Gloria Goldberg",
+	"displayName": "INV_GLORIA_GOLDBERG_NAME",
+	"occupation": "INV_GLORIA_GOLDBERG_OCC",
+	"startingLocation": "Arkham",
+	"set": "INV_SET_THE_DREAMLANDS",
+	"quote": "INV_GLORIA_GOLDBERG_QUOTE",
+	"role": [
+	  "INV_ROLE_SUPPORT",
       "INV_ROLE_RESEARCH"
-    ],
-    "health": 4,
-    "sanity": 8,
-    "skills": {
-      "lore": 3,
-      "influence": 3,
-      "observation": 3,
-      "strength": 1,
-      "will": 3
-    }
+	],
+	"health": 4,
+	"sanity": 8,
+	"skills": {
+	  "lore": 3,
+	  "influence": 3,
+	  "observation": 3,
+	  "strength": 1,
+	  "will": 3
+	}
   },
   {
-    "name": "Kate Winthrop",
-    "displayName": "INV_KATE_WINTHROP_NAME",
-    "occupation": "INV_KATE_WINTHROP_OCC",
-    "startingLocation": "Buenos Aires",
-    "set": "INV_SET_THE_DREAMLANDS",
-    "quote": "INV_KATE_WINTHROP_QUOTE",
-    "role": [
-      "INV_ROLE_RESEARCH",
+	"name": "Kate Winthrop",
+	"displayName": "INV_KATE_WINTHROP_NAME",
+	"occupation": "INV_KATE_WINTHROP_OCC",
+	"startingLocation": "Buenos Aires",
+	"set": "INV_SET_THE_DREAMLANDS",
+	"quote": "INV_KATE_WINTHROP_QUOTE",
+	"role": [
+	  "INV_ROLE_RESEARCH",
       "INV_ROLE_GATE_CLOSER"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 3,
-      "influence": 2,
-      "observation": 4,
-      "strength": 2,
-      "will": 2
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 3,
+	  "influence": 2,
+	  "observation": 4,
+	  "strength": 2,
+	  "will": 2
+	}
   },
   {
-    "name": "Minh Thi Phan",
-    "displayName": "INV_MINH_THI_PHAN_NAME",
-    "occupation": "INV_MINH_THI_PHAN_OCC",
-    "startingLocation": "Tokyo",
-    "set": "INV_SET_UNDER_THE_PYRAMIDS",
-    "quote": "INV_MINH_THI_PHAN_QUOTE",
-    "role": [
+	"name": "Minh Thi Phan",
+	"displayName": "INV_MINH_THI_PHAN_NAME",
+	"occupation": "INV_MINH_THI_PHAN_OCC",
+	"startingLocation": "Tokyo",
+	"set": "INV_SET_UNDER_THE_PYRAMIDS",
+	"quote": "INV_MINH_THI_PHAN_QUOTE",
+	"role": [
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 6,
-    "sanity": 6,
-    "skills": {
-      "lore": 3,
-      "influence": 3,
-      "observation": 3,
-      "strength": 2,
-      "will": 2
-    }
+	],
+	"health": 6,
+	"sanity": 6,
+	"skills": {
+	  "lore": 3,
+	  "influence": 3,
+	  "observation": 3,
+	  "strength": 2,
+	  "will": 2
+	}
   },
   {
-    "name": "Rita Young",
-    "displayName": "INV_RITA_YOUNG_NAME",
-    "occupation": "INV_RITA_YOUNG_OCC",
-    "startingLocation": "Shanghai",
-    "set": "INV_SET_CITIES_IN_RUIN",
-    "quote": "INV_RITA_YOUNG_QUOTE",
-    "role": [
+	"name": "Rita Young",
+	"displayName": "INV_RITA_YOUNG_NAME",
+	"occupation": "INV_RITA_YOUNG_OCC",
+	"startingLocation": "Shanghai",
+	"set": "INV_SET_CITIES_IN_RUIN",
+	"quote": "INV_RITA_YOUNG_QUOTE",
+	"role": [
       "INV_ROLE_COMBAT"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 3,
-      "influence": 1,
-      "observation": 2,
-      "strength": 4,
-      "will": 3
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 3,
+	  "influence": 1,
+	  "observation": 2,
+	  "strength": 4,
+	  "will": 3
+	}
   },
   {
-    "name": "Joe Diamond",
-    "displayName": "INV_JOE_DIAMOND_NAME",
-    "occupation": "INV_JOE_DIAMOND_OCC",
-    "startingLocation": "San Francisco",
-    "set": "INV_SET_UNDER_THE_PYRAMIDS",
-    "quote": "INV_JOE_DIAMOND_QUOTE",
-    "role": [
+	"name": "Joe Diamond",
+	"displayName": "INV_JOE_DIAMOND_NAME",
+	"occupation": "INV_JOE_DIAMOND_OCC",
+	"startingLocation": "San Francisco",
+	"set": "INV_SET_UNDER_THE_PYRAMIDS",
+	"quote": "INV_JOE_DIAMOND_QUOTE",
+	"role": [
       "INV_ROLE_RESEARCH"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 2,
-      "influence": 3,
-      "observation": 4,
-      "strength": 2,
-      "will": 2
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 2,
+	  "influence": 3,
+	  "observation": 4,
+	  "strength": 2,
+	  "will": 2
+	}
   },
   {
-    "name": "William Yorick",
-    "displayName": "INV_WILLIAM_YORICK_NAME",
-    "occupation": "INV_WILLIAM_YORICK_OCC",
-    "startingLocation": "Sydney",
-    "set": "INV_SET_THE_DREAMLANDS",
-    "quote": "INV_WILLIAM_YORICK_QUOTE",
-    "role": [
+	"name": "William Yorick",
+	"displayName": "INV_WILLIAM_YORICK_NAME",
+	"occupation": "INV_WILLIAM_YORICK_OCC",
+	"startingLocation": "Sydney",
+	"set": "INV_SET_THE_DREAMLANDS",
+	"quote": "INV_WILLIAM_YORICK_QUOTE",
+	"role": [
       "INV_ROLE_COMBAT"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 3,
-      "influence": 2,
-      "observation": 2,
-      "strength": 3,
-      "will": 3
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 3,
+	  "influence": 2,
+	  "observation": 2,
+	  "strength": 3,
+	  "will": 3
+	}
   },
   {
-    "name": "Agatha Crane",
-    "displayName": "INV_AGATHA_CRANE_NAME",
-    "occupation": "INV_AGATHA_CRANE_OCC",
-    "startingLocation": "Tokyo",
-    "set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-    "quote": "INV_AGATHA_CRANE_QUOTE",
-    "role": [
-      "INV_ROLE_MAGIC",
+	"name": "Agatha Crane",
+	"displayName": "INV_AGATHA_CRANE_NAME",
+	"occupation": "INV_AGATHA_CRANE_OCC",
+	"startingLocation": "Tokyo",
+	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+	"quote": "INV_AGATHA_CRANE_QUOTE",
+	"role": [
+	  "INV_ROLE_MAGIC",
       "INV_ROLE_RESEARCH"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 4,
-      "influence": 3,
-      "observation": 3,
-      "strength": 1,
-      "will": 2
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 4,
+	  "influence": 3,
+	  "observation": 3,
+	  "strength": 1,
+	  "will": 2
+	}
   },
   {
-    "name": "Daniela Reyes",
-    "displayName": "INV_DANIELA_REYES_NAME",
-    "occupation": "INV_DANIELA_REYES_OCC",
-    "startingLocation": "San Francisco",
-    "set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-    "quote": "INV_DANIELA_REYES_QUOTE",
-    "role": [
+	"name": "Daniela Reyes",
+	"displayName": "INV_DANIELA_REYES_NAME",
+	"occupation": "INV_DANIELA_REYES_OCC",
+	"startingLocation": "San Francisco",
+	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+	"quote": "INV_DANIELA_REYES_QUOTE",
+	"role": [
       "INV_ROLE_ALL_ROUNDER"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 3,
-      "influence": 3,
-      "observation": 1,
-      "strength": 3,
-      "will": 3
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 3,
+	  "influence": 3,
+	  "observation": 1,
+	  "strength": 3,
+	  "will": 3
+	}
   },
   {
-    "name": "\"Ashcan\" Pete",
-    "displayName": "INV_ASHCAN_PETE_NAME",
-    "occupation": "INV_ASHCAN_PETE_OCC",
-    "startingLocation": "14",
-    "set": "INV_SET_CITIES_IN_RUIN",
-    "quote": "INV_ASHCAN_PETE_QUOTE",
-    "role": [
+	"name": "\"Ashcan\" Pete",
+	"displayName": "INV_ASHCAN_PETE_NAME",
+	"occupation": "INV_ASHCAN_PETE_OCC",
+	"startingLocation": "14",
+	"set": "INV_SET_CITIES_IN_RUIN",
+	"quote": "INV_ASHCAN_PETE_QUOTE",
+	"role": [
       "INV_ROLE_ALL_ROUNDER"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 3,
-      "influence": 1,
-      "observation": 3,
-      "strength": 3,
-      "will": 3
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 3,
+	  "influence": 1,
+	  "observation": 3,
+	  "strength": 3,
+	  "will": 3
+	}
   },
   {
-    "name": "Michael McGlen",
-    "displayName": "INV_MICHAEL_MCGLEN_NAME",
-    "occupation": "INV_MICHAEL_MCGLEN_OCC",
-    "startingLocation": "London",
-    "set": "INV_SET_SIGNS_OF_CARCOSA",
-    "quote": "INV_MICHAEL_MCGLEN_QUOTE",
-    "role": [
+	"name": "Michael McGlen",
+	"displayName": "INV_MICHAEL_MCGLEN_NAME",
+	"occupation": "INV_MICHAEL_MCGLEN_OCC",
+	"startingLocation": "London",
+	"set": "INV_SET_SIGNS_OF_CARCOSA",
+	"quote": "INV_MICHAEL_MCGLEN_QUOTE",
+	"role": [
       "INV_ROLE_COMBAT"
-    ],
-    "health": 8,
-    "sanity": 4,
-    "skills": {
-      "lore": 2,
-      "influence": 3,
-      "observation": 1,
-      "strength": 4,
-      "will": 3
-    }
+	],
+	"health": 8,
+	"sanity": 4,
+	"skills": {
+	  "lore": 2,
+	  "influence": 3,
+	  "observation": 1,
+	  "strength": 4,
+	  "will": 3
+	}
   },
   {
-    "name": "Tommy Muldoon",
-    "displayName": "INV_TOMMY_MULDOON_NAME",
-    "occupation": "INV_TOMMY_MULDOON_OCC",
-    "startingLocation": "1",
-    "set": "INV_SET_MOUNTAINS_OF_MADNESS",
-    "quote": "INV_TOMMY_MULDOON_QUOTE",
-    "role": [
+	"name": "Tommy Muldoon",
+	"displayName": "INV_TOMMY_MULDOON_NAME",
+	"occupation": "INV_TOMMY_MULDOON_OCC",
+	"startingLocation": "1",
+	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+	"quote": "INV_TOMMY_MULDOON_QUOTE",
+	"role": [
       "INV_ROLE_COMBAT"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 2,
-      "influence": 3,
-      "observation": 3,
-      "strength": 3,
-      "will": 2
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 2,
+	  "influence": 3,
+	  "observation": 3,
+	  "strength": 3,
+	  "will": 2
+	}
   },
   {
-    "name": "Sefina Rousseau",
-    "displayName": "INV_SEFINA_ROUSSEAU_NAME",
-    "occupation": "INV_SEFINA_ROUSSEAU_OCC",
-    "startingLocation": "Sydney",
-    "set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-    "quote": "INV_SEFINA_ROUSSEAU_QUOTE",
-    "role": [
+	"name": "Sefina Rousseau",
+	"displayName": "INV_SEFINA_ROUSSEAU_NAME",
+	"occupation": "INV_SEFINA_ROUSSEAU_OCC",
+	"startingLocation": "Sydney",
+	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+	"quote": "INV_SEFINA_ROUSSEAU_QUOTE",
+	"role": [
       "INV_ROLE_RESEARCH"
-    ],
-    "health": 4,
-    "sanity": 8,
-    "skills": {
-      "lore": 3,
-      "influence": 2,
-      "observation": 4,
-      "strength": 1,
-      "will": 3
-    }
+	],
+	"health": 4,
+	"sanity": 8,
+	"skills": {
+	  "lore": 3,
+	  "influence": 2,
+	  "observation": 4,
+	  "strength": 1,
+	  "will": 3
+	}
   },
   {
-    "name": "Harvey Walters",
-    "displayName": "INV_HARVEY_WALTERS_NAME",
-    "occupation": "INV_HARVEY_WALTERS_OCC",
-    "startingLocation": "Arkham",
-    "set": "INV_SET_UNDER_THE_PYRAMIDS",
-    "quote": "INV_HARVEY_WALTERS_QUOTE",
-    "role": [
+	"name": "Harvey Walters",
+	"displayName": "INV_HARVEY_WALTERS_NAME",
+	"occupation": "INV_HARVEY_WALTERS_OCC",
+	"startingLocation": "Arkham",
+	"set": "INV_SET_UNDER_THE_PYRAMIDS",
+	"quote": "INV_HARVEY_WALTERS_QUOTE",
+	"role": [
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 4,
-    "sanity": 8,
-    "skills": {
-      "lore": 3,
-      "influence": 2,
-      "observation": 3,
-      "strength": 2,
-      "will": 3
-    }
+	],
+	"health": 4,
+	"sanity": 8,
+	"skills": {
+	  "lore": 3,
+	  "influence": 2,
+	  "observation": 3,
+	  "strength": 2,
+	  "will": 3
+	}
   },
   {
-    "name": "Marie Lambeau",
-    "displayName": "INV_MARIE_LAMBEAU_NAME",
-    "occupation": "INV_MARIE_LAMBEAU_OCC",
-    "startingLocation": "20",
-    "set": "INV_SET_STRANGE_REMNANTS",
-    "quote": "INV_MARIE_LAMBEAU_QUOTE",
-    "role": [
+	"name": "Marie Lambeau",
+	"displayName": "INV_MARIE_LAMBEAU_NAME",
+	"occupation": "INV_MARIE_LAMBEAU_OCC",
+	"startingLocation": "20",
+	"set": "INV_SET_STRANGE_REMNANTS",
+	"quote": "INV_MARIE_LAMBEAU_QUOTE",
+	"role": [
       "INV_ROLE_MAGIC"
-    ],
-    "health": 6,
-    "sanity": 6,
-    "skills": {
-      "lore": 3,
-      "influence": 4,
-      "observation": 2,
-      "strength": 2,
-      "will": 2
-    }
+	],
+	"health": 6,
+	"sanity": 6,
+	"skills": {
+	  "lore": 3,
+	  "influence": 4,
+	  "observation": 2,
+	  "strength": 2,
+	  "will": 2
+	}
   },
   {
-    "name": "George Barnaby",
-    "displayName": "INV_GEORGE_BARNABY_NAME",
-    "occupation": "INV_GEORGE_BARNABY_OCC",
-    "startingLocation": "17",
-    "set": "INV_SET_MOUNTAINS_OF_MADNESS",
-    "quote": "INV_GEORGE_BARNABY_QUOTE",
-    "role": [
+	"name": "George Barnaby",
+	"displayName": "INV_GEORGE_BARNABY_NAME",
+	"occupation": "INV_GEORGE_BARNABY_OCC",
+	"startingLocation": "17",
+	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+	"quote": "INV_GEORGE_BARNABY_QUOTE",
+	"role": [
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 4,
-    "sanity": 8,
-    "skills": {
-      "lore": 3,
-      "influence": 4,
-      "observation": 2,
-      "strength": 1,
-      "will": 3
-    }
+	],
+	"health": 4,
+	"sanity": 8,
+	"skills": {
+	  "lore": 3,
+	  "influence": 4,
+	  "observation": 2,
+	  "strength": 1,
+	  "will": 3
+	}
   },
   {
-    "name": "Wendy Adams",
-    "displayName": "INV_WENDY_ADAMS_NAME",
-    "occupation": "INV_WENDY_ADAMS_OCC",
-    "startingLocation": "16",
-    "set": "INV_SET_SIGNS_OF_CARCOSA",
-    "quote": "INV_WENDY_ADAMS_QUOTE",
-    "role": [
+	"name": "Wendy Adams",
+	"displayName": "INV_WENDY_ADAMS_NAME",
+	"occupation": "INV_WENDY_ADAMS_OCC",
+	"startingLocation": "16",
+	"set": "INV_SET_SIGNS_OF_CARCOSA",
+	"quote": "INV_WENDY_ADAMS_QUOTE",
+	"role": [
       "INV_ROLE_RESEARCH"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 3,
-      "influence": 1,
-      "observation": 4,
-      "strength": 2,
-      "will": 3
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 3,
+	  "influence": 1,
+	  "observation": 4,
+	  "strength": 2,
+	  "will": 3
+	}
   },
   {
-    "name": "Lola Hayes",
-    "displayName": "INV_LOLA_HAYES_NAME",
-    "occupation": "INV_LOLA_HAYES_OCC",
-    "startingLocation": "Tokyo",
-    "set": "INV_SET_CORE",
-    "quote": "INV_LOLA_HAYES_QUOTE",
-    "role": [
+	"name": "Lola Hayes",
+	"displayName": "INV_LOLA_HAYES_NAME",
+	"occupation": "INV_LOLA_HAYES_OCC",
+	"startingLocation": "Tokyo",
+	"set": "INV_SET_CORE",
+	"quote": "INV_LOLA_HAYES_QUOTE",
+	"role": [
       "INV_ROLE_ALL_ROUNDER"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 2,
-      "influence": 4,
-      "observation": 2,
-      "strength": 2,
-      "will": 3
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 2,
+	  "influence": 4,
+	  "observation": 2,
+	  "strength": 2,
+	  "will": 3
+	}
   },
   {
-    "name": "Rex Murphy",
-    "displayName": "INV_REX_MURPHY_NAME",
-    "occupation": "INV_REX_MURPHY_OCC",
-    "startingLocation": "1",
-    "set": "INV_SET_UNDER_THE_PYRAMIDS",
-    "quote": "INV_REX_MURPHY_QUOTE",
-    "role": [
+	"name": "Rex Murphy",
+	"displayName": "INV_REX_MURPHY_NAME",
+	"occupation": "INV_REX_MURPHY_OCC",
+	"startingLocation": "1",
+	"set": "INV_SET_UNDER_THE_PYRAMIDS",
+	"quote": "INV_REX_MURPHY_QUOTE",
+	"role": [
       "INV_ROLE_ALL_ROUNDER"
-    ],
-    "health": 7,
-    "sanity": 7,
-    "skills": {
-      "lore": 2,
-      "influence": 3,
-      "observation": 2,
-      "strength": 3,
-      "will": 3
-    }
+	],
+	"health": 7,
+	"sanity": 7,
+	"skills": {
+	  "lore": 2,
+	  "influence": 3,
+	  "observation": 2,
+	  "strength": 3,
+	  "will": 3
+	}
   },
   {
-    "name": "Lily Chen",
-    "displayName": "INV_LILY_CHEN_NAME",
-    "occupation": "INV_LILY_CHEN_OCC",
-    "startingLocation": "Shanghai",
-    "set": "INV_SET_CORE",
-    "quote": "INV_LILY_CHEN_QUOTE",
-    "role": [
+	"name": "Lily Chen",
+	"displayName": "INV_LILY_CHEN_NAME",
+	"occupation": "INV_LILY_CHEN_OCC",
+	"startingLocation": "Shanghai",
+	"set": "INV_SET_CORE",
+	"quote": "INV_LILY_CHEN_QUOTE",
+	"role": [
       "INV_ROLE_COMBAT"
-    ],
-    "health": 6,
-    "sanity": 6,
-    "skills": {
-      "lore": 2,
-      "influence": 2,
-      "observation": 2,
-      "strength": 4,
-      "will": 3
-    }
+	],
+	"health": 6,
+	"sanity": 6,
+	"skills": {
+	  "lore": 2,
+	  "influence": 2,
+	  "observation": 2,
+	  "strength": 4,
+	  "will": 3
+	}
   },
   {
-    "name": "Bob Jenkins",
-    "displayName": "INV_BOB_JENKINS_NAME",
-    "occupation": "INV_BOB_JENKINS_OCC",
-    "startingLocation": "London",
-    "set": "INV_SET_CITIES_IN_RUIN",
-    "quote": "INV_BOB_JENKINS_QUOTE",
-    "role": [
+	"name": "Bob Jenkins",
+	"displayName": "INV_BOB_JENKINS_NAME",
+	"occupation": "INV_BOB_JENKINS_OCC",
+	"startingLocation": "London",
+	"set": "INV_SET_CITIES_IN_RUIN",
+	"quote": "INV_BOB_JENKINS_QUOTE",
+	"role": [
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 2,
-      "influence": 4,
-      "observation": 2,
-      "strength": 3,
-      "will": 2
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 2,
+	  "influence": 4,
+	  "observation": 2,
+	  "strength": 3,
+	  "will": 2
+	}
   },
   {
-    "name": "Jim Culver",
-    "displayName": "INV_JIM_CULVER_NAME",
-    "occupation": "INV_JIM_CULVER_OCC",
-    "startingLocation": "6",
-    "set": "INV_SET_CORE",
-    "quote": "INV_JIM_CULVER_QUOTE",
-    "role": [
-      "INV_ROLE_MAGIC",
+	"name": "Jim Culver",
+	"displayName": "INV_JIM_CULVER_NAME",
+	"occupation": "INV_JIM_CULVER_OCC",
+	"startingLocation": "6",
+	"set": "INV_SET_CORE",
+	"quote": "INV_JIM_CULVER_QUOTE",
+	"role": [
+	  "INV_ROLE_MAGIC",
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 3,
-      "influence": 3,
-      "observation": 2,
-      "strength": 2,
-      "will": 3
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 3,
+	  "influence": 3,
+	  "observation": 2,
+	  "strength": 2,
+	  "will": 3
+	}
   },
   {
-    "name": "Jenny Barnes",
-    "displayName": "INV_JENNY_BARNES_NAME",
-    "occupation": "INV_JENNY_BARNES_OCC",
-    "startingLocation": "8",
-    "set": "INV_SET_SIGNS_OF_CARCOSA",
-    "quote": "INV_JENNY_BARNES_QUOTE",
-    "role": [
+	"name": "Jenny Barnes",
+	"displayName": "INV_JENNY_BARNES_NAME",
+	"occupation": "INV_JENNY_BARNES_OCC",
+	"startingLocation": "8",
+	"set": "INV_SET_SIGNS_OF_CARCOSA",
+	"quote": "INV_JENNY_BARNES_QUOTE",
+	"role": [
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 1,
-      "influence": 4,
-      "observation": 2,
-      "strength": 3,
-      "will": 3
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 1,
+	  "influence": 4,
+	  "observation": 2,
+	  "strength": 3,
+	  "will": 3
+	}
   },
   {
-    "name": "Ursula Downs",
-    "displayName": "INV_URSULA_DOWNS_NAME",
-    "occupation": "INV_URSULA_DOWNS_OCC",
-    "startingLocation": "The Heart of Africa",
-    "set": "INV_SET_MOUNTAINS_OF_MADNESS",
-    "quote": "INV_URSULA_DOWNS_QUOTE",
-    "role": [
+	"name": "Ursula Downs",
+	"displayName": "INV_URSULA_DOWNS_NAME",
+	"occupation": "INV_URSULA_DOWNS_OCC",
+	"startingLocation": "The Heart of Africa",
+	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+	"quote": "INV_URSULA_DOWNS_QUOTE",
+	"role": [
       "INV_ROLE_EXPEDITION"
-    ],
-    "health": 6,
-    "sanity": 6,
-    "skills": {
-      "lore": 3,
-      "influence": 2,
-      "observation": 3,
-      "strength": 3,
-      "will": 2
-    }
+	],
+	"health": 6,
+	"sanity": 6,
+	"skills": {
+	  "lore": 3,
+	  "influence": 2,
+	  "observation": 3,
+	  "strength": 3,
+	  "will": 2
+	}
   },
   {
-    "name": "Wilson Richards",
-    "displayName": "INV_WILSON_RICHARDS_NAME",
-    "occupation": "INV_WILSON_RICHARDS_OCC",
-    "startingLocation": "Arkham",
-    "set": "INV_SET_MOUNTAINS_OF_MADNESS",
-    "quote": "INV_WILSON_RICHARDS_QUOTE",
-    "role": [
+	"name": "Wilson Richards",
+	"displayName": "INV_WILSON_RICHARDS_NAME",
+	"occupation": "INV_WILSON_RICHARDS_OCC",
+	"startingLocation": "Arkham",
+	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+	"quote": "INV_WILSON_RICHARDS_QUOTE",
+	"role": [
       "INV_ROLE_COMBAT"
-    ],
-    "health": 8,
-    "sanity": 4,
-    "skills": {
-      "lore": 1,
-      "influence": 3,
-      "observation": 2,
-      "strength": 4,
-      "will": 3
-    }
+	],
+	"health": 8,
+	"sanity": 4,
+	"skills": {
+	  "lore": 1,
+	  "influence": 3,
+	  "observation": 2,
+	  "strength": 4,
+	  "will": 3
+	}
   },
   {
-    "name": "Luke Robinson",
-    "displayName": "INV_LUKE_ROBINSON_NAME",
-    "occupation": "INV_LUKE_ROBINSON_OCC",
-    "startingLocation": "Arkham",
-    "set": "INV_SET_THE_DREAMLANDS",
-    "quote": "INV_LUKE_ROBINSON_QUOTE",
-    "role": [
+	"name": "Luke Robinson",
+	"displayName": "INV_LUKE_ROBINSON_NAME",
+	"occupation": "INV_LUKE_ROBINSON_OCC",
+	"startingLocation": "Arkham",
+	"set": "INV_SET_THE_DREAMLANDS",
+	"quote": "INV_LUKE_ROBINSON_QUOTE",
+	"role": [
       "INV_ROLE_GATE_CLOSER"
-    ],
-    "health": 4,
-    "sanity": 8,
-    "skills": {
-      "lore": 4,
-      "influence": 2,
-      "observation": 1,
-      "strength": 2,
-      "will": 4
-    }
+	],
+	"health": 4,
+	"sanity": 8,
+	"skills": {
+	  "lore": 4,
+	  "influence": 2,
+	  "observation": 1,
+	  "strength": 2,
+	  "will": 4
+	}
   },
   {
-    "name": "Leo Anderson",
-    "displayName": "INV_LEO_ANDERSON_NAME",
-    "occupation": "INV_LEO_ANDERSON_OCC",
-    "startingLocation": "Buenos Aires",
-    "set": "INV_SET_CORE",
-    "quote": "INV_LEO_ANDERSON_QUOTE",
-    "role": [
+	"name": "Leo Anderson",
+	"displayName": "INV_LEO_ANDERSON_NAME",
+	"occupation": "INV_LEO_ANDERSON_OCC",
+	"startingLocation": "Buenos Aires",
+	"set": "INV_SET_CORE",
+	"quote": "INV_LEO_ANDERSON_QUOTE",
+	"role": [
       "INV_ROLE_EXPEDITION"
-    ],
-    "health": 6,
-    "sanity": 6,
-    "skills": {
-      "lore": 2,
-      "influence": 2,
-      "observation": 3,
-      "strength": 3,
-      "will": 3
-    }
+	],
+	"health": 6,
+	"sanity": 6,
+	"skills": {
+	  "lore": 2,
+	  "influence": 2,
+	  "observation": 3,
+	  "strength": 3,
+	  "will": 3
+	}
   },
   {
-    "name": "Preston Fairmont",
-    "displayName": "INV_PRESTON_FAIRMONT_NAME",
-    "occupation": "INV_PRESTON_FAIRMONT_OCC",
-    "startingLocation": "Istanbul",
-    "set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-    "quote": "INV_PRESTON_FAIRMONT_QUOTE",
-    "role": [
+	"name": "Preston Fairmont",
+	"displayName": "INV_PRESTON_FAIRMONT_NAME",
+	"occupation": "INV_PRESTON_FAIRMONT_OCC",
+	"startingLocation": "Istanbul",
+	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+	"quote": "INV_PRESTON_FAIRMONT_QUOTE",
+	"role": [
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 2,
-      "influence": 5,
-      "observation": 2,
-      "strength": 3,
-      "will": 1
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 2,
+	  "influence": 5,
+	  "observation": 2,
+	  "strength": 3,
+	  "will": 1
+	}
   },
   {
-    "name": "Norman Withers",
-    "displayName": "INV_NORMAN_WITHERS_NAME",
-    "occupation": "INV_NORMAN_WITHERS_OCC",
-    "startingLocation": "Arkham",
-    "set": "INV_SET_CORE",
-    "quote": "INV_NORMAN_WITHERS_QUOTE",
-    "role": [
+	"name": "Norman Withers",
+	"displayName": "INV_NORMAN_WITHERS_NAME",
+	"occupation": "INV_NORMAN_WITHERS_OCC",
+	"startingLocation": "Arkham",
+	"set": "INV_SET_CORE",
+	"quote": "INV_NORMAN_WITHERS_QUOTE",
+	"role": [
       "INV_ROLE_MAGIC"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 3,
-      "influence": 1,
-      "observation": 3,
-      "strength": 2,
-      "will": 4
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 3,
+	  "influence": 1,
+	  "observation": 3,
+	  "strength": 2,
+	  "will": 4
+	}
   },
   {
-    "name": "Father Mateo",
-    "displayName": "INV_FATHER_MATEO_NAME",
-    "occupation": "INV_FATHER_MATEO_OCC",
-    "startingLocation": "Rome",
-    "set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-    "quote": "INV_FATHER_MATEO_QUOTE",
-    "role": [
-      "INV_ROLE_GATE_CLOSER",
+	"name": "Father Mateo",
+	"displayName": "INV_FATHER_MATEO_NAME",
+	"occupation": "INV_FATHER_MATEO_OCC",
+	"startingLocation": "Rome",
+	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+	"quote": "INV_FATHER_MATEO_QUOTE",
+	"role": [
+	  "INV_ROLE_GATE_CLOSER",
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 3,
-      "influence": 3,
-      "observation": 1,
-      "strength": 2,
-      "will": 4
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 3,
+	  "influence": 3,
+	  "observation": 1,
+	  "strength": 2,
+	  "will": 4
+	}
   },
   {
-    "name": "Charlie Kane",
-    "displayName": "INV_CHARLIE_KANE_NAME",
-    "occupation": "INV_CHARLIE_KANE_OCC",
-    "startingLocation": "San Francisco",
-    "set": "INV_SET_CORE",
-    "quote": "INV_CHARLIE_KANE_QUOTE",
-    "role": [
+	"name": "Charlie Kane",
+	"displayName": "INV_CHARLIE_KANE_NAME",
+	"occupation": "INV_CHARLIE_KANE_OCC",
+	"startingLocation": "San Francisco",
+	"set": "INV_SET_CORE",
+	"quote": "INV_CHARLIE_KANE_QUOTE",
+	"role": [
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 4,
-    "sanity": 8,
-    "skills": {
-      "lore": 2,
-      "influence": 4,
-      "observation": 3,
-      "strength": 2,
-      "will": 2
-    }
+	],
+	"health": 4,
+	"sanity": 8,
+	"skills": {
+	  "lore": 2,
+	  "influence": 4,
+	  "observation": 3,
+	  "strength": 2,
+	  "will": 2
+	}
   },
   {
-    "name": "Akachi Onyele",
-    "displayName": "INV_AKACHI_ONYELE_NAME",
-    "occupation": "INV_AKACHI_ONYELE_OCC",
-    "startingLocation": "15",
-    "set": "INV_SET_CORE",
-    "quote": "INV_AKACHI_ONYELE_QUOTE",
-    "role": [
+	"name": "Akachi Onyele",
+	"displayName": "INV_AKACHI_ONYELE_NAME",
+	"occupation": "INV_AKACHI_ONYELE_OCC",
+	"startingLocation": "15",
+	"set": "INV_SET_CORE",
+	"quote": "INV_AKACHI_ONYELE_QUOTE",
+	"role": [
       "INV_ROLE_GATE_CLOSER"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 3,
-      "influence": 2,
-      "observation": 2,
-      "strength": 2,
-      "will": 4
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 3,
+	  "influence": 2,
+	  "observation": 2,
+	  "strength": 2,
+	  "will": 4
+	}
   },
   {
-    "name": "Mark Harrigan",
-    "displayName": "INV_MARK_HARRIGAN_NAME",
-    "occupation": "INV_MARK_HARRIGAN_OCC",
-    "startingLocation": "14",
-    "set": "INV_SET_CORE",
-    "quote": "INV_MARK_HARRIGAN_QUOTE",
-    "role": [
+	"name": "Mark Harrigan",
+	"displayName": "INV_MARK_HARRIGAN_NAME",
+	"occupation": "INV_MARK_HARRIGAN_OCC",
+	"startingLocation": "14",
+	"set": "INV_SET_CORE",
+	"quote": "INV_MARK_HARRIGAN_QUOTE",
+	"role": [
       "INV_ROLE_COMBAT"
-    ],
-    "health": 8,
-    "sanity": 4,
-    "skills": {
-      "lore": 1,
-      "influence": 2,
-      "observation": 2,
-      "strength": 4,
-      "will": 4
-    }
+	],
+	"health": 8,
+	"sanity": 4,
+	"skills": {
+	  "lore": 1,
+	  "influence": 2,
+	  "observation": 2,
+	  "strength": 4,
+	  "will": 4
+	}
   },
   {
-    "name": "Calvin Wright",
-    "displayName": "INV_CALVIN_WRIGHT_NAME",
-    "occupation": "INV_CALVIN_WRIGHT_OCC",
-    "startingLocation": "Buenos Aires",
-    "set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-    "quote": "INV_CALVIN_WRIGHT_QUOTE",
-    "role": [
+	"name": "Calvin Wright",
+	"displayName": "INV_CALVIN_WRIGHT_NAME",
+	"occupation": "INV_CALVIN_WRIGHT_OCC",
+	"startingLocation": "Buenos Aires",
+	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+	"quote": "INV_CALVIN_WRIGHT_QUOTE",
+	"role": [
       "INV_ROLE_ALL_ROUNDER"
-    ],
-    "health": 7,
-    "sanity": 7,
-    "skills": {
-      "lore": 3,
-      "influence": 3,
-      "observation": 3,
-      "strength": 3,
-      "will": 1
-    }
+	],
+	"health": 7,
+	"sanity": 7,
+	"skills": {
+	  "lore": 3,
+	  "influence": 3,
+	  "observation": 3,
+	  "strength": 3,
+	  "will": 1
+	}
   },
   {
-    "name": "Mandy Thompson",
-    "displayName": "INV_MANDY_THOMPSON_NAME",
-    "occupation": "INV_MANDY_THOMPSON_OCC",
-    "startingLocation": "Shanghai",
-    "set": "INV_SET_UNDER_THE_PYRAMIDS",
-    "quote": "INV_MANDY_THOMPSON_QUOTE",
-    "role": [
+	"name": "Mandy Thompson",
+	"displayName": "INV_MANDY_THOMPSON_NAME",
+	"occupation": "INV_MANDY_THOMPSON_OCC",
+	"startingLocation": "Shanghai",
+	"set": "INV_SET_UNDER_THE_PYRAMIDS",
+	"quote": "INV_MANDY_THOMPSON_QUOTE",
+	"role": [
       "INV_ROLE_RESEARCH"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 3,
-      "influence": 3,
-      "observation": 4,
-      "strength": 1,
-      "will": 2
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 3,
+	  "influence": 3,
+	  "observation": 4,
+	  "strength": 1,
+	  "will": 2
+	}
   },
   {
-    "name": "Daisy Walker",
-    "displayName": "INV_DAISY_WALKER_NAME",
-    "occupation": "INV_DAISY_WALKER_OCC",
-    "startingLocation": "Istanbul",
-    "set": "INV_SET_MOUNTAINS_OF_MADNESS",
-    "quote": "INV_DAISY_WALKER_QUOTE",
-    "role": [
+	"name": "Daisy Walker",
+	"displayName": "INV_DAISY_WALKER_NAME",
+	"occupation": "INV_DAISY_WALKER_OCC",
+	"startingLocation": "Istanbul",
+	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+	"quote": "INV_DAISY_WALKER_QUOTE",
+	"role": [
       "INV_ROLE_MAGIC"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 4,
-      "influence": 3,
-      "observation": 2,
-      "strength": 1,
-      "will": 3
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 4,
+	  "influence": 3,
+	  "observation": 2,
+	  "strength": 1,
+	  "will": 3
+	}
   },
   {
-    "name": "Roland Banks",
-    "displayName": "INV_ROLAND_BANKS_NAME",
-    "occupation": "INV_ROLAND_BANKS_OCC",
-    "startingLocation": "San Francisco",
-    "set": "INV_SET_CITIES_IN_RUIN",
-    "quote": "INV_ROLAND_BANKS_QUOTE",
-    "role": [
-      "INV_ROLE_RESEARCH",
+	"name": "Roland Banks",
+	"displayName": "INV_ROLAND_BANKS_NAME",
+	"occupation": "INV_ROLAND_BANKS_OCC",
+	"startingLocation": "San Francisco",
+	"set": "INV_SET_CITIES_IN_RUIN",
+	"quote": "INV_ROLAND_BANKS_QUOTE",
+	"role": [
+	  "INV_ROLE_RESEARCH",
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 2,
-      "influence": 2,
-      "observation": 4,
-      "strength": 2,
-      "will": 3
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 2,
+	  "influence": 2,
+	  "observation": 4,
+	  "strength": 2,
+	  "will": 3
+	}
   },
   {
-    "name": "Hank Samson",
-    "displayName": "INV_HANK_SAMSON_NAME",
-    "occupation": "INV_HANK_SAMSON_OCC",
-    "startingLocation": "6",
-    "set": "INV_SET_UNDER_THE_PYRAMIDS",
-    "quote": "INV_HANK_SAMSON_QUOTE",
-    "role": [
+	"name": "Hank Samson",
+	"displayName": "INV_HANK_SAMSON_NAME",
+	"occupation": "INV_HANK_SAMSON_OCC",
+	"startingLocation": "6",
+	"set": "INV_SET_UNDER_THE_PYRAMIDS",
+	"quote": "INV_HANK_SAMSON_QUOTE",
+	"role": [
       "INV_ROLE_COMBAT"
-    ],
-    "health": 8,
-    "sanity": 4,
-    "skills": {
-      "lore": 1,
-      "influence": 2,
-      "observation": 3,
-      "strength": 4,
-      "will": 3
-    }
+	],
+	"health": 8,
+	"sanity": 4,
+	"skills": {
+	  "lore": 1,
+	  "influence": 2,
+	  "observation": 3,
+	  "strength": 4,
+	  "will": 3
+	}
   },
   {
-    "name": "\"Skids\" O'Toole",
-    "displayName": "INV_SKIDS_O_TOOLE_NAME",
-    "occupation": "INV_SKIDS_O_TOOLE_OCC",
-    "startingLocation": "Buenos Aires",
-    "set": "INV_SET_STRANGE_REMNANTS",
-    "quote": "INV_SKIDS_O_TOOLE_QUOTE",
-    "role": [
+	"name": "\"Skids\" O'Toole",
+	"displayName": "INV_SKIDS_O_TOOLE_NAME",
+	"occupation": "INV_SKIDS_O_TOOLE_OCC",
+	"startingLocation": "Buenos Aires",
+	"set": "INV_SET_STRANGE_REMNANTS",
+	"quote": "INV_SKIDS_O_TOOLE_QUOTE",
+	"role": [
       "INV_ROLE_COMBAT"
-    ],
-    "health": 6,
-    "sanity": 6,
-    "skills": {
-      "lore": 2,
-      "influence": 1,
-      "observation": 3,
-      "strength": 4,
-      "will": 3
-    }
+	],
+	"health": 6,
+	"sanity": 6,
+	"skills": {
+	  "lore": 2,
+	  "influence": 1,
+	  "observation": 3,
+	  "strength": 4,
+	  "will": 3
+	}
   },
   {
-    "name": "Carolyn Fern",
-    "displayName": "INV_CAROLYN_FERN_NAME",
-    "occupation": "INV_CAROLYN_FERN_OCC",
-    "startingLocation": "Rome",
-    "set": "INV_SET_THE_DREAMLANDS",
-    "quote": "INV_CAROLYN_FERN_QUOTE",
-    "role": [
+	"name": "Carolyn Fern",
+	"displayName": "INV_CAROLYN_FERN_NAME",
+	"occupation": "INV_CAROLYN_FERN_OCC",
+	"startingLocation": "Rome",
+	"set": "INV_SET_THE_DREAMLANDS",
+	"quote": "INV_CAROLYN_FERN_QUOTE",
+	"role": [
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 2,
-      "influence": 3,
-      "observation": 2,
-      "strength": 2,
-      "will": 4
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 2,
+	  "influence": 3,
+	  "observation": 2,
+	  "strength": 2,
+	  "will": 4
+	}
   },
   {
-    "name": "Vincent Lee",
-    "displayName": "INV_VINCENT_LEE_NAME",
-    "occupation": "INV_VINCENT_LEE_OCC",
-    "startingLocation": "17",
-    "set": "INV_SET_THE_DREAMLANDS",
-    "quote": "INV_VINCENT_LEE_QUOTE",
-    "role": [
+	"name": "Vincent Lee",
+	"displayName": "INV_VINCENT_LEE_NAME",
+	"occupation": "INV_VINCENT_LEE_OCC",
+	"startingLocation": "17",
+	"set": "INV_SET_THE_DREAMLANDS",
+	"quote": "INV_VINCENT_LEE_QUOTE",
+	"role": [
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 6,
-    "sanity": 6,
-    "skills": {
-      "lore": 1,
-      "influence": 3,
-      "observation": 3,
-      "strength": 2,
-      "will": 4
-    }
+	],
+	"health": 6,
+	"sanity": 6,
+	"skills": {
+	  "lore": 1,
+	  "influence": 3,
+	  "observation": 3,
+	  "strength": 2,
+	  "will": 4
+	}
   },
   {
-    "name": "Agnes Baker",
-    "displayName": "INV_AGNES_BAKER_NAME",
-    "occupation": "INV_AGNES_BAKER_OCC",
-    "startingLocation": "London",
-    "set": "INV_SET_MOUNTAINS_OF_MADNESS",
-    "quote": "INV_AGNES_BAKER_QUOTE",
-    "role": [
+	"name": "Agnes Baker",
+	"displayName": "INV_AGNES_BAKER_NAME",
+	"occupation": "INV_AGNES_BAKER_OCC",
+	"startingLocation": "London",
+	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+	"quote": "INV_AGNES_BAKER_QUOTE",
+	"role": [
       "INV_ROLE_MAGIC"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 4,
-      "influence": 3,
-      "observation": 2,
-      "strength": 2,
-      "will": 2
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 4,
+	  "influence": 3,
+	  "observation": 2,
+	  "strength": 2,
+	  "will": 2
+	}
   },
   {
-    "name": "Finn Edwards",
-    "displayName": "INV_FINN_EDWARDS_NAME",
-    "occupation": "INV_FINN_EDWARDS_OCC",
-    "startingLocation": "5",
-    "set": "INV_SET_MOUNTAINS_OF_MADNESS",
-    "quote": "INV_FINN_EDWARDS_QUOTE",
-    "role": [
+	"name": "Finn Edwards",
+	"displayName": "INV_FINN_EDWARDS_NAME",
+	"occupation": "INV_FINN_EDWARDS_OCC",
+	"startingLocation": "5",
+	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+	"quote": "INV_FINN_EDWARDS_QUOTE",
+	"role": [
       "INV_ROLE_ALL_ROUNDER"
-    ],
-    "health": 6,
-    "sanity": 6,
-    "skills": {
-      "lore": 2,
-      "influence": 3,
-      "observation": 3,
-      "strength": 2,
-      "will": 3
-    }
+	],
+	"health": 6,
+	"sanity": 6,
+	"skills": {
+	  "lore": 2,
+	  "influence": 3,
+	  "observation": 3,
+	  "strength": 2,
+	  "will": 3
+	}
   },
   {
-    "name": "Patrice Hathaway",
-    "displayName": "INV_PATRICE_HATHAWAY_NAME",
-    "occupation": "INV_PATRICE_HATHAWAY_OCC",
-    "startingLocation": "Sydney",
-    "set": "INV_SET_MOUNTAINS_OF_MADNESS",
-    "quote": "INV_PATRICE_HATHAWAY_QUOTE",
-    "role": [
+	"name": "Patrice Hathaway",
+	"displayName": "INV_PATRICE_HATHAWAY_NAME",
+	"occupation": "INV_PATRICE_HATHAWAY_OCC",
+	"startingLocation": "Sydney",
+	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+	"quote": "INV_PATRICE_HATHAWAY_QUOTE",
+	"role": [
       "INV_ROLE_GATE_CLOSER"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 3,
-      "influence": 2,
-      "observation": 3,
-      "strength": 1,
-      "will": 4
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 3,
+	  "influence": 2,
+	  "observation": 3,
+	  "strength": 1,
+	  "will": 4
+	}
   },
   {
-    "name": "Carson Sinclair",
-    "displayName": "INV_CARSON_SINCLAIR_NAME",
-    "occupation": "INV_CARSON_SINCLAIR_OCC",
-    "startingLocation": "London",
-    "set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-    "quote": "INV_CARSON_SINCLAIR_QUOTE",
-    "role": [
-      "INV_ROLE_ALL_ROUNDER",
+	"name": "Carson Sinclair",
+	"displayName": "INV_CARSON_SINCLAIR_NAME",
+	"occupation": "INV_CARSON_SINCLAIR_OCC",
+	"startingLocation": "London",
+	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+	"quote": "INV_CARSON_SINCLAIR_QUOTE",
+	"role": [
+	  "INV_ROLE_ALL_ROUNDER",
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 6,
-    "sanity": 6,
-    "skills": {
-      "lore": 2,
-      "influence": 3,
-      "observation": 3,
-      "strength": 2,
-      "will": 3
-    }
+	],
+	"health": 6,
+	"sanity": 6,
+	"skills": {
+	  "lore": 2,
+	  "influence": 3,
+	  "observation": 3,
+	  "strength": 2,
+	  "will": 3
+	}
   },
   {
-    "name": "Tony Morgan",
-    "displayName": "INV_TONY_MORGAN_NAME",
-    "occupation": "INV_TONY_MORGAN_OCC",
-    "startingLocation": "7",
-    "set": "INV_SET_STRANGE_REMNANTS",
-    "quote": "INV_TONY_MORGAN_QUOTE",
-    "role": [
+	"name": "Tony Morgan",
+	"displayName": "INV_TONY_MORGAN_NAME",
+	"occupation": "INV_TONY_MORGAN_OCC",
+	"startingLocation": "7",
+	"set": "INV_SET_STRANGE_REMNANTS",
+	"quote": "INV_TONY_MORGAN_QUOTE",
+	"role": [
       "INV_ROLE_RESEARCH"
-    ],
-    "health": 7,
-    "sanity": 5,
-    "skills": {
-      "lore": 2,
-      "influence": 2,
-      "observation": 4,
-      "strength": 3,
-      "will": 2
-    }
+	],
+	"health": 7,
+	"sanity": 5,
+	"skills": {
+	  "lore": 2,
+	  "influence": 2,
+	  "observation": 4,
+	  "strength": 3,
+	  "will": 2
+	}
   },
   {
-    "name": "Sister Mary",
-    "displayName": "INV_SISTER_MARY_NAME",
-    "occupation": "INV_SISTER_MARY_OCC",
-    "startingLocation": "15",
-    "set": "INV_SET_UNDER_THE_PYRAMIDS",
-    "quote": "INV_SISTER_MARY_QUOTE",
-    "role": [
+	"name": "Sister Mary",
+	"displayName": "INV_SISTER_MARY_NAME",
+	"occupation": "INV_SISTER_MARY_OCC",
+	"startingLocation": "15",
+	"set": "INV_SET_UNDER_THE_PYRAMIDS",
+	"quote": "INV_SISTER_MARY_QUOTE",
+	"role": [
       "INV_ROLE_SUPPORT"
-    ],
-    "health": 5,
-    "sanity": 7,
-    "skills": {
-      "lore": 2,
-      "influence": 2,
-      "observation": 3,
-      "strength": 2,
-      "will": 4
-    }
+	],
+	"health": 5,
+	"sanity": 7,
+	"skills": {
+	  "lore": 2,
+	  "influence": 2,
+	  "observation": 3,
+	  "strength": 2,
+	  "will": 4
+	}
   }
 ]

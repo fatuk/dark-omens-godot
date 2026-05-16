@@ -108,7 +108,6 @@ theme_override_font_sizes/font_size = 36
 text = "❤"
 
 [node name="Value" type="Label" parent="InfoPanel/InfoCol/StatsRow/HpPill"]
-unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "0.0"
@@ -129,7 +128,6 @@ theme_override_font_sizes/font_size = 36
 text = "✦"
 
 [node name="Value" type="Label" parent="InfoPanel/InfoCol/StatsRow/SanPill"]
-unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "0.0"

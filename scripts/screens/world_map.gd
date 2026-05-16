@@ -52,12 +52,10 @@ func _ready() -> void:
 	# UI поверх неё в виде GamePanel/LocationSidebar). Возвращаем при выходе.
 	ScreenFrame.set_enabled(false)
 	_camera.position = Vector2(TILE_W / 2.0, TILE_H / 2.0)
-
-
-func _exit_tree() -> void:
-	ScreenFrame.set_enabled(true)
 	_zoom_target = _camera.zoom.x
+
 	_map_layer = MapLayer.new()
+	_map_layer.name = "MapLayer"
 	add_child(_map_layer)
 	_map_layer.camera = _camera
 	_map_layer.load_from_file("res://data/locations.json")
@@ -74,6 +72,10 @@ func _exit_tree() -> void:
 	# translation keys, лейблы Godot переводит автоматически при смене локали.
 
 
+func _exit_tree() -> void:
+	ScreenFrame.set_enabled(true)
+
+
 # Обновляем верхний HUD по текущему стейту игры.
 func _refresh_game_panel() -> void:
 	_game_panel.set_phase(_phase_label_for(GameState.phase))
@@ -84,7 +86,6 @@ func _refresh_game_panel() -> void:
 
 
 func _phase_label_for(p: String) -> String:
-	# Возвращаем translation key — Godot сам переводит при присваивании в text.
 	match p:
 		"action":    return "PHASE_ACTION"
 		"encounter": return "PHASE_ENCOUNTER"
@@ -93,7 +94,6 @@ func _phase_label_for(p: String) -> String:
 
 
 func _current_player_name() -> String:
-	# Активный игрок есть в action и encounter фазах (обе последовательные)
 	if GameState.phase != "action" and GameState.phase != "encounter":
 		return ""
 	if GameState.turn_order.is_empty():
@@ -101,7 +101,6 @@ func _current_player_name() -> String:
 	var pid: String = GameState.turn_order[GameState.current_idx]
 	if not GameState.players.has(pid):
 		return ""
-	# Показываем имя сыщика (не username игрока), локализованное.
 	var inv_id: String = GameState.players[pid].get("investigator", "???")
 	return Investigators.display_name(inv_id)
 

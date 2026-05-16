@@ -328,9 +328,9 @@ static func style_icon_button(btn: Button, color: Color = UIColors.DANGER) -> vo
 
 
 ## Создаёт стилизованную кнопку (legacy API для динамического UI).
-static func button(label: String, border_color: Color = UIColors.BORDER) -> Button:
+static func button(text: String, border_color: Color = UIColors.BORDER) -> Button:
 	var btn := Button.new()
-	btn.text = label
+	btn.text = text
 	style_button(btn, border_color)
 	return btn
 
@@ -512,7 +512,7 @@ static func label(
 ) -> Label:
 	var lbl := Label.new()
 	lbl.text = text
-	lbl.horizontal_alignment = align
+	lbl.horizontal_alignment = align as HorizontalAlignment
 	lbl.add_theme_font_size_override("font_size", size)
 	lbl.add_theme_color_override("font_color", color)
 	return lbl

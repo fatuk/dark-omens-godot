@@ -45,13 +45,15 @@ func _ready() -> void:
 
 ## Применяет текущее display-состояние к окну. Вызывать после изменения
 ## resolution_idx / fullscreen.
-@warning_ignore("integer_division")
 func apply_display() -> void:
 	if fullscreen:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 		DisplayServer.window_set_size(RESOLUTIONS[resolution_idx])
+		# Центрируем окно: деление на 2 в пиксельных координатах — намеренная
+		# целочисленная арифметика, дробная часть тут не нужна.
+		@warning_ignore("integer_division")
 		DisplayServer.window_set_position(
 			DisplayServer.screen_get_position() +
 			(DisplayServer.screen_get_size() - RESOLUTIONS[resolution_idx]) / 2

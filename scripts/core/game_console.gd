@@ -168,7 +168,7 @@ func _add_entry(text: String, color: Color) -> void:
 func _scroll_bottom_deferred() -> void:
 	await get_tree().process_frame
 	if is_instance_valid(_scroll):
-		_scroll.scroll_vertical = _scroll.get_v_scroll_bar().max_value
+		_scroll.scroll_vertical = int(_scroll.get_v_scroll_bar().max_value)
 
 
 func _ts() -> String:

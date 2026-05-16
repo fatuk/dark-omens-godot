@@ -58,8 +58,8 @@ const SLOT_BRIGHTNESS := [0.45, 0.65, 1.00, 0.65, 0.45]
 # Мягкая drop-тень под карточками — дочерний quad чуть больше карточки,
 # тёмный полупрозрачный, со сдвигом вниз. Как ребёнок меша наследует
 # трансформ — анимировать отдельно не нужно.
-const SHADOW_QUAD_SCALE: float = 1.35                    # размер тени относительно карточки
-const SHADOW_OFFSET     := Vector3(0.04, -0.16, -0.05)   # сдвиг: вправо-вниз + чуть назад
+const SHADOW_QUAD_SCALE: float = 1.2                   # размер тени относительно карточки
+const SHADOW_OFFSET     := Vector3(0.0, -0.15, 0.0)   # сдвиг: вправо-вниз + чуть назад
 const SHADOW_ALPHA:      float = 0.85
 
 # Глобальный сдвиг карточек по Y в 3D. 0 = карточки центрированы в viewport'е
@@ -160,8 +160,10 @@ func _ready() -> void:
 	_root = VBoxContainer.new()
 	_root.name = "Root"
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_root.offset_left   = 40
-	_root.offset_right  = -40
+	# Боковых отступов нет — карусель тянется до краёв экрана. Title и
+	# action-bar центрированы, им это безразлично; InfoBar тоже full-width.
+	_root.offset_left   = 0
+	_root.offset_right  = 0
 	_root.offset_top    = 30
 	_root.offset_bottom = -24
 	_root.add_theme_constant_override("separation", 7)
@@ -365,10 +367,6 @@ func _build_carousel() -> Control:
 		_card_meshes.append(mesh)
 		_apply_3d_slot(mesh, i)
 
-	# Виньетка по краям — поверх 3D-сцены, но ДО стрелок (стрелки остаются
-	# яркими сверху, дальние карточки мягко уходят в темноту).
-	area.add_child(_make_edge_vignette())
-
 	# Стрелки — TextureButton'ы на границе между внешней и соседней карточками
 	# (см. ARROW_X_ANCHOR_FROM_EDGE). Дети area, поэтому всегда поверх 3D.
 	_prev_btn = _make_arrow_btn(ARROW_TEX_LEFT)
@@ -484,37 +482,6 @@ func _apply_3d_slot(mesh: MeshInstance3D, slot: int) -> void:
 	var smat := _card_shadow_mat(mesh)
 	if smat:
 		smat.albedo_color = Color(1.0, 1.0, 1.0, SHADOW_ALPHA)
-
-
-# Горизонтальная виньетка: непрозрачно-чёрная у левого/правого края,
-# плавно сходит в прозрачность к центру (16% ширины на затухание с каждой
-# стороны). Прячет жёсткий обрез дальних карточек.
-func _make_edge_vignette() -> TextureRect:
-	var grad := Gradient.new()
-	grad.offsets = PackedFloat32Array([0.0, 0.16, 0.84, 1.0])
-	grad.colors  = PackedColorArray([
-		Color(0.0, 0.0, 0.0, 1.0),
-		Color(0.0, 0.0, 0.0, 0.0),
-		Color(0.0, 0.0, 0.0, 0.0),
-		Color(0.0, 0.0, 0.0, 1.0),
-	])
-
-	var tex := GradientTexture2D.new()
-	tex.gradient  = grad
-	tex.width     = 512
-	tex.height    = 1
-	tex.fill      = GradientTexture2D.FILL_LINEAR
-	tex.fill_from = Vector2(0.0, 0.0)
-	tex.fill_to   = Vector2(1.0, 0.0)
-
-	var rect := TextureRect.new()
-	rect.name         = "EdgeVignette"
-	rect.texture      = tex
-	rect.expand_mode  = TextureRect.EXPAND_IGNORE_SIZE
-	rect.stretch_mode = TextureRect.STRETCH_SCALE
-	rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return rect
 
 
 func _make_arrow_btn(tex: Texture2D) -> TextureButton:
@@ -663,7 +630,9 @@ func _build_action_bar() -> HBoxContainer:
 	_back_btn.name = "BackBtn"
 	_back_btn.text = "BTN_BACK"
 	UIStyle.style_button(_back_btn, UIColors.MUTED)
-	_back_btn.custom_minimum_size = Vector2(160, 44)
+	# Только ширина — высоту задаёт style_button (= высота ассета). Переопределять
+	# высоту нельзя: текст калибруется под неё, рамка разъедется с надписью.
+	_back_btn.custom_minimum_size.x = 160
 	_back_btn.pressed.connect(func() -> void: back_pressed.emit())
 	hb.add_child(_back_btn)
 
@@ -671,7 +640,7 @@ func _build_action_bar() -> HBoxContainer:
 	_confirm_btn.name = "ConfirmBtn"
 	_confirm_btn.text = "PICKER_CONFIRM"
 	UIStyle.style_button(_confirm_btn, UIColors.ACCENT)
-	_confirm_btn.custom_minimum_size = Vector2(280, 44)
+	_confirm_btn.custom_minimum_size.x = 280
 	_confirm_btn.pressed.connect(_on_confirm_pressed)
 	hb.add_child(_confirm_btn)
 
@@ -679,7 +648,7 @@ func _build_action_bar() -> HBoxContainer:
 	_start_btn.name = "StartBtn"
 	_start_btn.text = "LOBBY_BTN_START_GAME"
 	UIStyle.style_button(_start_btn, UIColors.ACCENT)
-	_start_btn.custom_minimum_size = Vector2(220, 44)
+	_start_btn.custom_minimum_size.x = 220
 	_start_btn.pressed.connect(func() -> void: start_pressed.emit())
 	hb.add_child(_start_btn)
 	_update_start_btn_visibility()

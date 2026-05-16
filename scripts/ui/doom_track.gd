@@ -47,8 +47,8 @@ func _on_resized() -> void:
 
 
 func _update_mask_size() -> void:
-	for tr: TextureRect in [_bg, _fill]:
-		var mat: ShaderMaterial = tr.material as ShaderMaterial
+	for rect: TextureRect in [_bg, _fill]:
+		var mat: ShaderMaterial = rect.material as ShaderMaterial
 		if mat:
 			mat.set_shader_parameter("rect_size", size)
 

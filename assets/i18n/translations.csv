@@ -405,8 +405,8 @@ MENU_STATUS_FOUND_ROOMS_FMT,Найдено комнат: %d,Found rooms: %d
 
 PICKER_TAKEN,ЗАНЯТО,TAKEN
 PICKER_CONFIRM,ПОДТВЕРДИТЬ ВЫБОР,CONFIRM SELECTION
-STATS_HEALTH,Здоровье,Health
-STATS_SANITY,Рассудок,Sanity
+STATS_HEALTH,ЗДОРОВЬЕ,HEALTH
+STATS_SANITY,РАССУДОК,SANITY
 STATS_TICKETS,Билеты  ·  —,Tickets  ·  —
 SECTION_ATTRIBUTES,АТРИБУТЫ,ATTRIBUTES
 SECTION_STARTING_ITEMS,СТАРТОВЫЕ ПРЕДМЕТЫ,STARTING ITEMS

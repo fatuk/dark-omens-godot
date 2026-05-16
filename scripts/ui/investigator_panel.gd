@@ -28,7 +28,6 @@ const MAX_CARDS :=   20
 @onready var _occ_label:     Label = %OccLabel
 @onready var _quote_label:   Label = %QuoteLabel
 
-@onready var _info_col:      VBoxContainer = %InfoCol
 @onready var _hp_value:      Label         = $InfoPanel/InfoCol/StatsRow/HpPill/Value
 @onready var _san_value:     Label         = $InfoPanel/InfoCol/StatsRow/SanPill/Value
 @onready var _skills_label:  Label         = %SkillsLabel

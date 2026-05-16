@@ -4,7 +4,6 @@ extends CanvasLayer
 ## Кнопка «Завершить» вызывает GameState.finish_encounter().
 
 @onready var _root:        Control        = $Root
-@onready var _backdrop:    ColorRect      = $Root/Backdrop
 @onready var _panel:       PanelContainer = %Panel
 @onready var _title:       Label          = %Title
 @onready var _body:        Label          = %Body
