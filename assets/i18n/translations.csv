@@ -415,3 +415,191 @@ LOBBY_PLAYERS_DETAILS_TITLE,Состояние игроков,Players state
 LOBBY_DETAILS_ROOM_FMT,Комната: %s,Room: %s
 LOBBY_DETAILS_ROLE_HOST,Вы — ведущий игры,You are the host
 LOBBY_DETAILS_ROLE_GUEST,Ожидайте начала игры,Waiting for the game to start
+
+
+COND_DEBT_NAME,Долг,Debt
+COND_DARK_PACT_NAME,Тёмный пакт,Dark Pact
+COND_AMNESIA_NAME,Амнезия,Amnesia
+COND_PARANOIA_NAME,Паранойя,Paranoia
+COND_HALLUCINATIONS_NAME,Галлюцинации,Hallucinations
+COND_LEG_INJURY_NAME,Травма ноги,Leg Injury
+COND_INTERNAL_INJURY_NAME,Внутренняя травма,Internal Injury
+COND_BACK_INJURY_NAME,Травма спины,Back Injury
+COND_POISONED_NAME,Отравление,Poisoned
+COND_CURSED_NAME,Проклятие,Cursed
+COND_BLESSED_NAME,Благословение,Blessed
+COND_DETAINED_NAME,Заключение,Detained
+COND_LOST_IN_TIME_NAME,Потерян во времени и пространстве,Lost in Time and Space
+COND_HEAD_INJURY_NAME,Травма головы,Head Injury
+COND_RIGHTEOUS_NAME,Праведность,Righteous
+COND_HAUNTED_NAME,Одержимость призраком,Haunted
+COND_DESPAIR_NAME,Отчаяние,Despair
+COND_DISEASED_NAME,Болезнь,Diseased
+COND_HYPOTHERMIA_NAME,Переохлаждение,Hypothermia
+COND_FUNDING_NAME,Финансирование,Funding
+COND_INFECTION_NAME,Инфекция,Infection
+COND_HUNGER_NAME,Голод,Hunger
+COND_HUNTED_NAME,Преследуемый,Hunted
+COND_AGREEMENT_NAME,Соглашение,Agreement
+
+COND_DEBT_FRONT,"Локальное действие: проверка Влияния. При успехе сбросьте эту карту.","Local action: test Influence. If you pass, discard this card."
+COND_AMNESIA_FRONT,"При действии «Отдых» можно бросить 1 кубик; на 5 или 6 сбросьте эту карту.","When you perform the Rest action, you may roll 1 die; on a 5 or 6, discard this card."
+COND_PARANOIA_FRONT,"При действии «Отдых» можно бросить 1 кубик; на 5 или 6 сбросьте эту карту.","When you perform the Rest action, you may roll 1 die; on a 5 or 6, discard this card."
+COND_HALLUCINATIONS_FRONT,"При действии «Отдых» можно бросить 1 кубик; на 5 или 6 сбросьте эту карту.","When you perform the Rest action, you may roll 1 die; on a 5 or 6, discard this card."
+COND_LEG_INJURY_FRONT,"При действии «Отдых» можно бросить 1 кубик; на 5 или 6 сбросьте эту карту.","When you perform the Rest action, you may roll 1 die; on a 5 or 6, discard this card."
+COND_INTERNAL_INJURY_FRONT,"При действии «Отдых» можно бросить 1 кубик; на 5 или 6 сбросьте эту карту.","When you perform the Rest action, you may roll 1 die; on a 5 or 6, discard this card."
+COND_BACK_INJURY_FRONT,"При действии «Отдых» можно бросить 1 кубик; на 5 или 6 сбросьте эту карту.","When you perform the Rest action, you may roll 1 die; on a 5 or 6, discard this card."
+COND_POISONED_FRONT,"При действии «Отдых» вы не можете восстанавливать здоровье и рассудок; переверните эту карту.","When you perform the Rest action, you cannot recover Health or Sanity; flip this card."
+COND_CURSED_FRONT,"Только 6 считаются успехами в ваших проверках. Получаете ещё одно Проклятие — переверните эту карту вместо этого. Получаете Благословение — сбросьте эту карту вместо этого.","Only 6s count as successes on your tests. If you would gain another Cursed condition, flip this card instead. If you would gain a Blessed condition, discard this card instead."
+COND_BLESSED_FRONT,"4, 5 и 6 считаются успехами в ваших проверках. Получаете ещё одно Благословение — переверните эту карту вместо этого. Получаете Проклятие — сбросьте эту карту вместо этого.","4s, 5s, and 6s count as successes on your tests. If you would gain another Blessed condition, flip this card instead. If you would gain a Cursed condition, discard this card instead."
+COND_DETAINED_FRONT,"Вы не можете двигаться или совершать действия, кроме действия на этой карте. Вместо разрешения встречи переверните эту карту. Локальное действие: проверка Влияния. При успехе сбросьте эту карту.","You cannot move or perform actions other than the action on this card. Instead of resolving an encounter, flip this card. Local action: test Influence. If you pass, discard this card."
+COND_LOST_IN_TIME_FRONT,"Уберите фишку сыщика с поля. На вас не действуют другие игровые эффекты; вы не можете двигаться или совершать действия. Вместо разрешения встречи переверните эту карту.","Remove your investigator token from the board. You are not affected by other game effects; you cannot move or perform actions. Instead of resolving an encounter, flip this card."
+COND_HEAD_INJURY_FRONT,"При действии «Отдых» вы не можете восстанавливать рассудок; бросьте 1 кубик. На 4, 5 или 6 сбросьте эту карту.","When you perform the Rest action, you cannot recover Sanity; roll 1 die. On a 4, 5, or 6, discard this card."
+COND_RIGHTEOUS_FRONT,"При действии «Сосредоточение» или «Отдых» получите 1 жетон сосредоточения или восстановите 1 рассудок.","When you perform the Focus or Rest action, gain 1 focus token or recover 1 Sanity."
+COND_HAUNTED_FRONT,"Если вы получаете Благословение или улучшаете навык, можете сбросить эту карту вместо этого.","If you would gain a Blessed condition or improve a skill, you may discard this card instead."
+COND_DESPAIR_FRONT,"При действии «Отдых» вы не можете восстанавливать рассудок; переверните эту карту.","When you perform the Rest action, you cannot recover Sanity; flip this card."
+COND_DISEASED_FRONT,"При действии «Отдых» бросьте 1 кубик. На 5 или 6 сбросьте эту карту.","When you perform the Rest action, roll 1 die. On a 5 or 6, discard this card."
+COND_HYPOTHERMIA_FRONT,"При действии «Отдых» вы не можете восстанавливать здоровье; бросьте 1 кубик. На 4, 5 или 6 сбросьте эту карту. Если вы получаете ещё одно Переохлаждение — переверните эту карту вместо этого.","When you perform the Rest action, you cannot recover Health; roll 1 die. On a 4, 5, or 6, discard this card. If you would gain another Hypothermia condition, flip this card instead."
+COND_FUNDING_FRONT,"Можете сбросить эту карту вместо получения состояния «Долг» либо чтобы сбросить состояние «Долг».","You may discard this card instead of gaining a Debt condition, or to discard a Debt condition."
+COND_INFECTION_FRONT,"При действии «Отдых» вы не можете восстанавливать здоровье; бросьте 1 кубик. На 4, 5 или 6 сбросьте эту карту.","When you perform the Rest action, you cannot recover Health; roll 1 die. On a 4, 5, or 6, discard this card."
+COND_HUNGER_FRONT,"При действии «Отдых» вы не можете восстанавливать рассудок; бросьте 1 кубик. На 4, 5 или 6 сбросьте эту карту.","When you perform the Rest action, you cannot recover Sanity; roll 1 die. On a 4, 5, or 6, discard this card."
+COND_HUNTED_FRONT,"При действии «Путешествие» можно бросить 1 кубик. На 5 или 6 сбросьте эту карту.","When you perform the Travel action, you may roll 1 die. On a 5 or 6, discard this card."
+COND_AGREEMENT_FRONT,"Локальное действие: проверка Влияния −1. При успехе можете потратить 2 улики, чтобы сбросить эту карту.","Local action: test Influence −1. If you pass, you may spend 2 Clues to discard this card."
+
+COND_DEBT_RECKONING,"К вам пришли требовать долг. Переверните эту карту.","Someone has come to collect your debt. Flip this card."
+COND_DARK_PACT_RECKONING,"Бросьте 1 кубик. На 1 — пришло время исполнить вашу часть сделки; переверните эту карту.","Roll 1 die. On a 1, the time has come to honor your end of the bargain; flip this card."
+COND_AMNESIA_RECKONING,"Проверка Воли. При провале переверните эту карту.","Test Will. If you fail, flip this card."
+COND_PARANOIA_RECKONING,"Проверка Воли. При провале переверните эту карту.","Test Will. If you fail, flip this card."
+COND_HALLUCINATIONS_RECKONING,"Проверка Воли. При провале переверните эту карту.","Test Will. If you fail, flip this card."
+COND_LEG_INJURY_RECKONING,"Проверка Силы. При провале переверните эту карту.","Test Strength. If you fail, flip this card."
+COND_INTERNAL_INJURY_RECKONING,"Проверка Силы. При провале переверните эту карту.","Test Strength. If you fail, flip this card."
+COND_BACK_INJURY_RECKONING,"Проверка Силы. При провале переверните эту карту.","Test Strength. If you fail, flip this card."
+COND_POISONED_RECKONING,"Потеряйте 1 здоровье.","Lose 1 Health."
+COND_CURSED_RECKONING,"Бросьте 1 кубик. На 4, 5 или 6 сбросьте эту карту.","Roll 1 die. On a 4, 5, or 6, discard this card."
+COND_BLESSED_RECKONING,"Бросьте 1 кубик. На 1 или 2 сбросьте эту карту.","Roll 1 die. On a 1 or 2, discard this card."
+COND_HEAD_INJURY_RECKONING,"Проверка Силы. При провале переверните эту карту.","Test Strength. If you fail, flip this card."
+COND_RIGHTEOUS_RECKONING,"Можете перевернуть эту карту.","You may flip this card."
+COND_HAUNTED_RECKONING,"Бросьте 1 кубик. На 1, 2 или 3 переверните эту карту.","Roll 1 die. On a 1, 2, or 3, flip this card."
+COND_DESPAIR_RECKONING,"Потеряйте 1 рассудок.","Lose 1 Sanity."
+COND_DISEASED_RECKONING,"Проверка Воли −1. При провале переверните эту карту.","Test Will −1. If you fail, flip this card."
+COND_FUNDING_RECKONING,"Если вы в городской локации, можете перевернуть эту карту.","If you are in a city space, you may flip this card."
+COND_INFECTION_RECKONING,"Проверка Воли. При провале переверните эту карту.","Test Will. If you fail, flip this card."
+COND_HUNGER_RECKONING,"Проверка Воли. При провале переверните эту карту.","Test Will. If you fail, flip this card."
+COND_HUNTED_RECKONING,"Проверка Наблюдательности. При провале переверните эту карту.","Test Observation. If you fail, flip this card."
+COND_AGREEMENT_RECKONING,"Бросьте 1 кубик. На 1 или 2 пришло время платить по счетам; переверните эту карту.","Roll 1 die. On a 1 or 2, the time has come to settle accounts; flip this card."
+
+OUTCOME_NERVE_DAMAGE_NAME,Повреждение нервов,Nerve Damage
+OUTCOME_FRACTURED_SPINE_NAME,Перелом позвоночника,Fractured Spine
+OUTCOME_INFECTED_WOUND_NAME,Заражённая рана,Infected Wound
+OUTCOME_CRUSHED_FINGERS_NAME,Раздробленные пальцы,Crushed Fingers
+OUTCOME_SPLITTING_HEADACHE_NAME,Раскалывающая боль,Splitting Headache
+OUTCOME_REOPENED_WOUND_NAME,Открывшаяся рана,Reopened Wound
+OUTCOME_GANGRENE_NAME,Гангрена,Gangrene
+OUTCOME_FAILING_BODY_NAME,Тело отказывает,Failing Body
+OUTCOME_SELF_DOUBT_NAME,Сомнение в себе,Self-Doubt
+OUTCOME_RELENTLESS_WHISPERS_NAME,Неумолкающий шёпот,Relentless Whispers
+OUTCOME_STRANGER_IN_MIRROR_NAME,Незнакомец в зеркале,Stranger in the Mirror
+OUTCOME_NIGHT_TERRORS_NAME,Ночные кошмары,Night Terrors
+OUTCOME_COMPULSION_NAME,Навязчивость,Compulsion
+OUTCOME_FRACTURED_MIND_NAME,Расколотый разум,Fractured Mind
+OUTCOME_RAVING_NAME,Помрачение,Raving
+OUTCOME_FIT_OF_LAUGHTER_NAME,Приступ смеха,Fit of Laughter
+OUTCOME_BURNING_FEVER_NAME,Горячка,Burning Fever
+OUTCOME_TREMBLING_HANDS_NAME,Дрожь в руках,Trembling Hands
+OUTCOME_CONTAGION_NAME,Заразность,Contagion
+OUTCOME_BEDRIDDEN_NAME,Прикованный к постели,Bedridden
+OUTCOME_WASTING_SICKNESS_NAME,Истощение,Wasting Sickness
+OUTCOME_CREEPING_CHILLS_NAME,Озноб,Creeping Chills
+OUTCOME_MENDING_FLESH_NAME,Выздоровление,Mending Flesh
+OUTCOME_FEVERISH_DELIRIUM_NAME,Лихорадочный бред,Feverish Delirium
+OUTCOME_COLLECTORS_CALL_NAME,Визит сборщика,The Collector's Call
+OUTCOME_PRICE_EXACTED_NAME,Взыскание платы,The Price Exacted
+OUTCOME_BROKEN_WORD_NAME,Нарушенное слово,Broken Word
+OUTCOME_FAVOR_CALLED_IN_NAME,Услуга за услугу,Favor Called In
+OUTCOME_COMPOUNDING_DEBT_NAME,Растущий долг,Compounding Debt
+OUTCOME_PARTNERS_BETRAYAL_NAME,Предательство компаньона,A Partner's Betrayal
+OUTCOME_DEBT_FORGIVEN_NAME,Долг прощён,Debt Forgiven
+OUTCOME_HIDDEN_CLAUSE_NAME,Скрытая оговорка,Hidden Clause
+OUTCOME_ILL_OMEN_NAME,Дурной знак,Ill Omen
+OUTCOME_COLD_HAND_NAME,Холодная ладонь,The Cold Hand
+OUTCOME_DARK_MARK_NAME,Тёмная метка,The Dark Mark
+OUTCOME_RESTLESS_SPIRIT_NAME,Неупокоенный дух,Restless Spirit
+OUTCOME_WITHERING_LUCK_NAME,Иссякшая удача,Withering Luck
+OUTCOME_DEEPENING_SHADOW_NAME,Сгущающаяся тень,The Deepening Shadow
+OUTCOME_SPIRIT_DEPARTS_NAME,Дух уходит,The Spirit Departs
+OUTCOME_BLESSING_OF_NODENS_NAME,Благословение Ноденса,Blessing of Nodens
+OUTCOME_GUIDING_LIGHT_NAME,Путеводный огонь,Guiding Light
+OUTCOME_SECOND_WIND_NAME,Второе дыхание,Second Wind
+OUTCOME_QUIET_MOMENT_NAME,Минута покоя,A Quiet Moment
+OUTCOME_FORTUNATE_FIND_NAME,Счастливая находка,Fortunate Find
+OUTCOME_STEADY_HAND_NAME,Твёрдая рука,Steady Hand
+OUTCOME_LINGERING_GRACE_NAME,Длящаяся милость,Lingering Grace
+OUTCOME_ANSWERED_PRAYER_NAME,Услышанная молитва,An Answered Prayer
+OUTCOME_THEY_FOUND_YOU_NAME,Вас нашли,They Found You
+OUTCOME_CLOSING_IN_NAME,Кольцо сжимается,Closing In
+OUTCOME_AMBUSH_NAME,Засада,Ambush
+OUTCOME_SHELTER_REVEALED_NAME,Убежище раскрыто,Shelter Revealed
+OUTCOME_COLD_TRAIL_NAME,След потерян,Cold Trail
+OUTCOME_CAUGHT_OFF_GUARD_NAME,Застигнут врасплох,Caught Off Guard
+OUTCOME_FROSTBITE_NAME,Обморожение,Frostbite
+OUTCOME_NUMBING_COLD_NAME,Цепенящий холод,Numbing Cold
+OUTCOME_BITTER_NIGHT_NAME,Лютая ночь,Bitter Night
+OUTCOME_SHELTER_FOUND_NAME,Найдено укрытие,Shelter Found
+
+OUTCOME_NERVE_DAMAGE_TEXT,"Онемение в пальцах вернулось — вы почти не можете удержать предметы и неловко роняете ценную вещь безвозвратно. Сбросьте 1 предмет.","The numbness in your fingers has returned — you can barely keep your grip, and a valuable possession slips away for good. Discard 1 item."
+OUTCOME_FRACTURED_SPINE_TEXT,"Острая боль простреливает позвоночник вверх и вниз. Вы едва поднимаете руки — нести всё снаряжение слишком больно. Сбросьте все предметы, кроме одного.","Sharp pain shoots up and down your spine. You can hardly lift your arms — carrying all your gear hurts too much. Discard all items but one."
+OUTCOME_INFECTED_WOUND_TEXT,"Снимая пропитанные кровью бинты, вы видите, как из раны сочится жёлтый гной. Резкий запах инфекции кружит голову, вас почти тошнит. Получите состояние «Болезнь».","As you peel away the blood-soaked bandages, yellow pus seeps from the wound. The sharp stench of infection makes your head swim. Gain a Diseased condition."
+OUTCOME_CRUSHED_FINGERS_TEXT,"Сустав за суставом пальцы перестают сжиматься. Что-то выскальзывает из непослушной ладони и теряется во тьме под ногами. Сбросьте 1 предмет.","Joint by joint, your fingers stop closing. Something slips from your unresponsive hand and is lost in the dark underfoot. Discard 1 item."
+OUTCOME_SPLITTING_HEADACHE_TEXT,"Боль вбивается в висок, как ржавый гвоздь, и мысли расползаются прежде, чем вы успеваете их удержать. Потеряйте 1 рассудок.","Pain drives into your temple like a rusted nail, and your thoughts scatter before you can hold them. Lose 1 Sanity."
+OUTCOME_REOPENED_WOUND_TEXT,"Шов не выдержал движения, и тёплая струйка снова находит дорогу наружу. Потеряйте 1 здоровье.","The stitches gave way under the strain, and a warm trickle finds its way out once more. Lose 1 Health."
+OUTCOME_GANGRENE_TEXT,"Кожа вокруг раны почернела и больше ничего не чувствует. Лекарь молча качает головой. Получите состояние «Инфекция».","The skin around the wound has blackened and feels nothing at all. The doctor only shakes his head. Gain an Infection condition."
+OUTCOME_FAILING_BODY_TEXT,"Тело перестаёт слушаться так, как прежде; каждое движение даётся с боем, и привычная сноровка уходит. Сбросьте 1 жетон улучшения.","Your body no longer obeys as it once did; every motion is a fight, and your hard-won skill slips away. Discard 1 improvement token."
+OUTCOME_SELF_DOUBT_TEXT,"Ваши друзья и коллеги были правы. Какая надежда хоть что-то изменить? Простым смертным не остановить древних могущественных существ. Сбросьте все жетоны улучшений.","Your friends and colleagues were right. What hope is there to change anything? Mere mortals cannot stop ancient and mighty beings. Discard all improvement tokens."
+OUTCOME_RELENTLESS_WHISPERS_TEXT,"Голоса не умолкают даже во сне. Вы исписываете их словами поля своих заметок, пока бумага не темнеет. Сбросьте 1 улику.","The voices will not fall silent, even in sleep. You fill the margins of your notes with their words until the paper turns black. Discard 1 Clue."
+OUTCOME_STRANGER_IN_MIRROR_TEXT,"Из зеркала смотрит кто-то почти знакомый — и улыбается на мгновение позже, чем вы. Потеряйте 1 рассудок.","Someone almost familiar watches from the mirror — and smiles a moment later than you do. Lose 1 Sanity."
+OUTCOME_NIGHT_TERRORS_TEXT,"Сон оборачивается коридорами без дверей и шорохом за спиной; вы просыпаетесь более измотанным, чем легли. Потеряйте 1 рассудок.","Sleep turns to doorless corridors and a rustling at your back; you wake more exhausted than you lay down. Lose 1 Sanity."
+OUTCOME_COMPULSION_TEXT,"Вы не можете пройти мимо, не пересчитав трещины в мостовой, ступени, окна. Часы утекают сквозь пальцы. Сбросьте 1 улику.","You cannot walk past without counting the cracks in the pavement, the steps, the windows. Hours slip through your fingers. Discard 1 Clue."
+OUTCOME_FRACTURED_MIND_TEXT,"Между «до» и «сейчас» пролегла трещина, и часть вас осталась по ту сторону. Получите состояние «Амнезия».","A fissure has opened between 'before' and 'now,' and part of you remains on the far side. Gain an Amnesia condition."
+OUTCOME_RAVING_TEXT,"Стены дышат, потолок стекает вниз медовыми каплями, и вы больше не отличаете явь от бреда. Потеряйте 1 рассудок и сбросьте 1 улику.","The walls breathe, the ceiling drips down in honeyed beads, and you can no longer tell waking from delirium. Lose 1 Sanity and discard 1 Clue."
+OUTCOME_FIT_OF_LAUGHTER_TEXT,"Смех вырывается сам — неуместный, неудержимый, — и прохожие переходят на другую сторону улицы. Потеряйте 1 рассудок.","The laughter escapes on its own — misplaced, unstoppable — and passersby cross to the other side of the street. Lose 1 Sanity."
+OUTCOME_BURNING_FEVER_TEXT,"Жар поднимается волнами, и в их гребнях мелькают лица тех, кого давно нет. Потеряйте 1 здоровье.","The fever rises in waves, and in their crests flicker the faces of the long dead. Lose 1 Health."
+OUTCOME_TREMBLING_HANDS_TEXT,"Озноб не унимается, руки ходят ходуном, и простейшее дело отнимает все силы. Потеряйте 1 здоровье.","The chills will not ease, your hands shake without stop, and the simplest task drains all your strength. Lose 1 Health."
+OUTCOME_CONTAGION_TEXT,"Кашель сопровождает вас повсюду, и те, кто был рядом, теперь сторонятся вас. Болезнь нашла новых хозяев. Потеряйте 1 здоровье.","A cough follows you everywhere, and those who stood near now keep their distance. The sickness has found new hosts. Lose 1 Health."
+OUTCOME_BEDRIDDEN_TEXT,"Сил не остаётся даже подняться; мир сужается до сырого потолка над головой. Потеряйте 1 здоровье и 1 рассудок.","You haven't the strength even to rise; the world narrows to a damp ceiling overhead. Lose 1 Health and 1 Sanity."
+OUTCOME_WASTING_SICKNESS_TEXT,"Одежда висит мешком — тело тает день за днём, и вместе с ним уходит сноровка. Сбросьте 1 жетон улучшения.","Your clothes hang loose — your body wastes away day by day, and your skill goes with it. Discard 1 improvement token."
+OUTCOME_CREEPING_CHILLS_TEXT,"Холод пробирает до костей, хотя за окном духота. Зубы стучат сами собой. Потеряйте 1 здоровье.","Cold seeps into your bones though the air outside is stifling. Your teeth chatter on their own. Lose 1 Health."
+OUTCOME_MENDING_FLESH_TEXT,"К утру жар спадает, и впервые за долгие дни вы дышите полной грудью. Тело пошло на поправку.","By morning the fever breaks, and for the first time in days you draw a full breath. Your body is on the mend."
+OUTCOME_FEVERISH_DELIRIUM_TEXT,"Лихорадка путает дни и ночи; вы теряете счёт времени и собственным шагам. Получите состояние «Амнезия».","The fever blurs days into nights; you lose count of time and of your own steps. Gain an Amnesia condition."
+OUTCOME_COLLECTORS_CALL_TEXT,"В дверь стучат вежливо, но настойчиво. Тот, с кем вы условились, пришёл за своей долей. Сбросьте 2 улики.","A knock at the door, polite but insistent. The one you made terms with has come for his share. Discard 2 Clues."
+OUTCOME_PRICE_EXACTED_TEXT,"Сделка исполнена до последней буквы — и отданное уже не вернуть. Сбросьте 1 предмет.","The bargain is honored to the last letter — and what was given cannot be reclaimed. Discard 1 item."
+OUTCOME_BROKEN_WORD_TEXT,"Вы не сдержали слово, и теперь об этом знают нужные люди. Двери закрываются одна за другой. Получите состояние «Долг».","You failed to keep your word, and now the right people know it. Doors close one after another. Gain a Debt condition."
+OUTCOME_FAVOR_CALLED_IN_TEXT,"Услуга за услугу — так было условлено. Настала ваша очередь, и отказ не предусмотрен. Сбросьте 1 предмет.","A favor for a favor — so it was agreed. Now it is your turn, and refusal was never an option. Discard 1 item."
+OUTCOME_COMPOUNDING_DEBT_TEXT,"Долг рос, пока вы отворачивались, и теперь он больше вас самих. Сбросьте 2 улики.","The debt grew while you looked away, and now it is larger than you are. Discard 2 Clues."
+OUTCOME_PARTNERS_BETRAYAL_TEXT,"Тот, кому вы доверились, исчез — вместе с тем, что вам дорого. Сбросьте 1 предмет и 1 улику.","The one you trusted has vanished — along with what you held dear. Discard 1 item and 1 Clue."
+OUTCOME_DEBT_FORGIVEN_TEXT,"Записка без подписи: «Мы в расчёте». Камень падает с плеч.","An unsigned note: 'We are even.' A weight lifts from your shoulders."
+OUTCOME_HIDDEN_CLAUSE_TEXT,"Вы перечитываете контракт и находите строку, которой прежде там не было. Получите состояние «Соглашение».","You reread the contract and find a line that was not there before. Gain an Agreement condition."
+OUTCOME_ILL_OMEN_TEXT,"Ворон срывается с карниза ровно в тот миг, когда вы поднимаете взгляд. Дурной знак идёт за вами по пятам. Потеряйте 1 рассудок.","A raven bolts from the ledge the very moment you look up. An ill omen dogs your every step. Lose 1 Sanity."
+OUTCOME_COLD_HAND_TEXT,"Ночью что-то ложится поверх вашей ладони — холодное, как речной камень. К утру оно исчезает, но след остаётся. Потеряйте 1 рассудок.","In the night something settles over your hand — cold as a river stone. By morning it is gone, but the trace remains. Lose 1 Sanity."
+OUTCOME_DARK_MARK_TEXT,"На внутренней стороне запястья проступает знак, которого вы не ставили. Те, кто понимает, отводят глаза. Получите состояние «Проклятие».","A mark you never made shows on the inside of your wrist. Those who understand look away. Gain a Cursed condition."
+OUTCOME_RESTLESS_SPIRIT_TEXT,"Призрак не желает уходить и тянет вас за собой — в свои последние, мучительные минуты. Потеряйте 1 здоровье.","The ghost will not leave and drags you along — into its last, agonized minutes. Lose 1 Health."
+OUTCOME_WITHERING_LUCK_TEXT,"Монета падает не той стороной, замок не поддаётся, спичка ломается в пальцах. Удача истончилась до нити. Сбросьте 1 улику.","The coin lands wrong, the lock will not yield, the match snaps in your fingers. Your luck has worn to a thread. Discard 1 Clue."
+OUTCOME_DEEPENING_SHADOW_TEXT,"Ваша тень легла не туда, куда падает свет, и медлит, прежде чем повторить движение. Потеряйте 1 рассудок и 1 здоровье.","Your shadow has fallen where no light casts it, and lingers before it copies your movement. Lose 1 Sanity and 1 Health."
+OUTCOME_SPIRIT_DEPARTS_TEXT,"На рассвете тяжесть отступает — призрак отыскал свой покой или просто устал от вас.","At dawn the weight recedes — the ghost has found its rest, or simply tired of you."
+OUTCOME_BLESSING_OF_NODENS_TEXT,"Великий Владыка Бездны и его верные ночные призраки охотятся на слуг Древнего. Могучий Ноденс смотрит на вас благосклонно. Можете сбросить 1 монстра по своему выбору.","The Great Lord of the Abyss and his faithful night-gaunts hunt the servants of the Ancient One. Mighty Nodens looks upon you with favor. You may discard 1 monster of your choice."
+OUTCOME_GUIDING_LIGHT_TEXT,"В тумане проступает огонёк — слишком ровный для свечи, слишком тёплый для звезды. Он выводит вас верной дорогой. Восстановите 1 рассудок.","A small light shows through the fog — too steady for a candle, too warm for a star. It leads you down the right road. Recover 1 Sanity."
+OUTCOME_SECOND_WIND_TEXT,"Откуда-то приходят силы, которых уже не должно было остаться. Вы выпрямляетесь и идёте дальше. Восстановите 1 здоровье.","Strength comes from somewhere it should no longer have remained. You straighten up and walk on. Recover 1 Health."
+OUTCOME_QUIET_MOMENT_TEXT,"Впервые за долгое время мир замолкает, и в этой тишине вы наконец слышите собственные мысли. Восстановите 1 рассудок.","For the first time in a long while the world falls quiet, and in that silence you finally hear your own thoughts. Recover 1 Sanity."
+OUTCOME_FORTUNATE_FIND_TEXT,"Под половицей, куда вы оступились, что-то тускло блеснуло. Удача наконец повернулась к вам лицом. Получите 1 улику.","Beneath the floorboard you stumbled on, something glinted dully. Luck has turned to face you at last. Gain 1 Clue."
+OUTCOME_STEADY_HAND_TEXT,"Страх отступает, дыхание выравнивается. Что бы ни ждало впереди, теперь вы готовы это встретить. Получите 1 жетон сосредоточения.","Fear recedes, your breathing steadies. Whatever waits ahead, you are ready to meet it. Gain 1 focus token."
+OUTCOME_LINGERING_GRACE_TEXT,"Свет не угасает с рассветом — он остаётся с вами и в наступающий день.","The light does not fade with the dawn — it stays with you into the day to come."
+OUTCOME_ANSWERED_PRAYER_TEXT,"Слова, сказанные в отчаянии, были услышаны. Помощь приходит тогда, когда вы уже перестали ждать. Восстановите 1 здоровье и 1 рассудок.","Words spoken in despair were heard. Help arrives just when you had stopped waiting for it. Recover 1 Health and 1 Sanity."
+OUTCOME_THEY_FOUND_YOU_TEXT,"Шаги за спиной больше не отстают — они приближаются. Преследователь настигает вас в глухом переулке. Потеряйте 1 здоровье.","The footsteps behind you no longer fall back — they draw closer. Your pursuer catches you in a blind alley. Lose 1 Health."
+OUTCOME_CLOSING_IN_TEXT,"Каждый поворот, каждая подворотня — всё то же лицо в толпе. Кольцо медленно сжимается. Сбросьте 1 улику.","Every turn, every gateway — the same face in the crowd. The circle slowly tightens. Discard 1 Clue."
+OUTCOME_AMBUSH_TEXT,"Они ждали именно здесь, зная ваш путь лучше вас самих. Потеряйте 1 здоровье и 1 рассудок.","They waited exactly here, knowing your route better than you did. Lose 1 Health and 1 Sanity."
+OUTCOME_SHELTER_REVEALED_TEXT,"Убежище раскрыто. Хозяева комнаты смотрят на вас с тем же страхом, с каким вы — на дверь. Сбросьте 1 предмет.","Your hideout is exposed. The room's owners watch you with the same fear you turn on the door. Discard 1 item."
+OUTCOME_COLD_TRAIL_TEXT,"Вы петляли всю ночь дворами и крышами — и к рассвету шаги за спиной наконец стихли.","You wove through yards and rooftops all night — and by dawn the footsteps behind you finally fell silent."
+OUTCOME_CAUGHT_OFF_GUARD_TEXT,"Рука ложится на плечо прежде, чем вы успеваете обернуться. Сбросьте 1 предмет.","A hand settles on your shoulder before you can turn around. Discard 1 item."
+OUTCOME_FROSTBITE_TEXT,"Пальцы на ногах побелели и перестали слушаться; стягивая ботинок, вы боитесь того, что увидите. Потеряйте 1 здоровье.","Your toes have gone white and unfeeling; pulling off the boot, you dread what you will see. Lose 1 Health."
+OUTCOME_NUMBING_COLD_TEXT,"Холод больше не жжёт — он убаюкивает, и это страшнее всего. Веки тяжелеют сами собой. Потеряйте 1 рассудок.","The cold no longer burns — it lulls, and that is the most frightening of all. Your eyelids grow heavy on their own. Lose 1 Sanity."
+OUTCOME_BITTER_NIGHT_TEXT,"Костёр погас под утро, и остаток ночи вы провели, считая удары собственного сердца во тьме. Потеряйте 1 здоровье.","The fire died before morning, and you spent the rest of the night counting your own heartbeats in the dark. Lose 1 Health."
+OUTCOME_SHELTER_FOUND_TEXT,"Заброшенная сторожка, охапка сухих дров, четыре стены против ветра. К утру вы снова чувствуете руки.","An abandoned watchman's hut, an armful of dry wood, four walls against the wind. By morning you can feel your hands again."
