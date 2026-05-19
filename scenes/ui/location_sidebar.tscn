@@ -59,6 +59,12 @@ theme_override_font_sizes/font_size = 13
 text = ""
 autowrap_mode = 3
 
+[node name="TravelBtn" type="Button" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "SIDEBAR_TRAVEL_HERE"
+
 [node name="Sep" type="HSeparator" parent="Panel/Margin/VBox"]
 layout_mode = 2
 

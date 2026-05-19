@@ -1,0 +1,10 @@
+[
+	{ "id": "cthulhu",        "nameKey": "AO_CTHULHU" },
+	{ "id": "azathoth",       "nameKey": "AO_AZATHOTH" },
+	{ "id": "yog_sothoth",    "nameKey": "AO_YOG_SOTHOTH" },
+	{ "id": "hastur",         "nameKey": "AO_HASTUR" },
+	{ "id": "shub_niggurath", "nameKey": "AO_SHUB_NIGGURATH" },
+	{ "id": "nyarlathotep",   "nameKey": "AO_NYARLATHOTEP" },
+	{ "id": "ithaqua",        "nameKey": "AO_ITHAQUA" },
+	{ "id": "dagon",          "nameKey": "AO_DAGON" }
+]

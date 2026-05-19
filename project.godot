@@ -11,7 +11,8 @@ config_version=5
 [application]
 
 config/name="dark-omens"
-run/main_scene="res://scenes/login.tscn"
+config/version="0.1.0"
+run/main_scene="res://scenes/home.tscn"
 config/auto_accept_quit=false
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
@@ -36,6 +37,7 @@ SettingsStore="*res://scripts/core/settings_store.gd"
 MCPScreenshot="*res://addons/godot_mcp/mcp_screenshot_service.gd"
 MCPInputService="*res://addons/godot_mcp/mcp_input_service.gd"
 MCPGameInspector="*res://addons/godot_mcp/mcp_game_inspector_service.gd"
+ContentApi="*res://scripts/core/content_api.gd"
 
 [display]
 

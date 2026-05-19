@@ -1,0 +1,98 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/screens/home.gd" id="1_home"]
+[ext_resource type="Texture2D" uid="uid://c7ruv788i1xik" path="res://assets/main-bg.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://vkts82xxlwl1" path="res://assets/logo.png" id="3_logo"]
+[ext_resource type="Shader" path="res://assets/shaders/fog.gdshader" id="4_fog"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fog"]
+shader = ExtResource("4_fog")
+
+[node name="Home" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_home")
+
+[node name="Bg" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Fog" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+material = SubResource("ShaderMaterial_fog")
+
+[node name="Logo" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 64.0
+offset_right = 400.0
+offset_bottom = 535.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("3_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Menu" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -160.0
+offset_top = 600.0
+offset_right = 160.0
+offset_bottom = 866.0
+grow_horizontal = 2
+theme_override_constants/separation = 14
+
+[node name="PlayBtn" type="Button" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "HOME_BTN_PLAY"
+
+[node name="AuthorsBtn" type="Button" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "HOME_BTN_AUTHORS"
+
+[node name="SettingsBtn" type="Button" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "HOME_BTN_SETTINGS"
+
+[node name="QuitBtn" type="Button" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "HOME_BTN_QUIT"
+
+[node name="VersionLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 74.0
+offset_top = -40.0
+offset_right = 370.0
+offset_bottom = -16.0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13

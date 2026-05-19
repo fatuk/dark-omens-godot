@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://b4xmenu1dark"]
+[gd_scene load_steps=3 format=3 uid="uid://b4xmenu1dark"]
 
 [ext_resource type="Script" uid="uid://b1ui0ug8ta76x" path="res://scripts/screens/main_menu.gd" id="1_mainmenu"]
+[ext_resource type="Texture2D" uid="uid://vkts82xxlwl1" path="res://assets/logo.png" id="2_logo"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -27,14 +28,15 @@ custom_minimum_size = Vector2(720, 0)
 layout_mode = 2
 theme_override_constants/separation = 14
 
-; ── Заголовок ──
-[node name="Title" type="Label" parent="Center/Root"]
+; ── Логотип ──
+[node name="Logo" type="TextureRect" parent="Center/Root"]
+custom_minimum_size = Vector2(400, 236)
 layout_mode = 2
-theme_override_constants/shadow_offset_x = 3
-theme_override_constants/shadow_offset_y = 3
-theme_override_font_sizes/font_size = 52
-text = "DARK OMENS"
-horizontal_alignment = 1
+size_flags_horizontal = 4
+mouse_filter = 2
+texture = ExtResource("2_logo")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Subtitle" type="Label" parent="Center/Root"]
 layout_mode = 2
@@ -99,64 +101,6 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 14
 
-; ── Создать комнату ──
-[node name="CreatePanel" type="PanelContainer" parent="Center/Root/RoomsPanel"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(260, 0)
-layout_mode = 2
-
-[node name="VBox" type="VBoxContainer" parent="Center/Root/RoomsPanel/CreatePanel"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="Header" type="Label" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "MENU_BTN_CREATE_ROOM"
-
-[node name="Sep" type="HSeparator" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
-layout_mode = 2
-
-[node name="NameRow" type="HBoxContainer" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="NameLabel" type="Label" parent="Center/Root/RoomsPanel/CreatePanel/VBox/NameRow"]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "FORM_NAME"
-vertical_alignment = 1
-
-[node name="CreateNameInput" type="LineEdit" parent="Center/Root/RoomsPanel/CreatePanel/VBox/NameRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "MENU_GAME_NAME_PLACEHOLDER"
-
-[node name="PassRow" type="HBoxContainer" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="PassLabel" type="Label" parent="Center/Root/RoomsPanel/CreatePanel/VBox/PassRow"]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "FORM_PASSWORD"
-vertical_alignment = 1
-
-[node name="CreatePassInput" type="LineEdit" parent="Center/Root/RoomsPanel/CreatePanel/VBox/PassRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-secret = true
-placeholder_text = "FORM_OPTIONAL"
-
-[node name="CreateBtn" type="Button" parent="Center/Root/RoomsPanel/CreatePanel/VBox"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "BTN_CREATE_BIG"
-
 ; ── Список комнат ──
 [node name="ListPanel" type="PanelContainer" parent="Center/Root/RoomsPanel"]
 unique_name_in_owner = true
@@ -176,6 +120,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "MENU_OPEN_ROOMS_HEADER"
+
+[node name="CreateRoomBtn" type="Button" parent="Center/Root/RoomsPanel/ListPanel/VBox/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "MENU_BTN_CREATE_ROOM"
 
 [node name="RefreshBtn" type="Button" parent="Center/Root/RoomsPanel/ListPanel/VBox/HeaderRow"]
 unique_name_in_owner = true

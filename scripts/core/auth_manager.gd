@@ -7,7 +7,6 @@ extends Node
 ## ВАЖНО: 127.0.0.1, а не localhost. На Windows localhost резолвится в ::1 (IPv6),
 ## а Docker Desktop не пробрасывает IPv6-порты — запросы виснут до таймаута.
 var api_base: String = "http://127.0.0.1:3031"
-const SAVE_FILE := "user://auth.cfg"
 
 # ── Сигналы ────────────────────────────────────────────────────────────────────
 signal otp_sent                            # код отправлен на почту
@@ -188,7 +187,7 @@ func _result_name(r: int) -> String:
 
 func _load_session() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(SAVE_FILE) == OK:
+	if cfg.load(Profile.path("auth.cfg")) == OK:
 		session_token = cfg.get_value("auth", "token", "")
 		# current_user заполним через check_session — не доверяем кэшированным данным
 
@@ -196,4 +195,4 @@ func _load_session() -> void:
 func _save_session() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("auth", "token", session_token)
-	cfg.save(SAVE_FILE)
+	cfg.save(Profile.path("auth.cfg"))

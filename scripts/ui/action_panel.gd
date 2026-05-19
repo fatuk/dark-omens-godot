@@ -34,6 +34,11 @@ func _refresh() -> void:
 	_root.visible = visible_now
 	if not visible_now:
 		return
+	# Одно действие нельзя повторять в раунде — гасим уже использованные кнопки.
+	var used: Array = GameState.my_player().get("actions_used", [])
+	_ticket_btn.disabled  = used.has("buy_ticket")
+	_concent_btn.disabled = used.has("take_concentration")
+	_rest_btn.disabled    = used.has("rest")
 	# Биндим через LocaleBinder — строка форматированная (%d), при смене локали
 	# нужно перевычислить tr() с актуальным шаблоном.
 	LocaleBinder.bind(_hint_label, func() -> String:

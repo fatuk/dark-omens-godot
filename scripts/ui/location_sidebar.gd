@@ -36,9 +36,11 @@ const CONN_TR_KEYS: Dictionary = {
 @onready var _close_btn:     Button         = %CloseBtn
 @onready var _neighbors_hdr: Label          = %NeighborsHeader
 @onready var _neighbors:     VBoxContainer  = %NeighborsList
+@onready var _travel_btn:    Button         = %TravelBtn
 
 var _is_open:   bool       = false
 var _tween:     Tween      = null
+var _loc_name:  String     = ""   # имя показанной сейчас локации
 
 
 func _ready() -> void:
@@ -50,6 +52,9 @@ func _ready() -> void:
 	_description.add_theme_color_override("font_color",   UIColors.TEXT)
 	_neighbors_hdr.add_theme_color_override("font_color", UIColors.MUTED)
 	_close_btn.pressed.connect(_on_close_pressed)
+	UIStyle.style_button(_travel_btn)
+	_travel_btn.pressed.connect(_on_travel_pressed)
+	GameState.state_changed.connect(_refresh_travel)
 	_apply_offsets(true)
 	_neighbors_hdr.text = "SIDEBAR_NEIGHBORS"  # Godot auto-translate при рендере
 
@@ -65,6 +70,8 @@ func show_location(data: Dictionary) -> void:
 	_type_label.text  = _type_label_for(String(data.get("type", "city")))
 	_description.text = String(data.get("description", ""))
 	_populate_neighbors(data.get("connections", []))
+	_loc_name = String(data.get("name", ""))
+	_refresh_travel()
 	if not _is_open:
 		_is_open = true
 		_animate(false)
@@ -74,12 +81,26 @@ func close_panel() -> void:
 	if not _is_open:
 		return
 	_is_open = false
+	_loc_name = ""
+	_refresh_travel()
 	_animate(true)
 	closed.emit()
 
 
 func is_open() -> bool:
 	return _is_open
+
+
+# ── Перемещение ──────────────────────────────────────────────────────────────
+
+## Показывает кнопку «Переместиться сюда», если игрок может туда пойти сейчас.
+func _refresh_travel() -> void:
+	_travel_btn.visible = not _loc_name.is_empty() and GameState.can_travel_to(_loc_name)
+
+
+func _on_travel_pressed() -> void:
+	if not _loc_name.is_empty():
+		GameState.travel(_loc_name)
 
 
 # ── Соседи ───────────────────────────────────────────────────────────────────

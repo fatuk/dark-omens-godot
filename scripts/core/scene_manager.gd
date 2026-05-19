@@ -6,6 +6,7 @@ extends Node
 # ── Реестр сцен ───────────────────────────────────────────────────────────────
 
 const SCENES: Dictionary = {
+	"home":       "res://scenes/home.tscn",
 	"login":      "res://scenes/login.tscn",
 	"main_menu":  "res://scenes/main_menu.tscn",
 	"lobby":      "res://scenes/lobby.tscn",

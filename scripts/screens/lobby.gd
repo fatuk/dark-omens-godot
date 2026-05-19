@@ -17,8 +17,10 @@ extends Control
 ## Никакого UI здесь больше нет — picker сам строит и обновляет всё своё
 ## поверх NetworkManager.players (он подписан на те же сигналы).
 
-const _PREFS_PATH    := "user://dark_omens_prefs.cfg"
 const _PREFS_SECTION := "lobby"
+
+# Путь prefs с учётом профиля запуска (Profile) — для теста нескольких клиентов.
+var _prefs_path: String = Profile.path("dark_omens_prefs.cfg")
 
 @onready var _picker: Node = %Picker
 
@@ -35,6 +37,12 @@ var _player_names: Dictionary = {}
 
 func _ready() -> void:
 	_nm = get_node("/root/NetworkManager")
+	# Свежее лобби (не возврат в идущую игру): сбрасываем прошлую партию и
+	# сразу запускаем прогрев кампании — зерно (Древний, размер партии) задано
+	# в модалке создания комнаты. Генерация идёт, пока игроки выбирают сыщиков.
+	if _nm.is_host() and not _nm.game_started:
+		GameState.reset_pregame()
+		GameState.prewarm_campaign()
 	_nm.player_connected.connect(_on_player_connected)
 	_nm.player_disconnected.connect(_on_player_disconnected)
 	_nm.server_disconnected.connect(_on_server_disconnected)
@@ -89,23 +97,23 @@ func _ready() -> void:
 
 func _save_ready_state() -> void:
 	var cfg := ConfigFile.new()
-	cfg.load(_PREFS_PATH)
+	cfg.load(_prefs_path)
 	cfg.set_value(_PREFS_SECTION, "room_id",     _nm.room_id)
 	cfg.set_value(_PREFS_SECTION, "was_ready",   true)
 	cfg.set_value(_PREFS_SECTION, "player_name", _nm.my_name)
-	cfg.save(_PREFS_PATH)
+	cfg.save(_prefs_path)
 
 
 func _clear_ready_state() -> void:
 	var cfg := ConfigFile.new()
-	cfg.load(_PREFS_PATH)
+	cfg.load(_prefs_path)
 	cfg.set_value(_PREFS_SECTION, "was_ready", false)
-	cfg.save(_PREFS_PATH)
+	cfg.save(_prefs_path)
 
 
 func _check_auto_ready() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(_PREFS_PATH) != OK:
+	if cfg.load(_prefs_path) != OK:
 		return
 	var saved_room:   String = cfg.get_value(_PREFS_SECTION, "room_id",     "")
 	var saved_ready:  bool   = cfg.get_value(_PREFS_SECTION, "was_ready",   false)
@@ -276,6 +284,10 @@ func _on_ready_pressed() -> void:
 	# Хост тоже рассылает — другие игроки увидят его статус и сыщика.
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
 	_refresh_start_button()
+	# Хост: страховка — если прогрев кампании ещё не стартовал (промоут в
+	# хосты и т.п.), запускаем сейчас. Идемпотентно: если уже идёт — no-op.
+	if _nm.is_host() and not _nm.game_started:
+		GameState.prewarm_campaign()
 	# Если игра уже идёт (мы поздний игрок) — хост не нажмёт «Начать», он уже
 	# на карте. Прыгаем на карту сами, как только подтвердили выбор сыщика.
 	if _nm.game_started:
@@ -322,7 +334,7 @@ func _build_players_init() -> Array:
 		var inv: Dictionary  = inv_data.get(inv_name, {})
 		arr.append({
 			"pid":          pid,
-			"user_id":      pid,
+			"user_id":      info.get("user_id", ""),
 			"name":         info.get("name", "???"),
 			"investigator": inv_name,
 			"hp_max":       int(inv.get("health", 5)),

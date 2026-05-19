@@ -43,11 +43,24 @@ var _zoom_target: float = 0.5
 @onready var _camera:     Camera2D    = $Camera2D
 @onready var _game_panel: CanvasLayer = $GamePanel
 @onready var _sidebar:    CanvasLayer = $LocationSidebar
+@onready var _mystery:    CanvasLayer = $MysterySidebar
 
 var _map_layer: MapLayer
 
+# Интро-гейт: блокирующая модалка-цепочка (загрузка → Древний → первая
+# Тайна → карта), строится в коде.
+var _campaign_gate: CanvasLayer   = null
+var _gate_vbox:     VBoxContainer = null
+var _intro_step:    int           = 0   # 0=загрузка 1=Древний 2=Тайна 3=готово
+var _gate_rendered: int           = -1  # последний отрисованный шаг
+
 
 func _ready() -> void:
+	# Игровая музыка — основной трек, общий для всех экранов, кроме выбора
+	# сыщика (там picker сам ставит TRACK_NO_CHOICE). Придя из лобби, где
+	# играл NO_CHOICE, MusicManager переключит трек обратно на основной.
+	MusicManager.play(MusicManager.TRACK_ELDER_SIGN)
+
 	# На карте мира декоративная рамка лишняя (карта — основная игровая сцена,
 	# UI поверх неё в виде GamePanel/LocationSidebar). Возвращаем при выходе.
 	ScreenFrame.set_enabled(false)
@@ -62,12 +75,19 @@ func _ready() -> void:
 
 	# Привязка GamePanel к глобальному GameState
 	GameState.state_changed.connect(_refresh_game_panel)
+	GameState.state_changed.connect(_refresh_investigators)
+	GameState.state_changed.connect(_refresh_campaign_gate)
+	_build_campaign_gate()
 	_refresh_game_panel()
+	_refresh_investigators()
+	_refresh_campaign_gate()
 
 	# Сайдбар закрылся — снимаем подсветку с карты
 	_sidebar.closed.connect(func() -> void: _map_layer.set_selected(""))
 	# Клик по соседу в списке — открываем его как если бы кликнули по карте
 	_sidebar.neighbor_selected.connect(_on_neighbor_selected)
+	# Клик по орбу раунда — открыть/закрыть сайдбар текущей Мистерии.
+	_game_panel.round_clicked.connect(_on_round_clicked)
 	# Смена языка не требует здесь обработки: данные локаций/сыщиков содержат
 	# translation keys, лейблы Godot переводит автоматически при смене локали.
 
@@ -83,6 +103,21 @@ func _refresh_game_panel() -> void:
 	_game_panel.set_doom(GameState.doom)
 	_game_panel.set_omens_step(float(GameState.omens_step))
 	_game_panel.set_info(_to_roman(GameState.round_num))
+
+
+## Обновляет маркеры сыщиков на карте по позициям из GameState.
+func _refresh_investigators() -> void:
+	if not is_instance_valid(_map_layer):
+		return
+	var list: Array = []
+	for pid: String in GameState.players:
+		var p: Dictionary = GameState.players[pid]
+		list.append({
+			"pid":          pid,
+			"investigator": String(p.get("investigator", "")),
+			"location":     String(p.get("location", "")),
+		})
+	_map_layer.set_investigators(list)
 
 
 func _phase_label_for(p: String) -> String:
@@ -224,6 +259,135 @@ func _on_neighbor_selected(loc_name: String) -> void:
 		return
 	_sidebar.show_location(data)
 	_map_layer.set_selected(loc_name)
+
+
+func _on_round_clicked() -> void:
+	_mystery.toggle()
+
+
+# ── Интро-гейт: загрузка → Древний → первая Тайна → карта ────────────────────
+
+## Строит блокирующую модалку поверх всех слоёв. Контент шага наполняет
+## _render_gate().
+func _build_campaign_gate() -> void:
+	var layer := CanvasLayer.new()
+	layer.name    = "CampaignGate"
+	layer.layer   = 90
+	layer.visible = false
+	add_child(layer)
+
+	var backdrop := ColorRect.new()
+	backdrop.name  = "Backdrop"
+	backdrop.color = Color(0.03, 0.03, 0.07, 0.96)
+	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(backdrop)
+
+	var center := CenterContainer.new()
+	center.name = "Center"
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	backdrop.add_child(center)
+
+	var panel := UIStyle.panel(32)
+	panel.name = "Panel"
+	panel.custom_minimum_size = Vector2(620.0, 0.0)
+	center.add_child(panel)
+
+	_gate_vbox = VBoxContainer.new()
+	_gate_vbox.name = "VBox"
+	_gate_vbox.add_theme_constant_override("separation", 14)
+	panel.add_child(_gate_vbox)
+
+	_campaign_gate = layer
+
+
+## Шаг 0 (загрузка) ведётся campaign_pending; дальше — кнопками интро.
+func _refresh_campaign_gate() -> void:
+	if not is_instance_valid(_campaign_gate):
+		return
+	if GameState.campaign_pending:
+		_intro_step = 0
+	elif _intro_step == 0:
+		# кампания готова: показываем Древнего; нет кампании — сразу на карту
+		_intro_step = 1 if not GameState.campaign.is_empty() else 3
+	_campaign_gate.visible = _intro_step < 3
+	if _campaign_gate.visible and _intro_step != _gate_rendered:
+		_gate_rendered = _intro_step
+		_render_gate()
+
+
+## Наполняет панель гейта содержимым текущего шага.
+func _render_gate() -> void:
+	for child in _gate_vbox.get_children():
+		child.queue_free()
+	match _intro_step:
+		0:
+			_gate_title("CAMPAIGN_GATE_TITLE")
+			_gate_body("CAMPAIGN_GATE_BODY")
+		1:
+			var ao: Dictionary = GameState.campaign.get("ancientOne", {})
+			_gate_eyebrow("INTRO_ANCIENT_EYEBROW")
+			_gate_title(String(ao.get("name", "")))
+			var epithet: String = String(ao.get("epithet", ""))
+			if not epithet.is_empty():
+				_gate_subtitle(epithet)
+			_gate_body(String(ao.get("description", "")))
+			_gate_button("INTRO_NEXT", _on_gate_next)
+		2:
+			var m: Dictionary = GameState.current_mystery()
+			_gate_eyebrow("INTRO_MYSTERY_EYEBROW")
+			_gate_title(String(m.get("title", "")))
+			var flavor: String = String(m.get("flavorText", ""))
+			if not flavor.is_empty():
+				_gate_body(flavor)
+			_gate_body(String(m.get("text", "")))
+			_gate_button("INTRO_START", _on_gate_start)
+
+
+func _on_gate_next() -> void:
+	_intro_step = 2
+	_refresh_campaign_gate()
+
+
+func _on_gate_start() -> void:
+	_intro_step = 3
+	_refresh_campaign_gate()
+
+
+# ── Хелперы наполнения гейта ──────────────────────────────────────────────────
+
+func _gate_eyebrow(text: String) -> void:
+	var lbl := UIStyle.label(text, 12, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl.name = "Eyebrow"
+	_gate_vbox.add_child(lbl)
+
+
+func _gate_title(text: String) -> void:
+	var lbl := UIStyle.label(text, 26, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl.name = "Title"
+	_gate_vbox.add_child(lbl)
+
+
+func _gate_subtitle(text: String) -> void:
+	var lbl := UIStyle.label(text, 15, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl.name = "Subtitle"
+	_gate_vbox.add_child(lbl)
+
+
+func _gate_body(text: String) -> void:
+	var lbl := UIStyle.label(text, 15, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl.name = "Body"
+	lbl.custom_minimum_size = Vector2(540.0, 0.0)
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_gate_vbox.add_child(lbl)
+
+
+func _gate_button(text: String, handler: Callable) -> void:
+	var btn := UIStyle.button(text)
+	btn.name = "GateButton"
+	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	btn.pressed.connect(handler)
+	_gate_vbox.add_child(btn)
 
 
 # ── Утилиты ───────────────────────────────────────────────────────────────────

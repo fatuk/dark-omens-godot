@@ -27,6 +27,10 @@ const MARKER_SCREEN:  float = 100.0
 ## Расстояние от центра маркера до верха подписи в экранных пикселях.
 const LABEL_SCREEN_Y: float = 50.0
 const LABEL_FONT:     int   = 14    # шрифт в экранных пикселях
+## Маркер сыщика: экранный размер, смещение над локацией, разнос соседей.
+const INVESTIGATOR_SCREEN:   float = 72.0
+const INVESTIGATOR_OFFSET_Y: float = -54.0
+const INVESTIGATOR_FAN_X:    float = 42.0
 
 # ── Зависимости ───────────────────────────────────────────────────────────────
 
@@ -40,6 +44,11 @@ var _edges:            Array      = []
 var _markers:          Array      = []   # [{sprite, label, indicator, pos, loc_name}]
 var _textures:         Dictionary = {}
 var _selected_name:    String     = ""
+
+# Маркеры сыщиков — поверх маркеров локаций.
+var _inv_markers:   Array     = []    # [{sprite, base, screen_off, base_scale}]
+var _inv_signature: String    = ""    # для пропуска лишних перестроений
+var _token_tex:     Texture2D = null  # запасной жетон (нет файла портрета)
 
 
 # ── Загрузка ──────────────────────────────────────────────────────────────────
@@ -56,6 +65,8 @@ func load_from_file(path: String) -> void:
 	for child in get_children():
 		child.queue_free()
 	_markers.clear()
+	_inv_markers.clear()
+	_inv_signature = ""
 	_locs.clear()
 
 	var data: Array = DataLoader.load_array(path)
@@ -118,6 +129,18 @@ func _process(_delta: float) -> void:
 				-lb.size.x * inv * 0.5,   # горизонтальное центрирование
 				LABEL_SCREEN_Y * inv       # отступ ниже маркера
 			)
+
+	# Маркеры сыщиков — постоянный экранный размер, смещение над локацией.
+	for i: int in range(_inv_markers.size()):
+		var im: Dictionary = _inv_markers[i]
+		var isp: Sprite2D  = im.sprite as Sprite2D
+		if not is_instance_valid(isp):
+			continue
+		var ibase: Vector2 = im.base
+		var ioff:  Vector2 = im.screen_off
+		var iscale: float  = im.base_scale
+		isp.scale    = Vector2.ONE * iscale * inv
+		isp.position = ibase + ioff * inv
 
 
 # ── Маркеры ───────────────────────────────────────────────────────────────────
@@ -318,3 +341,88 @@ func set_selected(loc_name: String) -> void:
 		ind.visible = on
 		if on:
 			ind.scale = Vector2.ONE * inv  # сразу нужный размер до первого _process
+
+
+# ── Маркеры сыщиков ───────────────────────────────────────────────────────────
+
+## Размещает маркеры сыщиков на карте. list: [{pid, investigator, location}].
+## Перестраивает, только если состав/локации изменились (сигнатура).
+func set_investigators(list: Array) -> void:
+	var sig: String = ""
+	for i: int in range(list.size()):
+		var e: Dictionary = list[i]
+		sig += "%s@%s;" % [String(e.get("pid", "")), String(e.get("location", ""))]
+	if sig == _inv_signature:
+		return
+	_inv_signature = sig
+
+	for i: int in range(_inv_markers.size()):
+		var old_e: Dictionary = _inv_markers[i]
+		var old_sp: Sprite2D = old_e.sprite as Sprite2D
+		if is_instance_valid(old_sp):
+			old_sp.queue_free()
+	_inv_markers.clear()
+
+	# Сколько сыщиков в каждой локации — чтобы разнести их маркеры.
+	var per_loc: Dictionary = {}
+	for i: int in range(list.size()):
+		var ln: String = String(list[i].get("location", ""))
+		per_loc[ln] = int(per_loc.get(ln, 0)) + 1
+
+	var inv0: float = (1.0 / camera.zoom.x) if is_instance_valid(camera) else 2.0
+	var placed: Dictionary = {}
+
+	for i: int in range(list.size()):
+		var entry: Dictionary = list[i]
+		var loc_name: String = String(entry.get("location", ""))
+		if not _locs.has(loc_name):
+			continue
+		var total: int = int(per_loc.get(loc_name, 1))
+		var k: int = int(placed.get(loc_name, 0))
+		placed[loc_name] = k + 1
+		var fan_x: float = (float(k) - float(total - 1) * 0.5) * INVESTIGATOR_FAN_X
+		var screen_off := Vector2(fan_x, INVESTIGATOR_OFFSET_Y)
+
+		var tex: Texture2D = _investigator_texture(String(entry.get("investigator", "")))
+		var base_scale: float = INVESTIGATOR_SCREEN / maxf(1.0, float(tex.get_height()))
+		var loc_pos: Vector2 = _locs[loc_name].pos
+
+		for dx: int in [-TILE_W, 0, TILE_W]:
+			var base: Vector2 = loc_pos + Vector2(dx, 0)
+			var sprite := Sprite2D.new()
+			sprite.name     = "Inv_%s_%d" % [String(entry.get("pid", "")), sign(dx)]
+			sprite.texture  = tex
+			sprite.z_index  = 1
+			sprite.scale    = Vector2.ONE * base_scale * inv0
+			sprite.position = base + screen_off * inv0
+			add_child(sprite)
+			_inv_markers.append({
+				"sprite":     sprite,
+				"base":       base,
+				"screen_off": screen_off,
+				"base_scale": base_scale,
+			})
+
+
+## Текстура маркера: портрет сыщика, либо общий жетон-кружок, если файла нет.
+func _investigator_texture(inv_name: String) -> Texture2D:
+	var path: String = "res://assets/investigators/%s.png" % inv_name
+	if not inv_name.is_empty() and ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	if _token_tex == null:
+		_token_tex = _make_token_texture()
+	return _token_tex
+
+
+## Запасной жетон — залитый кружок (для сыщиков без файла портрета).
+func _make_token_texture() -> Texture2D:
+	var s: int = 96
+	var img := Image.create(s, s, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var c := Vector2(s, s) * 0.5
+	var r: float = float(s) * 0.5 - 3.0
+	for y: int in range(s):
+		for x: int in range(s):
+			if Vector2(x, y).distance_to(c) <= r:
+				img.set_pixel(x, y, UIColors.ACCENT)
+	return ImageTexture.create_from_image(img)

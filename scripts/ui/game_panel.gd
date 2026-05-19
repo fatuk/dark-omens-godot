@@ -9,6 +9,22 @@ extends CanvasLayer
 @onready var _omens:  Control = %OmensDial
 @onready var _info:   Control = %InfoOrb
 
+## Клик по орбу раунда — для открытия сайдбара текущей Мистерии.
+signal round_clicked
+
+
+func _ready() -> void:
+	_info.mouse_filter = Control.MOUSE_FILTER_STOP
+	_info.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_info.gui_input.connect(_on_info_gui_input)
+
+
+func _on_info_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+			round_clicked.emit()
+
 
 func set_phase(text: String) -> void:
 	_phase.text = text

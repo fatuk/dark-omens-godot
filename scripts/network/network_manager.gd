@@ -9,7 +9,7 @@ signal disconnected_from_relay
 signal rooms_updated(rooms: Array)
 signal joined_room(room_id: String, room_name: String, is_host: bool, players: Array)
 signal player_joined(player: Dictionary)
-signal player_left(player_id: String, new_host_id: String)
+signal player_left(player_id: String, new_host_id: String, user_id: String)
 signal relay_received(from_id: String, data: Dictionary)
 signal game_state_received(state: Dictionary)   # снапшот стейта от сервера
 signal relay_error(message: String)
@@ -25,11 +25,12 @@ signal player_disconnected(id: String)
 signal server_disconnected
 
 # ── Игровое состояние ──────────────────────────────────────────────────────────
-var my_id: String = ""
+var my_id: String = ""        # id соединения — меняется при каждом реконнекте
+var my_user_id: String = ""   # стабильный id аккаунта (relay userId); пусто → аноним
 var my_name: String = ""
 var room_id: String = ""
 var room_name: String = ""
-var players: Dictionary = {}  # pid -> {id, name, ready, investigator}
+var players: Dictionary = {}  # pid -> {id, user_id, name, ready, investigator}
 
 var _is_host_flag: bool = false
 var game_started: bool  = false  # true если игровая сессия уже запущена (из DB)
@@ -59,6 +60,7 @@ func _ready() -> void:
 func connect_to_relay(player_name: String, relay_url: String = "ws://127.0.0.1:3030") -> Error:
 	my_name    = player_name.strip_edges()
 	my_id      = ""
+	my_user_id = ""
 	room_id    = ""
 	room_name  = ""
 	players.clear()
@@ -191,10 +193,17 @@ func _handle_message(msg: Dictionary) -> void:
 				var pid: String   = p.get("id", "")
 				players[pid] = {
 					"id":           pid,
+					"user_id":      p.get("user_id", ""),
 					"name":         p.get("name", ""),
 					"ready":        p.get("ready", false),
 					"investigator": p.get("investigator", ""),
 				}
+			# Свой стабильный account-id берём из собственной записи в списке
+			# (relay присылает его в user_id). Аноним → фолбэк на id соединения.
+			if players.has(my_id):
+				my_user_id = players[my_id].get("user_id", "")
+			if my_user_id.is_empty():
+				my_user_id = my_id
 			if was_reconnect:
 				reconnected.emit()
 				if _saved_ready:
@@ -215,6 +224,7 @@ func _handle_message(msg: Dictionary) -> void:
 			var pid: String   = p.get("id", "")
 			players[pid] = {
 				"id":           pid,
+				"user_id":      p.get("user_id", ""),
 				"name":         p.get("name", ""),
 				"ready":        p.get("ready", false),
 				"investigator": p.get("investigator", ""),
@@ -226,6 +236,7 @@ func _handle_message(msg: Dictionary) -> void:
 		"player_left":
 			var pid: String      = msg.get("player_id", "")
 			var new_host: String = msg.get("new_host_id", "")
+			var left_uid: String = msg.get("user_id", "")
 			var pname: String    = players.get(pid, {}).get("name", pid)
 			players.erase(pid)
 			if not new_host.is_empty() and new_host == my_id:
@@ -233,7 +244,7 @@ func _handle_message(msg: Dictionary) -> void:
 				GameConsole.log("%s вышел  ·  вы стали ведущим" % pname)
 			else:
 				GameConsole.log("%s вышел из комнаты" % pname)
-			player_left.emit(pid, new_host)
+			player_left.emit(pid, new_host, left_uid)
 			player_disconnected.emit(pid)
 
 		"relay":

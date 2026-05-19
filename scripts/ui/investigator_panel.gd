@@ -8,15 +8,19 @@ extends CanvasLayer
 ## Тут — загрузка данных, заполнение текста + динамика (роли, веер карт),
 ## анимация выезда панели.
 
-const _PREFS_PATH    := "user://dark_omens_prefs.cfg"
 const _PREFS_SECTION := "player"
 const _DATA_PATH     := "res://data/investigators.json"
 
 const BAR_H     := 280.0   # высота выезжающей панели
 const ANIM_DUR  :=   0.28
-const CARD_W    :=  68.0
-const CARD_H    := 100.0
-const MAX_CARDS :=   20
+
+# Маркеры типов имущества (GameState items) → ключи перевода.
+const _ITEM_WORDS := {
+	"gainAsset":       "ITEM_ASSET",
+	"gainSpell":       "ITEM_SPELL",
+	"gainArtifact":    "ITEM_ARTIFACT",
+	"gainImprovement": "ITEM_IMPROVEMENT",
+}
 
 # ── Узлы ──────────────────────────────────────────────────────────────────────
 @onready var _info_panel:    Control = %InfoPanel
@@ -39,6 +43,7 @@ var _inv_name: String     = ""
 var _inv_data: Dictionary = {}
 var _shown:    bool       = false
 var _tween:    Tween      = null
+var _live_label: Label    = null   # строка живых статусов/состояний/имущества
 
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
@@ -47,8 +52,10 @@ func _ready() -> void:
 	_load_data()
 	_apply_styles()
 	_populate_data()
-	_build_card_fan()
+	_build_live_area()
 	_wire_handlers()
+	GameState.state_changed.connect(_refresh_live)
+	_refresh_live()
 
 
 # ── Применение Dark Omens-цветов к статичным лейблам ──────────────────────────
@@ -128,41 +135,73 @@ func _make_role_badge(badge_text: String) -> PanelContainer:
 	return pc
 
 
-# ── Веер карт (динамически 20 штук с поворотом) ──────────────────────────────
+# ── Живые данные игрока (статусы, состояния, имущество) ───────────────────────
 
-func _build_card_fan() -> void:
-	# Стартовая позиция: правее слотов предметов
-	var start_x: float = 660.0
-	var arc_deg: float = 38.0
-	var step:    float = arc_deg / maxf(float(MAX_CARDS) - 1.0, 1.0)
-	var x_step:  float = CARD_W * 0.52
+func _build_live_area() -> void:
+	# Декоративные слоты предметов больше не нужны — живые данные показываем
+	# текстом в области бывшего веера карт.
+	for slot_name: String in ["Slot1", "Slot2"]:
+		var slot: CanvasItem = get_node_or_null("InfoPanel/" + slot_name) as CanvasItem
+		if slot:
+			slot.visible = false
 
-	for i: int in range(MAX_CARDS):
-		var angle_deg: float = -arc_deg / 2.0 + float(i) * step
+	_live_label = Label.new()
+	_live_label.name = "LiveInfo"
+	_live_label.position = Vector2(480.0, 30.0)
+	_live_label.custom_minimum_size = Vector2(900.0, 0.0)
+	_live_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_live_label.add_theme_font_size_override("font_size", 18)
+	_live_label.add_theme_color_override("font_color", UIColors.TEXT)
+	_card_fan.add_child(_live_label)
 
-		var card := Panel.new()
-		card.name = "Card_%d" % i
-		var style := StyleBoxFlat.new()
-		style.bg_color     = Color(0.20, 0.15, 0.36, 0.93)
-		style.border_color = Color(0.40, 0.30, 0.60)
-		style.set_border_width_all(1)
-		style.set_corner_radius_all(6)
-		card.add_theme_stylebox_override("panel", style)
 
-		card.anchor_left   = 0.0
-		card.anchor_right  = 0.0
-		card.anchor_top    = 1.0
-		card.anchor_bottom = 1.0
-		card.offset_left   = start_x + float(i) * x_step
-		card.offset_right  = start_x + float(i) * x_step + CARD_W
-		card.offset_top    = -CARD_H - 6.0
-		card.offset_bottom = -6.0
+## Обновляет живые статусы / состояния / имущество из GameState.
+func _refresh_live() -> void:
+	var p: Dictionary = GameState.my_player()
+	if p.is_empty():
+		return   # не в игре — оставляем статичные значения
+	_hp_value.text  = "%d / %d" % [int(p.get("hp", 0)), int(p.get("hp_max", 0))]
+	_san_value.text = "%d / %d" % [int(p.get("sanity", 0)), int(p.get("sanity_max", 0))]
+	if is_instance_valid(_live_label):
+		_live_label.text = _live_text(p)
 
-		# Поворот вокруг нижнего центра — веер раскрывается вверх
-		card.pivot_offset = Vector2(CARD_W / 2.0, CARD_H)
-		card.rotation     = deg_to_rad(angle_deg)
 
-		_card_fan.add_child(card)
+func _live_text(p: Dictionary) -> String:
+	var lines := PackedStringArray()
+	lines.append("%s: %d   ·   %s: %d   ·   %s: %d" % [
+		tr("INV_PANEL_CLUES"),   int(p.get("clues", 0)),
+		tr("INV_PANEL_TICKETS"), int(p.get("tickets", 0)),
+		tr("INV_PANEL_FOCUS"),   int(p.get("concentration", 0)),
+	])
+
+	var conds: Array = p.get("conditions", [])
+	var cond_names := PackedStringArray()
+	for i: int in range(conds.size()):
+		cond_names.append(tr(Conditions.name_key(String(conds[i]))))
+	lines.append("%s: %s" % [
+		tr("INV_PANEL_CONDITIONS"),
+		", ".join(cond_names) if cond_names.size() > 0 else tr("INV_PANEL_NONE"),
+	])
+
+	var items: Array = p.get("items", [])
+	lines.append("%s: %s" % [
+		tr("INV_PANEL_ITEMS"),
+		_items_text(items) if items.size() > 0 else tr("INV_PANEL_NONE"),
+	])
+	return "\n".join(lines)
+
+
+## Группирует маркеры имущества по типу: «Артефакт ×2, Заклинание».
+func _items_text(items: Array) -> String:
+	var counts: Dictionary = {}
+	for i: int in range(items.size()):
+		var key: String = String(_ITEM_WORDS.get(String(items[i]), "ITEM_OTHER"))
+		counts[key] = int(counts.get(key, 0)) + 1
+	var parts := PackedStringArray()
+	for key: String in counts:
+		var n: int = int(counts[key])
+		parts.append("%s ×%d" % [tr(key), n] if n > 1 else tr(key))
+	return ", ".join(parts)
 
 
 # ── Обработчики ───────────────────────────────────────────────────────────────
@@ -209,7 +248,7 @@ func _load_data() -> void:
 	# Приоритет 2: последний сохранённый выбор (фолбэк / соло-режим)
 	if _inv_name.is_empty():
 		var cfg := ConfigFile.new()
-		if cfg.load(_PREFS_PATH) == OK:
+		if cfg.load(Profile.path("dark_omens_prefs.cfg")) == OK:
 			_inv_name = cfg.get_value(_PREFS_SECTION, "last_investigator", "")
 	if _inv_name.is_empty():
 		return

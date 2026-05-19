@@ -6,7 +6,8 @@ extends Control
 ## Разметка статичной части в scenes/main_menu.tscn, тут только поведение,
 ## стилизация, динамика (карточки комнат, попап настроек).
 
-const _SETTINGS_DIALOG := preload("res://scenes/ui/settings_dialog.tscn")
+const _SETTINGS_DIALOG    := preload("res://scenes/ui/settings_dialog.tscn")
+const _CREATE_ROOM_DIALOG := preload("res://scenes/ui/create_room_dialog.tscn")
 
 # ── Узлы ──────────────────────────────────────────────────────────────────────
 @onready var _bg:           ColorRect = $Bg
@@ -16,25 +17,22 @@ const _SETTINGS_DIALOG := preload("res://scenes/ui/settings_dialog.tscn")
 @onready var _logout_btn:   Button    = %LogoutBtn
 
 @onready var _rooms_panel:  HBoxContainer  = %RoomsPanel
-@onready var _create_panel: PanelContainer = %CreatePanel
 @onready var _list_panel:   PanelContainer = %ListPanel
 
-@onready var _create_name_input: LineEdit = %CreateNameInput
-@onready var _create_pass_input: LineEdit = %CreatePassInput
-@onready var _create_btn:        Button   = %CreateBtn
+@onready var _create_room_btn: Button        = %CreateRoomBtn
+@onready var _refresh_btn:     Button        = %RefreshBtn
+@onready var _rooms_list:      VBoxContainer  = %RoomsList
+@onready var _join_pass_input: LineEdit       = %JoinPassInput
+@onready var _join_btn:        Button         = %JoinBtn
 
-@onready var _refresh_btn:   Button       = %RefreshBtn
-@onready var _rooms_list:    VBoxContainer = %RoomsList
-@onready var _join_pass_input: LineEdit   = %JoinPassInput
-@onready var _join_btn:      Button       = %JoinBtn
-
-@onready var _status_label:  Label        = %StatusLabel
+@onready var _status_label:    Label          = %StatusLabel
 
 # ── Состояние ─────────────────────────────────────────────────────────────────
 var _nm:   Node
 var _auth: Node
 var _selected_room_id: String = ""
 var _settings_dialog:  Control = null
+var _create_dialog:    Control = null
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
@@ -70,10 +68,6 @@ func _apply_styles() -> void:
 	_bg.queue_free()
 	UIStyle.apply_main_bg(self)
 
-	var title := $Center/Root/Title as Label
-	title.add_theme_color_override("font_color",        UIColors.ACCENT)
-	title.add_theme_color_override("font_shadow_color", UIColors.DANGER)
-
 	($Center/Root/Subtitle as Label).add_theme_color_override("font_color", UIColors.MUTED)
 
 	_player_label.add_theme_color_override("font_color", UIColors.SUCCESS)
@@ -83,29 +77,19 @@ func _apply_styles() -> void:
 	UIStyle.style_button(_settings_btn, UIColors.MUTED)
 	UIStyle.style_button(_logout_btn,   UIColors.MUTED)
 
-	UIStyle.style_panel(_create_panel)
 	UIStyle.style_panel(_list_panel)
 
-	# Заголовки панелей
-	for path in [
-		"Center/Root/RoomsPanel/CreatePanel/VBox/Header",
-		"Center/Root/RoomsPanel/ListPanel/VBox/HeaderRow/Header",
-	]:
-		(get_node(path) as Label).add_theme_color_override("font_color", UIColors.ACCENT)
+	# Заголовок панели списка
+	(get_node("Center/Root/RoomsPanel/ListPanel/VBox/HeaderRow/Header") as Label) \
+		.add_theme_color_override("font_color", UIColors.ACCENT)
 
-	# Лейблы строк ввода
-	for path in [
-		"Center/Root/RoomsPanel/CreatePanel/VBox/NameRow/NameLabel",
-		"Center/Root/RoomsPanel/CreatePanel/VBox/PassRow/PassLabel",
-		"Center/Root/RoomsPanel/ListPanel/VBox/JoinPassRow/JoinPassLabel",
-	]:
-		(get_node(path) as Label).add_theme_color_override("font_color", UIColors.TEXT)
+	# Лейбл строки пароля при входе в комнату
+	(get_node("Center/Root/RoomsPanel/ListPanel/VBox/JoinPassRow/JoinPassLabel") as Label) \
+		.add_theme_color_override("font_color", UIColors.TEXT)
 
-	UIStyle.style_input(_create_name_input)
-	UIStyle.style_input(_create_pass_input)
 	UIStyle.style_input(_join_pass_input)
 
-	UIStyle.style_button(_create_btn, UIColors.DANGER)
+	UIStyle.style_button(_create_room_btn, UIColors.DANGER)
 	UIStyle.style_button(_refresh_btn)
 	UIStyle.style_button(_join_btn)
 
@@ -115,7 +99,7 @@ func _apply_styles() -> void:
 func _wire_handlers() -> void:
 	_settings_btn.pressed.connect(_on_settings_pressed)
 	_logout_btn.pressed.connect(_on_logout_pressed)
-	_create_btn.pressed.connect(_on_create_pressed)
+	_create_room_btn.pressed.connect(_on_create_room_pressed)
 	_refresh_btn.pressed.connect(_on_refresh_pressed)
 	_join_btn.pressed.connect(_on_join_pressed)
 
@@ -181,14 +165,27 @@ func _on_refresh_pressed() -> void:
 	_show_status("STATUS_UPDATING", UIColors.MUTED)
 
 
-func _on_create_pressed() -> void:
-	var rname := _create_name_input.text.strip_edges()
-	if rname.is_empty():
-		_show_status("MENU_ERR_NEED_ROOM_NAME", UIColors.ERROR)
+func _on_create_room_pressed() -> void:
+	if not _nm.is_connected_to_relay():
+		_show_status("STATUS_NO_CONNECTION", UIColors.WARNING)
+		_auto_connect()
 		return
-	_create_btn.disabled = true
-	_nm.create_room(rname, _create_pass_input.text)
-	_show_status("Создание комнаты \"%s\"..." % rname, UIColors.WARNING)
+	if is_instance_valid(_create_dialog):
+		return
+	_create_dialog = _CREATE_ROOM_DIALOG.instantiate()
+	add_child(_create_dialog)
+	_create_dialog.submitted.connect(_on_room_form_submitted)
+	_create_dialog.tree_exited.connect(func() -> void: _create_dialog = null)
+
+
+# Модалка вернула параметры — задаём зерно кампании (хост начнёт генерацию
+# сразу в лобби, пока игроки выбирают сыщиков) и создаём комнату.
+func _on_room_form_submitted(
+	room_name: String, password: String, max_players: int, ancient_one: String
+) -> void:
+	GameState.set_campaign_seed(ancient_one, max_players)
+	_nm.create_room(room_name, password, max_players)
+	_show_status("Создание комнаты «%s»..." % room_name, UIColors.WARNING)
 
 
 func _on_join_pressed() -> void:
@@ -285,7 +282,6 @@ func _on_room_deleted_in_menu(reason: String) -> void:
 
 
 func _on_relay_error(message: String) -> void:
-	_create_btn.disabled = false
 	_join_btn.disabled = _selected_room_id.is_empty()
 	_show_status("Ошибка: %s" % message, UIColors.ERROR)
 

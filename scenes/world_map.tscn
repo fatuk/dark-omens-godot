@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://0kgoahny8047"]
+[gd_scene load_steps=9 format=3 uid="uid://0kgoahny8047"]
 
 [ext_resource type="Script" uid="uid://diiss2g0befi6" path="res://scripts/screens/world_map.gd" id="1_oru6e"]
 [ext_resource type="Texture2D" uid="uid://cb6u8vwfb1jla" path="res://assets/map.png" id="2_maptex"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://daction0panel0001" path="res://scenes/ui/action_panel.tscn" id="5_action"]
 [ext_resource type="PackedScene" uid="uid://dencount0modal0001" path="res://scenes/ui/encounter_modal.tscn" id="6_encmod"]
 [ext_resource type="PackedScene" uid="uid://cy2s73u4pffim" path="res://scenes/ui/location_sidebar.tscn" id="7_sidebar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/mystery_sidebar.tscn" id="8_mystery"]
 
 [node name="WorldMap" type="Node2D" unique_id=400240817]
 script = ExtResource("1_oru6e")
@@ -38,3 +39,5 @@ unique_name_in_owner = true
 [node name="EncounterModal" parent="." instance=ExtResource("6_encmod")]
 
 [node name="LocationSidebar" parent="." instance=ExtResource("7_sidebar")]
+
+[node name="MysterySidebar" parent="." instance=ExtResource("8_mystery")]
