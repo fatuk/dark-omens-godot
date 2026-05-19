@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://buxo6le3jeepc"]
+[gd_scene load_steps=3 format=3 uid="uid://buxo6le3jeepc"]
 
 [ext_resource type="Script" uid="uid://iflg6egts45l" path="res://scripts/screens/login.gd" id="1_pymad"]
+[ext_resource type="Texture2D" uid="uid://vkts82xxlwl1" path="res://assets/logo.png" id="2_logo"]
 
 [node name="Login" type="Control"]
 layout_mode = 3
@@ -28,13 +29,14 @@ custom_minimum_size = Vector2(480, 0)
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="Title" type="Label" parent="Center/Root"]
+[node name="Logo" type="TextureRect" parent="Center/Root"]
+custom_minimum_size = Vector2(400, 236)
 layout_mode = 2
-theme_override_constants/shadow_offset_x = 3
-theme_override_constants/shadow_offset_y = 3
-theme_override_font_sizes/font_size = 52
-text = "DARK OMENS"
-horizontal_alignment = 1
+size_flags_horizontal = 4
+mouse_filter = 2
+texture = ExtResource("2_logo")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Subtitle" type="Label" parent="Center/Root"]
 layout_mode = 2

@@ -5,7 +5,6 @@ extends Control
 
 # ── Узлы (через unique_name_in_owner) ──────────────────────────────────────────
 @onready var _bg:           ColorRect = $Bg
-@onready var _title:        Label     = $Center/Root/Title
 @onready var _subtitle:     Label     = $Center/Root/Subtitle
 
 @onready var _check_panel:  PanelContainer = %CheckPanel
@@ -54,9 +53,6 @@ func _apply_styles() -> void:
 	# Старый ColorRect фон заменяем на тайлированную main-gb.png.
 	_bg.queue_free()
 	UIStyle.apply_main_bg(self)
-
-	_title.add_theme_color_override("font_color",        UIColors.ACCENT)
-	_title.add_theme_color_override("font_shadow_color", UIColors.DANGER)
 
 	_subtitle.add_theme_color_override("font_color", UIColors.MUTED)
 

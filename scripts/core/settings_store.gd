@@ -14,7 +14,9 @@ extends Node
 signal relay_url_changed(new_url: String)
 
 const SETTINGS_FILE := "user://settings.cfg"
-const DEFAULT_URL   := "ws://127.0.0.1:3030"
+## Прод-relay на Render. Для локальной разработки — ws://127.0.0.1:3030
+## (через диалог настроек в игре).
+const DEFAULT_URL   := "wss://dark-omens-backend.onrender.com"
 
 const RESOLUTIONS: Array[Vector2i] = [
 	Vector2i(1280,  720),
