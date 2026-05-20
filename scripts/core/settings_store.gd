@@ -40,6 +40,10 @@ func _ready() -> void:
 	# Чтобы настройки можно было менять из меню паузы (где tree.paused = true).
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_load()
+	# В редакторе всегда локальный relay — для разработки против docker-compose
+	# dev. Экспортированные сборки идут на прод (Render).
+	if OS.has_feature("editor"):
+		relay_url = "ws://127.0.0.1:3030"
 	apply_display()
 
 
@@ -62,6 +66,19 @@ func apply_display() -> void:
 		)
 
 
+## URL для HTTP-API, выведенный из relay_url. Бэкенд унифицированный (один
+## хост на WS и HTTP) — отличается только схема: wss:// → https://, ws:// →
+## http://. Хост и порт те же. Если у вас разный хост на WS и HTTP — это
+## место (и точка вызова в AuthManager.api_base getter) надо переделать.
+func api_base() -> String:
+	var base := relay_url
+	if base.begins_with("wss://"):
+		base = "https://" + base.substr(6)
+	elif base.begins_with("ws://"):
+		base = "http://" + base.substr(5)
+	return base.rstrip("/")
+
+
 ## Меняет URL и эмитит сигнал — main_menu слушает, чтобы переподключиться.
 func set_relay_url(url: String) -> void:
 	var clean := url.strip_edges()
@@ -78,7 +95,10 @@ func set_relay_url(url: String) -> void:
 func save() -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(SETTINGS_FILE)   # ок если файла нет
-	cfg.set_value("relay", "url", relay_url)
+	# В редакторе не перезаписываем сохранённый прод-URL — переопределение
+	# на localhost действует только в памяти, в cfg остаётся прод.
+	if not OS.has_feature("editor"):
+		cfg.set_value("relay", "url", relay_url)
 	cfg.set_value("display", "fullscreen", fullscreen)
 	var r: Vector2i = RESOLUTIONS[resolution_idx]
 	cfg.set_value("display", "resolution", "%dx%d" % [r.x, r.y])

@@ -1,10 +1,16 @@
 extends CanvasLayer
 
-## Меню паузы — открывается/закрывается по Escape в игровых сценах.
+## Меню паузы — открывается/закрывается по Escape на любой сцене (включая
+## login и main_menu — иначе оттуда нельзя выйти из игры).
 ## Autoload-синглтон: /root/PauseMenu (см. project.godot).
 ## Разметка в scenes/ui/pause_menu.tscn, тут только поведение и стилизация.
 ##
 ## Settings — переиспользует общий SettingsDialog (тот же, что в main_menu).
+##
+## Если на сцене открыт диалог (settings_dialog / create_room_dialog), его
+## _unhandled_key_input проглатывает Escape РАНЬШЕ нашего _unhandled_input
+## (в Godot 4 _unhandled_key_input идёт первым) — так что pause-меню поверх
+## модалок не выскакивает.
 
 const _SETTINGS_DIALOG := preload("res://scenes/ui/settings_dialog.tscn")
 
@@ -29,13 +35,6 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
-		return
-	# Не открываем на экране логина и главного меню
-	var scene := get_tree().current_scene
-	if not is_instance_valid(scene):
-		return
-	var path: String = scene.scene_file_path
-	if "login" in path or "main_menu" in path:
 		return
 	_toggle()
 	get_viewport().set_input_as_handled()
@@ -64,8 +63,23 @@ func _wire_handlers() -> void:
 
 func _toggle() -> void:
 	_open = not _open
+	if _open:
+		_update_buttons_for_current_scene()
 	visible = _open
 	get_tree().paused = _open
+
+
+# Прячет неприменимые кнопки: на login / main_menu / home игры ещё/уже нет —
+# «Продолжить» и «В меню» бессмысленны, оставляем Settings + Quit. Закрыть
+# меню на этих экранах можно повторным Escape. На lobby / world_map —
+# показываем все четыре кнопки.
+func _update_buttons_for_current_scene() -> void:
+	var scene := get_tree().current_scene
+	var path: String = scene.scene_file_path if is_instance_valid(scene) else ""
+	var on_pre_game: bool = "login" in path \
+		or "main_menu" in path or "home" in path
+	_continue_btn.visible = not on_pre_game
+	_menu_btn.visible     = not on_pre_game
 
 
 # ── Settings (через общий SettingsDialog) ─────────────────────────────────────

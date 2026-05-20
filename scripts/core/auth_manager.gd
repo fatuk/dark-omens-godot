@@ -4,9 +4,15 @@ extends Node
 ## Autoload-синглтон: /root/AuthManager
 
 # ── Настройки ──────────────────────────────────────────────────────────────────
-## Базовый URL API. Прод — единый бэкенд на Render (relay и API на одном хосте).
-## Для локальной разработки замените на http://127.0.0.1:3031.
-var api_base: String = "https://dark-omens-backend.onrender.com"
+## Базовый URL API — выводится из SettingsStore.relay_url. Бэкенд унифицированный
+## (один хост на WS и HTTP), отличается только схема: wss:// ↔ https://. В
+## редакторе всегда локальный API на :3031 (там два сервиса: relay :3030, api
+## :3031). При смене relay-URL в настройках api_base подхватится автоматически.
+var api_base: String:
+	get:
+		if OS.has_feature("editor"):
+			return "http://127.0.0.1:3031"
+		return SettingsStore.api_base()
 
 # ── Сигналы ────────────────────────────────────────────────────────────────────
 signal otp_sent                            # код отправлен на почту

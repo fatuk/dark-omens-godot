@@ -8,9 +8,10 @@ extends Node
 ##
 ## Фазы раунда: action → encounter → mythos → action (next round).
 ## В Action-фазе игроки ходят по очереди (turn_order), у каждого 2 действия.
-## Доступные действия: buy_ticket, take_concentration, rest, pass.
-## Encounter — заглушка (каждый просто жмёт «Завершить»).
-## Mythos — авто: omens_step += 1, doom += 1.
+## Доступные действия: buy_ticket, take_concentration, rest, travel, pass.
+## Encounter — каждому генерится карточка, бросок проверки, эффекты.
+## Mythos — хост вытягивает карту из mythosDeck, ВСЕ видят модалку, по
+## кнопке «Дальше» хост применяет onDraw-эффекты и стартует новый раунд.
 
 signal state_changed                        # любое изменение стейта
 signal phase_changed(new_phase: String)     # переход фазы
@@ -72,6 +73,21 @@ var _campaign_epoch: int = 0
 var _seed_ancient_one: String = ""
 var _seed_player_count: int = 0
 
+# Активная карта Мифов (синкается). {} — фаза не mythos или карта уже разрешена.
+var current_mythos: Dictionary = {}
+
+# Колода Мифов — host-only, не синкается. Заполняется из campaign.mythosDeck
+# при готовности кампании; карты разыгрываются по порядку.
+var _mythos_deck:  Array = []
+var _mythos_index: int   = 0
+
+# Префетч карт встречи — host-only. Как только игрок исчерпал свои действия,
+# запускаем фоновую генерацию его встречи; к моменту его очереди в фазе
+# encounter карта уже готова и применяется без ожидания. Не синкается; при
+# реджойне хоста — fallback на обычную live-генерацию.
+var _prefetched_encounters: Dictionary = {}   # uid -> card
+var _prefetch_in_flight:    Dictionary = {}   # uid -> bool
+
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -103,6 +119,8 @@ func _broadcast_sync() -> void:
 		"omens_step":  omens_step,
 		"players":     players,
 		"current_encounter": current_encounter,
+		"current_mythos":    current_mythos,
+		"mythos_index":      _mythos_index,
 		"campaign":    campaign,
 		"campaign_pending": campaign_pending,
 		"active":      active,
@@ -247,6 +265,9 @@ func _apply_action_as_host(pid: String, action_type: String, payload: Dictionary
 		_name_of(pid), action_type, int(p["actions_left"])
 	])
 	if int(p["actions_left"]) == 0:
+		# Игрок исчерпал свои действия — запускаем префетч его встречи
+		# в фоне, пока ходят остальные. К encounter-фазе карта уже готова.
+		_prefetch_encounter_for.call_deferred(pid)
 		_advance_turn()
 
 	_broadcast_sync()
@@ -387,19 +408,107 @@ func _apply_finish_encounter(pid: String) -> bool:
 func _run_mythos() -> void:
 	phase             = "mythos"
 	current_encounter = {}   # фаза встреч закончилась
-	omens_step       += 1
-	doom             += 1
-	GameConsole.log("[Game] Фаза Мифов · омен сдвинулся (%d) · doom +1 (%d)" % [omens_step, doom])
+	GameConsole.log("[Game] Фаза Мифов")
 	phase_changed.emit(phase)
+	# Хост вытягивает карту; не-хост ждёт sync. Эффекты применяются только
+	# когда кто-то нажмёт «Дальше» в модалке (resolve_mythos).
+	if _is_host():
+		_draw_mythos_card()
+		_broadcast_sync()
+	_emit_changed()
+
+
+# Хост: вытянуть следующую карту из mythosDeck в current_mythos.
+func _draw_mythos_card() -> void:
+	if _mythos_deck.is_empty() or _mythos_index >= _mythos_deck.size():
+		# Колода кончилась — карта-заглушка, чтобы цикл не вставал.
+		current_mythos = {
+			"name":       "Эхо Древних",
+			"flavorText": "Колода Мифов исчерпана.",
+			"text":       "Ничего нового не происходит — миф крутится по последнему витку.",
+			"onDraw":     [],
+		}
+		GameConsole.warn("[Mythos] Колода исчерпана — карта-заглушка")
+		return
+	current_mythos = _mythos_deck[_mythos_index]
+	_mythos_index += 1
+	GameConsole.log("[Mythos] вытянута карта: %s" % String(current_mythos.get("name", "?")))
+
+
+## Любой игрок подтверждает применение текущей карты Мифов («Дальше» в модалке).
+## На хосте — применяем напрямую, на не-хосте — релеем хосту.
+func resolve_mythos() -> void:
+	if _is_host():
+		_apply_resolve_mythos()
+	else:
+		_nm.relay_all({ "action": "game_resolve_mythos" })
+
+
+# Хост: применить onDraw активной карты и стартовать новый раунд.
+func _apply_resolve_mythos() -> void:
+	if phase != "mythos" or current_mythos.is_empty():
+		return
+	var card: Dictionary = current_mythos
+	_apply_mythos_effects(card.get("onDraw", []))
+	GameConsole.log("[Mythos] %s — разрешена" % String(card.get("name", "?")))
+	current_mythos = {}
 	mythos_resolved.emit(omens_step, doom)
-	# Сразу новый раунд (Mythos для MVP — это просто шаг счётчиков)
 	_start_new_round()
+	_broadcast_sync()
+	_emit_changed()
+
+
+# Эффекты карты Мифов. Узлы с target (например target=each) → к каждому
+# подключённому игроку; без target → один раз на «доску» (advanceDoom,
+# advanceOmen, openGate и т.п.). board-эффекты из per-player узла игнорим,
+# чтобы не задвоить.
+func _apply_mythos_effects(effects: Array) -> void:
+	for i in range(effects.size()):
+		var eff: Dictionary = effects[i]
+		if eff.has("target"):
+			for uid: String in players:
+				if not bool(players[uid].get("connected", true)):
+					continue
+				var res: Dictionary = EffectRunner.run([eff], players[uid])
+				for log_msg in res.get("logs", []):
+					GameConsole.log("[Mythos→%s] %s" % [_name_of(uid), String(log_msg)])
+		else:
+			var dummy: Dictionary = {}
+			var res: Dictionary = EffectRunner.run([eff], dummy)
+			for node in res.get("board", []):
+				_apply_board_effect(node)
+			for log_msg in res.get("logs", []):
+				GameConsole.log("[Mythos] %s" % String(log_msg))
+
+
+# Хост: восстановить _mythos_deck после реджойна. Полная библия живёт в
+# relay-API (таблица `campaigns`), тянем её по campaign.id из snapshot.
+func _restore_mythos_deck(campaign_id: String) -> void:
+	var api: Node = get_node_or_null("/root/ContentApi")
+	if api == null:
+		GameConsole.warn("[Mythos] ContentApi недоступен — колоду не восстановить")
+		return
+	GameConsole.log("[Mythos] Восстановление колоды кампании %s..." % campaign_id.substr(0, 8))
+	@warning_ignore("unsafe_method_access")
+	var res: Dictionary = await api.get_campaign(campaign_id)
+	if not bool(res.get("ok", false)):
+		GameConsole.warn("[Mythos] Не удалось получить кампанию: %s" % String(res.get("error", "")))
+		return
+	var full: Dictionary = res.get("campaign", {})
+	_mythos_deck = full.get("mythosDeck", [])
+	GameConsole.log("[Mythos] Колода восстановлена: %d карт (позиция %d)" % [
+		_mythos_deck.size(), _mythos_index
+	])
 
 
 func _start_new_round() -> void:
 	round_num  += 1
 	phase       = "action"
 	current_idx = 0
+	# Стираем все префетчи прошлого раунда — состояние игроков и доски
+	# изменилось, старые карты могут быть неактуальны.
+	_prefetched_encounters.clear()
+	_prefetch_in_flight.clear()
 	for pid: String in players:
 		players[pid]["actions_left"]   = ACTIONS_PER_ROUND
 		players[pid]["actions_used"]   = []
@@ -530,11 +639,30 @@ func _apply_snapshot(data: Dictionary) -> void:
 	omens_step  = int(data.get("omens_step",  0))
 	players     = data.get("players",     {})
 	current_encounter = data.get("current_encounter", {})
+	current_mythos    = data.get("current_mythos",    {})
+	_mythos_index     = int(data.get("mythos_index", 0))
 	campaign    = data.get("campaign",    {})
 	campaign_pending = bool(data.get("campaign_pending", false))
 	active      = bool(data.get("active",     false))
 	_emit_changed()
 	phase_changed.emit(phase)
+
+	# Хост реджойнулся в фазу встреч, а карта в снапшоте — пустая (хост ушёл
+	# в момент await api.generate_encounter, снапшот сохранился в loading-
+	# состоянии). Без перезапуска генерации модалка зависнет на «загрузке».
+	# call_deferred — чтобы не дёргать сеть из коллбэка снапшота.
+	if _is_host() and active and phase == "encounter" and current_encounter.is_empty():
+		GameConsole.log("[Game] Реджойн в фазу встреч с пустой картой — перегенерируем")
+		_generate_encounter_for_current.call_deferred()
+
+	# Реджойн хоста: _mythos_deck — host-only, в снапшот не попадает. При
+	# перезапуске процесса колода теряется → _draw_mythos_card выпадет в
+	# заглушку. Тянем полную библию из relay-API по campaign.id и
+	# восстанавливаем колоду; индекс уже подтянулся из snapshot выше.
+	if _is_host() and active and _mythos_deck.is_empty() and not campaign.is_empty():
+		var camp_id: String = String(campaign.get("id", ""))
+		if not camp_id.is_empty():
+			_restore_mythos_deck.call_deferred(camp_id)
 
 
 # ── Не-хост: приём от relay ──────────────────────────────────────────────────
@@ -560,6 +688,10 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"game_resolve_encounter":
 			if _is_host():
 				_apply_resolve_encounter(data.get("pid", ""))
+
+		"game_resolve_mythos":
+			if _is_host():
+				_apply_resolve_mythos()
 
 		"set_ready":
 			# Поздний игрок выбрал сыщика в лобби уже идущей партии —
@@ -610,7 +742,9 @@ func my_player() -> Dictionary:
 # ── Хост: генерация встречи через ContentApi ──────────────────────────────────
 
 ## Генерит карту встречи для игрока, чей сейчас ход на встречу, и рассылает её.
-## Пока карта генерится, current_encounter пустой — клиенты показывают загрузку.
+## Сначала смотрит в _prefetched_encounters — карта могла быть подготовлена
+## фоном ещё в action-фазе (см. _prefetch_encounter_for); тогда показываем
+## мгновенно. Иначе ждём префетч, если он в полёте, либо запускаем live.
 ## Корутина: вызывается без await (fire-and-forget) из encounter-флоу.
 func _generate_encounter_for_current() -> void:
 	if not _is_host():
@@ -619,9 +753,26 @@ func _generate_encounter_for_current() -> void:
 	if pid.is_empty() or not players.has(pid):
 		return
 
+	# Префетч уже готов — применяем мгновенно.
+	if _prefetched_encounters.has(pid):
+		current_encounter = _prefetched_encounters[pid]
+		_prefetched_encounters.erase(pid)
+		GameConsole.log("[Game] Встреча для %s взята из префетча: %s" % [
+			_name_of(pid), String(current_encounter.get("name", ""))
+		])
+		_broadcast_sync()
+		_emit_changed()
+		return
+
 	current_encounter = {}            # состояние «загрузка»
 	_broadcast_sync()
 	_emit_changed()
+
+	# Префетч ещё идёт — карту поставит его completion-handler, новой
+	# генерации не запускаем.
+	if _prefetch_in_flight.get(pid, false):
+		GameConsole.log("[Game] Ждём префетч встречи для %s..." % _name_of(pid))
+		return
 
 	var api: Node = get_node_or_null("/root/ContentApi")
 	if api == null:
@@ -650,6 +801,47 @@ func _generate_encounter_for_current() -> void:
 		GameConsole.warn("[Game] Генерация встречи не удалась: %s" % String(res.get("error", "")))
 	_broadcast_sync()
 	_emit_changed()
+
+
+## Хост: фоновая генерация карты встречи для игрока, который только что
+## исчерпал свои действия. Карта прячется в _prefetched_encounters до начала
+## его encounter-очереди. Идемпотентно: повторные вызовы для того же pid
+## пропускаются (карта уже есть или ещё в полёте).
+func _prefetch_encounter_for(pid: String) -> void:
+	if not _is_host() or pid.is_empty() or not players.has(pid):
+		return
+	if _prefetched_encounters.has(pid) or _prefetch_in_flight.get(pid, false):
+		return
+	var api: Node = get_node_or_null("/root/ContentApi")
+	if api == null:
+		return
+
+	_prefetch_in_flight[pid] = true
+	var req: Dictionary = _build_encounter_request(players[pid])
+	GameConsole.log("[Game] Префетч встречи для %s..." % _name_of(pid))
+	@warning_ignore("unsafe_method_access")
+	var res: Dictionary = await api.generate_encounter(req)
+	_prefetch_in_flight.erase(pid)
+
+	var encs: Array = res.get("encounters", [])
+	if not bool(res.get("ok", false)) or encs.is_empty():
+		GameConsole.warn("[Game] Префетч для %s не удался: %s" % [
+			_name_of(pid), String(res.get("error", ""))
+		])
+		return
+	var card: Dictionary = encs[0]
+
+	# Если уже стоит очередь этого игрока на encounter, а карта пустая
+	# (loading) — показываем её сразу, без отдельного _generate-цикла.
+	# Иначе припрятываем до начала его encounter-хода.
+	if phase == "encounter" and _current_pid() == pid and current_encounter.is_empty():
+		current_encounter = card
+		GameConsole.log("[Game] Префетч готов и применён: %s" % String(card.get("name", "")))
+		_broadcast_sync()
+		_emit_changed()
+	else:
+		_prefetched_encounters[pid] = card
+		GameConsole.log("[Game] Префетч готов: %s" % String(card.get("name", "")))
 
 
 ## Собирает тело запроса /encounters/generate для игрока.
@@ -837,6 +1029,11 @@ func reset_pregame() -> void:
 	campaign          = {}
 	campaign_pending  = false
 	current_encounter = {}
+	current_mythos    = {}
+	_mythos_deck      = []
+	_mythos_index     = 0
+	_prefetched_encounters = {}
+	_prefetch_in_flight    = {}
 	active            = false
 
 
@@ -870,9 +1067,14 @@ func _start_campaign_generation(player_count: int, ancient_one: String) -> void:
 	if epoch != _campaign_epoch:
 		return   # перебито новым циклом или reset_pregame — результат устарел
 	if bool(res.get("ok", false)):
-		campaign = _campaign_summary(res.get("campaign", {}))
+		var full: Dictionary = res.get("campaign", {})
+		campaign      = _campaign_summary(full)
+		_mythos_deck  = full.get("mythosDeck", [])
+		_mythos_index = 0
 		var ao: Dictionary = campaign.get("ancientOne", {})
-		GameConsole.log("[Game] Кампания готова — Древний: %s" % String(ao.get("name", "?")))
+		GameConsole.log("[Game] Кампания готова — Древний: %s, карт Мифов: %d" % [
+			String(ao.get("name", "?")), _mythos_deck.size()
+		])
 	else:
 		GameConsole.warn("[Game] Генерация кампании не удалась: %s" % String(res.get("error", "")))
 	campaign_pending = false

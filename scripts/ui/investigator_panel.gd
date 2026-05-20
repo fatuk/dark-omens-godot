@@ -54,8 +54,22 @@ func _ready() -> void:
 	_populate_data()
 	_build_live_area()
 	_wire_handlers()
+	# При смене стейта подтягиваем и идентичность сыщика, и живые статусы.
+	# Идентичность пересобирается только если поменялась — _populate_data зря
+	# не дёргается. Нужно, потому что на первой загрузке мира GameState.players
+	# может быть ещё пустым (картинка показалась раньше старта игры) — тогда
+	# _load_data возьмёт фолбэк из NM/prefs, а после start_game синк её исправит.
+	GameState.state_changed.connect(_refresh_identity)
 	GameState.state_changed.connect(_refresh_live)
 	_refresh_live()
+
+
+# Перезагружает идентичность сыщика после смены состояния игры.
+func _refresh_identity() -> void:
+	var prev: String = _inv_name
+	_load_data()
+	if _inv_name != prev:
+		_populate_data()
 
 
 # ── Применение Dark Omens-цветов к статичным лейблам ──────────────────────────
@@ -237,19 +251,27 @@ func _toggle() -> void:
 # ── Загрузка данных сыщика ────────────────────────────────────────────────────
 
 func _load_data() -> void:
-	# Приоритет 1: живое состояние NetworkManager (актуально для текущей сессии,
-	# корректно при нескольких инстансах на одной машине)
-	var nm: Node = get_node_or_null("/root/NetworkManager")
-	if nm:
-		var my_id: String       = (nm as Node).get("my_id")
-		var players: Dictionary = (nm as Node).get("players")
-		if players.has(my_id):
-			_inv_name = players[my_id].get("investigator", "")
-	# Приоритет 2: последний сохранённый выбор (фолбэк / соло-режим)
+	_inv_name = ""
+	# Приоритет 1: GameState (ключ по стабильному user_id) — истина во время
+	# игры; устойчив к переподключению и позднему входу.
+	var me: Dictionary = GameState.my_player()
+	if not me.is_empty():
+		_inv_name = String(me.get("investigator", ""))
+	# Приоритет 2: NetworkManager.players (лобби-стейт) — пока игра не началась.
+	if _inv_name.is_empty():
+		var nm: Node = get_node_or_null("/root/NetworkManager")
+		if nm:
+			var my_id: String       = (nm as Node).get("my_id")
+			var players: Dictionary = (nm as Node).get("players")
+			if players.has(my_id):
+				_inv_name = String(players[my_id].get("investigator", ""))
+	# Приоритет 3: prefs.cfg last_investigator — самый ранний просмотр (picker
+	# в лобби до set_ready, или соло-проверка панели вне игры).
 	if _inv_name.is_empty():
 		var cfg := ConfigFile.new()
 		if cfg.load(Profile.path("dark_omens_prefs.cfg")) == OK:
 			_inv_name = cfg.get_value(_PREFS_SECTION, "last_investigator", "")
+	_inv_data = {}
 	if _inv_name.is_empty():
 		return
 	var arr: Array = DataLoader.load_array(_DATA_PATH)
