@@ -9,7 +9,7 @@ extends RefCounted
 ## Owner — GameState (autoload). MythosFlow читает/пишет публичные поля
 ## GameState напрямую (current_mythos/players/doom/omens_step/phase…),
 ## зовёт _gs._broadcast_sync() и _gs._emit_changed() для рассылки и сигналов
-## стейта, _gs._start_new_round() — для перехода фазы. Это сознательная
+## стейта, _gs._phase.start_new_round() — для перехода фазы. Это сознательная
 ## близкая связь: модуль владеет своими данными (deck/index), но не своим
 ## жизненным циклом.
 
@@ -30,7 +30,8 @@ func _init(gs: Node) -> void:
 
 # ── Фаза ─────────────────────────────────────────────────────────────────────
 
-## Вход в фазу Мифов из turn-flow (_advance_encounter_turn / _enter_encounter).
+## Вход в фазу Мифов из turn-flow (PhaseController.advance_encounter_turn /
+## .enter_encounter).
 ## Хост сразу вытягивает карту и рассылает sync; не-хост дождётся синка с
 ## готовой current_mythos и покажет модалку.
 func enter_phase() -> void:
@@ -81,7 +82,7 @@ func _apply_resolve() -> void:
 	GameConsole.log("[Mythos] %s — разрешена" % String(card.get("name", "?")))
 	_gs.current_mythos = {}
 	_gs.mythos_resolved.emit(_gs.omens_step, _gs.doom)
-	_gs._start_new_round()
+	_gs._phase.start_new_round()
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 

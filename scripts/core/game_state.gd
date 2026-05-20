@@ -18,8 +18,6 @@ signal phase_changed(new_phase: String)     # переход фазы
 signal mythos_resolved(omens_step: int, doom: int)  # для UI-уведомления
 
 const ACTIONS_PER_ROUND := 2
-const REST_HEAL_HP      := 1
-const REST_HEAL_SANITY  := 1
 
 # ── Глобальный стейт ──────────────────────────────────────────────────────────
 var round_num:  int    = 0
@@ -66,10 +64,12 @@ var current_mythos: Dictionary = {}
 
 # Подсистемы. GameState — фасад и хранитель синкаемого state; подмодули —
 # host-only логика и owned state (колода мифов, эпоха генерации кампании,
-# префетч встреч).
+# префетч встреч). _phase владеет переходами и обработкой действий — без
+# собственных полей, тонкий контроллер.
 var _mythos:    MythosFlow
 var _campaign:  CampaignGen
 var _encounter: EncounterFlow
+var _phase:     PhaseController
 
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
@@ -81,6 +81,7 @@ func _ready() -> void:
 	_mythos    = MythosFlow.new(self)
 	_campaign  = CampaignGen.new(self)
 	_encounter = EncounterFlow.new(self)
+	_phase     = PhaseController.new(self)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
 	_nm.player_connected.connect(_on_player_connected)
@@ -211,7 +212,7 @@ func start_game(players_init: Array) -> void:
 func perform_action(action_type: String, payload: Dictionary = {}) -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
-		_apply_action_as_host(my_pid, action_type, payload)
+		_phase.host_apply_action(my_pid, action_type, payload)
 	else:
 		_nm.relay_all({
 			"action": "game_action", "type": action_type,
@@ -219,117 +220,13 @@ func perform_action(action_type: String, payload: Dictionary = {}) -> void:
 		})
 
 
-func _apply_action_as_host(pid: String, action_type: String, payload: Dictionary = {}) -> bool:
-	if phase != "action":
-		GameConsole.warn("[Game] Действие вне фазы action отклонено")
-		return false
-	if _current_pid() != pid:
-		GameConsole.warn("[Game] %s ходит вне очереди" % _name_of(pid))
-		return false
-	if not players.has(pid):
-		return false
+# ── Encounter (фасады) ────────────────────────────────────────────────────────
 
-	var p: Dictionary = players[pid]
-	if int(p.get("actions_left", 0)) <= 0:
-		return false
-
-	# Одно и то же действие нельзя повторять в раунде (pass не в счёт).
-	var used: Array = p.get("actions_used", [])
-	if action_type != "pass" and used.has(action_type):
-		GameConsole.warn("[Game] %s — «%s» уже использовано в этом раунде" % [
-			_name_of(pid), action_type
-		])
-		return false
-
-	match action_type:
-		"buy_ticket":
-			p["tickets"]      = int(p.get("tickets", 0)) + 1
-			p["actions_left"] = int(p["actions_left"]) - 1
-		"take_concentration":
-			p["concentration"] = int(p.get("concentration", 0)) + 1
-			p["actions_left"]  = int(p["actions_left"]) - 1
-		"rest":
-			p["hp"]     = mini(int(p["hp_max"]),     int(p["hp"])     + REST_HEAL_HP)
-			p["sanity"] = mini(int(p["sanity_max"]), int(p["sanity"]) + REST_HEAL_SANITY)
-			p["actions_left"] = int(p["actions_left"]) - 1
-		"travel":
-			var dest: String = String(payload.get("to", ""))
-			if not _can_travel(pid, dest):
-				GameConsole.warn("[Game] %s — недопустимое перемещение" % _name_of(pid))
-				return false
-			p["location"]     = dest
-			p["actions_left"] = int(p["actions_left"]) - 1
-		"pass":
-			p["actions_left"] = 0
-		_:
-			GameConsole.warn("[Game] Неизвестное действие: %s" % action_type)
-			return false
-
-	if action_type != "pass":
-		used.append(action_type)
-		p["actions_used"] = used
-
-	GameConsole.log("[Game] %s · %s · осталось действий: %d" % [
-		_name_of(pid), action_type, int(p["actions_left"])
-	])
-	if int(p["actions_left"]) == 0:
-		# Игрок исчерпал свои действия — запускаем префетч его встречи
-		# в фоне, пока ходят остальные. К encounter-фазе карта уже готова.
-		_encounter.prefetch.call_deferred(pid)
-		_advance_turn()
-
-	_broadcast_sync()
-	_emit_changed()
-	return true
-
-
-func _advance_turn() -> void:
-	current_idx += 1
-	if not _skip_disconnected():
-		_enter_encounter()
-
-
-func _enter_encounter() -> void:
-	phase       = "encounter"
-	current_idx = 0   # первый игрок начинает встречу, остальные ждут своей очереди
-	for pid: String in players:
-		players[pid]["encounter_done"] = false
-	# Все игроки отключены — фаза встреч пропускается.
-	if not _skip_disconnected():
-		_mythos.enter_phase()
-		return
-	GameConsole.log("[Game] Фаза: встречи · ход: %s" % _name_of(_current_pid()))
-	phase_changed.emit(phase)
-	_encounter.generate()
-
-
-## Прокрутить current_idx мимо отключённых игроков. true — остановились на
-## подключённом игроке; false — досмотрели turn_order до конца (ходить некому).
-func _skip_disconnected() -> bool:
-	while current_idx < turn_order.size():
-		var pid: String = turn_order[current_idx]
-		if players.has(pid) and bool(players[pid].get("connected", true)):
-			return true
-		current_idx += 1
-	return false
-
-
-## Передать ход на встречу следующему подключённому игроку (или Mythos).
-func _advance_encounter_turn() -> void:
-	current_idx += 1
-	if not _skip_disconnected():
-		_mythos.enter_phase()
-	else:
-		GameConsole.log("[Game] Встреча: ход → %s" % _name_of(_current_pid()))
-		_encounter.generate()
-
-
-# ── Encounter ────────────────────────────────────────────────────────────────
-
+## Игрок отмечает «встреча завершена» — передаёт ход следующему / в Mythos.
 func finish_encounter() -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
-		_apply_finish_encounter(my_pid)
+		_phase.host_apply_finish_encounter(my_pid)
 	else:
 		_nm.relay_all({"action": "game_finish_encounter", "pid": my_pid})
 
@@ -343,7 +240,7 @@ func resolve_encounter() -> void:
 		_nm.relay_all({"action": "game_resolve_encounter", "pid": my_pid})
 
 
-# ── Действие «Перемещение» ────────────────────────────────────────────────────
+# ── Travel (фасады) ───────────────────────────────────────────────────────────
 
 ## Переместиться в связанную локацию dest (расходует действие).
 func travel(dest: String) -> void:
@@ -351,6 +248,8 @@ func travel(dest: String) -> void:
 
 
 ## Может ли локальный игрок переместиться в dest прямо сейчас (для UI сайдбара).
+## Дополнительно к чистой связности проверяет, что сейчас мой ход в action-фазе
+## и не израсходован travel в этом раунде.
 func can_travel_to(dest: String) -> bool:
 	if not is_my_turn():
 		return false
@@ -360,54 +259,7 @@ func can_travel_to(dest: String) -> bool:
 	var used: Array = me.get("actions_used", [])
 	if used.has("travel"):
 		return false
-	return _can_travel(_nm.my_user_id, dest)
-
-
-## Проверка связности: dest достижима из текущей локации игрока pid.
-func _can_travel(pid: String, dest: String) -> bool:
-	if dest.is_empty() or not players.has(pid):
-		return false
-	var here: String = String(players[pid].get("location", ""))
-	if dest == here:
-		return false
-	var conns: Array = _location_connections(here)
-	for i in range(conns.size()):
-		var c: Dictionary = conns[i]
-		if String(c.get("to", "")) == dest:
-			return true
-	return false
-
-
-## Список связей локации из locations.json.
-func _location_connections(loc_name: String) -> Array:
-	var locations: Array = _load_locations()
-	for i in range(locations.size()):
-		var loc: Dictionary = locations[i]
-		if String(loc.get("name", "")) == loc_name:
-			return loc.get("connections", [])
-	return []
-
-
-func _apply_finish_encounter(pid: String) -> bool:
-	if phase != "encounter":
-		return false
-	if not players.has(pid):
-		return false
-	if players[pid].get("encounter_done", false):
-		return false
-	# Встречи проходят по очереди — только активный игрок может завершить.
-	if _current_pid() != pid:
-		GameConsole.warn("[Game] %s завершает встречу не в свой ход" % _name_of(pid))
-		return false
-
-	players[pid]["encounter_done"] = true
-	GameConsole.log("[Game] %s завершил встречу" % _name_of(pid))
-
-	_advance_encounter_turn()
-
-	_broadcast_sync()
-	_emit_changed()
-	return true
+	return _phase.can_travel(_nm.my_user_id, dest)
 
 
 # ── Mythos (фасад) ───────────────────────────────────────────────────────────
@@ -415,22 +267,6 @@ func _apply_finish_encounter(pid: String) -> bool:
 ## Любой игрок подтверждает «Дальше» в модалке мифа. Делегат в MythosFlow.
 func resolve_mythos() -> void:
 	_mythos.resolve()
-
-
-func _start_new_round() -> void:
-	round_num  += 1
-	phase       = "action"
-	current_idx = 0
-	# Стираем все префетчи прошлого раунда — состояние игроков и доски
-	# изменилось, старые карты могут быть неактуальны.
-	_encounter.clear_prefetch()
-	for pid: String in players:
-		players[pid]["actions_left"]   = ACTIONS_PER_ROUND
-		players[pid]["actions_used"]   = []
-		players[pid]["encounter_done"] = false
-	_skip_disconnected()   # начинаем раунд с первого подключённого игрока
-	GameConsole.log("[Game] Раунд %d · ход: %s" % [round_num, _name_of(_current_pid())])
-	phase_changed.emit(phase)
 
 
 # ── Уход игрока ──────────────────────────────────────────────────────────────
@@ -456,9 +292,9 @@ func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -
 	# застрянет на «ходит несуществующий игрок».
 	if _current_pid() == uid:
 		if phase == "action":
-			_advance_turn()
+			_phase.advance_action_turn()
 		elif phase == "encounter":
-			_advance_encounter_turn()
+			_phase.advance_encounter_turn()
 
 	_broadcast_sync()
 	_emit_changed()
@@ -582,11 +418,11 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 			if _is_host():
 				var pid: String = data.get("pid", "")
 				var t: String   = data.get("type", "")
-				_apply_action_as_host(pid, t, data.get("payload", {}))
+				_phase.host_apply_action(pid, t, data.get("payload", {}))
 
 		"game_finish_encounter":
 			if _is_host():
-				_apply_finish_encounter(data.get("pid", ""))
+				_phase.host_apply_finish_encounter(data.get("pid", ""))
 
 		"game_resolve_encounter":
 			if _is_host():

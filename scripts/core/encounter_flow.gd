@@ -172,7 +172,8 @@ func host_apply_resolve(pid: String) -> bool:
 	return true
 
 
-## Чистит префетч (вызывается из _start_new_round и reset_pregame в GameState).
+## Чистит префетч (вызывается из PhaseController.start_new_round и
+## GameState.reset_pregame).
 func clear_prefetch() -> void:
 	_prefetched.clear()
 	_in_flight.clear()
