@@ -60,26 +60,17 @@ var players: Dictionary = {}
 
 var _nm: Node = null
 
-# Кэш data/locations.json — для имени/типа локации в запросе встречи.
+# Кэш data/locations.json — для имени/типа локации в запросе встречи и
+# проверки связности при travel. Лениво загружается через _load_locations().
 var _locations_cache: Array = []
-
-# Эпоха генерации кампании: инкрементится на каждый новый цикл генерации и на
-# reset_pregame. Защищает от записи устаревшего результата (см.
-# _start_campaign_generation).
-var _campaign_epoch: int = 0
-
-# Зерно будущей кампании из модалки создания комнаты: имя Древнего ("" — на
-# выбор модели) и размер партии (0 — не задан, фолбэк на состав лобби).
-var _seed_ancient_one: String = ""
-var _seed_player_count: int = 0
 
 # Активная карта Мифов (синкается). {} — фаза не mythos или карта уже разрешена.
 var current_mythos: Dictionary = {}
 
-# Колода Мифов (host-only) и фаза мифов — в подмодуле; см. mythos_flow.gd.
-# GameState владеет жизненным циклом и публичными полями (phase, current_mythos),
-# модуль владеет своей колодой и обработкой эффектов карты.
-var _mythos: MythosFlow
+# Подсистемы. GameState — фасад и хранитель синкаемого state; подмодули —
+# host-only логика и owned state (колода мифов, эпоха генерации кампании).
+var _mythos:   MythosFlow
+var _campaign: CampaignGen
 
 # Префетч карт встречи — host-only. Как только игрок исчерпал свои действия,
 # запускаем фоновую генерацию его встречи; к моменту его очереди в фазе
@@ -94,8 +85,9 @@ var _prefetch_in_flight:    Dictionary = {}   # uid -> bool
 func _ready() -> void:
 	_nm = get_node("/root/NetworkManager")
 	# Подмодули создаём ДО подписки на сигналы — иначе входящий снапшот может
-	# обратиться к _mythos раньше, чем он инициализирован.
-	_mythos = MythosFlow.new(self)
+	# обратиться к ним раньше, чем они инициализированы.
+	_mythos   = MythosFlow.new(self)
+	_campaign = CampaignGen.new(self)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
 	_nm.player_connected.connect(_on_player_connected)
@@ -214,7 +206,7 @@ func start_game(players_init: Array) -> void:
 	# Библия: прогрета в лобби — используем готовую (или дождёмся текущей
 	# генерации); не прогрета — запускаем генерацию сейчас (фолбэк).
 	if campaign.is_empty() and not campaign_pending:
-		_start_campaign_generation(turn_order.size(), "")
+		_campaign.start_generation(turn_order.size(), "")
 	_broadcast_sync()
 	_emit_changed()
 	phase_changed.emit(phase)
@@ -395,10 +387,9 @@ func _can_travel(pid: String, dest: String) -> bool:
 
 ## Список связей локации из locations.json.
 func _location_connections(loc_name: String) -> Array:
-	if _locations_cache.is_empty():
-		_locations_cache = DataLoader.load_array("res://data/locations.json")
-	for i in range(_locations_cache.size()):
-		var loc: Dictionary = _locations_cache[i]
+	var locations: Array = _load_locations()
+	for i in range(locations.size()):
+		var loc: Dictionary = locations[i]
 		if String(loc.get("name", "")) == loc_name:
 			return loc.get("connections", [])
 	return []
@@ -799,17 +790,16 @@ func _build_encounter_request(p: Dictionary) -> Dictionary:
 	var cid: String = String(campaign.get("id", ""))
 	if not cid.is_empty():
 		req["campaignId"] = cid
-		req["act"]        = _current_act()
+		req["act"]        = _campaign.current_act()
 		req["doom"]       = doom
 	return req
 
 
 ## Реальное (локализованное) имя и тип локации по её id из locations.json.
 func _location_info(loc_name: String) -> Dictionary:
-	if _locations_cache.is_empty():
-		_locations_cache = DataLoader.load_array("res://data/locations.json")
-	for i in range(_locations_cache.size()):
-		var loc: Dictionary = _locations_cache[i]
+	var locations: Array = _load_locations()
+	for i in range(locations.size()):
+		var loc: Dictionary = locations[i]
 		if String(loc.get("name", "")) == loc_name:
 			return {
 				"name": tr(String(loc.get("realWorldLocation", loc_name))),
@@ -922,45 +912,31 @@ func _apply_board_effect(node: Dictionary) -> void:
 			GameConsole.log("[Эффект] %s — пока не поддержано движком" % verb)
 
 
-# ── Хост: генерация сценарной библии ──────────────────────────────────────────
+# ── Сценарная библия (фасады в CampaignGen) ───────────────────────────────────
 
-## Модалка создания комнаты задаёт «зерно» будущей кампании: имя Древнего
-## ("" — на выбор модели) и размер партии. Прогрев в лобби (prewarm_campaign)
-## подхватит их и сбросит — зерно одноразовое.
+## Модалка создания комнаты задаёт «зерно» будущей кампании. Делегат.
 func set_campaign_seed(ancient_one: String, player_count: int) -> void:
-	_seed_ancient_one  = ancient_one
-	_seed_player_count = maxi(1, player_count)
+	_campaign.set_seed(ancient_one, player_count)
 
 
-## Хост: запустить генерацию библии ЗАРАНЕЕ — из лобби, пока игроки ещё
-## выбирают сыщиков. К моменту start_game библия будет готова или почти
-## готова, и экран загрузки покажется меньше (или не покажется вовсе).
-## Использует зерно из set_campaign_seed; без зерна (промоут в хосты) —
-## Древний на выбор модели, размер партии по составу лобби.
+## Хост: прогрев библии в лобби. Делегат.
 func prewarm_campaign() -> void:
-	if not _is_host():
-		return
-	if campaign_pending or not campaign.is_empty():
-		return   # генерация уже идёт либо библия уже готова
-	var pc: int = _seed_player_count
-	if pc <= 0:
-		pc = maxi(1, _nm.players.size())
-	var ao: String = _seed_ancient_one
-	_seed_ancient_one  = ""    # зерно одноразовое
-	_seed_player_count = 0
-	GameConsole.log("[Game] Прогрев кампании в лобби (игроков: %d)..." % pc)
-	_start_campaign_generation(pc, ao)
+	_campaign.prewarm()
+
+
+## Мистерия текущего акта ({} если кампания/тайны ещё не готовы) — для UI.
+func current_mystery() -> Dictionary:
+	return _campaign.current_mystery()
 
 
 ## Хост: сброс перед новой игрой. Зовётся из lobby при входе в свежее лобби —
 ## чтобы prewarm следующей игры не наткнулся на библию предыдущей и зависшую
-## генерацию.
+## генерацию. Чистит собственный state GameState; campaign и мифос — через
+## модули (там живут их «приватные» поля типа epoch/seed).
 func reset_pregame() -> void:
 	if not _is_host():
 		return
-	_campaign_epoch  += 1   # инвалидирует зависшую генерацию прошлой игры
-	campaign          = {}
-	campaign_pending  = false
+	_campaign.reset()
 	current_encounter = {}
 	current_mythos    = {}
 	_mythos.deck      = []
@@ -970,121 +946,12 @@ func reset_pregame() -> void:
 	active            = false
 
 
-## Хост: один цикл генерации сценарной библии (~минуты). Корутина —
-## вызывается без await. Эпоха защищает от устаревших результатов: если за
-## время await начался новый цикл или был reset_pregame — итог отбрасываем.
-func _start_campaign_generation(player_count: int, ancient_one: String) -> void:
-	if not _is_host():
-		return
-	_campaign_epoch += 1
-	var epoch: int = _campaign_epoch
-	campaign         = {}
-	campaign_pending = true
-	_emit_changed()
+# ── Helpers для подмодулей ───────────────────────────────────────────────────
 
-	var api: Node = get_node_or_null("/root/ContentApi")
-	if api == null:
-		GameConsole.warn("[Game] ContentApi недоступен — кампания не сгенерирована")
-		if epoch == _campaign_epoch:
-			campaign_pending = false
-			if active:
-				_broadcast_sync()
-			_emit_changed()
-		return
-
-	var req: Dictionary = _build_campaign_request(player_count, ancient_one)
-	GameConsole.log("[Game] Генерация сценарной библии...")
-	@warning_ignore("unsafe_method_access")
-	var res: Dictionary = await api.generate_campaign(req)
-
-	if epoch != _campaign_epoch:
-		return   # перебито новым циклом или reset_pregame — результат устарел
-	if bool(res.get("ok", false)):
-		var full: Dictionary = res.get("campaign", {})
-		campaign      = _campaign_summary(full)
-		_mythos.deck  = full.get("mythosDeck", [])
-		_mythos.index = 0
-		var ao: Dictionary = campaign.get("ancientOne", {})
-		GameConsole.log("[Game] Кампания готова — Древний: %s, карт Мифов: %d" % [
-			String(ao.get("name", "?")), _mythos.deck.size()
-		])
-	else:
-		GameConsole.warn("[Game] Генерация кампании не удалась: %s" % String(res.get("error", "")))
-	campaign_pending = false
-	# Броадкаст только если игра уже идёт; библию, прогретую ещё в лобби,
-	# разошлёт _broadcast_sync() из start_game.
-	if active:
-		_broadcast_sync()
-	_emit_changed()
-
-
-## Тело запроса /campaign/generate: локации, размер партии, язык, Древний.
-func _build_campaign_request(player_count: int, ancient_one: String) -> Dictionary:
+## Лениво загружает data/locations.json и кэширует. Используется travel-flow
+## (проверка связности, имя/тип в запросе встречи) и CampaignGen (список
+## локаций в запросе библии).
+func _load_locations() -> Array:
 	if _locations_cache.is_empty():
 		_locations_cache = DataLoader.load_array("res://data/locations.json")
-	var locs: Array = []
-	for i in range(_locations_cache.size()):
-		var loc: Dictionary = _locations_cache[i]
-		locs.append({
-			"name": tr(String(loc.get("realWorldLocation", loc.get("name", "")))),
-			"type": String(loc.get("type", "city")),
-		})
-	var req: Dictionary = {
-		"locations":   locs,
-		"playerCount": maxi(1, player_count),
-		"language":    _relay_language(),
-	}
-	# Древний задан в модалке создания комнаты — иначе модель придумывает сама.
-	if not ancient_one.is_empty():
-		req["ancientOne"] = ancient_one
-	return req
-
-
-## Компактная сводка библии для GameState — без тяжёлой колоды Мифов и эффектов.
-## Полная библия сохранена на сервере и тянется по id при генерации встреч.
-func _campaign_summary(full: Dictionary) -> Dictionary:
-	var mysteries: Array = []
-	var src: Array = full.get("mysteries", [])
-	for i in range(src.size()):
-		var m: Dictionary = src[i]
-		mysteries.append({
-			"act":            int(m.get("act", 0)),
-			"title":          String(m.get("title", "")),
-			"flavorText":     String(m.get("flavorText", "")),
-			"text":           String(m.get("text", "")),
-			"solveCondition": m.get("solveCondition", {}),
-		})
-	return {
-		"id":         String(full.get("id", "")),
-		"doomClock":  int(full.get("doomClock", 0)),
-		"ancientOne": full.get("ancientOne", {}),
-		"theme":      full.get("theme", []),
-		"mysteries":  mysteries,
-	}
-
-
-## Текущий акт (1–3) по доле заполнения doom-часов. Трекинга прогресса
-## Мистерий пока нет — акт оцениваем по doom.
-func _current_act() -> int:
-	var clock: int = int(campaign.get("doomClock", 0))
-	if clock <= 0:
-		return 1
-	var ratio: float = float(doom) / float(clock)
-	if ratio < 0.34:
-		return 1
-	if ratio < 0.67:
-		return 2
-	return 3
-
-
-## Мистерия текущего акта ({} если кампания/тайны ещё не готовы) — для UI.
-func current_mystery() -> Dictionary:
-	var ms: Array = campaign.get("mysteries", [])
-	if ms.is_empty():
-		return {}
-	var act: int = _current_act()
-	for i in range(ms.size()):
-		var m: Dictionary = ms[i]
-		if int(m.get("act", 0)) == act:
-			return m
-	return ms[0]
+	return _locations_cache
