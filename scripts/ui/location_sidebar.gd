@@ -38,9 +38,9 @@ const CONN_TR_KEYS: Dictionary = {
 @onready var _neighbors:     VBoxContainer  = %NeighborsList
 @onready var _travel_btn:    Button         = %TravelBtn
 
-var _is_open:   bool       = false
-var _tween:     Tween      = null
-var _loc_name:  String     = ""   # имя показанной сейчас локации
+var _is_open: bool   = false
+var _tween:   Tween  = null
+var _loc_id:  String = ""   # id показанной сейчас локации (для GameState.travel)
 
 
 func _ready() -> void:
@@ -62,15 +62,15 @@ func _ready() -> void:
 # ── Public ────────────────────────────────────────────────────────────────────
 
 func show_location(data: Dictionary) -> void:
-	# Поля realWorldLocation/description/type — это translation keys.
+	# name/realWorldLocation/description/type — translation keys.
 	# Присваивание в Label.text оставляет ключ; Godot вызывает tr() при рендере
 	# и сам обновит при смене локали.
-	_title.text       = String(data.get("name", ""))
-	_subtitle.text    = String(data.get("realWorldLocation", ""))
+	_title.text       = String(data.get("name", ""))              # игровое имя (LOC_*_NAME)
+	_subtitle.text    = String(data.get("realWorldLocation", "")) # реальный прообраз
 	_type_label.text  = _type_label_for(String(data.get("type", "city")))
 	_description.text = String(data.get("description", ""))
 	_populate_neighbors(data.get("connections", []))
-	_loc_name = String(data.get("name", ""))
+	_loc_id = String(data.get("id", ""))
 	_refresh_travel()
 	if not _is_open:
 		_is_open = true
@@ -81,7 +81,7 @@ func close_panel() -> void:
 	if not _is_open:
 		return
 	_is_open = false
-	_loc_name = ""
+	_loc_id = ""
 	_refresh_travel()
 	_animate(true)
 	closed.emit()
@@ -95,12 +95,12 @@ func is_open() -> bool:
 
 ## Показывает кнопку «Переместиться сюда», если игрок может туда пойти сейчас.
 func _refresh_travel() -> void:
-	_travel_btn.visible = not _loc_name.is_empty() and GameState.can_travel_to(_loc_name)
+	_travel_btn.visible = not _loc_id.is_empty() and GameState.can_travel_to(_loc_id)
 
 
 func _on_travel_pressed() -> void:
-	if not _loc_name.is_empty():
-		GameState.travel(_loc_name)
+	if not _loc_id.is_empty():
+		GameState.travel(_loc_id)
 
 
 # ── Соседи ───────────────────────────────────────────────────────────────────
@@ -119,13 +119,15 @@ func _populate_neighbors(conns: Array) -> void:
 
 	for i: int in range(conns.size()):
 		var c: Dictionary = conns[i]
-		var to_name: String   = String(c.get("to", ""))
-		var ctype:   String   = String(c.get("type", "ship"))
-		_neighbors.add_child(_make_neighbor_row(to_name, ctype))
+		var to_id:   String = String(c.get("to", ""))
+		var to_name: String = String(c.get("name", to_id))   # translation key, fallback на id
+		var ctype:   String = String(c.get("type", "ship"))
+		_neighbors.add_child(_make_neighbor_row(to_id, to_name, ctype))
 
 
-func _make_neighbor_row(to_name: String, ctype: String) -> Button:
+func _make_neighbor_row(to_id: String, to_name: String, ctype: String) -> Button:
 	var btn := Button.new()
+	# to_name — translation key (LOC_*_NAME), Godot переводит автоматически.
 	btn.text = to_name
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -144,7 +146,7 @@ func _make_neighbor_row(to_name: String, ctype: String) -> Button:
 	hint.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	btn.add_child(hint)
-	btn.pressed.connect(func() -> void: neighbor_selected.emit(to_name))
+	btn.pressed.connect(func() -> void: neighbor_selected.emit(to_id))
 	return btn
 
 
@@ -157,6 +159,8 @@ func _on_close_pressed() -> void:
 func _animate(hide_panel: bool) -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
+	# Звук слайда синхронен с tween'ом — один и тот же эффект в обе стороны.
+	SfxManager.play(SfxManager.SFX_SIDEBAR_SLIDE)
 	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	var off_left: float  = 0.0         if hide_panel else -PANEL_WIDTH
 	var off_right: float = PANEL_WIDTH if hide_panel else 0.0

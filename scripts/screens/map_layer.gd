@@ -22,10 +22,15 @@ const COLOR_UNCHARTED: Color = Color(1.000, 0.843, 0.000, 0.90)  # #FFD700
 
 const LINE_W:         float = 1.8
 const GC_STEPS:       int   = 48
-## Желаемый экранный размер маркера в пикселях (не зависит от зума).
-const MARKER_SCREEN:  float = 100.0
-## Расстояние от центра маркера до верха подписи в экранных пикселях.
-const LABEL_SCREEN_Y: float = 50.0
+## Экранный размер маркера локации (в пикселях). Лерпится по zoom:
+## на дальнем зуме маркер компактный (_FAR), на близком — крупный (_NEAR,
+## исторические 100/50, которыми пользовались до уменьшения общего масштаба).
+const MARKER_SCREEN_FAR:   float = 67.0
+const MARKER_SCREEN_NEAR:  float = 100.0
+## Отступ от центра маркера до верха подписи. Лерпится синхронно с маркером,
+## чтобы подпись не отрывалась/не наезжала при изменении масштаба.
+const LABEL_SCREEN_Y_FAR:  float = 33.0
+const LABEL_SCREEN_Y_NEAR: float = 50.0
 const LABEL_FONT:     int   = 14    # шрифт в экранных пикселях
 ## Маркер сыщика: экранный размер, смещение над локацией, разнос соседей.
 const INVESTIGATOR_SCREEN:   float = 72.0
@@ -36,6 +41,12 @@ const INVESTIGATOR_FAN_X:    float = 42.0
 
 ## Задаётся из world_map.gd после add_child.
 var camera: Camera2D = null
+
+## Диапазон зума камеры — точки лерпа MARKER_SCREEN_FAR/_NEAR. Дефолты
+## совпадают с ZOOM_MIN/ZOOM_MAX в world_map.gd; world_map переустанавливает
+## их явно после add_child, чтобы единый источник правды остался там.
+var zoom_min: float = 0.5
+var zoom_max: float = 1.2
 
 # ── Данные ────────────────────────────────────────────────────────────────────
 
@@ -76,20 +87,23 @@ func load_from_file(path: String) -> void:
 
 	for i: int in range(data.size()):
 		var loc: Dictionary = data[i]
-		var loc_name: String = loc.get("name", "")
-		if loc_name.is_empty():
+		# id — стабильный slug ("arkham", "1"), не показывается пользователю.
+		# name — translation key с игровым именем (LOC_*_NAME), Godot переводит.
+		var loc_id: String = String(loc.get("id", ""))
+		if loc_id.is_empty():
 			continue
 		var coords: Array = loc.get("coordinates", [])
 		if coords.size() < 2:
 			continue
 		var lat: float = float(coords[0])
 		var lon: float = float(coords[1])
-		_locs[loc_name] = {
+		_locs[loc_id] = {
 			"pos":               _geo_to_pixel(lat, lon),
 			"lat":               lat,
 			"lon":               lon,
 			"type":              loc.get("type", "city"),
 			"connections":       loc.get("connections", []),
+			"name":              String(loc.get("name", loc_id)),  # translation key
 			"realWorldLocation": loc.get("realWorldLocation", ""),
 			"description":       loc.get("description", ""),
 		}
@@ -101,15 +115,36 @@ func load_from_file(path: String) -> void:
 
 # ── Обновление масштаба каждый кадр ──────────────────────────────────────────
 
+## t∈[0,1]: 0 на дальнем зуме (zoom_min), 1 на близком (zoom_max). Используется
+## для лерпа размеров маркера и зависимых от него UI-элементов.
+func _zoom_t() -> float:
+	if not is_instance_valid(camera):
+		return 0.0
+	var z: float = camera.zoom.x
+	return clampf((z - zoom_min) / maxf(zoom_max - zoom_min, 0.0001), 0.0, 1.0)
+
+
+## Текущий экранный размер маркера локации с учётом зума.
+func _marker_screen_size() -> float:
+	return lerpf(MARKER_SCREEN_FAR, MARKER_SCREEN_NEAR, _zoom_t())
+
+
 func _process(_delta: float) -> void:
 	if not is_instance_valid(camera):
 		return
 	var z: float   = camera.zoom.x
 	var inv: float = 1.0 / z
+	var t: float   = _zoom_t()
+	var marker_screen: float = lerpf(MARKER_SCREEN_FAR,  MARKER_SCREEN_NEAR,  t)
+	var label_y:       float = lerpf(LABEL_SCREEN_Y_FAR, LABEL_SCREEN_Y_NEAR, t)
+	# Множитель «насколько крупнее маркер сейчас по сравнению с FAR»:
+	# 1.0 на дальнем зуме, ≈1.49 на близком. Им же масштабируется индикатор
+	# подсветки (RING/GLOW в SelectionIndicator заданы под FAR-размер).
+	var marker_factor: float = marker_screen / MARKER_SCREEN_FAR
 
 	# Мировой размер = желаемый экранный размер / зум
-	var sp_scale: Vector2 = Vector2.ONE * (MARKER_SCREEN / 150.0) * inv
-	var ui_scale: Vector2 = Vector2.ONE * inv
+	var sp_scale:  Vector2 = Vector2.ONE * (marker_screen / 150.0) * inv
+	var ind_scale: Vector2 = Vector2.ONE * inv * marker_factor
 
 	for i: int in range(_markers.size()):
 		var m: Dictionary       = _markers[i]
@@ -121,13 +156,13 @@ func _process(_delta: float) -> void:
 			sp.scale = sp_scale
 
 		if is_instance_valid(ind) and ind.visible:
-			ind.scale = ui_scale
+			ind.scale = ind_scale
 
 		if is_instance_valid(lb) and lb.size.x > 0.0:
 			lb.scale    = Vector2.ONE * inv
 			lb.position = m.pos + Vector2(
 				-lb.size.x * inv * 0.5,   # горизонтальное центрирование
-				LABEL_SCREEN_Y * inv       # отступ ниже маркера
+				label_y * inv             # отступ ниже маркера (лерп по zoom)
 			)
 
 	# Маркеры сыщиков — постоянный экранный размер, смещение над локацией.
@@ -163,7 +198,10 @@ func _spawn_markers() -> void:
 
 			var lbl := Label.new()
 			lbl.name = "Label_%s_%d" % [loc_name, tile_idx]
-			lbl.text = loc_name
+			# loc.name — translation key с коротким игровым именем (LOC_*_NAME).
+			# Godot вызывает tr() при рендере и сам обновит текст при смене локали.
+			# Fallback на id (loc_name) — на случай отсутствия ключа в JSON.
+			lbl.text = String(loc.get("name", loc_name))
 			lbl.add_theme_font_size_override("font_size", LABEL_FONT)
 			lbl.add_theme_color_override("font_color", Color.WHITE)
 			var bg := StyleBoxFlat.new()
@@ -295,7 +333,7 @@ func try_pick(world_pos: Vector2) -> String:
 	if not is_instance_valid(camera):
 		return ""
 	var inv_z: float = 1.0 / camera.zoom.x
-	var pick_r: float = MARKER_SCREEN * 0.5 * inv_z
+	var pick_r: float = _marker_screen_size() * 0.5 * inv_z
 	var best: float = INF
 	var best_name: String = ""
 	for i: int in range(_markers.size()):
@@ -308,16 +346,33 @@ func try_pick(world_pos: Vector2) -> String:
 
 
 ## Возвращает данные локации в формате для LocationSidebar.show_location().
-func get_location(loc_name: String) -> Dictionary:
-	if not _locs.has(loc_name):
+## id — стабильный slug для travel-операций, name — translation key для отображения.
+## В connections для каждого соседа добавляется его name (translation key) — иначе
+## сайдбар знает только id и показывает "1"/"Arkham" вместо переводимых имён.
+func get_location(loc_id: String) -> Dictionary:
+	if not _locs.has(loc_id):
 		return {}
-	var loc: Dictionary = _locs[loc_name]
+	var loc: Dictionary = _locs[loc_id]
+	var raw_conns: Array = loc.get("connections", [])
+	var conns: Array = []
+	for i: int in range(raw_conns.size()):
+		var c: Dictionary = raw_conns[i]
+		var to_id: String = String(c.get("to", ""))
+		var to_name: String = to_id
+		if _locs.has(to_id):
+			to_name = String(_locs[to_id].get("name", to_id))
+		conns.append({
+			"to":   to_id,
+			"name": to_name,                       # translation key
+			"type": String(c.get("type", "ship")),
+		})
 	return {
-		"name":              loc_name,
+		"id":                loc_id,
+		"name":              String(loc.get("name", loc_id)),
 		"type":              loc.get("type", "city"),
 		"realWorldLocation": loc.get("realWorldLocation", ""),
 		"description":       loc.get("description", ""),
-		"connections":       loc.get("connections", []),
+		"connections":       conns,
 	}
 
 
@@ -332,6 +387,9 @@ func set_selected(loc_name: String) -> void:
 		return
 	_selected_name = loc_name
 	var inv: float = 1.0 / camera.zoom.x if is_instance_valid(camera) else 1.0
+	# Тот же marker_factor, что в _process — индикатор сразу под текущий зум,
+	# чтобы между set_selected и первым _process не дрогнул размер.
+	var marker_factor: float = _marker_screen_size() / MARKER_SCREEN_FAR
 	for i: int in range(_markers.size()):
 		var m: Dictionary = _markers[i]
 		var ind: Node2D = m.indicator as Node2D
@@ -340,7 +398,7 @@ func set_selected(loc_name: String) -> void:
 		var on: bool = (m.loc_name == loc_name)
 		ind.visible = on
 		if on:
-			ind.scale = Vector2.ONE * inv  # сразу нужный размер до первого _process
+			ind.scale = Vector2.ONE * inv * marker_factor  # сразу нужный размер до первого _process
 
 
 # ── Маркеры сыщиков ───────────────────────────────────────────────────────────

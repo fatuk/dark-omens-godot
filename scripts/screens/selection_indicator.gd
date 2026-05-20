@@ -18,17 +18,17 @@ const GROUP := "selection_indicators"
 # #8fbd4d — лаймовый
 const COLOR: Color = Color(0.561, 0.741, 0.302, 0.95)
 
-const RING_RADIUS:    float = 52.0
+const RING_RADIUS:    float = 35.0
 const RING_THICKNESS: float = 1.9
 
-const GLOW_INNER:     float = 120.0
-const GLOW_OUTER:     float = 59.0
+const GLOW_INNER:     float = 80.0
+const GLOW_OUTER:     float = 39.0
 const GLOW_STRENGTH:  float = 0.17
 const GLOW_FALLOFF:   float = 8.1
 
 const ARROW_W:     float = 13.0
 const ARROW_H:     float = 13.0
-const ARROW_TIP_Y: float = -55.0
+const ARROW_TIP_Y: float = -37.0
 
 const OFFSET_X: float = 0.0
 const OFFSET_Y: float = -1.5

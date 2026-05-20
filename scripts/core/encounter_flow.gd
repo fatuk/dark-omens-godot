@@ -191,10 +191,18 @@ func _build_request(p: Dictionary) -> Dictionary:
 		background = tr("ENCOUNTER_DEFAULT_BG")
 	# Трекинга позиции сыщика ещё нет — берём его стартовую локацию.
 	var loc: Dictionary = _location_info(String(p.get("location", "Arkham")))
+	# В LLM отдаём игровое имя ("Аркхэм") как основное, а реальный прообраз
+	# ("Уэнэм, Массачусетс, США") — отдельным flavor-полем для контекста модели.
+	var real_loc: Dictionary = {
+		"name":         loc["name"],
+		"locationType": loc["type"],
+	}
+	if not String(loc.get("flavor", "")).is_empty():
+		real_loc["flavor"] = loc["flavor"]
 	var req: Dictionary = {
 		"kind":         "general",
 		"investigator": { "name": inv_name, "background": background },
-		"realLocation": { "name": loc["name"], "locationType": loc["type"] },
+		"realLocation": real_loc,
 		"conditions":   [],
 		"count":        1,
 		"language":     _gs._relay_language(),
@@ -208,17 +216,19 @@ func _build_request(p: Dictionary) -> Dictionary:
 	return req
 
 
-# Реальное (локализованное) имя и тип локации по её id из locations.json.
-func _location_info(loc_name: String) -> Dictionary:
+# Локализованное игровое имя ("Аркхэм") + реальный прообраз ("Уэнэм, Массачусетс")
+# по id локации. Матч по `id`, а не `name` — name теперь translation key.
+func _location_info(loc_id: String) -> Dictionary:
 	var locations: Array = _gs._load_locations()
 	for i in range(locations.size()):
 		var loc: Dictionary = locations[i]
-		if String(loc.get("name", "")) == loc_name:
+		if String(loc.get("id", "")) == loc_id:
 			return {
-				"name": tr(String(loc.get("realWorldLocation", loc_name))),
-				"type": String(loc.get("type", "city")),
+				"name":   tr(String(loc.get("name", loc_id))),
+				"flavor": tr(String(loc.get("realWorldLocation", ""))),
+				"type":   String(loc.get("type", "city")),
 			}
-	return { "name": loc_name, "type": "city" }
+	return { "name": loc_id, "flavor": "", "type": "city" }
 
 
 # Запасная карта на случай сбоя генерации — игра не должна вставать.

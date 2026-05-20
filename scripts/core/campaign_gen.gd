@@ -159,8 +159,12 @@ func _build_request(player_count: int, ancient_one: String) -> Dictionary:
 	var locs: Array = []
 	for i in range(locations.size()):
 		var loc: Dictionary = locations[i]
+		# В LLM отдаём локализованное игровое имя (Аркхэм / Arkham), а не
+		# realWorldLocation (Уэнэм, Массачусетс) — модель будет ссылаться на
+		# места по узнаваемым лавкрафтовским названиям, не по реальным.
+		var name_key: String = String(loc.get("name", loc.get("id", "")))
 		locs.append({
-			"name": tr(String(loc.get("realWorldLocation", loc.get("name", "")))),
+			"name": tr(name_key),
 			"type": String(loc.get("type", "city")),
 		})
 	var req: Dictionary = {

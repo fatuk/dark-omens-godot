@@ -72,7 +72,10 @@ func _ready() -> void:
 	_map_layer = MapLayer.new()
 	_map_layer.name = "MapLayer"
 	add_child(_map_layer)
-	_map_layer.camera = _camera
+	_map_layer.camera   = _camera
+	# Лерп MARKER_SCREEN_FAR↔_NEAR в MapLayer привязан к этому диапазону.
+	_map_layer.zoom_min = ZOOM_MIN
+	_map_layer.zoom_max = ZOOM_MAX
 	_map_layer.load_from_file("res://data/locations.json")
 
 	# Привязка GamePanel к глобальному GameState

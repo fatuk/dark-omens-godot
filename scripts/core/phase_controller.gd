@@ -202,11 +202,12 @@ func can_travel(pid: String, dest: String) -> bool:
 	return false
 
 
-# Список связей локации из locations.json.
-func _location_connections(loc_name: String) -> Array:
+# Список связей локации из locations.json. Матчим по id (стабильный slug),
+# а не по name — name теперь translation key (LOC_*_NAME), не уникальный.
+func _location_connections(loc_id: String) -> Array:
 	var locations: Array = _gs._load_locations()
 	for i in range(locations.size()):
 		var loc: Dictionary = locations[i]
-		if String(loc.get("name", "")) == loc_name:
+		if String(loc.get("id", "")) == loc_id:
 			return loc.get("connections", [])
 	return []

@@ -309,6 +309,42 @@ LOC_SYDNEY_REAL,"Сидней, Австралия","Sydney, Australia"
 LOC_SYDNEY_DESC,"Эта гавань — врата к великой внутренней пустыне, под которой на координатах, какие Геологическая служба Содружества нашла недавно повод утратить, лежат базальтовые залы города, выстроенного умами, что прибыли в телах конусообразных существ и одалживали себя время от времени телам иных, в том числе нашим. Сны иных профессоров университетов этого города включали в последнее столетие целые послеполуденные часы, проведённые за чтением в библиотеках, какие те профессора никогда не посещали. Профессора более не публикуются. Библиотеки, по предварительной записи, всё ещё открыты.","This harbour is the gateway to the great inland desert, beneath which — at coordinates the Geological Survey of the Commonwealth has lately found reason to misplace — lie the basalt halls of a city built by minds that arrived in the bodies of cone-shaped beings, and that lent themselves, periodically, to the bodies of others, including ours. The dreams of certain professors of this city's universities have, within the last century, included whole afternoons spent reading in libraries those professors never visited. The professors no longer publish. The libraries are, by appointment, still open."
 LOC_TOKYO_REAL,"Токио, Япония","Tokyo, Japan"
 LOC_TOKYO_DESC,"Под этим великим городом текут старые русла — храмовые потоки, какие инженеры перекрыли, но не вполне, строго говоря, пресекли. Из них в иные календарные ночи, каких современные альманахи не перечисляют, приходит прилив, что не есть вода, и звук, какой жрецы одной малоизвестной святыни обучаются год за годом переводить. Тихий океан к востоку от этого архипелага несёт под всеми своими честными волнами более долгую — зыбь, чьё происхождение океанографы учтиво отказались определять. Когда она придёт, жрецам не звонить ни в один колокол. Указание ясно. Святыня в тот час должна быть просто пустой и слушающей.","Beneath this great city the old courses run — temple streams the engineers covered over but did not, technically, sever. From them, on certain calendar nights the modern almanacs do not list, comes a tide that is not water, and a sound the priests of one obscure shrine train, year by year, to translate. The Pacific to the east of this archipelago carries, under all its honest waves, a longer one — a swell whose origin the oceanographers have politely declined to locate. When it arrives, the priests are to ring no bell. The instruction is clear. The shrine, upon that hour, is to be merely empty, and listening."
+LOC_1_NAME,Анкоридж,Anchorage
+LOC_2_NAME,К северо-востоку от Гавайев,Northeast of Hawaii
+LOC_3_NAME,Точка Немо,Point Nemo
+LOC_4_NAME,Форт-Провиденс,Fort Providence
+LOC_5_NAME,Средний Запад,The Midwest
+LOC_6_NAME,Даллас,Dallas
+LOC_7_NAME,Панама,Panama City
+LOC_8_NAME,Бермудский треугольник,Bermuda Triangle
+LOC_9_NAME,Остров Диско,Disko Island
+LOC_10_NAME,Дакар,Dakar
+LOC_11_NAME,Тристан-да-Кунья,Tristan de Cunha
+LOC_12_NAME,Южная Георгия,South Georgia
+LOC_13_NAME,Земля Франца-Иосифа,Franz Josef Land
+LOC_14_NAME,Оулу,Oulu
+LOC_15_NAME,Кейптаун,Cape Town
+LOC_16_NAME,Красноярск,Krasnoyarsk
+LOC_17_NAME,Бомбей,Bombay
+LOC_18_NAME,Кергелен,Kerguelen
+LOC_19_NAME,Беринговский,Beringovsky
+LOC_20_NAME,Макассар,Makassar
+LOC_21_NAME,Улуру,Uluru
+LOC_THE_AMAZON_NAME,Амазония,The Amazon
+LOC_THE_PYRAMIDS_NAME,Пирамиды,The Pyramids
+LOC_THE_HEART_OF_AFRICA_NAME,Сердце Африки,The Heart of Africa
+LOC_THE_HIMALAYAS_NAME,Гималаи,The Himalayas
+LOC_TUNGUSKA_NAME,Тунгуска,Tunguska
+LOC_ANTARCTICA_NAME,Антарктида,Antarctica
+LOC_SAN_FRANCISCO_NAME,Сан-Франциско,San Francisco
+LOC_ARKHAM_NAME,Аркхэм,Arkham
+LOC_BUENOS_AIRES_NAME,Буэнос-Айрес,Buenos Aires
+LOC_LONDON_NAME,Лондон,London
+LOC_ROME_NAME,Рим,Rome
+LOC_ISTANBUL_NAME,Стамбул,Istanbul
+LOC_SHANGHAI_NAME,Шанхай,Shanghai
+LOC_SYDNEY_NAME,Сидней,Sydney
+LOC_TOKYO_NAME,Токио,Tokyo
 
 SKILL_LORE,ЗНАНИЕ,LORE
 SKILL_INFLUENCE,ВЛИЯНИЕ,INFLUENCE

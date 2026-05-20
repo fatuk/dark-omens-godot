@@ -87,6 +87,8 @@ func _solve_text(sc: Dictionary) -> String:
 func _animate(hide_panel: bool) -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
+	# Звук слайда синхронен с tween'ом — один и тот же эффект в обе стороны.
+	SfxManager.play(SfxManager.SFX_SIDEBAR_SLIDE)
 	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	var off_l: float = -PANEL_WIDTH if hide_panel else 0.0
 	var off_r: float = 0.0          if hide_panel else PANEL_WIDTH

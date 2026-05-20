@@ -1,6 +1,7 @@
 [
   {
-	"name": "1",
+	"id": "1",
+	"name": "LOC_1_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_1_REAL",
 	"description": "LOC_1_DESC",
@@ -27,7 +28,8 @@
 	]
   },
   {
-	"name": "2",
+	"id": "2",
+	"name": "LOC_2_NAME",
 	"type": "sea",
 	"realWorldLocation": "LOC_2_REAL",
 	"description": "LOC_2_DESC",
@@ -50,7 +52,8 @@
 	]
   },
   {
-	"name": "3",
+	"id": "3",
+	"name": "LOC_3_NAME",
 	"type": "sea",
 	"realWorldLocation": "LOC_3_REAL",
 	"description": "LOC_3_DESC",
@@ -73,7 +76,8 @@
 	]
   },
   {
-	"name": "4",
+	"id": "4",
+	"name": "LOC_4_NAME",
 	"type": "wilderness",
 	"realWorldLocation": "LOC_4_REAL",
 	"description": "LOC_4_DESC",
@@ -96,7 +100,8 @@
 	]
   },
   {
-	"name": "5",
+	"id": "5",
+	"name": "LOC_5_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_5_REAL",
 	"description": "LOC_5_DESC",
@@ -123,7 +128,8 @@
 	]
   },
   {
-	"name": "6",
+	"id": "6",
+	"name": "LOC_6_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_6_REAL",
 	"description": "LOC_6_DESC",
@@ -150,7 +156,8 @@
 	]
   },
   {
-	"name": "7",
+	"id": "7",
+	"name": "LOC_7_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_7_REAL",
 	"description": "LOC_7_DESC",
@@ -185,7 +192,8 @@
 	]
   },
   {
-	"name": "8",
+	"id": "8",
+	"name": "LOC_8_NAME",
 	"type": "sea",
 	"realWorldLocation": "LOC_8_REAL",
 	"description": "LOC_8_DESC",
@@ -216,7 +224,8 @@
 	]
   },
   {
-	"name": "9",
+	"id": "9",
+	"name": "LOC_9_NAME",
 	"type": "wilderness",
 	"realWorldLocation": "LOC_9_REAL",
 	"description": "LOC_9_DESC",
@@ -235,7 +244,8 @@
 	]
   },
   {
-	"name": "10",
+	"id": "10",
+	"name": "LOC_10_NAME",
 	"type": "wilderness",
 	"realWorldLocation": "LOC_10_REAL",
 	"description": "LOC_10_DESC",
@@ -266,7 +276,8 @@
 	]
   },
   {
-	"name": "11",
+	"id": "11",
+	"name": "LOC_11_NAME",
 	"type": "sea",
 	"realWorldLocation": "LOC_11_REAL",
 	"description": "LOC_11_DESC",
@@ -289,7 +300,8 @@
 	]
   },
   {
-	"name": "12",
+	"id": "12",
+	"name": "LOC_12_NAME",
 	"type": "sea",
 	"realWorldLocation": "LOC_12_REAL",
 	"description": "LOC_12_DESC",
@@ -312,7 +324,8 @@
 	]
   },
   {
-	"name": "13",
+	"id": "13",
+	"name": "LOC_13_NAME",
 	"type": "sea",
 	"realWorldLocation": "LOC_13_REAL",
 	"description": "LOC_13_DESC",
@@ -331,7 +344,8 @@
 	]
   },
   {
-	"name": "14",
+	"id": "14",
+	"name": "LOC_14_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_14_REAL",
 	"description": "LOC_14_DESC",
@@ -354,7 +368,8 @@
 	]
   },
   {
-	"name": "15",
+	"id": "15",
+	"name": "LOC_15_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_15_REAL",
 	"description": "LOC_15_DESC",
@@ -389,7 +404,8 @@
 	]
   },
   {
-	"name": "16",
+	"id": "16",
+	"name": "LOC_16_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_16_REAL",
 	"description": "LOC_16_DESC",
@@ -416,7 +432,8 @@
 	]
   },
   {
-	"name": "17",
+	"id": "17",
+	"name": "LOC_17_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_17_REAL",
 	"description": "LOC_17_DESC",
@@ -451,7 +468,8 @@
 	]
   },
   {
-	"name": "18",
+	"id": "18",
+	"name": "LOC_18_NAME",
 	"type": "sea",
 	"realWorldLocation": "LOC_18_REAL",
 	"description": "LOC_18_DESC",
@@ -474,7 +492,8 @@
 	]
   },
   {
-	"name": "19",
+	"id": "19",
+	"name": "LOC_19_NAME",
 	"type": "wilderness",
 	"realWorldLocation": "LOC_19_REAL",
 	"description": "LOC_19_DESC",
@@ -505,7 +524,8 @@
 	]
   },
   {
-	"name": "20",
+	"id": "20",
+	"name": "LOC_20_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_20_REAL",
 	"description": "LOC_20_DESC",
@@ -536,7 +556,8 @@
 	]
   },
   {
-	"name": "21",
+	"id": "21",
+	"name": "LOC_21_NAME",
 	"type": "wilderness",
 	"realWorldLocation": "LOC_21_REAL",
 	"description": "LOC_21_DESC",
@@ -555,7 +576,8 @@
 	]
   },
   {
-	"name": "The Amazon",
+	"id": "The Amazon",
+	"name": "LOC_THE_AMAZON_NAME",
 	"type": "wilderness",
 	"realWorldLocation": "LOC_THE_AMAZON_REAL",
 	"description": "LOC_THE_AMAZON_DESC",
@@ -579,7 +601,8 @@
 	]
   },
   {
-	"name": "The Pyramids",
+	"id": "The Pyramids",
+	"name": "LOC_THE_PYRAMIDS_NAME",
 	"type": "wilderness",
 	"realWorldLocation": "LOC_THE_PYRAMIDS_REAL",
 	"description": "LOC_THE_PYRAMIDS_DESC",
@@ -611,7 +634,8 @@
 	]
   },
   {
-	"name": "The Heart of Africa",
+	"id": "The Heart of Africa",
+	"name": "LOC_THE_HEART_OF_AFRICA_NAME",
 	"type": "wilderness",
 	"realWorldLocation": "LOC_THE_HEART_OF_AFRICA_REAL",
 	"description": "LOC_THE_HEART_OF_AFRICA_DESC",
@@ -635,7 +659,8 @@
 	]
   },
   {
-	"name": "The Himalayas",
+	"id": "The Himalayas",
+	"name": "LOC_THE_HIMALAYAS_NAME",
 	"type": "wilderness",
 	"realWorldLocation": "LOC_THE_HIMALAYAS_REAL",
 	"description": "LOC_THE_HIMALAYAS_DESC",
@@ -659,7 +684,8 @@
 	]
   },
   {
-	"name": "Tunguska",
+	"id": "Tunguska",
+	"name": "LOC_TUNGUSKA_NAME",
 	"type": "wilderness",
 	"realWorldLocation": "LOC_TUNGUSKA_REAL",
 	"description": "LOC_TUNGUSKA_DESC",
@@ -683,7 +709,8 @@
 	]
   },
   {
-	"name": "Antarctica",
+	"id": "Antarctica",
+	"name": "LOC_ANTARCTICA_NAME",
 	"type": "sea",
 	"realWorldLocation": "LOC_ANTARCTICA_REAL",
 	"description": "LOC_ANTARCTICA_DESC",
@@ -707,7 +734,8 @@
 	]
   },
   {
-	"name": "San Francisco",
+	"id": "San Francisco",
+	"name": "LOC_SAN_FRANCISCO_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_SAN_FRANCISCO_REAL",
 	"description": "LOC_SAN_FRANCISCO_DESC",
@@ -743,7 +771,8 @@
 	]
   },
   {
-	"name": "Arkham",
+	"id": "Arkham",
+	"name": "LOC_ARKHAM_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_ARKHAM_REAL",
 	"description": "LOC_ARKHAM_DESC",
@@ -779,7 +808,8 @@
 	]
   },
   {
-	"name": "Buenos Aires",
+	"id": "Buenos Aires",
+	"name": "LOC_BUENOS_AIRES_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_BUENOS_AIRES_REAL",
 	"description": "LOC_BUENOS_AIRES_DESC",
@@ -819,7 +849,8 @@
 	]
   },
   {
-	"name": "London",
+	"id": "London",
+	"name": "LOC_LONDON_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_LONDON_REAL",
 	"description": "LOC_LONDON_DESC",
@@ -847,7 +878,8 @@
 	]
   },
   {
-	"name": "Rome",
+	"id": "Rome",
+	"name": "LOC_ROME_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_ROME_REAL",
 	"description": "LOC_ROME_DESC",
@@ -883,7 +915,8 @@
 	]
   },
   {
-	"name": "Istanbul",
+	"id": "Istanbul",
+	"name": "LOC_ISTANBUL_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_ISTANBUL_REAL",
 	"description": "LOC_ISTANBUL_DESC",
@@ -915,7 +948,8 @@
 	]
   },
   {
-	"name": "Shanghai",
+	"id": "Shanghai",
+	"name": "LOC_SHANGHAI_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_SHANGHAI_REAL",
 	"description": "LOC_SHANGHAI_DESC",
@@ -951,7 +985,8 @@
 	]
   },
   {
-	"name": "Sydney",
+	"id": "Sydney",
+	"name": "LOC_SYDNEY_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_SYDNEY_REAL",
 	"description": "LOC_SYDNEY_DESC",
@@ -987,7 +1022,8 @@
 	]
   },
   {
-	"name": "Tokyo",
+	"id": "Tokyo",
+	"name": "LOC_TOKYO_NAME",
 	"type": "city",
 	"realWorldLocation": "LOC_TOKYO_REAL",
 	"description": "LOC_TOKYO_DESC",
