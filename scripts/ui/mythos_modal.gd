@@ -4,7 +4,7 @@ extends CanvasLayer
 ## вытянул карту (GameState.current_mythos непустая). Показывает имя карты,
 ## flavor-строчку, рулз-текст и список эффектов onDraw. По кнопке «Дальше»
 ## событие через relay уходит хосту, который применяет эффекты и стартует
-## следующий раунд (см. GameState._apply_resolve_mythos).
+## следующий раунд (см. MythosFlow._apply_resolve).
 ##
 ## Контент строится кодом — паттерн settings_dialog / create_room_dialog.
 
@@ -94,8 +94,8 @@ func _refresh() -> void:
 		_next_btn.disabled = false
 		return
 	var card: Dictionary = GameState.current_mythos
-	# Уникальный ключ карты — name + index (мифос-карты от LLM без id, имени
-	# хватает для разделения, плюс _mythos_index уже отражён неявно в смене).
+	# Уникальный ключ карты — её name (мифос-карты от LLM без id; смена имени
+	# = смена карты, что и нужно для решения «пересобирать или нет»).
 	var card_key: String = String(card.get("name", ""))
 	if card_key == _last_card_key:
 		return  # ничего не сменилось — UI уже правильный

@@ -76,10 +76,10 @@ var _seed_player_count: int = 0
 # Активная карта Мифов (синкается). {} — фаза не mythos или карта уже разрешена.
 var current_mythos: Dictionary = {}
 
-# Колода Мифов — host-only, не синкается. Заполняется из campaign.mythosDeck
-# при готовности кампании; карты разыгрываются по порядку.
-var _mythos_deck:  Array = []
-var _mythos_index: int   = 0
+# Колода Мифов (host-only) и фаза мифов — в подмодуле; см. mythos_flow.gd.
+# GameState владеет жизненным циклом и публичными полями (phase, current_mythos),
+# модуль владеет своей колодой и обработкой эффектов карты.
+var _mythos: MythosFlow
 
 # Префетч карт встречи — host-only. Как только игрок исчерпал свои действия,
 # запускаем фоновую генерацию его встречи; к моменту его очереди в фазе
@@ -93,6 +93,9 @@ var _prefetch_in_flight:    Dictionary = {}   # uid -> bool
 
 func _ready() -> void:
 	_nm = get_node("/root/NetworkManager")
+	# Подмодули создаём ДО подписки на сигналы — иначе входящий снапшот может
+	# обратиться к _mythos раньше, чем он инициализирован.
+	_mythos = MythosFlow.new(self)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
 	_nm.player_connected.connect(_on_player_connected)
@@ -120,7 +123,7 @@ func _broadcast_sync() -> void:
 		"players":     players,
 		"current_encounter": current_encounter,
 		"current_mythos":    current_mythos,
-		"mythos_index":      _mythos_index,
+		"mythos_index":      _mythos.index,
 		"campaign":    campaign,
 		"campaign_pending": campaign_pending,
 		"active":      active,
@@ -308,7 +311,7 @@ func _enter_encounter() -> void:
 		players[pid]["encounter_done"] = false
 	# Все игроки отключены — фаза встреч пропускается.
 	if not _skip_disconnected():
-		_run_mythos()
+		_mythos.enter_phase()
 		return
 	GameConsole.log("[Game] Фаза: встречи · ход: %s" % _name_of(_current_pid()))
 	phase_changed.emit(phase)
@@ -330,7 +333,7 @@ func _skip_disconnected() -> bool:
 func _advance_encounter_turn() -> void:
 	current_idx += 1
 	if not _skip_disconnected():
-		_run_mythos()
+		_mythos.enter_phase()
 	else:
 		GameConsole.log("[Game] Встреча: ход → %s" % _name_of(_current_pid()))
 		_generate_encounter_for_current()
@@ -423,102 +426,11 @@ func _apply_finish_encounter(pid: String) -> bool:
 	return true
 
 
-# ── Mythos ───────────────────────────────────────────────────────────────────
+# ── Mythos (фасад) ───────────────────────────────────────────────────────────
 
-func _run_mythos() -> void:
-	phase             = "mythos"
-	current_encounter = {}   # фаза встреч закончилась
-	GameConsole.log("[Game] Фаза Мифов")
-	phase_changed.emit(phase)
-	# Хост вытягивает карту; не-хост ждёт sync. Эффекты применяются только
-	# когда кто-то нажмёт «Дальше» в модалке (resolve_mythos).
-	if _is_host():
-		_draw_mythos_card()
-		_broadcast_sync()
-	_emit_changed()
-
-
-# Хост: вытянуть следующую карту из mythosDeck в current_mythos.
-func _draw_mythos_card() -> void:
-	if _mythos_deck.is_empty() or _mythos_index >= _mythos_deck.size():
-		# Колода кончилась — карта-заглушка, чтобы цикл не вставал.
-		current_mythos = {
-			"name":       "Эхо Древних",
-			"flavorText": "Колода Мифов исчерпана.",
-			"text":       "Ничего нового не происходит — миф крутится по последнему витку.",
-			"onDraw":     [],
-		}
-		GameConsole.warn("[Mythos] Колода исчерпана — карта-заглушка")
-		return
-	current_mythos = _mythos_deck[_mythos_index]
-	_mythos_index += 1
-	GameConsole.log("[Mythos] вытянута карта: %s" % String(current_mythos.get("name", "?")))
-
-
-## Любой игрок подтверждает применение текущей карты Мифов («Дальше» в модалке).
-## На хосте — применяем напрямую, на не-хосте — релеем хосту.
+## Любой игрок подтверждает «Дальше» в модалке мифа. Делегат в MythosFlow.
 func resolve_mythos() -> void:
-	if _is_host():
-		_apply_resolve_mythos()
-	else:
-		_nm.relay_all({ "action": "game_resolve_mythos" })
-
-
-# Хост: применить onDraw активной карты и стартовать новый раунд.
-func _apply_resolve_mythos() -> void:
-	if phase != "mythos" or current_mythos.is_empty():
-		return
-	var card: Dictionary = current_mythos
-	_apply_mythos_effects(card.get("onDraw", []))
-	GameConsole.log("[Mythos] %s — разрешена" % String(card.get("name", "?")))
-	current_mythos = {}
-	mythos_resolved.emit(omens_step, doom)
-	_start_new_round()
-	_broadcast_sync()
-	_emit_changed()
-
-
-# Эффекты карты Мифов. Узлы с target (например target=each) → к каждому
-# подключённому игроку; без target → один раз на «доску» (advanceDoom,
-# advanceOmen, openGate и т.п.). board-эффекты из per-player узла игнорим,
-# чтобы не задвоить.
-func _apply_mythos_effects(effects: Array) -> void:
-	for i in range(effects.size()):
-		var eff: Dictionary = effects[i]
-		if eff.has("target"):
-			for uid: String in players:
-				if not bool(players[uid].get("connected", true)):
-					continue
-				var res: Dictionary = EffectRunner.run([eff], players[uid])
-				for log_msg in res.get("logs", []):
-					GameConsole.log("[Mythos→%s] %s" % [_name_of(uid), String(log_msg)])
-		else:
-			var dummy: Dictionary = {}
-			var res: Dictionary = EffectRunner.run([eff], dummy)
-			for node in res.get("board", []):
-				_apply_board_effect(node)
-			for log_msg in res.get("logs", []):
-				GameConsole.log("[Mythos] %s" % String(log_msg))
-
-
-# Хост: восстановить _mythos_deck после реджойна. Полная библия живёт в
-# relay-API (таблица `campaigns`), тянем её по campaign.id из snapshot.
-func _restore_mythos_deck(campaign_id: String) -> void:
-	var api: Node = get_node_or_null("/root/ContentApi")
-	if api == null:
-		GameConsole.warn("[Mythos] ContentApi недоступен — колоду не восстановить")
-		return
-	GameConsole.log("[Mythos] Восстановление колоды кампании %s..." % campaign_id.substr(0, 8))
-	@warning_ignore("unsafe_method_access")
-	var res: Dictionary = await api.get_campaign(campaign_id)
-	if not bool(res.get("ok", false)):
-		GameConsole.warn("[Mythos] Не удалось получить кампанию: %s" % String(res.get("error", "")))
-		return
-	var full: Dictionary = res.get("campaign", {})
-	_mythos_deck = full.get("mythosDeck", [])
-	GameConsole.log("[Mythos] Колода восстановлена: %d карт (позиция %d)" % [
-		_mythos_deck.size(), _mythos_index
-	])
+	_mythos.resolve()
 
 
 func _start_new_round() -> void:
@@ -648,7 +560,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	players     = data.get("players",     {})
 	current_encounter = data.get("current_encounter", {})
 	current_mythos    = data.get("current_mythos",    {})
-	_mythos_index     = int(data.get("mythos_index", 0))
+	_mythos.index     = int(data.get("mythos_index", 0))
 	campaign    = data.get("campaign",    {})
 	campaign_pending = bool(data.get("campaign_pending", false))
 	active      = bool(data.get("active",     false))
@@ -663,14 +575,14 @@ func _apply_snapshot(data: Dictionary) -> void:
 		GameConsole.log("[Game] Реджойн в фазу встреч с пустой картой — перегенерируем")
 		_generate_encounter_for_current.call_deferred()
 
-	# Реджойн хоста: _mythos_deck — host-only, в снапшот не попадает. При
-	# перезапуске процесса колода теряется → _draw_mythos_card выпадет в
+	# Реджойн хоста: колода Мифов — host-only, в снапшот не попадает. При
+	# перезапуске процесса колода теряется → следующая вытяжка выпала бы в
 	# заглушку. Тянем полную библию из relay-API по campaign.id и
 	# восстанавливаем колоду; индекс уже подтянулся из snapshot выше.
-	if _is_host() and active and _mythos_deck.is_empty() and not campaign.is_empty():
+	if _is_host() and active and _mythos.deck.is_empty() and not campaign.is_empty():
 		var camp_id: String = String(campaign.get("id", ""))
 		if not camp_id.is_empty():
-			_restore_mythos_deck.call_deferred(camp_id)
+			_mythos.restore_deck.call_deferred(camp_id)
 
 
 # ── Не-хост: приём от relay ──────────────────────────────────────────────────
@@ -699,7 +611,7 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 
 		"game_resolve_mythos":
 			if _is_host():
-				_apply_resolve_mythos()
+				_mythos.resolve()
 
 		"set_ready":
 			# Поздний игрок выбрал сыщика в лобби уже идущей партии —
@@ -1051,8 +963,8 @@ func reset_pregame() -> void:
 	campaign_pending  = false
 	current_encounter = {}
 	current_mythos    = {}
-	_mythos_deck      = []
-	_mythos_index     = 0
+	_mythos.deck      = []
+	_mythos.index     = 0
 	_prefetched_encounters = {}
 	_prefetch_in_flight    = {}
 	active            = false
@@ -1090,11 +1002,11 @@ func _start_campaign_generation(player_count: int, ancient_one: String) -> void:
 	if bool(res.get("ok", false)):
 		var full: Dictionary = res.get("campaign", {})
 		campaign      = _campaign_summary(full)
-		_mythos_deck  = full.get("mythosDeck", [])
-		_mythos_index = 0
+		_mythos.deck  = full.get("mythosDeck", [])
+		_mythos.index = 0
 		var ao: Dictionary = campaign.get("ancientOne", {})
 		GameConsole.log("[Game] Кампания готова — Древний: %s, карт Мифов: %d" % [
-			String(ao.get("name", "?")), _mythos_deck.size()
+			String(ao.get("name", "?")), _mythos.deck.size()
 		])
 	else:
 		GameConsole.warn("[Game] Генерация кампании не удалась: %s" % String(res.get("error", "")))
