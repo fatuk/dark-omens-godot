@@ -131,6 +131,38 @@ func _emit_changed() -> void:
 	state_changed.emit()
 
 
+# Сборка свежей записи игрока — общий шаблон для старта партии и поздних
+# подключений. Меняешь поле здесь — оно автоматом подхватится в обоих местах.
+func _make_player_dict(
+	uid: String,
+	pname: String,
+	investigator: String,
+	location: String,
+	hp_max: int,
+	sanity_max: int,
+) -> Dictionary:
+	return {
+		"user_id":        uid,
+		"name":           pname,
+		"investigator":   investigator,
+		"location":       location,
+		"connected":      true,
+		"actions_left":   ACTIONS_PER_ROUND,
+		"actions_used":   [],
+		"encounter_done": false,
+		"tickets":        0,
+		"concentration":  0,
+		"hp":             hp_max,
+		"sanity":         sanity_max,
+		"hp_max":         hp_max,
+		"sanity_max":     sanity_max,
+		"clues":          0,
+		"conditions":     [],
+		"items":          [],
+		"skill_mods":     {},
+	}
+
+
 # ── Хост: запуск игры ────────────────────────────────────────────────────────
 
 ## Вызывается хостом после нажатия «Начать игру».
@@ -155,26 +187,14 @@ func start_game(players_init: Array) -> void:
 		var start_loc: String = String(
 			Investigators.get_data(String(p.get("investigator", ""))).get("startingLocation", "")
 		)
-		players[uid] = {
-			"user_id":        uid,
-			"name":           p.get("name", "???"),
-			"investigator":   p.get("investigator", ""),
-			"location":       start_loc,
-			"connected":      true,
-			"actions_left":   ACTIONS_PER_ROUND,
-			"actions_used":   [],
-			"encounter_done": false,
-			"tickets":        0,
-			"concentration":  0,
-			"hp":             p.get("hp_max", 5),
-			"sanity":         p.get("sanity_max", 5),
-			"hp_max":         p.get("hp_max", 5),
-			"sanity_max":     p.get("sanity_max", 5),
-			"clues":          0,
-			"conditions":     [],
-			"items":          [],
-			"skill_mods":     {},
-		}
+		players[uid] = _make_player_dict(
+			uid,
+			String(p.get("name", "???")),
+			String(p.get("investigator", "")),
+			start_loc,
+			int(p.get("hp_max", 5)),
+			int(p.get("sanity_max", 5)),
+		)
 		turn_order.append(uid)
 	turn_order.sort()
 
@@ -600,26 +620,14 @@ func _add_player_mid_game(uid: String, pname: String, investigator: String) -> v
 	var inv: Dictionary = Investigators.get_data(investigator)
 	var hp_max: int  = int(inv.get("health", 5))
 	var san_max: int = int(inv.get("sanity", 5))
-	players[uid] = {
-		"user_id":        uid,
-		"name":           pname,
-		"investigator":   investigator,
-		"location":       String(inv.get("startingLocation", "")),
-		"connected":      true,
-		"actions_left":   ACTIONS_PER_ROUND,
-		"actions_used":   [],
-		"encounter_done": false,
-		"tickets":        0,
-		"concentration":  0,
-		"hp":             hp_max,
-		"sanity":         san_max,
-		"hp_max":         hp_max,
-		"sanity_max":     san_max,
-		"clues":          0,
-		"conditions":     [],
-		"items":          [],
-		"skill_mods":     {},
-	}
+	players[uid] = _make_player_dict(
+		uid,
+		pname,
+		investigator,
+		String(inv.get("startingLocation", "")),
+		hp_max,
+		san_max,
+	)
 	turn_order.append(uid)
 	GameConsole.log("[Game] %s присоединился к партии (игроков: %d)" % [
 		pname, turn_order.size()
@@ -783,13 +791,16 @@ func _generate_encounter_for_current() -> void:
 		return
 
 	var req: Dictionary = _build_encounter_request(players[pid])
+	# Захватываем раунд — после долгого await тот же игрок может оказаться
+	# уже в новом раунде с новой встречей, и старый ответ нельзя писать.
+	var captured_round: int = round_num
 	GameConsole.log("[Game] Генерация встречи для %s..." % _name_of(pid))
 	@warning_ignore("unsafe_method_access")
 	var res: Dictionary = await api.generate_encounter(req)
 
-	# За время генерации (десятки секунд) ход/фаза могли смениться —
-	# не перетираем чужую встречу.
-	if phase != "encounter" or _current_pid() != pid:
+	# Проверяем, что за время await ничего не сменилось: фаза, активный
+	# игрок и раунд. Старый ответ — в мусор.
+	if phase != "encounter" or _current_pid() != pid or round_num != captured_round:
 		return
 
 	var encs: Array = res.get("encounters", [])
@@ -818,10 +829,20 @@ func _prefetch_encounter_for(pid: String) -> void:
 
 	_prefetch_in_flight[pid] = true
 	var req: Dictionary = _build_encounter_request(players[pid])
+	# Запомнить раунд — между запуском префетча и его resolve может пройти
+	# целый action-phase + encounter-phase + mythos + новый раунд; в этом
+	# случае стейт игрока (location/conditions) уже не тот, и карту
+	# применять/класть нельзя.
+	var captured_round: int = round_num
 	GameConsole.log("[Game] Префетч встречи для %s..." % _name_of(pid))
 	@warning_ignore("unsafe_method_access")
 	var res: Dictionary = await api.generate_encounter(req)
 	_prefetch_in_flight.erase(pid)
+
+	# Раунд сменился — результат устарел.
+	if round_num != captured_round:
+		GameConsole.log("[Game] Префетч для %s устарел (раунд сменился) — отбрасываем" % _name_of(pid))
+		return
 
 	var encs: Array = res.get("encounters", [])
 	if not bool(res.get("ok", false)) or encs.is_empty():

@@ -2,8 +2,10 @@ extends Node2D
 
 # ── Константы ─────────────────────────────────────────────────────────────────
 
-const TILE_W:    int   = 4098
-const TILE_H:    int   = 4000
+# Размер тайла карты — единственный источник правды в MapLayer.TILE_W/TILE_H.
+# Здесь дублировать не надо: world_map двигает камеру по тем же координатам,
+# что MapLayer рисует маркеры.
+
 const ZOOM_MIN:  float = 0.5
 const ZOOM_MAX:  float = 1.2
 const ZOOM_STEP: float = 0.15
@@ -64,7 +66,7 @@ func _ready() -> void:
 	# На карте мира декоративная рамка лишняя (карта — основная игровая сцена,
 	# UI поверх неё в виде GamePanel/LocationSidebar). Возвращаем при выходе.
 	ScreenFrame.set_enabled(false)
-	_camera.position = Vector2(TILE_W / 2.0, TILE_H / 2.0)
+	_camera.position = Vector2(MapLayer.TILE_W / 2.0, MapLayer.TILE_H / 2.0)
 	_zoom_target = _camera.zoom.x
 
 	_map_layer = MapLayer.new()
@@ -419,10 +421,10 @@ func _set_zoom(value: float) -> void:
 func _apply_bounds() -> void:
 	# Горизонтальный wrap: камера всегда остаётся в [0, TILE_W)
 	# Три тайла рядом делают переход незаметным
-	_camera.position.x = fmod(_camera.position.x, float(TILE_W))
+	_camera.position.x = fmod(_camera.position.x, float(MapLayer.TILE_W))
 	if _camera.position.x < 0.0:
-		_camera.position.x += TILE_W
+		_camera.position.x += MapLayer.TILE_W
 
 	# Вертикальный clamp: не выходим за верх/низ карты
 	var vp_half_h: float = get_viewport().get_visible_rect().size.y * 0.5 / _camera.zoom.y
-	_camera.position.y = clamp(_camera.position.y, vp_half_h, TILE_H - vp_half_h)
+	_camera.position.y = clamp(_camera.position.y, vp_half_h, MapLayer.TILE_H - vp_half_h)

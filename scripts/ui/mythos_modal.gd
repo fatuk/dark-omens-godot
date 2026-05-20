@@ -63,7 +63,7 @@ func _build() -> void:
 
 	_eff_header = Label.new()
 	_eff_header.name = "EffectsHeader"
-	_eff_header.text = "Эффекты:"
+	_eff_header.text = tr("MYTHOS_EFFECTS_HEADER")
 	_eff_header.add_theme_font_size_override("font_size", 12)
 	_eff_header.add_theme_color_override("font_color", UIColors.MUTED)
 	_vbox.add_child(_eff_header)
@@ -75,7 +75,7 @@ func _build() -> void:
 
 	UIStyle.separator(_vbox)
 
-	_next_btn = UIStyle.button("Дальше", UIColors.DANGER)
+	_next_btn = UIStyle.button(tr("MYTHOS_BTN_NEXT"), UIColors.DANGER)
 	_next_btn.name = "NextBtn"
 	_next_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_next_btn.pressed.connect(_on_next)
@@ -102,7 +102,7 @@ func _refresh() -> void:
 	_last_card_key = card_key
 	_next_btn.disabled = false
 
-	_title_lbl.text  = String(card.get("name", "Миф"))
+	_title_lbl.text  = String(card.get("name", tr("MYTHOS_TITLE_FALLBACK")))
 	_flavor_lbl.text = String(card.get("flavorText", ""))
 	_flavor_lbl.visible = not _flavor_lbl.text.is_empty()
 	_text_lbl.text   = String(card.get("text", ""))
@@ -115,7 +115,7 @@ func _render_effects(effects: Array) -> void:
 		child.queue_free()
 	if effects.is_empty():
 		var lbl := Label.new()
-		lbl.text = "(нет эффектов)"
+		lbl.text = tr("MYTHOS_NO_EFFECTS")
 		lbl.add_theme_color_override("font_color", UIColors.MUTED)
 		lbl.add_theme_font_size_override("font_size", 12)
 		_eff_box.add_child(lbl)
@@ -138,21 +138,21 @@ func _describe_effect(eff: Dictionary) -> String:
 	var target: String = String(eff.get("target", ""))
 	var s: String
 	match verb:
-		"advanceDoom":         s = "Часы doom: +%d" % n
-		"advanceOmen", "moveOmen": s = "Сдвиг знамения: +%d" % n
-		"openGate":            s = "Открывается врат: %d" % n
-		"spawnMonster":        s = "Появляется чудовищ: %d" % n
-		"placeClue":           s = "Появляется улик: %d" % n
-		"placeEldritchToken":  s = "Эльдричские жетоны: %d" % n
-		"placeRumor":          s = "Появляется слух"
-		"resolveReckoning":    s = "Срабатывает Расплата"
-		"loseHealth":          s = "Потеря здоровья: %d" % n
-		"loseSanity":          s = "Потеря рассудка: %d" % n
-		"gainCondition":       s = "Получает состояние: %s" % String(eff.get("condition", "?"))
-		"text":                s = String(eff.get("text", "(эффект)"))
+		"advanceDoom":         s = tr("MYTHOS_EFF_ADVANCE_DOOM") % n
+		"advanceOmen", "moveOmen": s = tr("MYTHOS_EFF_ADVANCE_OMEN") % n
+		"openGate":            s = tr("MYTHOS_EFF_OPEN_GATE") % n
+		"spawnMonster":        s = tr("MYTHOS_EFF_SPAWN_MONSTER") % n
+		"placeClue":           s = tr("MYTHOS_EFF_PLACE_CLUE") % n
+		"placeEldritchToken":  s = tr("MYTHOS_EFF_PLACE_ELDRITCH") % n
+		"placeRumor":          s = tr("MYTHOS_EFF_PLACE_RUMOR")
+		"resolveReckoning":    s = tr("MYTHOS_EFF_RESOLVE_RECKONING")
+		"loseHealth":          s = tr("MYTHOS_EFF_LOSE_HEALTH") % n
+		"loseSanity":          s = tr("MYTHOS_EFF_LOSE_SANITY") % n
+		"gainCondition":       s = tr("MYTHOS_EFF_GAIN_CONDITION") % String(eff.get("condition", "?"))
+		"text":                s = String(eff.get("text", tr("MYTHOS_EFF_TEXT_FALLBACK")))
 		_:
 			if verb.is_empty():
-				s = "(комбинатор)"
+				s = tr("MYTHOS_EFF_COMBINATOR")
 			else:
 				s = verb
 	if not target.is_empty():
@@ -162,11 +162,11 @@ func _describe_effect(eff: Dictionary) -> String:
 
 func _describe_target(t: String) -> String:
 	match t:
-		"lead":             return "ведущий"
-		"each":             return "у каждого"
-		"eachOnCity":       return "в городе"
-		"eachOnWilderness": return "в дикой местности"
-		"eachOnSea":        return "в море"
+		"lead":             return tr("MYTHOS_TGT_LEAD")
+		"each":             return tr("MYTHOS_TGT_EACH")
+		"eachOnCity":       return tr("MYTHOS_TGT_EACH_CITY")
+		"eachOnWilderness": return tr("MYTHOS_TGT_EACH_WILD")
+		"eachOnSea":        return tr("MYTHOS_TGT_EACH_SEA")
 		_:                  return t
 
 

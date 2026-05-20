@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/ui/location_sidebar.gd" id="1_script"]
 
 [node name="LocationSidebar" type="CanvasLayer"]
-layer = 60
+layer = 61
 script = ExtResource("1_script")
 
 [node name="Panel" type="PanelContainer" parent="."]

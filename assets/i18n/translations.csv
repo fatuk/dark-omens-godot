@@ -671,3 +671,26 @@ AO_ITHAQUA,Итаква,Ithaqua
 AO_DAGON,Дагон,Dagon
 FORM_PLAYER_COUNT,Игроков,Players
 FORM_ANCIENT_ONE,Древний,Ancient One
+
+MYTHOS_TITLE_FALLBACK,Миф,Mythos
+MYTHOS_EFFECTS_HEADER,Эффекты:,Effects:
+MYTHOS_NO_EFFECTS,(нет эффектов),(no effects)
+MYTHOS_BTN_NEXT,Дальше,Next
+MYTHOS_EFF_COMBINATOR,(комбинатор),(combinator)
+MYTHOS_EFF_TEXT_FALLBACK,(эффект),(effect)
+MYTHOS_EFF_ADVANCE_DOOM,Часы doom: +%d,Doom track: +%d
+MYTHOS_EFF_ADVANCE_OMEN,Сдвиг знамения: +%d,Omen shift: +%d
+MYTHOS_EFF_OPEN_GATE,Открывается врат: %d,Gates opened: %d
+MYTHOS_EFF_SPAWN_MONSTER,Появляется чудовищ: %d,Monsters spawned: %d
+MYTHOS_EFF_PLACE_CLUE,Появляется улик: %d,Clues placed: %d
+MYTHOS_EFF_PLACE_ELDRITCH,Эльдричские жетоны: %d,Eldritch tokens: %d
+MYTHOS_EFF_PLACE_RUMOR,Появляется слух,A rumor appears
+MYTHOS_EFF_RESOLVE_RECKONING,Срабатывает Расплата,Reckoning triggers
+MYTHOS_EFF_LOSE_HEALTH,Потеря здоровья: %d,Health lost: %d
+MYTHOS_EFF_LOSE_SANITY,Потеря рассудка: %d,Sanity lost: %d
+MYTHOS_EFF_GAIN_CONDITION,Получает состояние: %s,Gains condition: %s
+MYTHOS_TGT_LEAD,ведущий,lead
+MYTHOS_TGT_EACH,у каждого,each player
+MYTHOS_TGT_EACH_CITY,в городе,in a city
+MYTHOS_TGT_EACH_WILD,в дикой местности,in wilderness
+MYTHOS_TGT_EACH_SEA,в море,at sea
