@@ -21,9 +21,6 @@ const ACTIONS_PER_ROUND := 2
 const REST_HEAL_HP      := 1
 const REST_HEAL_SANITY  := 1
 
-# Интерпретатор Effect-DSL — применяет onSuccess/onFailure встреч.
-const EffectRunner = preload("res://scripts/core/effect_runner.gd")
-
 # ── Глобальный стейт ──────────────────────────────────────────────────────────
 var round_num:  int    = 0
 var phase:      String = ""           # "action" | "encounter" | "mythos" | ""
@@ -68,16 +65,11 @@ var _locations_cache: Array = []
 var current_mythos: Dictionary = {}
 
 # Подсистемы. GameState — фасад и хранитель синкаемого state; подмодули —
-# host-only логика и owned state (колода мифов, эпоха генерации кампании).
-var _mythos:   MythosFlow
-var _campaign: CampaignGen
-
-# Префетч карт встречи — host-only. Как только игрок исчерпал свои действия,
-# запускаем фоновую генерацию его встречи; к моменту его очереди в фазе
-# encounter карта уже готова и применяется без ожидания. Не синкается; при
-# реджойне хоста — fallback на обычную live-генерацию.
-var _prefetched_encounters: Dictionary = {}   # uid -> card
-var _prefetch_in_flight:    Dictionary = {}   # uid -> bool
+# host-only логика и owned state (колода мифов, эпоха генерации кампании,
+# префетч встреч).
+var _mythos:    MythosFlow
+var _campaign:  CampaignGen
+var _encounter: EncounterFlow
 
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
@@ -86,8 +78,9 @@ func _ready() -> void:
 	_nm = get_node("/root/NetworkManager")
 	# Подмодули создаём ДО подписки на сигналы — иначе входящий снапшот может
 	# обратиться к ним раньше, чем они инициализированы.
-	_mythos   = MythosFlow.new(self)
-	_campaign = CampaignGen.new(self)
+	_mythos    = MythosFlow.new(self)
+	_campaign  = CampaignGen.new(self)
+	_encounter = EncounterFlow.new(self)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
 	_nm.player_connected.connect(_on_player_connected)
@@ -282,7 +275,7 @@ func _apply_action_as_host(pid: String, action_type: String, payload: Dictionary
 	if int(p["actions_left"]) == 0:
 		# Игрок исчерпал свои действия — запускаем префетч его встречи
 		# в фоне, пока ходят остальные. К encounter-фазе карта уже готова.
-		_prefetch_encounter_for.call_deferred(pid)
+		_encounter.prefetch.call_deferred(pid)
 		_advance_turn()
 
 	_broadcast_sync()
@@ -307,7 +300,7 @@ func _enter_encounter() -> void:
 		return
 	GameConsole.log("[Game] Фаза: встречи · ход: %s" % _name_of(_current_pid()))
 	phase_changed.emit(phase)
-	_generate_encounter_for_current()
+	_encounter.generate()
 
 
 ## Прокрутить current_idx мимо отключённых игроков. true — остановились на
@@ -328,7 +321,7 @@ func _advance_encounter_turn() -> void:
 		_mythos.enter_phase()
 	else:
 		GameConsole.log("[Game] Встреча: ход → %s" % _name_of(_current_pid()))
-		_generate_encounter_for_current()
+		_encounter.generate()
 
 
 # ── Encounter ────────────────────────────────────────────────────────────────
@@ -345,7 +338,7 @@ func finish_encounter() -> void:
 func resolve_encounter() -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
-		_apply_resolve_encounter(my_pid)
+		_encounter.host_apply_resolve(my_pid)
 	else:
 		_nm.relay_all({"action": "game_resolve_encounter", "pid": my_pid})
 
@@ -430,8 +423,7 @@ func _start_new_round() -> void:
 	current_idx = 0
 	# Стираем все префетчи прошлого раунда — состояние игроков и доски
 	# изменилось, старые карты могут быть неактуальны.
-	_prefetched_encounters.clear()
-	_prefetch_in_flight.clear()
+	_encounter.clear_prefetch()
 	for pid: String in players:
 		players[pid]["actions_left"]   = ACTIONS_PER_ROUND
 		players[pid]["actions_used"]   = []
@@ -564,7 +556,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	# call_deferred — чтобы не дёргать сеть из коллбэка снапшота.
 	if _is_host() and active and phase == "encounter" and current_encounter.is_empty():
 		GameConsole.log("[Game] Реджойн в фазу встреч с пустой картой — перегенерируем")
-		_generate_encounter_for_current.call_deferred()
+		_encounter.generate.call_deferred()
 
 	# Реджойн хоста: колода Мифов — host-only, в снапшот не попадает. При
 	# перезапуске процесса колода теряется → следующая вытяжка выпала бы в
@@ -598,7 +590,7 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 
 		"game_resolve_encounter":
 			if _is_host():
-				_apply_resolve_encounter(data.get("pid", ""))
+				_encounter.host_apply_resolve(data.get("pid", ""))
 
 		"game_resolve_mythos":
 			if _is_host():
@@ -650,254 +642,19 @@ func my_player() -> Dictionary:
 	return players.get(_nm.my_user_id, {})
 
 
-# ── Хост: генерация встречи через ContentApi ──────────────────────────────────
+# ── Helpers, общие для подмодулей ─────────────────────────────────────────────
 
-## Генерит карту встречи для игрока, чей сейчас ход на встречу, и рассылает её.
-## Сначала смотрит в _prefetched_encounters — карта могла быть подготовлена
-## фоном ещё в action-фазе (см. _prefetch_encounter_for); тогда показываем
-## мгновенно. Иначе ждём префетч, если он в полёте, либо запускаем live.
-## Корутина: вызывается без await (fire-and-forget) из encounter-флоу.
-func _generate_encounter_for_current() -> void:
-	if not _is_host():
-		return
-	var pid: String = _current_pid()
-	if pid.is_empty() or not players.has(pid):
-		return
-
-	# Префетч уже готов — применяем мгновенно.
-	if _prefetched_encounters.has(pid):
-		current_encounter = _prefetched_encounters[pid]
-		_prefetched_encounters.erase(pid)
-		GameConsole.log("[Game] Встреча для %s взята из префетча: %s" % [
-			_name_of(pid), String(current_encounter.get("name", ""))
-		])
-		_broadcast_sync()
-		_emit_changed()
-		return
-
-	current_encounter = {}            # состояние «загрузка»
-	_broadcast_sync()
-	_emit_changed()
-
-	# Префетч ещё идёт — карту поставит его completion-handler, новой
-	# генерации не запускаем.
-	if _prefetch_in_flight.get(pid, false):
-		GameConsole.log("[Game] Ждём префетч встречи для %s..." % _name_of(pid))
-		return
-
-	var api: Node = get_node_or_null("/root/ContentApi")
-	if api == null:
-		GameConsole.warn("[Game] ContentApi недоступен — ставим встречу-заглушку")
-		current_encounter = _fallback_encounter()
-		_broadcast_sync()
-		_emit_changed()
-		return
-
-	var req: Dictionary = _build_encounter_request(players[pid])
-	# Захватываем раунд — после долгого await тот же игрок может оказаться
-	# уже в новом раунде с новой встречей, и старый ответ нельзя писать.
-	var captured_round: int = round_num
-	GameConsole.log("[Game] Генерация встречи для %s..." % _name_of(pid))
-	@warning_ignore("unsafe_method_access")
-	var res: Dictionary = await api.generate_encounter(req)
-
-	# Проверяем, что за время await ничего не сменилось: фаза, активный
-	# игрок и раунд. Старый ответ — в мусор.
-	if phase != "encounter" or _current_pid() != pid or round_num != captured_round:
-		return
-
-	var encs: Array = res.get("encounters", [])
-	if bool(res.get("ok", false)) and not encs.is_empty():
-		current_encounter = encs[0]
-		GameConsole.log("[Game] Встреча готова: %s" % String(current_encounter.get("name", "")))
-	else:
-		current_encounter = _fallback_encounter()
-		GameConsole.warn("[Game] Генерация встречи не удалась: %s" % String(res.get("error", "")))
-	_broadcast_sync()
-	_emit_changed()
-
-
-## Хост: фоновая генерация карты встречи для игрока, который только что
-## исчерпал свои действия. Карта прячется в _prefetched_encounters до начала
-## его encounter-очереди. Идемпотентно: повторные вызовы для того же pid
-## пропускаются (карта уже есть или ещё в полёте).
-func _prefetch_encounter_for(pid: String) -> void:
-	if not _is_host() or pid.is_empty() or not players.has(pid):
-		return
-	if _prefetched_encounters.has(pid) or _prefetch_in_flight.get(pid, false):
-		return
-	var api: Node = get_node_or_null("/root/ContentApi")
-	if api == null:
-		return
-
-	_prefetch_in_flight[pid] = true
-	var req: Dictionary = _build_encounter_request(players[pid])
-	# Запомнить раунд — между запуском префетча и его resolve может пройти
-	# целый action-phase + encounter-phase + mythos + новый раунд; в этом
-	# случае стейт игрока (location/conditions) уже не тот, и карту
-	# применять/класть нельзя.
-	var captured_round: int = round_num
-	GameConsole.log("[Game] Префетч встречи для %s..." % _name_of(pid))
-	@warning_ignore("unsafe_method_access")
-	var res: Dictionary = await api.generate_encounter(req)
-	_prefetch_in_flight.erase(pid)
-
-	# Раунд сменился — результат устарел.
-	if round_num != captured_round:
-		GameConsole.log("[Game] Префетч для %s устарел (раунд сменился) — отбрасываем" % _name_of(pid))
-		return
-
-	var encs: Array = res.get("encounters", [])
-	if not bool(res.get("ok", false)) or encs.is_empty():
-		GameConsole.warn("[Game] Префетч для %s не удался: %s" % [
-			_name_of(pid), String(res.get("error", ""))
-		])
-		return
-	var card: Dictionary = encs[0]
-
-	# Если уже стоит очередь этого игрока на encounter, а карта пустая
-	# (loading) — показываем её сразу, без отдельного _generate-цикла.
-	# Иначе припрятываем до начала его encounter-хода.
-	if phase == "encounter" and _current_pid() == pid and current_encounter.is_empty():
-		current_encounter = card
-		GameConsole.log("[Game] Префетч готов и применён: %s" % String(card.get("name", "")))
-		_broadcast_sync()
-		_emit_changed()
-	else:
-		_prefetched_encounters[pid] = card
-		GameConsole.log("[Game] Префетч готов: %s" % String(card.get("name", "")))
-
-
-## Собирает тело запроса /encounters/generate для игрока.
-func _build_encounter_request(p: Dictionary) -> Dictionary:
-	var inv_id: String  = String(p.get("investigator", ""))
-	var inv: Dictionary = Investigators.get_data(inv_id)
-	var inv_name: String   = tr(String(inv.get("displayName", inv_id)))
-	var background: String = tr(String(inv.get("occupation", "")))
-	if background.is_empty():
-		background = tr("ENCOUNTER_DEFAULT_BG")
-	# Трекинга позиции сыщика ещё нет — берём его стартовую локацию.
-	var loc: Dictionary = _location_info(String(p.get("location", "Arkham")))
-	var req: Dictionary = {
-		"kind":         "general",
-		"investigator": { "name": inv_name, "background": background },
-		"realLocation": { "name": loc["name"], "locationType": loc["type"] },
-		"conditions":   [],
-		"count":        1,
-		"language":     _relay_language(),
-	}
-	# Библия готова — встреча несёт контекст кампании (Древний, акт, doom).
-	var cid: String = String(campaign.get("id", ""))
-	if not cid.is_empty():
-		req["campaignId"] = cid
-		req["act"]        = _campaign.current_act()
-		req["doom"]       = doom
-	return req
-
-
-## Реальное (локализованное) имя и тип локации по её id из locations.json.
-func _location_info(loc_name: String) -> Dictionary:
-	var locations: Array = _load_locations()
-	for i in range(locations.size()):
-		var loc: Dictionary = locations[i]
-		if String(loc.get("name", "")) == loc_name:
-			return {
-				"name": tr(String(loc.get("realWorldLocation", loc_name))),
-				"type": String(loc.get("type", "city")),
-			}
-	return { "name": loc_name, "type": "city" }
-
-
-## Запасная карта на случай сбоя генерации — игра не должна вставать.
-func _fallback_encounter() -> Dictionary:
-	return {
-		"id":          "fallback",
-		"name":        "ENCOUNTER_FALLBACK_NAME",
-		"mainText":    "ENCOUNTER_FALLBACK_MAIN",
-		"test":        { "skill": "will", "modifier": 0 },
-		"successText": "ENCOUNTER_FALLBACK_SUCCESS",
-		"failureText": "ENCOUNTER_FALLBACK_FAILURE",
-		"onSuccess":   [],
-		"onFailure":   [],
-	}
-
-
-## Текущий язык игры названием для relay ("Russian" / "English").
+## Текущий язык игры названием для relay ("Russian" / "English"). Используется
+## EncounterFlow и CampaignGen в теле запроса к ContentApi.
 func _relay_language() -> String:
 	if I18n.get_locale() == "en":
 		return "English"
 	return "Russian"
 
 
-# ── Хост: разрешение встречи (бросок + эффекты) ───────────────────────────────
-
-## Хост катит проверку активного игрока, применяет onSuccess/onFailure,
-## кладёт результат в current_encounter.resolution и рассылает синком.
-func _apply_resolve_encounter(pid: String) -> bool:
-	if phase != "encounter" or not players.has(pid):
-		return false
-	if _current_pid() != pid:
-		return false
-	if current_encounter.is_empty() or current_encounter.has("resolution"):
-		return false   # карта ещё генерится либо уже разрешена
-
-	var roll: Dictionary = _roll_encounter_check(pid)
-	var branch: Array = current_encounter.get(
-		"onSuccess" if roll["passed"] else "onFailure", []
-	)
-	_apply_encounter_effects(branch, pid)
-
-	current_encounter["resolution"] = roll
-	GameConsole.log("[Game] %s · встреча %s · успехов: %d" % [
-		_name_of(pid),
-		"пройдена" if roll["passed"] else "провалена",
-		int(roll["successes"]),
-	])
-	_broadcast_sync()
-	_emit_changed()
-	return true
-
-
-## Бросок основной проверки: пул d6 = навык сыщика + модификаторы навыка +
-## модификатор карты, успех на 5–6, пройдено при хотя бы одном успехе.
-func _roll_encounter_check(pid: String) -> Dictionary:
-	var p: Dictionary = players.get(pid, {})
-	var test: Dictionary = current_encounter.get("test", {})
-	var skill: String = String(test.get("skill", "will"))
-	var modifier: int = int(test.get("modifier", 0))
-
-	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-	var inv_skills: Dictionary = inv.get("skills", {})
-	var skill_mods: Dictionary = p.get("skill_mods", {})
-	var pool: int = maxi(1,
-		int(inv_skills.get(skill, 1)) + int(skill_mods.get(skill, 0)) + modifier
-	)
-
-	var dice: Array = []
-	var successes: int = 0
-	for _i in pool:
-		var d: int = randi() % 6 + 1
-		dice.append(d)
-		if d >= 5:
-			successes += 1
-	return { "dice": dice, "successes": successes, "passed": successes >= 1 }
-
-
-## Применяет программу эффектов: интерпретатор — игроку, эффекты поля — здесь.
-func _apply_encounter_effects(effects: Array, pid: String) -> void:
-	if effects.is_empty() or not players.has(pid):
-		return
-	var res: Dictionary = EffectRunner.run(effects, players[pid])
-	var board: Array = res.get("board", [])
-	for i in range(board.size()):
-		var node: Dictionary = board[i]
-		_apply_board_effect(node)
-	var logs: Array = res.get("logs", [])
-	for i in range(logs.size()):
-		GameConsole.log("[Эффект] %s" % String(logs[i]))
-
-
-## Эффекты уровня поля (advanceDoom и т.п.) — интерпретатор их не трогает.
+## Эффекты уровня поля (advanceDoom и т.п.) — интерпретатор их не трогает,
+## применяются здесь, потому что меняют синкаемые поля GameState (doom,
+## omens_step). Зовётся из EncounterFlow и MythosFlow.
 func _apply_board_effect(node: Dictionary) -> void:
 	var verb: String = String(node.get("do", ""))
 	var n: int = int(node.get("amount", node.get("count", 1)))
@@ -941,8 +698,7 @@ func reset_pregame() -> void:
 	current_mythos    = {}
 	_mythos.deck      = []
 	_mythos.index     = 0
-	_prefetched_encounters = {}
-	_prefetch_in_flight    = {}
+	_encounter.clear_prefetch()
 	active            = false
 
 
