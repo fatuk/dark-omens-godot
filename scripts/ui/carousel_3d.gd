@@ -159,6 +159,29 @@ func set_data(investigators: Array, taken: Dictionary, start_index: int = 0) -> 
 	_index = ((start_index % n) + n) % n
 	_refresh_slots()
 	index_changed.emit(_index)
+	_force_initial_render()
+
+
+# Per-card SubViewport'ы и _world_vp на UPDATE_ONCE рендерятся в одном кадре,
+# и _world_vp успевает схватить ещё ПУСТЫЕ текстуры карточек → карусель чёрная
+# до первого взаимодействия (которое будит _world_vp на ALWAYS). Держим его
+# активным несколько кадров, чтобы он подхватил уже отрисованные текстуры.
+func _force_initial_render() -> void:
+	_wake_world_vp()
+	# set_data может вызваться, пока нода ещё/уже вне SceneTree (hot-reload,
+	# ранний вызов до add_child) — get_tree() тогда null. _wake_world_vp выше
+	# уже сделал главное, await пропускаем.
+	if not is_inside_tree():
+		return
+	var tree := get_tree()
+	if tree == null:
+		return
+	await tree.process_frame
+	await tree.process_frame
+	await tree.process_frame
+	# За время await ноду могли удалить — проверяем перед обращением к _world_vp.
+	if is_instance_valid(_world_vp):
+		_on_mesh_tween_finished()   # усыпит _world_vp, если активных tween'ов нет
 
 
 ## Обновляет map занятости (без анимации).

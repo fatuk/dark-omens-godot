@@ -287,13 +287,31 @@ func _emit_selection() -> void:
 func _preselect_saved() -> void:
 	if _investigators.is_empty() or _carousel == null:
 		return
-	var start_idx: int = 0
+	var start_idx: int = -1
 	var saved: String = SelectionPrefs.load_last()
 	if not saved.is_empty():
 		for i: int in range(_investigators.size()):
 			if _investigators[i].get("name", "") == saved:
 				start_idx = i
 				break
+	# Нет сохранённого выбора (или он невалиден) — стартуем со случайного
+	# СВОБОДНОГО сыщика, а не с первого по списку. selection_changed ниже сразу
+	# закрепит его за игроком (lloby отметит занятым).
+	if start_idx < 0:
+		start_idx = _random_available_index()
 	# set_data сам эмитит index_changed → подцепится _on_carousel_index_changed,
 	# который обновит InfoBar и проэмитит selection_changed.
 	_carousel.set_data(_investigators, _taken, start_idx)
+
+
+## Индекс случайного свободного (не занятого другим игроком) сыщика.
+## Если все заняты — любой случайный.
+func _random_available_index() -> int:
+	var free: Array = []
+	for i: int in range(_investigators.size()):
+		var nm: String = String(_investigators[i].get("name", ""))
+		if not _taken.has(nm):
+			free.append(i)
+	if free.is_empty():
+		return randi() % _investigators.size()
+	return int(free[randi() % free.size()])
