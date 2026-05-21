@@ -62,6 +62,11 @@ var _locations_cache: Array = []
 # Активная карта Мифов (синкается). {} — фаза не mythos или карта уже разрешена.
 var current_mythos: Dictionary = {}
 
+# Открытые врата по локациям (синкается). {loc_id: "red"|"green"|"blue"}.
+# Меняется через _apply_board_effect("openGate"). MapLayer.set_gates рендерит
+# их визуально на маркерах с вращающейся анимацией.
+var gates: Dictionary = {}
+
 # Подсистемы. GameState — фасад и хранитель синкаемого state; подмодули —
 # host-only логика и owned state (колода мифов, эпоха генерации кампании,
 # префетч встреч). _phase владеет переходами и обработкой действий — без
@@ -110,6 +115,7 @@ func _broadcast_sync() -> void:
 		"current_encounter": current_encounter,
 		"current_mythos":    current_mythos,
 		"mythos_index":      _mythos.index,
+		"gates":       gates,
 		"campaign":    campaign,
 		"campaign_pending": campaign_pending,
 		"active":      active,
@@ -380,6 +386,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	current_encounter = data.get("current_encounter", {})
 	current_mythos    = data.get("current_mythos",    {})
 	_mythos.index     = int(data.get("mythos_index", 0))
+	gates       = data.get("gates",       {})
 	campaign    = data.get("campaign",    {})
 	campaign_pending = bool(data.get("campaign_pending", false))
 	active      = bool(data.get("active",     false))
@@ -501,8 +508,37 @@ func _apply_board_effect(node: Dictionary) -> void:
 		"advanceOmen", "moveOmen":
 			omens_step += n
 			GameConsole.log("[Эффект] омен +%d" % n)
+		"openGate":
+			# MVP-заглушка: открываем N врат на случайных свободных локациях,
+			# цвет циклически (red→green→blue). Когда появится полноценная
+			# логика выбора локации/цвета — заменим.
+			for _i: int in n:
+				_open_random_gate()
 		_:
 			GameConsole.log("[Эффект] %s — пока не поддержано движком" % verb)
+
+
+# Подбирает свободную (нет открытых врат) локацию и проставляет цвет.
+# Только хост — клиенты получают результат через game_sync.
+func _open_random_gate() -> void:
+	if not _is_host():
+		return
+	var locations: Array = _load_locations()
+	var candidates: Array = []
+	for i: int in range(locations.size()):
+		var loc: Dictionary = locations[i]
+		var lid: String = String(loc.get("id", ""))
+		if lid.is_empty() or gates.has(lid):
+			continue
+		candidates.append(lid)
+	if candidates.is_empty():
+		GameConsole.warn("[Эффект] openGate: все локации уже с открытыми вратами")
+		return
+	var pick: String = String(candidates[randi() % candidates.size()])
+	var colors: Array = ["red", "green", "blue"]
+	var color: String = colors[gates.size() % colors.size()]
+	gates[pick] = color
+	GameConsole.log("[Эффект] Открылись врата (%s) на локации %s" % [color, pick])
 
 
 # ── Сценарная библия (фасады в CampaignGen) ───────────────────────────────────
@@ -535,6 +571,7 @@ func reset_pregame() -> void:
 	_mythos.deck      = []
 	_mythos.index     = 0
 	_encounter.clear_prefetch()
+	gates             = {}
 	active            = false
 
 

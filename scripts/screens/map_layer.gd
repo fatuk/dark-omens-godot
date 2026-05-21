@@ -37,6 +37,26 @@ const INVESTIGATOR_SCREEN:   float = 72.0
 const INVESTIGATOR_OFFSET_Y: float = -54.0
 const INVESTIGATOR_FAN_X:    float = 42.0
 
+## Открытые врата: два слоя (outer/inner) на маркере локации. Оба вращаются,
+## inner ощутимо быстрее. Размер обоих ≈ MARKER_SCREEN (заполняют кружок).
+const GATE_OUTER_TEX: Dictionary = {
+	"red":   preload("res://assets/gates/gate-red-outer.png"),
+	"green": preload("res://assets/gates/gate-green-outer.png"),
+	"blue":  preload("res://assets/gates/gate-blue-outer.png"),
+}
+const GATE_INNER_TEX: Dictionary = {
+	"red":   preload("res://assets/gates/gate-red-inner.png"),
+	"green": preload("res://assets/gates/gate-green-inner.png"),
+	"blue":  preload("res://assets/gates/gate-blue-inner.png"),
+}
+## Скорости вращения (рад/сек), оба по часовой — как в web-прототипе:
+## outer — полный оборот за 15с, inner — за 8с.
+const GATE_OUTER_SPEED: float = TAU / 15.0   # ≈0.419
+const GATE_INNER_SPEED: float = TAU / 8.0    # ≈0.785
+## Множитель размера врат относительно маркера локации — врата немного крупнее,
+## чтобы полностью перекрывать кружок.
+const GATE_SIZE_MULT: float = 1.1
+
 # ── Зависимости ───────────────────────────────────────────────────────────────
 
 ## Задаётся из world_map.gd после add_child.
@@ -61,6 +81,13 @@ var _inv_markers:   Array     = []    # [{sprite, base, screen_off, base_scale}]
 var _inv_signature: String    = ""    # для пропуска лишних перестроений
 var _token_tex:     Texture2D = null  # запасной жетон (нет файла портрета)
 
+# Открытые врата: по 3 пары (outer+inner) на каждые врата для wrap-копий.
+# Накопленные углы общие на все спрайты — wrap-копии крутятся синхронно.
+var _gate_markers:     Array  = []    # [{outer, inner, outer_h, inner_h}]
+var _gate_signature:   String = ""    # ключ для пропуска лишних перестроений
+var _gate_outer_angle: float  = 0.0
+var _gate_inner_angle: float  = 0.0
+
 
 # ── Загрузка ──────────────────────────────────────────────────────────────────
 
@@ -78,6 +105,8 @@ func load_from_file(path: String) -> void:
 	_markers.clear()
 	_inv_markers.clear()
 	_inv_signature = ""
+	_gate_markers.clear()
+	_gate_signature = ""
 	_locs.clear()
 
 	var data: Array = DataLoader.load_array(path)
@@ -129,7 +158,7 @@ func _marker_screen_size() -> float:
 	return lerpf(MARKER_SCREEN_FAR, MARKER_SCREEN_NEAR, _zoom_t())
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not is_instance_valid(camera):
 		return
 	var z: float   = camera.zoom.x
@@ -176,6 +205,23 @@ func _process(_delta: float) -> void:
 		var iscale: float  = im.base_scale
 		isp.scale    = Vector2.ONE * iscale * inv
 		isp.position = ibase + ioff * inv
+
+	# Открытые врата — заполняют кружок маркера, оба слоя вращаются.
+	# Накопленные углы общие для всех wrap-копий — они крутятся синхронно.
+	if not _gate_markers.is_empty():
+		_gate_outer_angle += GATE_OUTER_SPEED * delta
+		_gate_inner_angle += GATE_INNER_SPEED * delta
+		var gate_screen: float = marker_screen * GATE_SIZE_MULT
+		for i: int in range(_gate_markers.size()):
+			var g: Dictionary = _gate_markers[i]
+			var outer: Sprite2D = g.outer as Sprite2D
+			var inner: Sprite2D = g.inner as Sprite2D
+			if is_instance_valid(outer):
+				outer.scale    = Vector2.ONE * (gate_screen / float(g.outer_h)) * inv
+				outer.rotation = _gate_outer_angle
+			if is_instance_valid(inner):
+				inner.scale    = Vector2.ONE * (gate_screen / float(g.inner_h)) * inv
+				inner.rotation = _gate_inner_angle
 
 
 # ── Маркеры ───────────────────────────────────────────────────────────────────
@@ -484,3 +530,66 @@ func _make_token_texture() -> Texture2D:
 			if Vector2(x, y).distance_to(c) <= r:
 				img.set_pixel(x, y, UIColors.ACCENT)
 	return ImageTexture.create_from_image(img)
+
+
+# ── Открытые врата ────────────────────────────────────────────────────────────
+
+## Размещает символы открытых врат на маркерах локаций. gates — словарь
+## {loc_id: "red"|"green"|"blue"}. Перестраивает только при смене состава/цветов
+## (сигнатура). Размеры и углы вращения применяются в _process per-frame.
+func set_gates(gates: Dictionary) -> void:
+	var keys: Array = gates.keys()
+	keys.sort()   # стабильный порядок для сигнатуры
+	var sig: String = ""
+	for k in keys:
+		sig += "%s=%s;" % [String(k), String(gates[k])]
+	if sig == _gate_signature:
+		return
+	_gate_signature = sig
+
+	for i: int in range(_gate_markers.size()):
+		var old: Dictionary = _gate_markers[i]
+		if is_instance_valid(old.outer): (old.outer as Sprite2D).queue_free()
+		if is_instance_valid(old.inner): (old.inner as Sprite2D).queue_free()
+	_gate_markers.clear()
+
+	for loc_id_v: Variant in keys:
+		var loc_id: String = String(loc_id_v)
+		if not _locs.has(loc_id):
+			continue
+		var color: String = String(gates[loc_id])
+		var outer_tex: Texture2D = GATE_OUTER_TEX.get(color, GATE_OUTER_TEX["red"]) as Texture2D
+		var inner_tex: Texture2D = GATE_INNER_TEX.get(color, GATE_INNER_TEX["red"]) as Texture2D
+		# Кэшируем height — _process пересчитывает scale каждый кадр.
+		var outer_h: float = maxf(1.0, float(outer_tex.get_height()))
+		var inner_h: float = maxf(1.0, float(inner_tex.get_height()))
+		var loc_pos: Vector2 = _locs[loc_id].pos
+
+		for dx: int in [-TILE_W, 0, TILE_W]:
+			var world_pos: Vector2 = loc_pos + Vector2(dx, 0)
+			# Outer и inner лежат на 1 и 2 z-слоях — поверх маркера локации
+			# (sprite, z=0) но НЕ закрывают маркер сыщика (он на z=1 в slot'е).
+			# Хм, sygm — InvestigatorSprite z=1 тоже. Поставим inner.z=2 чтобы
+			# монета поверх символа гейта была видна.
+			var outer := Sprite2D.new()
+			outer.name          = "GateOuter_%s_%d" % [loc_id, sign(dx)]
+			outer.texture       = outer_tex
+			outer.position      = world_pos
+			outer.z_index       = 1
+			# Mipmaps сглаживают край при downscale (дальний зум) и вращении —
+			# MSAA 2D в gl_compatibility недоступен, mipmaps работают.
+			outer.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+			add_child(outer)
+
+			var inner := Sprite2D.new()
+			inner.name          = "GateInner_%s_%d" % [loc_id, sign(dx)]
+			inner.texture       = inner_tex
+			inner.position      = world_pos
+			inner.z_index       = 1
+			inner.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+			add_child(inner)
+
+			_gate_markers.append({
+				"outer": outer, "inner": inner,
+				"outer_h": outer_h, "inner_h": inner_h,
+			})

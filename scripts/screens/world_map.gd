@@ -81,10 +81,12 @@ func _ready() -> void:
 	# Привязка GamePanel к глобальному GameState
 	GameState.state_changed.connect(_refresh_game_panel)
 	GameState.state_changed.connect(_refresh_investigators)
+	GameState.state_changed.connect(_refresh_gates)
 	GameState.state_changed.connect(_refresh_campaign_gate)
 	_build_campaign_gate()
 	_refresh_game_panel()
 	_refresh_investigators()
+	_refresh_gates()
 	_refresh_campaign_gate()
 
 	# Сайдбар закрылся — снимаем подсветку с карты
@@ -123,6 +125,13 @@ func _refresh_investigators() -> void:
 			"location":     String(p.get("location", "")),
 		})
 	_map_layer.set_investigators(list)
+
+
+## Обновляет визуализацию открытых врат по GameState.gates.
+func _refresh_gates() -> void:
+	if not is_instance_valid(_map_layer):
+		return
+	_map_layer.set_gates(GameState.gates)
 
 
 func _phase_label_for(p: String) -> String:
