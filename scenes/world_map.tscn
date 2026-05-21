@@ -17,15 +17,18 @@ script = ExtResource("1_oru6e")
 position = Vector2(-4098, 0)
 texture = ExtResource("2_maptex")
 centered = false
+scale = Vector2(0.5, 0.5)
 
 [node name="TileCenter" type="Sprite2D" parent="." unique_id=959188594]
 texture = ExtResource("2_maptex")
 centered = false
+scale = Vector2(0.5, 0.5)
 
 [node name="TileRight" type="Sprite2D" parent="." unique_id=268268959]
 position = Vector2(4098, 0)
 texture = ExtResource("2_maptex")
 centered = false
+scale = Vector2(0.5, 0.5)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1878513138]
 zoom = Vector2(0.5, 0.5)
