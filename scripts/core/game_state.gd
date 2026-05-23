@@ -67,6 +67,11 @@ var current_mythos: Dictionary = {}
 # их визуально на маркерах с вращающейся анимацией.
 var gates: Dictionary = {}
 
+# Сущности по локациям (синкается). {loc_id: [type,…]} — список иконок-сущностей
+# (type ∈ "clue"|"monster"|"rumor") на локации. MapLayer.set_entities раскладывает
+# их стопкой над маркером. Наполняется board-эффектами (placeClue/spawnMonster/…).
+var entities: Dictionary = {}
+
 # Подсистемы. GameState — фасад и хранитель синкаемого state; подмодули —
 # host-only логика и owned state (колода мифов, эпоха генерации кампании,
 # префетч встреч). _phase владеет переходами и обработкой действий — без
@@ -116,6 +121,7 @@ func _broadcast_sync() -> void:
 		"current_mythos":    current_mythos,
 		"mythos_index":      _mythos.index,
 		"gates":       gates,
+		"entities":    entities,
 		"campaign":    campaign,
 		"campaign_pending": campaign_pending,
 		"active":      active,
@@ -387,6 +393,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	current_mythos    = data.get("current_mythos",    {})
 	_mythos.index     = int(data.get("mythos_index", 0))
 	gates       = data.get("gates",       {})
+	entities    = data.get("entities",    {})
 	campaign    = data.get("campaign",    {})
 	campaign_pending = bool(data.get("campaign_pending", false))
 	active      = bool(data.get("active",     false))
@@ -572,6 +579,7 @@ func reset_pregame() -> void:
 	_mythos.index     = 0
 	_encounter.clear_prefetch()
 	gates             = {}
+	entities          = {}
 	active            = false
 
 

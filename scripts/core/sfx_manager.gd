@@ -13,6 +13,9 @@ extends Node
 const SFX_SLIDE:          AudioStream = preload("res://assets/audio/sfx/slide.wav")
 const SFX_BTN_CLICK:      AudioStream = preload("res://assets/audio/sfx/btn-click.wav")
 const SFX_SIDEBAR_SLIDE:  AudioStream = preload("res://assets/audio/sfx/sidebar-slide.wav")
+## Наведение/уход курсора с жетонов локации (колода выезжает/прячется).
+const SFX_MAP_ITEM_HOVER: AudioStream = preload("res://assets/audio/sfx/map-item-hover.wav")
+const SFX_MAP_ITEM_BLUR:  AudioStream = preload("res://assets/audio/sfx/map-item-blur.wav")
 
 const BUS_NAME := "Sfx"
 const _POOL_SIZE: int = 4
