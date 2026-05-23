@@ -12,18 +12,32 @@ extends Control
 const STEP_DEG:        float = 45.0
 const START_ANGLE_DEG: float = -82.0   # как в React-прототипе
 const PEEK_AMOUNT:     float = 0.3
-const TWEEN_TIME:      float = 0.3     # секунды
+const TWEEN_TIME:      float = 0.3     # секунды — короткий peek по наведению
+const OMEN_MOVE_TIME:  float = 0.3     # фолбэк длительности сдвига (берём длину omen-move.wav)
 const MASK_RADIUS:     float = 46.0    # радиус видимого окошка в canvas-координатах
 
 @export var current_step: float = 0.0:
 	set(v):
+		# Сеттер дёргается на каждом state_changed-рефреше тем же значением —
+		# проворачиваем диск (5с + звук) только при реальной смене ступени.
+		# Первичная установка — мгновенно, без звука (синк при входе в игру).
+		var changed: bool = not is_equal_approx(v, current_step)
 		current_step = v
-		_animate_to(current_step)
+		if not _initialized:
+			_initialized = true
+			_animate_to(v, TWEEN_TIME)
+			return
+		if not changed:
+			return
+		# Длительность проворота = длина звука сдвига (синхронно, как у peek).
+		SfxManager.play(SfxManager.SFX_OMEN_MOVE)
+		_animate_to(v, _stream_len(SfxManager.SFX_OMEN_MOVE, OMEN_MOVE_TIME))
 
 @onready var _circle: TextureRect = %Circle
 
 var _tween: Tween = null
 var _last_center: Vector2 = Vector2.INF
+var _initialized: bool = false
 
 
 func _ready() -> void:
@@ -41,20 +55,33 @@ func _process(_delta: float) -> void:
 
 
 func _on_hover() -> void:
-	_animate_to(current_step + PEEK_AMOUNT)
+	# Подсматривание следующего омена: длительность анимации = длина звука,
+	# чтобы поворот диска шёл синхронно с эффектом.
+	SfxManager.play(SfxManager.SFX_OMEN_PICK_IN)
+	_animate_to(current_step + PEEK_AMOUNT, _stream_len(SfxManager.SFX_OMEN_PICK_IN, TWEEN_TIME))
 
 
 func _on_unhover() -> void:
-	_animate_to(current_step)
+	SfxManager.play(SfxManager.SFX_OMEN_PICK_OUT)
+	_animate_to(current_step, _stream_len(SfxManager.SFX_OMEN_PICK_OUT, TWEEN_TIME))
 
 
-func _animate_to(step_value: float) -> void:
+## Длина аудиопотока в секундах (с фолбэком, если поток пуст/нулевой).
+func _stream_len(stream: AudioStream, fallback: float) -> float:
+	if stream != null:
+		var l: float = stream.get_length()
+		if l > 0.0:
+			return l
+	return fallback
+
+
+func _animate_to(step_value: float, duration: float) -> void:
 	if not is_instance_valid(_circle):
 		return
 	if _tween and _tween.is_valid():
 		_tween.kill()
 	_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	_tween.tween_property(_circle, "rotation_degrees", _angle_for(step_value), TWEEN_TIME)
+	_tween.tween_property(_circle, "rotation_degrees", _angle_for(step_value), duration)
 
 
 func _angle_for(step_value: float) -> float:
