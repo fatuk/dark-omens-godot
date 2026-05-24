@@ -1,0 +1,2099 @@
+[
+	{
+		"id": "avian_thrall",
+		"nameKey": "MON_AVIAN_THRALL_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_AVIAN_THRALL_ABILITY"
+		}
+	},
+	{
+		"id": "byakhee",
+		"nameKey": "MON_BYAKHEE_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_BYAKHEE_ABILITY"
+		}
+	},
+	{
+		"id": "carrier_nightgaunt",
+		"nameKey": "MON_CARRIER_NIGHTGAUNT_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_CARRIER_NIGHTGAUNT_ABILITY"
+		}
+	},
+	{
+		"id": "child_of_the_goat",
+		"nameKey": "MON_CHILD_OF_THE_GOAT_NAME",
+		"toughness": 1,
+		"horror": {
+			"skill": "none",
+			"modificator": 0,
+			"damage": 0
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_CHILD_OF_THE_GOAT_ABILITY"
+		}
+	},
+	{
+		"id": "colour_out_of_space",
+		"nameKey": "MON_COLOUR_OUT_OF_SPACE_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "none",
+			"modificator": 0,
+			"damage": 0
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_COLOUR_OUT_OF_SPACE_ABILITY"
+		}
+	},
+	{
+		"id": "crawling_one",
+		"nameKey": "MON_CRAWLING_ONE_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 0
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_CRAWLING_ONE_ABILITY"
+		}
+	},
+	{
+		"id": "crazed_mob",
+		"nameKey": "MON_CRAZED_MOB_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "influence",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -3,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_CRAZED_MOB_ABILITY"
+		}
+	},
+	{
+		"id": "cthonian",
+		"nameKey": "MON_CTHONIAN_NAME",
+		"toughness": 4,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_CTHONIAN_ABILITY"
+		}
+	},
+	{
+		"id": "cultist",
+		"nameKey": "MON_CULTIST_NAME",
+		"useAncientOne": true,
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_CULTIST_ABILITY"
+		}
+	},
+	{
+		"id": "dark_young",
+		"nameKey": "MON_DARK_YOUNG_NAME",
+		"toughness": 5,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -3,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_DARK_YOUNG_ABILITY"
+		}
+	},
+	{
+		"id": "deep_one",
+		"nameKey": "MON_DEEP_ONE_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_DEEP_ONE_ABILITY"
+		}
+	},
+	{
+		"id": "deep_one_hybrid",
+		"nameKey": "MON_DEEP_ONE_HYBRID_NAME",
+		"toughness": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_DEEP_ONE_HYBRID_ABILITY"
+		}
+	},
+	{
+		"id": "dhole",
+		"nameKey": "MON_DHOLE_NAME",
+		"toughness": 5,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_DHOLE_ABILITY"
+		}
+	},
+	{
+		"id": "dimensional_shambler",
+		"nameKey": "MON_DIMENSIONAL_SHAMBLER_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "observation",
+			"modificator": -1,
+			"damage": 0
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_DIMENSIONAL_SHAMBLER_ABILITY"
+		}
+	},
+	{
+		"id": "elder_thing",
+		"nameKey": "MON_ELDER_THING_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_ELDER_THING_ABILITY"
+		}
+	},
+	{
+		"id": "fire_vampire",
+		"nameKey": "MON_FIRE_VAMPIRE_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_FIRE_VAMPIRE_ABILITY"
+		}
+	},
+	{
+		"id": "firebug",
+		"nameKey": "MON_FIREBUG_NAME",
+		"toughness": 1,
+		"horror": {
+			"skill": "influence",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_FIREBUG_ABILITY"
+		}
+	},
+	{
+		"id": "flying_polyp",
+		"nameKey": "MON_FLYING_POLYP_NAME",
+		"toughness": 4,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_FLYING_POLYP_ABILITY"
+		}
+	},
+	{
+		"id": "formless_spawn",
+		"nameKey": "MON_FORMLESS_SPAWN_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_FORMLESS_SPAWN_ABILITY"
+		}
+	},
+	{
+		"id": "ghast",
+		"nameKey": "MON_GHAST_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_GHAST_ABILITY"
+		}
+	},
+	{
+		"id": "ghost",
+		"nameKey": "MON_GHOST_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "none",
+			"modificator": 0,
+			"damage": 0
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_GHOST_ABILITY"
+		}
+	},
+	{
+		"id": "ghoul",
+		"nameKey": "MON_GHOUL_NAME",
+		"toughness": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": 1,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_GHOUL_ABILITY"
+		}
+	},
+	{
+		"id": "ghoul_priest",
+		"nameKey": "MON_GHOUL_PRIEST_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_GHOUL_PRIEST_ABILITY"
+		}
+	},
+	{
+		"id": "giant_penguin",
+		"nameKey": "MON_GIANT_PENGUIN_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 1,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_GIANT_PENGUIN_ABILITY"
+		}
+	},
+	{
+		"id": "gnoph_keh",
+		"nameKey": "MON_GNOPH_KEH_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_GNOPH_KEH_ABILITY"
+		}
+	},
+	{
+		"id": "goat_spawn",
+		"nameKey": "MON_GOAT_SPAWN_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_GOAT_SPAWN_ABILITY"
+		}
+	},
+	{
+		"id": "gug",
+		"nameKey": "MON_GUG_NAME",
+		"toughness": 4,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_GUG_ABILITY"
+		}
+	},
+	{
+		"id": "honored_dead",
+		"nameKey": "MON_HONORED_DEAD_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_HONORED_DEAD_ABILITY"
+		}
+	},
+	{
+		"id": "hound_of_tindalos",
+		"nameKey": "MON_HOUND_OF_TINDALOS_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_HOUND_OF_TINDALOS_ABILITY"
+		}
+	},
+	{
+		"id": "hunting_byakhee",
+		"nameKey": "MON_HUNTING_BYAKHEE_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_HUNTING_BYAKHEE_ABILITY"
+		}
+	},
+	{
+		"id": "hunting_horror",
+		"nameKey": "MON_HUNTING_HORROR_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_HUNTING_HORROR_ABILITY"
+		}
+	},
+	{
+		"id": "jiangshi",
+		"nameKey": "MON_JIANGSHI_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_JIANGSHI_ABILITY"
+		}
+	},
+	{
+		"id": "leng_spider",
+		"nameKey": "MON_LENG_SPIDER_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_LENG_SPIDER_ABILITY"
+		}
+	},
+	{
+		"id": "leopard_man",
+		"nameKey": "MON_LEOPARD_MAN_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_LEOPARD_MAN_ABILITY"
+		}
+	},
+	{
+		"id": "lloigor",
+		"nameKey": "MON_LLOIGOR_NAME",
+		"toughness": 4,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_LLOIGOR_ABILITY"
+		}
+	},
+	{
+		"id": "maniac",
+		"nameKey": "MON_MANIAC_NAME",
+		"toughness": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": 1,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_MANIAC_ABILITY"
+		}
+	},
+	{
+		"id": "mi_go",
+		"nameKey": "MON_MI_GO_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_MI_GO_ABILITY"
+		}
+	},
+	{
+		"id": "moon_beast",
+		"nameKey": "MON_MOON_BEAST_NAME",
+		"toughness": 4,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_MOON_BEAST_ABILITY"
+		}
+	},
+	{
+		"id": "mummy",
+		"nameKey": "MON_MUMMY_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_MUMMY_ABILITY"
+		}
+	},
+	{
+		"id": "nightgaunt",
+		"nameKey": "MON_NIGHTGAUNT_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_NIGHTGAUNT_ABILITY"
+		}
+	},
+	{
+		"id": "poltergeist",
+		"nameKey": "MON_POLTERGEIST_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 0
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_POLTERGEIST_ABILITY"
+		}
+	},
+	{
+		"id": "proto_shoggoth",
+		"nameKey": "MON_PROTO_SHOGGOTH_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_PROTO_SHOGGOTH_ABILITY"
+		}
+	},
+	{
+		"id": "rat_thing",
+		"nameKey": "MON_RAT_THING_NAME",
+		"toughness": 1,
+		"horror": {
+			"skill": "observation",
+			"modificator": -2,
+			"damage": 0
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_RAT_THING_ABILITY"
+		}
+	},
+	{
+		"id": "ravenous_gug",
+		"nameKey": "MON_RAVENOUS_GUG_NAME",
+		"toughness": 5,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_RAVENOUS_GUG_ABILITY"
+		}
+	},
+	{
+		"id": "riot",
+		"nameKey": "MON_RIOT_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "none",
+			"modificator": 0,
+			"damage": 0
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -3,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_RIOT_ABILITY"
+		}
+	},
+	{
+		"id": "sand_dweller",
+		"nameKey": "MON_SAND_DWELLER_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "observation",
+			"modificator": -2,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_SAND_DWELLER_ABILITY"
+		}
+	},
+	{
+		"id": "serpent_people",
+		"nameKey": "MON_SERPENT_PEOPLE_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_SERPENT_PEOPLE_ABILITY"
+		}
+	},
+	{
+		"id": "servitor_of_the_outer_gods",
+		"nameKey": "MON_SERVITOR_OF_THE_OUTER_GODS_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 0
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_SERVITOR_OF_THE_OUTER_GODS_ABILITY"
+		}
+	},
+	{
+		"id": "shan",
+		"nameKey": "MON_SHAN_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_SHAN_ABILITY"
+		}
+	},
+	{
+		"id": "shoggoth",
+		"nameKey": "MON_SHOGGOTH_NAME",
+		"toughness": 4,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_SHOGGOTH_ABILITY"
+		}
+	},
+	{
+		"id": "skeleton",
+		"nameKey": "MON_SKELETON_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_SKELETON_ABILITY"
+		}
+	},
+	{
+		"id": "spawn_of_sebak",
+		"nameKey": "MON_SPAWN_OF_SEBAK_NAME",
+		"toughness": 4,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 4
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_SPAWN_OF_SEBAK_ABILITY"
+		}
+	},
+	{
+		"id": "star_spawn",
+		"nameKey": "MON_STAR_SPAWN_NAME",
+		"toughness": 5,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -3,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_STAR_SPAWN_ABILITY"
+		}
+	},
+	{
+		"id": "star_vampire",
+		"nameKey": "MON_STAR_VAMPIRE_NAME",
+		"toughness": 4,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_STAR_VAMPIRE_ABILITY"
+		}
+	},
+	{
+		"id": "tcho_tcho",
+		"nameKey": "MON_TCHO_TCHO_NAME",
+		"toughness": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_TCHO_TCHO_ABILITY"
+		}
+	},
+	{
+		"id": "thrall",
+		"nameKey": "MON_THRALL_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_THRALL_ABILITY"
+		}
+	},
+	{
+		"id": "vampire",
+		"nameKey": "MON_VAMPIRE_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_VAMPIRE_ABILITY"
+		}
+	},
+	{
+		"id": "warlock",
+		"nameKey": "MON_WARLOCK_NAME",
+		"toughness": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_WARLOCK_ABILITY"
+		}
+	},
+	{
+		"id": "wendigo",
+		"nameKey": "MON_WENDIGO_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_WENDIGO_ABILITY"
+		}
+	},
+	{
+		"id": "werewolf",
+		"nameKey": "MON_WEREWOLF_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_WEREWOLF_ABILITY"
+		}
+	},
+	{
+		"id": "witch",
+		"nameKey": "MON_WITCH_NAME",
+		"toughness": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 0
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_WITCH_ABILITY"
+		}
+	},
+	{
+		"id": "wraith",
+		"nameKey": "MON_WRAITH_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_WRAITH_ABILITY"
+		}
+	},
+	{
+		"id": "yithian",
+		"nameKey": "MON_YITHIAN_NAME",
+		"toughness": 5,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_YITHIAN_ABILITY"
+		}
+	},
+	{
+		"id": "young_cthonian",
+		"nameKey": "MON_YOUNG_CTHONIAN_NAME",
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_YOUNG_CTHONIAN_ABILITY"
+		}
+	},
+	{
+		"id": "zombie",
+		"nameKey": "MON_ZOMBIE_NAME",
+		"toughness": 2,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_ZOMBIE_ABILITY"
+		}
+	},
+	{
+		"id": "zoog",
+		"nameKey": "MON_ZOOG_NAME",
+		"toughness": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": 1,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "observation",
+			"modificator": -1,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_ZOOG_ABILITY"
+		}
+	},
+	{
+		"id": "abhoth",
+		"nameKey": "MON_ABHOTH_NAME",
+		"epic": true,
+		"toughness": 3,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -2,
+			"damage": 4
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 4
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_ABHOTH_ABILITY"
+		}
+	},
+	{
+		"id": "ancient_cthonian",
+		"nameKey": "MON_ANCIENT_CTHONIAN_NAME",
+		"epic": true,
+		"toughness": 5,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_ANCIENT_CTHONIAN_ABILITY"
+		}
+	},
+	{
+		"id": "atlach_nacha",
+		"nameKey": "MON_ATLACH_NACHA_NAME",
+		"epic": true,
+		"toughness": 3,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "observation",
+			"modificator": 0,
+			"damage": 5
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 4
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_ATLACH_NACHA_ABILITY"
+		}
+	},
+	{
+		"id": "bloated_woman",
+		"nameKey": "MON_BLOATED_WOMAN_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "observation",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_BLOATED_WOMAN_ABILITY"
+		}
+	},
+	{
+		"id": "child_of_abhoth",
+		"nameKey": "MON_CHILD_OF_ABHOTH_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_CHILD_OF_ABHOTH_ABILITY"
+		}
+	},
+	{
+		"id": "children_of_yig",
+		"nameKey": "MON_CHILDREN_OF_YIG_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "observation",
+			"modificator": -1,
+			"damage": 0
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_CHILDREN_OF_YIG_ABILITY"
+		}
+	},
+	{
+		"id": "crawling_chaos",
+		"nameKey": "MON_CRAWLING_CHAOS_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_CRAWLING_CHAOS_ABILITY"
+		}
+	},
+	{
+		"id": "crazed_elder_thing",
+		"nameKey": "MON_CRAZED_ELDER_THING_NAME",
+		"epic": true,
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_CRAZED_ELDER_THING_ABILITY"
+		}
+	},
+	{
+		"id": "cthulhu",
+		"nameKey": "MON_CTHULHU_NAME",
+		"epic": true,
+		"toughness": 3,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -2,
+			"damage": 5
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 4
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_CTHULHU_ABILITY"
+		}
+	},
+	{
+		"id": "cthylla",
+		"nameKey": "MON_CTHYLLA_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 4
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_CTHYLLA_ABILITY"
+		}
+	},
+	{
+		"id": "doppelganger",
+		"nameKey": "MON_DOPPELGANGER_NAME",
+		"epic": true,
+		"toughness": 5,
+		"horror": {
+			"skill": "observation",
+			"modificator": -1,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_DOPPELGANGER_ABILITY"
+		}
+	},
+	{
+		"id": "dunwich_horror",
+		"nameKey": "MON_DUNWICH_HORROR_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_DUNWICH_HORROR_ABILITY"
+		}
+	},
+	{
+		"id": "ghatanothoa",
+		"nameKey": "MON_GHATANOTHOA_NAME",
+		"epic": true,
+		"toughness": 6,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_GHATANOTHOA_ABILITY"
+		}
+	},
+	{
+		"id": "god_of_the_bloody_tongue",
+		"nameKey": "MON_GOD_OF_THE_BLOODY_TONGUE_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_GOD_OF_THE_BLOODY_TONGUE_ABILITY"
+		}
+	},
+	{
+		"id": "haunter_of_the_dark",
+		"nameKey": "MON_HAUNTER_OF_THE_DARK_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -2,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_HAUNTER_OF_THE_DARK_ABILITY"
+		}
+	},
+	{
+		"id": "hydra",
+		"nameKey": "MON_HYDRA_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_HYDRA_ABILITY"
+		}
+	},
+	{
+		"id": "ithaqua",
+		"nameKey": "MON_ITHAQUA_NAME",
+		"epic": true,
+		"toughness": 3,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 5
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_ITHAQUA_ABILITY"
+		}
+	},
+	{
+		"id": "nctolhu",
+		"nameKey": "MON_NCTOLHU_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_NCTOLHU_ABILITY"
+		}
+	},
+	{
+		"id": "nctosa",
+		"nameKey": "MON_NCTOSA_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_NCTOSA_ABILITY"
+		}
+	},
+	{
+		"id": "nug",
+		"nameKey": "MON_NUG_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 4
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_NUG_ABILITY"
+		}
+	},
+	{
+		"id": "quachil_uttaus",
+		"nameKey": "MON_QUACHIL_UTTAUS_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": 0,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_QUACHIL_UTTAUS_ABILITY"
+		}
+	},
+	{
+		"id": "rampaging_shoggoth",
+		"nameKey": "MON_RAMPAGING_SHOGGOTH_NAME",
+		"epic": true,
+		"toughness": 4,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_RAMPAGING_SHOGGOTH_ABILITY"
+		}
+	},
+	{
+		"id": "render_of_the_veils",
+		"nameKey": "MON_RENDER_OF_THE_VEILS_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 4
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 5
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_RENDER_OF_THE_VEILS_ABILITY"
+		}
+	},
+	{
+		"id": "rhan_tegoth",
+		"nameKey": "MON_RHAN_TEGOTH_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_RHAN_TEGOTH_ABILITY"
+		}
+	},
+	{
+		"id": "rogue_byakhee",
+		"nameKey": "MON_ROGUE_BYAKHEE_NAME",
+		"epic": true,
+		"toughness": 3,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 1
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 1
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_ROGUE_BYAKHEE_ABILITY"
+		}
+	},
+	{
+		"id": "shub_niggurath",
+		"nameKey": "MON_SHUB_NIGGURATH_NAME",
+		"epic": true,
+		"toughness": 3,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 4
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -3,
+			"damage": 5
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_SHUB_NIGGURATH_ABILITY"
+		}
+	},
+	{
+		"id": "shudde_m_ell",
+		"nameKey": "MON_SHUDDE_M_ELL_NAME",
+		"epic": true,
+		"toughness": 3,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 4
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -3,
+			"damage": 5
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_SHUDDE_M_ELL_ABILITY"
+		}
+	},
+	{
+		"id": "sleeper_of_n_kai",
+		"nameKey": "MON_SLEEPER_OF_N_KAI_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 4
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_SLEEPER_OF_N_KAI_ABILITY"
+		}
+	},
+	{
+		"id": "spawn_of_azathoth",
+		"nameKey": "MON_SPAWN_OF_AZATHOTH_NAME",
+		"epic": true,
+		"toughness": 5,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_SPAWN_OF_AZATHOTH_ABILITY"
+		}
+	},
+	{
+		"id": "spawn_of_hastur",
+		"nameKey": "MON_SPAWN_OF_HASTUR_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_SPAWN_OF_HASTUR_ABILITY"
+		}
+	},
+	{
+		"id": "spinner_of_webs",
+		"nameKey": "MON_SPINNER_OF_WEBS_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_SPINNER_OF_WEBS_ABILITY"
+		}
+	},
+	{
+		"id": "the_beast",
+		"nameKey": "MON_THE_BEAST_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -3,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_THE_BEAST_ABILITY"
+		}
+	},
+	{
+		"id": "the_brood",
+		"nameKey": "MON_THE_BROOD_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_THE_BROOD_ABILITY"
+		}
+	},
+	{
+		"id": "tick_tock_men",
+		"nameKey": "MON_TICK_TOCK_MEN_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "none",
+			"modificator": 0,
+			"damage": 0
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_TICK_TOCK_MEN_ABILITY"
+		}
+	},
+	{
+		"id": "tulzscha",
+		"nameKey": "MON_TULZSCHA_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -1,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_TULZSCHA_ABILITY"
+		}
+	},
+	{
+		"id": "wind_walker",
+		"nameKey": "MON_WIND_WALKER_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 2
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_WIND_WALKER_ABILITY"
+		}
+	},
+	{
+		"id": "winged_serpent",
+		"nameKey": "MON_WINGED_SERPENT_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 4
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_WINGED_SERPENT_ABILITY"
+		}
+	},
+	{
+		"id": "worldrender",
+		"nameKey": "MON_WORLDRENDER_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -3,
+			"damage": 4
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_WORLDRENDER_ABILITY"
+		}
+	},
+	{
+		"id": "yeb",
+		"nameKey": "MON_YEB_NAME",
+		"epic": true,
+		"toughness": 2,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "onSpawn",
+			"textKey": "MON_YEB_ABILITY"
+		}
+	},
+	{
+		"id": "yig",
+		"nameKey": "MON_YIG_NAME",
+		"epic": true,
+		"toughness": 3,
+		"toughnessPerInvestigator": 1,
+		"horror": {
+			"skill": "will",
+			"modificator": -1,
+			"damage": 3
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -2,
+			"damage": 4
+		},
+		"ability": {
+			"trigger": "special",
+			"textKey": "MON_YIG_ABILITY"
+		}
+	},
+	{
+		"id": "zombie_horde",
+		"nameKey": "MON_ZOMBIE_HORDE_NAME",
+		"epic": true,
+		"toughness": 5,
+		"horror": {
+			"skill": "will",
+			"modificator": 0,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modificator": -3,
+			"damage": 3
+		},
+		"ability": {
+			"trigger": "reckoning",
+			"textKey": "MON_ZOMBIE_HORDE_ABILITY"
+		}
+	}
+]
