@@ -73,27 +73,43 @@ func _draw_card() -> void:
 	GameConsole.log("[Mythos] вытянута карта: %s" % String(_gs.current_mythos.get("name", "?")))
 
 
-# Хост: применить onDraw активной карты и стартовать новый раунд.
+# Задержки (сек) между эффектами — чтобы анимация предыдущего успела доиграть
+# на клиентах, прежде чем применяется следующий.
+const _DELAY_OMEN:    float = 2.7   # проворот диска омена
+const _DELAY_GATE:    float = 0.9   # открытие врат + монстр
+const _DELAY_MONSTER: float = 0.6
+const _DELAY_SURGE:   float = 1.2
+const _DELAY_DEFAULT: float = 0.45
+
+
+# Хост: применить onDraw активной карты (последовательно) и стартовать раунд.
+# Корутина: эффекты проигрываются по одному с паузой на анимацию каждого.
 func _apply_resolve() -> void:
 	if _gs.phase != "mythos" or _gs.current_mythos.is_empty():
 		return
 	var card: Dictionary = _gs.current_mythos
-	_apply_effects(card.get("onDraw", []))
-	GameConsole.log("[Mythos] %s — разрешена" % String(card.get("name", "?")))
+	var effects: Array = card.get("onDraw", [])
+	GameConsole.log("[Mythos] %s — разрешается" % String(card.get("name", "?")))
+	# Закрываем модалку мифа сразу, чтобы игроки видели анимации эффектов на карте.
 	_gs.current_mythos = {}
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	# Эффекты — последовательно, с ожиданием анимации каждого. Дум от омена
+	# считается внутри шага омена (до открытия новых врат) — см. _apply_board_effect.
+	await _apply_effects(effects)
 	_gs.mythos_resolved.emit(_gs.omens_step, _gs.doom)
 	_gs._phase.start_new_round()
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 
 
-# Эффекты карты Мифов. Узлы с target (например target=each) — к каждому
-# подключённому игроку; без target — один раз на «доску» (advanceDoom,
-# advanceOmen, openGate и т.п.). board-эффекты из per-player узла игнорим,
-# чтобы не задвоить.
+# Эффекты карты Мифов, по одному. Узлы с target (target=each) — к каждому
+# подключённому игроку; без target — на «доску» (advanceDoom/advanceOmen/
+# openGate и т.п.). После каждого эффекта рассылаем синк и ждём его анимацию.
 func _apply_effects(effects: Array) -> void:
 	for i in range(effects.size()):
 		var eff: Dictionary = effects[i]
+		var verb: String = String(eff.get("do", ""))
 		if eff.has("target"):
 			for uid: String in _gs.players:
 				if not bool(_gs.players[uid].get("connected", true)):
@@ -106,8 +122,23 @@ func _apply_effects(effects: Array) -> void:
 			var res: Dictionary = _EffectRunner.run([eff], dummy)
 			for node in res.get("board", []):
 				_gs._apply_board_effect(node)
+				verb = String(node.get("do", verb))   # реальный verb board-узла
 			for log_msg in res.get("logs", []):
 				GameConsole.log("[Mythos] %s" % String(log_msg))
+		# Рассылаем результат этого эффекта и ждём его анимацию перед следующим.
+		_gs._broadcast_sync()
+		_gs._emit_changed()
+		await _gs.get_tree().create_timer(_effect_delay(verb)).timeout
+
+
+# Пауза под анимацию конкретного эффекта.
+func _effect_delay(verb: String) -> float:
+	match verb:
+		"advanceOmen", "moveOmen": return _DELAY_OMEN
+		"openGate":                return _DELAY_GATE
+		"spawnMonster":            return _DELAY_MONSTER
+		"monsterSurge":            return _DELAY_SURGE
+	return _DELAY_DEFAULT
 
 
 # ── Реджойн ──────────────────────────────────────────────────────────────────

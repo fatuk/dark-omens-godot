@@ -8,8 +8,9 @@ extends Node
 ## locale (см. I18n — тот же паттерн). Каждый модуль пишет свой ключ
 ## в один и тот же user://settings.cfg.
 ##
-## Порядок autoload'ов важен: SettingsStore должен идти РАНЬШЕ MusicManager
-## и SfxManager, чтобы они в своих _ready() успели прочитать его поля.
+## SettingsStore в autoload идёт ПОСЛЕ MusicManager/SfxManager, поэтому в _ready()
+## (после _load) сам применяет загруженные громкости к ним — их собственные
+## _ready прочитали ещё дефолты. Если поменяете порядок — учтите это.
 
 signal relay_url_changed(new_url: String)
 
@@ -45,6 +46,11 @@ func _ready() -> void:
 	if OS.has_feature("editor"):
 		relay_url = "ws://127.0.0.1:3030"
 	apply_display()
+	# SettingsStore в autoload идёт ПОСЛЕ Music/SfxManager, поэтому в их _ready()
+	# значения громкости были ещё дефолтными — навёрстываем загруженные здесь,
+	# иначе сохранённая громкость не применялась бы после перезапуска.
+	MusicManager.set_volume(music_volume)
+	SfxManager.set_volume(sfx_volume)
 
 
 # ── Public API ────────────────────────────────────────────────────────────────

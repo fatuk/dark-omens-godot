@@ -458,6 +458,13 @@ func _conn_color(ctype: String) -> Color:
 	return COLOR_SHIP
 
 
+## Мировая позиция локации (центральный тайл) по id, либо Vector2.INF если нет.
+func loc_world_pos(loc_id: String) -> Vector2:
+	if _locs.has(loc_id):
+		return _locs[loc_id].pos
+	return Vector2.INF
+
+
 # ── Пик и подсветка ───────────────────────────────────────────────────────────
 
 ## Возвращает имя локации под мировой позицией world_pos, либо "" если промах.

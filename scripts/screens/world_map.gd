@@ -40,6 +40,17 @@ var _drag_samples: Array = []
 
 var _zoom_target: float = 0.5
 
+# Локации с вратами/уликами на прошлом синке — чтобы ловить ТОЛЬКО что
+# появившиеся и панорамировать на них. *_seen: первый рефреш (старт/вход)
+# не анимируем — только запоминаем. Фокус-очередь общая для врат и улик, чтобы
+# панорамирования не накладывались.
+var _known_gate_locs: Dictionary = {}
+var _known_clue_locs: Dictionary = {}
+var _gates_seen:       bool       = false
+var _clues_seen:       bool       = false
+var _focus_queue:      Array      = []     # [{ "loc": String, "sound": AudioStream|null }]
+var _focus_busy:       bool       = false
+
 # ── Ноды ──────────────────────────────────────────────────────────────────────
 
 @onready var _camera:     Camera2D    = $Camera2D
@@ -129,18 +140,102 @@ func _refresh_investigators() -> void:
 	_map_layer.set_investigators(list)
 
 
-## Обновляет визуализацию открытых врат по GameState.gates.
+## Обновляет визуализацию открытых врат по GameState.gates. Новые врата (которых
+## не было на прошлом синке) — со звуком и последовательным панорамированием
+## камеры на каждую локацию.
 func _refresh_gates() -> void:
 	if not is_instance_valid(_map_layer):
 		return
 	_map_layer.set_gates(GameState.gates)
 
+	# Какие локации с вратами появились впервые.
+	var new_locs: Array = []
+	for lid: Variant in GameState.gates:
+		if not _known_gate_locs.has(lid):
+			new_locs.append(String(lid))
+	_known_gate_locs = {}
+	for lid: Variant in GameState.gates:
+		_known_gate_locs[lid] = true
 
-## Обновляет кружки сущностей на локациях по GameState.entities.
+	# Первый рефреш (вход в игру/старт) не анимируем — только запоминаем.
+	if not _gates_seen:
+		_gates_seen = true
+		return
+	for i: int in range(new_locs.size()):
+		_enqueue_focus(String(new_locs[i]), SfxManager.SFX_OPEN_GATE)
+
+
+# Поставить локацию в очередь фокуса камеры (+опц. звук) и запустить обработку.
+func _enqueue_focus(loc: String, sound: AudioStream) -> void:
+	_focus_queue.append({ "loc": loc, "sound": sound })
+	if not _focus_busy:
+		_run_focus_queue()
+
+
+# Последовательно: звук + плавный пан камеры на каждую локацию из очереди.
+func _run_focus_queue() -> void:
+	if _focus_busy:
+		return
+	_focus_busy = true
+	while not _focus_queue.is_empty():
+		var item: Dictionary = _focus_queue.pop_front()
+		var p: Vector2 = _map_layer.loc_world_pos(String(item.get("loc", "")))
+		if p == Vector2.INF:
+			continue
+		if item.get("sound") != null:
+			SfxManager.play(item.get("sound"))
+		await _pan_camera_to(p)
+		await get_tree().create_timer(0.4).timeout
+	_focus_busy = false
+
+
+# Плавно ведёт камеру к мировой точке (по кратчайшему пути с учётом wrap по X).
+func _pan_camera_to(target: Vector2) -> void:
+	_inertia_velocity = Vector2.ZERO
+	# Ближайшая по горизонтали копия цели (карта закольцована по X).
+	var tx: float = target.x
+	var dx: float = tx - _camera.position.x
+	if dx > MapLayer.TILE_W * 0.5:
+		tx -= MapLayer.TILE_W
+	elif dx < -MapLayer.TILE_W * 0.5:
+		tx += MapLayer.TILE_W
+	var dest := Vector2(tx, target.y)
+	var tw := create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_camera, "position", dest, 0.6)
+	await tw.finished
+	_apply_bounds()
+
+
+## Обновляет иконки сущностей на локациях. Склеивает улики/слухи (GameState.
+## entities) и монстров (GameState.monsters → иконки "monster") в один вид.
+## Новые улики (как и врата) — последовательный пан камеры на их локации.
 func _refresh_entities() -> void:
 	if not is_instance_valid(_map_layer):
 		return
-	_map_layer.set_entities(GameState.entities)
+	var view: Dictionary = {}
+	for lid: Variant in GameState.entities:
+		view[lid] = (GameState.entities[lid] as Array).duplicate()
+	for lid: Variant in GameState.monsters:
+		var cell: Array = view.get(lid, [])
+		for _i: int in range((GameState.monsters[lid] as Array).size()):
+			cell.append("monster")
+		view[lid] = cell
+	_map_layer.set_entities(view)
+
+	# Локации, где улика появилась впервые.
+	var new_clue_locs: Array = []
+	var clue_now: Dictionary = {}
+	for lid: Variant in GameState.entities:
+		if (GameState.entities[lid] as Array).has("clue"):
+			clue_now[lid] = true
+			if not _known_clue_locs.has(lid):
+				new_clue_locs.append(String(lid))
+	_known_clue_locs = clue_now
+	if not _clues_seen:
+		_clues_seen = true
+		return
+	for i: int in range(new_clue_locs.size()):
+		_enqueue_focus(String(new_clue_locs[i]), SfxManager.SFX_CLUE_OPEN)
 
 
 func _phase_label_for(p: String) -> String:

@@ -101,6 +101,7 @@ func _refresh() -> void:
 		return  # ничего не сменилось — UI уже правильный
 	_last_card_key = card_key
 	_next_btn.disabled = false
+	SfxManager.play(SfxManager.SFX_MYTHOS_START)   # звук появления карты мифа
 
 	_title_lbl.text  = String(card.get("name", tr("MYTHOS_TITLE_FALLBACK")))
 	_flavor_lbl.text = String(card.get("flavorText", ""))

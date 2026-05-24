@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://0kgoahny8047"]
+[gd_scene load_steps=12 format=3 uid="uid://0kgoahny8047"]
 
 [ext_resource type="Script" uid="uid://diiss2g0befi6" path="res://scripts/screens/world_map.gd" id="1_oru6e"]
 [ext_resource type="Texture2D" uid="uid://cb6u8vwfb1jla" path="res://assets/map.png" id="2_maptex"]
@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://cy2s73u4pffim" path="res://scenes/ui/location_sidebar.tscn" id="7_sidebar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/mystery_sidebar.tscn" id="8_mystery"]
 [ext_resource type="PackedScene" path="res://scenes/ui/mythos_modal.tscn" id="9_mythosmod"]
+[ext_resource type="PackedScene" path="res://scenes/ui/encounter_choice_modal.tscn" id="10_choicemod"]
+[ext_resource type="PackedScene" path="res://scenes/ui/combat_modal.tscn" id="11_combatmod"]
 
 [node name="WorldMap" type="Node2D" unique_id=400240817]
 script = ExtResource("1_oru6e")
@@ -47,3 +49,7 @@ unique_name_in_owner = true
 [node name="MysterySidebar" parent="." instance=ExtResource("8_mystery")]
 
 [node name="MythosModal" parent="." instance=ExtResource("9_mythosmod")]
+
+[node name="EncounterChoiceModal" parent="." instance=ExtResource("10_choicemod")]
+
+[node name="CombatModal" parent="." instance=ExtResource("11_combatmod")]

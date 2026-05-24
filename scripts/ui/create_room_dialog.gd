@@ -15,7 +15,7 @@ signal submitted(room_name: String, password: String, max_players: int, ancient_
 signal cancelled
 
 const _AO_DATA         := "res://data/ancient_ones.json"
-const _MIN_PLAYERS     := 2
+const _MIN_PLAYERS     := 1
 const _MAX_PLAYERS     := 8
 const _DEFAULT_PLAYERS := 4
 

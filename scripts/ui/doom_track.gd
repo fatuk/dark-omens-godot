@@ -22,8 +22,13 @@ const DIVIDER_COLOR: Color = Color(0.169, 0.580, 0.067, 0.380)
 
 @export_range(0, 99) var filled: int = 0:
 	set(v):
-		filled = clampi(v, 0, max_doom)
+		var nv: int = clampi(v, 0, max_doom)
+		var changed: bool = nv != filled
+		filled = nv
 		_animate_to(_pct_for(filled))
+		# Звук только при реальном сдвиге и после инициализации (не на загрузке).
+		if changed and _initialized:
+			SfxManager.play(SfxManager.SFX_DOOM_MOVE)
 
 @onready var _bg:       TextureRect = $Bg
 @onready var _fill:     TextureRect = %Fill
@@ -31,6 +36,7 @@ const DIVIDER_COLOR: Color = Color(0.169, 0.580, 0.067, 0.380)
 
 var _displayed_pct: float = 0.0
 var _tween:         Tween = null
+var _initialized:   bool  = false   # звук дум-трека — только после готовности
 
 
 func _ready() -> void:
@@ -39,6 +45,9 @@ func _ready() -> void:
 	_update_mask_size()
 	_displayed_pct = _pct_for(filled)
 	_apply_pct(_displayed_pct)
+	# Со следующего кадра — реагируем звуком на изменения (не на стартовый синк).
+	await get_tree().process_frame
+	_initialized = true
 
 
 func _on_resized() -> void:

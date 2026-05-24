@@ -6,8 +6,8 @@ extends RefCounted
 ## Содержит правила перехода фаз (action → encounter → mythos → action),
 ## валидацию и применение действий игрока (buy_ticket/take_concentration/
 ## rest/travel/pass), пропуск отключённых игроков, старт нового раунда.
-## Триггерит подмодули: _encounter.generate/prefetch/clear_prefetch и
-## _mythos.enter_phase в нужные моменты цикла.
+## Триггерит подмодули: _encounter.begin_turn/generate и _mythos.enter_phase
+## в нужные моменты цикла.
 ##
 ## GameState владеет полями (round_num, phase, current_idx, turn_order,
 ## players, …) — модуль пишет в них напрямую и зовёт _gs._broadcast_sync()/
@@ -82,9 +82,6 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 		_gs._name_of(pid), action_type, int(p["actions_left"])
 	])
 	if int(p["actions_left"]) == 0:
-		# Игрок исчерпал свои действия — запускаем префетч его встречи
-		# в фоне, пока ходят остальные. К encounter-фазе карта уже готова.
-		_gs._encounter.prefetch.call_deferred(pid)
 		advance_action_turn()
 
 	_gs._broadcast_sync()
@@ -141,7 +138,7 @@ func enter_encounter() -> void:
 		return
 	GameConsole.log("[Game] Фаза: встречи · ход: %s" % _gs._name_of(_gs._current_pid()))
 	_gs.phase_changed.emit(_gs.phase)
-	_gs._encounter.generate()
+	_gs._encounter.begin_turn()
 
 
 ## Передать ход на встречу следующему подключённому игроку (или Mythos, если
@@ -152,19 +149,15 @@ func advance_encounter_turn() -> void:
 		_gs._mythos.enter_phase()
 	else:
 		GameConsole.log("[Game] Встреча: ход → %s" % _gs._name_of(_gs._current_pid()))
-		_gs._encounter.generate()
+		_gs._encounter.begin_turn()
 
 
 ## Стартует новый раунд (зовётся из MythosFlow после применения карты мифов):
-## раунд++, фаза action, action-окно у всех восстановлено, встречи закрыты,
-## префетчи прошлого раунда — выбрасываем.
+## раунд++, фаза action, action-окно у всех восстановлено, встречи закрыты.
 func start_new_round() -> void:
 	_gs.round_num  += 1
 	_gs.phase       = "action"
 	_gs.current_idx = 0
-	# Стираем все префетчи прошлого раунда — состояние игроков и доски
-	# изменилось, старые карты могут быть неактуальны.
-	_gs._encounter.clear_prefetch()
 	for pid: String in _gs.players:
 		_gs.players[pid]["actions_left"]   = _gs.ACTIONS_PER_ROUND
 		_gs.players[pid]["actions_used"]   = []

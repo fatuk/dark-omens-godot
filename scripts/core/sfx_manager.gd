@@ -18,6 +18,14 @@ const SFX_MAP_ITEM_HOVER: AudioStream = preload("res://assets/audio/sfx/map-item
 const SFX_MAP_ITEM_BLUR:  AudioStream = preload("res://assets/audio/sfx/map-item-blur.wav")
 ## Сдвиг омена (компасный диск проворачивается на новую ступень).
 const SFX_OMEN_MOVE:      AudioStream = preload("res://assets/audio/sfx/omen-move.wav")
+## Открытие модалки карты Мифов.
+const SFX_MYTHOS_START:   AudioStream = preload("res://assets/audio/sfx/myth-start.wav")
+## Движение дум-трека (Рок продвинулся).
+const SFX_DOOM_MOVE:      AudioStream = preload("res://assets/audio/sfx/doom-track-move.wav")
+## Открытие врат на локации.
+const SFX_OPEN_GATE:      AudioStream = preload("res://assets/audio/sfx/open-gate.wav")
+## Выкладывание улики на локацию.
+const SFX_CLUE_OPEN:      AudioStream = preload("res://assets/audio/sfx/clue-open.wav")
 ## Подсматривание следующего омена по наведению (peek in) и возврат (peek out).
 const SFX_OMEN_PICK_IN:   AudioStream = preload("res://assets/audio/sfx/omen-pick-in.wav")
 const SFX_OMEN_PICK_OUT:  AudioStream = preload("res://assets/audio/sfx/omen-pick-out.wav")

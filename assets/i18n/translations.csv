@@ -27,6 +27,21 @@ PHASE_MYTHOS,Мифы,Mythos
 
 SIDEBAR_NEIGHBORS,СОСЕДНИЕ ЛОКАЦИИ,Neighboring Locations
 SIDEBAR_NO_NEIGHBORS,—,—
+SIDEBAR_ITEMS,НА ЛОКАЦИИ,On this space
+SIDEBAR_CAT_MONSTERS,Монстры,Monsters
+SIDEBAR_CAT_CLUES,Улики,Clues
+SIDEBAR_CAT_RUMORS,Слухи,Rumors
+SIDEBAR_TOUGHNESS,Стойкость,Toughness
+SIDEBAR_HORROR,Ужас,Horror
+SIDEBAR_COMBAT,Бой,Combat
+SIDEBAR_DAMAGE,урон,dmg
+SIDEBAR_USE_ANCIENT_ONE,Статы — с листа Древнего,Stats on the Ancient One sheet
+SKILL_WILL,Воля,Will
+SKILL_STRENGTH,Сила,Strength
+SKILL_LORE,Знание,Lore
+SKILL_INFLUENCE,Влияние,Influence
+SKILL_OBSERVATION,Наблюдение,Observation
+SKILL_NONE,—,—
 LOC_TYPE_CITY,ГОРОД,City
 LOC_TYPE_SEA,МОРЕ,Sea
 LOC_TYPE_WILDERNESS,ДИКАЯ ЗЕМЛЯ,Wilderness
@@ -655,6 +670,24 @@ SKILL_WILL,Воля,Will
 
 ENCOUNTER_TITLE,Встреча,Encounter
 ENCOUNTER_GENERATING,Готовим встречу…,Preparing an encounter…
+ENCOUNTER_CHOICE_TITLE,Выберите встречу,Choose an encounter
+ENCOUNTER_CHOICE_GENERAL,Локационная встреча,Location encounter
+ENCOUNTER_CHOICE_RESEARCH,Исследование (улика),Research (clue)
+ENCOUNTER_CHOICE_GATE,Войти во врата,Enter the gate
+ENCOUNTER_CHOICE_COMBAT,Бой,Combat
+ENCOUNTER_CONTINUE,Дальше,Continue
+COMBAT_HEALTH,Здоровье,Health
+COMBAT_SANITY,Рассудок,Sanity
+COMBAT_MDMG,Урон,Damage
+COMBAT_ROLL,Бросить кубики,Roll dice
+COMBAT_ROLL_WILL,Бросок на Волю,Roll Will
+COMBAT_ROLL_STRENGTH,Бросок на Силу,Roll Strength
+COMBAT_WILL,Шаг 1: Воля,Step 1: Will
+COMBAT_WILL_HINT,Успехи блокируют урон по рассудку,Successes block Sanity damage
+COMBAT_STRENGTH,Шаг 2: Сила,Step 2: Strength
+COMBAT_STRENGTH_HINT,Успехи бьют монстра и гасят урон по вам,Successes hit the monster and reduce damage to you
+COMBAT_WIN,Монстр повержен!,Monster defeated!
+COMBAT_LOSS,Монстр выжил,The monster survives
 ENCOUNTER_CHECK,Проверка,Test
 ENCOUNTER_ROLL,Бросить кубики,Roll the dice
 ENCOUNTER_DICE,Кубики,Dice
