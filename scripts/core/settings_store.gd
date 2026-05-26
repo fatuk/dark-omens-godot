@@ -41,10 +41,10 @@ func _ready() -> void:
 	# Чтобы настройки можно было менять из меню паузы (где tree.paused = true).
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_load()
-	# В редакторе всегда локальный relay — для разработки против docker-compose
-	# dev. Экспортированные сборки идут на прод (Render).
-	if OS.has_feature("editor"):
-		relay_url = "ws://127.0.0.1:3030"
+	# Адрес сервера определяется СБОРКОЙ, а не настройками игры (см.
+	# _build_default_url): редактор → localhost, релиз → прод (или по feature-тегу
+	# экспорт-пресета). Поэтому relay_url не грузится/не пишется в settings.cfg.
+	relay_url = _build_default_url()
 	apply_display()
 	# SettingsStore в autoload идёт ПОСЛЕ Music/SfxManager, поэтому в их _ready()
 	# значения громкости были ещё дефолтными — навёрстываем загруженные здесь,
@@ -91,7 +91,20 @@ func api_base() -> String:
 	return base
 
 
-## Меняет URL и эмитит сигнал — main_menu слушает, чтобы переподключиться.
+## Адрес сервера для текущей СБОРКИ. Контролируется не игрой, а экспорт-пресетом:
+## редактор → локальный relay; релиз → прод. Для отдельной сборки под другой
+## сервер добавь custom feature tag в Export-пресете (Export → Features) и ветку
+## ниже, например staging.
+func _build_default_url() -> String:
+	if OS.has_feature("editor"):
+		return "ws://127.0.0.1:3030"        # локальная разработка
+	if OS.has_feature("staging"):
+		return "wss://dark-omens-staging.onrender.com"
+	return DEFAULT_URL                       # любой релизный билд → прод
+
+
+## Меняет URL в рантайме (поле в настройках доступно только в редакторе). Не
+## сохраняется — при следующем запуске берётся из сборки. main_menu слушает сигнал.
 func set_relay_url(url: String) -> void:
 	var clean := url.strip_edges()
 	if clean.is_empty():
@@ -107,10 +120,7 @@ func set_relay_url(url: String) -> void:
 func save() -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(SETTINGS_FILE)   # ок если файла нет
-	# В редакторе не перезаписываем сохранённый прод-URL — переопределение
-	# на localhost действует только в памяти, в cfg остаётся прод.
-	if not OS.has_feature("editor"):
-		cfg.set_value("relay", "url", relay_url)
+	# relay URL намеренно НЕ сохраняем — сервер задаётся сборкой (_build_default_url).
 	cfg.set_value("display", "fullscreen", fullscreen)
 	var r: Vector2i = RESOLUTIONS[resolution_idx]
 	cfg.set_value("display", "resolution", "%dx%d" % [r.x, r.y])
@@ -127,11 +137,8 @@ func _load() -> void:
 	var cfg := ConfigFile.new()
 	if cfg.load(SETTINGS_FILE) != OK:
 		return
-	relay_url = cfg.get_value("relay", "url", DEFAULT_URL)
-	# Миграция: localhost резолвится в IPv6 ::1, а Docker Desktop на Windows
-	# не пробрасывает IPv6 — соединение виснет. Переписываем на IPv4.
-	if "://localhost:" in relay_url:
-		relay_url = relay_url.replace("://localhost:", "://127.0.0.1:")
+	# relay URL не читаем из cfg — он определяется сборкой (_build_default_url),
+	# выставляется в _ready после _load.
 	fullscreen = cfg.get_value("display", "fullscreen", false)
 	var res_str: String = cfg.get_value("display", "resolution", "1920x1080")
 	for i in range(RESOLUTIONS.size()):

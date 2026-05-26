@@ -54,7 +54,9 @@ func _build() -> void:
 	_vbox.add_child(UIStyle.modal_header("SETTINGS_TITLE", _on_cancel))
 	UIStyle.separator(_vbox)
 
-	if show_server_url:
+	# Поле Relay URL — только в редакторе (дев-инструмент). В релизе сервер задаётся
+	# сборкой, поэтому секцию SERVER не показываем (см. SettingsStore._build_default_url).
+	if show_server_url and OS.has_feature("editor"):
 		_build_server_section()
 		UIStyle.separator(_vbox)
 
