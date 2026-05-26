@@ -32,7 +32,7 @@ const _SKILL_KEYS := {
 
 
 func _ready() -> void:
-	UIStyle.style_panel(_panel, 24)
+	UIStyle.style_modal_panel(_panel)
 	UIStyle.style_button(_roll_btn)
 	UIStyle.style_button(_finish_btn)
 	_title.add_theme_color_override("font_color",     UIColors.ACCENT)

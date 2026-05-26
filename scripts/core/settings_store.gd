@@ -72,17 +72,23 @@ func apply_display() -> void:
 		)
 
 
-## URL для HTTP-API, выведенный из relay_url. Бэкенд унифицированный (один
-## хост на WS и HTTP) — отличается только схема: wss:// → https://, ws:// →
-## http://. Хост и порт те же. Если у вас разный хост на WS и HTTP — это
-## место (и точка вызова в AuthManager.api_base getter) надо переделать.
+## URL для HTTP-API, выведенный из relay_url. В проде бэкенд унифицирован (один
+## хост и порт на WS и HTTP) — меняется только схема: wss:// → https://. Локально
+## же relay и api — разные сервисы (:3030 и :3031), поэтому для localhost порт
+## правится на :3031 (см. ниже). В редакторе AuthManager жёстко берёт :3031.
 func api_base() -> String:
 	var base := relay_url
 	if base.begins_with("wss://"):
 		base = "https://" + base.substr(6)
 	elif base.begins_with("ws://"):
 		base = "http://" + base.substr(5)
-	return base.rstrip("/")
+	base = base.rstrip("/")
+	# Локально relay и HTTP-API — РАЗНЫЕ сервисы (relay :3030, api :3031). В проде
+	# бэкенд унифицирован (один порт), поэтому правим порт только для localhost —
+	# иначе сборка, указывающая на ws://127.0.0.1:3030, бьёт в relay и ловит 404.
+	if base.begins_with("http://127.0.0.1:3030") or base.begins_with("http://localhost:3030"):
+		base = base.replace(":3030", ":3031")
+	return base
 
 
 ## Меняет URL и эмитит сигнал — main_menu слушает, чтобы переподключиться.

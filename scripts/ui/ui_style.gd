@@ -293,7 +293,7 @@ static func texture_icon_button(tex: Texture2D, scale: float = 0.5) -> TextureBu
 # Hover/press feedback для TextureButton: modulate на наведении + press-tween.
 # Аналогично _wire_button_hover для Button, но без отдельного __TexturedBg —
 # для иконки modulate применяется прямо на саму кнопку.
-static func _wire_texture_button_hover(btn: TextureButton) -> void:
+static func _wire_texture_button_hover(btn: BaseButton) -> void:
 	var c_normal   := Color(1.00, 1.00, 1.00, 1.00)
 	var c_hover    := Color(1.20, 1.18, 1.10, 1.00)   # тёплый брайтенинг
 	var c_disabled := Color(0.45, 0.45, 0.48, 1.00)
@@ -352,6 +352,54 @@ static func panel(padding: int = 16) -> PanelContainer:
 	var p := PanelContainer.new()
 	style_panel(p, padding)
 	return p
+
+
+# ── Модальная рамка ──────────────────────────────────────────────────────────
+# Единый ассет-скин для ВСЕХ модалок: орнаментная рамка modal-frame.png,
+# скомпонованная поверх паттерна main-gb.png (см. assets/modal/modal-panel-bg.png),
+# нарезанная 9-slice — углы фиксированы, центр тянется.
+
+const _MODAL_BG_TEX: Texture2D = preload("res://assets/modal/modal-panel-bg.png")
+const _MODAL_CLOSE_TEX: Texture2D = preload("res://assets/modal/modal-close-btn.png")
+const _MODAL_FRAME_MARGIN: float = 80.0   # ассеты @2× (×0.5); угловой орнамент ~75px
+
+## StyleBoxTexture с орнаментной рамкой. content_pad — отступ контента внутрь
+## от рамки (по краям рамка ~14px + воздух).
+static func make_modal_stylebox(content_pad: int = 26) -> StyleBoxTexture:
+	var sb := StyleBoxTexture.new()
+	sb.texture = _MODAL_BG_TEX
+	sb.texture_margin_left   = _MODAL_FRAME_MARGIN
+	sb.texture_margin_right  = _MODAL_FRAME_MARGIN
+	sb.texture_margin_top    = _MODAL_FRAME_MARGIN
+	sb.texture_margin_bottom = _MODAL_FRAME_MARGIN
+	sb.content_margin_left   = float(content_pad)
+	sb.content_margin_right  = float(content_pad)
+	sb.content_margin_top    = float(content_pad)
+	sb.content_margin_bottom = float(content_pad)
+	return sb
+
+
+## Применяет орнаментную модальную рамку к PanelContainer.
+static func style_modal_panel(p: PanelContainer, content_pad: int = 22) -> void:
+	p.add_theme_stylebox_override("panel", make_modal_stylebox(content_pad))
+
+
+## Делает кнопку закрытия модалки из арта modal-close-btn.png (без фона/рамок).
+static func style_modal_close_button(btn: Button) -> void:
+	btn.text = ""
+	btn.icon = _MODAL_CLOSE_TEX
+	btn.expand_icon = true
+	btn.flat = true
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	if btn.custom_minimum_size == Vector2.ZERO:
+		btn.custom_minimum_size = Vector2(32, 32)
+	var empty := StyleBoxEmpty.new()
+	for s: String in ["normal", "hover", "pressed", "focus", "disabled"]:
+		btn.add_theme_stylebox_override(s, empty)
+	# Тот же hover-эффект, что у кнопки Info на карусели: тёплый брайтенинг
+	# иконки на наведении + press-анимация вниз (фон прозрачный → красится иконка).
+	_wire_texture_button_hover(btn)
 
 
 # ── Поле ввода ─────────────────────────────────────────────────────────────────
@@ -518,16 +566,65 @@ static func label(
 	return lbl
 
 
+## Единый заголовок модалки: размер 22, по центру, перенос по словам.
+## color — обычно ACCENT (янтарь), у мифа DANGER (красный).
+static func modal_title(text: String, color: Color = UIColors.ACCENT) -> Label:
+	var lbl := label(text, 22, color, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl.name = "Title"
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return lbl
+
+
+## Шапка модалки: центрированный заголовок + крестик закрытия в правом верхнем
+## углу (как у ModalDialog). on_close вызывается по нажатию крестика; если
+## Callable пустой — крестик не добавляется. Добавляй первым ребёнком в VBox
+## панели — крестик выезжает за край контента на орнаментную рамку.
+static func modal_header(title_text: String, on_close: Callable = Callable(), color: Color = UIColors.ACCENT) -> Control:
+	var header := Control.new()
+	header.name = "Header"
+	header.custom_minimum_size = Vector2(0, 40)
+	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var title := modal_title(title_text, color)
+	title.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	header.add_child(title)
+
+	if on_close.is_valid():
+		var close := Button.new()
+		close.name = "CloseBtn"
+		style_modal_close_button(close)
+		close.anchor_left = 1.0
+		close.anchor_right = 1.0
+		close.offset_left   = -10.0
+		close.offset_top    = -38.0
+		close.offset_right  = 38.0
+		close.offset_bottom = 10.0
+		close.pressed.connect(on_close)
+		header.add_child(close)
+
+	return header
+
+
 # ── Разделитель ────────────────────────────────────────────────────────────────
 
+## Цвет разделителей в модалках — почти чёрный, под тёмную рамку.
+const MODAL_LINE_COLOR: Color = Color("#0b0b09")
+
 ## Создаёт горизонтальный разделитель и добавляет его в parent.
-static func separator(parent: Control, color: Color = UIColors.BORDER) -> void:
+static func separator(parent: Control, color: Color = MODAL_LINE_COLOR) -> void:
 	var sep := HSeparator.new()
+	style_separator(sep, color)
+	parent.add_child(sep)
+
+
+## Применяет цвет к существующему HSeparator (например, объявленному в .tscn).
+static func style_separator(sep: HSeparator, color: Color = MODAL_LINE_COLOR) -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
 	style.set_content_margin_all(0)
 	sep.add_theme_stylebox_override("separator", style)
-	parent.add_child(sep)
 
 
 # ── Модальное окно ─────────────────────────────────────────────────────────────
@@ -553,7 +650,8 @@ static func modal(
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	backdrop.add_child(center)
 
-	var p := panel(20)
+	var p := PanelContainer.new()
+	style_modal_panel(p)
 	p.name = "Panel"
 	p.custom_minimum_size.x = min_width
 	center.add_child(p)
@@ -563,13 +661,8 @@ static func modal(
 	vbox.add_theme_constant_override("separation", 12)
 	p.add_child(vbox)
 
-	var hdr := Label.new()
-	hdr.name = "Title"
-	hdr.text = title   # ожидается translation key — Godot переводит сам
-	hdr.add_theme_font_size_override("font_size", 16)
-	hdr.add_theme_color_override("font_color", UIColors.ACCENT)
-	vbox.add_child(hdr)
-
+	# Шапка с центрированным заголовком и крестиком, который закрывает окно.
+	vbox.add_child(modal_header(title, backdrop.queue_free))
 	separator(vbox)
 
 	content_builder.call(vbox)

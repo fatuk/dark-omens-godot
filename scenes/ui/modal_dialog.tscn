@@ -1,6 +1,7 @@
-[gd_scene format=3 uid="uid://544omj8f3st1"]
+[gd_scene load_steps=3 format=3 uid="uid://544omj8f3st1"]
 
 [ext_resource type="Script" path="res://scripts/ui/modal_dialog.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://0egr7p288rma" path="res://assets/modal/modal-title-shield.png" id="2_shield"]
 
 [node name="ModalDialog" type="CanvasLayer"]
 layer = 90
@@ -40,25 +41,46 @@ layout_mode = 2
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="HeaderRow" type="HBoxContainer" parent="Root/Center/Panel/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Title" type="Label" parent="Root/Center/Panel/VBox/HeaderRow"]
+[node name="Header" type="Control" parent="Root/Center/Panel/VBox"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 1
+
+[node name="Shield" type="TextureRect" parent="Root/Center/Panel/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_shield")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Root/Center/Panel/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 theme_override_font_sizes/font_size = 18
 text = ""
+horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CloseBtn" type="Button" parent="Root/Center/Panel/VBox/HeaderRow"]
+[node name="CloseBtn" type="Button" parent="Root/Center/Panel/VBox/Header"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(36, 36)
-layout_mode = 2
-size_flags_vertical = 4
-text = "×"
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -10.0
+offset_top = -38.0
+offset_right = 38.0
+offset_bottom = 10.0
+grow_horizontal = 0
+grow_vertical = 1
 
 [node name="HeaderSep" type="HSeparator" parent="Root/Center/Panel/VBox"]
 unique_name_in_owner = true

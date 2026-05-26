@@ -406,7 +406,8 @@ func _build_campaign_gate() -> void:
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	backdrop.add_child(center)
 
-	var panel := UIStyle.panel(32)
+	var panel := PanelContainer.new()
+	UIStyle.style_modal_panel(panel)
 	panel.name = "Panel"
 	panel.custom_minimum_size = Vector2(620.0, 0.0)
 	center.add_child(panel)

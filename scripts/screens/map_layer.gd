@@ -323,6 +323,8 @@ func _spawn_markers() -> void:
 			var sprite := Sprite2D.new()
 			sprite.name     = "Marker_%s_%d" % [loc_name, tile_idx]
 			sprite.texture  = tex
+			# Mipmaps: гасят мерцание медальонов при панорамировании карты.
+			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 			sprite.position = world_pos
 			sprite.z_index  = 2   # медальон локации — над колодой сущностей (z=1)
 			add_child(sprite)

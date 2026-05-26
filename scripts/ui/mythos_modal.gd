@@ -25,7 +25,7 @@ var _last_card_key: String = ""
 
 
 func _ready() -> void:
-	UIStyle.style_panel(_panel, 24)
+	UIStyle.style_modal_panel(_panel)
 	_build()
 	GameState.state_changed.connect(_refresh)
 	_refresh()
@@ -34,12 +34,7 @@ func _ready() -> void:
 # ── Сборка ────────────────────────────────────────────────────────────────────
 
 func _build() -> void:
-	_title_lbl = Label.new()
-	_title_lbl.name = "Title"
-	_title_lbl.add_theme_font_size_override("font_size", 22)
-	_title_lbl.add_theme_color_override("font_color", UIColors.DANGER)
-	_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_title_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_title_lbl = UIStyle.modal_title("", UIColors.DANGER)
 	_vbox.add_child(_title_lbl)
 
 	UIStyle.separator(_vbox)

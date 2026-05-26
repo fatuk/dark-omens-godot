@@ -42,7 +42,7 @@ func _ready() -> void:
 	# Чтобы работало в PauseMenu (tree.paused).
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_STOP   # клики мимо панели не падают вниз
-	UIStyle.style_panel(_panel, 24)
+	UIStyle.style_modal_panel(_panel)
 	_music_snap = MusicManager.volume
 	_sfx_snap   = SfxManager.volume
 	_build()
@@ -51,12 +51,7 @@ func _ready() -> void:
 # ── Сборка контента ───────────────────────────────────────────────────────────
 
 func _build() -> void:
-	var title := Label.new()
-	title.name = "Title"
-	title.text = "SETTINGS_TITLE"
-	title.add_theme_font_size_override("font_size", 22)
-	title.add_theme_color_override("font_color", UIColors.ACCENT)
-	_vbox.add_child(title)
+	_vbox.add_child(UIStyle.modal_header("SETTINGS_TITLE", _on_cancel))
 	UIStyle.separator(_vbox)
 
 	if show_server_url:
@@ -172,6 +167,7 @@ func _build_language_section() -> void:
 
 
 func _build_buttons() -> void:
+	# Cancel убран — закрытие через крестик в шапке (тоже откатывает live-preview).
 	var btns := HBoxContainer.new()
 	btns.name = "Buttons"
 	btns.add_theme_constant_override("separation", 8)
@@ -182,12 +178,6 @@ func _build_buttons() -> void:
 	save_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	save_btn.pressed.connect(_on_save)
 	btns.add_child(save_btn)
-
-	var cancel_btn := UIStyle.button("BTN_CANCEL_BIG", UIColors.MUTED)
-	cancel_btn.name = "CancelBtn"
-	cancel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	cancel_btn.pressed.connect(_on_cancel)
-	btns.add_child(cancel_btn)
 
 
 # ── Save/Cancel ───────────────────────────────────────────────────────────────

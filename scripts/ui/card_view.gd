@@ -32,8 +32,8 @@ const _BADGE_TEXT_OFFSET_X:      int = 40
 const _QUOTE_OFFSET_TOP:    int = -63
 const _QUOTE_OFFSET_BOTTOM: int = -13
 const _QUOTE_OFFSET_X:      int = 40
-const _QUOTE_COLOR := Color("#8e6940")
-
+# Цитата — тем же цветом, что и имя сыщика (верхний текст).
+const _QUOTE_COLOR := UIColors.TEXT
 var _placeholder_tex: ImageTexture
 
 var _portrait: TextureRect

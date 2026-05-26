@@ -92,15 +92,4 @@ func _build_authors_content(vbox: VBoxContainer) -> void:
 	body.add_theme_font_size_override("font_size", 14)
 	body.add_theme_color_override("font_color", UIColors.TEXT)
 	vbox.add_child(body)
-
-	var close_btn := UIStyle.button("BTN_CLOSE")
-	close_btn.name = "CloseBtn"
-	close_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	close_btn.pressed.connect(_close_authors)
-	vbox.add_child(close_btn)
-
-
-func _close_authors() -> void:
-	if is_instance_valid(_authors_modal):
-		_authors_modal.queue_free()
-	_authors_modal = null
+	# Закрытие — крестиком в шапке (см. UIStyle.modal).

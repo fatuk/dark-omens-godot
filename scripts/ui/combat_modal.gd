@@ -11,7 +11,7 @@ extends CanvasLayer
 
 
 func _ready() -> void:
-	UIStyle.style_panel(_panel, 24)
+	UIStyle.style_modal_panel(_panel)
 	GameState.state_changed.connect(_refresh)
 	_refresh()
 
@@ -32,12 +32,7 @@ func _build(card: Dictionary) -> void:
 	var res: Dictionary = card.get("resolution", {})
 	var done: bool = not res.is_empty()
 
-	var title := Label.new()
-	title.text = String(card.get("monsterName", "ENCOUNTER_TITLE"))
-	title.add_theme_font_size_override("font_size", 22)
-	title.add_theme_color_override("font_color", UIColors.ACCENT)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_vbox.add_child(title)
+	_vbox.add_child(UIStyle.modal_title(String(card.get("monsterName", "ENCOUNTER_TITLE"))))
 
 	var cols := HBoxContainer.new()
 	cols.add_theme_constant_override("separation", 20)

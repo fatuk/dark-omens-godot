@@ -43,9 +43,12 @@ func _unhandled_input(event: InputEvent) -> void:
 # ── Стили ─────────────────────────────────────────────────────────────────────
 
 func _apply_styles() -> void:
-	UIStyle.style_panel(_main_panel, 28)
-	(get_node("Root/Center/MainPanel/VBox/Title") as Label) \
-		.add_theme_color_override("font_color", UIColors.ACCENT)
+	UIStyle.style_modal_panel(_main_panel)
+	var title := get_node("Root/Center/MainPanel/VBox/Title") as Label
+	title.add_theme_color_override("font_color", UIColors.ACCENT)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	UIStyle.style_separator(get_node("Root/Center/MainPanel/VBox/Sep1") as HSeparator)
+	UIStyle.style_separator(get_node("Root/Center/MainPanel/VBox/Sep2") as HSeparator)
 	UIStyle.style_button(_continue_btn)
 	UIStyle.style_button(_settings_btn)
 	UIStyle.style_button(_menu_btn,  UIColors.WARNING)

@@ -32,7 +32,7 @@ var _ao_entries:   Array = []   # [{id, nameKey}, ...] из ancient_ones.json
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP   # клики мимо панели не падают вниз
-	UIStyle.style_panel(_panel, 24)
+	UIStyle.style_modal_panel(_panel)
 	_ao_entries = DataLoader.load_array(_AO_DATA)
 	_build()
 	_name_input.grab_focus()
@@ -47,12 +47,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 # ── Сборка контента ───────────────────────────────────────────────────────────
 
 func _build() -> void:
-	var title := Label.new()
-	title.name = "Title"
-	title.text = "MENU_BTN_CREATE_ROOM"
-	title.add_theme_font_size_override("font_size", 22)
-	title.add_theme_color_override("font_color", UIColors.ACCENT)
-	_vbox.add_child(title)
+	_vbox.add_child(UIStyle.modal_header("MENU_BTN_CREATE_ROOM", _on_cancel))
 	UIStyle.separator(_vbox)
 
 	# Название
@@ -127,17 +122,12 @@ func _build_buttons() -> void:
 	btns.add_theme_constant_override("separation", 8)
 	_vbox.add_child(btns)
 
+	# Cancel убран — закрытие через крестик в шапке (_on_cancel).
 	var create_btn := UIStyle.button("BTN_CREATE_BIG", UIColors.DANGER)
 	create_btn.name = "CreateBtn"
 	create_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	create_btn.pressed.connect(_on_create)
 	btns.add_child(create_btn)
-
-	var cancel_btn := UIStyle.button("BTN_CANCEL_BIG", UIColors.MUTED)
-	cancel_btn.name = "CancelBtn"
-	cancel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	cancel_btn.pressed.connect(_on_cancel)
-	btns.add_child(cancel_btn)
 
 
 # ── Создать / Отмена ──────────────────────────────────────────────────────────

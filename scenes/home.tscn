@@ -1,39 +1,51 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://djwvpqeepag3c"]
 
-[ext_resource type="Script" path="res://scripts/screens/home.gd" id="1_home"]
+[ext_resource type="Script" uid="uid://beqygmxvrjppy" path="res://scripts/screens/home.gd" id="1_home"]
 [ext_resource type="Texture2D" uid="uid://c7ruv788i1xik" path="res://assets/main-bg.png" id="2_bg"]
 [ext_resource type="Texture2D" uid="uid://vkts82xxlwl1" path="res://assets/logo.png" id="3_logo"]
-[ext_resource type="Shader" path="res://assets/shaders/fog.gdshader" id="4_fog"]
+[ext_resource type="Shader" uid="uid://ccf0otuh00sff" path="res://assets/shaders/fog.gdshader" id="4_fog"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fog"]
 shader = ExtResource("4_fog")
+shader_parameter/fog_color = Color(0.58, 0.63, 0.61, 1)
+shader_parameter/speed = 0.03
+shader_parameter/scale = 1.9
+shader_parameter/density = 1.1
+shader_parameter/ground = 0.65
+shader_parameter/wispiness = 0.45
 
-[node name="Home" type="Control"]
+[node name="Home" type="Control" unique_id=1525038621]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_home")
 
-[node name="Bg" type="TextureRect" parent="."]
+[node name="Bg" type="TextureRect" parent="." unique_id=1887896555]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("2_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Fog" type="ColorRect" parent="."]
+[node name="Fog" type="ColorRect" parent="." unique_id=960654142]
+material = SubResource("ShaderMaterial_fog")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-material = SubResource("ShaderMaterial_fog")
 
-[node name="Logo" type="TextureRect" parent="."]
+[node name="Logo" type="TextureRect" parent="." unique_id=2036027738]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -48,7 +60,7 @@ texture = ExtResource("3_logo")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Menu" type="VBoxContainer" parent="."]
+[node name="Menu" type="VBoxContainer" parent="." unique_id=1437664623]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -60,33 +72,34 @@ offset_bottom = 866.0
 grow_horizontal = 2
 theme_override_constants/separation = 14
 
-[node name="PlayBtn" type="Button" parent="Menu"]
+[node name="PlayBtn" type="Button" parent="Menu" unique_id=8953550]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "HOME_BTN_PLAY"
 
-[node name="AuthorsBtn" type="Button" parent="Menu"]
+[node name="AuthorsBtn" type="Button" parent="Menu" unique_id=642879351]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "HOME_BTN_AUTHORS"
 
-[node name="SettingsBtn" type="Button" parent="Menu"]
+[node name="SettingsBtn" type="Button" parent="Menu" unique_id=356185320]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "HOME_BTN_SETTINGS"
 
-[node name="QuitBtn" type="Button" parent="Menu"]
+[node name="QuitBtn" type="Button" parent="Menu" unique_id=1613163480]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "HOME_BTN_QUIT"
 
-[node name="VersionLabel" type="Label" parent="."]
+[node name="VersionLabel" type="Label" parent="." unique_id=157000458]
 unique_name_in_owner = true
 layout_mode = 1
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 74.0
@@ -94,5 +107,4 @@ offset_top = -40.0
 offset_right = 370.0
 offset_bottom = -16.0
 grow_vertical = 0
-mouse_filter = 2
 theme_override_font_sizes/font_size = 13

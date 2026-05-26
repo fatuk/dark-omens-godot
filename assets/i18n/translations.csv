@@ -15,7 +15,6 @@ SETTINGS_VOLUME_SFX,Эффекты,Sound effects
 BTN_SAVE,Сохранить,Save
 BTN_CANCEL,Отмена,Cancel
 BTN_BACK,Назад,Back
-BTN_CLOSE,Закрыть,Close
 BTN_RESET,Сбросить,Reset
 BTN_OK,OK,OK
 BTN_YES,Да,Yes
@@ -374,7 +373,6 @@ FORM_CODE,Код:,Code:
 BTN_LOG_IN,ВОЙТИ,LOG IN
 MENU_QUIT,Выйти,Quit
 FORM_LANGUAGE,Язык:,Language:
-BTN_CANCEL_BIG,ОТМЕНА,CANCEL
 SECTION_SERVER,СЕРВЕР,SERVER
 LOBBY_BTN_READY,  ГОТОВ,  READY
 PAUSE_TITLE,  ПАУЗА,  PAUSED

@@ -33,6 +33,7 @@ const ANIM_TIME: float = 0.18
 @onready var _content:  VBoxContainer  = %Content
 @onready var _close_btn: Button        = %CloseBtn
 @onready var _header_sep: HSeparator   = %HeaderSep
+@onready var _shield:   TextureRect    = %Shield
 
 var _is_open: bool   = false
 var _tween:   Tween  = null
@@ -41,9 +42,9 @@ var _tween:   Tween  = null
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_panel.custom_minimum_size.x = float(panel_min_width)
-	UIStyle.style_panel(_panel, 20)
-	UIStyle.style_icon_button(_close_btn, UIColors.DANGER)
-	_close_btn.add_theme_font_size_override("font_size", 18)
+	UIStyle.style_modal_panel(_panel)
+	UIStyle.style_modal_close_button(_close_btn)
+	UIStyle.style_separator(_header_sep)
 	_title.add_theme_color_override("font_color", UIColors.ACCENT)
 	_close_btn.pressed.connect(close)
 	_backdrop.gui_input.connect(_on_backdrop_input)
@@ -66,9 +67,11 @@ func _input(event: InputEvent) -> void:
 func set_title(text: String) -> void:
 	if not is_node_ready():
 		await ready
-	_title.text = "  " + text
-	_title.visible = not text.is_empty()
-	_header_sep.visible = not text.is_empty()
+	_title.text = text
+	var has_title := not text.is_empty()
+	_title.visible = has_title
+	_shield.visible = has_title
+	_header_sep.visible = has_title
 
 
 ## Заменяет всё содержимое слота на единственный node. Если нужно несколько
