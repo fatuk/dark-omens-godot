@@ -975,3 +975,339 @@ MON_YIG_NAME,Yig,Yig
 MON_YIG_ABILITY,"If you lose Sanity from the Will test, gain a Cursed Condition.","If you lose Sanity from the Will test, gain a Cursed Condition."
 MON_ZOMBIE_HORDE_NAME,Zombie Horde,Zombie Horde
 MON_ZOMBIE_HORDE_ABILITY,"If you lose Health from the Strength test, discard 1 Ally Asset. Reckoning: Roll 1 die. On a 1 or 2, advance Doom by 1.","If you lose Health from the Strength test, discard 1 Ally Asset. Reckoning: Roll 1 die. On a 1 or 2, advance Doom by 1."
+ASSET_18_DERRINGER_NAME,.18 Derringer,.18 Derringer
+ASSET_18_DERRINGER_ABILITY,You may add 1 to the result of 1 die when resolving a Strength test during a Combat Encounter.,You may add 1 to the result of 1 die when resolving a Strength test during a Combat Encounter.
+ASSET_25_AUTOMATIC_NAME,.25 Automatic,.25 Automatic
+ASSET_25_AUTOMATIC_ABILITY,Roll 1 additional die when resolving a Strength test during a Combat Encounter.,Roll 1 additional die when resolving a Strength test during a Combat Encounter.
+ASSET_32_COLT_POCKET_NAME,.32 Colt Pocket,.32 Colt Pocket
+ASSET_32_COLT_POCKET_ABILITY,Roll 1 additional die when resolving a Strength during a Combat Encounter. You may reroll 1 die when resolving a Strength test during a Combat Encounter.,Roll 1 additional die when resolving a Strength during a Combat Encounter. You may reroll 1 die when resolving a Strength test during a Combat Encounter.
+ASSET_38_REVOLVER_NAME,.38 Revolver,.38 Revolver
+ASSET_38_REVOLVER_ABILITY,Gain +2 Strength during Combat Encounters.,Gain +2 Strength during Combat Encounters.
+ASSET_45_AUTOMATIC_NAME,.45 Automatic,.45 Automatic
+ASSET_45_AUTOMATIC_ABILITY,Gain +3 Strength during Combat Encounters.,Gain +3 Strength during Combat Encounters.
+ASSET_45_COLT_REVOLVER_NAME,.45 Colt Revolver,.45 Colt Revolver
+ASSET_45_COLT_REVOLVER_ABILITY,"Once per round, you may gain +3 Strength during a Combat Encounter.","Once per round, you may gain +3 Strength during a Combat Encounter."
+ASSET_AGENCY_QUARANTINE_NAME,Agency Quarantine,Agency Quarantine
+ASSET_AGENCY_QUARANTINE_ABILITY,"When you gain this card, immediately choose a space. Each Monster on the chosen space loses 4 Health. Then discard this card.","When you gain this card, immediately choose a space. Each Monster on the chosen space loses 4 Health. Then discard this card."
+ASSET_AGENCY_STAKEOUT_NAME,Agency Stakeout,Agency Stakeout
+ASSET_AGENCY_STAKEOUT_ABILITY,"When you gain this card, immediately gain clue and 1 Monster of your choice on any space loses 3 Health. Then, discard this card.","When you gain this card, immediately gain clue and 1 Monster of your choice on any space loses 3 Health. Then, discard this card."
+ASSET_AGENT_OF_SECRETS_NAME,Agent of Secrets,Agent of Secrets
+ASSET_AGENT_OF_SECRETS_ABILITY,Gain +1 Lore and +1 Observation. You may reroll 1 die when resolving a Lore or Observation test.,Gain +1 Lore and +1 Observation. You may reroll 1 die when resolving a Lore or Observation test.
+ASSET_ALCHEMICAL_CONCOCTION_NAME,Alchemical Concoction,Alchemical Concoction
+ASSET_ALCHEMICAL_CONCOCTION_ABILITY,You may discard this card to gain +5 Strength during a Combat Encounter.,You may discard this card to gain +5 Strength during a Combat Encounter.
+ASSET_ANCIENT_MANUSCRIPT_NAME,Ancient Manuscript,Ancient Manuscript
+ASSET_ANCIENT_MANUSCRIPT_ABILITY,"Gain +1 Lore and +1 Will. Once per round, you may reroll 1 die when resolving a test.","Gain +1 Lore and +1 Will. Once per round, you may reroll 1 die when resolving a test."
+ASSET_ANCIENT_TOME_NAME,Ancient Tome,Ancient Tome
+ASSET_ANCIENT_TOME_ABILITY,"Action: You study the words of the long dead language (Lore). If you pass, you may spend 1 Sanity to gain clue, 1 Spell, or 1 Task Unique Asset.","Action: You study the words of the long dead language (Lore). If you pass, you may spend 1 Sanity to gain clue, 1 Spell, or 1 Task Unique Asset."
+ASSET_ANKH_NAME,Ankh,Ankh
+ASSET_ANKH_ABILITY,Gain +2 Lore when resolving Spell effects. Gain +2 Will when resolving Combat Encounters.,Gain +2 Lore when resolving Spell effects. Gain +2 Will when resolving Combat Encounters.
+ASSET_APPEAL_TO_THE_COUNCIL_NAME,Appeal to the Council,Appeal to the Council
+ASSET_APPEAL_TO_THE_COUNCIL_ABILITY,"When you gain this card, you may immediately spend clue to retreat doom by 1. Then discard this card.","When you gain this card, you may immediately spend clue to retreat doom by 1. Then discard this card."
+ASSET_ARCANE_ASSISTANT_NAME,Arcane Assistant,Arcane Assistant
+ASSET_ARCANE_ASSISTANT_ABILITY,Roll 1 additional die when resolving a Lore test as part of a Spell effect.,Roll 1 additional die when resolving a Lore test as part of a Spell effect.
+ASSET_ARCANE_BLADE_NAME,Arcane Blade,Arcane Blade
+ASSET_ARCANE_BLADE_ABILITY,Gain +2 Strength when resolving Combat Encounters. Gain +2 Lore when resolving Spell effects.,Gain +2 Strength when resolving Combat Encounters. Gain +2 Lore when resolving Spell effects.
+ASSET_ARCANE_MANUSCRIPTS_NAME,Arcane Manuscripts,Arcane Manuscripts
+ASSET_ARCANE_MANUSCRIPTS_ABILITY,Gain +1 Lore when resolving Spell effects.,Gain +1 Lore when resolving Spell effects.
+ASSET_ARCANE_SCHOLAR_NAME,Arcane Scholar,Arcane Scholar
+ASSET_ARCANE_SCHOLAR_ABILITY,Gain +1 Lore. You may reroll 1 die when resolving a Lore test.,Gain +1 Lore. You may reroll 1 die when resolving a Lore test.
+ASSET_ARCANE_SCROLL_NAME,Arcane Scroll,Arcane Scroll
+ASSET_ARCANE_SCROLL_ABILITY,You may add 1 to the result of 1 die when resolving a Lore test as part of a Spell effect.,You may add 1 to the result of 1 die when resolving a Lore test as part of a Spell effect.
+ASSET_ARCANE_SUTRA_NAME,Arcane Sutra,Arcane Sutra
+ASSET_ARCANE_SUTRA_ABILITY,Gain +2 Lore when resolving Spell effects. You may reroll 2 dice with matching results when resolving a Lore test as part of a Spell effect.,Gain +2 Lore when resolving Spell effects. You may reroll 2 dice with matching results when resolving a Lore test as part of a Spell effect.
+ASSET_ARCANE_TOME_NAME,Arcane Tome,Arcane Tome
+ASSET_ARCANE_TOME_ABILITY,"Gain +2 Lore when resolving Spell effects. When you perform a Rest action, you may test Lore. If you pass, gain 1 Spell.","Gain +2 Lore when resolving Spell effects. When you perform a Rest action, you may test Lore. If you pass, gain 1 Spell."
+ASSET_ARCANIST_NAME,Arcanist,Arcanist
+ASSET_ARCANIST_ABILITY,"When you gain this card from the deck or reserve, gain 2 Spells. Then, discard 1 Spell. Roll 1 additional die when resolving a Lore test as part of a Spell effect.","When you gain this card from the deck or reserve, gain 2 Spells. Then, discard 1 Spell. Roll 1 additional die when resolving a Lore test as part of a Spell effect."
+ASSET_ASSASSINATION_NAME,Assassination,Assassination
+ASSET_ASSASSINATION_ABILITY,"When you gain this card, immediately choose a Monster on any space. The chosen Monster loses 2 Health. Then discard this card.","When you gain this card, immediately choose a Monster on any space. The chosen Monster loses 2 Health. Then discard this card."
+ASSET_ASTRONOMY_GUIDEBOOK_NAME,Astronomy Guidebook,Astronomy Guidebook
+ASSET_ASTRONOMY_GUIDEBOOK_ABILITY,"When you close a Gate during an Other World Encounter, recover 1 Sanity and gain clue.","When you close a Gate during an Other World Encounter, recover 1 Sanity and gain clue."
+ASSET_ASTUTE_RESEARCHER_NAME,Astute Researcher,Astute Researcher
+ASSET_ASTUTE_RESEARCHER_ABILITY,"When you gain this card from the deck or reserve, gain 2 Task Unique Asset. Then discard 1 Task Unique Asset. Whenever you discard a Task Unique Asset, gain clue.","When you gain this card from the deck or reserve, gain 2 Task Unique Asset. Then discard 1 Task Unique Asset. Whenever you discard a Task Unique Asset, gain clue."
+ASSET_AXE_NAME,Axe,Axe
+ASSET_AXE_ABILITY,Gain +2 Strength during Combat Encounters. You may spend 2 Sanity to reroll any number of dice when resolving a Strength test during a Combat Encounter.,Gain +2 Strength during Combat Encounters. You may spend 2 Sanity to reroll any number of dice when resolving a Strength test during a Combat Encounter.
+ASSET_BANDAGES_NAME,Bandages,Bandages
+ASSET_BANDAGES_ABILITY,You may discard this card to prevent an investigator on your space from losing up to 2 Health.,You may discard this card to prevent an investigator on your space from losing up to 2 Health.
+ASSET_BLESSED_BLADE_NAME,Blessed Blade,Blessed Blade
+ASSET_BLESSED_BLADE_ABILITY,"When you gain this card from the deck or reserve, gain 1 Boon Conditions. Gain +3 Strength during Combat Encounters.","When you gain this card from the deck or reserve, gain 1 Boon Conditions. Gain +3 Strength during Combat Encounters."
+ASSET_BLUNDERBUSS_NAME,Blunderbuss,Blunderbuss
+ASSET_BLUNDERBUSS_ABILITY,"When resolving a Combat Encounter, you may gain +2 Strength. If you do, each 6 you roll when resolving a Strength test during a Combat Encounter counts as 2 successes and each 1 negates 1 success.","When resolving a Combat Encounter, you may gain +2 Strength. If you do, each 6 you roll when resolving a Strength test during a Combat Encounter counts as 2 successes and each 1 negates 1 success."
+ASSET_BODYGUARD_NAME,Bodyguard,Bodyguard
+ASSET_BODYGUARD_ABILITY,Gain +1 Strength. Reduce the damage of Monsters you encounter by 1 to a minimum of 1.,Gain +1 Strength. Reduce the damage of Monsters you encounter by 1 to a minimum of 1.
+ASSET_BOOK_OF_SPELLS_NAME,Book of Spells,Book of Spells
+ASSET_BOOK_OF_SPELLS_ABILITY,"When you gain this card from the deck or reserve, gain 2 Spells and discard 1 of them. Gain +2 Lore when resolving Spell effects.","When you gain this card from the deck or reserve, gain 2 Spells and discard 1 of them. Gain +2 Lore when resolving Spell effects."
+ASSET_BULL_WHIP_NAME,Bull Whip,Bull Whip
+ASSET_BULL_WHIP_ABILITY,Gain +1 Strength during Combat Encounters. You may reroll 1 die when resolving a Strength test during a Combat Encounter.,Gain +1 Strength during Combat Encounters. You may reroll 1 die when resolving a Strength test during a Combat Encounter.
+ASSET_CAMERA_NAME,Camera,Camera
+ASSET_CAMERA_ABILITY,"Once per round, when you spend a clue, you may gain 1 Clue.","Once per round, when you spend a clue, you may gain 1 Clue."
+ASSET_CARBINE_RIFLE_NAME,Carbine Rifle,Carbine Rifle
+ASSET_CARBINE_RIFLE_ABILITY,"Once per round, you may gain +5 Strength during a Combat Encounter.","Once per round, you may gain +5 Strength during a Combat Encounter."
+ASSET_CAT_BURGLAR_NAME,Cat Burglar,Cat Burglar
+ASSET_CAT_BURGLAR_ABILITY,"Action: Roll 1 die. On a 5 or 6, gain 1 Item or Trinket Asset from the reserve. On a 1, discard this card.","Action: Roll 1 die. On a 5 or 6, gain 1 Item or Trinket Asset from the reserve. On a 1, discard this card."
+ASSET_CHAINSAW_NAME,Chainsaw,Chainsaw
+ASSET_CHAINSAW_ABILITY,Gain +3 Strength during Combat Encounters. Each 6 you roll when resolving a Strength test during a Combat Encounter counts as 2 successes.,Gain +3 Strength during Combat Encounters. Each 6 you roll when resolving a Strength test during a Combat Encounter counts as 2 successes.
+ASSET_CHARTER_FLIGHT_NAME,Charter Flight,Charter Flight
+ASSET_CHARTER_FLIGHT_ABILITY,"When you gain this card, immediately move up to 2 spaces. Then discard this card.","When you gain this card, immediately move up to 2 spaces. Then discard this card."
+ASSET_CHIEF_INSPECTOR_NAME,Chief Inspector,Chief Inspector
+ASSET_CHIEF_INSPECTOR_ABILITY,Gain +1 Observation. Gain +2 Observation during Research Encounters.,Gain +1 Observation. Gain +2 Observation during Research Encounters.
+ASSET_CONSECRATION_NAME,Consecration,Consecration
+ASSET_CONSECRATION_ABILITY,"When you gain this card, immediately gain 1 Boon Condition. Then discard this card.","When you gain this card, immediately gain 1 Boon Condition. Then discard this card."
+ASSET_CONSPIRACY_THEORIST_NAME,Conspiracy Theorist,Conspiracy Theorist
+ASSET_CONSPIRACY_THEORIST_ABILITY,"Gain +2 Observation during Research Encounters. Reckoning: Roll 1 die. On a 4, 5, or 6, gain clue.","Gain +2 Observation during Research Encounters. Reckoning: Roll 1 die. On a 4, 5, or 6, gain clue."
+ASSET_COURIER_NEEDED_NAME,Courier Needed!,Courier Needed!
+ASSET_COURIER_NEEDED_ABILITY,"When you gain this card, immediately gain a Courier Run Unique Asset. Then discard this card.","When you gain this card, immediately gain a Courier Run Unique Asset. Then discard this card."
+ASSET_CULTISTS_JOURNAL_NAME,Cultist's Journal,Cultist's Journal
+ASSET_CULTISTS_JOURNAL_ABILITY,Gain +2 Will and +2 Strength during Combat Encounters.,Gain +2 Will and +2 Strength during Combat Encounters.
+ASSET_CURIOSITY_SHOPPE_NAME,Curiosity Shoppe,Curiosity Shoppe
+ASSET_CURIOSITY_SHOPPE_ABILITY,"When you gain this card, immediately gain 1 Artifact. Then discard this card.","When you gain this card, immediately gain 1 Artifact. Then discard this card."
+ASSET_DELIVERY_SERVICE_NAME,Delivery Service,Delivery Service
+ASSET_DELIVERY_SERVICE_ABILITY,"When you gain this card, immediately give any number of Item possessions to another investigator on any space. Then discard this card.","When you gain this card, immediately give any number of Item possessions to another investigator on any space. Then discard this card."
+ASSET_DIVINATION_NAME,Divination,Divination
+ASSET_DIVINATION_ABILITY,"When you gain this card, look at the top 3 Gates in the Gate stack. Put any number of them on the bottom of the Gate stack and the rest on top in any order. Then discard this card.","When you gain this card, look at the top 3 Gates in the Gate stack. Put any number of them on the bottom of the Gate stack and the rest on top in any order. Then discard this card."
+ASSET_DOUBLE_BARRELED_SHOTGUN_NAME,Double-barreled Shotgun,Double-barreled Shotgun
+ASSET_DOUBLE_BARRELED_SHOTGUN_ABILITY,Gain +4 Strength during Combat Encounters. Each 6 you roll when resolving a Strength test during a Combat Encounter counts as 2 successes.,Gain +4 Strength during Combat Encounters. Each 6 you roll when resolving a Strength test during a Combat Encounter counts as 2 successes.
+ASSET_DREAM_BOX_NAME,Dream Box,Dream Box
+ASSET_DREAM_BOX_ABILITY,"When you close a Gate during an Other World Encounter, gain focus. If that Gate corresponds to the current Omen, recover 1 Sanity.","When you close a Gate during an Other World Encounter, gain focus. If that Gate corresponds to the current Omen, recover 1 Sanity."
+ASSET_DREAM_DIARY_NAME,Dream Diary,Dream Diary
+ASSET_DREAM_DIARY_ABILITY,"Gain +1 Lore during Other World Encounters. When you perform a Rest action, spawn clue.","Gain +1 Lore during Other World Encounters. When you perform a Rest action, spawn clue."
+ASSET_DYNAMITE_NAME,Dynamite,Dynamite
+ASSET_DYNAMITE_ABILITY,Action: You may discard this card to cause each Monster on your space to lose 3 Health.,Action: You may discard this card to cause each Monster on your space to lose 3 Health.
+ASSET_ELDER_SIGN_NAME,Elder Sign,Elder Sign
+ASSET_ELDER_SIGN_ABILITY,You may reroll 1 die when resolving a Will test during a Combat Encounter. Reduce the horror of Monsters you encounter by 1 to a minimum of 1.,You may reroll 1 die when resolving a Will test during a Combat Encounter. Reduce the horror of Monsters you encounter by 1 to a minimum of 1.
+ASSET_ENCHANTED_BLADE_NAME,Enchanted Blade,Enchanted Blade
+ASSET_ENCHANTED_BLADE_ABILITY,Gain +1 Will and +3 Strength during Combat Encounters.,Gain +1 Will and +3 Strength during Combat Encounters.
+ASSET_ENCHANTED_BOW_NAME,Enchanted Bow,Enchanted Bow
+ASSET_ENCHANTED_BOW_ABILITY,Gain +3 Strength during Combat Encounters. Action: A Monster of your choice on your space loses 1 Health.,Gain +3 Strength during Combat Encounters. Action: A Monster of your choice on your space loses 1 Health.
+ASSET_ENCHANTED_CANE_NAME,Enchanted Cane,Enchanted Cane
+ASSET_ENCHANTED_CANE_ABILITY,Gain +3 Strength during Combat Encounters.,Gain +3 Strength during Combat Encounters.
+ASSET_ENCHANTED_DAGGER_NAME,Enchanted Dagger,Enchanted Dagger
+ASSET_ENCHANTED_DAGGER_ABILITY,Gain +2 Strength during Combat Encounters.,Gain +2 Strength during Combat Encounters.
+ASSET_ENCHANTED_JEWELRY_NAME,Enchanted Jewelry,Enchanted Jewelry
+ASSET_ENCHANTED_JEWELRY_ABILITY,"If you would lose Sanity, you may spend focus to prevent 2 of that Sanity loss.","If you would lose Sanity, you may spend focus to prevent 2 of that Sanity loss."
+ASSET_ESTEEMED_AUTHOR_NAME,Esteemed Author,Esteemed Author
+ASSET_ESTEEMED_AUTHOR_ABILITY,"You may reroll 1 die when resolving a Influence test. When you gain this card from the deck or reserve, gain 1 random Tome Asset from the deck.","You may reroll 1 die when resolving a Influence test. When you gain this card from the deck or reserve, gain 1 random Tome Asset from the deck."
+ASSET_EXPEDITION_GUIDE_NAME,Expedition Guide,Expedition Guide
+ASSET_EXPEDITION_GUIDE_ABILITY,"When you spend a focus to reroll a die when resolving an Observation or Strength test, you may reroll up to 2 dice instead.","When you spend a focus to reroll a die when resolving an Observation or Strength test, you may reroll up to 2 dice instead."
+ASSET_EXPEDITION_MAP_NAME,Expedition Map,Expedition Map
+ASSET_EXPEDITION_MAP_ABILITY,"Once per round, you may add 1 to the result of 1 die when resolving a test during an Expedition Encounter or a Mystic Ruins Encounter.","Once per round, you may add 1 to the result of 1 die when resolving a test during an Expedition Encounter or a Mystic Ruins Encounter."
+ASSET_EXPERTS_BLADE_NAME,Expert's Blade,Expert's Blade
+ASSET_EXPERTS_BLADE_ABILITY,"When you gain this card from the deck or reserve, gain 1 Talent Condition. Gain +2 Strength during Combat Encounters.","When you gain this card from the deck or reserve, gain 1 Talent Condition. Gain +2 Strength during Combat Encounters."
+ASSET_FINE_CLOTHES_NAME,Fine Clothes,Fine Clothes
+ASSET_FINE_CLOTHES_ABILITY,Each 6 you roll when performing an Acquire Assets action counts as 2 successes.,Each 6 you roll when performing an Acquire Assets action counts as 2 successes.
+ASSET_FINE_JEWELRY_NAME,Fine Jewelry,Fine Jewelry
+ASSET_FINE_JEWELRY_ABILITY,You may add 1 to the result of 1 die when performing an Influence test during an Acquire Assets action.,You may add 1 to the result of 1 die when performing an Influence test during an Acquire Assets action.
+ASSET_FISHING_NET_NAME,Fishing Net,Fishing Net
+ASSET_FISHING_NET_ABILITY,You may reroll 1 die when resolving a Strength test during a Combat Encounter. Reduce the damage of Monsters you encounter by 1 to a minimum of 1.,You may reroll 1 die when resolving a Strength test during a Combat Encounter. Reduce the damage of Monsters you encounter by 1 to a minimum of 1.
+ASSET_FLAMETHROWER_NAME,Flamethrower,Flamethrower
+ASSET_FLAMETHROWER_ABILITY,Gain +5 Strength during Combat Encounters. Reduce the damage of Monsters you encounter by 1 to a minimum of 1.,Gain +5 Strength during Combat Encounters. Reduce the damage of Monsters you encounter by 1 to a minimum of 1.
+ASSET_FORBIDDEN_SECRETS_NAME,Forbidden Secrets,Forbidden Secrets
+ASSET_FORBIDDEN_SECRETS_ABILITY,"Gain +1 Will during Combat Encounters. When you resolve a Will test during a Combat Encounter, if you do not lose Sanity, gain clue.","Gain +1 Will during Combat Encounters. When you resolve a Will test during a Combat Encounter, if you do not lose Sanity, gain clue."
+ASSET_FORBIDDEN_TEXT_NAME,Forbidden Text,Forbidden Text
+ASSET_FORBIDDEN_TEXT_ABILITY,Gain +1 Will. Gain +2 Will during Combat Encounters.,Gain +1 Will. Gain +2 Will during Combat Encounters.
+ASSET_FRESH_FRUIT_NAME,Fresh Fruit,Fresh Fruit
+ASSET_FRESH_FRUIT_ABILITY,"When you perform a Rest action, you may discard this card to recover 1 additional Health and 1 additional Sanity.","When you perform a Rest action, you may discard this card to recover 1 additional Health and 1 additional Sanity."
+ASSET_GAMBLERS_DICE_NAME,Gambler's Dice,Gambler's Dice
+ASSET_GAMBLERS_DICE_ABILITY,"You roll a minimum of 2 dice when resolving tests. Once per round, you may reroll 2 dice with matching results when resolving a test.","You roll a minimum of 2 dice when resolving tests. Once per round, you may reroll 2 dice with matching results when resolving a test."
+ASSET_GATLING_GUN_NAME,Gatling Gun,Gatling Gun
+ASSET_GATLING_GUN_ABILITY,Gain +5 Strength during Combat Encounters. You may reroll 2 dice with matching results when resolving a Strength test during a Combat Encounter.,Gain +5 Strength during Combat Encounters. You may reroll 2 dice with matching results when resolving a Strength test during a Combat Encounter.
+ASSET_GENEALOGY_RESEARCH_NAME,Genealogy Research,Genealogy Research
+ASSET_GENEALOGY_RESEARCH_ABILITY,"When you defeat a Monster with toughness 2 or more during a Combat Encounter, you may examine the creature's remains (Observation). If you pass, gain clue and discard this card.","When you defeat a Monster with toughness 2 or more during a Combat Encounter, you may examine the creature's remains (Observation). If you pass, gain clue and discard this card."
+ASSET_GRIM_LEXICON_NAME,Grim Lexicon,Grim Lexicon
+ASSET_GRIM_LEXICON_ABILITY,"When you gain this card from the deck or reserve, gain clue. Reduce the horror of Monsters you encounter by 1 to a minimum of 1.","When you gain this card from the deck or reserve, gain clue. Reduce the horror of Monsters you encounter by 1 to a minimum of 1."
+ASSET_GRISLY_TOTEM_NAME,Grisly Totem,Grisly Totem
+ASSET_GRISLY_TOTEM_ABILITY,"Gain +1 Strength and +1 Will. Once per round, you may reroll 1 die when resolving a test.","Gain +1 Strength and +1 Will. Once per round, you may reroll 1 die when resolving a test."
+ASSET_GROTESQUE_COMPENDIUM_NAME,Grotesque Compendium,Grotesque Compendium
+ASSET_GROTESQUE_COMPENDIUM_ABILITY,Gain +4 Lore when resolving Spell effects. Each 6 you roll when resolving a Spell effect counts as two successes.,Gain +4 Lore when resolving Spell effects. Each 6 you roll when resolving a Spell effect counts as two successes.
+ASSET_GRUESOME_TALISMAN_NAME,Gruesome Talisman,Gruesome Talisman
+ASSET_GRUESOME_TALISMAN_ABILITY,You may add 1 to the result of 1 die when resolving a Will test during a Combat Encounter.,You may add 1 to the result of 1 die when resolving a Will test during a Combat Encounter.
+ASSET_HANDCUFFS_NAME,Handcuffs,Handcuffs
+ASSET_HANDCUFFS_ABILITY,"Before resolving the Strength test during a Combat Encounter, you may spend focus to defeat that Monster if it has toughness 2 or less.","Before resolving the Strength test during a Combat Encounter, you may spend focus to defeat that Monster if it has toughness 2 or less."
+ASSET_HIRED_MUSCLE_NAME,Hired Muscle,Hired Muscle
+ASSET_HIRED_MUSCLE_ABILITY,Gain +1 Strength. You may reroll 1 die when resolving a Strength test.,Gain +1 Strength. You may reroll 1 die when resolving a Strength test.
+ASSET_HITMAN_NAME,Hitman,Hitman
+ASSET_HITMAN_ABILITY,"When you gain this card from the deck or reserve, gain 1 random Weapon Asset from the deck. Roll 1 additional die when resolving a Strength test during a Combat Encounter.","When you gain this card from the deck or reserve, gain 1 random Weapon Asset from the deck. Roll 1 additional die when resolving a Strength test during a Combat Encounter."
+ASSET_HOLY_CROSS_NAME,Holy Cross,Holy Cross
+ASSET_HOLY_CROSS_ABILITY,Gain +2 Will during Combat Encounters.,Gain +2 Will during Combat Encounters.
+ASSET_HOLY_SPEAR_NAME,Holy Spear,Holy Spear
+ASSET_HOLY_SPEAR_ABILITY,Gain +4 Strength during Combat Encounters.,Gain +4 Strength during Combat Encounters.
+ASSET_HOLY_WATER_NAME,Holy Water,Holy Water
+ASSET_HOLY_WATER_ABILITY,You may discard this card to gain +5 Will and +5 Strength during a Combat Encounter. Action: You may discard this card to choose an investigator on your space. That investigator gains a Blessed Condition.,You may discard this card to gain +5 Will and +5 Strength during a Combat Encounter. Action: You may discard this card to choose an investigator on your space. That investigator gains a Blessed Condition.
+ASSET_INTELLIGENCE_REPORT_NAME,Intelligence Report,Intelligence Report
+ASSET_INTELLIGENCE_REPORT_ABILITY,"When you gain this card, immediately gain clue. Then discard this card.","When you gain this card, immediately gain clue. Then discard this card."
+ASSET_INVESTMENT_NAME,Investment,Investment
+ASSET_INVESTMENT_ABILITY,Reckoning: flavor You may discard this card to gain a Funding Condition.,Reckoning: flavor You may discard this card to gain a Funding Condition.
+ASSET_KEROSENE_NAME,Kerosene,Kerosene
+ASSET_KEROSENE_ABILITY,You may discard this card to gain +5 Strength during a Combat Encounter.,You may discard this card to gain +5 Strength during a Combat Encounter.
+ASSET_KING_JAMES_BIBLE_NAME,King James Bible,King James Bible
+ASSET_KING_JAMES_BIBLE_ABILITY,"You may reroll 1 die when resolving a Will test during a Combat Encounter. When you perform a Rest action, recover 1 additional Sanity.","You may reroll 1 die when resolving a Will test during a Combat Encounter. When you perform a Rest action, recover 1 additional Sanity."
+ASSET_LANTERN_NAME,Lantern,Lantern
+ASSET_LANTERN_ABILITY,"Once per round, you may roll 1 additional die when resolving a test.","Once per round, you may roll 1 additional die when resolving a test."
+ASSET_LAVISH_FEAST_NAME,Lavish Feast,Lavish Feast
+ASSET_LAVISH_FEAST_ABILITY,"When you gain this card, immediately recover 2 Health and 2 Sanity. Then discard this card.","When you gain this card, immediately recover 2 Health and 2 Sanity. Then discard this card."
+ASSET_LODGE_DISCIPLE_NAME,Lodge Disciple,Lodge Disciple
+ASSET_LODGE_DISCIPLE_ABILITY,Gain +1 Lore and +1 Influence. You may reroll 1 die when resolving a Lore or Influence test.,Gain +1 Lore and +1 Influence. You may reroll 1 die when resolving a Lore or Influence test.
+ASSET_LODGE_HUNTER_NAME,Lodge Hunter,Lodge Hunter
+ASSET_LODGE_HUNTER_ABILITY,Gain +1 Strength and +1 Will. You may reroll 1 die when resolving a Strength or a Will test.,Gain +1 Strength and +1 Will. You may reroll 1 die when resolving a Strength or a Will test.
+ASSET_LODGE_PHYSICIAN_NAME,Lodge Physician,Lodge Physician
+ASSET_LODGE_PHYSICIAN_ABILITY,You and other investigators on your space may recover 1 additional Health or discard 1 Illness or Injury Condition when performing a Rest action.,You and other investigators on your space may recover 1 additional Health or discard 1 Illness or Injury Condition when performing a Rest action.
+ASSET_LODGE_RESEARCHER_NAME,Lodge Researcher,Lodge Researcher
+ASSET_LODGE_RESEARCHER_ABILITY,"If you defeat a Monster during a Combat Encounter, recover 1 Sanity and gain clue.","If you defeat a Monster during a Combat Encounter, recover 1 Sanity and gain clue."
+ASSET_LUCKY_CIGARETTE_CASE_NAME,Lucky Cigarette Case,Lucky Cigarette Case
+ASSET_LUCKY_CIGARETTE_CASE_ABILITY,"Once per round, you may add 1 to the result of 1 die when resolving a test.","Once per round, you may add 1 to the result of 1 die when resolving a test."
+ASSET_LUCKY_RABBITS_FOOT_NAME,Lucky Rabbit's Foot,Lucky Rabbit's Foot
+ASSET_LUCKY_RABBITS_FOOT_ABILITY,"Once per round, you may reroll 1 die when resolving a test.","Once per round, you may reroll 1 die when resolving a test."
+ASSET_LUCKY_RING_NAME,Lucky Ring,Lucky Ring
+ASSET_LUCKY_RING_ABILITY,You may reroll 1 die when resolving a test.,You may reroll 1 die when resolving a test.
+ASSET_LUCKY_TALISMAN_NAME,Lucky Talisman,Lucky Talisman
+ASSET_LUCKY_TALISMAN_ABILITY,"Once per round, you may reroll all of your dice when resolving a test.","Once per round, you may reroll all of your dice when resolving a test."
+ASSET_MAGICK_SHOPPE_NAME,Magick Shoppe,Magick Shoppe
+ASSET_MAGICK_SHOPPE_ABILITY,"When you gain this card, immediately gain 2 Spells. Then discard 1 Spell and this card.","When you gain this card, immediately gain 2 Spells. Then discard 1 Spell and this card."
+ASSET_MAGNIFYING_GLASS_NAME,Magnifying Glass,Magnifying Glass
+ASSET_MAGNIFYING_GLASS_ABILITY,"Once per round, you or another investigator on your space may spend clue to reroll any number of dice when resolving a test.","Once per round, you or another investigator on your space may spend clue to reroll any number of dice when resolving a test."
+ASSET_MAP_OF_THE_LEY_LINES_NAME,Map of the Ley Lines,Map of the Ley Lines
+ASSET_MAP_OF_THE_LEY_LINES_ABILITY,"Gain +1 Lore and +1 Will. Once per round, you may reroll 1 die when resolving a test during an Other World Encounter.","Gain +1 Lore and +1 Will. Once per round, you may reroll 1 die when resolving a test during an Other World Encounter."
+ASSET_MAUSER_C96_NAME,Mauser C96,Mauser C96
+ASSET_MAUSER_C96_ABILITY,Gain +2 Strength during Combat Encounters. You may reroll 1 die when resolving a Strength test during a Combat Encounter.,Gain +2 Strength during Combat Encounters. You may reroll 1 die when resolving a Strength test during a Combat Encounter.
+ASSET_MEDICAL_JOURNAL_NAME,Medical Journal,Medical Journal
+ASSET_MEDICAL_JOURNAL_ABILITY,"You may reroll 1 die when resolving a Strength test as part of an Illness or Injury Condition effect. When you perform a Rest action, recover 1 additional Health.","You may reroll 1 die when resolving a Strength test as part of an Illness or Injury Condition effect. When you perform a Rest action, recover 1 additional Health."
+ASSET_MINERALOGY_RESEARCH_NAME,Mineralogy Research,Mineralogy Research
+ASSET_MINERALOGY_RESEARCH_ABILITY,"After resolving a General Encounter or an Expedition Encounter on a wilderness space, you may examine the area's soil (Observation). If you pass, gain clue and discard this card.","After resolving a General Encounter or an Expedition Encounter on a wilderness space, you may examine the area's soil (Observation). If you pass, gain clue and discard this card."
+ASSET_MISSION_BRIEFING_NAME,Mission Briefing,Mission Briefing
+ASSET_MISSION_BRIEFING_ABILITY,"When you gain this card, immediately gain 2 Task Unique Assets. Then discard 1 Task Asset and this card.","When you gain this card, immediately gain 2 Task Unique Assets. Then discard 1 Task Asset and this card."
+ASSET_MONSTER_HUNTER_NAME,Monster Hunter,Monster Hunter
+ASSET_MONSTER_HUNTER_ABILITY,Gain +2 Strength during Combat Encounters. Action: A Monster of your choice on your space loses 1 Health.,Gain +2 Strength during Combat Encounters. Action: A Monster of your choice on your space loses 1 Health.
+ASSET_MUSEUM_CURATOR_NAME,Museum Curator,Museum Curator
+ASSET_MUSEUM_CURATOR_ABILITY,"You may reroll 1 die when resolving a test during an Expedition Encounter or a Mystic Ruins Encounter. When you gain this card from the deck or reserve, gain 1 Relic Unique Asset.","You may reroll 1 die when resolving a test during an Expedition Encounter or a Mystic Ruins Encounter. When you gain this card from the deck or reserve, gain 1 Relic Unique Asset."
+ASSET_MUSEUM_DIRECTOR_NAME,Museum Director,Museum Director
+ASSET_MUSEUM_DIRECTOR_ABILITY,"When you gain this card from the deck or reserve, gain 1 Artifact. Roll 1 additional die when resolving a Will test during a Combat Encounter.","When you gain this card from the deck or reserve, gain 1 Artifact. Roll 1 additional die when resolving a Will test during a Combat Encounter."
+ASSET_MYSTERIOUS_TOME_NAME,Mysterious Tome,Mysterious Tome
+ASSET_MYSTERIOUS_TOME_ABILITY,"When you spend a focus to reroll a die when resolving a Lore or Will test, you may reroll up to 2 dice instead.","When you spend a focus to reroll a die when resolving a Lore or Will test, you may reroll up to 2 dice instead."
+ASSET_MYSTIC_BOUNTY_HUNTER_NAME,Mystic Bounty Hunter,Mystic Bounty Hunter
+ASSET_MYSTIC_BOUNTY_HUNTER_ABILITY,Gain +1 Strength during Combat Encounters. Gain +2 Lore when resolving Spell effects.,Gain +1 Strength during Combat Encounters. Gain +2 Lore when resolving Spell effects.
+ASSET_MYSTIC_SCROLL_NAME,Mystic Scroll,Mystic Scroll
+ASSET_MYSTIC_SCROLL_ABILITY,You may reroll 1 die when resolving a Lore test.,You may reroll 1 die when resolving a Lore test.
+ASSET_MYSTIC_TOME_NAME,Mystic Tome,Mystic Tome
+ASSET_MYSTIC_TOME_ABILITY,"When you gain this card from the deck or reserve, gain 2 Spells, then discard 1 Spell. When you perform a Rest action, recover 1 additional Sanity.","When you gain this card from the deck or reserve, gain 2 Spells, then discard 1 Spell. When you perform a Rest action, recover 1 additional Sanity."
+ASSET_NEWSPAPER_REPORT_NAME,Newspaper Report,Newspaper Report
+ASSET_NEWSPAPER_REPORT_ABILITY,"After resolving a Research Encounter, you may spend clue you gained from that encounter and discard this card to retreat doom by 1.","After resolving a Research Encounter, you may spend clue you gained from that encounter and discard this card to retreat doom by 1."
+ASSET_NEWS_REPORT_NAME,News Report,News Report
+ASSET_NEWS_REPORT_ABILITY,"When you gain this card, immediately spawn clue. Then discard this card.","When you gain this card, immediately spawn clue. Then discard this card."
+ASSET_NIGHT_CLASSES_NAME,Night Classes,Night Classes
+ASSET_NIGHT_CLASSES_ABILITY,"When you gain this card, immediately gain 2 Talent Conditions. Then discard 1 Talent Condition and this card.","When you gain this card, immediately gain 2 Talent Conditions. Then discard 1 Talent Condition and this card."
+ASSET_OCCULT_GRIMOIRE_NAME,Occult Grimoire,Occult Grimoire
+ASSET_OCCULT_GRIMOIRE_ABILITY,Gain +3 Lore when resolving Spell effects. Reduce the horror of Monsters you encounter by 1 to a minimum of 1.,Gain +3 Lore when resolving Spell effects. Reduce the horror of Monsters you encounter by 1 to a minimum of 1.
+ASSET_OCCULT_TABLET_NAME,Occult Tablet,Occult Tablet
+ASSET_OCCULT_TABLET_ABILITY,"Gain +3 Lore when resolving Spell effects. When you undertake a Rest action, you may test Lore. If you pass, you may spend 1 Sanity to gain clue.","Gain +3 Lore when resolving Spell effects. When you undertake a Rest action, you may test Lore. If you pass, you may spend 1 Sanity to gain clue."
+ASSET_OCCULT_TEXT_NAME,Occult Text,Occult Text
+ASSET_OCCULT_TEXT_ABILITY,Gain +1 Will during Combat Encounters. Monsters you encounter lose Physical Resistance.,Gain +1 Will during Combat Encounters. Monsters you encounter lose Physical Resistance.
+ASSET_OCCULT_SCRIPTURE_NAME,Occult Scripture,Occult Scripture
+ASSET_OCCULT_SCRIPTURE_ABILITY,"When you gain this card from the deck or reserve, gain clue. Whenever you gain a Clue during a Research Encounter, spawn 1 Clue.","When you gain this card from the deck or reserve, gain clue. Whenever you gain a Clue during a Research Encounter, spawn 1 Clue."
+ASSET_OPUS_ARCANA_NAME,Opus Arcana,Opus Arcana
+ASSET_OPUS_ARCANA_ABILITY,Gain +1 Lore. Gain +2 Lore when resolving Spell effects.,Gain +1 Lore. Gain +2 Lore when resolving Spell effects.
+ASSET_OTHERWORLD_CODEX_NAME,Otherworld Codex,Otherworld Codex
+ASSET_OTHERWORLD_CODEX_ABILITY,Gain +1 Lore and +1 Will. Play with the top Gate in the Gate stack revealed.,Gain +1 Lore and +1 Will. Play with the top Gate in the Gate stack revealed.
+ASSET_PAINKILLERS_NAME,Painkillers,Painkillers
+ASSET_PAINKILLERS_ABILITY,You may reroll 1 die when resolving a Strength test as part of an Illness or Injury Condition effect.,You may reroll 1 die when resolving a Strength test as part of an Illness or Injury Condition effect.
+ASSET_PATROLLING_THE_STREETS_NAME,Patrolling the Streets,Patrolling the Streets
+ASSET_PATROLLING_THE_STREETS_ABILITY,"When you defeat a Monster with toughness 3 or more during a Combat Encounter, you may discard this card to retreat doom by 1.","When you defeat a Monster with toughness 3 or more during a Combat Encounter, you may discard this card to retreat doom by 1."
+ASSET_PERSONAL_ASSISTANT_NAME,Personal Assistant,Personal Assistant
+ASSET_PERSONAL_ASSISTANT_ABILITY,Gain +1 Influence. You may reroll 1 die when resolving a Influence test.,Gain +1 Influence. You may reroll 1 die when resolving a Influence test.
+ASSET_POCKET_WATCH_NAME,Pocket Watch,Pocket Watch
+ASSET_POCKET_WATCH_ABILITY,You cannot become Delayed unless you choose to.,You cannot become Delayed unless you choose to.
+ASSET_POLICE_ASSISTANCE_NAME,Police Assistance,Police Assistance
+ASSET_POLICE_ASSISTANCE_ABILITY,"When you gain this card, immediately discard 1 Monster of your choice on any space with toughness 2 or less. Then discard this card.","When you gain this card, immediately discard 1 Monster of your choice on any space with toughness 2 or less. Then discard this card."
+ASSET_POLICE_LEDGER_NAME,Police Ledger,Police Ledger
+ASSET_POLICE_LEDGER_ABILITY,"When you perform a Rest action, you may attempt to decipher the ledger (Observation). If you pass, you may discard this card to gain clue.","When you perform a Rest action, you may attempt to decipher the ledger (Observation). If you pass, you may discard this card to gain clue."
+ASSET_POLICE_RAID_NAME,Police Raid,Police Raid
+ASSET_POLICE_RAID_ABILITY,"When you gain this card, immediately choose a space. Each Monster on the chosen space loses 3 Health. Then discard this card.","When you gain this card, immediately choose a space. Each Monster on the chosen space loses 3 Health. Then discard this card."
+ASSET_PRIVATE_CARE_NAME,Private Care,Private Care
+ASSET_PRIVATE_CARE_ABILITY,"When you gain this card, immediately recover all Health and Sanity. Then discard this card.","When you gain this card, immediately recover all Health and Sanity. Then discard this card."
+ASSET_PRIVATE_FLIGHT_NAME,Private Flight,Private Flight
+ASSET_PRIVATE_FLIGHT_ABILITY,"When you gain this card, immediately move to any space of your choice. Then discard this card.","When you gain this card, immediately move to any space of your choice. Then discard this card."
+ASSET_PRIVATE_INVESTIGATOR_NAME,Private Investigator,Private Investigator
+ASSET_PRIVATE_INVESTIGATOR_ABILITY,Gain +1 Observation. You may reroll 1 die when resolving a Observation test.,Gain +1 Observation. You may reroll 1 die when resolving a Observation test.
+ASSET_PROFANE_TOME_NAME,Profane Tome,Profane Tome
+ASSET_PROFANE_TOME_ABILITY,You may reroll 1 die when resolving a Will test during a Combat Encounter.,You may reroll 1 die when resolving a Will test during a Combat Encounter.
+ASSET_PROTECTIVE_AMULET_NAME,Protective Amulet,Protective Amulet
+ASSET_PROTECTIVE_AMULET_ABILITY,Gain +1 Will during Combat Encounters.,Gain +1 Will during Combat Encounters.
+ASSET_PROTECTIVE_TOTEM_NAME,Protective Totem,Protective Totem
+ASSET_PROTECTIVE_TOTEM_ABILITY,"Once per round, if you would lose 2 or more Health and/or Sanity, prevent 1 of that loss.","Once per round, if you would lose 2 or more Health and/or Sanity, prevent 1 of that loss."
+ASSET_PSYCHOANALYST_NAME,Psychoanalyst,Psychoanalyst
+ASSET_PSYCHOANALYST_ABILITY,"You may reroll 1 die when resolving a Will test as part of a Madness Condition effect. When you perform a Rest action, recover 1 additional Sanity.","You may reroll 1 die when resolving a Will test as part of a Madness Condition effect. When you perform a Rest action, recover 1 additional Sanity."
+ASSET_PUZZLE_BOX_NAME,Puzzle Box,Puzzle Box
+ASSET_PUZZLE_BOX_ABILITY,"When you perform a Rest action, you may attempt to open the puzzle box (Observation-2). If you pass, you may discard this card to gain 1 Artifact.","When you perform a Rest action, you may attempt to open the puzzle box (Observation-2). If you pass, you may discard this card to gain 1 Artifact."
+ASSET_RESEARCH_STUDENT_NAME,Research Student,Research Student
+ASSET_RESEARCH_STUDENT_ABILITY,"Action: Roll 1 die. On a 5 or 6, gain clue. On a 1, discard the nearest Clue on the game board.","Action: Roll 1 die. On a 5 or 6, gain clue. On a 1, discard the nearest Clue on the game board."
+ASSET_RITUAL_CANDLES_NAME,Ritual Candles,Ritual Candles
+ASSET_RITUAL_CANDLES_ABILITY,You may discard this card to gain +5 Lore when resolving a Spell effect. Action: You may discard this card to gain 1 Spell.,You may discard this card to gain +5 Lore when resolving a Spell effect. Action: You may discard this card to gain 1 Spell.
+ASSET_RITUAL_DAGGER_NAME,Ritual Dagger,Ritual Dagger
+ASSET_RITUAL_DAGGER_ABILITY,"Once per round, you may gain +1 Lore when resolving a Spell effect or +2 Strength when resolving a Combat Encounter.","Once per round, you may gain +1 Lore when resolving a Spell effect or +2 Strength when resolving a Combat Encounter."
+ASSET_RUMOR_MILL_NAME,Rumor Mill,Rumor Mill
+ASSET_RUMOR_MILL_ABILITY,"When you gain this card, immediately gain clue. Then discard this card.","When you gain this card, immediately gain clue. Then discard this card."
+ASSET_SANCTUARY_NAME,Sanctuary,Sanctuary
+ASSET_SANCTUARY_ABILITY,"When you gain this card, you may immediately discard 1 Condition. Then discard this card.","When you gain this card, you may immediately discard 1 Condition. Then discard this card."
+ASSET_SCRIBES_JOURNAL_NAME,Scribe's Journal,Scribe's Journal
+ASSET_SCRIBES_JOURNAL_ABILITY,Effects cannot cause you to discard your Clues or Spells unless you choose to.,Effects cannot cause you to discard your Clues or Spells unless you choose to.
+ASSET_SCROLL_OF_SECRETS_NAME,Scroll of Secrets,Scroll of Secrets
+ASSET_SCROLL_OF_SECRETS_ABILITY,"When you gain this card from the deck or reserve, gain clue. Gain +2 Lore when resolving Spell effects.","When you gain this card from the deck or reserve, gain clue. Gain +2 Lore when resolving Spell effects."
+ASSET_SEARCH_THE_ARCHIVES_NAME,Search the Archives,Search the Archives
+ASSET_SEARCH_THE_ARCHIVES_ABILITY,"When you gain this card, immediately gain 1 random Tome Asset from the deck. Then discard this card.","When you gain this card, immediately gain 1 random Tome Asset from the deck. Then discard this card."
+ASSET_SECRET_PAGE_NAME,Secret Page,Secret Page
+ASSET_SECRET_PAGE_ABILITY,"Gain +1 Lore when resolving Spell effects. When you gain this card from the deck or reserve, gain 1 Spell.","Gain +1 Lore when resolving Spell effects. When you gain this card from the deck or reserve, gain 1 Spell."
+ASSET_SECURITY_SQUAD_NAME,Security Squad,Security Squad
+ASSET_SECURITY_SQUAD_ABILITY,"When resolving a Combat Encounter, you may resolve an Influence test in place of the Strength test, using the same test modifier.","When resolving a Combat Encounter, you may resolve an Influence test in place of the Strength test, using the same test modifier."
+ASSET_SEEK_THE_TRUTH_NAME,Seek the Truth,Seek the Truth
+ASSET_SEEK_THE_TRUTH_ABILITY,"Whenever you gain a clue during a Research Encounter, spawn 1 Clue. Then, you may spend 3 Clues and discard this card to advance the active Mystery by 1.","Whenever you gain a clue during a Research Encounter, spawn 1 Clue. Then, you may spend 3 Clues and discard this card to advance the active Mystery by 1."
+ASSET_SILVER_TWILIGHT_HOST_NAME,Silver Twilight Host,Silver Twilight Host
+ASSET_SILVER_TWILIGHT_HOST_ABILITY,"When you gain this card, immediately recover 3 Health, 3 Sanity, and gain 1 Boon Condition. Then discard this card.","When you gain this card, immediately recover 3 Health, 3 Sanity, and gain 1 Boon Condition. Then discard this card."
+ASSET_SILVER_TWILIGHT_RITUAL_NAME,Silver Twilight Ritual,Silver Twilight Ritual
+ASSET_SILVER_TWILIGHT_RITUAL_ABILITY,"When you gain this card, immediately retreat doom by 1. Then discard this card.","When you gain this card, immediately retreat doom by 1. Then discard this card."
+ASSET_SKELETON_KEYS_NAME,Skeleton Keys,Skeleton Keys
+ASSET_SKELETON_KEYS_ABILITY,"Once per round, you may add 1 to the result of 1 die when resolving a test during an Other World Encounter.","Once per round, you may add 1 to the result of 1 die when resolving a test during an Other World Encounter."
+ASSET_SLEDGEHAMMER_NAME,Sledgehammer,Sledgehammer
+ASSET_SLEDGEHAMMER_ABILITY,Gain +1 Strength. Gain +2 Strength during Combat Encounters.,Gain +1 Strength. Gain +2 Strength during Combat Encounters.
+ASSET_SPECIALIST_NAME,Specialist,Specialist
+ASSET_SPECIALIST_ABILITY,"Once per round, you may reroll 1 die when resolving a test. When you gain this card from the deck or reserve, gain 1 Talent Condition.","Once per round, you may reroll 1 die when resolving a test. When you gain this card from the deck or reserve, gain 1 Talent Condition."
+ASSET_SPECIALIZED_TRAINING_NAME,Specialized Training,Specialized Training
+ASSET_SPECIALIZED_TRAINING_ABILITY,"When you perform a Focus action, you may consult experts to train you Will. If you pass, discard this card and improve 1 skill of your choice.","When you perform a Focus action, you may consult experts to train you Will. If you pass, discard this card and improve 1 skill of your choice."
+ASSET_SPIRIT_DAGGER_NAME,Spirit Dagger,Spirit Dagger
+ASSET_SPIRIT_DAGGER_ABILITY,Gain +1 Will and +2 Strength during Combat Encounters.,Gain +1 Will and +2 Strength during Combat Encounters.
+ASSET_SYNDICATE_AGENT_NAME,Syndicate Agent,Syndicate Agent
+ASSET_SYNDICATE_AGENT_ABILITY,Gain +2 Strength during Combat Encounters. You may reroll 1 die when resolving a Strength test during a Combat Encounter.,Gain +2 Strength during Combat Encounters. You may reroll 1 die when resolving a Strength test during a Combat Encounter.
+ASSET_TEAR_GAS_NAME,Tear Gas,Tear Gas
+ASSET_TEAR_GAS_ABILITY,"You may discard this card to reroll up to 2 dice when resolving a Strength test during a Combat Encounter. In addition, reduce the Monster's damage by 2 to a minimum of 1.","You may discard this card to reroll up to 2 dice when resolving a Strength test during a Combat Encounter. In addition, reduce the Monster's damage by 2 to a minimum of 1."
+ASSET_THREE_CARD_MONTE_NAME,Three-card Monte,Three-card Monte
+ASSET_THREE_CARD_MONTE_ABILITY,"When you gain this card, immediately roll 1 die. On a 5 or 6, gain 1 Asset of your choice from the reserve, or 1 random Asset with value 3 or greater from the deck. Then discard this card.","When you gain this card, immediately roll 1 die. On a 5 or 6, gain 1 Asset of your choice from the reserve, or 1 random Asset with value 3 or greater from the deck. Then discard this card."
+ASSET_TIMEWORN_BRAND_NAME,Timeworn Brand,Timeworn Brand
+ASSET_TIMEWORN_BRAND_ABILITY,Gain +1 Strength during Combat Encounters. You may reroll 1 die when resolving a Strength check during a Combat Encounter.,Gain +1 Strength during Combat Encounters. You may reroll 1 die when resolving a Strength check during a Combat Encounter.
+ASSET_TOME_OF_HORRORS_NAME,Tome of Horrors,Tome of Horrors
+ASSET_TOME_OF_HORRORS_ABILITY,Gain +2 Will during Combat Encounters. Reduce the horror of Monsters you encounter by 1 to a minimum of 1.,Gain +2 Will during Combat Encounters. Reduce the horror of Monsters you encounter by 1 to a minimum of 1.
+ASSET_TOME_OF_SECRETS_NAME,Tome of Secrets,Tome of Secrets
+ASSET_TOME_OF_SECRETS_ABILITY,"Once per round, you may spend focus in place of spending clue. When you perform a Focus action, recover 1 Sanity.","Once per round, you may spend focus in place of spending clue. When you perform a Focus action, recover 1 Sanity."
+ASSET_TOMMY_GUN_NAME,Tommy Gun,Tommy Gun
+ASSET_TOMMY_GUN_ABILITY,Gain +4 Strength during Combat Encounters.,Gain +4 Strength during Combat Encounters.
+ASSET_TRAINING_REGIMEN_NAME,Training Regimen,Training Regimen
+ASSET_TRAINING_REGIMEN_ABILITY,"When you gain this card, immediately improve 1 skill of your choice and gain 1 Talent Condition. Then discard this card.","When you gain this card, immediately improve 1 skill of your choice and gain 1 Talent Condition. Then discard this card."
+ASSET_TREASURE_HUNTER_NAME,Treasure Hunter,Treasure Hunter
+ASSET_TREASURE_HUNTER_ABILITY,Gain +1 Observation and +1 Strength. You may reroll 1 die when resolving an Observation or Strength test.,Gain +1 Observation and +1 Strength. You may reroll 1 die when resolving an Observation or Strength test.
+ASSET_TREASURED_MEMENTO_NAME,Treasured Memento,Treasured Memento
+ASSET_TREASURED_MEMENTO_ABILITY,"Once per round, when you spend focus, you may gain 1 Focus.","Once per round, when you spend focus, you may gain 1 Focus."
+ASSET_URBAN_GUIDE_NAME,Urban Guide,Urban Guide
+ASSET_URBAN_GUIDE_ABILITY,"If you are on a city space, investigators on your space roll 1 additional die when resolving tests except when resolving Other World Encounters.","If you are on a city space, investigators on your space roll 1 additional die when resolving tests except when resolving Other World Encounters."
+ASSET_VAMPIRIC_TALISMAN_NAME,Vampiric Talisman,Vampiric Talisman
+ASSET_VAMPIRIC_TALISMAN_ABILITY,"Gain +2 Strength during Combat Encounters. When you defeat a Monster during a Combat Encounter, gain focus.","Gain +2 Strength during Combat Encounters. When you defeat a Monster during a Combat Encounter, gain focus."
+ASSET_VATICAN_MISSIONARY_NAME,Vatican Missionary,Vatican Missionary
+ASSET_VATICAN_MISSIONARY_ABILITY,Gain +1 Will. You may reroll 1 die when resolving a Will test.,Gain +1 Will. You may reroll 1 die when resolving a Will test.
+ASSET_WARD_EVIL_NAME,Ward Evil,Ward Evil
+ASSET_WARD_EVIL_ABILITY,"When you gain this card, immediately discard 1 Monster of your choice on any space with toughness 3 or less. Then discard this card.","When you gain this card, immediately discard 1 Monster of your choice on any space with toughness 3 or less. Then discard this card."
+ASSET_WHISKEY_NAME,Whiskey,Whiskey
+ASSET_WHISKEY_ABILITY,You may discard this card to prevent an investigator on your space from losing up to 2 Sanity.,You may discard this card to prevent an investigator on your space from losing up to 2 Sanity.
+ASSET_WILLFUL_ARISTOCRAT_NAME,Willful Aristocrat,Willful Aristocrat
+ASSET_WILLFUL_ARISTOCRAT_ABILITY,Gain +1 Influence and +1 Will. You may reroll 1 die when resolving an Influence or Will test.,Gain +1 Influence and +1 Will. You may reroll 1 die when resolving an Influence or Will test.
+ASSET_WINCHESTER_RIFLE_NAME,Winchester Rifle,Winchester Rifle
+ASSET_WINCHESTER_RIFLE_ABILITY,"Once per round, you may gain +4 Strength during a Combat Encounter.","Once per round, you may gain +4 Strength during a Combat Encounter."
+ASSET_WIRELESS_REPORT_NAME,Wireless Report,Wireless Report
+ASSET_WIRELESS_REPORT_ABILITY,"When you gain this card, immediately give any number of clues to another investigator on any space.","When you gain this card, immediately give any number of clues to another investigator on any space."
+ASSET_WITCH_DOCTOR_NAME,Witch Doctor,Witch Doctor
+ASSET_WITCH_DOCTOR_ABILITY,Investigators on your space may recover 1 additional Health or discard a Cursed Condition when performing a Rest action.,Investigators on your space may recover 1 additional Health or discard a Cursed Condition when performing a Rest action.

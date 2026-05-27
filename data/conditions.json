@@ -1,5 +1,5 @@
 {
-  "_comment": "Статичная библиотека состояний. Тексты — ключи i18n (assets/i18n/translations.csv, ru/en). conditions (24): front/reckoning — ключи отображаемого текста; onReckoning — программа Effect-DSL шага расплаты. reckoningOutcomes (57): name/text — ключи; effects — программа Effect-DSL; then — flip|discard. Фронты карт (пассивные правила, локальные действия) автоэффектами не выражаются — это только текст. do:\"text\" — заглушка: движок показывает текст по ключу, но не исполняет. loseImprovement без count означает «все жетоны улучшений».",
+  "_comment": "Статичная библиотека состояний. Тексты — ключи i18n (assets/i18n/translations.csv, ru/en). conditions (24): front/reckoning — ключи отображаемого текста; onReckoning — программа Effect-DSL шага расплаты; опционально whileHeld (пассивы-ограничения: cannotMove/cannotAct/cannotRecover/removeFromBoard/immuneToEffects), action (локальное действие карты), triggered ([{on,do}] — по событию, напр. rest). reckoningOutcomes (57): name/text — ключи; effects — программа Effect-DSL; then — flip|discard. do:\"text\" — заглушка: движок показывает текст по ключу, но не исполняет. loseImprovement без count означает «все жетоны улучшений».",
 
   "conditions": [
 	{ "id": "debt", "name": "COND_DEBT_NAME", "kind": "deal",
@@ -48,10 +48,14 @@
 
 	{ "id": "detained", "name": "COND_DETAINED_NAME", "kind": "restriction",
 	  "front": "COND_DETAINED_FRONT", "reckoning": "",
+	  "whileHeld": [ { "do": "cannotMove" }, { "do": "cannotAct" } ],
+	  "action": [ { "test": "influence", "onPass": [ { "do": "discardCard" } ], "onFail": [] } ],
 	  "onReckoning": [] },
 
 	{ "id": "lostInTimeAndSpace", "name": "COND_LOST_IN_TIME_NAME", "kind": "restriction",
 	  "front": "COND_LOST_IN_TIME_FRONT", "reckoning": "",
+	  "whileHeld": [ { "do": "removeFromBoard" }, { "do": "immuneToEffects" },
+	    { "do": "cannotMove" }, { "do": "cannotAct" } ],
 	  "onReckoning": [] },
 
 	{ "id": "headInjury", "name": "COND_HEAD_INJURY_NAME", "kind": "injury",
@@ -76,6 +80,8 @@
 
 	{ "id": "hypothermia", "name": "COND_HYPOTHERMIA_NAME", "kind": "exposure",
 	  "front": "COND_HYPOTHERMIA_FRONT", "reckoning": "",
+	  "triggered": [ { "on": "rest", "do": [ { "do": "cannotRecover", "stat": "health" },
+	    { "dieRoll": [ { "on": "4-6", "then": [ { "do": "discardCard" } ] }, { "on": "1-3", "then": [] } ] } ] } ],
 	  "onReckoning": [] },
 
 	{ "id": "funding", "name": "COND_FUNDING_NAME", "kind": "deal",
@@ -109,7 +115,7 @@
 	{ "id": "fracturedSpine", "name": "OUTCOME_FRACTURED_SPINE_NAME", "kind": "injury",
 	  "tags": ["injury", "severe", "equipment"],
 	  "text": "OUTCOME_FRACTURED_SPINE_TEXT",
-	  "effects": [ { "do": "text", "text": "OUTCOME_FRACTURED_SPINE_TEXT" } ],
+	  "effects": [ { "do": "loseAsset", "keep": 1 } ],
 	  "then": "discard" },
 
 	{ "id": "infectedWound", "name": "OUTCOME_INFECTED_WOUND_NAME", "kind": "injury",

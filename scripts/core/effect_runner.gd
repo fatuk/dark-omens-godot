@@ -18,6 +18,23 @@ const _PLAYER_VERBS := [
 	"loseAsset", "loseSpell", "loseImprovement",
 	"gainFocus", "loseFocus", "improveSkill", "impairSkill",
 	"becomeDelayed", "move", "text",
+	# v2/v3: пассивные модификаторы проверок/боя/правил — собираются в
+	# player.passive_mods, слой разрешения читает их (см. EFFECT-DSL.md §11–12).
+	"rerollDice", "rollAdditionalDice", "addToDie", "convertDie",
+	"reduceMonsterDamage", "reduceMonsterHorror", "preventLoss",
+	"substituteSkill", "substituteResource", "enhanceReroll", "rerollMatching",
+	"minDice", "immuneTo", "protectResource",
+	# v4: ограничения (пассивы состояний)
+	"cannotMove", "cannotAct", "cannotRecover", "removeFromBoard", "immuneToEffects",
+]
+
+# Глаголы-пассивы: не мутируют игрока сразу, а копятся как модификаторы.
+const _PASSIVE_VERBS := [
+	"rerollDice", "rollAdditionalDice", "addToDie", "convertDie",
+	"reduceMonsterDamage", "reduceMonsterHorror", "preventLoss",
+	"substituteSkill", "substituteResource", "enhanceReroll", "rerollMatching",
+	"minDice", "immuneTo", "protectResource",
+	"cannotMove", "cannotAct", "cannotRecover", "removeFromBoard", "immuneToEffects",
 ]
 
 
@@ -150,7 +167,13 @@ static func _apply_player_verb(verb: String, node: Dictionary, player: Dictionar
 		"move", "text":
 			pass   # move — трекинга позиции пока нет; text — только показ
 		_:
-			pass
+			if _PASSIVE_VERBS.has(verb):
+				# Пассивный модификатор: сохраняем узел целиком — боевой/проверочный
+				# слой прочитает его при разрешении (reroll, +к кубику, −урон монстра…).
+				var mods: Array = player.get("passive_mods", [])
+				mods.append(node)
+				player["passive_mods"] = mods
+				logs.append("модификатор: %s" % verb)
 
 
 # ── Хелперы ───────────────────────────────────────────────────────────────────

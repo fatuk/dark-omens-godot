@@ -1,0 +1,4547 @@
+[
+	{
+		"id": "18_derringer",
+		"nameKey": "ASSET_18_DERRINGER_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"trinket",
+			"weapon"
+		],
+		"abilityKey": "ASSET_18_DERRINGER_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "addToDie",
+					"amount": 1,
+					"count": 1,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "38_revolver",
+		"nameKey": "ASSET_38_REVOLVER_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_38_REVOLVER_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "45_automatic",
+		"nameKey": "ASSET_45_AUTOMATIC_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_45_AUTOMATIC_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 3,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "agency_quarantine",
+		"nameKey": "ASSET_AGENCY_QUARANTINE_NAME",
+		"set": "core",
+		"cost": 4,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_AGENCY_QUARANTINE_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "damageMonster",
+					"amount": 4,
+					"target": "eachMonsterOnSpace"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "arcane_manuscripts",
+		"nameKey": "ASSET_ARCANE_MANUSCRIPTS_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_ARCANE_MANUSCRIPTS_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1,
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "arcane_scholar",
+		"nameKey": "ASSET_ARCANE_SCHOLAR_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_ARCANE_SCHOLAR_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "lore"
+				}
+			]
+		}
+	},
+	{
+		"id": "arcane_tome",
+		"nameKey": "ASSET_ARCANE_TOME_NAME",
+		"set": "core",
+		"cost": 3,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_ARCANE_TOME_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 2,
+					"context": "spellEffect"
+				}
+			],
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"test": "lore",
+							"onPass": [
+								{
+									"do": "gainSpell"
+								}
+							],
+							"onFail": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "axe",
+		"nameKey": "ASSET_AXE_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_AXE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "rerollDice",
+					"count": 99,
+					"optional": true,
+					"skill": "strength",
+					"context": "combatEncounter",
+					"cost": {
+						"spend": "sanity",
+						"amount": 2
+					}
+				}
+			]
+		}
+	},
+	{
+		"id": "bandages",
+		"nameKey": "ASSET_BANDAGES_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"item"
+		],
+		"abilityKey": "ASSET_BANDAGES_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "preventLoss",
+					"stat": "health",
+					"amount": 2,
+					"target": "eachOnSpace",
+					"cost": {
+						"discardSelf": true
+					},
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "bull_whip",
+		"nameKey": "ASSET_BULL_WHIP_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_BULL_WHIP_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 1,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "carbine_rifle",
+		"nameKey": "ASSET_CARBINE_RIFLE_NAME",
+		"set": "core",
+		"cost": 3,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_CARBINE_RIFLE_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 5,
+					"context": "combatEncounter",
+					"limit": "oncePerRound",
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "cat_burglar",
+		"nameKey": "ASSET_CAT_BURGLAR_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"ally"
+		],
+		"tags": [
+			"action"
+		],
+		"abilityKey": "ASSET_CAT_BURGLAR_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"dieRoll": [
+						{
+							"on": "5-6",
+							"then": [
+								{
+									"do": "gainAsset",
+									"from": "reserve"
+								}
+							]
+						},
+						{
+							"on": "1",
+							"then": [
+								{
+									"do": "discardCard"
+								}
+							]
+						},
+						{
+							"on": "2-4",
+							"then": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "charter_flight",
+		"nameKey": "ASSET_CHARTER_FLIGHT_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_CHARTER_FLIGHT_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "move",
+					"amount": 2
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "delivery_service",
+		"nameKey": "ASSET_DELIVERY_SERVICE_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"service",
+			"teamwork"
+		],
+		"abilityKey": "ASSET_DELIVERY_SERVICE_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "giveAsset",
+					"trait": "item",
+					"all": true,
+					"target": "chosenInvestigator",
+					"optional": true
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "double_barreled_shotgun",
+		"nameKey": "ASSET_DOUBLE_BARRELED_SHOTGUN_NAME",
+		"set": "core",
+		"cost": 4,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_DOUBLE_BARRELED_SHOTGUN_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 4,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "convertDie",
+					"on": "6",
+					"successes": 2,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "dynamite",
+		"nameKey": "ASSET_DYNAMITE_NAME",
+		"set": "core",
+		"cost": 3,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"tags": [
+			"action"
+		],
+		"abilityKey": "ASSET_DYNAMITE_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "damageMonster",
+					"amount": 3,
+					"target": "eachMonsterOnSpace",
+					"cost": {
+						"discardSelf": true
+					}
+				}
+			]
+		}
+	},
+	{
+		"id": "fine_clothes",
+		"nameKey": "ASSET_FINE_CLOTHES_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"item"
+		],
+		"abilityKey": "ASSET_FINE_CLOTHES_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "convertDie",
+					"on": "6",
+					"successes": 2,
+					"context": "acquireAssets"
+				}
+			]
+		}
+	},
+	{
+		"id": "fishing_net",
+		"nameKey": "ASSET_FISHING_NET_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"item"
+		],
+		"abilityKey": "ASSET_FISHING_NET_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "strength",
+					"context": "combatEncounter"
+				},
+				{
+					"do": "reduceMonsterDamage",
+					"amount": 1,
+					"min": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "hired_muscle",
+		"nameKey": "ASSET_HIRED_MUSCLE_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_HIRED_MUSCLE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 1
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "strength"
+				}
+			]
+		}
+	},
+	{
+		"id": "holy_cross",
+		"nameKey": "ASSET_HOLY_CROSS_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"item"
+		],
+		"skill": "will",
+		"abilityKey": "ASSET_HOLY_CROSS_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 2,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "holy_water",
+		"nameKey": "ASSET_HOLY_WATER_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"skill": "will",
+		"tags": [
+			"action"
+		],
+		"abilityKey": "ASSET_HOLY_WATER_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 5,
+					"context": "combatEncounter",
+					"cost": {
+						"discardSelf": true
+					},
+					"optional": true
+				},
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 5,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "gainCondition",
+					"condition": "blessed",
+					"target": "eachOnSpace",
+					"cost": {
+						"discardSelf": true
+					},
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "kerosene",
+		"nameKey": "ASSET_KEROSENE_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"item"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_KEROSENE_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 5,
+					"context": "combatEncounter",
+					"cost": {
+						"discardSelf": true
+					},
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "king_james_bible",
+		"nameKey": "ASSET_KING_JAMES_BIBLE_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"abilityKey": "ASSET_KING_JAMES_BIBLE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"skill": "will",
+					"context": "combatEncounter"
+				}
+			],
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"do": "healSanity",
+							"amount": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "lodge_researcher",
+		"nameKey": "ASSET_LODGE_RESEARCHER_NAME",
+		"set": "core",
+		"cost": 3,
+		"traits": [
+			"ally"
+		],
+		"abilityKey": "ASSET_LODGE_RESEARCHER_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "defeatMonster",
+					"do": [
+						{
+							"do": "healSanity",
+							"amount": 1
+						},
+						{
+							"do": "gainClue",
+							"count": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "lucky_cigarette_case",
+		"nameKey": "ASSET_LUCKY_CIGARETTE_CASE_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"trinket"
+		],
+		"abilityKey": "ASSET_LUCKY_CIGARETTE_CASE_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "addToDie",
+					"amount": 1,
+					"count": 1,
+					"optional": true,
+					"context": "anyTest",
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "lucky_rabbits_foot",
+		"nameKey": "ASSET_LUCKY_RABBITS_FOOT_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"trinket"
+		],
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_LUCKY_RABBITS_FOOT_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"context": "anyTest",
+					"optional": true,
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "personal_assistant",
+		"nameKey": "ASSET_PERSONAL_ASSISTANT_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"skill": "influence",
+		"abilityKey": "ASSET_PERSONAL_ASSISTANT_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "influence",
+					"amount": 1
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "influence"
+				}
+			]
+		}
+	},
+	{
+		"id": "pocket_watch",
+		"nameKey": "ASSET_POCKET_WATCH_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"trinket"
+		],
+		"abilityKey": "ASSET_POCKET_WATCH_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "immuneTo",
+					"status": "delayed"
+				}
+			]
+		}
+	},
+	{
+		"id": "private_care",
+		"nameKey": "ASSET_PRIVATE_CARE_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_PRIVATE_CARE_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "healHealth",
+					"amount": 99
+				},
+				{
+					"do": "healSanity",
+					"amount": 99
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "private_investigator",
+		"nameKey": "ASSET_PRIVATE_INVESTIGATOR_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"skill": "observation",
+		"abilityKey": "ASSET_PRIVATE_INVESTIGATOR_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "observation",
+					"amount": 1
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "observation"
+				}
+			]
+		}
+	},
+	{
+		"id": "protective_amulet",
+		"nameKey": "ASSET_PROTECTIVE_AMULET_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"item"
+		],
+		"skill": "will",
+		"abilityKey": "ASSET_PROTECTIVE_AMULET_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "puzzle_box",
+		"nameKey": "ASSET_PUZZLE_BOX_NAME",
+		"set": "core",
+		"cost": 3,
+		"traits": [
+			"trinket"
+		],
+		"abilityKey": "ASSET_PUZZLE_BOX_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"test": "observation",
+							"modifier": -2,
+							"onPass": [
+								{
+									"do": "gainArtifact",
+									"cost": {
+										"discardSelf": true
+									},
+									"optional": true
+								}
+							],
+							"onFail": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "sanctuary",
+		"nameKey": "ASSET_SANCTUARY_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_SANCTUARY_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "loseCondition",
+					"optional": true
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "silver_twilight_ritual",
+		"nameKey": "ASSET_SILVER_TWILIGHT_RITUAL_NAME",
+		"set": "core",
+		"cost": 3,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_SILVER_TWILIGHT_RITUAL_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "retreatDoom",
+					"amount": 1
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "spirit_dagger",
+		"nameKey": "ASSET_SPIRIT_DAGGER_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"item",
+			"magical",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_SPIRIT_DAGGER_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "urban_guide",
+		"nameKey": "ASSET_URBAN_GUIDE_NAME",
+		"set": "core",
+		"cost": 4,
+		"traits": [
+			"ally"
+		],
+		"abilityKey": "ASSET_URBAN_GUIDE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rollAdditionalDice",
+					"count": 1,
+					"target": "eachOnSpace",
+					"when": {
+						"kind": "onLocationType",
+						"type": "city"
+					},
+					"context": "anyTest"
+				}
+			]
+		}
+	},
+	{
+		"id": "vatican_missionary",
+		"nameKey": "ASSET_VATICAN_MISSIONARY_NAME",
+		"set": "core",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"skill": "will",
+		"abilityKey": "ASSET_VATICAN_MISSIONARY_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "will"
+				}
+			]
+		}
+	},
+	{
+		"id": "whiskey",
+		"nameKey": "ASSET_WHISKEY_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"item"
+		],
+		"abilityKey": "ASSET_WHISKEY_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "preventLoss",
+					"stat": "sanity",
+					"amount": 2,
+					"target": "eachOnSpace",
+					"cost": {
+						"discardSelf": true
+					},
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "wireless_report",
+		"nameKey": "ASSET_WIRELESS_REPORT_NAME",
+		"set": "core",
+		"cost": 1,
+		"traits": [
+			"service",
+			"teamwork"
+		],
+		"abilityKey": "ASSET_WIRELESS_REPORT_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "giveClue",
+					"all": true,
+					"target": "chosenInvestigator",
+					"optional": true
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "witch_doctor",
+		"nameKey": "ASSET_WITCH_DOCTOR_NAME",
+		"set": "core",
+		"cost": 3,
+		"traits": [
+			"ally"
+		],
+		"abilityKey": "ASSET_WITCH_DOCTOR_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"choice": [
+								{
+									"do": "healHealth",
+									"amount": 1
+								},
+								{
+									"do": "loseCondition",
+									"condition": "cursed"
+								}
+							],
+							"target": "eachOnSpace"
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "45_colt_revolver",
+		"nameKey": "ASSET_45_COLT_REVOLVER_NAME",
+		"set": "fl",
+		"cost": 1,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_45_COLT_REVOLVER_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 3,
+					"context": "combatEncounter",
+					"limit": "oncePerRound",
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "appeal_to_the_council",
+		"nameKey": "ASSET_APPEAL_TO_THE_COUNCIL_NAME",
+		"set": "fl",
+		"cost": 1,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_APPEAL_TO_THE_COUNCIL_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "retreatDoom",
+					"amount": 1,
+					"cost": {
+						"spend": "clue",
+						"amount": 1
+					},
+					"optional": true
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "bodyguard",
+		"nameKey": "ASSET_BODYGUARD_NAME",
+		"set": "fl",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_BODYGUARD_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 1
+				},
+				{
+					"do": "reduceMonsterDamage",
+					"amount": 1,
+					"min": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "conspiracy_theorist",
+		"nameKey": "ASSET_CONSPIRACY_THEORIST_NAME",
+		"set": "fl",
+		"cost": 3,
+		"traits": [
+			"ally"
+		],
+		"skill": "observation",
+		"tags": [
+			"reckoning"
+		],
+		"abilityKey": "ASSET_CONSPIRACY_THEORIST_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "observation",
+					"amount": 2,
+					"context": "researchEncounter"
+				}
+			],
+			"onReckoning": [
+				{
+					"dieRoll": [
+						{
+							"on": "4-6",
+							"then": [
+								{
+									"do": "gainClue",
+									"count": 1
+								}
+							]
+						},
+						{
+							"on": "1-3",
+							"then": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "elder_sign",
+		"nameKey": "ASSET_ELDER_SIGN_NAME",
+		"set": "fl",
+		"cost": 2,
+		"traits": [
+			"trinket",
+			"magical"
+		],
+		"abilityKey": "ASSET_ELDER_SIGN_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "will",
+					"context": "combatEncounter"
+				},
+				{
+					"do": "reduceMonsterHorror",
+					"amount": 1,
+					"min": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "enchanted_blade",
+		"nameKey": "ASSET_ENCHANTED_BLADE_NAME",
+		"set": "fl",
+		"cost": 3,
+		"traits": [
+			"item",
+			"magical",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_ENCHANTED_BLADE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 3,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "fresh_fruit",
+		"nameKey": "ASSET_FRESH_FRUIT_NAME",
+		"set": "fl",
+		"cost": 1,
+		"traits": [
+			"item"
+		],
+		"abilityKey": "ASSET_FRESH_FRUIT_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"do": "healHealth",
+							"amount": 1,
+							"cost": {
+								"discardSelf": true
+							},
+							"optional": true
+						},
+						{
+							"do": "healSanity",
+							"amount": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "intelligence_report",
+		"nameKey": "ASSET_INTELLIGENCE_REPORT_NAME",
+		"set": "fl",
+		"cost": 3,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_INTELLIGENCE_REPORT_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainClue",
+					"count": 1
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "lantern",
+		"nameKey": "ASSET_LANTERN_NAME",
+		"set": "fl",
+		"cost": 1,
+		"traits": [
+			"item"
+		],
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_LANTERN_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "rollAdditionalDice",
+					"count": 1,
+					"context": "anyTest",
+					"optional": true,
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "lucky_ring",
+		"nameKey": "ASSET_LUCKY_RING_NAME",
+		"set": "fl",
+		"cost": 3,
+		"traits": [
+			"trinket"
+		],
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_LUCKY_RING_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"context": "anyTest"
+				}
+			]
+		}
+	},
+	{
+		"id": "mystic_bounty_hunter",
+		"nameKey": "ASSET_MYSTIC_BOUNTY_HUNTER_NAME",
+		"set": "fl",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_MYSTIC_BOUNTY_HUNTER_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 1,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 2,
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "police_assistance",
+		"nameKey": "ASSET_POLICE_ASSISTANCE_NAME",
+		"set": "fl",
+		"cost": 1,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_POLICE_ASSISTANCE_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "discardMonster",
+					"target": "chosenMonster"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "police_ledger",
+		"nameKey": "ASSET_POLICE_LEDGER_NAME",
+		"set": "fl",
+		"cost": 1,
+		"traits": [
+			"item"
+		],
+		"abilityKey": "ASSET_POLICE_LEDGER_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"test": "observation",
+							"onPass": [
+								{
+									"do": "gainClue",
+									"count": 1,
+									"cost": {
+										"discardSelf": true
+									},
+									"optional": true
+								}
+							],
+							"onFail": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "research_student",
+		"nameKey": "ASSET_RESEARCH_STUDENT_NAME",
+		"set": "fl",
+		"cost": 1,
+		"traits": [
+			"ally"
+		],
+		"tags": [
+			"action"
+		],
+		"abilityKey": "ASSET_RESEARCH_STUDENT_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"dieRoll": [
+						{
+							"on": "5-6",
+							"then": [
+								{
+									"do": "gainClue",
+									"count": 1
+								}
+							]
+						},
+						{
+							"on": "1",
+							"then": [
+								{
+									"do": "discardCard"
+								}
+							]
+						},
+						{
+							"on": "2-4",
+							"then": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "syndicate_agent",
+		"nameKey": "ASSET_SYNDICATE_AGENT_NAME",
+		"set": "fl",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_SYNDICATE_AGENT_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "tear_gas",
+		"nameKey": "ASSET_TEAR_GAS_NAME",
+		"set": "fl",
+		"cost": 1,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"abilityKey": "ASSET_TEAR_GAS_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "rerollDice",
+					"count": 2,
+					"optional": true,
+					"skill": "strength",
+					"context": "combatEncounter",
+					"cost": {
+						"discardSelf": true
+					}
+				},
+				{
+					"do": "reduceMonsterDamage",
+					"amount": 2,
+					"min": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "astronomy_guidebook",
+		"nameKey": "ASSET_ASTRONOMY_GUIDEBOOK_NAME",
+		"set": "mom",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"abilityKey": "ASSET_ASTRONOMY_GUIDEBOOK_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "closeGate",
+					"do": [
+						{
+							"do": "healSanity",
+							"amount": 1
+						},
+						{
+							"do": "gainClue",
+							"count": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "blunderbuss",
+		"nameKey": "ASSET_BLUNDERBUSS_NAME",
+		"set": "mom",
+		"cost": 2,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_BLUNDERBUSS_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "convertDie",
+					"on": "6",
+					"successes": 2,
+					"skill": "strength",
+					"context": "combatEncounter"
+				},
+				{
+					"do": "convertDie",
+					"on": "1",
+					"negate": true,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "courier_needed",
+		"nameKey": "ASSET_COURIER_NEEDED_NAME",
+		"set": "mom",
+		"cost": 1,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_COURIER_NEEDED_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainAsset",
+					"from": "deck",
+					"trait": "task"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "cultists_journal",
+		"nameKey": "ASSET_CULTISTS_JOURNAL_NAME",
+		"set": "mom",
+		"cost": 3,
+		"traits": [
+			"item",
+			"magical",
+			"tome"
+		],
+		"skill": "will",
+		"abilityKey": "ASSET_CULTISTS_JOURNAL_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 2,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "gamblers_dice",
+		"nameKey": "ASSET_GAMBLERS_DICE_NAME",
+		"set": "mom",
+		"cost": 3,
+		"traits": [
+			"trinket"
+		],
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_GAMBLERS_DICE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "minDice",
+					"count": 2
+				}
+			],
+			"action": [
+				{
+					"do": "rerollMatching",
+					"count": 2,
+					"context": "anyTest",
+					"limit": "oncePerRound",
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "genealogy_research",
+		"nameKey": "ASSET_GENEALOGY_RESEARCH_NAME",
+		"set": "mom",
+		"cost": 1,
+		"traits": [
+			"tasks",
+			"task"
+		],
+		"abilityKey": "ASSET_GENEALOGY_RESEARCH_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "defeatMonster",
+					"do": [
+						{
+							"test": "observation",
+							"onPass": [
+								{
+									"do": "gainClue",
+									"count": 1
+								},
+								{
+									"do": "discardCard"
+								}
+							],
+							"onFail": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "investment",
+		"nameKey": "ASSET_INVESTMENT_NAME",
+		"set": "mom",
+		"cost": 1,
+		"traits": [
+			"tasks",
+			"task"
+		],
+		"tags": [
+			"reckoning"
+		],
+		"abilityKey": "ASSET_INVESTMENT_ABILITY",
+		"effect": {
+			"onReckoning": [
+				{
+					"do": "gainCondition",
+					"condition": "funding",
+					"cost": {
+						"discardSelf": true
+					},
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "map_of_the_ley_lines",
+		"nameKey": "ASSET_MAP_OF_THE_LEY_LINES_NAME",
+		"set": "mom",
+		"cost": 4,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_MAP_OF_THE_LEY_LINES_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				}
+			],
+			"action": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"context": "otherWorldEncounter",
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "mineralogy_research",
+		"nameKey": "ASSET_MINERALOGY_RESEARCH_NAME",
+		"set": "mom",
+		"cost": 1,
+		"traits": [
+			"tasks",
+			"task"
+		],
+		"abilityKey": "ASSET_MINERALOGY_RESEARCH_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "encounterResolved",
+					"do": [
+						{
+							"test": "observation",
+							"onPass": [
+								{
+									"do": "gainClue",
+									"count": 1
+								},
+								{
+									"do": "discardCard"
+								}
+							],
+							"onFail": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "monster_hunter",
+		"nameKey": "ASSET_MONSTER_HUNTER_NAME",
+		"set": "mom",
+		"cost": 3,
+		"traits": [
+			"ally"
+		],
+		"skill": "strength",
+		"tags": [
+			"action"
+		],
+		"abilityKey": "ASSET_MONSTER_HUNTER_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				}
+			],
+			"action": [
+				{
+					"do": "damageMonster",
+					"amount": 1,
+					"target": "chosenMonster"
+				}
+			]
+		}
+	},
+	{
+		"id": "newspaper_report",
+		"nameKey": "ASSET_NEWSPAPER_REPORT_NAME",
+		"set": "mom",
+		"cost": 1,
+		"traits": [
+			"tasks",
+			"task"
+		],
+		"abilityKey": "ASSET_NEWSPAPER_REPORT_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "researchResolved",
+					"do": [
+						{
+							"do": "retreatDoom",
+							"amount": 1,
+							"cost": {
+								"discardSelf": true,
+								"spend": "clue",
+								"amount": 1
+							},
+							"optional": true
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "patrolling_the_streets",
+		"nameKey": "ASSET_PATROLLING_THE_STREETS_NAME",
+		"set": "mom",
+		"cost": 1,
+		"traits": [
+			"tasks",
+			"task"
+		],
+		"abilityKey": "ASSET_PATROLLING_THE_STREETS_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "defeatMonster",
+					"do": [
+						{
+							"do": "retreatDoom",
+							"amount": 1,
+							"cost": {
+								"discardSelf": true
+							},
+							"optional": true
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "profane_tome",
+		"nameKey": "ASSET_PROFANE_TOME_NAME",
+		"set": "mom",
+		"cost": 1,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"abilityKey": "ASSET_PROFANE_TOME_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "will",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "search_the_archives",
+		"nameKey": "ASSET_SEARCH_THE_ARCHIVES_NAME",
+		"set": "mom",
+		"cost": 2,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_SEARCH_THE_ARCHIVES_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainAsset",
+					"from": "random",
+					"trait": "tome"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "secret_page",
+		"nameKey": "ASSET_SECRET_PAGE_NAME",
+		"set": "mom",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_SECRET_PAGE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1,
+					"context": "spellEffect"
+				}
+			],
+			"onGain": [
+				{
+					"do": "gainSpell"
+				}
+			]
+		}
+	},
+	{
+		"id": "tome_of_horrors",
+		"nameKey": "ASSET_TOME_OF_HORRORS_NAME",
+		"set": "mom",
+		"cost": 3,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "will",
+		"abilityKey": "ASSET_TOME_OF_HORRORS_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 2,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "reduceMonsterHorror",
+					"amount": 1,
+					"min": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "agent_of_secrets",
+		"nameKey": "ASSET_AGENT_OF_SECRETS_NAME",
+		"set": "sr",
+		"cost": 4,
+		"traits": [
+			"ally"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_AGENT_OF_SECRETS_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "observation",
+					"amount": 1
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "arcane_blade",
+		"nameKey": "ASSET_ARCANE_BLADE_NAME",
+		"set": "sr",
+		"cost": 3,
+		"traits": [
+			"item",
+			"magical",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_ARCANE_BLADE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 2,
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "consecration",
+		"nameKey": "ASSET_CONSECRATION_NAME",
+		"set": "sr",
+		"cost": 2,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_CONSECRATION_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainCondition",
+					"condition": "blessed"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "expedition_guide",
+		"nameKey": "ASSET_EXPEDITION_GUIDE_NAME",
+		"set": "sr",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"abilityKey": "ASSET_EXPEDITION_GUIDE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "enhanceReroll",
+					"count": 2,
+					"context": "anyTest"
+				}
+			]
+		}
+	},
+	{
+		"id": "expedition_map",
+		"nameKey": "ASSET_EXPEDITION_MAP_NAME",
+		"set": "sr",
+		"cost": 1,
+		"traits": [
+			"trinket",
+			"tome"
+		],
+		"abilityKey": "ASSET_EXPEDITION_MAP_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "addToDie",
+					"amount": 1,
+					"count": 1,
+					"optional": true,
+					"context": "expeditionEncounter",
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "gruesome_talisman",
+		"nameKey": "ASSET_GRUESOME_TALISMAN_NAME",
+		"set": "sr",
+		"cost": 1,
+		"traits": [
+			"trinket"
+		],
+		"abilityKey": "ASSET_GRUESOME_TALISMAN_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "addToDie",
+					"amount": 1,
+					"count": 1,
+					"skill": "will",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "handcuffs",
+		"nameKey": "ASSET_HANDCUFFS_NAME",
+		"set": "sr",
+		"cost": 2,
+		"traits": [
+			"item"
+		],
+		"abilityKey": "ASSET_HANDCUFFS_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "combatEncounter",
+					"do": [
+						{
+							"do": "defeatMonster",
+							"target": "eachMonsterYouEncounter",
+							"when": {
+								"kind": "monsterToughnessAtMost",
+								"n": 2
+							},
+							"cost": {
+								"spend": "focus",
+								"amount": 1
+							},
+							"optional": true
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "holy_spear",
+		"nameKey": "ASSET_HOLY_SPEAR_NAME",
+		"set": "sr",
+		"cost": 3,
+		"traits": [
+			"item",
+			"magical",
+			"relic",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_HOLY_SPEAR_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 4,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "lavish_feast",
+		"nameKey": "ASSET_LAVISH_FEAST_NAME",
+		"set": "sr",
+		"cost": 1,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_LAVISH_FEAST_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "healHealth",
+					"amount": 2
+				},
+				{
+					"do": "healSanity",
+					"amount": 2
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "medical_journal",
+		"nameKey": "ASSET_MEDICAL_JOURNAL_NAME",
+		"set": "sr",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"abilityKey": "ASSET_MEDICAL_JOURNAL_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"skill": "strength",
+					"context": "illnessInjuryEffect"
+				}
+			],
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"do": "healHealth",
+							"amount": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "museum_curator",
+		"nameKey": "ASSET_MUSEUM_CURATOR_NAME",
+		"set": "sr",
+		"cost": 3,
+		"traits": [
+			"ally"
+		],
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_MUSEUM_CURATOR_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"context": "expeditionEncounter"
+				}
+			],
+			"onGain": [
+				{
+					"do": "gainAsset",
+					"from": "deck",
+					"trait": "relic"
+				}
+			]
+		}
+	},
+	{
+		"id": "mysterious_tome",
+		"nameKey": "ASSET_MYSTERIOUS_TOME_NAME",
+		"set": "sr",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"abilityKey": "ASSET_MYSTERIOUS_TOME_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "enhanceReroll",
+					"count": 2,
+					"context": "anyTest"
+				}
+			]
+		}
+	},
+	{
+		"id": "opus_arcana",
+		"nameKey": "ASSET_OPUS_ARCANA_NAME",
+		"set": "sr",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_OPUS_ARCANA_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 2,
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "ritual_dagger",
+		"nameKey": "ASSET_RITUAL_DAGGER_NAME",
+		"set": "sr",
+		"cost": 1,
+		"traits": [
+			"item",
+			"magical",
+			"weapon"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_RITUAL_DAGGER_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"choice": [
+						{
+							"do": "improveSkill",
+							"skill": "lore",
+							"amount": 1,
+							"context": "spellEffect"
+						},
+						{
+							"do": "improveSkill",
+							"skill": "strength",
+							"amount": 2,
+							"context": "combatEncounter"
+						}
+					],
+					"limit": "oncePerRound",
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "specialized_training",
+		"nameKey": "ASSET_SPECIALIZED_TRAINING_NAME",
+		"set": "sr",
+		"cost": 1,
+		"traits": [
+			"tasks",
+			"task"
+		],
+		"abilityKey": "ASSET_SPECIALIZED_TRAINING_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "focus",
+					"do": [
+						{
+							"test": "will",
+							"onPass": [
+								{
+									"do": "improveSkill",
+									"optional": true
+								},
+								{
+									"do": "discardCard"
+								}
+							],
+							"onFail": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "tome_of_secrets",
+		"nameKey": "ASSET_TOME_OF_SECRETS_NAME",
+		"set": "sr",
+		"cost": 3,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"abilityKey": "ASSET_TOME_OF_SECRETS_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "substituteResource",
+					"fromResource": "clue",
+					"toResource": "focus",
+					"limit": "oncePerRound"
+				}
+			],
+			"triggered": [
+				{
+					"on": "focus",
+					"do": [
+						{
+							"do": "healSanity",
+							"amount": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "25_automatic",
+		"nameKey": "ASSET_25_AUTOMATIC_NAME",
+		"set": "soc",
+		"cost": 1,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"abilityKey": "ASSET_25_AUTOMATIC_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rollAdditionalDice",
+					"count": 1,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "arcane_assistant",
+		"nameKey": "ASSET_ARCANE_ASSISTANT_NAME",
+		"set": "soc",
+		"cost": 1,
+		"traits": [
+			"ally"
+		],
+		"abilityKey": "ASSET_ARCANE_ASSISTANT_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rollAdditionalDice",
+					"count": 1,
+					"skill": "lore",
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "assassination",
+		"nameKey": "ASSET_ASSASSINATION_NAME",
+		"set": "soc",
+		"cost": 2,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_ASSASSINATION_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "damageMonster",
+					"amount": 2,
+					"target": "chosenMonster"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "chief_inspector",
+		"nameKey": "ASSET_CHIEF_INSPECTOR_NAME",
+		"set": "soc",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"skill": "observation",
+		"abilityKey": "ASSET_CHIEF_INSPECTOR_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "observation",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "observation",
+					"amount": 2,
+					"context": "researchEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "enchanted_cane",
+		"nameKey": "ASSET_ENCHANTED_CANE_NAME",
+		"set": "soc",
+		"cost": 2,
+		"traits": [
+			"item",
+			"magical",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_ENCHANTED_CANE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 3,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "esteemed_author",
+		"nameKey": "ASSET_ESTEEMED_AUTHOR_NAME",
+		"set": "soc",
+		"cost": 3,
+		"traits": [
+			"ally"
+		],
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_ESTEEMED_AUTHOR_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"skill": "influence"
+				}
+			],
+			"onGain": [
+				{
+					"do": "gainAsset",
+					"from": "random",
+					"trait": "tome"
+				}
+			]
+		}
+	},
+	{
+		"id": "fine_jewelry",
+		"nameKey": "ASSET_FINE_JEWELRY_NAME",
+		"set": "soc",
+		"cost": 1,
+		"traits": [
+			"trinket"
+		],
+		"abilityKey": "ASSET_FINE_JEWELRY_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "addToDie",
+					"amount": 1,
+					"count": 1,
+					"optional": true,
+					"skill": "influence",
+					"context": "acquireAssets"
+				}
+			]
+		}
+	},
+	{
+		"id": "flamethrower",
+		"nameKey": "ASSET_FLAMETHROWER_NAME",
+		"set": "soc",
+		"cost": 4,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_FLAMETHROWER_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 5,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "reduceMonsterDamage",
+					"amount": 1,
+					"min": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "lodge_disciple",
+		"nameKey": "ASSET_LODGE_DISCIPLE_NAME",
+		"set": "soc",
+		"cost": 4,
+		"traits": [
+			"ally"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_LODGE_DISCIPLE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "influence",
+					"amount": 1
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "lodge_physician",
+		"nameKey": "ASSET_LODGE_PHYSICIAN_NAME",
+		"set": "soc",
+		"cost": 3,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"abilityKey": "ASSET_LODGE_PHYSICIAN_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"choice": [
+								{
+									"do": "healHealth",
+									"amount": 1
+								},
+								{
+									"do": "loseCondition"
+								}
+							],
+							"target": "eachOnSpace"
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "occult_text",
+		"nameKey": "ASSET_OCCULT_TEXT_NAME",
+		"set": "soc",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "will",
+		"abilityKey": "ASSET_OCCULT_TEXT_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "rumor_mill",
+		"nameKey": "ASSET_RUMOR_MILL_NAME",
+		"set": "soc",
+		"cost": 1,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_RUMOR_MILL_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainClue",
+					"count": 1
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "security_squad",
+		"nameKey": "ASSET_SECURITY_SQUAD_NAME",
+		"set": "soc",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"abilityKey": "ASSET_SECURITY_SQUAD_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "substituteSkill",
+					"fromSkill": "strength",
+					"toSkill": "influence",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "specialist",
+		"nameKey": "ASSET_SPECIALIST_NAME",
+		"set": "soc",
+		"cost": 3,
+		"traits": [
+			"ally"
+		],
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_SPECIALIST_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainCondition"
+				}
+			],
+			"action": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"context": "anyTest",
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "three_card_monte",
+		"nameKey": "ASSET_THREE_CARD_MONTE_NAME",
+		"set": "soc",
+		"cost": 1,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_THREE_CARD_MONTE_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"dieRoll": [
+						{
+							"on": "5-6",
+							"then": [
+								{
+									"do": "gainAsset",
+									"from": "reserve"
+								}
+							]
+						},
+						{
+							"on": "1-4",
+							"then": []
+						}
+					]
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "tommy_gun",
+		"nameKey": "ASSET_TOMMY_GUN_NAME",
+		"set": "soc",
+		"cost": 3,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_TOMMY_GUN_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 4,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "32_colt_pocket",
+		"nameKey": "ASSET_32_COLT_POCKET_NAME",
+		"set": "utp",
+		"cost": 2,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"abilityKey": "ASSET_32_COLT_POCKET_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rollAdditionalDice",
+					"count": 1,
+					"skill": "strength",
+					"context": "combatEncounter"
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "ancient_tome",
+		"nameKey": "ASSET_ANCIENT_TOME_NAME",
+		"set": "utp",
+		"cost": 2,
+		"traits": [
+			"item",
+			"relic",
+			"tome"
+		],
+		"tags": [
+			"action"
+		],
+		"abilityKey": "ASSET_ANCIENT_TOME_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"test": "lore",
+					"onPass": [
+						{
+							"do": "gainClue",
+							"count": 1
+						}
+					],
+					"onFail": []
+				}
+			]
+		}
+	},
+	{
+		"id": "ankh",
+		"nameKey": "ASSET_ANKH_NAME",
+		"set": "utp",
+		"cost": 3,
+		"traits": [
+			"item",
+			"relic"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_ANKH_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 2,
+					"context": "spellEffect"
+				},
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 2,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "arcane_scroll",
+		"nameKey": "ASSET_ARCANE_SCROLL_NAME",
+		"set": "utp",
+		"cost": 1,
+		"traits": [
+			"trinket",
+			"tome"
+		],
+		"abilityKey": "ASSET_ARCANE_SCROLL_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "addToDie",
+					"amount": 1,
+					"count": 1,
+					"skill": "lore",
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "book_of_spells",
+		"nameKey": "ASSET_BOOK_OF_SPELLS_NAME",
+		"set": "utp",
+		"cost": 3,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_BOOK_OF_SPELLS_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainSpell"
+				},
+				{
+					"do": "gainSpell"
+				},
+				{
+					"do": "loseSpell"
+				}
+			],
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 2,
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "curiosity_shoppe",
+		"nameKey": "ASSET_CURIOSITY_SHOPPE_NAME",
+		"set": "utp",
+		"cost": 4,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_CURIOSITY_SHOPPE_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainArtifact"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "enchanted_dagger",
+		"nameKey": "ASSET_ENCHANTED_DAGGER_NAME",
+		"set": "utp",
+		"cost": 1,
+		"traits": [
+			"item",
+			"magical",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_ENCHANTED_DAGGER_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "lucky_talisman",
+		"nameKey": "ASSET_LUCKY_TALISMAN_NAME",
+		"set": "utp",
+		"cost": 3,
+		"traits": [
+			"trinket",
+			"relic"
+		],
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_LUCKY_TALISMAN_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "rerollDice",
+					"count": 99,
+					"context": "anyTest",
+					"optional": true,
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "magick_shoppe",
+		"nameKey": "ASSET_MAGICK_SHOPPE_NAME",
+		"set": "utp",
+		"cost": 2,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_MAGICK_SHOPPE_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainSpell"
+				},
+				{
+					"do": "gainSpell"
+				},
+				{
+					"do": "loseSpell"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "magnifying_glass",
+		"nameKey": "ASSET_MAGNIFYING_GLASS_NAME",
+		"set": "utp",
+		"cost": 1,
+		"traits": [
+			"trinket"
+		],
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_MAGNIFYING_GLASS_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "rerollDice",
+					"all": true,
+					"target": "eachOnSpace",
+					"context": "anyTest",
+					"cost": {
+						"spend": "clue",
+						"amount": 1
+					},
+					"limit": "oncePerRound",
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "psychoanalyst",
+		"nameKey": "ASSET_PSYCHOANALYST_NAME",
+		"set": "utp",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"abilityKey": "ASSET_PSYCHOANALYST_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"skill": "will",
+					"context": "madnessEffect"
+				}
+			],
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"do": "healSanity",
+							"amount": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "ritual_candles",
+		"nameKey": "ASSET_RITUAL_CANDLES_NAME",
+		"set": "utp",
+		"cost": 1,
+		"traits": [
+			"trinket"
+		],
+		"skill": "lore",
+		"tags": [
+			"action"
+		],
+		"abilityKey": "ASSET_RITUAL_CANDLES_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 5,
+					"context": "spellEffect",
+					"cost": {
+						"discardSelf": true
+					},
+					"optional": true
+				},
+				{
+					"do": "gainSpell",
+					"cost": {
+						"discardSelf": true
+					},
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "scribes_journal",
+		"nameKey": "ASSET_SCRIBES_JOURNAL_NAME",
+		"set": "utp",
+		"cost": 1,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"abilityKey": "ASSET_SCRIBES_JOURNAL_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "protectResource",
+					"resource": "clue"
+				},
+				{
+					"do": "protectResource",
+					"resource": "spell"
+				}
+			]
+		}
+	},
+	{
+		"id": "sledgehammer",
+		"nameKey": "ASSET_SLEDGEHAMMER_NAME",
+		"set": "utp",
+		"cost": 2,
+		"traits": [
+			"item"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_SLEDGEHAMMER_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "treasure_hunter",
+		"nameKey": "ASSET_TREASURE_HUNTER_NAME",
+		"set": "utp",
+		"cost": 4,
+		"traits": [
+			"ally"
+		],
+		"skill": "observation",
+		"abilityKey": "ASSET_TREASURE_HUNTER_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "observation",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 1
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "ward_evil",
+		"nameKey": "ASSET_WARD_EVIL_NAME",
+		"set": "utp",
+		"cost": 2,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_WARD_EVIL_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "discardMonster",
+					"target": "chosenMonster"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "agency_stakeout",
+		"nameKey": "ASSET_AGENCY_STAKEOUT_NAME",
+		"set": "cir",
+		"cost": 3,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_AGENCY_STAKEOUT_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainClue",
+					"count": 1
+				},
+				{
+					"do": "damageMonster",
+					"amount": 3,
+					"target": "chosenMonster"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "arcane_sutra",
+		"nameKey": "ASSET_ARCANE_SUTRA_NAME",
+		"set": "cir",
+		"cost": 3,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_ARCANE_SUTRA_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 2,
+					"context": "spellEffect"
+				},
+				{
+					"do": "rerollDice",
+					"count": 2,
+					"optional": true,
+					"skill": "lore",
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "forbidden_secrets",
+		"nameKey": "ASSET_FORBIDDEN_SECRETS_NAME",
+		"set": "cir",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "will",
+		"abilityKey": "ASSET_FORBIDDEN_SECRETS_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "gatling_gun",
+		"nameKey": "ASSET_GATLING_GUN_NAME",
+		"set": "cir",
+		"cost": 4,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_GATLING_GUN_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 5,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "rerollDice",
+					"count": 2,
+					"optional": true,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "grisly_totem",
+		"nameKey": "ASSET_GRISLY_TOTEM_NAME",
+		"set": "cir",
+		"cost": 3,
+		"traits": [
+			"trinket",
+			"magical"
+		],
+		"skill": "will",
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_GRISLY_TOTEM_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				}
+			],
+			"action": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"context": "anyTest",
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "lodge_hunter",
+		"nameKey": "ASSET_LODGE_HUNTER_NAME",
+		"set": "cir",
+		"cost": 4,
+		"traits": [
+			"ally"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_LODGE_HUNTER_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "mauser_c96",
+		"nameKey": "ASSET_MAUSER_C96_NAME",
+		"set": "cir",
+		"cost": 2,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_MAUSER_C96_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "mission_briefing",
+		"nameKey": "ASSET_MISSION_BRIEFING_NAME",
+		"set": "cir",
+		"cost": 1,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_MISSION_BRIEFING_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainAsset",
+					"from": "deck",
+					"trait": "task"
+				},
+				{
+					"do": "gainAsset",
+					"from": "deck",
+					"trait": "task"
+				},
+				{
+					"do": "loseAsset",
+					"trait": "task"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "mystic_scroll",
+		"nameKey": "ASSET_MYSTIC_SCROLL_NAME",
+		"set": "cir",
+		"cost": 1,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"abilityKey": "ASSET_MYSTIC_SCROLL_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "lore"
+				}
+			]
+		}
+	},
+	{
+		"id": "news_report",
+		"nameKey": "ASSET_NEWS_REPORT_NAME",
+		"set": "cir",
+		"cost": 1,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_NEWS_REPORT_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "placeClue",
+					"count": 1,
+					"where": "self"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "occult_scripture",
+		"nameKey": "ASSET_OCCULT_SCRIPTURE_NAME",
+		"set": "cir",
+		"cost": 3,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"abilityKey": "ASSET_OCCULT_SCRIPTURE_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"triggered": [
+				{
+					"on": "gainClueResearch",
+					"do": [
+						{
+							"do": "placeClue",
+							"count": 1,
+							"where": "self"
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "painkillers",
+		"nameKey": "ASSET_PAINKILLERS_NAME",
+		"set": "cir",
+		"cost": 1,
+		"traits": [
+			"trinket"
+		],
+		"abilityKey": "ASSET_PAINKILLERS_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"skill": "strength",
+					"context": "illnessInjuryEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "private_flight",
+		"nameKey": "ASSET_PRIVATE_FLIGHT_NAME",
+		"set": "cir",
+		"cost": 2,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_PRIVATE_FLIGHT_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "move"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "silver_twilight_host",
+		"nameKey": "ASSET_SILVER_TWILIGHT_HOST_NAME",
+		"set": "cir",
+		"cost": 3,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_SILVER_TWILIGHT_HOST_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "healHealth",
+					"amount": 3
+				},
+				{
+					"do": "healSanity",
+					"amount": 3
+				},
+				{
+					"do": "gainCondition",
+					"condition": "blessed"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "training_regimen",
+		"nameKey": "ASSET_TRAINING_REGIMEN_NAME",
+		"set": "cir",
+		"cost": 2,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_TRAINING_REGIMEN_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "improveSkill",
+					"optional": true
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "winchester_rifle",
+		"nameKey": "ASSET_WINCHESTER_RIFLE_NAME",
+		"set": "cir",
+		"cost": 2,
+		"traits": [
+			"item",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_WINCHESTER_RIFLE_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 4,
+					"context": "combatEncounter",
+					"limit": "oncePerRound",
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "alchemical_concoction",
+		"nameKey": "ASSET_ALCHEMICAL_CONCOCTION_NAME",
+		"set": "td",
+		"cost": 1,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_ALCHEMICAL_CONCOCTION_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 5,
+					"context": "combatEncounter",
+					"cost": {
+						"discardSelf": true
+					},
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "arcanist",
+		"nameKey": "ASSET_ARCANIST_NAME",
+		"set": "td",
+		"cost": 3,
+		"traits": [
+			"ally"
+		],
+		"abilityKey": "ASSET_ARCANIST_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainSpell"
+				},
+				{
+					"do": "gainSpell"
+				},
+				{
+					"do": "loseSpell"
+				}
+			],
+			"whileOwned": [
+				{
+					"do": "rollAdditionalDice",
+					"count": 1,
+					"skill": "lore",
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "camera",
+		"nameKey": "ASSET_CAMERA_NAME",
+		"set": "td",
+		"cost": 2,
+		"traits": [
+			"item"
+		],
+		"abilityKey": "ASSET_CAMERA_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "spendClue",
+					"do": [
+						{
+							"do": "gainClue",
+							"count": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "divination",
+		"nameKey": "ASSET_DIVINATION_NAME",
+		"set": "td",
+		"cost": 1,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_DIVINATION_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "lookAtGates",
+					"count": 3
+				},
+				{
+					"do": "reorderGates"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "dream_box",
+		"nameKey": "ASSET_DREAM_BOX_NAME",
+		"set": "td",
+		"cost": 2,
+		"traits": [
+			"trinket",
+			"magical"
+		],
+		"abilityKey": "ASSET_DREAM_BOX_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "closeGate",
+					"do": [
+						{
+							"do": "gainFocus",
+							"amount": 1
+						},
+						{
+							"do": "healSanity",
+							"amount": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "dream_diary",
+		"nameKey": "ASSET_DREAM_DIARY_NAME",
+		"set": "td",
+		"cost": 1,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_DREAM_DIARY_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1,
+					"context": "otherWorldEncounter"
+				}
+			],
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"do": "placeClue",
+							"count": 1,
+							"where": "self"
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "enchanted_bow",
+		"nameKey": "ASSET_ENCHANTED_BOW_NAME",
+		"set": "td",
+		"cost": 3,
+		"traits": [
+			"item",
+			"magical",
+			"weapon"
+		],
+		"skill": "strength",
+		"tags": [
+			"action"
+		],
+		"abilityKey": "ASSET_ENCHANTED_BOW_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 3,
+					"context": "combatEncounter"
+				}
+			],
+			"action": [
+				{
+					"do": "damageMonster",
+					"amount": 1,
+					"target": "chosenMonster"
+				}
+			]
+		}
+	},
+	{
+		"id": "forbidden_text",
+		"nameKey": "ASSET_FORBIDDEN_TEXT_NAME",
+		"set": "td",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "will",
+		"abilityKey": "ASSET_FORBIDDEN_TEXT_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 2,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "hitman",
+		"nameKey": "ASSET_HITMAN_NAME",
+		"set": "td",
+		"cost": 3,
+		"traits": [
+			"ally"
+		],
+		"abilityKey": "ASSET_HITMAN_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainAsset",
+					"from": "random",
+					"trait": "weapon"
+				}
+			],
+			"whileOwned": [
+				{
+					"do": "rollAdditionalDice",
+					"count": 1,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "night_classes",
+		"nameKey": "ASSET_NIGHT_CLASSES_NAME",
+		"set": "td",
+		"cost": 2,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_NIGHT_CLASSES_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainCondition"
+				},
+				{
+					"do": "gainCondition"
+				},
+				{
+					"do": "loseCondition"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "occult_grimoire",
+		"nameKey": "ASSET_OCCULT_GRIMOIRE_NAME",
+		"set": "td",
+		"cost": 3,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_OCCULT_GRIMOIRE_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 3,
+					"context": "spellEffect"
+				},
+				{
+					"do": "reduceMonsterHorror",
+					"amount": 1,
+					"min": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "otherworld_codex",
+		"nameKey": "ASSET_OTHERWORLD_CODEX_NAME",
+		"set": "td",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_OTHERWORLD_CODEX_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "police_raid",
+		"nameKey": "ASSET_POLICE_RAID_NAME",
+		"set": "td",
+		"cost": 3,
+		"traits": [
+			"service"
+		],
+		"abilityKey": "ASSET_POLICE_RAID_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "damageMonster",
+					"amount": 3,
+					"target": "eachMonsterOnSpace"
+				},
+				{
+					"do": "discardCard"
+				}
+			]
+		}
+	},
+	{
+		"id": "seek_the_truth",
+		"nameKey": "ASSET_SEEK_THE_TRUTH_NAME",
+		"set": "td",
+		"cost": 1,
+		"traits": [
+			"task"
+		],
+		"abilityKey": "ASSET_SEEK_THE_TRUTH_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "gainClueResearch",
+					"do": [
+						{
+							"do": "placeClue",
+							"count": 1,
+							"where": "self"
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "skeleton_keys",
+		"nameKey": "ASSET_SKELETON_KEYS_NAME",
+		"set": "td",
+		"cost": 1,
+		"traits": [
+			"trinket"
+		],
+		"abilityKey": "ASSET_SKELETON_KEYS_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "addToDie",
+					"amount": 1,
+					"count": 1,
+					"optional": true,
+					"context": "otherWorldEncounter",
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "willful_aristocrat",
+		"nameKey": "ASSET_WILLFUL_ARISTOCRAT_NAME",
+		"set": "td",
+		"cost": 4,
+		"traits": [
+			"ally"
+		],
+		"skill": "influence",
+		"abilityKey": "ASSET_WILLFUL_ARISTOCRAT_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "influence",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "ancient_manuscript",
+		"nameKey": "ASSET_ANCIENT_MANUSCRIPT_NAME",
+		"set": "mon",
+		"cost": 3,
+		"traits": [
+			"trinket",
+			"relic",
+			"tome"
+		],
+		"skill": "lore",
+		"tags": [
+			"reroll"
+		],
+		"abilityKey": "ASSET_ANCIENT_MANUSCRIPT_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				}
+			],
+			"action": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"context": "anyTest",
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "astute_researcher",
+		"nameKey": "ASSET_ASTUTE_RESEARCHER_NAME",
+		"set": "mon",
+		"cost": 2,
+		"traits": [
+			"ally"
+		],
+		"abilityKey": "ASSET_ASTUTE_RESEARCHER_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainAsset",
+					"from": "deck",
+					"trait": "task"
+				},
+				{
+					"do": "gainAsset",
+					"from": "deck",
+					"trait": "task"
+				},
+				{
+					"do": "loseAsset",
+					"trait": "task"
+				}
+			]
+		}
+	},
+	{
+		"id": "blessed_blade",
+		"nameKey": "ASSET_BLESSED_BLADE_NAME",
+		"set": "mon",
+		"cost": 3,
+		"traits": [
+			"item",
+			"magical",
+			"relic",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_BLESSED_BLADE_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainCondition",
+					"condition": "blessed"
+				}
+			],
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 3,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "chainsaw",
+		"nameKey": "ASSET_CHAINSAW_NAME",
+		"set": "mon",
+		"cost": 3,
+		"traits": [
+			"item"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_CHAINSAW_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 3,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "convertDie",
+					"on": "6",
+					"successes": 2,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "enchanted_jewelry",
+		"nameKey": "ASSET_ENCHANTED_JEWELRY_NAME",
+		"set": "mon",
+		"cost": 3,
+		"traits": [
+			"item",
+			"magical",
+			"relic"
+		],
+		"abilityKey": "ASSET_ENCHANTED_JEWELRY_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "preventLoss",
+					"stat": "sanity",
+					"amount": 2,
+					"cost": {
+						"spend": "focus",
+						"amount": 1
+					},
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "experts_blade",
+		"nameKey": "ASSET_EXPERTS_BLADE_NAME",
+		"set": "mon",
+		"cost": 2,
+		"traits": [
+			"item",
+			"magical",
+			"relic",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_EXPERTS_BLADE_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainCondition"
+				}
+			],
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "grim_lexicon",
+		"nameKey": "ASSET_GRIM_LEXICON_NAME",
+		"set": "mon",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"abilityKey": "ASSET_GRIM_LEXICON_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"whileOwned": [
+				{
+					"do": "reduceMonsterHorror",
+					"amount": 1,
+					"min": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "grotesque_compendium",
+		"nameKey": "ASSET_GROTESQUE_COMPENDIUM_NAME",
+		"set": "mon",
+		"cost": 4,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_GROTESQUE_COMPENDIUM_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 4,
+					"context": "spellEffect"
+				},
+				{
+					"do": "convertDie",
+					"on": "6",
+					"successes": 2,
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "museum_director",
+		"nameKey": "ASSET_MUSEUM_DIRECTOR_NAME",
+		"set": "mon",
+		"cost": 4,
+		"traits": [
+			"ally"
+		],
+		"abilityKey": "ASSET_MUSEUM_DIRECTOR_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainArtifact"
+				}
+			],
+			"whileOwned": [
+				{
+					"do": "rollAdditionalDice",
+					"count": 1,
+					"skill": "will",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "mystic_tome",
+		"nameKey": "ASSET_MYSTIC_TOME_NAME",
+		"set": "mon",
+		"cost": 3,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"abilityKey": "ASSET_MYSTIC_TOME_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainSpell"
+				},
+				{
+					"do": "gainSpell"
+				},
+				{
+					"do": "loseSpell"
+				}
+			],
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"do": "healSanity",
+							"amount": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "occult_tablet",
+		"nameKey": "ASSET_OCCULT_TABLET_NAME",
+		"set": "mon",
+		"cost": 3,
+		"traits": [
+			"item",
+			"relic",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_OCCULT_TABLET_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 3,
+					"context": "spellEffect"
+				}
+			],
+			"triggered": [
+				{
+					"on": "rest",
+					"do": [
+						{
+							"test": "lore",
+							"onPass": [
+								{
+									"do": "gainClue",
+									"count": 1,
+									"cost": {
+										"spend": "sanity",
+										"amount": 1
+									},
+									"optional": true
+								}
+							],
+							"onFail": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "protective_totem",
+		"nameKey": "ASSET_PROTECTIVE_TOTEM_NAME",
+		"set": "mon",
+		"cost": 1,
+		"traits": [
+			"item",
+			"magical",
+			"relic"
+		],
+		"abilityKey": "ASSET_PROTECTIVE_TOTEM_ABILITY",
+		"effect": {
+			"action": [
+				{
+					"do": "preventLoss",
+					"stat": "health",
+					"amount": 1,
+					"limit": "oncePerRound",
+					"optional": true
+				}
+			]
+		}
+	},
+	{
+		"id": "scroll_of_secrets",
+		"nameKey": "ASSET_SCROLL_OF_SECRETS_NAME",
+		"set": "mon",
+		"cost": 2,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"skill": "lore",
+		"abilityKey": "ASSET_SCROLL_OF_SECRETS_ABILITY",
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 2,
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "timeworn_brand",
+		"nameKey": "ASSET_TIMEWORN_BRAND_NAME",
+		"set": "mon",
+		"cost": 1,
+		"traits": [
+			"item",
+			"magical",
+			"relic",
+			"weapon"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_TIMEWORN_BRAND_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 1,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"optional": true,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "treasured_memento",
+		"nameKey": "ASSET_TREASURED_MEMENTO_NAME",
+		"set": "mon",
+		"cost": 1,
+		"traits": [
+			"trinket"
+		],
+		"abilityKey": "ASSET_TREASURED_MEMENTO_ABILITY",
+		"effect": {
+			"triggered": [
+				{
+					"on": "focus",
+					"do": [
+						{
+							"do": "gainFocus",
+							"amount": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "vampiric_talisman",
+		"nameKey": "ASSET_VAMPIRIC_TALISMAN_NAME",
+		"set": "mon",
+		"cost": 2,
+		"traits": [
+			"item",
+			"magical",
+			"relic"
+		],
+		"skill": "strength",
+		"abilityKey": "ASSET_VAMPIRIC_TALISMAN_ABILITY",
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 2,
+					"context": "combatEncounter"
+				}
+			],
+			"triggered": [
+				{
+					"on": "defeatMonster",
+					"do": [
+						{
+							"do": "gainFocus",
+							"amount": 1
+						}
+					]
+				}
+			]
+		}
+	}
+]
