@@ -64,7 +64,7 @@ const GATE_SIZE_MULT: float = 1.1
 
 ## Сущности на локации (улики/монстры/слухи) — жетоны-иконки. В покое сложены
 ## стопкой ПОД маркером (позади него, с небольшим сдвигом вниз, наслоены со
-## сдвигом), при наведении на локацию анимированно выезжают вправо в ряд.
+## сдвигом), при ВЫБОРЕ локации анимированно выезжают вправо в ряд.
 const ENTITY_TEX: Dictionary = {
 	"clue":    preload("res://assets/map/clue-icon.png"),
 	"monster": preload("res://assets/map/monster-icon.png"),
@@ -82,13 +82,12 @@ var ENTITY_SIZE_FRAC: float = 1.0
 var ENTITY_STACK_Y:  float = 0.0
 var ENTITY_STACK_X0: float = 20.0
 var ENTITY_STACK_DX: float = 18.0
-## Выезд в ряд по наведению: шаг между иконками + сдвиг начала ряда вправо.
+## Выезд в ряд у выбранной локации: шаг между иконками + сдвиг начала ряда вправо.
 ## ROW_X0 ≈ размер маркера, чтобы первый жетон (idx0) выходил из-за медальона,
 ## а не прятался под ним.
 var ENTITY_ROW_GAP:  float = 42.0
 var ENTITY_ROW_X0:   float = 40.0
-## Радиус наведения (доля маркера) и скорость сглаживания выезда.
-var ENTITY_HOVER_RADIUS_FRAC: float = 0.75
+## Скорость сглаживания раскрытия/сворачивания ряда.
 var ENTITY_HOVER_LERP:        float = 12.0
 
 # ── Зависимости ───────────────────────────────────────────────────────────────
@@ -122,7 +121,7 @@ var _gate_signature:   String = ""    # ключ для пропуска лиш�
 var _gate_outer_angle: float  = 0.0
 var _gate_inner_angle: float  = 0.0
 
-# Сущности на локациях — иконки стопкой над маркером (выезжают в ряд по hover).
+# Сущности на локациях — иконки стопкой над маркером (выезжают в ряд при выборе).
 var _entity_markers:   Array     = []    # [{sprite, base, idx, tex_h, loc_id, hover}]
 var _entity_signature: String    = ""
 # Какие локации сейчас под курсором (для SFX по фронту наведения/ухода).
@@ -269,24 +268,21 @@ func _process(delta: float) -> void:
 				inner.scale    = Vector2.ONE * (gate_screen / float(g.inner_h)) * inv
 				inner.rotation = _gate_inner_angle
 
-	# Сущности — стопкой над маркером; при наведении на локацию иконки
-	# анимированно выезжают вправо в ряд. hover per-marker по близости курсора
-	# к центру локации (своя tile-копия активируется отдельно).
+	# Сущности — стопкой над маркером; раскрываются в ряд только когда локация
+	# ВЫБРАНА (не по ховеру). Все tile-копии выбранной локации раскрываются вместе.
 	if not _entity_markers.is_empty():
 		var ent_size: float = marker_screen * ENTITY_SIZE_FRAC
-		var mouse_w:  Vector2 = get_global_mouse_position()
-		var hover_r:  float = marker_screen * ENTITY_HOVER_RADIUS_FRAC * inv * 0.5
 		var lerp_t:   float = clampf(ENTITY_HOVER_LERP * delta, 0.0, 1.0)
-		var now_hovered: Dictionary = {}   # {loc_id: true} в этом кадре
+		var now_expanded: Dictionary = {}   # {loc_id: true} в этом кадре
 		for i: int in range(_entity_markers.size()):
 			var e: Dictionary = _entity_markers[i]
 			var esp: Sprite2D = e.sprite as Sprite2D
 			if not is_instance_valid(esp):
 				continue
-			var hovered: bool = mouse_w.distance_to(e.base) <= hover_r
-			if hovered:
-				now_hovered[String(e.loc_id)] = true
-			e.hover = lerpf(float(e.hover), 1.0 if hovered else 0.0, lerp_t)
+			var expanded: bool = String(e.loc_id) == _selected_name
+			if expanded:
+				now_expanded[String(e.loc_id)] = true
+			e.hover = lerpf(float(e.hover), 1.0 if expanded else 0.0, lerp_t)
 			var idx: int = int(e.idx)
 			# Отступы раскладки масштабируются marker_factor — так разнос колоды
 			# и дистанция выезда растут вместе с размером иконок при зуме (иначе
@@ -297,15 +293,15 @@ func _process(delta: float) -> void:
 			esp.position = e.base + Vector2(off_x, ENTITY_STACK_Y * marker_factor) * inv
 			esp.scale    = Vector2.ONE * (ent_size / float(e.tex_h)) * inv
 
-		# SFX по фронту: курсор зашёл на локацию с жетонами → hover, ушёл → blur.
+		# SFX по фронту: локация с жетонами стала выбранной → reveal, снята → blur.
 		# Сравниваем с состоянием прошлого кадра (по loc_id, без дублей на tile-копии).
-		for lid_v: Variant in now_hovered:
+		for lid_v: Variant in now_expanded:
 			if not _entity_hover_state.has(lid_v):
 				SfxManager.play(SfxManager.SFX_MAP_ITEM_HOVER)
 		for lid_v: Variant in _entity_hover_state:
-			if not now_hovered.has(lid_v):
+			if not now_expanded.has(lid_v):
 				SfxManager.play(SfxManager.SFX_MAP_ITEM_BLUR)
-		_entity_hover_state = now_hovered
+		_entity_hover_state = now_expanded
 
 
 # ── Маркеры ───────────────────────────────────────────────────────────────────
@@ -696,7 +692,7 @@ func set_gates(gates: Dictionary) -> void:
 
 ## Размещает иконки сущностей стопкой над маркерами. by_loc — {loc_id: [type,…]}
 ## где type ∈ {"clue","monster","rumor"}. Перестраивает только при смене состава
-## (сигнатура). Позиции/выезд по hover/размер считаются в _process.
+## (сигнатура). Позиции/выезд при выборе/размер считаются в _process.
 func set_entities(by_loc: Dictionary) -> void:
 	var keys: Array = by_loc.keys()
 	keys.sort()

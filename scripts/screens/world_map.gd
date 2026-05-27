@@ -364,6 +364,10 @@ func _handle_click(screen_pos: Vector2) -> void:
 	var loc_name: String = _map_layer.try_pick(world_pos)
 	if loc_name.is_empty():
 		return
+	# Повторный клик по уже выбранной локации — закрыть сайдбар (closed → set_selected("")).
+	if _sidebar.is_open() and _map_layer.get_selected_name() == loc_name:
+		_sidebar.close_panel()
+		return
 	var data: Dictionary = _map_layer.get_location(loc_name)
 	if data.is_empty():
 		return
