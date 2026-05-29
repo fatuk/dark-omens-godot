@@ -102,7 +102,10 @@ func _request(method: int, path: String, body: String, timeout: float) -> Dictio
 	var json: Dictionary = parsed if parsed is Dictionary else {}
 
 	if code != 200:
-		return _err(json.get("error", "Ошибка сервера (%d)" % code))
+		# error может прийти строкой ИЛИ объектом (структурная ошибка валидации).
+		# Приводим к строке, иначе _err(msg: String) падает на конвертации типа.
+		var e: Variant = json.get("error", "Ошибка сервера (%d)" % code)
+		return _err(e if e is String else JSON.stringify(e))
 
 	return { "ok": true, "error": "", "json": json }
 
