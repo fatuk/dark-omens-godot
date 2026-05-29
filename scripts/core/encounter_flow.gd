@@ -245,7 +245,8 @@ func _set_monster_health(loc_id: String, idx: int, health: int) -> void:
 
 
 # Доступные типы встречи по содержимому клетки игрока. general — всегда;
-# combat — если есть монстр; research — если есть улика; gate — если врата.
+# combat — если есть монстр; research — если есть улика; gate — если врата;
+# mystery — если эта локация помечена активной Тайной и ещё не зачищена.
 func _compute_choices(pid: String) -> Array:
 	var loc: String = String(_gs.players[pid].get("location", ""))
 	var out: Array = ["general"]
@@ -257,6 +258,11 @@ func _compute_choices(pid: String) -> Array:
 		out.append("research")
 	if _gs.gates.has(loc):
 		out.append("gate")
+	# Тайна: локация в mysteries[active].locations И не в mystery_claimed.
+	var mystery: Dictionary = _gs._campaign.current_mystery()
+	var locs: Array = mystery.get("locations", [])
+	if locs.has(loc) and not (_gs.mystery_claimed as Array).has(loc):
+		out.append("mystery")
 	return out
 
 
@@ -273,8 +279,8 @@ func host_apply_resolve(pid: String) -> bool:
 		return false   # карта ещё генерится
 
 	var enc_kind: String = String(_gs.current_encounter.get("kind", ""))
-	# gate — двухстадийная встреча Иного мира; combat — локальный бой по раундам.
-	if enc_kind == "gate":
+	# gate / mystery — двухфазные ветвящиеся (общая структура); combat — отдельно.
+	if enc_kind == "gate" or enc_kind == "mystery":
 		return _resolve_gate_stage(pid)
 	if enc_kind == "combat":
 		return _resolve_combat(pid)
@@ -348,7 +354,8 @@ func _resolve_gate_stage(pid: String) -> bool:
 func host_apply_advance_stage(pid: String) -> bool:
 	if _gs.phase != "encounter" or _gs._current_pid() != pid:
 		return false
-	if String(_gs.current_encounter.get("kind", "")) != "gate":
+	var k: String = String(_gs.current_encounter.get("kind", ""))
+	if k != "gate" and k != "mystery":
 		return false
 	if int(_gs.current_encounter.get("stage", 0)) != 0:
 		return false   # переход только с первой проверки на вторую
@@ -398,6 +405,7 @@ func _build_request(p: Dictionary, kind: String = "general") -> Dictionary:
 	# В LLM отдаём игровое имя ("Аркхэм") как основное, а реальный прообраз
 	# ("Уэнэм, Массачусетс, США") — отдельным flavor-полем для контекста модели.
 	var real_loc: Dictionary = {
+		"id":           String(loc.get("id", "")),   # ← для locationAffinities на relay
 		"name":         loc["name"],
 		"locationType": loc["type"],
 	}
@@ -431,11 +439,12 @@ func _location_info(loc_id: String) -> Dictionary:
 		var loc: Dictionary = locations[i]
 		if String(loc.get("id", "")) == loc_id:
 			return {
+				"id":     loc_id,
 				"name":   tr(String(loc.get("name", loc_id))),
 				"flavor": tr(String(loc.get("realWorldLocation", ""))),
 				"type":   String(loc.get("type", "city")),
 			}
-	return { "name": loc_id, "flavor": "", "type": "city" }
+	return { "id": loc_id, "name": loc_id, "flavor": "", "type": "city" }
 
 
 # Запасная карта на случай сбоя генерации — игра не должна вставать.

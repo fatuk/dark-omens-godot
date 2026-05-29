@@ -65,8 +65,8 @@ func _refresh() -> void:
 		return
 	if card.is_empty():
 		_show_loading()
-	elif String(card.get("kind", "")) == "gate":
-		_show_gate(card)
+	elif _is_branching(card):
+		_show_gate(card)   # gate и mystery — общая ветвящаяся структура
 	elif card.has("resolution"):
 		_show_outcome(card)
 	else:
@@ -152,8 +152,15 @@ func _show_gate(card: Dictionary) -> void:
 	_finish_btn.visible = true
 
 
-# Активный узел врат для UI (зеркалит EncounterFlow._gate_node): стадия 0 →
-# stage1, стадия 1 → выбранная по исходу ветка (success/failure).
+# Ветвящиеся встречи (gate и mystery) — одинаковая структура card.stage1 +
+# card.branches.{success,failure}. UI и резолв общие.
+func _is_branching(card: Dictionary) -> bool:
+	var k: String = String(card.get("kind", ""))
+	return k == "gate" or k == "mystery"
+
+
+# Активный узел ветвящейся встречи: стадия 0 → stage1, стадия 1 → ветка по
+# результату первой проверки (success/failure).
 func _gate_node(card: Dictionary, stage: int) -> Dictionary:
 	if stage <= 0:
 		return card.get("stage1", {})
@@ -171,7 +178,7 @@ func _on_roll_pressed() -> void:
 # проверке при ЛЮБОМ исходе (ветка выбирается по успеху/провалу); иначе — конец.
 func _on_finish_pressed() -> void:
 	var card: Dictionary = GameState.current_encounter
-	if String(card.get("kind", "")) == "gate":
+	if _is_branching(card):
 		if int(card.get("stage", 0)) == 0 and card.has("stage_resolution"):
 			GameState.advance_encounter_stage()
 			return

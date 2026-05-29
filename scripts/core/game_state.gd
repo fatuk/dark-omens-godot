@@ -97,6 +97,21 @@ var encounter_choices: Array = []
 const SHOP_RESERVE_SIZE: int = 4
 var shop_reserve: Array = []
 
+# ── Цикл Тайн (синкается) ────────────────────────────────────────────────────
+# Активная Тайна — индекс 0/1/2 в campaign.mysteries[]. Не от doom: акт = это+1.
+# Партия проходит Тайны по порядку; каждая решается набором «зачётов» помеченных
+# локаций через двух-фазную mystery-встречу (см. encounter_flow + effect_runner).
+var active_mystery:   int   = 0
+# Сколько локаций активной Тайны уже зачищено (mysteryProgress). При достижении
+# solveCondition.n активная Тайна решается, индекс ++ (если уже 3 → outcome).
+var mystery_progress: int   = 0
+# id зачищенных локаций активной Тайны (чтобы они исчезли из выбора встречи).
+# При решении Тайны очищается вместе с progress.
+var mystery_claimed:  Array = []
+# Финал партии: "" — ещё идёт; "victory" — все 3 Тайны решены; "defeat" — doom
+# достиг doomClock. Клиент по этому полю показывает финальные модалки.
+var outcome:          String = ""
+
 # Подсистемы. GameState — фасад и хранитель синкаемого state; подмодули —
 # host-only логика и owned state (колода мифов, эпоха генерации кампании,
 # префетч встреч). _phase владеет переходами и обработкой действий — без
@@ -155,6 +170,10 @@ func _broadcast_sync() -> void:
 		"campaign":    campaign,
 		"campaign_pending": campaign_pending,
 		"active":      active,
+		"active_mystery":   active_mystery,
+		"mystery_progress": mystery_progress,
+		"mystery_claimed":  mystery_claimed,
+		"outcome":          outcome,
 	})
 
 
@@ -557,6 +576,10 @@ func _apply_snapshot(data: Dictionary) -> void:
 	campaign    = data.get("campaign",    {})
 	campaign_pending = bool(data.get("campaign_pending", false))
 	active      = bool(data.get("active",     false))
+	active_mystery   = int(data.get("active_mystery",   0))
+	mystery_progress = int(data.get("mystery_progress", 0))
+	mystery_claimed  = data.get("mystery_claimed",  [])
+	outcome          = String(data.get("outcome",   ""))
 	_emit_changed()
 	phase_changed.emit(phase)
 
@@ -692,6 +715,7 @@ func _apply_board_effect(node: Dictionary) -> void:
 		"advanceDoom":
 			doom += n
 			GameConsole.log("[Эффект] doom +%d" % n)
+			_check_defeat()
 		"advanceOmen", "moveOmen":
 			# На каждый шаг омена: сдвигаем, затем СРАЗУ считаем дум по вратам
 			# нового цвета омена — ДО того как карта откроет новые врата, чтобы
@@ -716,8 +740,68 @@ func _apply_board_effect(node: Dictionary) -> void:
 				_place_rumor()
 		"monsterSurge":
 			_monster_surge()
+		"mysteryProgress":
+			# Зачёт текущей локации активного игрока в активную Тайну. Выдаётся
+			# только из mystery-встреч (см. relay encounter-tables). За пределами
+			# фазы encounter — тихо игнорируем.
+			if phase != "encounter":
+				GameConsole.log("[Эффект] mysteryProgress вне фазы encounter — игнор")
+			else:
+				_apply_mystery_progress()
 		_:
 			GameConsole.log("[Эффект] %s — пока не поддержано движком" % verb)
+
+
+# ── Цикл Тайн: зачёт / решение / финал ────────────────────────────────────────
+
+# Зачёт текущей локации активного игрока в активную Тайну (verb mysteryProgress).
+# При достижении solveCondition.n активная Тайна решается, индекс ++; на третьей
+# решённой → outcome="victory".
+func _apply_mystery_progress() -> void:
+	var pid: String = _current_pid()
+	if pid.is_empty() or not players.has(pid):
+		return
+	var loc: String = String(players[pid].get("location", ""))
+	if loc.is_empty():
+		return
+	if (mystery_claimed as Array).has(loc):
+		return   # уже была зачтена этим же активным игроком этой же Тайны
+	mystery_progress += 1
+	(mystery_claimed as Array).append(loc)
+	GameConsole.log("[Тайна] %s зачёл «%s» (%d/%d)" % [
+		_name_of(pid), loc, mystery_progress, _mystery_target()
+	])
+	if mystery_progress >= _mystery_target():
+		_solve_active_mystery()
+
+
+func _mystery_target() -> int:
+	var m: Dictionary = _campaign.current_mystery()
+	var sc: Dictionary = m.get("solveCondition", {})
+	return maxi(1, int(sc.get("n", 1)))
+
+
+# Активная Тайна решена: переходим к следующей или фиксируем победу.
+func _solve_active_mystery() -> void:
+	var solved_idx: int = active_mystery
+	GameConsole.log("[Тайна] решена тайна акта %d" % (solved_idx + 1))
+	active_mystery += 1
+	mystery_progress = 0
+	mystery_claimed = []
+	var total: int = (campaign.get("mysteries", []) as Array).size()
+	if active_mystery >= total:
+		outcome = "victory"
+		GameConsole.log("[Финал] все Тайны решены — победа партии")
+
+
+# Doom достиг doomClock → партия проиграла. Хук на advanceDoom.
+func _check_defeat() -> void:
+	if not outcome.is_empty():
+		return
+	var clock: int = int(campaign.get("doomClock", 0))
+	if clock > 0 and doom >= clock:
+		outcome = "defeat"
+		GameConsole.log("[Финал] doom достиг %d — Древний пробуждается" % clock)
 
 
 # ── Цвета омена / врат ────────────────────────────────────────────────────────

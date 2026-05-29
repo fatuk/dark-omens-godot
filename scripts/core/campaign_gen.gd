@@ -77,31 +77,28 @@ func reset() -> void:
 
 # ── Анализ ───────────────────────────────────────────────────────────────────
 
-## Текущий акт (1–3) по доле заполнения doom-часов. Трекинга прогресса
-## Мистерий пока нет — акт оцениваем по doom.
+## Текущий акт (1–3) — по индексу активной Тайны. Прогресс игроков, не doom:
+## решили Тайну акта 1 → акт 2, и т.д. doom отдельно — часы поражения.
 func current_act() -> int:
-	var clock: int = int(_gs.campaign.get("doomClock", 0))
-	if clock <= 0:
-		return 1
-	var ratio: float = float(_gs.doom) / float(clock)
-	if ratio < 0.34:
-		return 1
-	if ratio < 0.67:
-		return 2
-	return 3
+	return clampi(_gs.active_mystery + 1, 1, 3)
 
 
-## Мистерия текущего акта ({} если кампания/тайны ещё не готовы) — для UI.
+## Активная Тайна — по индексу active_mystery. {} — кампания/тайны не готовы
+## либо все 3 уже решены (outcome=="victory").
 func current_mystery() -> Dictionary:
 	var ms: Array = _gs.campaign.get("mysteries", [])
 	if ms.is_empty():
 		return {}
+	var idx: int = _gs.active_mystery
+	if idx < 0 or idx >= ms.size():
+		return {}
+	# Сначала пытаемся найти по полю act (стабильнее), иначе берём по индексу.
 	var act: int = current_act()
 	for i in range(ms.size()):
 		var m: Dictionary = ms[i]
 		if int(m.get("act", 0)) == act:
 			return m
-	return ms[0]
+	return ms[idx]
 
 
 # ── Корутина генерации ───────────────────────────────────────────────────────
@@ -115,6 +112,11 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 	var epoch: int = _epoch
 	_gs.campaign         = {}
 	_gs.campaign_pending = true
+	# Новая кампания — сбрасываем цикл Тайн (active_mystery/прогресс/финал).
+	_gs.active_mystery   = 0
+	_gs.mystery_progress = 0
+	_gs.mystery_claimed  = []
+	_gs.outcome          = ""
 	_gs._emit_changed()
 
 	var api: Node = _gs.get_node_or_null("/root/ContentApi")

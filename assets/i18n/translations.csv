@@ -1360,3 +1360,9 @@ ENC_EFF_COND_GAIN,Состояние: %s,Condition: %s
 ENC_EFF_COND_LOSE,Снять состояние: %s,Remove: %s
 ENC_EFF_MOVE,Принудительный ход,Forced move
 ENC_EFF_CLOSE_GATE,Врата закрываются,Gate sealed
+ENCOUNTER_CHOICE_MYSTERY,Тайна,Mystery
+MYSTERY_PROGRESS_FMT,Прогресс: %d / %d локаций,Progress: %d / %d locations
+OUTCOME_VICTORY_TITLE,Тайна раскрыта,The Mystery Unveiled
+OUTCOME_VICTORY_BODY,"Партия решила все Тайны. Древний остаётся скован за гранью — этот мир уцелел.","Your party has solved every Mystery. The Old One remains bound beyond the veil — this world endures."
+OUTCOME_DEFEAT_TITLE,Древний пробуждается,The Old One Awakens
+OUTCOME_DEFEAT_BODY,"Часы рока пробили полночь. Печати треснули, и древний бог поднимается во всю свою чудовищную высоту.","The doom clock has struck midnight. The seals have cracked, and the ancient god rises to his monstrous full height."

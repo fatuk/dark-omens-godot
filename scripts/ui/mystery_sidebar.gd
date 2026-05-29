@@ -68,18 +68,30 @@ func _refresh() -> void:
 	]
 	_flavor.text = String(m.get("flavorText", ""))
 	_text.text   = String(m.get("text", ""))
-	_solve.text  = "%s: %s" % [tr("MYSTERY_SOLVE"), _solve_text(m.get("solveCondition", {}))]
+	# Прогресс + список локаций (зачищенные помечены галочкой).
+	var sc: Dictionary = m.get("solveCondition", {})
+	var target: int = int(sc.get("n", 1))
+	var done: int   = GameState.mystery_progress
+	var locs_lines: PackedStringArray = PackedStringArray()
+	var locations: Array = m.get("locations", [])
+	for i in range(locations.size()):
+		var lid: String = String(locations[i])
+		var loc_name: String = _localized_loc(lid)
+		var prefix: String = "✓" if (GameState.mystery_claimed as Array).has(lid) else "·"
+		locs_lines.append("%s %s" % [prefix, loc_name])
+	var progress_line: String = tr("MYSTERY_PROGRESS_FMT") % [done, target]
+	_solve.text = "%s\n%s" % [progress_line, "\n".join(locs_lines)]
 
 
-## Человекочитаемое условие закрытия из структурного solveCondition.
-func _solve_text(sc: Dictionary) -> String:
-	var kind: String = String(sc.get("kind", ""))
-	var n: int = int(sc.get("n", sc.get("count", 0)))
-	match kind:
-		"cluesOnCard":     return tr("MYSTERY_SOLVE_CLUES")  % n
-		"tokensOnCard":    return tr("MYSTERY_SOLVE_TOKENS") % n
-		"monsterDefeated": return tr("MYSTERY_SOLVE_MONSTER")
-	return tr("MYSTERY_SOLVE_UNKNOWN")
+# Локализованное имя локации по её id (data/locations.json). Возвращает id,
+# если локация не найдена в каталоге.
+func _localized_loc(loc_id: String) -> String:
+	var locations: Array = GameState._load_locations()
+	for i in range(locations.size()):
+		var loc: Dictionary = locations[i]
+		if String(loc.get("id", "")) == loc_id:
+			return tr(String(loc.get("name", loc_id)))
+	return loc_id
 
 
 # ── Анимация выезда ───────────────────────────────────────────────────────────
