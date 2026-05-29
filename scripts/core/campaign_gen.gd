@@ -163,7 +163,10 @@ func _build_request(player_count: int, ancient_one: String) -> Dictionary:
 		# realWorldLocation (Уэнэм, Массачусетс) — модель будет ссылаться на
 		# места по узнаваемым лавкрафтовским названиям, не по реальным.
 		var name_key: String = String(loc.get("name", loc.get("id", "")))
+		# id шлём отдельно — relay сопоставляет с config/ancients.json по нему
+		# (стабильный ключ, не зависит от языка).
 		locs.append({
+			"id":   String(loc.get("id", "")),
 			"name": tr(name_key),
 			"type": String(loc.get("type", "city")),
 		})
