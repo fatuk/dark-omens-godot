@@ -52,6 +52,7 @@ func _build(card: Dictionary) -> void:
 		# Одна кнопка катит текущий шаг: сначала Воля, затем Сила (отдельные броски).
 		var key: String = "COMBAT_ROLL_WILL" if not card.has("will") else "COMBAT_ROLL_STRENGTH"
 		btns.add_child(_button(key, func() -> void: GameState.resolve_encounter()))
+	UIStyle.scale_modal_text(_vbox)   # текст модалок крупнее (×1.5), пересборка — заново
 
 
 # ── Колонки ───────────────────────────────────────────────────────────────────

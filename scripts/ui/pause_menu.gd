@@ -53,6 +53,7 @@ func _apply_styles() -> void:
 	UIStyle.style_button(_settings_btn)
 	UIStyle.style_button(_menu_btn,  UIColors.WARNING)
 	UIStyle.style_button(_quit_btn,  UIColors.DANGER)
+	UIStyle.scale_modal_text(_main_panel)   # текст модалок крупнее (×1.5)
 
 
 func _wire_handlers() -> void:

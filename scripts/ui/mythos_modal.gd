@@ -75,6 +75,7 @@ func _build() -> void:
 	_next_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_next_btn.pressed.connect(_on_next)
 	_vbox.add_child(_next_btn)
+	UIStyle.scale_modal_text(_vbox)   # текст модалок крупнее (×1.5)
 
 
 # ── Отрисовка по стейту ───────────────────────────────────────────────────────
@@ -116,6 +117,7 @@ func _render_effects(effects: Array) -> void:
 		lbl.add_theme_font_size_override("font_size", 12)
 		_eff_box.add_child(lbl)
 		_eff_header.visible = false
+		UIStyle.scale_modal_text(_eff_box)
 		return
 	_eff_header.visible = true
 	for i in range(effects.size()):
@@ -125,6 +127,7 @@ func _render_effects(effects: Array) -> void:
 		lbl.add_theme_color_override("font_color", UIColors.TEXT)
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_eff_box.add_child(lbl)
+	UIStyle.scale_modal_text(_eff_box)   # эффекты пересобираются — масштаб заново
 
 
 # Человекочитаемое описание узла Effect-DSL — для отображения, не применение.

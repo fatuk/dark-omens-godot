@@ -55,3 +55,4 @@ func _build(choices: Array) -> void:
 		UIStyle.style_button(btn)
 		btn.pressed.connect(func() -> void: GameState.choose_encounter(kind))
 		_vbox.add_child(btn)
+	UIStyle.scale_modal_text(_vbox)   # текст модалок крупнее (×1.5)

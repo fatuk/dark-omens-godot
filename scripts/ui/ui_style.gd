@@ -607,6 +607,23 @@ static func modal_header(title_text: String, on_close: Callable = Callable(), co
 	return header
 
 
+## Множитель размера шрифта в модалках.
+const MODAL_FONT_SCALE: float = 1.5
+
+## Рекурсивно увеличивает размер шрифта всех текстовых контролов поддерева в
+## factor раз. Вызывать ОДИН раз после построения контента модалки (повторный
+## вызов на тех же узлах удвоит масштаб — для перестраиваемых модалок звать после
+## каждой пересборки, узлы там создаются заново).
+static func scale_modal_text(node: Node, factor: float = MODAL_FONT_SCALE) -> void:
+	if node is Label or node is Button or node is LineEdit or node is OptionButton:
+		var c := node as Control
+		var cur: int = c.get_theme_font_size("font_size")
+		if cur > 0:
+			c.add_theme_font_size_override("font_size", roundi(float(cur) * factor))
+	for ch in node.get_children():
+		scale_modal_text(ch, factor)
+
+
 # ── Разделитель ────────────────────────────────────────────────────────────────
 
 ## Цвет разделителей в модалках — почти чёрный, под тёмную рамку.
@@ -666,6 +683,7 @@ static func modal(
 	separator(vbox)
 
 	content_builder.call(vbox)
+	scale_modal_text(vbox)   # текст модалок крупнее (×1.5)
 
 	return backdrop
 
