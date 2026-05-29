@@ -1038,6 +1038,11 @@ func current_mystery() -> Dictionary:
 	return _campaign.current_mystery()
 
 
+## Текущий акт (1–3) — по индексу активной Тайны. Делегат в CampaignGen.
+func current_act() -> int:
+	return _campaign.current_act()
+
+
 ## Хост: сброс перед новой игрой. Зовётся из lobby при входе в свежее лобби —
 ## чтобы prewarm следующей игры не наткнулся на библию предыдущей и зависшую
 ## генерацию. Чистит собственный state GameState; campaign и мифос — через
