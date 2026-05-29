@@ -99,12 +99,15 @@ func _ready() -> void:
 	GameState.state_changed.connect(_refresh_investigators)
 	GameState.state_changed.connect(_refresh_gates)
 	GameState.state_changed.connect(_refresh_entities)
+	GameState.state_changed.connect(_refresh_mystery_marks)
 	GameState.state_changed.connect(_refresh_campaign_gate)
 	_build_campaign_gate()
+	_build_outcome_modal()
 	_refresh_game_panel()
 	_refresh_investigators()
 	_refresh_gates()
 	_refresh_entities()
+	_refresh_mystery_marks()
 	_refresh_campaign_gate()
 
 	# Сайдбар закрылся — снимаем подсветку с карты
@@ -173,6 +176,34 @@ func _animate_moves(moves: Array, list: Array) -> void:
 ## Обновляет визуализацию открытых врат по GameState.gates. Новые врата (которых
 ## не было на прошлом синке) — со звуком и последовательным панорамированием
 ## камеры на каждую локацию.
+## Маркеры локаций активной Тайны — незачищенные точки текущей Тайны, цвет акта.
+func _refresh_mystery_marks() -> void:
+	if not is_instance_valid(_map_layer):
+		return
+	var m: Dictionary = GameState.current_mystery()
+	var locs: Array = m.get("locations", [])
+	var unclaimed: Array = []
+	for i in range(locs.size()):
+		var lid: String = String(locs[i])
+		if not (GameState.mystery_claimed as Array).has(lid):
+			unclaimed.append(lid)
+	_map_layer.set_mystery_marks(unclaimed, _act_color(GameState.current_act()))
+
+
+## Цвет маркеров Тайны по акту: акт 1 — медь, 2 — ржавчина, 3 — кровь.
+func _act_color(act: int) -> Color:
+	match act:
+		1:  return Color("#c9a24b")
+		2:  return Color("#b5572b")
+		_:  return Color("#8e2b2b")
+
+
+func _build_outcome_modal() -> void:
+	var om: CanvasLayer = load("res://scripts/ui/outcome_modal.gd").new()
+	om.name = "OutcomeModal"
+	add_child(om)
+
+
 func _refresh_gates() -> void:
 	if not is_instance_valid(_map_layer):
 		return
