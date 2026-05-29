@@ -42,6 +42,7 @@ func _ready() -> void:
 
 	_roll_btn.pressed.connect(_on_roll_pressed)
 	_finish_btn.pressed.connect(_on_finish_pressed)
+	UIStyle.scale_modal_text(_panel)   # текст модалок крупнее (×1.5)
 
 	GameState.state_changed.connect(_refresh)
 	_refresh()
@@ -82,8 +83,8 @@ func _show_loading() -> void:
 
 
 func _show_card(card: Dictionary) -> void:
-	_title.text     = String(card.get("name", "ENCOUNTER_TITLE"))
-	_main_text.text = String(card.get("mainText", ""))
+	_title.text     = _title_text(card)
+	_main_text.text = _main_or_stakes(card)
 	_check.text         = _check_label(card.get("test", {}))
 	_check.visible      = true
 	_roll_btn.visible   = true
@@ -96,13 +97,13 @@ func _show_card(card: Dictionary) -> void:
 func _show_outcome(card: Dictionary) -> void:
 	var res: Dictionary = card["resolution"]
 	var passed: bool = bool(res.get("passed", false))
-	_title.text     = String(card.get("name", "ENCOUNTER_TITLE"))
-	_main_text.text = String(card.get("mainText", ""))
+	_title.text     = _title_text(card)
+	_main_text.text = _main_or_stakes(card)
 	_check.text     = _check_label(card.get("test", {}))
 	_check.visible  = true
 	_dice.text      = _dice_label(res)
 	_dice.visible   = true
-	_outcome.text   = String(card.get("successText" if passed else "failureText", ""))
+	_outcome.text   = _outcome_text(card, passed)
 	_outcome.add_theme_color_override(
 		"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
 	)
@@ -112,20 +113,18 @@ func _show_outcome(card: Dictionary) -> void:
 	_finish_btn.visible = true
 
 
-# Двухстадийная встреча Иного мира (gate): показываем текущую стадию. Нет
-# stage_resolution → текст стадии + бросок; есть → исход + «Дальше» (если успех
-# и стадия не последняя) либо «Завершить».
+# Двухфазные врата — дерево глубины 2. Стадия 0 (stage1) маршрутизирует: бросок
+# → исход выбирает ветку, после чего «Дальше» ведёт ко второй проверке ПРИ ЛЮБОМ
+# исходе. Стадия 1 — вторая проверка ветки: исход + «Завершить».
 func _show_gate(card: Dictionary) -> void:
-	var stages: Array = card.get("stages", [])
 	var stage: int = int(card.get("stage", 0))
-	if stages.is_empty() or stage < 0 or stage >= stages.size():
+	var node: Dictionary = _gate_node(card, stage)
+	if node.is_empty():
 		_show_loading()
 		return
-	var st: Dictionary = stages[stage]
-	var total: int = stages.size()
-	_title.text     = "%s  (%d/%d)" % [String(card.get("name", "ENCOUNTER_TITLE")), stage + 1, total]
-	_main_text.text = String(st.get("mainText", ""))
-	_check.text     = _check_label(st.get("test", {}))
+	_title.text     = "%s  (%d/2)" % [_title_text(card), stage + 1]
+	_main_text.text = _main_or_stakes(node)
+	_check.text     = _check_label(node.get("test", {}))
 	_check.visible  = true
 
 	if not card.has("stage_resolution"):
@@ -140,16 +139,27 @@ func _show_gate(card: Dictionary) -> void:
 	var passed: bool = bool(res.get("passed", false))
 	_dice.text    = _dice_label(res)
 	_dice.visible = true
-	_outcome.text = String(st.get("successText" if passed else "failureText", ""))
+	_outcome.text = _outcome_text(node, passed)
 	_outcome.add_theme_color_override(
 		"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
 	)
 	_outcome.visible  = true
 	_roll_btn.visible = false
-	# Успех и есть следующая стадия → «Дальше»; иначе встреча окончена → «Завершить».
-	var more: bool = passed and stage < total - 1
+	# После первой проверки (stage 0) всегда «Дальше» (обе ветви ведут ко второй
+	# проверке); после второй (stage 1) — «Завершить».
+	var more: bool = stage == 0
 	_finish_btn.text    = "ENCOUNTER_CONTINUE" if more else "BTN_FINISH_BIG"
 	_finish_btn.visible = true
+
+
+# Активный узел врат для UI (зеркалит EncounterFlow._gate_node): стадия 0 →
+# stage1, стадия 1 → выбранная по исходу ветка (success/failure).
+func _gate_node(card: Dictionary, stage: int) -> Dictionary:
+	if stage <= 0:
+		return card.get("stage1", {})
+	var branches: Dictionary = card.get("branches", {})
+	var branch: String = String(card.get("branch", "success"))
+	return branches.get(branch, {})
 
 
 func _on_roll_pressed() -> void:
@@ -157,21 +167,95 @@ func _on_roll_pressed() -> void:
 	GameState.resolve_encounter()
 
 
-# Кнопка под исходом: для gate с успехом и следующей стадией — «Дальше»
-# (переход стадии), иначе — завершение встречи.
+# Кнопка под исходом: после первой проверки врат (stage 0) — «Дальше» ко второй
+# проверке при ЛЮБОМ исходе (ветка выбирается по успеху/провалу); иначе — конец.
 func _on_finish_pressed() -> void:
 	var card: Dictionary = GameState.current_encounter
 	if String(card.get("kind", "")) == "gate":
-		var stages: Array = card.get("stages", [])
-		var stage: int = int(card.get("stage", 0))
-		var res: Dictionary = card.get("stage_resolution", {})
-		if bool(res.get("passed", false)) and stage < stages.size() - 1:
+		if int(card.get("stage", 0)) == 0 and card.has("stage_resolution"):
 			GameState.advance_encounter_stage()
 			return
 	GameState.finish_encounter()
 
 
 # ── Хелперы текста ────────────────────────────────────────────────────────────
+
+# Заголовок: имя карты (от LLM) либо локализованный фолбэк (механический режим).
+func _title_text(card: Dictionary) -> String:
+	var n: String = String(card.get("name", "")).strip_edges()
+	return n if not n.is_empty() else tr("ENCOUNTER_TITLE")
+
+
+# Основной текст: художественный mainText, а если пуст (механический режим без
+# LLM) — ставки проверки: что даёт успех и чем карает провал.
+func _main_or_stakes(src: Dictionary) -> String:
+	var main: String = String(src.get("mainText", "")).strip_edges()
+	if not main.is_empty():
+		return main
+	var succ: Array = src.get("onSuccess", [])
+	var fail: Array = src.get("onFailure", [])
+	# Маршрутизирующая стадия врат (без эффектов на любом исходе) — нейтрально.
+	if succ.is_empty() and fail.is_empty():
+		return tr("ENCOUNTER_GATE_TRIAL")
+	return "%s: %s\n%s: %s" % [
+		tr("ENC_REWARD"),  _describe_effects(succ),
+		tr("ENC_PENALTY"), _describe_effects(fail),
+	]
+
+
+# Текст исхода: художественный success/failureText, либо описание применённых
+# эффектов, если текста нет (механический режим); пустой исход → «идём дальше».
+func _outcome_text(src: Dictionary, passed: bool) -> String:
+	var txt: String = String(src.get("successText" if passed else "failureText", "")).strip_edges()
+	if not txt.is_empty():
+		return txt
+	var arr: Array = src.get("onSuccess" if passed else "onFailure", [])
+	if arr.is_empty():
+		return tr("ENCOUNTER_PROCEED")
+	return _describe_effects(arr)
+
+
+# ── Описание эффектов (для механического режима) ───────────────────────────────
+
+func _describe_effects(arr: Variant) -> String:
+	if not (arr is Array) or (arr as Array).is_empty():
+		return tr("ENC_EFF_NONE")
+	var parts := PackedStringArray()
+	for i in range((arr as Array).size()):
+		var e: Variant = (arr as Array)[i]
+		if e is Dictionary:
+			parts.append(_describe_one(e))
+	return ", ".join(parts) if parts.size() > 0 else tr("ENC_EFF_NONE")
+
+
+func _describe_one(eff: Dictionary) -> String:
+	var verb: String = String(eff.get("do", ""))
+	var amount: int = int(eff.get("amount", eff.get("count", 1)))
+	match verb:
+		"gainClue":      return tr("ENC_EFF_CLUE") % amount
+		"loseClue":      return tr("ENC_EFF_CLUE") % -amount
+		"healHealth":    return tr("ENC_EFF_HP")  % amount
+		"loseHealth":    return tr("ENC_EFF_HP")  % -amount
+		"healSanity":    return tr("ENC_EFF_SAN") % amount
+		"loseSanity":    return tr("ENC_EFF_SAN") % -amount
+		"gainSpell":     return tr("ENC_EFF_SPELL")
+		"gainArtifact":  return tr("ENC_EFF_ARTIFACT")
+		"gainAsset":     return tr("ENC_EFF_ASSET")
+		"improveSkill":  return tr("ENC_EFF_IMPROVE") % amount
+		"gainCondition": return tr("ENC_EFF_COND_GAIN") % tr(Conditions.name_key(String(eff.get("condition", ""))))
+		"loseCondition": return tr("ENC_EFF_COND_LOSE") % tr(Conditions.name_key(String(eff.get("condition", ""))))
+		"move":          return tr("ENC_EFF_MOVE")
+		"closeGate":     return tr("ENC_EFF_CLOSE_GATE")
+		"":
+			# Комбинатор: choice → ветви через «/», group → перечисление.
+			if eff.has("choice"):
+				return _describe_effects(eff.get("choice", [])).replace(", ", " / ")
+			if eff.has("group"):
+				return _describe_effects(eff.get("group", []))
+			return verb
+		_:
+			return verb
+
 
 func _check_label(test: Dictionary) -> String:
 	var skill: String = String(test.get("skill", "will"))

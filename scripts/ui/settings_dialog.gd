@@ -29,6 +29,7 @@ var _url_input:    LineEdit
 var _res_option:   OptionButton
 var _fs_check:     CheckBox
 var _fx_check:     CheckBox
+var _llm_check:    CheckBox
 var _music_slider: HSlider
 var _sfx_slider:   HSlider
 var _lang_option:  OptionButton
@@ -66,10 +67,14 @@ func _build() -> void:
 	_build_audio_section()
 	UIStyle.separator(_vbox)
 
+	_build_gameplay_section()
+	UIStyle.separator(_vbox)
+
 	_build_language_section()
 	UIStyle.separator(_vbox)
 
 	_build_buttons()
+	UIStyle.scale_modal_text(_vbox)   # текст модалок крупнее (×1.5)
 
 
 func _build_server_section() -> void:
@@ -150,6 +155,34 @@ func _build_audio_section() -> void:
 	_sfx_slider.name = "SfxSlider"
 
 
+func _build_gameplay_section() -> void:
+	_section_header("SECTION_GAMEPLAY", "GameplayHeader")
+
+	var llm_row := HBoxContainer.new()
+	llm_row.name = "LlmRow"
+	llm_row.add_theme_constant_override("separation", 10)
+	_vbox.add_child(llm_row)
+
+	_llm_check = CheckBox.new()
+	_llm_check.name = "LlmCheck"
+	_llm_check.button_pressed = SettingsStore.use_llm
+	_llm_check.add_theme_color_override("font_color", UIColors.TEXT)
+	_llm_check.add_theme_font_size_override("font_size", 14)
+	llm_row.add_child(_llm_check)
+	var llm_lbl := _plain_label("SETTINGS_USE_LLM")
+	llm_lbl.name = "LlmLabel"
+	llm_row.add_child(llm_lbl)
+
+	# Подпись-пояснение: что значит выключить.
+	var hint := Label.new()
+	hint.name = "LlmHint"
+	hint.text = "SETTINGS_USE_LLM_HINT"
+	hint.add_theme_font_size_override("font_size", 11)
+	hint.add_theme_color_override("font_color", UIColors.MUTED)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_vbox.add_child(hint)
+
+
 func _build_language_section() -> void:
 	var row := HBoxContainer.new()
 	row.name = "LanguageRow"
@@ -196,6 +229,7 @@ func _on_save() -> void:
 	SfxManager.set_volume(_sfx_slider.value)
 
 	PostFx.set_enabled(_fx_check.button_pressed)
+	SettingsStore.use_llm = _llm_check.button_pressed
 	if _lang_option.selected >= 0:
 		I18n.set_locale(I18n.SUPPORTED[_lang_option.selected])
 

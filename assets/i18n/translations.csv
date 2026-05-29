@@ -674,6 +674,8 @@ ENCOUNTER_CHOICE_RESEARCH,Исследование (улика),Research (clue)
 ENCOUNTER_CHOICE_GATE,Войти во врата,Enter the gate
 ENCOUNTER_CHOICE_COMBAT,Бой,Combat
 ENCOUNTER_CONTINUE,Дальше,Continue
+ENCOUNTER_GATE_TRIAL,Испытание Иного мира — пройдите проверку.,An Other World ordeal — make the check.
+ENCOUNTER_PROCEED,Вы идёте дальше.,You press on.
 COMBAT_HEALTH,Здоровье,Health
 COMBAT_SANITY,Рассудок,Sanity
 COMBAT_MDMG,Урон,Damage
@@ -1311,3 +1313,50 @@ ASSET_WIRELESS_REPORT_NAME,Wireless Report,Wireless Report
 ASSET_WIRELESS_REPORT_ABILITY,"When you gain this card, immediately give any number of clues to another investigator on any space.","When you gain this card, immediately give any number of clues to another investigator on any space."
 ASSET_WITCH_DOCTOR_NAME,Witch Doctor,Witch Doctor
 ASSET_WITCH_DOCTOR_ABILITY,Investigators on your space may recover 1 additional Health or discard a Cursed Condition when performing a Rest action.,Investigators on your space may recover 1 additional Health or discard a Cursed Condition when performing a Rest action.
+SIDEBAR_BTN_SHOP,Магазин,Shop
+BTN_CANCEL_BIG,ОТМЕНИТЬ,CANCEL
+SHOP_TITLE,МАГАЗИН,SHOP
+SHOP_SUBTITLE,"Выберите товар, который хотите приобрести.",Choose an item you wish to acquire.
+SHOP_CHECK,Проверка:,Check:
+SHOP_INFLUENCE_CHECK,Проверка Влияния,Influence Check
+SHOP_DICE_POOL,Пул кубов,Dice Pool
+SHOP_MODIFIERS,Модификаторы,Modifiers
+SHOP_BASE_VALUE,Базовое значение,Base value
+SHOP_TOTAL,Итого,Total
+SHOP_HOW_TITLE,Как купить,How to buy
+SHOP_HOW_TEXT,"Выберите товар и пройдите проверку Влияния с итоговым значением, указанным на карте товара. При успехе возьмите товар и добавьте его в своё имущество.","Choose an item and pass an Influence check at the value shown on the item card. On success, take the item and add it to your possessions."
+SHOP_TYPE_CONDITION,Состояние,Condition
+SHOP_DEBT_TEXT,В конце игры вы теряете 2 ед. рассудка за каждое состояние Долг.,At the end of the game you lose 2 Sanity for each Debt condition.
+TRAIT_WEAPON,Оружие,Weapon
+TRAIT_MAGICAL,Магия,Magical
+TRAIT_RELIC,Реликвия,Relic
+TRAIT_TOME,Книга,Tome
+TRAIT_TEAMWORK,Командная,Teamwork
+TRAIT_ITEM,Предмет,Item
+TRAIT_TRINKET,Безделушка,Trinket
+TRAIT_TASK,Задание,Task
+TRAIT_SERVICE,Услуга,Service
+TRAIT_ALLY,Союзник,Ally
+SHOP_ROLL,Бросить кубы,Roll dice
+SHOP_TAKE_DEBT,Взять долг (+2),Take debt (+2)
+SHOP_BUY,Купить,Buy
+SHOP_COINS,Монеты,Coins
+SHOP_REMAINING,Доступно,Available
+SHOP_ROLL_HINT,"Бросьте кубы Влияния, чтобы получить монеты. При желании возьмите долг (+2 монеты, состояние «Долг»). Выберите товары на сумму монет и нажмите «Купить».","Roll Influence dice to gain coins. Optionally take debt (+2 coins, a Debt condition). Select items up to your coins and press Buy."
+SECTION_GAMEPLAY,ИГРОВОЙ ПРОЦЕСС,GAMEPLAY
+SETTINGS_USE_LLM,Тексты встреч (ИИ),Encounter text (AI)
+SETTINGS_USE_LLM_HINT,"Выкл. — встречи без художественного текста: только механические проверки (быстро, без затрат на ИИ).","Off — encounters show mechanical checks only, no narrative (fast, no AI cost)."
+ENC_REWARD,Успех,Success
+ENC_PENALTY,Провал,Failure
+ENC_EFF_NONE,—,—
+ENC_EFF_CLUE,Улики: %+d,Clues: %+d
+ENC_EFF_HP,Здоровье: %+d,Health: %+d
+ENC_EFF_SAN,Рассудок: %+d,Sanity: %+d
+ENC_EFF_SPELL,+ Заклинание,+ Spell
+ENC_EFF_ARTIFACT,+ Артефакт,+ Artifact
+ENC_EFF_ASSET,+ Имущество,+ Asset
+ENC_EFF_IMPROVE,Навык +%d,Skill +%d
+ENC_EFF_COND_GAIN,Состояние: %s,Condition: %s
+ENC_EFF_COND_LOSE,Снять состояние: %s,Remove: %s
+ENC_EFF_MOVE,Принудительный ход,Forced move
+ENC_EFF_CLOSE_GATE,Врата закрываются,Gate sealed

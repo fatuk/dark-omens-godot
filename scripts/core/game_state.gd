@@ -92,6 +92,11 @@ var monster_surge: int = 0
 # Элементы ∈ "general" | "research" | "gate" | "combat".
 var encounter_choices: Array = []
 
+# Витрина магазина (синкается) — список id выложенных «лицом» ассетов. После
+# покупки купленные заменяются новыми (см. _refill_shop_reserve).
+const SHOP_RESERVE_SIZE: int = 4
+var shop_reserve: Array = []
+
 # Подсистемы. GameState — фасад и хранитель синкаемого state; подмодули —
 # host-only логика и owned state (колода мифов, эпоха генерации кампании,
 # префетч встреч). _phase владеет переходами и обработкой действий — без
@@ -146,6 +151,7 @@ func _broadcast_sync() -> void:
 		"monster_bag": monster_bag,
 		"monster_surge": monster_surge,
 		"encounter_choices": encounter_choices,
+		"shop_reserve": shop_reserve,
 		"campaign":    campaign,
 		"campaign_pending": campaign_pending,
 		"active":      active,
@@ -318,6 +324,111 @@ func can_travel_to(dest: String) -> bool:
 	return _phase.can_travel(_nm.my_user_id, dest)
 
 
+# ── Магазин (фасады) ──────────────────────────────────────────────────────────
+
+## Доступен ли магазин: мой ход, город, мой сыщик там, есть действие и покупка
+## («acquire_assets») ещё не сделана в этом раунде (уникальное действие — раз за раунд).
+func can_shop(loc_id: String) -> bool:
+	if loc_id.is_empty() or not is_my_turn():
+		return false
+	var me: Dictionary = my_player()
+	if int(me.get("actions_left", 0)) <= 0:
+		return false
+	if (me.get("actions_used", []) as Array).has("acquire_assets"):
+		return false
+	if location_type(loc_id) != "city":
+		return false
+	return String(me.get("location", "")) == loc_id
+
+
+## Бросок кубов = совершение действия «acquire_assets» (раз за раунд). Тратит
+## действие сразу — отмена покупки уже не вернёт поход в магазин в этом раунде.
+func shop_begin() -> void:
+	perform_action("acquire_assets", {})
+
+
+## Выдать купленные ассеты (по «Купить»). Действие уже потрачено на броске.
+func shop_grant(assets: Array) -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_phase.host_apply_shop_grant(my_pid, assets)
+	else:
+		_nm.relay_all({"action": "game_shop_grant", "pid": my_pid, "assets": assets})
+
+
+## Закрытие магазина — снимает отложенную передачу хода (если магазин был
+## последним действием, ход уйдёт только сейчас). Безопасно вызывать всегда.
+func shop_close() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_phase.host_apply_shop_close(my_pid)
+	else:
+		_nm.relay_all({"action": "game_shop_close", "pid": my_pid})
+
+
+## Взять долг — вешает состояние «Долг» (без дублей).
+func shop_take_debt() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_phase.host_apply_shop_debt(my_pid)
+	else:
+		_nm.relay_all({"action": "game_shop_debt", "pid": my_pid})
+
+
+## Хост: заполнить витрину магазина до SHOP_RESERVE_SIZE случайными ассетами.
+func _fill_shop_reserve() -> void:
+	shop_reserve = []
+	_draw_shop_assets(SHOP_RESERVE_SIZE)
+
+
+## Гарантирует непустую витрину (на случай партий, начатых до появления резерва).
+## Только дотягивает недостающее — выложенные карты остаются на местах.
+func ensure_shop_reserve() -> void:
+	if not _is_host() or shop_reserve.size() >= SHOP_RESERVE_SIZE:
+		return
+	_draw_shop_assets(SHOP_RESERVE_SIZE - shop_reserve.size())
+	_broadcast_sync()
+	_emit_changed()
+
+
+## Хост: после покупки убрать купленные id и дотянуть витрину новыми.
+func _refill_shop_reserve(bought: Array) -> void:
+	if not _is_host():
+		return
+	for b: Variant in bought:
+		shop_reserve.erase(String(b))
+	_draw_shop_assets(SHOP_RESERVE_SIZE - shop_reserve.size())
+
+
+## Добавляет n случайных ассетов в витрину. Карты не повторяются: исключаем уже
+## выложенные И уже принадлежащие любому игроку — каждый ассет на поле уникален.
+func _draw_shop_assets(n: int) -> void:
+	if n <= 0:
+		return
+	var taken: Dictionary = {}
+	for r: Variant in shop_reserve:
+		taken[String(r)] = true
+	for pid: Variant in players:
+		for it: Variant in (players[pid].get("items", []) as Array):
+			taken[String(it)] = true
+	var pool: Array = []
+	for a in AssetCatalog.all():
+		var aid: String = String((a as Dictionary).get("id", ""))
+		if not aid.is_empty() and not taken.has(aid):
+			pool.append(aid)
+	pool.shuffle()
+	for i: int in mini(n, pool.size()):
+		shop_reserve.append(pool[i])
+
+
+## Тип локации по id (city|wilderness|sea), "" если не найдена.
+func location_type(loc_id: String) -> String:
+	for loc in _load_locations():
+		if String((loc as Dictionary).get("id", "")) == loc_id:
+			return String((loc as Dictionary).get("type", ""))
+	return ""
+
+
 # ── Mythos (фасад) ───────────────────────────────────────────────────────────
 
 ## Любой игрок подтверждает «Дальше» в модалке мифа. Делегат в MythosFlow.
@@ -442,6 +553,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	monster_bag = data.get("monster_bag", [])
 	monster_surge = int(data.get("monster_surge", 0))
 	encounter_choices = data.get("encounter_choices", [])
+	shop_reserve = data.get("shop_reserve", [])
 	campaign    = data.get("campaign",    {})
 	campaign_pending = bool(data.get("campaign_pending", false))
 	active      = bool(data.get("active",     false))
@@ -497,6 +609,18 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"game_advance_stage":
 			if _is_host():
 				_encounter.host_apply_advance_stage(data.get("pid", ""))
+
+		"game_shop_grant":
+			if _is_host():
+				_phase.host_apply_shop_grant(data.get("pid", ""), data.get("assets", []))
+
+		"game_shop_close":
+			if _is_host():
+				_phase.host_apply_shop_close(data.get("pid", ""))
+
+		"game_shop_debt":
+			if _is_host():
+				_phase.host_apply_shop_debt(data.get("pid", ""))
 
 		"game_resolve_mythos":
 			if _is_host():
@@ -656,6 +780,7 @@ func _setup_board(player_count: int) -> void:
 	gates = {}
 	entities = {}
 	monsters = {}
+	_fill_shop_reserve()   # стартовая витрина магазина
 	# Наполняем «мешок» всеми не-эпическими монстрами (по одному id).
 	monster_bag = []
 	var pool: Array = MonsterCatalog.non_epic()

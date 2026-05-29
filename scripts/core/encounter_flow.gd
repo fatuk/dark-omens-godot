@@ -305,22 +305,34 @@ func host_apply_resolve(pid: String) -> bool:
 	return true
 
 
-# Резолв текущей стадии gate-встречи. Катит проверку стадии, применяет её
-# onSuccess/onFailure, кладёт результат в current_encounter.stage_resolution.
-# Переход на следующую стадию — отдельным действием (host_apply_advance_stage).
+# Активный узел двухфазных врат: стадия 0 → stage1 (маршрутизация), стадия 1 →
+# ветка по результату первой проверки (branches.success / branches.failure).
+func _gate_node(card: Dictionary, stage: int) -> Dictionary:
+	if stage <= 0:
+		return card.get("stage1", {})
+	var branches: Dictionary = card.get("branches", {})
+	var branch: String = String(card.get("branch", "success"))
+	return branches.get(branch, {})
+
+
+# Резолв текущей фазы gate-встречи (дерево глубины 2). Стадия 0 — ТОЛЬКО
+# маршрутизация: катим проверку, эффектов нет, исход решает, в какую ветку идём
+# (переход — host_apply_advance_stage). Стадия 1 — вторая проверка ветки: катим
+# и применяем её onSuccess/onFailure (положительный исход закрывает врата).
 func _resolve_gate_stage(pid: String) -> bool:
-	var stages: Array = _gs.current_encounter.get("stages", [])
-	var stage: int = int(_gs.current_encounter.get("stage", 0))
-	if stage < 0 or stage >= stages.size():
-		return false
 	if _gs.current_encounter.has("stage_resolution"):
-		return false   # текущая стадия уже разрешена — ждём «Дальше»/«Завершить»
-	var st: Dictionary = stages[stage]
-	var roll: Dictionary = _roll_check(pid, st.get("test", {}))
-	var branch: Array = st.get("onSuccess" if roll["passed"] else "onFailure", [])
-	_apply_effects(branch, pid)
+		return false   # фаза уже разрешена — ждём «Дальше»/«Завершить»
+	var stage: int = int(_gs.current_encounter.get("stage", 0))
+	var node: Dictionary = _gate_node(_gs.current_encounter, stage)
+	if node.is_empty():
+		return false
+	var roll: Dictionary = _roll_check(pid, node.get("test", {}))
+	# Стадия 1 (вторая проверка) — применяем исход ветки; стадия 0 лишь маршрутизирует.
+	if stage >= 1:
+		var branch: Array = node.get("onSuccess" if roll["passed"] else "onFailure", [])
+		_apply_effects(branch, pid)
 	_gs.current_encounter["stage_resolution"] = roll
-	GameConsole.log("[Game] %s · врата, стадия %d %s · успехов: %d" % [
+	GameConsole.log("[Game] %s · врата, фаза %d %s · успехов: %d" % [
 		_gs._name_of(pid), stage + 1,
 		"пройдена" if roll["passed"] else "провалена", int(roll["successes"]),
 	])
@@ -329,23 +341,25 @@ func _resolve_gate_stage(pid: String) -> bool:
 	return true
 
 
-## Хост: перейти к следующей стадии gate-встречи (после успешной нефинальной
-## стадии). Зовётся из GameState.advance_encounter_stage / relay-router.
+## Хост: после первой проверки врат перейти ко второй. В отличие от линейной
+## модели, переход происходит при ЛЮБОМ исходе первой проверки — успех ведёт в
+## ветку success, провал — в ветку failure (обе дают вторую проверку).
+## Зовётся из GameState.advance_encounter_stage / relay-router.
 func host_apply_advance_stage(pid: String) -> bool:
 	if _gs.phase != "encounter" or _gs._current_pid() != pid:
 		return false
 	if String(_gs.current_encounter.get("kind", "")) != "gate":
 		return false
+	if int(_gs.current_encounter.get("stage", 0)) != 0:
+		return false   # переход только с первой проверки на вторую
 	var res: Dictionary = _gs.current_encounter.get("stage_resolution", {})
-	if not bool(res.get("passed", false)):
-		return false   # перейти можно только после успеха
-	var stages: Array = _gs.current_encounter.get("stages", [])
-	var stage: int = int(_gs.current_encounter.get("stage", 0))
-	if stage + 1 >= stages.size():
-		return false   # это была последняя стадия — переходить некуда
-	_gs.current_encounter["stage"] = stage + 1
+	if res.is_empty():
+		return false   # первую проверку ещё не катили
+	var branch: String = "success" if bool(res.get("passed", false)) else "failure"
+	_gs.current_encounter["branch"] = branch
+	_gs.current_encounter["stage"] = 1
 	_gs.current_encounter.erase("stage_resolution")
-	GameConsole.log("[Game] %s · врата, стадия → %d" % [_gs._name_of(pid), stage + 2])
+	GameConsole.log("[Game] %s · врата, ветка → %s" % [_gs._name_of(pid), branch])
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
@@ -396,6 +410,9 @@ func _build_request(p: Dictionary, kind: String = "general") -> Dictionary:
 		"conditions":   [],
 		"count":        1,
 		"language":     _gs._relay_language(),
+		# Хост решает, генерить ли художественные тексты через LLM. Off →
+		# механические проверки (см. SettingsStore.use_llm / settings_dialog).
+		"useLLM":       SettingsStore.use_llm,
 	}
 	# Библия готова — встреча несёт контекст кампании (Древний, акт, doom).
 	var cid: String = String(_gs.campaign.get("id", ""))

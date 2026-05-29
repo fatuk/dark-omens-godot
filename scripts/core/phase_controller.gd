@@ -68,6 +68,17 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				return false
 			p["location"]     = dest
 			p["actions_left"] = int(p["actions_left"]) - 1
+		"acquire_assets":
+			# Поход в магазин — уникальное действие (раз за раунд). Фиксируется уже
+			# при БРОСКЕ кубов: тратит действие сразу, поэтому отмена покупки не
+			# вернёт возможность снова пойти в магазин. Сами товары выдаются позже
+			# (host_apply_shop_grant по кнопке «Купить»).
+			if _gs.location_type(String(p.get("location", ""))) != "city":
+				GameConsole.warn("[Магазин] %s не в городе" % _gs._name_of(pid))
+				return false
+			p["actions_left"] = int(p["actions_left"]) - 1
+			p["shopping"]     = true   # не передаём ход, пока магазин открыт
+			GameConsole.log("[Магазин] %s пошёл за покупками" % _gs._name_of(pid))
 		"pass":
 			p["actions_left"] = 0
 		_:
@@ -81,9 +92,74 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	GameConsole.log("[Game] %s · %s · осталось действий: %d" % [
 		_gs._name_of(pid), action_type, int(p["actions_left"])
 	])
-	if int(p["actions_left"]) == 0:
+	# Пока игрок в магазине (модалка открыта) — ход не передаём, даже если это
+	# было последнее действие. Передача произойдёт при закрытии (host_apply_shop_close).
+	if int(p["actions_left"]) == 0 and not bool(p.get("shopping", false)):
 		advance_action_turn()
 
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
+## Хост: выдать купленные ассеты. Действие уже потрачено при броске
+## (acquire_assets в actions_used), поэтому очередь/лимит тут не проверяем — только
+## что игрок реально начал поход в магазин в этом раунде и стоит в городе.
+func host_apply_shop_grant(pid: String, assets: Array) -> bool:
+	if not _gs.players.has(pid) or assets.is_empty():
+		return false
+	var p: Dictionary = _gs.players[pid]
+	if not (p.get("actions_used", []) as Array).has("acquire_assets"):
+		return false
+	if _gs.location_type(String(p.get("location", ""))) != "city":
+		return false
+	var items: Array = p.get("items", [])
+	for aid_v: Variant in assets:
+		var aid: String = String(aid_v)
+		if not AssetCatalog.by_id(aid).is_empty():
+			items.append(aid)
+	p["items"] = items
+	_gs._refill_shop_reserve(assets)   # купленные → заменить новыми
+	GameConsole.log("[Магазин] %s купил %d товар(ов)" % [_gs._name_of(pid), assets.size()])
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
+## Хост: магазин закрыт. Снимаем флаг shopping и, если действий не осталось,
+## только теперь передаём ход (отложенная передача после похода в магазин).
+func host_apply_shop_close(pid: String) -> bool:
+	if not _gs.players.has(pid):
+		return false
+	var p: Dictionary = _gs.players[pid]
+	if not bool(p.get("shopping", false)):
+		return false
+	p["shopping"] = false
+	if int(p.get("actions_left", 0)) == 0:
+		advance_action_turn()
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
+## Хост: игрок берёт долг — вешает состояние «debt». Двух одинаковых состояний
+## иметь нельзя, поэтому повторный debt игнорируется. Долг — не отдельное действие
+## (часть похода в магазин), но взять его может только активный игрок в городе.
+func host_apply_shop_debt(pid: String) -> bool:
+	if not _gs.players.has(pid):
+		return false
+	if _gs._current_pid() != pid:
+		return false
+	var p: Dictionary = _gs.players[pid]
+	if _gs.location_type(String(p.get("location", ""))) != "city":
+		return false
+	var conds: Array = p.get("conditions", [])
+	if conds.has("debt"):
+		GameConsole.log("[Магазин] %s уже имеет «Долг»" % _gs._name_of(pid))
+		return false
+	conds.append("debt")
+	p["conditions"] = conds
+	GameConsole.log("[Магазин] %s взял Долг" % _gs._name_of(pid))
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true

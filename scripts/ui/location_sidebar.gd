@@ -11,6 +11,7 @@ extends CanvasLayer
 
 signal closed
 signal neighbor_selected(loc_name: String)
+signal shop_requested   # клик по кнопке «Магазин» (открыть модалку магазина)
 
 const PANEL_WIDTH: float = 360.0
 const ANIM_TIME:   float = 0.22
@@ -47,6 +48,9 @@ var _items_sep:  HSeparator    = null
 var _items_hdr:  Label         = null
 var _items_list: VBoxContainer = null
 
+# Кнопка «Магазин» — создаётся программно, видна только в городе со своим сыщиком.
+var _shop_btn: Button = null
+
 
 func _ready() -> void:
 	UIStyle.style_panel(_panel, 18)
@@ -59,14 +63,29 @@ func _ready() -> void:
 	_close_btn.pressed.connect(_on_close_pressed)
 	UIStyle.style_button(_travel_btn)
 	_travel_btn.pressed.connect(_on_travel_pressed)
+	_build_shop_button()
 	GameState.state_changed.connect(_refresh_travel)
+	GameState.state_changed.connect(_refresh_shop)
 	GameState.state_changed.connect(_refresh_items)
 	_build_items_section()
 	_apply_offsets(true)
 	_neighbors_hdr.text = "SIDEBAR_NEIGHBORS"  # Godot auto-translate при рендере
 
 
-# Создаёт секцию «айтемы на локации» в VBox сразу после кнопки перемещения.
+# Кнопка «Магазин» — сразу после кнопки перемещения.
+func _build_shop_button() -> void:
+	var vbox: Node = _neighbors.get_parent()   # Panel/Margin/VBox
+	_shop_btn = Button.new()
+	_shop_btn.name = "ShopBtn"
+	_shop_btn.text = "SIDEBAR_BTN_SHOP"   # Godot переведёт по ключу
+	_shop_btn.visible = false
+	UIStyle.style_button(_shop_btn, UIColors.ACCENT)
+	_shop_btn.pressed.connect(func() -> void: shop_requested.emit())
+	vbox.add_child(_shop_btn)
+	vbox.move_child(_shop_btn, _travel_btn.get_index() + 1)
+
+
+# Создаёт секцию «айтемы на локации» в VBox сразу после кнопки магазина.
 func _build_items_section() -> void:
 	var vbox: Node = _neighbors.get_parent()   # Panel/Margin/VBox
 	_items_sep = HSeparator.new()
@@ -79,10 +98,16 @@ func _build_items_section() -> void:
 	vbox.add_child(_items_sep)
 	vbox.add_child(_items_hdr)
 	vbox.add_child(_items_list)
-	var at: int = _travel_btn.get_index() + 1
+	var at: int = _shop_btn.get_index() + 1
 	vbox.move_child(_items_sep, at)
 	vbox.move_child(_items_hdr, at + 1)
 	vbox.move_child(_items_list, at + 2)
+
+
+## Кнопка магазина видна только в городе, где стоит мой сыщик.
+func _refresh_shop() -> void:
+	if is_instance_valid(_shop_btn):
+		_shop_btn.visible = GameState.can_shop(_loc_id)
 
 
 # ── Public ────────────────────────────────────────────────────────────────────
@@ -99,6 +124,7 @@ func show_location(data: Dictionary) -> void:
 	_loc_id = String(data.get("id", ""))
 	_populate_items(_loc_id)
 	_refresh_travel()
+	_refresh_shop()
 	if not _is_open:
 		_is_open = true
 		_animate(false)

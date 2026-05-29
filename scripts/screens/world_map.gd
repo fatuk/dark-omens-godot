@@ -51,6 +51,11 @@ var _clues_seen:       bool       = false
 var _focus_queue:      Array      = []     # [{ "loc": String, "sound": AudioStream|null }]
 var _focus_busy:       bool       = false
 
+# Анимация перемещения сыщиков: где стояли на прошлом синке + флаг проигрывания.
+var _inv_locs:    Dictionary = {}    # {pid: loc_id}
+var _inv_seen:    bool       = false # первый рефреш — без анимации
+var _travelling:  bool       = false # идёт анимация перемещения (гард от ре-входа рефреша)
+
 # ── Ноды ──────────────────────────────────────────────────────────────────────
 
 @onready var _camera:     Camera2D    = $Camera2D
@@ -106,6 +111,8 @@ func _ready() -> void:
 	_sidebar.closed.connect(func() -> void: _map_layer.set_selected(""))
 	# Клик по соседу в списке — открываем его как если бы кликнули по карте
 	_sidebar.neighbor_selected.connect(_on_neighbor_selected)
+	# Кнопка «Магазин» в сайдбаре — открыть модалку магазина.
+	_sidebar.shop_requested.connect(_on_shop_requested)
 	# Клик по орбу раунда — открыть/закрыть сайдбар текущей Мистерии.
 	_game_panel.round_clicked.connect(_on_round_clicked)
 	# Смена языка не требует здесь обработки: данные локаций/сыщиков содержат
@@ -127,17 +134,40 @@ func _refresh_game_panel() -> void:
 
 ## Обновляет маркеры сыщиков на карте по позициям из GameState.
 func _refresh_investigators() -> void:
-	if not is_instance_valid(_map_layer):
+	if not is_instance_valid(_map_layer) or _travelling:
 		return
 	var list: Array = []
+	var moves: Array = []   # [{pid, inv, from, to}] — кто сменил локацию
 	for pid: String in GameState.players:
 		var p: Dictionary = GameState.players[pid]
-		list.append({
-			"pid":          pid,
-			"investigator": String(p.get("investigator", "")),
-			"location":     String(p.get("location", "")),
-		})
+		var inv: String = String(p.get("investigator", ""))
+		var loc: String = String(p.get("location", ""))
+		list.append({ "pid": pid, "investigator": inv, "location": loc })
+		var prev: String = String(_inv_locs.get(pid, ""))
+		if _inv_seen and not prev.is_empty() and prev != loc:
+			moves.append({ "pid": pid, "inv": inv, "from": prev, "to": loc })
+		_inv_locs[pid] = loc
+
+	# Первый рефреш или нет перемещений — просто расставляем пины.
+	if not _inv_seen or moves.is_empty():
+		_inv_seen = true
+		_map_layer.set_investigators(list)
+		return
+
+	_animate_moves(moves, list)
+
+
+# Последовательно проигрывает анимации перемещений, затем расставляет пины.
+func _animate_moves(moves: Array, list: Array) -> void:
+	_travelling = true
+	for i: int in range(moves.size()):
+		var m: Dictionary = moves[i]
+		_map_layer.hide_investigator(String(m.pid))
+		var ctype: String = _map_layer.edge_ctype(String(m.from), String(m.to))
+		await _map_layer.play_travel(String(m.inv), String(m.from), String(m.to), ctype)
+	_travelling = false
 	_map_layer.set_investigators(list)
+	_apply_bounds()
 
 
 ## Обновляет визуализацию открытых врат по GameState.gates. Новые врата (которых
@@ -375,6 +405,19 @@ func _handle_click(screen_pos: Vector2) -> void:
 	_map_layer.set_selected(loc_name)
 
 
+const _SHOP_MODAL := preload("res://scenes/ui/shop_modal.tscn")
+
+func _on_shop_requested() -> void:
+	# Не плодим дубликаты, если уже открыт.
+	if has_node("ShopModal"):
+		return
+	GameState.ensure_shop_reserve()   # дотянуть витрину, если пуста (без полного сброса)
+	var modal := _SHOP_MODAL.instantiate()
+	modal.name = "ShopModal"
+	add_child(modal)
+	modal.open()
+
+
 func _on_neighbor_selected(loc_name: String) -> void:
 	var data: Dictionary = _map_layer.get_location(loc_name)
 	if data.is_empty():
@@ -465,6 +508,7 @@ func _render_gate() -> void:
 				_gate_body(flavor)
 			_gate_body(String(m.get("text", "")))
 			_gate_button("INTRO_START", _on_gate_start)
+	UIStyle.scale_modal_text(_gate_vbox)   # текст модалок крупнее (×1.5)
 
 
 func _on_gate_next() -> void:

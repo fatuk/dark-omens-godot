@@ -55,7 +55,7 @@
 	{ "id": "lostInTimeAndSpace", "name": "COND_LOST_IN_TIME_NAME", "kind": "restriction",
 	  "front": "COND_LOST_IN_TIME_FRONT", "reckoning": "",
 	  "whileHeld": [ { "do": "removeFromBoard" }, { "do": "immuneToEffects" },
-	    { "do": "cannotMove" }, { "do": "cannotAct" } ],
+		{ "do": "cannotMove" }, { "do": "cannotAct" } ],
 	  "onReckoning": [] },
 
 	{ "id": "headInjury", "name": "COND_HEAD_INJURY_NAME", "kind": "injury",
@@ -81,7 +81,7 @@
 	{ "id": "hypothermia", "name": "COND_HYPOTHERMIA_NAME", "kind": "exposure",
 	  "front": "COND_HYPOTHERMIA_FRONT", "reckoning": "",
 	  "triggered": [ { "on": "rest", "do": [ { "do": "cannotRecover", "stat": "health" },
-	    { "dieRoll": [ { "on": "4-6", "then": [ { "do": "discardCard" } ] }, { "on": "1-3", "then": [] } ] } ] } ],
+		{ "dieRoll": [ { "on": "4-6", "then": [ { "do": "discardCard" } ] }, { "on": "1-3", "then": [] } ] } ] } ],
 	  "onReckoning": [] },
 
 	{ "id": "funding", "name": "COND_FUNDING_NAME", "kind": "deal",

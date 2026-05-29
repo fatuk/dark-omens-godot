@@ -1,0 +1,319 @@
+extends CanvasLayer
+
+## Магазин (Acquire Assets). Открывается из сайдбара в городе со своим сыщиком.
+##
+## Поток покупки:
+##   1. «Бросить кубы» — бросок Влияния; число успехов = монеты.
+##   2. В любой момент «Взять долг» — сразу вешает состояние «Долг» (без дублей)
+##      и даёт +2 монеты.
+##   3. Выбор карточек кликом — суммарная цена не должна превышать монеты.
+##   4. «Купить» — покупает выбранное и закрывает модалку.
+##
+## Бросок и подсчёт монет — на клиенте (интерактивный выбор), фактические покупки
+## применяет хост на «Купить» (GameState.shop_buy_asset), долг — сразу
+## (GameState.shop_take_debt).
+
+const _CARD_MIN := Vector2(220, 300)
+const _EYE := "◉"
+
+const _TRAIT_KEY := {
+	"weapon": "TRAIT_WEAPON", "magical": "TRAIT_MAGICAL", "relic": "TRAIT_RELIC",
+	"tome": "TRAIT_TOME", "teamwork": "TRAIT_TEAMWORK",
+	"item": "TRAIT_ITEM", "trinket": "TRAIT_TRINKET", "task": "TRAIT_TASK",
+	"service": "TRAIT_SERVICE", "ally": "TRAIT_ALLY",
+}
+
+# Состояние сессии магазина.
+var _coins:      int  = 0
+var _rolled:     bool = false
+var _debt_taken: bool = false
+var _selected:   Dictionary = {}    # asset_id -> cost
+
+# Узлы для обновления.
+var _dice_box:   HBoxContainer
+var _coins_lbl:  Label
+var _roll_btn:   Button
+var _debt_btn:   Button
+var _buy_btn:    Button
+var _cards:      Array = []          # [{id, cost, panel}]
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	_build()
+
+
+func open() -> void:
+	visible = true
+
+
+func _close() -> void:
+	# Снять отложенную передачу хода (если бросок был последним действием —
+	# ход уйдёт только сейчас). No-op, если игрок не начинал поход (не бросал).
+	GameState.shop_close()
+	queue_free()
+
+
+# ── Сборка ───────────────────────────────────────────────────────────────────
+
+func _build() -> void:
+	var bg := ColorRect.new()
+	bg.name = "Backdrop"
+	bg.color = Color(0, 0, 0, 0.6)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(bg)
+
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.add_child(center)
+
+	var panel := PanelContainer.new()
+	UIStyle.style_modal_panel(panel)
+	panel.custom_minimum_size = Vector2(1120, 0)
+	center.add_child(panel)
+
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 10)
+	panel.add_child(vb)
+
+	vb.add_child(UIStyle.modal_header("SHOP_TITLE", _close))
+	vb.add_child(UIStyle.label("SHOP_SUBTITLE", 14, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
+	UIStyle.separator(vb)
+
+	var main := HBoxContainer.new()
+	main.add_theme_constant_override("separation", 16)
+	main.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vb.add_child(main)
+
+	# Витрина.
+	var cards := HBoxContainer.new()
+	cards.add_theme_constant_override("separation", 12)
+	cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	main.add_child(cards)
+	# Витрина — из синкаемого резерва (после покупки хост заменяет купленные новыми).
+	for a in _offer():
+		cards.add_child(_build_asset_card(a))
+
+	# Правая колонка: проверка Влияния + справка.
+	var right := VBoxContainer.new()
+	right.add_theme_constant_override("separation", 12)
+	right.custom_minimum_size = Vector2(300, 0)
+	main.add_child(right)
+	right.add_child(_build_influence_panel())
+	right.add_child(_build_howto_panel())
+
+	# Закрытие — только крестиком в шапке (кнопки «Отменить» нет).
+	UIStyle.scale_modal_text(panel)   # текст модалок крупнее (×1.5)
+	visible = false
+	_refresh()
+
+
+# Список ассетов витрины: из GameState.shop_reserve, иначе — статичный фолбэк.
+func _offer() -> Array:
+	var out: Array = []
+	for aid in GameState.shop_reserve:
+		var a: Dictionary = AssetCatalog.by_id(String(aid))
+		if not a.is_empty():
+			out.append(a)
+	if out.is_empty():
+		out = AssetCatalog.shop_offer(4)
+	return out
+
+
+func _build_asset_card(a: Dictionary) -> PanelContainer:
+	var card := PanelContainer.new()
+	UIStyle.style_panel(card, 12)
+	card.custom_minimum_size = _CARD_MIN
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	var aid:  String = String(a.get("id", ""))
+	var cost: int    = int(a.get("cost", 0))
+	card.gui_input.connect(func(ev: InputEvent) -> void:
+		if ev is InputEventMouseButton and (ev as InputEventMouseButton).pressed \
+				and (ev as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+			_toggle_card(aid, cost))
+
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 6)
+	card.add_child(col)
+
+	var head := HBoxContainer.new()
+	var nm := UIStyle.label(String(a.get("nameKey", "")), 15, UIColors.ACCENT)
+	nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	head.add_child(nm)
+	head.add_child(UIStyle.label(str(cost), 18, UIColors.WARNING))
+	col.add_child(head)
+
+	var traits: Array = a.get("traits", [])
+	var trait_id: String = String(traits[-1]) if not traits.is_empty() else "item"
+	col.add_child(UIStyle.label(String(_TRAIT_KEY.get(trait_id, trait_id.to_upper())), 11, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
+	UIStyle.separator(col)
+
+	var eff := UIStyle.label(String(a.get("abilityKey", "")), 12, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	eff.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	eff.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	col.add_child(eff)
+
+	col.add_child(UIStyle.label("%s %s %d" % [tr("SHOP_CHECK"), _EYE, cost], 12, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
+
+	_cards.append({ "id": aid, "cost": cost, "panel": card })
+	return card
+
+
+func _build_influence_panel() -> PanelContainer:
+	var p := PanelContainer.new()
+	UIStyle.style_panel(p, 14)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 8)
+	p.add_child(col)
+	col.add_child(UIStyle.label("SHOP_INFLUENCE_CHECK", 14, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER))
+	UIStyle.separator(col)
+
+	col.add_child(UIStyle.label("SHOP_DICE_POOL", 11, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
+	_dice_box = HBoxContainer.new()
+	_dice_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	_dice_box.add_theme_constant_override("separation", 6)
+	col.add_child(_dice_box)
+	_render_dice([])   # пустой пул до броска
+
+	_roll_btn = UIStyle.button("SHOP_ROLL", UIColors.ACCENT)
+	_roll_btn.pressed.connect(_on_roll)
+	col.add_child(_roll_btn)
+
+	UIStyle.separator(col)
+	_coins_lbl = UIStyle.label("", 14, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
+	col.add_child(_coins_lbl)
+
+	_debt_btn = UIStyle.button("SHOP_TAKE_DEBT", UIColors.DANGER)
+	_debt_btn.pressed.connect(_on_take_debt)
+	# Если состояние «Долг» уже есть — не предлагаем брать ещё (дублей быть не может).
+	_debt_btn.visible = not _has_debt()
+	col.add_child(_debt_btn)
+	return p
+
+
+func _has_debt() -> bool:
+	return (GameState.my_player().get("conditions", []) as Array).has("debt")
+
+
+func _build_howto_panel() -> PanelContainer:
+	var p := PanelContainer.new()
+	UIStyle.style_panel(p, 14)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 6)
+	p.add_child(col)
+	col.add_child(UIStyle.label("SHOP_HOW_TITLE", 14, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER))
+	UIStyle.separator(col)
+	var t := UIStyle.label("SHOP_ROLL_HINT", 12, UIColors.TEXT)
+	t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	col.add_child(t)
+	UIStyle.separator(col)
+	_buy_btn = UIStyle.button("SHOP_BUY", UIColors.ACCENT)
+	_buy_btn.pressed.connect(_on_buy)
+	col.add_child(_buy_btn)
+	return p
+
+
+# ── Кубы ───────────────────────────────────────────────────────────────────────
+
+func _render_dice(rolls: Array) -> void:
+	for c in _dice_box.get_children():
+		c.queue_free()
+	var n: int = rolls.size() if not rolls.is_empty() else _influence_pool()
+	for i in maxi(1, n):
+		var d := ColorRect.new()
+		d.custom_minimum_size = Vector2(30, 30)
+		if rolls.is_empty():
+			d.color = Color(0.18, 0.16, 0.10)            # до броска
+		else:
+			var v: int = int(rolls[i])
+			d.color = Color(0.30, 0.45, 0.18) if v >= 5 else Color(0.18, 0.16, 0.16)  # успех / провал
+			var lbl := UIStyle.label(str(v), 14, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+			lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			d.add_child(lbl)
+		_dice_box.add_child(d)
+
+
+func _influence_pool() -> int:
+	var me: Dictionary = GameState.my_player()
+	var inv: Dictionary = Investigators.get_data(String(me.get("investigator", "")))
+	var base: int = int((inv.get("skills", {}) as Dictionary).get("influence", 1))
+	var mods: int = int((me.get("skill_mods", {}) as Dictionary).get("influence", 0))
+	return maxi(1, base + mods)
+
+
+# ── Действия ───────────────────────────────────────────────────────────────────
+
+func _on_roll() -> void:
+	if _rolled:
+		return
+	_rolled = true
+	GameState.shop_begin()          # бросок = совершённое действие (раз за раунд)
+	var rolls: Array = []
+	var succ: int = 0
+	for _i in _influence_pool():
+		var v: int = randi() % 6 + 1
+		rolls.append(v)
+		if v >= 5:
+			succ += 1
+	_coins += succ                  # все успехи — монеты
+	_render_dice(rolls)
+	_roll_btn.disabled = true
+	_refresh()
+
+
+func _on_take_debt() -> void:
+	if _debt_taken or _has_debt():
+		return
+	_debt_taken = true
+	_coins += 2
+	GameState.shop_take_debt()      # сразу вешает состояние «Долг» (без дублей)
+	_debt_btn.disabled = true
+	_refresh()
+
+
+func _toggle_card(aid: String, cost: int) -> void:
+	if _selected.has(aid):
+		_selected.erase(aid)
+	else:
+		if cost <= _coins - _spent():     # по карману?
+			_selected[aid] = cost
+	_refresh()
+
+
+func _on_buy() -> void:
+	if _selected.is_empty():
+		return
+	GameState.shop_grant(_selected.keys())   # действие уже потрачено на броске
+	_close()
+
+
+# ── Обновление UI ───────────────────────────────────────────────────────────────
+
+func _spent() -> int:
+	var s: int = 0
+	for c in _selected.values():
+		s += int(c)
+	return s
+
+
+func _refresh() -> void:
+	var remaining: int = _coins - _spent()
+	if _coins_lbl:
+		_coins_lbl.text = "%s: %d   ·   %s: %d" % [tr("SHOP_COINS"), _coins, tr("SHOP_REMAINING"), remaining]
+	if _buy_btn:
+		_buy_btn.disabled = _selected.is_empty()
+	for e in _cards:
+		var panel: PanelContainer = e.panel
+		var sel: bool = _selected.has(e.id)
+		var affordable: bool = sel or int(e.cost) <= remaining
+		if sel:
+			panel.modulate = Color(1.25, 1.18, 0.85)        # выбрано — тёплая подсветка
+		elif affordable:
+			panel.modulate = Color(1, 1, 1)
+		else:
+			panel.modulate = Color(0.5, 0.5, 0.5)            # не по карману — тускло

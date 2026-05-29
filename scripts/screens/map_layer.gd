@@ -463,6 +463,122 @@ func loc_world_pos(loc_id: String) -> Vector2:
 	return Vector2.INF
 
 
+# ── Анимация перемещения сыщика ────────────────────────────────────────────────
+
+# Состояние текущей анимации перемещения (читается _travel_step).
+var _tr_from: String = ""
+var _tr_to:   String = ""
+var _tr_pin:  Node2D  = null
+var _tr_dot:  Node2D  = null
+var _tr_base_scale: float   = 1.0
+var _tr_screen_off: Vector2 = Vector2.ZERO
+
+const TRAVEL_DUR: float = 1.7   # длительность анимации перемещения, сек
+
+
+## Тип связи между a и b ("ship"/"train"/"uncharted"), "ship" по умолчанию.
+func edge_ctype(a: String, b: String) -> String:
+	if _locs.has(a):
+		for c in _locs[a].connections:
+			if String((c as Dictionary).get("to", "")) == b:
+				return String((c as Dictionary).get("type", "ship"))
+	return "ship"
+
+
+## Точка мирового пространства (центральный тайл) на дуге большого круга a→b при t∈[0,1].
+func gc_point(from_loc: String, to_loc: String, t: float) -> Vector2:
+	if not (_locs.has(from_loc) and _locs.has(to_loc)):
+		return Vector2.INF
+	var a: Dictionary = _locs[from_loc]
+	var b: Dictionary = _locs[to_loc]
+	var v0: Vector3 = _ll_to_vec3(a.lat, a.lon)
+	var v1: Vector3 = _ll_to_vec3(b.lat, b.lon)
+	var d: float = clampf(v0.dot(v1), -1.0, 1.0)
+	var theta: float = acos(d)
+	if theta < 0.0001:
+		return (a.pos as Vector2).lerp(b.pos, t)
+	var st: float = sin(theta)
+	var w0: float = sin((1.0 - t) * theta) / st
+	var w1: float = sin(t * theta) / st
+	var v: Vector3 = (v0 * w0 + v1 * w1).normalized()
+	var lat: float = asin(clampf(v.z, -1.0, 1.0)) * 180.0 / PI
+	var lon: float = atan2(v.y, v.x) * 180.0 / PI
+	return _geo_to_pixel(lat, lon)
+
+
+## Скрыть пины сыщика pid (на время анимации; set_investigators потом пересоздаст).
+func hide_investigator(pid: String) -> void:
+	for e in _inv_markers:
+		var sp: Node2D = e.sprite as Node2D
+		if is_instance_valid(sp) and String(sp.name).begins_with("Inv_%s_" % pid):
+			sp.visible = false
+
+
+## Анимирует перемещение сыщика inv_id по дуге from_loc→to_loc: ведёт пин + точку
+## цвета пути, камера следит. Корутина — await до завершения.
+func play_travel(inv_id: String, from_loc: String, to_loc: String, ctype: String) -> void:
+	if gc_point(from_loc, to_loc, 0.0) == Vector2.INF:
+		return
+	_tr_from = from_loc
+	_tr_to   = to_loc
+	_tr_base_scale = INVESTIGATOR_CARD_H_NEAR / InvestigatorPin.card_height()
+	_tr_screen_off = Vector2(0.0, INVESTIGATOR_OFFSET_Y)
+
+	# Одна точка цвета пути, едет вместе с пином. z=1 — ПОД медальонами локаций
+	# (z=2): проходя локацию, точка уходит за её иконку. Радиус задаём в локальных
+	# координатах, экранный размер держим масштабом по зуму в _travel_step.
+	var dot := _make_travel_dot(_conn_color(ctype), 9.0)
+	dot.z_index = 1
+	add_child(dot)
+	_tr_dot = dot
+
+	var pin := InvestigatorPin.new()
+	pin.name    = "TravelPin"
+	pin.z_index = 4   # поверх медальонов — едущая иконка видна
+	add_child(pin)
+	pin.setup(_investigator_texture(inv_id))
+	_tr_pin = pin
+
+	_travel_step(0.0)
+	var tw := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_method(_travel_step, 0.0, 1.0, TRAVEL_DUR)
+	await tw.finished
+
+	if is_instance_valid(_tr_pin):
+		_tr_pin.queue_free()
+	if is_instance_valid(_tr_dot):
+		_tr_dot.queue_free()
+	_tr_pin = null
+	_tr_dot = null
+
+
+func _travel_step(t: float) -> void:
+	var p: Vector2 = gc_point(_tr_from, _tr_to, t)
+	if p == Vector2.INF:
+		return
+	var inv: float = (1.0 / camera.zoom.x) if is_instance_valid(camera) else 0.5
+	# Тот же масштаб, что у покоящихся пинов (см. _process) — иконка не «раздувается».
+	var inv_factor: float = lerpf(INVESTIGATOR_CARD_H_FAR, INVESTIGATOR_CARD_H_NEAR, _zoom_t()) / INVESTIGATOR_CARD_H_NEAR
+	if is_instance_valid(_tr_pin):
+		(_tr_pin as Node2D).scale    = Vector2.ONE * _tr_base_scale * inv * inv_factor
+		(_tr_pin as Node2D).position = p + _tr_screen_off * inv * inv_factor
+	if is_instance_valid(_tr_dot):
+		(_tr_dot as Node2D).position = p
+		(_tr_dot as Node2D).scale    = Vector2.ONE * inv
+
+
+# Залитый кружок-точка цвета пути.
+func _make_travel_dot(color: Color, r: float) -> Polygon2D:
+	var poly := Polygon2D.new()
+	var pts := PackedVector2Array()
+	for i: int in range(24):
+		var ang: float = TAU * float(i) / 24.0
+		pts.append(Vector2(cos(ang), sin(ang)) * r)
+	poly.polygon = pts
+	poly.color   = Color(color.r, color.g, color.b, 1.0)
+	return poly
+
+
 # ── Пик и подсветка ───────────────────────────────────────────────────────────
 
 ## Возвращает имя локации под мировой позицией world_pos, либо "" если промах.
