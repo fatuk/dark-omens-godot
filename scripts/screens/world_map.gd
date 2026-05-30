@@ -71,6 +71,7 @@ var _campaign_gate: CanvasLayer   = null
 var _gate_vbox:     VBoxContainer = null
 var _intro_step:    int           = 0   # 0=загрузка 1=Древний 2=Тайна 3=готово
 var _gate_rendered: int           = -1  # последний отрисованный шаг
+var _revealed_mystery: int        = -1  # индекс Тайны, чей ревил уже показали
 
 
 func _ready() -> void:
@@ -499,6 +500,13 @@ func _refresh_campaign_gate() -> void:
 	elif _intro_step == 0:
 		# кампания готова: показываем Древнего; нет кампании — сразу на карту
 		_intro_step = 1 if not GameState.campaign.is_empty() else 3
+	elif _intro_step == 3 and GameState.phase == "action" \
+			and GameState.outcome.is_empty() \
+			and GameState.active_mystery != _revealed_mystery \
+			and not GameState.current_mystery().is_empty():
+		# Тайна сменилась (решена в прошлом раунде) — после мифа, в начале нового
+		# раунда (фаза action), показываем ревил новой Тайны (гейт-шаг 2).
+		_intro_step = 2
 	_campaign_gate.visible = _intro_step < 3
 	if _campaign_gate.visible and _intro_step != _gate_rendered:
 		_gate_rendered = _intro_step
@@ -524,6 +532,8 @@ func _render_gate() -> void:
 			_gate_button("INTRO_NEXT", _on_gate_next)
 		2:
 			var m: Dictionary = GameState.current_mystery()
+			# Запоминаем, чей ревил показан — чтобы не повторять и ловить смену.
+			_revealed_mystery = GameState.active_mystery
 			_gate_eyebrow("INTRO_MYSTERY_EYEBROW")
 			_gate_title(String(m.get("title", "")))
 			var flavor: String = String(m.get("flavorText", ""))
