@@ -127,13 +127,14 @@ var _entity_signature: String    = ""
 # Какие локации сейчас под курсором (для SFX по фронту наведения/ухода).
 var _entity_hover_state: Dictionary = {}  # {loc_id: true}
 
-# Маркеры локаций активной Тайны — ромбы цвета акта над медальоном. Рисуем
+# Маркеры локаций активной Тайны — иконка mystery-icon над медальоном. Рисуем
 # только незачищенные локации текущей Тайны (set_mystery_marks из world_map).
-var _mystery_markers:   Array  = []   # [{poly, pos}]
+var _mystery_markers:   Array  = []   # [{sprite, tex_h, pos}]
 var _mystery_signature: String = ""
 var _mystery_pulse:     float  = 0.0  # фаза пульсации прозрачности (в _process)
-## Базовый «мировой» радиус ромба-маркера Тайны (масштабируется по зуму в _process).
-const MYSTERY_MARK_R: float = 46.0
+const MYSTERY_TEX: Texture2D = preload("res://assets/map/mystery-icon.png")
+## Желаемый экранный размер иконки Тайны относительно медальона локации.
+const MYSTERY_SIZE_MULT: float = 0.95
 
 
 # ── Загрузка ──────────────────────────────────────────────────────────────────
@@ -278,18 +279,18 @@ func _process(delta: float) -> void:
 				inner.scale    = Vector2.ONE * (gate_screen / float(g.inner_h)) * inv
 				inner.rotation = _gate_inner_angle
 
-	# Маркеры Тайны — ромбы поверх медальона, постоянный экранный размер +
+	# Маркеры Тайны — иконка поверх медальона, постоянный экранный размер +
 	# лёгкая пульсация прозрачности (привлекают внимание к цели Тайны).
 	if not _mystery_markers.is_empty():
-		var m_scale: Vector2 = Vector2.ONE * inv * marker_factor
+		var myst_screen: float = marker_screen * MYSTERY_SIZE_MULT
 		var pulse: float = 0.65 + 0.35 * (0.5 + 0.5 * sin(_mystery_pulse))
 		_mystery_pulse += delta * 3.0
 		for i: int in range(_mystery_markers.size()):
 			var mm: Dictionary = _mystery_markers[i]
-			var poly: Polygon2D = mm.poly as Polygon2D
-			if is_instance_valid(poly):
-				poly.scale    = m_scale
-				poly.modulate.a = pulse
+			var ms: Sprite2D = mm.sprite as Sprite2D
+			if is_instance_valid(ms):
+				ms.scale     = Vector2.ONE * (myst_screen / float(mm.tex_h)) * inv
+				ms.modulate.a = pulse
 
 	# Сущности — стопкой над маркером; раскрываются в ряд только когда локация
 	# ВЫБРАНА (не по ховеру). Все tile-копии выбранной локации раскрываются вместе.
@@ -829,26 +830,22 @@ func set_gates(gates: Dictionary) -> void:
 
 ## Маркеры локаций активной Тайны — ромбы цвета `color` над медальоном (z=3).
 ## loc_ids — id незачищенных локаций текущей Тайны. Перестраивает только при
-## смене набора/цвета (сигнатура). Размер/пульсация считаются в _process.
-func set_mystery_marks(loc_ids: Array, color: Color) -> void:
+## смене набора (сигнатура). Размер/пульсация считаются в _process.
+func set_mystery_marks(loc_ids: Array) -> void:
 	var ids: Array = loc_ids.duplicate()
 	ids.sort()
-	var sig: String = "%s|%s" % [",".join(PackedStringArray(ids)), str(color)]
+	var sig: String = ",".join(PackedStringArray(ids))
 	if sig == _mystery_signature:
 		return
 	_mystery_signature = sig
 
 	for i: int in range(_mystery_markers.size()):
 		var old: Dictionary = _mystery_markers[i]
-		if is_instance_valid(old.poly):
-			(old.poly as Node2D).queue_free()
+		if is_instance_valid(old.sprite):
+			(old.sprite as Node2D).queue_free()
 	_mystery_markers.clear()
 
-	# Ромб (вертикально вытянут поуже по X) — узнаваемая «руна-цель».
-	var shape := PackedVector2Array([
-		Vector2(0, -MYSTERY_MARK_R), Vector2(MYSTERY_MARK_R * 0.66, 0),
-		Vector2(0, MYSTERY_MARK_R),  Vector2(-MYSTERY_MARK_R * 0.66, 0),
-	])
+	var tex_h: float = maxf(1.0, float(MYSTERY_TEX.get_height()))
 	for lid_v: Variant in loc_ids:
 		var lid: String = String(lid_v)
 		if not _locs.has(lid):
@@ -856,14 +853,14 @@ func set_mystery_marks(loc_ids: Array, color: Color) -> void:
 		var loc_pos: Vector2 = _locs[lid].pos
 		for dx: int in [-TILE_W, 0, TILE_W]:
 			var world_pos: Vector2 = loc_pos + Vector2(dx, 0)
-			var poly := Polygon2D.new()
-			poly.name     = "MysteryMark_%s_%d" % [lid, sign(dx)]
-			poly.polygon  = shape
-			poly.color    = color
-			poly.position = world_pos
-			poly.z_index  = 3   # над медальоном(2), под пином сыщика(4)/вратами(5)
-			add_child(poly)
-			_mystery_markers.append({ "poly": poly, "pos": world_pos })
+			var sprite := Sprite2D.new()
+			sprite.name          = "MysteryMark_%s_%d" % [lid, sign(dx)]
+			sprite.texture       = MYSTERY_TEX
+			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+			sprite.position      = world_pos
+			sprite.z_index       = 3   # над медальоном(2), под пином сыщика(4)/вратами(5)
+			add_child(sprite)
+			_mystery_markers.append({ "sprite": sprite, "tex_h": tex_h, "pos": world_pos })
 
 
 # ── Сущности на локациях ──────────────────────────────────────────────────────
