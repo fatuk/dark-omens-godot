@@ -303,13 +303,13 @@ func resolve_encounter() -> void:
 		_nm.relay_all({"action": "game_resolve_encounter", "pid": my_pid})
 
 
-## Активный игрок перебрасывает проваленные кубики проверки за 1 концентрацию.
-func reroll_encounter() -> void:
+## Активный игрок перебрасывает ОДИН выбранный куб проверки за 1 концентрацию.
+func reroll_encounter(die_index: int) -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
-		_encounter.host_apply_reroll(my_pid)
+		_encounter.host_apply_reroll(my_pid, die_index)
 	else:
-		_nm.relay_all({"action": "game_reroll_encounter", "pid": my_pid})
+		_nm.relay_all({"action": "game_reroll_encounter", "pid": my_pid, "die": die_index})
 
 
 ## Активный игрок выбрал тип встречи (general/research/gate/combat). Хост
@@ -637,7 +637,7 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 
 		"game_reroll_encounter":
 			if _is_host():
-				_encounter.host_apply_reroll(data.get("pid", ""))
+				_encounter.host_apply_reroll(data.get("pid", ""), int(data.get("die", -1)))
 
 		"game_choose_encounter":
 			if _is_host():

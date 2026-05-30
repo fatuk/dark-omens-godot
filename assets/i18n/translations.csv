@@ -692,6 +692,7 @@ COMBAT_LOSS,Монстр выжил,The monster survives
 ENCOUNTER_CHECK,Проверка,Test
 ENCOUNTER_ROLL,Бросить кубики,Roll the dice
 ENCOUNTER_REROLL,Переброс · концентрация %d,Reroll · focus %d
+ENCOUNTER_REROLL_HINT,нажмите кубик для переброса (концентрация %d),tap a die to reroll (focus %d)
 ENCOUNTER_DICE,Кубики,Dice
 ENCOUNTER_SUCCESSES,успехов,successes
 ENCOUNTER_DEFAULT_BG,"сыщик, идущий по следу кошмара",an investigator on the trail of a nightmare

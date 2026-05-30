@@ -21,8 +21,8 @@ extends CanvasLayer
 @onready var _outcome:    Label          = %Outcome
 @onready var _finish_btn: Button         = %FinishBtn
 
-# Кнопка переброса за концентрацию — создаётся кодом, ставится перед FinishBtn.
-var _reroll_btn: Button
+# Ряд кликабельных кубиков (для переброса по выбору) — создаётся кодом над _dice.
+var _dice_holder: VBoxContainer
 
 # Навык → ключ перевода для подписи проверки.
 const _SKILL_KEYS := {
@@ -43,15 +43,14 @@ func _ready() -> void:
 	_check.add_theme_color_override("font_color",     UIColors.MUTED)
 	_dice.add_theme_color_override("font_color",      UIColors.MUTED)
 
-	# Кнопка переброса — между исходом и «Завершить»/«Дальше».
-	_reroll_btn = Button.new()
-	_reroll_btn.name = "RerollBtn"
-	UIStyle.style_button(_reroll_btn, UIColors.MUTED)
-	_reroll_btn.pressed.connect(_on_reroll_pressed)
-	var vbox: Node = _finish_btn.get_parent()
-	vbox.add_child(_reroll_btn)
-	vbox.move_child(_reroll_btn, _finish_btn.get_index())   # перед FinishBtn
-	_reroll_btn.visible = false
+	# Контейнер ряда кубиков — над строкой _dice (успехи/концентрация).
+	_dice_holder = VBoxContainer.new()
+	_dice_holder.name = "DiceHolder"
+	_dice_holder.alignment = BoxContainer.ALIGNMENT_CENTER
+	var vbox: Node = _dice.get_parent()
+	vbox.add_child(_dice_holder)
+	vbox.move_child(_dice_holder, _dice.get_index())   # перед строкой _dice
+	_dice_holder.visible = false
 
 	_roll_btn.pressed.connect(_on_roll_pressed)
 	_finish_btn.pressed.connect(_on_finish_pressed)
@@ -93,7 +92,7 @@ func _show_loading() -> void:
 	_main_text.text = "ENCOUNTER_GENERATING"
 	for node: Control in [_check, _roll_btn, _dice, _outcome, _finish_btn]:
 		node.visible = false
-	_update_reroll_btn(false)
+	_render_dice({}, false)
 
 
 func _show_card(card: Dictionary) -> void:
@@ -106,7 +105,7 @@ func _show_card(card: Dictionary) -> void:
 	_dice.visible       = false
 	_outcome.visible    = false
 	_finish_btn.visible = false
-	_update_reroll_btn(false)
+	_render_dice({}, false)
 
 
 func _show_outcome(card: Dictionary) -> void:
@@ -116,8 +115,7 @@ func _show_outcome(card: Dictionary) -> void:
 	_main_text.text = _main_or_stakes(card)
 	_check.text     = _check_label(card.get("test", {}))
 	_check.visible  = true
-	_dice.text      = _dice_label(res)
-	_dice.visible   = true
+	_render_dice(res, true)
 	_outcome.text   = _outcome_text(card, passed)
 	_outcome.add_theme_color_override(
 		"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
@@ -126,7 +124,7 @@ func _show_outcome(card: Dictionary) -> void:
 	_roll_btn.visible   = false
 	_finish_btn.text    = "BTN_FINISH_BIG"
 	_finish_btn.visible = true
-	_update_reroll_btn(true)   # одиночная встреча — переброс доступен до «Завершить»
+
 
 
 # Двухфазные врата — дерево глубины 2. Стадия 0 (stage1) маршрутизирует: бросок
@@ -149,13 +147,12 @@ func _show_gate(card: Dictionary) -> void:
 		_dice.visible       = false
 		_outcome.visible    = false
 		_finish_btn.visible = false
-		_update_reroll_btn(false)
+		_render_dice({}, false)
 		return
 
 	var res: Dictionary = card["stage_resolution"]
 	var passed: bool = bool(res.get("passed", false))
-	_dice.text    = _dice_label(res)
-	_dice.visible = true
+	_render_dice(res, true)
 	_outcome.text = _outcome_text(node, passed)
 	_outcome.add_theme_color_override(
 		"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
@@ -167,7 +164,7 @@ func _show_gate(card: Dictionary) -> void:
 	var more: bool = stage == 0
 	_finish_btn.text    = "ENCOUNTER_CONTINUE" if more else "BTN_FINISH_BIG"
 	_finish_btn.visible = true
-	_update_reroll_btn(true)   # переброс доступен на любой фазе до перехода/финиша
+
 
 
 # Ветвящиеся встречи (gate и mystery) — одинаковая структура card.stage1 +
@@ -192,26 +189,33 @@ func _on_roll_pressed() -> void:
 	GameState.resolve_encounter()
 
 
-func _on_reroll_pressed() -> void:
-	_reroll_btn.disabled = true   # хост пришлёт обновлённый бросок синком
-	GameState.reroll_encounter()
+func _on_die_clicked(index: int) -> void:
+	# Переброс выбранного куба за 1 концентрацию; хост пришлёт обновлённый бросок.
+	GameState.reroll_encounter(index)
 
 
-# Видимость кнопки переброса: показываем при показанном результате броска, если
-# есть концентрация, встреча не зафиксирована и это не бой.
-func _update_reroll_btn(roll_shown: bool) -> void:
-	if not is_instance_valid(_reroll_btn):
+# Рендер ряда кубиков + строки «успехов: N · подсказка». roll_shown=false прячет.
+# Провальные кубики кликабельны для переброса, если есть концентрация и встреча
+# не зафиксирована.
+func _render_dice(res: Dictionary, roll_shown: bool) -> void:
+	if not is_instance_valid(_dice_holder):
 		return
-	var enc: Dictionary = GameState.current_encounter
+	for c in _dice_holder.get_children():
+		c.queue_free()
+	if not roll_shown or res.is_empty():
+		_dice_holder.visible = false
+		_dice.visible = false
+		return
 	var foc: int = int(GameState.my_player().get("concentration", 0))
-	var committed: bool = bool(enc.get("committed", false))
-	var combat: bool = String(enc.get("kind", "")) == "combat"
-	if roll_shown and foc > 0 and not committed and not combat:
-		_reroll_btn.text     = tr("ENCOUNTER_REROLL") % foc
-		_reroll_btn.disabled = false
-		_reroll_btn.visible  = true
-	else:
-		_reroll_btn.visible = false
+	var committed: bool = bool(GameState.current_encounter.get("committed", false))
+	var can: bool = foc > 0 and not committed
+	_dice_holder.add_child(UIStyle.build_dice_row(res.get("dice", []), can, _on_die_clicked))
+	_dice_holder.visible = true
+	var summary: String = "%s: %d" % [tr("ENCOUNTER_SUCCESSES"), int(res.get("successes", 0))]
+	if can:
+		summary += "  ·  " + (tr("ENCOUNTER_REROLL_HINT") % foc)
+	_dice.text = summary
+	_dice.visible = true
 
 
 # Кнопка под исходом: после первой проверки врат (stage 0) — «Дальше» ко второй
@@ -314,19 +318,3 @@ func _check_label(test: Dictionary) -> String:
 	if modifier != 0:
 		line += " %+d" % modifier
 	return line
-
-
-func _dice_label(res: Dictionary) -> String:
-	return "%s: %s · %s: %d" % [
-		tr("ENCOUNTER_DICE"),
-		", ".join(_to_strings(res.get("dice", []))),
-		tr("ENCOUNTER_SUCCESSES"),
-		int(res.get("successes", 0)),
-	]
-
-
-func _to_strings(nums: Array) -> PackedStringArray:
-	var out := PackedStringArray()
-	for i in range(nums.size()):
-		out.append(str(nums[i]))
-	return out

@@ -405,10 +405,11 @@ func _commit_combat(pid: String) -> void:
 			_set_monster_health(loc, 0, int(r.get("health_after", 0)))
 
 
-## Хост: переброс проваленных кубиков (d<5) активной проверки за 1 концентрацию.
-## Доступен, пока встреча не зафиксирована (committed). Зовётся из
-## GameState.reroll_encounter / relay-router. Возвращает true при перебросе.
-func host_apply_reroll(pid: String) -> bool:
+## Хост: переброс ОДНОГО выбранного куба (die_index) активной проверки за 1
+## концентрацию. Куб должен быть провальным (d<5) — успех (≥5) не перебрасывается.
+## Доступен, пока встреча не зафиксирована. Зовётся из GameState.reroll_encounter /
+## relay-router. Возвращает true при перебросе.
+func host_apply_reroll(pid: String, die_index: int) -> bool:
 	if _gs.phase != "encounter" or _gs._current_pid() != pid or not _gs.players.has(pid):
 		return false
 	var enc: Dictionary = _gs.current_encounter
@@ -420,69 +421,70 @@ func host_apply_reroll(pid: String) -> bool:
 	var kind: String = String(enc.get("kind", ""))
 
 	if kind == "combat":
-		return _reroll_combat(pid)
+		return _reroll_combat_die(pid, die_index)
 
 	# Активный бросок: для ветвящихся — stage_resolution, иначе resolution.
 	var key: String = "stage_resolution" if (kind == "gate" or kind == "mystery") else "resolution"
 	if not enc.has(key):
 		return false   # ещё не бросали
 	var roll: Dictionary = enc[key]
-	var rr: Dictionary = _reroll_dice(roll.get("dice", []))
-	if int(rr["rerolled"]) == 0:
-		return false   # перебрасывать нечего (все успехи)
-	roll["dice"]      = rr["dice"]
-	roll["successes"] = rr["successes"]
-	roll["passed"]    = int(rr["successes"]) >= 1
+	var dice: Array = roll.get("dice", [])
+	if not _reroll_one(dice, die_index):
+		return false
+	roll["dice"]      = dice
+	roll["successes"] = _recount(dice)
+	roll["passed"]    = int(roll["successes"]) >= 1
 	enc[key] = roll
 	p["concentration"] = int(p.get("concentration", 0)) - 1
-	GameConsole.log("[Переброс] %s · фокус −1 · перебросов: %d · успехов: %d" % [
-		_gs._name_of(pid), int(rr["rerolled"]), int(rr["successes"])
+	GameConsole.log("[Переброс] %s · фокус −1 · куб #%d · успехов: %d" % [
+		_gs._name_of(pid), die_index, int(roll["successes"])
 	])
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
 
 
-# Переброс проваленных кубиков (d<5) массива. Возвращает {dice, successes, rerolled}.
-func _reroll_dice(src: Array) -> Dictionary:
-	var dice: Array = src.duplicate()
-	var rerolled: int = 0
-	for i in range(dice.size()):
-		if int(dice[i]) < 5:
-			dice[i] = randi() % 6 + 1
-			rerolled += 1
-	var successes: int = 0
+# Перебрасывает один куб массива по индексу. true — переброшен (был провальным).
+# Успех (≥5) или неверный индекс → false (фокус не тратится).
+func _reroll_one(dice: Array, idx: int) -> bool:
+	if idx < 0 or idx >= dice.size() or int(dice[idx]) >= 5:
+		return false
+	dice[idx] = randi() % 6 + 1
+	return true
+
+
+# Число успехов (≥5) в массиве кубиков.
+func _recount(dice: Array) -> int:
+	var n: int = 0
 	for i in range(dice.size()):
 		if int(dice[i]) >= 5:
-			successes += 1
-	return { "dice": dice, "successes": successes, "rerolled": rerolled }
+			n += 1
+	return n
 
 
-# Переброс активной проверки боя: пока нет resolution — Воля (пересчёт sanity_loss),
-# иначе Сила (пересчёт исхода атаки). Тратит 1 концентрацию.
-func _reroll_combat(pid: String) -> bool:
+# Переброс одного куба активной проверки боя: пока нет resolution — Воля (пересчёт
+# sanity_loss), иначе Сила (пересчёт исхода атаки). Тратит 1 концентрацию.
+func _reroll_combat_die(pid: String, die_index: int) -> bool:
 	var enc: Dictionary = _gs.current_encounter
 	var p: Dictionary = _gs.players[pid]
 	if enc.has("resolution"):
-		# Сила — перебрасываем кубики атаки, пересчитываем исход от стартового HP монстра.
 		var s: Dictionary = (enc["resolution"] as Dictionary).get("strength", {})
-		var rr: Dictionary = _reroll_dice(s.get("dice", []))
-		if int(rr["rerolled"]) == 0:
+		var dice: Array = s.get("dice", [])
+		if not _reroll_one(dice, die_index):
 			return false
-		var s_roll: Dictionary = { "dice": rr["dice"], "successes": rr["successes"], "passed": int(rr["successes"]) >= 1 }
+		var s_roll: Dictionary = { "dice": dice, "successes": _recount(dice), "passed": _recount(dice) >= 1 }
 		enc["resolution"] = _combat_strength_result(enc, s_roll)
-		GameConsole.log("[Переброс] %s · бой/Сила · успехов: %d" % [_gs._name_of(pid), int(rr["successes"])])
+		GameConsole.log("[Переброс] %s · бой/Сила · куб #%d" % [_gs._name_of(pid), die_index])
 	elif enc.has("will"):
-		# Воля — перебрасываем, пересчитываем потерю рассудка.
-		var rr: Dictionary = _reroll_dice((enc["will"] as Dictionary).get("dice", []))
-		if int(rr["rerolled"]) == 0:
-			return false
 		var w: Dictionary = enc["will"]
-		w["dice"] = rr["dice"]; w["successes"] = rr["successes"]; w["passed"] = int(rr["successes"]) >= 1
+		var dice: Array = w.get("dice", [])
+		if not _reroll_one(dice, die_index):
+			return false
+		w["dice"] = dice; w["successes"] = _recount(dice); w["passed"] = int(w["successes"]) >= 1
 		enc["will"] = w
 		var hd: int = int((enc.get("horror", {}) as Dictionary).get("damage", 0))
-		enc["sanity_loss"] = maxi(0, hd - int(rr["successes"]))
-		GameConsole.log("[Переброс] %s · бой/Воля · успехов: %d" % [_gs._name_of(pid), int(rr["successes"])])
+		enc["sanity_loss"] = maxi(0, hd - int(w["successes"]))
+		GameConsole.log("[Переброс] %s · бой/Воля · куб #%d" % [_gs._name_of(pid), die_index])
 	else:
 		return false   # ещё не бросали
 	p["concentration"] = int(p.get("concentration", 0)) - 1

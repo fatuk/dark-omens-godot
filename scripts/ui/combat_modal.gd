@@ -46,12 +46,6 @@ func _build(card: Dictionary) -> void:
 	btns.add_theme_constant_override("separation", 12)
 	btns.alignment = BoxContainer.ALIGNMENT_CENTER
 	_vbox.add_child(btns)
-	# Переброс активной проверки за концентрацию — если есть результат текущего
-	# шага (Воля или Сила), ещё не зафиксировано и есть концентрация.
-	var foc: int = int(GameState.my_player().get("concentration", 0))
-	var rolled: bool = card.has("will") or card.has("resolution")
-	if rolled and foc > 0 and not bool(card.get("committed", false)):
-		btns.add_child(_button(tr("ENCOUNTER_REROLL") % foc, func() -> void: GameState.reroll_encounter(), UIColors.MUTED))
 	if done:
 		btns.add_child(_button("BTN_FINISH_BIG", func() -> void: GameState.finish_encounter()))
 	else:
@@ -59,6 +53,11 @@ func _build(card: Dictionary) -> void:
 		var key: String = "COMBAT_ROLL_WILL" if not card.has("will") else "COMBAT_ROLL_STRENGTH"
 		btns.add_child(_button(key, func() -> void: GameState.resolve_encounter()))
 	UIStyle.scale_modal_text(_vbox)   # текст модалок крупнее (×1.5), пересборка — заново
+
+
+# Переброс выбранного куба активной проверки боя (Воля/Сила) за 1 концентрацию.
+func _on_die_clicked(index: int) -> void:
+	GameState.reroll_encounter(index)
 
 
 # ── Колонки ───────────────────────────────────────────────────────────────────
@@ -83,10 +82,13 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 	var has_will: bool = not will.is_empty()
 	var res: Dictionary = card.get("resolution", {})
 	var done: bool = not res.is_empty()
+	var foc: int = int(GameState.my_player().get("concentration", 0))
+	var can_focus: bool = foc > 0 and not bool(card.get("committed", false))
 
-	# Шаг 1 — Воля (ужас): отдельный бросок.
+	# Шаг 1 — Воля (ужас): отдельный бросок. Перебрасывается, пока не катнули Силу.
 	col.add_child(_lbl(tr("COMBAT_WILL"), 15, Color(0.4, 0.7, 0.9)))
 	if has_will:
+		col.add_child(UIStyle.build_dice_row(will.get("dice", []), can_focus and not done, _on_die_clicked))
 		var sl: int = int(card.get("sanity_loss", 0))
 		var line: String = "%s: %d" % [tr("ENCOUNTER_SUCCESSES"), int(will.get("successes", 0))]
 		if sl > 0:
@@ -95,10 +97,11 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 	else:
 		col.add_child(_lbl(tr("COMBAT_WILL_HINT"), 11, UIColors.MUTED))
 
-	# Шаг 2 — Сила (атака): второй отдельный бросок.
+	# Шаг 2 — Сила (атака): второй отдельный бросок (активный для переброса).
 	col.add_child(_lbl(tr("COMBAT_STRENGTH"), 15, UIColors.ACCENT))
 	if done:
 		var s: Dictionary = res.get("strength", {})
+		col.add_child(UIStyle.build_dice_row(s.get("dice", []), can_focus, _on_die_clicked))
 		col.add_child(_lbl("%s: %d · %s −%d" % [tr("ENCOUNTER_SUCCESSES"), int(s.get("successes", 0)), tr("SIDEBAR_TOUGHNESS"), int(res.get("dealt", 0))], 12, UIColors.TEXT))
 		if int(res.get("hp_loss", 0)) > 0:
 			col.add_child(_lbl("−%d %s" % [int(res["hp_loss"]), tr("COMBAT_HEALTH")], 12, UIColors.DANGER))
