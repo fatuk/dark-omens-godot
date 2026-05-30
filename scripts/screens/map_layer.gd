@@ -538,7 +538,10 @@ func gc_point(from_loc: String, to_loc: String, t: float) -> Vector2:
 func hide_investigator(pid: String) -> void:
 	for e in _inv_markers:
 		var sp: Node2D = e.sprite as Node2D
-		if is_instance_valid(sp) and String(sp.name).begins_with("Inv_%s_" % pid):
+		# Матчим по сохранённому pid, НЕ по имени ноды: Godot санитизирует имена
+		# (вырезает @ . : / " %), а user_id их содержит — иначе пин не скрывался бы
+		# и в начале travel двоился со статичным маркером.
+		if is_instance_valid(sp) and String(e.get("pid", "")) == pid:
 			sp.visible = false
 
 
@@ -743,6 +746,7 @@ func set_investigators(list: Array) -> void:
 			pin.setup(tex)
 			_inv_markers.append({
 				"sprite":     pin,
+				"pid":        String(entry.get("pid", "")),   # для hide_investigator (имя ноды санитизируется — матчить нельзя)
 				"base":       base,
 				"screen_off": screen_off,
 				"base_scale": base_scale,
