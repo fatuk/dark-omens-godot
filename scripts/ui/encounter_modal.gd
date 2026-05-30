@@ -201,9 +201,11 @@ func _main_or_stakes(src: Dictionary) -> String:
 		return main
 	var succ: Array = src.get("onSuccess", [])
 	var fail: Array = src.get("onFailure", [])
-	# Маршрутизирующая стадия врат (без эффектов на любом исходе) — нейтрально.
+	# Маршрутизирующая стадия (без эффектов на любом исходе) — нейтрально, текст
+	# по виду встречи: врата — Иной мир, Тайна — расследование на месте.
 	if succ.is_empty() and fail.is_empty():
-		return tr("ENCOUNTER_GATE_TRIAL")
+		var kind: String = String(GameState.current_encounter.get("kind", ""))
+		return tr("ENCOUNTER_MYSTERY_TRIAL" if kind == "mystery" else "ENCOUNTER_GATE_TRIAL")
 	return "%s: %s\n%s: %s" % [
 		tr("ENC_REWARD"),  _describe_effects(succ),
 		tr("ENC_PENALTY"), _describe_effects(fail),

@@ -675,6 +675,7 @@ ENCOUNTER_CHOICE_GATE,Войти во врата,Enter the gate
 ENCOUNTER_CHOICE_COMBAT,Бой,Combat
 ENCOUNTER_CONTINUE,Дальше,Continue
 ENCOUNTER_GATE_TRIAL,Испытание Иного мира — пройдите проверку.,An Other World ordeal — make the check.
+ENCOUNTER_MYSTERY_TRIAL,Расследование на месте Тайны — пройдите проверку.,Investigating the Mystery site — make the check.
 ENCOUNTER_PROCEED,Вы идёте дальше.,You press on.
 COMBAT_HEALTH,Здоровье,Health
 COMBAT_SANITY,Рассудок,Sanity
