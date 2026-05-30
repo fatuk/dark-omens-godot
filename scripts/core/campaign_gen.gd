@@ -18,11 +18,15 @@ var _gs: Node
 # был reset_pregame — старый результат отбрасываем).
 var _epoch: int = 0
 
-# Зерно будущей кампании из модалки создания комнаты: имя Древнего ("" —
-# на выбор модели) и размер партии (0 — не задан, фолбэк на состав лобби).
-# Одноразовое — после prewarm() сбрасывается.
+# Имя Древнего из модалки создания комнаты ("" — на выбор модели). Одноразовое:
+# расходуется на первом prewarm() (дальше Древний уже зашит в готовую библию).
 var _seed_ancient_one: String = ""
-var _seed_player_count: int = 0
+
+# Размер КОМНАТЫ (на сколько человек создали) — авторитет всего баланса: стартовая
+# раскладка, Наплыв монстров, мифос-колода, цели Тайн. НЕ расходуется (живёт пока
+# хост в комнате), иначе 2-я игра/перегенерация в той же комнате потеряет размер и
+# упадёт на число подключённых. 0 — не задан (промоут в хосты) → фолбэк на лобби.
+var _room_player_count: int = 0
 
 
 func _init(gs: Node) -> void:
@@ -33,8 +37,17 @@ func _init(gs: Node) -> void:
 
 ## Модалка создания комнаты передаёт сюда выбор хоста. Подхватится в prewarm().
 func set_seed(ancient_one: String, player_count: int) -> void:
-	_seed_ancient_one  = ancient_one
-	_seed_player_count = maxi(1, player_count)
+	_seed_ancient_one   = ancient_one
+	_room_player_count  = maxi(1, player_count)
+
+
+## Авторитетное число игроков для баланса = размер комнаты; если он неизвестен
+## (промоут в хосты без зерна) — фолбэк на размер лобби. Один источник правды
+## для генерации кампании и стартовой раскладки.
+func balance_player_count() -> int:
+	if _room_player_count > 0:
+		return _room_player_count
+	return maxi(1, _gs._nm.players.size())
 
 
 ## Хост: запустить генерацию ЗАРАНЕЕ — из лобби, пока игроки ещё выбирают
@@ -47,13 +60,10 @@ func prewarm() -> void:
 		return
 	if _gs.campaign_pending or not _gs.campaign.is_empty():
 		return   # генерация уже идёт либо библия уже готова
-	var pc: int = _seed_player_count
-	if pc <= 0:
-		pc = maxi(1, _gs._nm.players.size())
+	var pc: int = balance_player_count()   # размер комнаты (не лобби), если задан
 	var ao: String = _seed_ancient_one
-	_seed_ancient_one  = ""
-	_seed_player_count = 0
-	GameConsole.log("[Game] Прогрев кампании в лобби (игроков: %d)..." % pc)
+	_seed_ancient_one = ""                 # Древний — одноразовый, размер комнаты живёт
+	GameConsole.log("[Game] Прогрев кампании в лобби (игроков комнаты: %d)..." % pc)
 	_start_generation(pc, ao)
 
 

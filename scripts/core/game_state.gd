@@ -261,11 +261,12 @@ func start_game(players_init: Array) -> void:
 	# Библия: прогрета в лобби — используем готовую (или дождёмся текущей
 	# генерации); не прогрета — запускаем генерацию сейчас (фолбэк).
 	if campaign.is_empty() and not campaign_pending:
-		_campaign.start_generation(turn_order.size(), "")
-	# Раскладку считаем по размеру партии, под который сгенерена кампания
-	# (campaign.playerCount), а не по числу подключённых: соло-тест партии на
-	# N игроков должен раскладывать поле как на N. Фолбэк — подключённые.
-	var setup_pc: int = int(campaign.get("playerCount", turn_order.size()))
+		_campaign.start_generation(_campaign.balance_player_count(), "")
+	# Раскладку и Наплыв считаем по РАЗМЕРУ КОМНАТЫ (на сколько создали), а не по
+	# числу подключённых. campaign.playerCount уже = размер комнаты; фолбэк (если
+	# библия ещё не готова) — тот же авторитет из CampaignGen. Соло-тест партии на
+	# N раскладывает поле и задаёт Наплыв как на N.
+	var setup_pc: int = int(campaign.get("playerCount", _campaign.balance_player_count()))
 	_setup_board(maxi(1, setup_pc))   # стартовая раскладка: врата+монстры, улики, Наплыв
 	_broadcast_sync()
 	_emit_changed()
@@ -864,10 +865,10 @@ func resolve_omen_doom() -> int:
 ## в Памятке) пока НЕ применяются — это отдельная таблица per-Ancient (TODO).
 const REFERENCE: Dictionary = {
 	1: { "gates": 1, "clues": 1, "surge": 1 },
-	2: { "gates": 1, "clues": 1, "surge": 1 },
+	2: { "gates": 1, "clues": 2, "surge": 1 },
 	3: { "gates": 1, "clues": 2, "surge": 2 },
-	4: { "gates": 1, "clues": 2, "surge": 2 },
-	5: { "gates": 2, "clues": 2, "surge": 2 },
+	4: { "gates": 1, "clues": 3, "surge": 2 },
+	5: { "gates": 2, "clues": 3, "surge": 2 },
 	6: { "gates": 2, "clues": 3, "surge": 2 },
 	7: { "gates": 2, "clues": 4, "surge": 3 },
 	8: { "gates": 2, "clues": 4, "surge": 3 },
@@ -977,8 +978,11 @@ func _spawn_monster(loc_id: String) -> void:
 	if mid != "cultist":
 		monster_bag.remove_at(idx)
 	var m: Dictionary = MonsterCatalog.by_id(mid)
+	# Стойкость монстра — от РАЗМЕРА КОМНАТЫ (как весь баланс), а не от числа
+	# подключённых: соло-тест партии на N даёт монстров как на N.
+	var balance_pc: int = _campaign.balance_player_count()
 	@warning_ignore("unsafe_method_access")
-	var hp: int = maxi(1, MonsterCatalog.toughness_for(m, maxi(1, players.size())) if not m.is_empty() else 1)
+	var hp: int = maxi(1, MonsterCatalog.toughness_for(m, balance_pc) if not m.is_empty() else 1)
 	var arr: Array = monsters.get(loc_id, [])
 	arr.append({ "id": mid, "health": hp })
 	monsters[loc_id] = arr
