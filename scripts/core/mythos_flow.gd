@@ -58,15 +58,24 @@ func resolve() -> void:
 
 # Хост: вытянуть следующую карту из deck в current_mythos.
 func _draw_card() -> void:
-	if deck.is_empty() or index >= deck.size():
-		# Колода кончилась — карта-заглушка, чтобы цикл не вставал.
+	# Колода Мифов пройдена до конца — время Древнего вышло: поражение партии.
+	# Отличаем настоящее исчерпание (deck не пуст, дошли до конца) от сбоя
+	# загрузки (deck пуст при index==0 — карта-заглушка, не финал).
+	if not deck.is_empty() and index >= deck.size():
+		_gs.current_mythos = {}
+		if _gs.outcome.is_empty():
+			_gs.outcome = "defeat"
+			GameConsole.warn("[Финал] Колода Мифов исчерпана — Древний пробуждается, поражение партии")
+		return
+	if deck.is_empty():
+		# Колода не загрузилась (сбой восстановления) — пустышка, чтобы цикл не вставал.
 		_gs.current_mythos = {
 			"name":       "Эхо Древних",
-			"flavorText": "Колода Мифов исчерпана.",
+			"flavorText": "Колода Мифов недоступна.",
 			"text":       "Ничего нового не происходит — миф крутится по последнему витку.",
 			"onDraw":     [],
 		}
-		GameConsole.warn("[Mythos] Колода исчерпана — карта-заглушка")
+		GameConsole.warn("[Mythos] Колода недоступна — карта-заглушка")
 		return
 	_gs.current_mythos = deck[index]
 	index += 1
