@@ -79,25 +79,64 @@ func generate(kind: String = "general") -> void:
 	_gs._emit_changed()
 
 
-## Хост: начать ход встречи активного игрока. Считает доступные типы встречи
-## по содержимому его клетки. Если выбор есть (>1) — выставляет encounter_choices
-## и ждёт выбора игрока; иначе сразу генерирует единственную (general).
+## Хост: начать ход встречи активного игрока. Если на клетке есть монстры —
+## БОЙ обязателен и первым (без выбора); монстры отыгрываются последовательно
+## (см. continue_encounter_turn). Когда монстров нет — обычный выбор/генерация
+## не-боевой встречи.
 func begin_turn() -> void:
 	if not _gs._is_host():
 		return
 	var pid: String = _gs._current_pid()
 	if pid.is_empty() or not _gs.players.has(pid):
 		return
+	var loc: String = String(_gs.players[pid].get("location", ""))
+	if not (_gs.monsters.get(loc, []) as Array).is_empty():
+		# Монстры на клетке — встреча с монстром всегда первой.
+		_gs.encounter_choices = []
+		_begin_combat(pid)
+		return
+	_begin_noncombat(pid)
+
+
+## Не-боевая встреча: выбор типа (без combat) по содержимому клетки. Один вариант
+## → генерим сразу; несколько → выставляем encounter_choices и ждём выбора.
+func _begin_noncombat(pid: String) -> void:
 	var choices: Array = _compute_choices(pid)
+	choices.erase("combat")   # бой отыгрывается отдельно, не как выбор
 	if choices.size() <= 1:
 		_gs.encounter_choices = []
-		generate("general")
+		generate(String(choices[0]) if not choices.is_empty() else "general")
 	else:
 		_gs.encounter_choices = choices
 		_gs.current_encounter = {}
 		GameConsole.log("[Game] %s выбирает тип встречи: %s" % [_gs._name_of(pid), str(choices)])
 		_gs._broadcast_sync()
 		_gs._emit_changed()
+
+
+## Хост: после завершения встречи решает — продолжить ход того же игрока или
+## передать дальше. Возвращает true, если ход ПРОДОЛЖАЕТСЯ (настроил следующую
+## под-встречу): монстр повержен и остались ещё монстры → следующий бой; все
+## монстры повержены → выбор не-боевой встречи. False → ход завершается
+## (монстр выжил, либо не-боевая встреча отыграна). Зовётся из
+## PhaseController.host_apply_finish_encounter ПОСЛЕ _commit_outcome.
+func continue_encounter_turn(pid: String) -> bool:
+	if not _gs.players.has(pid):
+		return false
+	var enc: Dictionary = _gs.current_encounter
+	if String(enc.get("kind", "")) != "combat":
+		return false   # не-боевая встреча отыграна — ход дальше
+	# Монстр выжил (не повержен) — ход сыщика заканчивается, монстр остаётся.
+	if not bool((enc.get("resolution", {}) as Dictionary).get("won", false)):
+		return false
+	# Монстр повержен (снят в _commit_combat). Ещё монстры на клетке?
+	var loc: String = String(_gs.players[pid].get("location", ""))
+	if not (_gs.monsters.get(loc, []) as Array).is_empty():
+		_begin_combat(pid)   # следующий монстр — тот же игрок
+		return true
+	# Все монстры повержены — теперь выбор не-боевой встречи.
+	_begin_noncombat(pid)
+	return true
 
 
 ## Хост: игрок выбрал тип встречи — генерируем её. combat (бой) — пока заглушка.
@@ -164,7 +203,6 @@ func _resolve_combat(pid: String) -> bool:
 	var enc: Dictionary = _gs.current_encounter
 	if enc.has("resolution"):
 		return false
-	var p: Dictionary = _gs.players[pid]
 
 	# ── Шаг 1: бросок ВОЛИ (если ещё не катали) ──
 	# Только бросок + расчёт; рассудок/здоровье/монстр применяются при завершении
@@ -238,15 +276,13 @@ func _set_monster_health(loc_id: String, idx: int, health: int) -> void:
 	_gs.monsters[loc_id] = arr
 
 
-# Доступные типы встречи по содержимому клетки игрока. general — всегда;
-# combat — если есть монстр; research — если есть улика; gate — если врата;
-# mystery — если эта локация помечена активной Тайной и ещё не зачищена.
+# Доступные НЕ-БОЕВЫЕ типы встречи по содержимому клетки. general — всегда;
+# research — если есть улика; gate — если врата; mystery — если локация помечена
+# активной Тайной и ещё не зачищена. (Бой не входит — он принудительный и первым,
+# см. begin_turn / continue_encounter_turn.)
 func _compute_choices(pid: String) -> Array:
 	var loc: String = String(_gs.players[pid].get("location", ""))
 	var out: Array = ["general"]
-	var mons: Array = _gs.monsters.get(loc, [])
-	if not (mons as Array).is_empty():
-		out.append("combat")
 	var ents: Array = _gs.entities.get(loc, [])
 	if (ents as Array).has("clue"):
 		out.append("research")

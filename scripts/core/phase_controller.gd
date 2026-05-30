@@ -184,6 +184,13 @@ func host_apply_finish_encounter(pid: String) -> bool:
 	# броском и завершением был доступен переброс за концентрацию.
 	_gs._encounter._commit_outcome(pid)
 
+	# Бой может продолжиться (ещё монстры на клетке) или перейти к выбору не-боевой
+	# встречи — тогда ход того же игрока НЕ завершаем.
+	if _gs._encounter.continue_encounter_turn(pid):
+		_gs._broadcast_sync()
+		_gs._emit_changed()
+		return true
+
 	_gs.players[pid]["encounter_done"] = true
 	GameConsole.log("[Game] %s завершил встречу" % _gs._name_of(pid))
 
