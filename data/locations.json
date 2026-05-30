@@ -1,1057 +1,1072 @@
 [
-  {
-	"id": "1",
-	"name": "LOC_1_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_1_REAL",
-	"description": "LOC_1_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  61.227792875451016,
-	  -149.89633610734984
-	],
-	"connections": [
-	  {
-		"to": "19",
-		"type": "ship"
-	  },
-	  {
-		"to": "San Francisco",
-		"type": "ship"
-	  },
-	  {
-		"to": "4",
-		"type": "uncharted"
-	  }
-	]
-  },
-  {
-	"id": "2",
-	"name": "LOC_2_NAME",
-	"type": "sea",
-	"realWorldLocation": "LOC_2_REAL",
-	"description": "LOC_2_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  25.0,
-	  -150.0
-	],
-	"connections": [
-	  {
-		"to": "San Francisco",
-		"type": "ship"
-	  },
-	  {
-		"to": "Tokyo",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "3",
-	"name": "LOC_3_NAME",
-	"type": "sea",
-	"realWorldLocation": "LOC_3_REAL",
-	"description": "LOC_3_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  -48.87666666666667,
-	  -123.39333333333333
-	],
-	"connections": [
-	  {
-		"to": "Buenos Aires",
-		"type": "ship"
-	  },
-	  {
-		"to": "Sydney",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "4",
-	"name": "LOC_4_NAME",
-	"type": "wilderness",
-	"realWorldLocation": "LOC_4_REAL",
-	"description": "LOC_4_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  61.36354395281137,
-	  -117.65928769719235
-	],
-	"connections": [
-	  {
-		"to": "1",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "5",
-		"type": "uncharted"
-	  }
-	]
-  },
-  {
-	"id": "5",
-	"name": "LOC_5_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_5_REAL",
-	"description": "LOC_5_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  41.25474870429752,
-	  -95.9412306930459
-	],
-	"connections": [
-	  {
-		"to": "Arkham",
-		"type": "train"
-	  },
-	  {
-		"to": "San Francisco",
-		"type": "train"
-	  },
-	  {
-		"to": "4",
-		"type": "uncharted"
-	  }
-	]
-  },
-  {
-	"id": "6",
-	"name": "LOC_6_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_6_REAL",
-	"description": "LOC_6_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  32.78708209137895,
-	  -96.79610937882182
-	],
-	"connections": [
-	  {
-		"to": "Arkham",
-		"type": "train"
-	  },
-	  {
-		"to": "San Francisco",
-		"type": "train"
-	  },
-	  {
-		"to": "7",
-		"type": "train"
-	  }
-	]
-  },
-  {
-	"id": "7",
-	"name": "LOC_7_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_7_REAL",
-	"description": "LOC_7_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  8.987118555703058,
-	  -79.51700973797024
-	],
-	"connections": [
-	  {
-		"to": "The Amazon",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "Buenos Aires",
-		"type": "ship"
-	  },
-	  {
-		"to": "San Francisco",
-		"type": "ship"
-	  },
-	  {
-		"to": "6",
-		"type": "train"
-	  },
-	  {
-		"to": "8",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "8",
-	"name": "LOC_8_NAME",
-	"type": "sea",
-	"realWorldLocation": "LOC_8_REAL",
-	"description": "LOC_8_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  25.000971604318792,
-	  -71.00034337451198
-	],
-	"connections": [
-	  {
-		"to": "Arkham",
-		"type": "ship"
-	  },
-	  {
-		"to": "Buenos Aires",
-		"type": "ship"
-	  },
-	  {
-		"to": "7",
-		"type": "ship"
-	  },
-	  {
-		"to": "10",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "9",
-	"name": "LOC_9_NAME",
-	"type": "wilderness",
-	"realWorldLocation": "LOC_9_REAL",
-	"description": "LOC_9_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  69.83843709705985,
-	  -53.478957686177644
-	],
-	"connections": [
-	  {
-		"to": "Arkham",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "10",
-	"name": "LOC_10_NAME",
-	"type": "wilderness",
-	"realWorldLocation": "LOC_10_REAL",
-	"description": "LOC_10_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  14.719322360246661,
-	  -17.466855845462135
-	],
-	"connections": [
-	  {
-		"to": "The Pyramids",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "Rome",
-		"type": "ship"
-	  },
-	  {
-		"to": "8",
-		"type": "ship"
-	  },
-	  {
-		"to": "15",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "11",
-	"name": "LOC_11_NAME",
-	"type": "sea",
-	"realWorldLocation": "LOC_11_REAL",
-	"description": "LOC_11_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  -37.0921834019556,
-	  -12.276158854542762
-	],
-	"connections": [
-	  {
-		"to": "Buenos Aires",
-		"type": "ship"
-	  },
-	  {
-		"to": "15",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "12",
-	"name": "LOC_12_NAME",
-	"type": "sea",
-	"realWorldLocation": "LOC_12_REAL",
-	"description": "LOC_12_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  -54.386598291739524,
-	  -36.56236684775685
-	],
-	"connections": [
-	  {
-		"to": "Antarctica",
-		"type": "ship"
-	  },
-	  {
-		"to": "Buenos Aires",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "13",
-	"name": "LOC_13_NAME",
-	"type": "sea",
-	"realWorldLocation": "LOC_13_REAL",
-	"description": "LOC_13_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  80.80387348723677,
-	  55.23775033629281
-	],
-	"connections": [
-	  {
-		"to": "London",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "14",
-	"name": "LOC_14_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_14_REAL",
-	"description": "LOC_14_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  65.02952632509181,
-	  25.47020942432892
-	],
-	"connections": [
-	  {
-		"to": "Rome",
-		"type": "train"
-	  },
-	  {
-		"to": "16",
-		"type": "train"
-	  }
-	]
-  },
-  {
-	"id": "15",
-	"name": "LOC_15_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_15_REAL",
-	"description": "LOC_15_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  -33.92193657953176,
-	  18.45001774955841
-	],
-	"connections": [
-	  {
-		"to": "The Heart of Africa",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "10",
-		"type": "ship"
-	  },
-	  {
-		"to": "11",
-		"type": "ship"
-	  },
-	  {
-		"to": "17",
-		"type": "ship"
-	  },
-	  {
-		"to": "18",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "16",
-	"name": "LOC_16_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_16_REAL",
-	"description": "LOC_16_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  56.01664205186383,
-	  92.87396586875244
-	],
-	"connections": [
-	  {
-		"to": "Istanbul",
-		"type": "train"
-	  },
-	  {
-		"to": "Tunguska",
-		"type": "train"
-	  },
-	  {
-		"to": "14",
-		"type": "train"
-	  }
-	]
-  },
-  {
-	"id": "17",
-	"name": "LOC_17_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_17_REAL",
-	"description": "LOC_17_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  19.08736875314356,
-	  72.87911242100995
-	],
-	"connections": [
-	  {
-		"to": "The Himalayas",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "Istanbul",
-		"type": "train"
-	  },
-	  {
-		"to": "Shanghai",
-		"type": "train"
-	  },
-	  {
-		"to": "15",
-		"type": "ship"
-	  },
-	  {
-		"to": "20",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "18",
-	"name": "LOC_18_NAME",
-	"type": "sea",
-	"realWorldLocation": "LOC_18_REAL",
-	"description": "LOC_18_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  -49.348778234980756,
-	  70.21903095525244
-	],
-	"connections": [
-	  {
-		"to": "Sydney",
-		"type": "ship"
-	  },
-	  {
-		"to": "15",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "19",
-	"name": "LOC_19_NAME",
-	"type": "wilderness",
-	"realWorldLocation": "LOC_19_REAL",
-	"description": "LOC_19_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  63.06111582982855,
-	  179.34788798353154
-	],
-	"connections": [
-	  {
-		"to": "Shanghai",
-		"type": "train"
-	  },
-	  {
-		"to": "Tokyo",
-		"type": "ship"
-	  },
-	  {
-		"to": "Tunguska",
-		"type": "train"
-	  },
-	  {
-		"to": "1",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "20",
-	"name": "LOC_20_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_20_REAL",
-	"description": "LOC_20_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  -5.126530191940272,
-	  119.40571383096034
-	],
-	"connections": [
-	  {
-		"to": "Shanghai",
-		"type": "ship"
-	  },
-	  {
-		"to": "Sydney",
-		"type": "ship"
-	  },
-	  {
-		"to": "Tokyo",
-		"type": "ship"
-	  },
-	  {
-		"to": "17",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "21",
-	"name": "LOC_21_NAME",
-	"type": "wilderness",
-	"realWorldLocation": "LOC_21_REAL",
-	"description": "LOC_21_DESC",
-	"encounterTypes": [
-      "general"
-	],
-	"coordinates": [
-	  -25.343795226988536,
-	  131.03444213186447
-	],
-	"connections": [
-	  {
-		"to": "Sydney",
-		"type": "uncharted"
-	  }
-	]
-  },
-  {
-	"id": "The Amazon",
-	"name": "LOC_THE_AMAZON_NAME",
-	"type": "wilderness",
-	"realWorldLocation": "LOC_THE_AMAZON_REAL",
-	"description": "LOC_THE_AMAZON_DESC",
-	"encounterTypes": [
-	  "general",
-      "expedition"
-	],
-	"coordinates": [
-	  -3.306826895501358,
-	  -60.66516385371958
-	],
-	"connections": [
-	  {
-		"to": "Buenos Aires",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "7",
-		"type": "uncharted"
-	  }
-	]
-  },
-  {
-	"id": "The Pyramids",
-	"name": "LOC_THE_PYRAMIDS_NAME",
-	"type": "wilderness",
-	"realWorldLocation": "LOC_THE_PYRAMIDS_REAL",
-	"description": "LOC_THE_PYRAMIDS_DESC",
-	"encounterTypes": [
-	  "general",
-      "expedition"
-	],
-	"coordinates": [
-	  29.978410443405625,
-	  31.134240924147104
-	],
-	"connections": [
-	  {
-		"to": "The Heart of Africa",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "Istanbul",
-		"type": "train"
-	  },
-	  {
-		"to": "Rome",
-		"type": "ship"
-	  },
-	  {
-		"to": "10",
-		"type": "uncharted"
-	  }
-	]
-  },
-  {
-	"id": "The Heart of Africa",
-	"name": "LOC_THE_HEART_OF_AFRICA_NAME",
-	"type": "wilderness",
-	"realWorldLocation": "LOC_THE_HEART_OF_AFRICA_REAL",
-	"description": "LOC_THE_HEART_OF_AFRICA_DESC",
-	"encounterTypes": [
-	  "general",
-      "expedition"
-	],
-	"coordinates": [
-	  -5.769438870624468,
-	  29.591824435107082
-	],
-	"connections": [
-	  {
-		"to": "The Pyramids",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "15",
-		"type": "uncharted"
-	  }
-	]
-  },
-  {
-	"id": "The Himalayas",
-	"name": "LOC_THE_HIMALAYAS_NAME",
-	"type": "wilderness",
-	"realWorldLocation": "LOC_THE_HIMALAYAS_REAL",
-	"description": "LOC_THE_HIMALAYAS_DESC",
-	"encounterTypes": [
-	  "general",
-      "expedition"
-	],
-	"coordinates": [
-	  31.068124001330755,
-	  81.31185852035169
-	],
-	"connections": [
-	  {
-		"to": "Shanghai",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "17",
-		"type": "uncharted"
-	  }
-	]
-  },
-  {
-	"id": "Tunguska",
-	"name": "LOC_TUNGUSKA_NAME",
-	"type": "wilderness",
-	"realWorldLocation": "LOC_TUNGUSKA_REAL",
-	"description": "LOC_TUNGUSKA_DESC",
-	"encounterTypes": [
-	  "general",
-      "expedition"
-	],
-	"coordinates": [
-	  61.96724334590143,
-	  92.4734163596077
-	],
-	"connections": [
-	  {
-		"to": "16",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "19",
-		"type": "uncharted"
-	  }
-	]
-  },
-  {
-	"id": "Antarctica",
-	"name": "LOC_ANTARCTICA_NAME",
-	"type": "sea",
-	"realWorldLocation": "LOC_ANTARCTICA_REAL",
-	"description": "LOC_ANTARCTICA_DESC",
-	"encounterTypes": [
-	  "general",
-      "expedition"
-	],
-	"coordinates": [
-	  -70.92480077627484,
-	  23.838543681281152
-	],
-	"connections": [
-	  {
-		"to": "Sydney",
-		"type": "ship"
-	  },
-	  {
-		"to": "12",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "San Francisco",
-	"name": "LOC_SAN_FRANCISCO_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_SAN_FRANCISCO_REAL",
-	"description": "LOC_SAN_FRANCISCO_DESC",
-	"encounterTypes": [
-	  "general",
-      "america"
-	],
-	"coordinates": [
-	  37.7526711391998,
-	  -122.44807205755828
-	],
-	"connections": [
-	  {
-		"to": "1",
-		"type": "ship"
-	  },
-	  {
-		"to": "2",
-		"type": "ship"
-	  },
-	  {
-		"to": "5",
-		"type": "train"
-	  },
-	  {
-		"to": "6",
-		"type": "train"
-	  },
-	  {
-		"to": "7",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "Arkham",
-	"name": "LOC_ARKHAM_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_ARKHAM_REAL",
-	"description": "LOC_ARKHAM_DESC",
-	"encounterTypes": [
-	  "general",
-      "america"
-	],
-	"coordinates": [
-	  42.60436531512155,
-	  -70.8914825742486
-	],
-	"connections": [
-	  {
-		"to": "London",
-		"type": "ship"
-	  },
-	  {
-		"to": "5",
-		"type": "train"
-	  },
-	  {
-		"to": "6",
-		"type": "train"
-	  },
-	  {
-		"to": "8",
-		"type": "ship"
-	  },
-	  {
-		"to": "9",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "Buenos Aires",
-	"name": "LOC_BUENOS_AIRES_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_BUENOS_AIRES_REAL",
-	"description": "LOC_BUENOS_AIRES_DESC",
-	"encounterTypes": [
-	  "general",
-      "america"
-	],
-	"coordinates": [
-	  -34.60152552612713,
-	  -58.38951620583458
-	],
-	"connections": [
-	  {
-		"to": "The Amazon",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "3",
-		"type": "ship"
-	  },
-	  {
-		"to": "7",
-		"type": "ship"
-	  },
-	  {
-		"to": "8",
-		"type": "ship"
-	  },
-	  {
-		"to": "11",
-		"type": "ship"
-	  },
-	  {
-		"to": "12",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "London",
-	"name": "LOC_LONDON_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_LONDON_REAL",
-	"description": "LOC_LONDON_DESC",
-	"encounterTypes": [
-	  "general",
-      "europe"
-	],
-	"coordinates": [
-	  51.51022041119061,
-	  -0.12847910579949792
-	],
-	"connections": [
-	  {
-		"to": "Arkham",
-		"type": "ship"
-	  },
-	  {
-		"to": "Rome",
-		"type": "ship"
-	  },
-	  {
-		"to": "13",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "Rome",
-	"name": "LOC_ROME_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_ROME_REAL",
-	"description": "LOC_ROME_DESC",
-	"encounterTypes": [
-	  "general",
-      "europe"
-	],
-	"coordinates": [
-	  41.89472846070195,
-	  12.48250216644515
-	],
-	"connections": [
-	  {
-		"to": "Istanbul",
-		"type": "train"
-	  },
-	  {
-		"to": "London",
-		"type": "ship"
-	  },
-	  {
-		"to": "The Pyramids",
-		"type": "ship"
-	  },
-	  {
-		"to": "10",
-		"type": "ship"
-	  },
-	  {
-		"to": "14",
-		"type": "train"
-	  }
-	]
-  },
-  {
-	"id": "Istanbul",
-	"name": "LOC_ISTANBUL_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_ISTANBUL_REAL",
-	"description": "LOC_ISTANBUL_DESC",
-	"encounterTypes": [
-	  "general",
-      "europe"
-	],
-	"coordinates": [
-	  41.0113148309421,
-	  28.968200786684598
-	],
-	"connections": [
-	  {
-		"to": "Rome",
-		"type": "train"
-	  },
-	  {
-		"to": "The Pyramids",
-		"type": "train"
-	  },
-	  {
-		"to": "16",
-		"type": "train"
-	  },
-	  {
-		"to": "17",
-		"type": "train"
-	  }
-	]
-  },
-  {
-	"id": "Shanghai",
-	"name": "LOC_SHANGHAI_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_SHANGHAI_REAL",
-	"description": "LOC_SHANGHAI_DESC",
-	"encounterTypes": [
-	  "general",
-      "asiaAustralia"
-	],
-	"coordinates": [
-	  31.243890715788996,
-	  121.47120993258858
-	],
-	"connections": [
-	  {
-		"to": "The Himalayas",
-		"type": "uncharted"
-	  },
-	  {
-		"to": "Tokyo",
-		"type": "ship"
-	  },
-	  {
-		"to": "17",
-		"type": "train"
-	  },
-	  {
-		"to": "19",
-		"type": "train"
-	  },
-	  {
-		"to": "20",
-		"type": "ship"
-	  }
-	]
-  },
-  {
-	"id": "Sydney",
-	"name": "LOC_SYDNEY_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_SYDNEY_REAL",
-	"description": "LOC_SYDNEY_DESC",
-	"encounterTypes": [
-	  "general",
-      "asiaAustralia"
-	],
-	"coordinates": [
-	  -33.86808819938728,
-	  151.20722012133496
-	],
-	"connections": [
-	  {
-		"to": "Antarctica",
-		"type": "ship"
-	  },
-	  {
-		"to": "3",
-		"type": "ship"
-	  },
-	  {
-		"to": "18",
-		"type": "ship"
-	  },
-	  {
-		"to": "20",
-		"type": "ship"
-	  },
-	  {
-		"to": "21",
-		"type": "uncharted"
-	  }
-	]
-  },
-  {
-	"id": "Tokyo",
-	"name": "LOC_TOKYO_NAME",
-	"type": "city",
-	"realWorldLocation": "LOC_TOKYO_REAL",
-	"description": "LOC_TOKYO_DESC",
-	"encounterTypes": [
-	  "general",
-      "asiaAustralia"
-	],
-	"coordinates": [
-	  35.69227237330765,
-	  139.76811267408797
-	],
-	"connections": [
-	  {
-		"to": "Shanghai",
-		"type": "ship"
-	  },
-	  {
-		"to": "2",
-		"type": "ship"
-	  },
-	  {
-		"to": "19",
-		"type": "ship"
-	  },
-	  {
-		"to": "20",
-		"type": "ship"
-	  }
-	]
-  }
+	{
+		"id": "1",
+		"name": "LOC_1_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_1_REAL",
+		"description": "LOC_1_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			61.227792875451016,
+			-149.89633610734984
+		],
+		"connections": [
+			{
+				"to": "19",
+				"type": "ship"
+			},
+			{
+				"to": "San Francisco",
+				"type": "ship"
+			},
+			{
+				"to": "4",
+				"type": "uncharted"
+			}
+		]
+	},
+	{
+		"id": "2",
+		"name": "LOC_2_NAME",
+		"type": "sea",
+		"realWorldLocation": "LOC_2_REAL",
+		"description": "LOC_2_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			25.0,
+			-150.0
+		],
+		"connections": [
+			{
+				"to": "San Francisco",
+				"type": "ship"
+			},
+			{
+				"to": "Tokyo",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "3",
+		"name": "LOC_3_NAME",
+		"type": "sea",
+		"realWorldLocation": "LOC_3_REAL",
+		"description": "LOC_3_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			-48.87666666666667,
+			-123.39333333333333
+		],
+		"connections": [
+			{
+				"to": "Buenos Aires",
+				"type": "ship"
+			},
+			{
+				"to": "Sydney",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "4",
+		"name": "LOC_4_NAME",
+		"type": "wilderness",
+		"realWorldLocation": "LOC_4_REAL",
+		"description": "LOC_4_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			61.36354395281137,
+			-117.65928769719235
+		],
+		"connections": [
+			{
+				"to": "1",
+				"type": "uncharted"
+			},
+			{
+				"to": "5",
+				"type": "uncharted"
+			}
+		]
+	},
+	{
+		"id": "5",
+		"name": "LOC_5_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_5_REAL",
+		"description": "LOC_5_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			41.25474870429752,
+			-95.9412306930459
+		],
+		"connections": [
+			{
+				"to": "Arkham",
+				"type": "train"
+			},
+			{
+				"to": "San Francisco",
+				"type": "train"
+			},
+			{
+				"to": "4",
+				"type": "uncharted"
+			}
+		]
+	},
+	{
+		"id": "6",
+		"name": "LOC_6_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_6_REAL",
+		"description": "LOC_6_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			32.78708209137895,
+			-96.79610937882182
+		],
+		"connections": [
+			{
+				"to": "Arkham",
+				"type": "train"
+			},
+			{
+				"to": "San Francisco",
+				"type": "train"
+			},
+			{
+				"to": "7",
+				"type": "train"
+			}
+		]
+	},
+	{
+		"id": "7",
+		"name": "LOC_7_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_7_REAL",
+		"description": "LOC_7_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			8.987118555703058,
+			-79.51700973797024
+		],
+		"connections": [
+			{
+				"to": "The Amazon",
+				"type": "uncharted"
+			},
+			{
+				"to": "Buenos Aires",
+				"type": "ship"
+			},
+			{
+				"to": "San Francisco",
+				"type": "ship"
+			},
+			{
+				"to": "6",
+				"type": "train"
+			},
+			{
+				"to": "8",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "8",
+		"name": "LOC_8_NAME",
+		"type": "sea",
+		"realWorldLocation": "LOC_8_REAL",
+		"description": "LOC_8_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			25.000971604318792,
+			-71.00034337451198
+		],
+		"connections": [
+			{
+				"to": "Arkham",
+				"type": "ship"
+			},
+			{
+				"to": "Buenos Aires",
+				"type": "ship"
+			},
+			{
+				"to": "7",
+				"type": "ship"
+			},
+			{
+				"to": "10",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "9",
+		"name": "LOC_9_NAME",
+		"type": "wilderness",
+		"realWorldLocation": "LOC_9_REAL",
+		"description": "LOC_9_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			69.83843709705985,
+			-53.478957686177644
+		],
+		"connections": [
+			{
+				"to": "Arkham",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "10",
+		"name": "LOC_10_NAME",
+		"type": "wilderness",
+		"realWorldLocation": "LOC_10_REAL",
+		"description": "LOC_10_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			14.719322360246661,
+			-17.466855845462135
+		],
+		"connections": [
+			{
+				"to": "The Pyramids",
+				"type": "uncharted"
+			},
+			{
+				"to": "Rome",
+				"type": "ship"
+			},
+			{
+				"to": "8",
+				"type": "ship"
+			},
+			{
+				"to": "15",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "11",
+		"name": "LOC_11_NAME",
+		"type": "sea",
+		"realWorldLocation": "LOC_11_REAL",
+		"description": "LOC_11_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			-37.0921834019556,
+			-12.276158854542762
+		],
+		"connections": [
+			{
+				"to": "Buenos Aires",
+				"type": "ship"
+			},
+			{
+				"to": "15",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "12",
+		"name": "LOC_12_NAME",
+		"type": "sea",
+		"realWorldLocation": "LOC_12_REAL",
+		"description": "LOC_12_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			-54.386598291739524,
+			-36.56236684775685
+		],
+		"connections": [
+			{
+				"to": "Antarctica",
+				"type": "ship"
+			},
+			{
+				"to": "Buenos Aires",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "13",
+		"name": "LOC_13_NAME",
+		"type": "sea",
+		"realWorldLocation": "LOC_13_REAL",
+		"description": "LOC_13_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			80.80387348723677,
+			55.23775033629281
+		],
+		"connections": [
+			{
+				"to": "London",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "14",
+		"name": "LOC_14_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_14_REAL",
+		"description": "LOC_14_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			65.02952632509181,
+			25.47020942432892
+		],
+		"connections": [
+			{
+				"to": "Rome",
+				"type": "train"
+			},
+			{
+				"to": "16",
+				"type": "train"
+			}
+		]
+	},
+	{
+		"id": "15",
+		"name": "LOC_15_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_15_REAL",
+		"description": "LOC_15_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			-33.92193657953176,
+			18.45001774955841
+		],
+		"connections": [
+			{
+				"to": "The Heart of Africa",
+				"type": "uncharted"
+			},
+			{
+				"to": "10",
+				"type": "ship"
+			},
+			{
+				"to": "11",
+				"type": "ship"
+			},
+			{
+				"to": "17",
+				"type": "ship"
+			},
+			{
+				"to": "18",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "16",
+		"name": "LOC_16_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_16_REAL",
+		"description": "LOC_16_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			56.01664205186383,
+			92.87396586875244
+		],
+		"connections": [
+			{
+				"to": "Istanbul",
+				"type": "train"
+			},
+			{
+				"to": "Tunguska",
+				"type": "train"
+			},
+			{
+				"to": "14",
+				"type": "train"
+			}
+		]
+	},
+	{
+		"id": "17",
+		"name": "LOC_17_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_17_REAL",
+		"description": "LOC_17_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			19.08736875314356,
+			72.87911242100995
+		],
+		"connections": [
+			{
+				"to": "The Himalayas",
+				"type": "uncharted"
+			},
+			{
+				"to": "Istanbul",
+				"type": "train"
+			},
+			{
+				"to": "Shanghai",
+				"type": "train"
+			},
+			{
+				"to": "15",
+				"type": "ship"
+			},
+			{
+				"to": "20",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "18",
+		"name": "LOC_18_NAME",
+		"type": "sea",
+		"realWorldLocation": "LOC_18_REAL",
+		"description": "LOC_18_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			-49.348778234980756,
+			70.21903095525244
+		],
+		"connections": [
+			{
+				"to": "Sydney",
+				"type": "ship"
+			},
+			{
+				"to": "15",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "19",
+		"name": "LOC_19_NAME",
+		"type": "wilderness",
+		"realWorldLocation": "LOC_19_REAL",
+		"description": "LOC_19_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			63.06111582982855,
+			179.34788798353154
+		],
+		"connections": [
+			{
+				"to": "Shanghai",
+				"type": "train"
+			},
+			{
+				"to": "Tokyo",
+				"type": "ship"
+			},
+			{
+				"to": "Tunguska",
+				"type": "train"
+			},
+			{
+				"to": "1",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "20",
+		"name": "LOC_20_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_20_REAL",
+		"description": "LOC_20_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			-5.126530191940272,
+			119.40571383096034
+		],
+		"connections": [
+			{
+				"to": "Shanghai",
+				"type": "ship"
+			},
+			{
+				"to": "Sydney",
+				"type": "ship"
+			},
+			{
+				"to": "Tokyo",
+				"type": "ship"
+			},
+			{
+				"to": "17",
+				"type": "ship"
+			}
+		]
+	},
+	{
+		"id": "21",
+		"name": "LOC_21_NAME",
+		"type": "wilderness",
+		"realWorldLocation": "LOC_21_REAL",
+		"description": "LOC_21_DESC",
+		"encounterTypes": [
+			"general"
+		],
+		"coordinates": [
+			-25.343795226988536,
+			131.03444213186447
+		],
+		"connections": [
+			{
+				"to": "Sydney",
+				"type": "uncharted"
+			}
+		]
+	},
+	{
+		"id": "The Amazon",
+		"name": "LOC_THE_AMAZON_NAME",
+		"type": "wilderness",
+		"realWorldLocation": "LOC_THE_AMAZON_REAL",
+		"description": "LOC_THE_AMAZON_DESC",
+		"encounterTypes": [
+			"general",
+			"expedition"
+		],
+		"coordinates": [
+			-3.306826895501358,
+			-60.66516385371958
+		],
+		"connections": [
+			{
+				"to": "Buenos Aires",
+				"type": "uncharted"
+			},
+			{
+				"to": "7",
+				"type": "uncharted"
+			}
+		],
+		"gateColor": "red"
+	},
+	{
+		"id": "The Pyramids",
+		"name": "LOC_THE_PYRAMIDS_NAME",
+		"type": "wilderness",
+		"realWorldLocation": "LOC_THE_PYRAMIDS_REAL",
+		"description": "LOC_THE_PYRAMIDS_DESC",
+		"encounterTypes": [
+			"general",
+			"expedition"
+		],
+		"coordinates": [
+			29.978410443405625,
+			31.134240924147104
+		],
+		"connections": [
+			{
+				"to": "The Heart of Africa",
+				"type": "uncharted"
+			},
+			{
+				"to": "Istanbul",
+				"type": "train"
+			},
+			{
+				"to": "Rome",
+				"type": "ship"
+			},
+			{
+				"to": "10",
+				"type": "uncharted"
+			}
+		],
+		"gateColor": "blue"
+	},
+	{
+		"id": "The Heart of Africa",
+		"name": "LOC_THE_HEART_OF_AFRICA_NAME",
+		"type": "wilderness",
+		"realWorldLocation": "LOC_THE_HEART_OF_AFRICA_REAL",
+		"description": "LOC_THE_HEART_OF_AFRICA_DESC",
+		"encounterTypes": [
+			"general",
+			"expedition"
+		],
+		"coordinates": [
+			-5.769438870624468,
+			29.591824435107082
+		],
+		"connections": [
+			{
+				"to": "The Pyramids",
+				"type": "uncharted"
+			},
+			{
+				"to": "15",
+				"type": "uncharted"
+			}
+		],
+		"gateColor": "red"
+	},
+	{
+		"id": "The Himalayas",
+		"name": "LOC_THE_HIMALAYAS_NAME",
+		"type": "wilderness",
+		"realWorldLocation": "LOC_THE_HIMALAYAS_REAL",
+		"description": "LOC_THE_HIMALAYAS_DESC",
+		"encounterTypes": [
+			"general",
+			"expedition"
+		],
+		"coordinates": [
+			31.068124001330755,
+			81.31185852035169
+		],
+		"connections": [
+			{
+				"to": "Shanghai",
+				"type": "uncharted"
+			},
+			{
+				"to": "17",
+				"type": "uncharted"
+			}
+		],
+		"gateColor": "red"
+	},
+	{
+		"id": "Tunguska",
+		"name": "LOC_TUNGUSKA_NAME",
+		"type": "wilderness",
+		"realWorldLocation": "LOC_TUNGUSKA_REAL",
+		"description": "LOC_TUNGUSKA_DESC",
+		"encounterTypes": [
+			"general",
+			"expedition"
+		],
+		"coordinates": [
+			61.96724334590143,
+			92.4734163596077
+		],
+		"connections": [
+			{
+				"to": "16",
+				"type": "uncharted"
+			},
+			{
+				"to": "19",
+				"type": "uncharted"
+			}
+		],
+		"gateColor": "green"
+	},
+	{
+		"id": "Antarctica",
+		"name": "LOC_ANTARCTICA_NAME",
+		"type": "sea",
+		"realWorldLocation": "LOC_ANTARCTICA_REAL",
+		"description": "LOC_ANTARCTICA_DESC",
+		"encounterTypes": [
+			"general",
+			"expedition"
+		],
+		"coordinates": [
+			-70.92480077627484,
+			23.838543681281152
+		],
+		"connections": [
+			{
+				"to": "Sydney",
+				"type": "ship"
+			},
+			{
+				"to": "12",
+				"type": "ship"
+			}
+		],
+		"gateColor": "blue"
+	},
+	{
+		"id": "San Francisco",
+		"name": "LOC_SAN_FRANCISCO_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_SAN_FRANCISCO_REAL",
+		"description": "LOC_SAN_FRANCISCO_DESC",
+		"encounterTypes": [
+			"general",
+			"america"
+		],
+		"coordinates": [
+			37.7526711391998,
+			-122.44807205755828
+		],
+		"connections": [
+			{
+				"to": "1",
+				"type": "ship"
+			},
+			{
+				"to": "2",
+				"type": "ship"
+			},
+			{
+				"to": "5",
+				"type": "train"
+			},
+			{
+				"to": "6",
+				"type": "train"
+			},
+			{
+				"to": "7",
+				"type": "ship"
+			}
+		],
+		"gateColor": "green"
+	},
+	{
+		"id": "Arkham",
+		"name": "LOC_ARKHAM_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_ARKHAM_REAL",
+		"description": "LOC_ARKHAM_DESC",
+		"encounterTypes": [
+			"general",
+			"america"
+		],
+		"coordinates": [
+			42.60436531512155,
+			-70.8914825742486
+		],
+		"connections": [
+			{
+				"to": "London",
+				"type": "ship"
+			},
+			{
+				"to": "5",
+				"type": "train"
+			},
+			{
+				"to": "6",
+				"type": "train"
+			},
+			{
+				"to": "8",
+				"type": "ship"
+			},
+			{
+				"to": "9",
+				"type": "ship"
+			}
+		],
+		"gateColor": "red"
+	},
+	{
+		"id": "Buenos Aires",
+		"name": "LOC_BUENOS_AIRES_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_BUENOS_AIRES_REAL",
+		"description": "LOC_BUENOS_AIRES_DESC",
+		"encounterTypes": [
+			"general",
+			"america"
+		],
+		"coordinates": [
+			-34.60152552612713,
+			-58.38951620583458
+		],
+		"connections": [
+			{
+				"to": "The Amazon",
+				"type": "uncharted"
+			},
+			{
+				"to": "3",
+				"type": "ship"
+			},
+			{
+				"to": "7",
+				"type": "ship"
+			},
+			{
+				"to": "8",
+				"type": "ship"
+			},
+			{
+				"to": "11",
+				"type": "ship"
+			},
+			{
+				"to": "12",
+				"type": "ship"
+			}
+		],
+		"gateColor": "blue"
+	},
+	{
+		"id": "London",
+		"name": "LOC_LONDON_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_LONDON_REAL",
+		"description": "LOC_LONDON_DESC",
+		"encounterTypes": [
+			"general",
+			"europe"
+		],
+		"coordinates": [
+			51.51022041119061,
+			-0.12847910579949792
+		],
+		"connections": [
+			{
+				"to": "Arkham",
+				"type": "ship"
+			},
+			{
+				"to": "Rome",
+				"type": "ship"
+			},
+			{
+				"to": "13",
+				"type": "ship"
+			}
+		],
+		"gateColor": "blue"
+	},
+	{
+		"id": "Rome",
+		"name": "LOC_ROME_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_ROME_REAL",
+		"description": "LOC_ROME_DESC",
+		"encounterTypes": [
+			"general",
+			"europe"
+		],
+		"coordinates": [
+			41.89472846070195,
+			12.48250216644515
+		],
+		"connections": [
+			{
+				"to": "Istanbul",
+				"type": "train"
+			},
+			{
+				"to": "London",
+				"type": "ship"
+			},
+			{
+				"to": "The Pyramids",
+				"type": "ship"
+			},
+			{
+				"to": "10",
+				"type": "ship"
+			},
+			{
+				"to": "14",
+				"type": "train"
+			}
+		],
+		"gateColor": "red"
+	},
+	{
+		"id": "Istanbul",
+		"name": "LOC_ISTANBUL_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_ISTANBUL_REAL",
+		"description": "LOC_ISTANBUL_DESC",
+		"encounterTypes": [
+			"general",
+			"europe"
+		],
+		"coordinates": [
+			41.0113148309421,
+			28.968200786684598
+		],
+		"connections": [
+			{
+				"to": "Rome",
+				"type": "train"
+			},
+			{
+				"to": "The Pyramids",
+				"type": "train"
+			},
+			{
+				"to": "16",
+				"type": "train"
+			},
+			{
+				"to": "17",
+				"type": "train"
+			}
+		],
+		"gateColor": "green"
+	},
+	{
+		"id": "Shanghai",
+		"name": "LOC_SHANGHAI_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_SHANGHAI_REAL",
+		"description": "LOC_SHANGHAI_DESC",
+		"encounterTypes": [
+			"general",
+			"asiaAustralia"
+		],
+		"coordinates": [
+			31.243890715788996,
+			121.47120993258858
+		],
+		"connections": [
+			{
+				"to": "The Himalayas",
+				"type": "uncharted"
+			},
+			{
+				"to": "Tokyo",
+				"type": "ship"
+			},
+			{
+				"to": "17",
+				"type": "train"
+			},
+			{
+				"to": "19",
+				"type": "train"
+			},
+			{
+				"to": "20",
+				"type": "ship"
+			}
+		],
+		"gateColor": "red"
+	},
+	{
+		"id": "Sydney",
+		"name": "LOC_SYDNEY_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_SYDNEY_REAL",
+		"description": "LOC_SYDNEY_DESC",
+		"encounterTypes": [
+			"general",
+			"asiaAustralia"
+		],
+		"coordinates": [
+			-33.86808819938728,
+			151.20722012133496
+		],
+		"connections": [
+			{
+				"to": "Antarctica",
+				"type": "ship"
+			},
+			{
+				"to": "3",
+				"type": "ship"
+			},
+			{
+				"to": "18",
+				"type": "ship"
+			},
+			{
+				"to": "20",
+				"type": "ship"
+			},
+			{
+				"to": "21",
+				"type": "uncharted"
+			}
+		],
+		"gateColor": "red"
+	},
+	{
+		"id": "Tokyo",
+		"name": "LOC_TOKYO_NAME",
+		"type": "city",
+		"realWorldLocation": "LOC_TOKYO_REAL",
+		"description": "LOC_TOKYO_DESC",
+		"encounterTypes": [
+			"general",
+			"asiaAustralia"
+		],
+		"coordinates": [
+			35.69227237330765,
+			139.76811267408797
+		],
+		"connections": [
+			{
+				"to": "Shanghai",
+				"type": "ship"
+			},
+			{
+				"to": "2",
+				"type": "ship"
+			},
+			{
+				"to": "19",
+				"type": "ship"
+			},
+			{
+				"to": "20",
+				"type": "ship"
+			}
+		],
+		"gateColor": "blue"
+	}
 ]

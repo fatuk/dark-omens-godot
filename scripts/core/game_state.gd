@@ -889,22 +889,42 @@ func _open_gate(loc_id: String = "", color: String = "") -> void:
 		return
 	var lid: String = loc_id
 	if lid.is_empty():
+		# Врата открываются ТОЛЬКО на гейт-спейсах (локации с gateColor), как на
+		# доске EH — номерные «реальные» точки гейтов не имеют.
 		var candidates: Array = []
 		var locations: Array = _load_locations()
 		for i: int in range(locations.size()):
-			var did: String = String(locations[i].get("id", ""))
-			if not did.is_empty() and not gates.has(did):
-				candidates.append(did)
+			var l: Dictionary = locations[i]
+			var did: String = String(l.get("id", ""))
+			if did.is_empty() or gates.has(did):
+				continue
+			if String(l.get("gateColor", "")).is_empty():
+				continue   # не гейт-спейс
+			candidates.append(did)
 		if candidates.is_empty():
-			GameConsole.warn("[Врата] все локации уже с вратами")
+			GameConsole.warn("[Врата] нет свободных гейт-локаций")
 			return
 		lid = String(candidates[randi() % candidates.size()])
+	# Цвет привязан к локации (каноничный цвет спейса EH); явный аргумент имеет
+	# приоритет. Фолбэк (локация без gateColor) — зелёный.
 	var col: String = color
 	if col.is_empty():
-		col = String(OMEN_COLORS[gates.size() % OMEN_COLORS.size()])
+		col = _gate_color_for(lid)
 	gates[lid] = col
 	GameConsole.log("[Врата] открылись (%s) на %s" % [col, lid])
 	_spawn_monster(lid)   # каждые новые врата → 1 монстр
+
+
+## Каноничный цвет врат локации (из data/locations.json → gateColor). Локация
+## без поля (не гейт-спейс) → "green" как безопасный фолбэк.
+func _gate_color_for(loc_id: String) -> String:
+	var locations: Array = _load_locations()
+	for i: int in range(locations.size()):
+		var l: Dictionary = locations[i]
+		if String(l.get("id", "")) == loc_id:
+			var c: String = String(l.get("gateColor", ""))
+			return c if not c.is_empty() else "green"
+	return "green"
 
 
 ## Закрыть врата на локации активного игрока (эффект closeGate финальной стадии
