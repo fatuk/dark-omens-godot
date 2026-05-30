@@ -262,7 +262,11 @@ func start_game(players_init: Array) -> void:
 	# генерации); не прогрета — запускаем генерацию сейчас (фолбэк).
 	if campaign.is_empty() and not campaign_pending:
 		_campaign.start_generation(turn_order.size(), "")
-	_setup_board(turn_order.size())   # стартовая раскладка: врата+монстры, улики, Наплыв
+	# Раскладку считаем по размеру партии, под который сгенерена кампания
+	# (campaign.playerCount), а не по числу подключённых: соло-тест партии на
+	# N игроков должен раскладывать поле как на N. Фолбэк — подключённые.
+	var setup_pc: int = int(campaign.get("playerCount", turn_order.size()))
+	_setup_board(maxi(1, setup_pc))   # стартовая раскладка: врата+монстры, улики, Наплыв
 	_broadcast_sync()
 	_emit_changed()
 	phase_changed.emit(phase)
@@ -853,17 +857,20 @@ func resolve_omen_doom() -> int:
 
 # ── Стартовая раскладка кампании (Icon Reference) ─────────────────────────────
 
-## Таблица Icon Reference (Набор A): по числу сыщиков — сколько врат открыть,
-## улик разложить и значение Наплыва на старте.
+## Базовая таблица Памятки (простые карточки): по числу сыщиков — сколько врат
+## открыть и улик разложить на старте, и значение Наплыва (monster_surge) на всю
+## партию. Наплыв растёт 1→3, поэтому surge-эффекты Мифа масштабируются числом
+## игроков сами (см. _monster_surge). NB: оверрайды Древних (карточки с символами
+## в Памятке) пока НЕ применяются — это отдельная таблица per-Ancient (TODO).
 const REFERENCE: Dictionary = {
-	1: { "gates": 1, "clues": 2, "surge": 1 },
+	1: { "gates": 1, "clues": 1, "surge": 1 },
 	2: { "gates": 1, "clues": 1, "surge": 1 },
-	3: { "gates": 2, "clues": 2, "surge": 1 },
-	4: { "gates": 2, "clues": 2, "surge": 1 },
-	5: { "gates": 2, "clues": 3, "surge": 1 },
-	6: { "gates": 3, "clues": 3, "surge": 1 },
-	7: { "gates": 3, "clues": 4, "surge": 1 },
-	8: { "gates": 3, "clues": 4, "surge": 1 },
+	3: { "gates": 1, "clues": 2, "surge": 2 },
+	4: { "gates": 1, "clues": 2, "surge": 2 },
+	5: { "gates": 2, "clues": 2, "surge": 2 },
+	6: { "gates": 2, "clues": 3, "surge": 2 },
+	7: { "gates": 2, "clues": 4, "surge": 3 },
+	8: { "gates": 2, "clues": 4, "surge": 3 },
 }
 
 func _reference_for(player_count: int) -> Dictionary:

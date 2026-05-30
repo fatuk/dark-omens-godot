@@ -139,6 +139,10 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 	if bool(res.get("ok", false)):
 		var full: Dictionary = res.get("campaign", {})
 		_gs.campaign     = _summary(full)
+		# Размер партии, под который сгенерена кампания (мифос-колода, цели Тайн).
+		# Стартовая раскладка (_setup_board) обязана взять ИМЕННО его, а не число
+		# подключённых: иначе соло-тест партии на 5–8 даст раскладку как на 1.
+		_gs.campaign["playerCount"] = maxi(1, player_count)
 		_gs._mythos.deck  = full.get("mythosDeck", [])
 		_gs._mythos.index = 0
 		var ao: Dictionary = _gs.campaign.get("ancientOne", {})
