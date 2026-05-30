@@ -288,18 +288,9 @@ func host_apply_resolve(pid: String) -> bool:
 	if _gs.current_encounter.has("resolution"):
 		return false   # уже разрешена
 
+	# Только бросок — эффекты применяются при завершении (_commit_outcome), чтобы
+	# между броском и «Завершить» можно было перебрасывать за концентрацию.
 	var roll: Dictionary = _roll_check(pid, _gs.current_encounter.get("test", {}))
-	var branch: Array = _gs.current_encounter.get(
-		"onSuccess" if roll["passed"] else "onFailure", []
-	)
-	var clues_before: int = int(_gs.players[pid].get("clues", 0))
-	_apply_effects(branch, pid)
-	var clues_gained: int = int(_gs.players[pid].get("clues", 0)) - clues_before
-
-	# Исследование: забранная улика исчезает с локации игрока.
-	if clues_gained > 0 and String(_gs.current_encounter.get("kind", "")) == "research":
-		_remove_clues_at(String(_gs.players[pid].get("location", "")), clues_gained)
-
 	_gs.current_encounter["resolution"] = roll
 	GameConsole.log("[Game] %s · встреча %s · успехов: %d" % [
 		_gs._name_of(pid),
@@ -332,11 +323,9 @@ func _resolve_gate_stage(pid: String) -> bool:
 	var node: Dictionary = _gate_node(_gs.current_encounter, stage)
 	if node.is_empty():
 		return false
+	# Только бросок. Эффекты второй проверки применяются при завершении встречи
+	# (_commit_outcome) — между броском и «Завершить» доступен переброс за фокус.
 	var roll: Dictionary = _roll_check(pid, node.get("test", {}))
-	# Стадия 1 (вторая проверка) — применяем исход ветки; стадия 0 лишь маршрутизирует.
-	if stage >= 1:
-		var branch: Array = node.get("onSuccess" if roll["passed"] else "onFailure", [])
-		_apply_effects(branch, pid)
 	_gs.current_encounter["stage_resolution"] = roll
 	GameConsole.log("[Game] %s · врата, фаза %d %s · успехов: %d" % [
 		_gs._name_of(pid), stage + 1,
@@ -367,6 +356,79 @@ func host_apply_advance_stage(pid: String) -> bool:
 	_gs.current_encounter["stage"] = 1
 	_gs.current_encounter.erase("stage_resolution")
 	GameConsole.log("[Game] %s · врата, ветка → %s" % [_gs._name_of(pid), branch])
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
+## Хост: применить ИТОГОВЫЕ эффекты встречи. Зовётся при завершении (из
+## PhaseController.host_apply_finish_encounter) — эффекты отвязаны от броска,
+## чтобы между ними был доступен переброс за фокус. Идемпотентна (флаг committed).
+## combat применяет свои эффекты сам (в _resolve_combat) — здесь пропускается.
+func _commit_outcome(pid: String) -> void:
+	var enc: Dictionary = _gs.current_encounter
+	if bool(enc.get("committed", false)) or enc.is_empty():
+		return
+	var kind: String = String(enc.get("kind", ""))
+	if kind == "combat":
+		return
+	enc["committed"] = true
+	if kind == "gate" or kind == "mystery":
+		var branches: Dictionary = enc.get("branches", {})
+		var node: Dictionary = branches.get(String(enc.get("branch", "success")), {})
+		var res: Dictionary = enc.get("stage_resolution", {})
+		_apply_effects(node.get("onSuccess" if bool(res.get("passed", false)) else "onFailure", []), pid)
+	else:
+		var res: Dictionary = enc.get("resolution", {})
+		var arr: Array = enc.get("onSuccess" if bool(res.get("passed", false)) else "onFailure", [])
+		var clues_before: int = int(_gs.players[pid].get("clues", 0))
+		_apply_effects(arr, pid)
+		var clues_gained: int = int(_gs.players[pid].get("clues", 0)) - clues_before
+		# Исследование: забранная улика исчезает с локации игрока.
+		if clues_gained > 0 and kind == "research":
+			_remove_clues_at(String(_gs.players[pid].get("location", "")), clues_gained)
+
+
+## Хост: переброс проваленных кубиков (d<5) активной проверки за 1 концентрацию.
+## Доступен, пока встреча не зафиксирована (committed). Зовётся из
+## GameState.reroll_encounter / relay-router. Возвращает true при перебросе.
+func host_apply_reroll(pid: String) -> bool:
+	if _gs.phase != "encounter" or _gs._current_pid() != pid or not _gs.players.has(pid):
+		return false
+	var enc: Dictionary = _gs.current_encounter
+	if enc.is_empty() or bool(enc.get("committed", false)):
+		return false
+	var kind: String = String(enc.get("kind", ""))
+	if kind == "combat":
+		return false   # у боя свой поток
+	var p: Dictionary = _gs.players[pid]
+	if int(p.get("concentration", 0)) <= 0:
+		return false   # нет концентрации
+	# Активный бросок: для ветвящихся — stage_resolution, иначе resolution.
+	var key: String = "stage_resolution" if (kind == "gate" or kind == "mystery") else "resolution"
+	if not enc.has(key):
+		return false   # ещё не бросали
+	var roll: Dictionary = enc[key]
+	var dice: Array = roll.get("dice", [])
+	var rerolled: int = 0
+	for i in range(dice.size()):
+		if int(dice[i]) < 5:
+			dice[i] = randi() % 6 + 1
+			rerolled += 1
+	if rerolled == 0:
+		return false   # перебрасывать нечего (все успехи)
+	var successes: int = 0
+	for i in range(dice.size()):
+		if int(dice[i]) >= 5:
+			successes += 1
+	roll["dice"] = dice
+	roll["successes"] = successes
+	roll["passed"] = successes >= 1
+	enc[key] = roll
+	p["concentration"] = int(p.get("concentration", 0)) - 1
+	GameConsole.log("[Переброс] %s · фокус −1 · перебросов: %d · успехов: %d" % [
+		_gs._name_of(pid), rerolled, successes
+	])
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true

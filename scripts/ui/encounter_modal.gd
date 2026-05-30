@@ -21,6 +21,9 @@ extends CanvasLayer
 @onready var _outcome:    Label          = %Outcome
 @onready var _finish_btn: Button         = %FinishBtn
 
+# Кнопка переброса за концентрацию — создаётся кодом, ставится перед FinishBtn.
+var _reroll_btn: Button
+
 # Навык → ключ перевода для подписи проверки.
 const _SKILL_KEYS := {
 	"lore":        "SKILL_LORE",
@@ -39,6 +42,16 @@ func _ready() -> void:
 	_main_text.add_theme_color_override("font_color", UIColors.TEXT)
 	_check.add_theme_color_override("font_color",     UIColors.MUTED)
 	_dice.add_theme_color_override("font_color",      UIColors.MUTED)
+
+	# Кнопка переброса — между исходом и «Завершить»/«Дальше».
+	_reroll_btn = Button.new()
+	_reroll_btn.name = "RerollBtn"
+	UIStyle.style_button(_reroll_btn, UIColors.MUTED)
+	_reroll_btn.pressed.connect(_on_reroll_pressed)
+	var vbox: Node = _finish_btn.get_parent()
+	vbox.add_child(_reroll_btn)
+	vbox.move_child(_reroll_btn, _finish_btn.get_index())   # перед FinishBtn
+	_reroll_btn.visible = false
 
 	_roll_btn.pressed.connect(_on_roll_pressed)
 	_finish_btn.pressed.connect(_on_finish_pressed)
@@ -80,6 +93,7 @@ func _show_loading() -> void:
 	_main_text.text = "ENCOUNTER_GENERATING"
 	for node: Control in [_check, _roll_btn, _dice, _outcome, _finish_btn]:
 		node.visible = false
+	_update_reroll_btn(false)
 
 
 func _show_card(card: Dictionary) -> void:
@@ -92,6 +106,7 @@ func _show_card(card: Dictionary) -> void:
 	_dice.visible       = false
 	_outcome.visible    = false
 	_finish_btn.visible = false
+	_update_reroll_btn(false)
 
 
 func _show_outcome(card: Dictionary) -> void:
@@ -111,6 +126,7 @@ func _show_outcome(card: Dictionary) -> void:
 	_roll_btn.visible   = false
 	_finish_btn.text    = "BTN_FINISH_BIG"
 	_finish_btn.visible = true
+	_update_reroll_btn(true)   # одиночная встреча — переброс доступен до «Завершить»
 
 
 # Двухфазные врата — дерево глубины 2. Стадия 0 (stage1) маршрутизирует: бросок
@@ -133,6 +149,7 @@ func _show_gate(card: Dictionary) -> void:
 		_dice.visible       = false
 		_outcome.visible    = false
 		_finish_btn.visible = false
+		_update_reroll_btn(false)
 		return
 
 	var res: Dictionary = card["stage_resolution"]
@@ -150,6 +167,7 @@ func _show_gate(card: Dictionary) -> void:
 	var more: bool = stage == 0
 	_finish_btn.text    = "ENCOUNTER_CONTINUE" if more else "BTN_FINISH_BIG"
 	_finish_btn.visible = true
+	_update_reroll_btn(true)   # переброс доступен на любой фазе до перехода/финиша
 
 
 # Ветвящиеся встречи (gate и mystery) — одинаковая структура card.stage1 +
@@ -172,6 +190,28 @@ func _gate_node(card: Dictionary, stage: int) -> Dictionary:
 func _on_roll_pressed() -> void:
 	_roll_btn.disabled = true   # хост разрешит встречу и пришлёт результат синком
 	GameState.resolve_encounter()
+
+
+func _on_reroll_pressed() -> void:
+	_reroll_btn.disabled = true   # хост пришлёт обновлённый бросок синком
+	GameState.reroll_encounter()
+
+
+# Видимость кнопки переброса: показываем при показанном результате броска, если
+# есть концентрация, встреча не зафиксирована и это не бой.
+func _update_reroll_btn(roll_shown: bool) -> void:
+	if not is_instance_valid(_reroll_btn):
+		return
+	var enc: Dictionary = GameState.current_encounter
+	var foc: int = int(GameState.my_player().get("concentration", 0))
+	var committed: bool = bool(enc.get("committed", false))
+	var combat: bool = String(enc.get("kind", "")) == "combat"
+	if roll_shown and foc > 0 and not committed and not combat:
+		_reroll_btn.text     = tr("ENCOUNTER_REROLL") % foc
+		_reroll_btn.disabled = false
+		_reroll_btn.visible  = true
+	else:
+		_reroll_btn.visible = false
 
 
 # Кнопка под исходом: после первой проверки врат (stage 0) — «Дальше» ко второй

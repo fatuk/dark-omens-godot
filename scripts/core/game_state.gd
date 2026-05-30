@@ -293,13 +293,23 @@ func finish_encounter() -> void:
 		_nm.relay_all({"action": "game_finish_encounter", "pid": my_pid})
 
 
-## Активный игрок бросает проверку встречи. Хост катит и применяет эффекты.
+## Активный игрок бросает проверку встречи. Хост катит результат (эффекты
+## применяются при завершении встречи — между броском и финишем можно перебрасывать).
 func resolve_encounter() -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
 		_encounter.host_apply_resolve(my_pid)
 	else:
 		_nm.relay_all({"action": "game_resolve_encounter", "pid": my_pid})
+
+
+## Активный игрок перебрасывает проваленные кубики проверки за 1 концентрацию.
+func reroll_encounter() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_encounter.host_apply_reroll(my_pid)
+	else:
+		_nm.relay_all({"action": "game_reroll_encounter", "pid": my_pid})
 
 
 ## Активный игрок выбрал тип встречи (general/research/gate/combat). Хост
@@ -624,6 +634,10 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"game_resolve_encounter":
 			if _is_host():
 				_encounter.host_apply_resolve(data.get("pid", ""))
+
+		"game_reroll_encounter":
+			if _is_host():
+				_encounter.host_apply_reroll(data.get("pid", ""))
 
 		"game_choose_encounter":
 			if _is_host():

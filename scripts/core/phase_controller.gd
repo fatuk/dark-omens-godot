@@ -180,6 +180,10 @@ func host_apply_finish_encounter(pid: String) -> bool:
 		GameConsole.warn("[Game] %s завершает встречу не в свой ход" % _gs._name_of(pid))
 		return false
 
+	# Применяем итоговые эффекты встречи ЗДЕСЬ (не при броске) — чтобы между
+	# броском и завершением был доступен переброс за концентрацию.
+	_gs._encounter._commit_outcome(pid)
+
 	_gs.players[pid]["encounter_done"] = true
 	GameConsole.log("[Game] %s завершил встречу" % _gs._name_of(pid))
 
