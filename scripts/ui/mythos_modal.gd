@@ -141,6 +141,7 @@ func _describe_effect(eff: Dictionary) -> String:
 		"advanceOmen", "moveOmen": s = tr("MYTHOS_EFF_ADVANCE_OMEN") % n
 		"openGate":            s = tr("MYTHOS_EFF_OPEN_GATE") % n
 		"spawnMonster":        s = tr("MYTHOS_EFF_SPAWN_MONSTER") % n
+		"monsterSurge":        s = tr("MYTHOS_EFF_SURGE")
 		"placeClue":           s = tr("MYTHOS_EFF_PLACE_CLUE") % n
 		"placeEldritchToken":  s = tr("MYTHOS_EFF_PLACE_ELDRITCH") % n
 		"placeRumor":          s = tr("MYTHOS_EFF_PLACE_RUMOR")

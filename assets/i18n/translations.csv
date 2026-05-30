@@ -751,6 +751,7 @@ MYTHOS_EFF_ADVANCE_DOOM,Часы doom: +%d,Doom track: +%d
 MYTHOS_EFF_ADVANCE_OMEN,Сдвиг знамения: +%d,Omen shift: +%d
 MYTHOS_EFF_OPEN_GATE,Открывается врат: %d,Gates opened: %d
 MYTHOS_EFF_SPAWN_MONSTER,Появляется чудовищ: %d,Monsters spawned: %d
+MYTHOS_EFF_SURGE,Наплыв монстров (врата знамения),Monster surge (Omen gates)
 MYTHOS_EFF_PLACE_CLUE,Появляется улик: %d,Clues placed: %d
 MYTHOS_EFF_PLACE_ELDRITCH,Эльдричские жетоны: %d,Eldritch tokens: %d
 MYTHOS_EFF_PLACE_RUMOR,Появляется слух,A rumor appears
