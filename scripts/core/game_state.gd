@@ -15,7 +15,6 @@ extends Node
 
 signal state_changed                        # любое изменение стейта
 signal phase_changed(new_phase: String)     # переход фазы
-signal mythos_resolved(omens_step: int, doom: int)  # для UI-уведомления
 
 const ACTIONS_PER_ROUND := 2
 

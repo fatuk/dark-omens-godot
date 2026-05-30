@@ -106,7 +106,6 @@ func _apply_resolve() -> void:
 	# Эффекты — последовательно, с ожиданием анимации каждого. Дум от омена
 	# считается внутри шага омена (до открытия новых врат) — см. _apply_board_effect.
 	await _apply_effects(effects)
-	_gs.mythos_resolved.emit(_gs.omens_step, _gs.doom)
 	_gs._phase.start_new_round()
 	_gs._broadcast_sync()
 	_gs._emit_changed()
