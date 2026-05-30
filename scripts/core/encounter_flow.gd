@@ -167,52 +167,46 @@ func _resolve_combat(pid: String) -> bool:
 	var p: Dictionary = _gs.players[pid]
 
 	# ── Шаг 1: бросок ВОЛИ (если ещё не катали) ──
+	# Только бросок + расчёт; рассудок/здоровье/монстр применяются при завершении
+	# (_commit_outcome), чтобы между бросками был доступен переброс за концентрацию.
 	if not enc.has("will"):
 		var h: Dictionary = enc.get("horror", {})
 		var w_roll: Dictionary = _roll_check(pid, { "skill": h.get("skill", "will"), "modifier": int(h.get("modificator", 0)) })
-		var sanity_loss: int = maxi(0, int(h.get("damage", 0)) - int(w_roll["successes"]))
-		if sanity_loss > 0:
-			p["sanity"] = maxi(0, int(p.get("sanity", 0)) - sanity_loss)
 		enc["will"] = w_roll
-		enc["sanity_loss"] = sanity_loss
-		GameConsole.log("[Бой] %s · Воля %d · рассудок −%d" % [_gs._name_of(pid), int(w_roll["successes"]), sanity_loss])
+		enc["sanity_loss"] = maxi(0, int(h.get("damage", 0)) - int(w_roll["successes"]))
+		GameConsole.log("[Бой] %s · Воля %d · рассудок −%d" % [_gs._name_of(pid), int(w_roll["successes"]), int(enc["sanity_loss"])])
 		_gs._broadcast_sync()
 		_gs._emit_changed()
 		return true
 
-	# ── Шаг 2: бросок СИЛЫ (атака) ──
+	# ── Шаг 2: бросок СИЛЫ (атака) ── (enc.health — здоровье монстра НА СТАРТЕ боя,
+	# не мутируем; health_after хранится в resolution и применяется при завершении).
 	var c: Dictionary = enc.get("combat", {})
 	var s_roll: Dictionary = _roll_check(pid, { "skill": c.get("skill", "strength"), "modifier": int(c.get("modificator", 0)) })
-	var hits: int = int(s_roll["successes"])
-	var health_before: int = int(enc.get("health", 0))
-	var health_after: int = maxi(0, health_before - hits)
-	var won: bool = health_after <= 0
-	var hp_loss: int = maxi(0, int(c.get("damage", 0)) - hits)
-	if hp_loss > 0:
-		p["hp"] = maxi(0, int(p.get("hp", 0)) - hp_loss)
-
-	var loc: String = String(p.get("location", ""))
-	if won:
-		_remove_monster_instance(loc, 0)
-		_gs.return_monster_to_bag(String(enc.get("monsterId", "")))   # монстр умер → обратно в мешок
-	else:
-		_set_monster_health(loc, 0, health_after)
-
-	enc["health"] = health_after
-	enc["resolution"] = {
-		"won":          won,
-		"strength":     s_roll,
-		"hp_loss":      hp_loss,
-		"dealt":        hits,
-		"health_after": health_after,
-	}
+	enc["resolution"] = _combat_strength_result(enc, s_roll)
+	var r: Dictionary = enc["resolution"]
 	GameConsole.log("[Бой] %s · %s (атака %d, монстр %d→%d, здоровье −%d)" % [
-		_gs._name_of(pid), "повержен" if won else "выжил",
-		hits, health_before, health_after, hp_loss,
+		_gs._name_of(pid), "повержен" if bool(r["won"]) else "выжил",
+		int(r["dealt"]), int(enc.get("health", 0)), int(r["health_after"]), int(r["hp_loss"]),
 	])
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
+
+
+# Производные значения броска СИЛЫ из стартового здоровья монстра (enc.health) —
+# чистый расчёт без применения (для resolve и переброса).
+func _combat_strength_result(enc: Dictionary, s_roll: Dictionary) -> Dictionary:
+	var c: Dictionary = enc.get("combat", {})
+	var hits: int = int(s_roll["successes"])
+	var health_after: int = maxi(0, int(enc.get("health", 0)) - hits)
+	return {
+		"won":          health_after <= 0,
+		"strength":     s_roll,
+		"hp_loss":      maxi(0, int(c.get("damage", 0)) - hits),
+		"dealt":        hits,
+		"health_after": health_after,
+	}
 
 
 # Снять экземпляр монстра по индексу с локации (синкаемое monsters).
@@ -370,9 +364,10 @@ func _commit_outcome(pid: String) -> void:
 	if bool(enc.get("committed", false)) or enc.is_empty():
 		return
 	var kind: String = String(enc.get("kind", ""))
-	if kind == "combat":
-		return
 	enc["committed"] = true
+	if kind == "combat":
+		_commit_combat(pid)
+		return
 	if kind == "gate" or kind == "mystery":
 		var branches: Dictionary = enc.get("branches", {})
 		var node: Dictionary = branches.get(String(enc.get("branch", "success")), {})
@@ -389,6 +384,27 @@ func _commit_outcome(pid: String) -> void:
 			_remove_clues_at(String(_gs.players[pid].get("location", "")), clues_gained)
 
 
+# Применение итогов боя при завершении: потеря рассудка (Воля) + урон сыщику и
+# судьба монстра (Сила). Эффекты отвязаны от бросков ради переброса.
+func _commit_combat(pid: String) -> void:
+	var enc: Dictionary = _gs.current_encounter
+	var p: Dictionary = _gs.players[pid]
+	var sl: int = int(enc.get("sanity_loss", 0))
+	if sl > 0:
+		p["sanity"] = maxi(0, int(p.get("sanity", 0)) - sl)
+	if enc.has("resolution"):
+		var r: Dictionary = enc["resolution"]
+		var hp_loss: int = int(r.get("hp_loss", 0))
+		if hp_loss > 0:
+			p["hp"] = maxi(0, int(p.get("hp", 0)) - hp_loss)
+		var loc: String = String(p.get("location", ""))
+		if bool(r.get("won", false)):
+			_remove_monster_instance(loc, 0)
+			_gs.return_monster_to_bag(String(enc.get("monsterId", "")))   # монстр умер → в мешок
+		else:
+			_set_monster_health(loc, 0, int(r.get("health_after", 0)))
+
+
 ## Хост: переброс проваленных кубиков (d<5) активной проверки за 1 концентрацию.
 ## Доступен, пока встреча не зафиксирована (committed). Зовётся из
 ## GameState.reroll_encounter / relay-router. Возвращает true при перебросе.
@@ -398,37 +414,78 @@ func host_apply_reroll(pid: String) -> bool:
 	var enc: Dictionary = _gs.current_encounter
 	if enc.is_empty() or bool(enc.get("committed", false)):
 		return false
-	var kind: String = String(enc.get("kind", ""))
-	if kind == "combat":
-		return false   # у боя свой поток
 	var p: Dictionary = _gs.players[pid]
 	if int(p.get("concentration", 0)) <= 0:
 		return false   # нет концентрации
+	var kind: String = String(enc.get("kind", ""))
+
+	if kind == "combat":
+		return _reroll_combat(pid)
+
 	# Активный бросок: для ветвящихся — stage_resolution, иначе resolution.
 	var key: String = "stage_resolution" if (kind == "gate" or kind == "mystery") else "resolution"
 	if not enc.has(key):
 		return false   # ещё не бросали
 	var roll: Dictionary = enc[key]
-	var dice: Array = roll.get("dice", [])
+	var rr: Dictionary = _reroll_dice(roll.get("dice", []))
+	if int(rr["rerolled"]) == 0:
+		return false   # перебрасывать нечего (все успехи)
+	roll["dice"]      = rr["dice"]
+	roll["successes"] = rr["successes"]
+	roll["passed"]    = int(rr["successes"]) >= 1
+	enc[key] = roll
+	p["concentration"] = int(p.get("concentration", 0)) - 1
+	GameConsole.log("[Переброс] %s · фокус −1 · перебросов: %d · успехов: %d" % [
+		_gs._name_of(pid), int(rr["rerolled"]), int(rr["successes"])
+	])
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
+# Переброс проваленных кубиков (d<5) массива. Возвращает {dice, successes, rerolled}.
+func _reroll_dice(src: Array) -> Dictionary:
+	var dice: Array = src.duplicate()
 	var rerolled: int = 0
 	for i in range(dice.size()):
 		if int(dice[i]) < 5:
 			dice[i] = randi() % 6 + 1
 			rerolled += 1
-	if rerolled == 0:
-		return false   # перебрасывать нечего (все успехи)
 	var successes: int = 0
 	for i in range(dice.size()):
 		if int(dice[i]) >= 5:
 			successes += 1
-	roll["dice"] = dice
-	roll["successes"] = successes
-	roll["passed"] = successes >= 1
-	enc[key] = roll
+	return { "dice": dice, "successes": successes, "rerolled": rerolled }
+
+
+# Переброс активной проверки боя: пока нет resolution — Воля (пересчёт sanity_loss),
+# иначе Сила (пересчёт исхода атаки). Тратит 1 концентрацию.
+func _reroll_combat(pid: String) -> bool:
+	var enc: Dictionary = _gs.current_encounter
+	var p: Dictionary = _gs.players[pid]
+	if enc.has("resolution"):
+		# Сила — перебрасываем кубики атаки, пересчитываем исход от стартового HP монстра.
+		var s: Dictionary = (enc["resolution"] as Dictionary).get("strength", {})
+		var rr: Dictionary = _reroll_dice(s.get("dice", []))
+		if int(rr["rerolled"]) == 0:
+			return false
+		var s_roll: Dictionary = { "dice": rr["dice"], "successes": rr["successes"], "passed": int(rr["successes"]) >= 1 }
+		enc["resolution"] = _combat_strength_result(enc, s_roll)
+		GameConsole.log("[Переброс] %s · бой/Сила · успехов: %d" % [_gs._name_of(pid), int(rr["successes"])])
+	elif enc.has("will"):
+		# Воля — перебрасываем, пересчитываем потерю рассудка.
+		var rr: Dictionary = _reroll_dice((enc["will"] as Dictionary).get("dice", []))
+		if int(rr["rerolled"]) == 0:
+			return false
+		var w: Dictionary = enc["will"]
+		w["dice"] = rr["dice"]; w["successes"] = rr["successes"]; w["passed"] = int(rr["successes"]) >= 1
+		enc["will"] = w
+		var hd: int = int((enc.get("horror", {}) as Dictionary).get("damage", 0))
+		enc["sanity_loss"] = maxi(0, hd - int(rr["successes"]))
+		GameConsole.log("[Переброс] %s · бой/Воля · успехов: %d" % [_gs._name_of(pid), int(rr["successes"])])
+	else:
+		return false   # ещё не бросали
 	p["concentration"] = int(p.get("concentration", 0)) - 1
-	GameConsole.log("[Переброс] %s · фокус −1 · перебросов: %d · успехов: %d" % [
-		_gs._name_of(pid), rerolled, successes
-	])
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true

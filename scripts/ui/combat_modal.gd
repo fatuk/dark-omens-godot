@@ -46,6 +46,12 @@ func _build(card: Dictionary) -> void:
 	btns.add_theme_constant_override("separation", 12)
 	btns.alignment = BoxContainer.ALIGNMENT_CENTER
 	_vbox.add_child(btns)
+	# Переброс активной проверки за концентрацию — если есть результат текущего
+	# шага (Воля или Сила), ещё не зафиксировано и есть концентрация.
+	var foc: int = int(GameState.my_player().get("concentration", 0))
+	var rolled: bool = card.has("will") or card.has("resolution")
+	if rolled and foc > 0 and not bool(card.get("committed", false)):
+		btns.add_child(_button(tr("ENCOUNTER_REROLL") % foc, func() -> void: GameState.reroll_encounter(), UIColors.MUTED))
 	if done:
 		btns.add_child(_button("BTN_FINISH_BIG", func() -> void: GameState.finish_encounter()))
 	else:
@@ -113,7 +119,11 @@ func _monster_col(card: Dictionary) -> VBoxContainer:
 	col.custom_minimum_size = Vector2(190, 0)
 	var combat: Dictionary = card.get("combat", {})
 	var horror: Dictionary = card.get("horror", {})
-	col.add_child(_lbl("%s: %d / %d" % [tr("SIDEBAR_TOUGHNESS"), int(card.get("health", 0)), int(card.get("toughness", 0))], 14, UIColors.WARNING))
+	# enc.health — здоровье монстра НА СТАРТЕ боя; после атаки показываем итоговое
+	# (resolution.health_after), т.к. эффекты применяются только при завершении.
+	var res: Dictionary = card.get("resolution", {})
+	var mon_health: int = int(res.get("health_after", card.get("health", 0))) if not res.is_empty() else int(card.get("health", 0))
+	col.add_child(_lbl("%s: %d / %d" % [tr("SIDEBAR_TOUGHNESS"), mon_health, int(card.get("toughness", 0))], 14, UIColors.WARNING))
 	col.add_child(_lbl("%s: %d · %s: %d" % [tr("COMBAT_MDMG"), int(combat.get("damage", 0)), tr("SIDEBAR_HORROR"), int(horror.get("damage", 0))], 12, UIColors.TEXT))
 	var ab: String = String(card.get("abilityKey", ""))
 	if not ab.is_empty():
@@ -135,9 +145,9 @@ func _lbl(text: String, size: int, color: Color, align: HorizontalAlignment = HO
 	return l
 
 
-func _button(key: String, on_press: Callable) -> Button:
+func _button(key: String, on_press: Callable, color: Color = UIColors.ACCENT) -> Button:
 	var b := Button.new()
 	b.text = key
-	UIStyle.style_button(b)
+	UIStyle.style_button(b, color)
 	b.pressed.connect(on_press)
 	return b
