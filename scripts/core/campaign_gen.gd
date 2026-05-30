@@ -198,6 +198,8 @@ func _summary(full: Dictionary) -> Dictionary:
 			"flavorText":     String(m.get("flavorText", "")),
 			"text":           String(m.get("text", "")),
 			"solveCondition": m.get("solveCondition", {}),
+			# Помеченные локации Тайны — без них нет маркеров и mystery-встреч.
+			"locations":      m.get("locations", []),
 		})
 	return {
 		"id":         String(full.get("id", "")),
