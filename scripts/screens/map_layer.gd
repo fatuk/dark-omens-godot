@@ -27,6 +27,8 @@ const GC_STEPS:       int   = 48
 ## исторические 100/50, которыми пользовались до уменьшения общего масштаба).
 const MARKER_SCREEN_FAR:   float = 67.0
 const MARKER_SCREEN_NEAR:  float = 100.0
+## Сдвиг центра бордера выбора вниз относительно центра медальона (экранные px).
+const SELECTION_Y_OFFSET:  float = 2.0
 ## Отступ от центра маркера до верха подписи. Лерпится синхронно с маркером,
 ## чтобы подпись не отрывалась/не наезжала при изменении масштаба.
 const LABEL_SCREEN_Y_FAR:  float = 33.0
@@ -239,6 +241,8 @@ func _process(delta: float) -> void:
 
 		if is_instance_valid(ind) and ind.visible:
 			ind.scale = ind_scale
+			# Центр бордера выбора — на 2px ниже центра медальона (экранные px).
+			ind.position = m.pos + Vector2(0.0, SELECTION_Y_OFFSET * inv)
 
 		if is_instance_valid(lb) and lb.size.x > 0.0:
 			lb.scale    = Vector2.ONE * inv
