@@ -507,6 +507,7 @@ func _refresh_campaign_gate() -> void:
 		# Тайна сменилась (решена в прошлом раунде) — после мифа, в начале нового
 		# раунда (фаза action), показываем ревил новой Тайны (гейт-шаг 2).
 		_intro_step = 2
+		_gate_rendered = -1   # форс перерисовки: шаг тот же (2), но контент новый
 	_campaign_gate.visible = _intro_step < 3
 	if _campaign_gate.visible and _intro_step != _gate_rendered:
 		_gate_rendered = _intro_step
