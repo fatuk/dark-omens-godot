@@ -562,7 +562,7 @@ func play_travel(inv_id: String, from_loc: String, to_loc: String, ctype: String
 
 	var pin := InvestigatorPin.new()
 	pin.name    = "TravelPin"
-	pin.z_index = 6   # поверх ВСЕХ айтемов — едущая иконка всегда видна
+	pin.z_index = 7   # поверх ВСЕХ айтемов (врата z=5, метка Тайны z=6) — едущая иконка всегда видна
 	add_child(pin)
 	pin.setup(_investigator_texture(inv_id))
 	_tr_pin = pin
@@ -736,7 +736,7 @@ func set_investigators(list: Array) -> void:
 			var base: Vector2 = loc_pos + Vector2(dx, 0)
 			var pin := InvestigatorPin.new()
 			pin.name    = "Inv_%s_%d" % [String(entry.get("pid", "")), sign(dx)]
-			pin.z_index = 6   # пины сыщиков — поверх ВСЕХ айтемов (врата z=5 и т.д.)
+			pin.z_index = 7   # пины сыщиков — поверх ВСЕХ айтемов (врата z=5, метка Тайны z=6)
 			pin.scale    = Vector2.ONE * base_scale * inv0 * if0
 			pin.position = base + screen_off * inv0 * if0
 			add_child(pin)
@@ -865,7 +865,7 @@ func set_mystery_marks(loc_ids: Array) -> void:
 			sprite.texture       = MYSTERY_TEX
 			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 			sprite.position      = world_pos
-			sprite.z_index       = 3   # над медальоном(2), под пином сыщика(4)/вратами(5)
+			sprite.z_index       = 6   # метка Тайны — над вратами(5), под пином сыщика(7)
 			add_child(sprite)
 			_mystery_markers.append({ "sprite": sprite, "tex_h": tex_h, "pos": world_pos })
 
