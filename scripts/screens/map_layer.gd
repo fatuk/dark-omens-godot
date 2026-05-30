@@ -562,7 +562,7 @@ func play_travel(inv_id: String, from_loc: String, to_loc: String, ctype: String
 
 	var pin := InvestigatorPin.new()
 	pin.name    = "TravelPin"
-	pin.z_index = 4   # поверх медальонов — едущая иконка видна
+	pin.z_index = 6   # поверх ВСЕХ айтемов — едущая иконка всегда видна
 	add_child(pin)
 	pin.setup(_investigator_texture(inv_id))
 	_tr_pin = pin
@@ -710,6 +710,9 @@ func set_investigators(list: Array) -> void:
 		per_loc[ln] = int(per_loc.get(ln, 0)) + 1
 
 	var inv0: float = (1.0 / camera.zoom.x) if is_instance_valid(camera) else 2.0
+	# Тот же фактор высоты карточки, что в _process — иначе пин стоит на другой
+	# высоте 1 кадр после создания (дёрганье в конце travel, раздвоение в начале).
+	var if0: float = lerpf(INVESTIGATOR_CARD_H_FAR, INVESTIGATOR_CARD_H_NEAR, _zoom_t()) / INVESTIGATOR_CARD_H_NEAR
 	var placed: Dictionary = {}
 
 	for i: int in range(list.size()):
@@ -733,9 +736,9 @@ func set_investigators(list: Array) -> void:
 			var base: Vector2 = loc_pos + Vector2(dx, 0)
 			var pin := InvestigatorPin.new()
 			pin.name    = "Inv_%s_%d" % [String(entry.get("pid", "")), sign(dx)]
-			pin.z_index = 4   # пины сыщиков — поверх медальона/врат
-			pin.scale    = Vector2.ONE * base_scale * inv0
-			pin.position = base + screen_off * inv0
+			pin.z_index = 6   # пины сыщиков — поверх ВСЕХ айтемов (врата z=5 и т.д.)
+			pin.scale    = Vector2.ONE * base_scale * inv0 * if0
+			pin.position = base + screen_off * inv0 * if0
 			add_child(pin)
 			pin.setup(tex)
 			_inv_markers.append({
