@@ -463,7 +463,9 @@ func _on_card_enter(idx: int) -> void:
 	if not _open:
 		return
 	_collapse_timer.stop()
-	set_active(idx)
+	if _active != idx:   # звук только при смене активной карты (не на дрожании курсора)
+		set_active(idx)
+		_play_scroll()
 
 
 func _on_card_exit() -> void:
