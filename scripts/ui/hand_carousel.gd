@@ -36,6 +36,14 @@ static var PIVOT_Y_FRAC: float = 1.10  # центр поворота: доля �
 static var HAND_BELOW: float = -60.0   # насколько якорь веера ниже края экрана (минус = выше)
 static var ANIM:   float = 0.28    # длительность перекладки
 
+# Звук перемотки: один файл нарезается на N равных кусков, при каждом шаге играет
+# случайный (+ случайный питч). Тюнится в дебаг-панели. Файл подхватится, как
+# только появится по пути SCROLL_SFX_PATH (пока его нет — перемотка просто молчит).
+static var SCROLL_VARIATIONS: int = 5      # на сколько вариаций нарезан файл
+static var SCROLL_PITCH: float = 0.06      # случайный сдвиг высоты ±
+
+const SCROLL_SFX_PATH := "res://assets/audio/sfx/card-scroll.wav"
+
 # Палитра — токены Dark Omens (UIColors) + производные тёмные оттенки.
 # Ассеты добавятся позже; пока стиль строится на дизайн-токенах проекта.
 const C_CARD_BG    := UIColors.SURFACE          # фон карты
@@ -77,6 +85,8 @@ var _open: bool = false
 var _mid: float = 0.0
 var _tween: Tween
 var _collapse_timer: Timer
+var _scroll_sfx: AudioStream = null
+var _scroll_tried: bool = false   # пытались ли уже загрузить звук перемотки
 
 
 func _ready() -> void:
@@ -359,6 +369,23 @@ func _step(d: int) -> void:
 		_active = int(round(_mid))
 	_active = (_active + d + n) % n
 	set_active(_active)
+	_play_scroll()
+
+
+# Звук перемотки: случайная вариация из одного файла (см. SfxManager.play_variation).
+# Файл грузим лениво и только если он есть — пока его нет, перемотка молчит.
+func _scroll_stream() -> AudioStream:
+	if not _scroll_tried:
+		_scroll_tried = true
+		if ResourceLoader.exists(SCROLL_SFX_PATH):
+			_scroll_sfx = load(SCROLL_SFX_PATH)
+	return _scroll_sfx
+
+
+func _play_scroll() -> void:
+	var s: AudioStream = _scroll_stream()
+	if s != null:
+		SfxManager.play_variation(s, SCROLL_VARIATIONS, SCROLL_PITCH)
 
 
 # ── Открытие / закрытие ─────────────────────────────────────────────────────

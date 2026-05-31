@@ -96,6 +96,12 @@ func _build_specs() -> Array:
 		{"key": "hand_anim", "label": "Анимация",
 			"min": 0.05, "max": 0.80, "step": 0.01,
 			"default": HandCarousel.ANIM, "set": _set_hand_anim},
+		{"key": "hand_sfx_var", "label": "Звук вариаций",
+			"min": 1.0, "max": 16.0, "step": 1.0,
+			"default": float(HandCarousel.SCROLL_VARIATIONS), "set": _set_hand_sfx_var},
+		{"key": "hand_sfx_pitch", "label": "Звук питч",
+			"min": 0.0, "max": 0.30, "step": 0.01,
+			"default": HandCarousel.SCROLL_PITCH, "set": _set_hand_sfx_pitch},
 	]
 
 
@@ -296,3 +302,5 @@ func _set_hand_push(v: float) -> void:   HandCarousel.PUSH = v;         _relayou
 func _set_hand_pivot(v: float) -> void:  HandCarousel.PIVOT_Y_FRAC = v; _relayout_hand()
 func _set_hand_below(v: float) -> void:  HandCarousel.HAND_BELOW = v;   _relayout_hand()
 func _set_hand_anim(v: float) -> void:   HandCarousel.ANIM = v   # применится на следующей перекладке
+func _set_hand_sfx_var(v: float) -> void:   HandCarousel.SCROLL_VARIATIONS = int(round(v))
+func _set_hand_sfx_pitch(v: float) -> void: HandCarousel.SCROLL_PITCH = v

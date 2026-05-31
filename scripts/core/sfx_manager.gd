@@ -64,6 +64,47 @@ func play(stream: AudioStream) -> void:
 	p.play()
 
 
+## Проиграть СЛУЧАЙНУЮ ВАРИАЦИЮ из одного файла, нарезанного по времени на
+## `variations` равных кусков. Берёт кусок k = randi() % variations, играет с его
+## позиции и обрывает в конце сегмента (иначе звук поехал бы в следующую вариацию).
+## pitch_jitter (0..1) — случайный сдвиг высоты ±jitter для доп. разнообразия.
+##
+## variations <= 1 → файл играется целиком через общий пул (только питч-джиттер).
+## Лучше всего, если между вариациями в файле есть короткая тишина — тогда обрыв
+## сегмента приходится на паузу и не щёлкает.
+func play_variation(stream: AudioStream, variations: int = 1, pitch_jitter: float = 0.0) -> void:
+	if stream == null:
+		return
+	var jitter: float = 1.0
+	if pitch_jitter > 0.0:
+		jitter = 1.0 + randf_range(-pitch_jitter, pitch_jitter)
+
+	var total: float = stream.get_length()
+	if variations <= 1 or total <= 0.0:
+		var p: AudioStreamPlayer = _pool[_next]
+		_next = (_next + 1) % _POOL_SIZE
+		p.pitch_scale = jitter
+		p.stream = stream
+		p.play()
+		return
+
+	# Многосекционный файл — отдельный плеер на эту вариацию: играем нужный кусок
+	# и глушим в конце (пул переиспользуется round-robin'ом, на нём отложенный
+	# stop мог бы оборвать чужое проигрывание).
+	var seg: float = total / float(variations)
+	var k: int = randi() % variations
+	var tp := AudioStreamPlayer.new()
+	tp.bus         = BUS_NAME
+	tp.pitch_scale = jitter
+	tp.stream      = stream
+	add_child(tp)
+	tp.play(seg * float(k))
+	# Длительность сегмента на экране = seg / pitch (питч ускоряет/замедляет).
+	await get_tree().create_timer(seg / jitter).timeout
+	if is_instance_valid(tp):
+		tp.queue_free()
+
+
 ## Установить громкость (линейно 0..1). Применяется к шине мгновенно.
 ## Persist делает SettingsStore.save() при сохранении настроек.
 func set_volume(linear: float) -> void:
