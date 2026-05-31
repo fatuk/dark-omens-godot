@@ -104,6 +104,7 @@ func _ready() -> void:
 	GameState.state_changed.connect(_refresh_campaign_gate)
 	_build_campaign_gate()
 	_build_outcome_modal()
+	_build_hand_carousel()
 	_refresh_game_panel()
 	_refresh_investigators()
 	_refresh_gates()
@@ -195,6 +196,13 @@ func _build_outcome_modal() -> void:
 	var om: CanvasLayer = load("res://scripts/ui/outcome_modal.gd").new()
 	om.name = "OutcomeModal"
 	add_child(om)
+
+
+# Веер карт руки (прототип) — открывается по Tab. Пока фейковые карты.
+func _build_hand_carousel() -> void:
+	var hc: CanvasLayer = load("res://scripts/ui/hand_carousel.gd").new()
+	hc.name = "HandCarousel"
+	add_child(hc)
 
 
 func _refresh_gates() -> void:
