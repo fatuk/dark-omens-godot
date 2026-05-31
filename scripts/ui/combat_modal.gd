@@ -60,6 +60,14 @@ func _on_die_clicked(index: int) -> void:
 	GameState.reroll_encounter(index)
 
 
+# Единый компонент ряда кубиков (Воля/Сила): только активный ряд кликабелен.
+func _dice_tray(values: Array, can_reroll: bool) -> DiceTray:
+	var t := DiceTray.new()
+	t.die_selected.connect(_on_die_clicked)
+	t.show_roll(values, can_reroll)
+	return t
+
+
 # ── Колонки ───────────────────────────────────────────────────────────────────
 
 func _player_col() -> VBoxContainer:
@@ -88,7 +96,7 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 	# Шаг 1 — Воля (ужас): отдельный бросок. Перебрасывается, пока не катнули Силу.
 	col.add_child(_lbl(tr("COMBAT_WILL"), 15, Color(0.4, 0.7, 0.9)))
 	if has_will:
-		col.add_child(UIStyle.build_dice_row(will.get("dice", []), can_focus and not done, _on_die_clicked))
+		col.add_child(_dice_tray(will.get("dice", []), can_focus and not done))
 		var sl: int = int(card.get("sanity_loss", 0))
 		var line: String = "%s: %d" % [tr("ENCOUNTER_SUCCESSES"), int(will.get("successes", 0))]
 		if sl > 0:
@@ -101,7 +109,7 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 	col.add_child(_lbl(tr("COMBAT_STRENGTH"), 15, UIColors.ACCENT))
 	if done:
 		var s: Dictionary = res.get("strength", {})
-		col.add_child(UIStyle.build_dice_row(s.get("dice", []), can_focus, _on_die_clicked))
+		col.add_child(_dice_tray(s.get("dice", []), can_focus))
 		col.add_child(_lbl("%s: %d · %s −%d" % [tr("ENCOUNTER_SUCCESSES"), int(s.get("successes", 0)), tr("SIDEBAR_TOUGHNESS"), int(res.get("dealt", 0))], 12, UIColors.TEXT))
 		if int(res.get("hp_loss", 0)) > 0:
 			col.add_child(_lbl("−%d %s" % [int(res["hp_loss"]), tr("COMBAT_HEALTH")], 12, UIColors.DANGER))

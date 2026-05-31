@@ -465,11 +465,9 @@ func host_apply_reroll(pid: String, die_index: int) -> bool:
 		return false   # ещё не бросали
 	var roll: Dictionary = enc[key]
 	var dice: Array = roll.get("dice", [])
-	if not _reroll_one(dice, die_index):
+	if not Dice.reroll_failure(dice, die_index):
 		return false
-	roll["dice"]      = dice
-	roll["successes"] = _recount(dice)
-	roll["passed"]    = int(roll["successes"]) >= 1
+	roll = Dice.result(dice)
 	enc[key] = roll
 	p["concentration"] = int(p.get("concentration", 0)) - 1
 	GameConsole.log("[Переброс] %s · фокус −1 · куб #%d · успехов: %d" % [
@@ -480,24 +478,6 @@ func host_apply_reroll(pid: String, die_index: int) -> bool:
 	return true
 
 
-# Перебрасывает один куб массива по индексу. true — переброшен (был провальным).
-# Успех (≥5) или неверный индекс → false (фокус не тратится).
-func _reroll_one(dice: Array, idx: int) -> bool:
-	if idx < 0 or idx >= dice.size() or int(dice[idx]) >= 5:
-		return false
-	dice[idx] = randi() % 6 + 1
-	return true
-
-
-# Число успехов (≥5) в массиве кубиков.
-func _recount(dice: Array) -> int:
-	var n: int = 0
-	for i in range(dice.size()):
-		if int(dice[i]) >= 5:
-			n += 1
-	return n
-
-
 # Переброс одного куба активной проверки боя: пока нет resolution — Воля (пересчёт
 # sanity_loss), иначе Сила (пересчёт исхода атаки). Тратит 1 концентрацию.
 func _reroll_combat_die(pid: String, die_index: int) -> bool:
@@ -506,17 +486,16 @@ func _reroll_combat_die(pid: String, die_index: int) -> bool:
 	if enc.has("resolution"):
 		var s: Dictionary = (enc["resolution"] as Dictionary).get("strength", {})
 		var dice: Array = s.get("dice", [])
-		if not _reroll_one(dice, die_index):
+		if not Dice.reroll_failure(dice, die_index):
 			return false
-		var s_roll: Dictionary = { "dice": dice, "successes": _recount(dice), "passed": _recount(dice) >= 1 }
-		enc["resolution"] = _combat_strength_result(enc, s_roll)
+		enc["resolution"] = _combat_strength_result(enc, Dice.result(dice))
 		GameConsole.log("[Переброс] %s · бой/Сила · куб #%d" % [_gs._name_of(pid), die_index])
 	elif enc.has("will"):
 		var w: Dictionary = enc["will"]
 		var dice: Array = w.get("dice", [])
-		if not _reroll_one(dice, die_index):
+		if not Dice.reroll_failure(dice, die_index):
 			return false
-		w["dice"] = dice; w["successes"] = _recount(dice); w["passed"] = int(w["successes"]) >= 1
+		w = Dice.result(dice)
 		enc["will"] = w
 		var hd: int = int((enc.get("horror", {}) as Dictionary).get("damage", 0))
 		enc["sanity_loss"] = maxi(0, hd - int(w["successes"]))
@@ -635,14 +614,7 @@ func _roll_check(pid: String, test: Dictionary) -> Dictionary:
 		int(inv_skills.get(skill, 1)) + int(skill_mods.get(skill, 0)) + modifier
 	)
 
-	var dice: Array = []
-	var successes: int = 0
-	for _i in pool:
-		var d: int = randi() % 6 + 1
-		dice.append(d)
-		if d >= 5:
-			successes += 1
-	return { "dice": dice, "successes": successes, "passed": successes >= 1 }
+	return Dice.result(Dice.roll(pool))
 
 
 # Применяет программу эффектов: интерпретатор — игроку, эффекты поля — через

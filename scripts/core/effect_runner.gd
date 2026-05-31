@@ -62,7 +62,7 @@ static func _run_node(node: Dictionary, player: Dictionary, logs: Array, board: 
 			_run_node(branches[0], player, logs, board)
 		return
 	if node.has("dieRoll"):
-		var d: int = randi() % 6 + 1
+		var d: int = Dice.roll_one()
 		var rules: Array = node["dieRoll"]
 		for i in range(rules.size()):
 			var rule: Dictionary = rules[i]

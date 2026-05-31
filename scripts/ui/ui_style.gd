@@ -575,51 +575,6 @@ static func modal_title(text: String, color: Color = UIColors.ACCENT) -> Label:
 	return lbl
 
 
-## Ряд кубиков проверки. dice — массив значений. can_reroll → провальные кубики
-## (d<5) кликабельны (золотая рамка), успешные (≥5) — зелёные, не кликабельны.
-## on_click.call(index) вызывается по нажатию на выбранный куб (для переброса).
-static func build_dice_row(dice: Array, can_reroll: bool, on_click: Callable) -> HBoxContainer:
-	var row := HBoxContainer.new()
-	row.name = "DiceRow"
-	row.add_theme_constant_override("separation", 8)
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	for i in range(dice.size()):
-		var v: int = int(dice[i])
-		var success: bool = v >= 5
-		var clickable: bool = can_reroll and not success
-		var edge: Color = UIColors.SUCCESS if success else (UIColors.ACCENT if clickable else UIColors.MUTED)
-
-		var chip := Button.new()
-		chip.text = str(v)
-		chip.custom_minimum_size = Vector2(44, 44)
-		chip.focus_mode = Control.FOCUS_NONE
-		chip.add_theme_font_size_override("font_size", 20)
-		var fcol: Color = UIColors.SUCCESS if success else UIColors.TEXT
-		chip.add_theme_color_override("font_color", fcol)
-		chip.add_theme_color_override("font_disabled_color", fcol)   # не сереть в disabled
-		chip.add_theme_color_override("font_hover_color", fcol)
-
-		var sb := StyleBoxFlat.new()
-		sb.bg_color = Color(0.10, 0.10, 0.13, 0.92)
-		sb.set_corner_radius_all(6)
-		sb.set_border_width_all(2)
-		sb.border_color = edge
-		chip.add_theme_stylebox_override("normal", sb)
-		chip.add_theme_stylebox_override("disabled", sb)
-		var sb_hi := sb.duplicate() as StyleBoxFlat
-		sb_hi.bg_color = Color(0.20, 0.17, 0.10, 0.96)
-		chip.add_theme_stylebox_override("hover", sb_hi)
-		chip.add_theme_stylebox_override("pressed", sb_hi)
-
-		if clickable:
-			var idx: int = i
-			chip.pressed.connect(func() -> void: on_click.call(idx))
-		else:
-			chip.disabled = true
-		row.add_child(chip)
-	return row
-
-
 ## Шапка модалки: центрированный заголовок + крестик закрытия в правом верхнем
 ## углу (как у ModalDialog). on_close вызывается по нажатию крестика; если
 ## Callable пустой — крестик не добавляется. Добавляй первым ребёнком в VBox

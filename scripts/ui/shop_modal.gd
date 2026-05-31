@@ -221,21 +221,13 @@ func _build_howto_panel() -> PanelContainer:
 func _render_dice(rolls: Array) -> void:
 	for c in _dice_box.get_children():
 		c.queue_free()
-	var n: int = rolls.size() if not rolls.is_empty() else _influence_pool()
-	for i in maxi(1, n):
-		var d := ColorRect.new()
-		d.custom_minimum_size = Vector2(30, 30)
-		if rolls.is_empty():
-			d.color = Color(0.18, 0.16, 0.10)            # до броска
-		else:
-			var v: int = int(rolls[i])
-			d.color = Color(0.30, 0.45, 0.18) if v >= 5 else Color(0.18, 0.16, 0.16)  # успех / провал
-			var lbl := UIStyle.label(str(v), 14, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-			lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			d.add_child(lbl)
-		_dice_box.add_child(d)
+	# Единый компонент проверки (без переброса — в магазине его нет).
+	var tray := DiceTray.new()
+	_dice_box.add_child(tray)
+	if rolls.is_empty():
+		tray.show_pending(_influence_pool())   # кубы до броска
+	else:
+		tray.show_roll(rolls, false)
 
 
 func _influence_pool() -> int:
@@ -253,14 +245,8 @@ func _on_roll() -> void:
 		return
 	_rolled = true
 	GameState.shop_begin()          # бросок = совершённое действие (раз за раунд)
-	var rolls: Array = []
-	var succ: int = 0
-	for _i in _influence_pool():
-		var v: int = randi() % 6 + 1
-		rolls.append(v)
-		if v >= 5:
-			succ += 1
-	_coins += succ                  # все успехи — монеты
+	var rolls: Array = Dice.roll(_influence_pool())
+	_coins += Dice.count_successes(rolls)   # все успехи — монеты
 	_render_dice(rolls)
 	_roll_btn.disabled = true
 	_refresh()

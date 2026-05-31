@@ -209,7 +209,10 @@ func _render_dice(res: Dictionary, roll_shown: bool) -> void:
 	var foc: int = int(GameState.my_player().get("concentration", 0))
 	var committed: bool = bool(GameState.current_encounter.get("committed", false))
 	var can: bool = foc > 0 and not committed
-	_dice_holder.add_child(UIStyle.build_dice_row(res.get("dice", []), can, _on_die_clicked))
+	var tray := DiceTray.new()
+	tray.die_selected.connect(_on_die_clicked)
+	tray.show_roll(res.get("dice", []), can)
+	_dice_holder.add_child(tray)
 	_dice_holder.visible = true
 	var summary: String = "%s: %d" % [tr("ENCOUNTER_SUCCESSES"), int(res.get("successes", 0))]
 	if can:
