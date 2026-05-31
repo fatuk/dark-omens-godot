@@ -165,6 +165,27 @@ func host_apply_shop_debt(pid: String) -> bool:
 	return true
 
 
+## Хост: списать 1 концентрацию за переброс куба в магазине. Сам переброс и
+## пересчёт монет — на клиенте (бросок магазина клиентский), здесь авторитетно
+## тратится только синкаемый фокус. Можно только активному игроку, который сейчас
+## в магазине (shopping) и имеет концентрацию.
+func host_apply_shop_reroll(pid: String) -> bool:
+	if not _gs.players.has(pid):
+		return false
+	if _gs._current_pid() != pid:
+		return false
+	var p: Dictionary = _gs.players[pid]
+	if not bool(p.get("shopping", false)):
+		return false
+	if int(p.get("concentration", 0)) <= 0:
+		return false
+	p["concentration"] = int(p["concentration"]) - 1
+	GameConsole.log("[Магазин] %s · переброс за фокус (−1)" % _gs._name_of(pid))
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
 ## Хост: игрок завершил встречу — отметить и передать ход дальше.
 ## Возвращает true при успехе. Зовётся из GameState.finish_encounter и из
 ## relay-router на game_finish_encounter.

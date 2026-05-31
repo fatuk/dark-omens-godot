@@ -25,6 +25,7 @@ const _TRAIT_KEY := {
 
 # Состояние сессии магазина.
 var _coins:      int  = 0
+var _rolls:      Array = []          # значения брошенных кубов (для переброса)
 var _rolled:     bool = false
 var _debt_taken: bool = false
 var _selected:   Dictionary = {}    # asset_id -> cost
@@ -221,13 +222,15 @@ func _build_howto_panel() -> PanelContainer:
 func _render_dice(rolls: Array) -> void:
 	for c in _dice_box.get_children():
 		c.queue_free()
-	# Единый компонент проверки (без переброса — в магазине его нет).
+	# Единый компонент проверки. После броска провальные кубы кликабельны для
+	# переброса за концентрацию (как во встречах/бою).
 	var tray := DiceTray.new()
 	_dice_box.add_child(tray)
 	if rolls.is_empty():
 		tray.show_pending(_influence_pool())   # кубы до броска
 	else:
-		tray.show_roll(rolls, false)
+		tray.die_selected.connect(_on_die_clicked)
+		tray.show_roll(rolls, _focus() > 0)
 
 
 func _influence_pool() -> int:
@@ -245,9 +248,9 @@ func _on_roll() -> void:
 		return
 	_rolled = true
 	GameState.shop_begin()          # бросок = совершённое действие (раз за раунд)
-	var rolls: Array = Dice.roll(_influence_pool())
-	_coins += Dice.count_successes(rolls)   # все успехи — монеты
-	_render_dice(rolls)
+	_rolls = Dice.roll(_influence_pool())
+	_recompute_coins()
+	_render_dice(_rolls)
 	_roll_btn.disabled = true
 	_refresh()
 
@@ -256,9 +259,33 @@ func _on_take_debt() -> void:
 	if _debt_taken or _has_debt():
 		return
 	_debt_taken = true
-	_coins += 2
+	_recompute_coins()
 	GameState.shop_take_debt()      # сразу вешает состояние «Долг» (без дублей)
 	_debt_btn.disabled = true
+	_refresh()
+
+
+# Монеты = успехи текущего броска + бонус долга. Пересчитывается при броске,
+# перебросе и взятии долга (успехи могут только вырасти при перебросе).
+func _recompute_coins() -> void:
+	_coins = Dice.count_successes(_rolls) + (2 if _debt_taken else 0)
+
+
+func _focus() -> int:
+	return int(GameState.my_player().get("concentration", 0))
+
+
+# Клик по провальному кубу — переброс за концентрацию (как во встречах/бою).
+# Хост авторитетно списывает фокус; переброс и монеты — локально (бросок
+# магазина клиентский).
+func _on_die_clicked(index: int) -> void:
+	if _focus() <= 0:
+		return
+	if not Dice.reroll_failure(_rolls, index):
+		return   # успех или неверный индекс — фокус не тратим
+	GameState.shop_reroll()
+	_recompute_coins()
+	_render_dice(_rolls)
 	_refresh()
 
 

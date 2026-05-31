@@ -408,6 +408,16 @@ func shop_take_debt() -> void:
 		_nm.relay_all({"action": "game_shop_debt", "pid": my_pid})
 
 
+## Переброс куба в магазине за концентрацию — хост списывает фокус. Возвращает
+## true, если фокус был и списан (клиент тогда применяет переброс локально).
+func shop_reroll() -> bool:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		return _phase.host_apply_shop_reroll(my_pid)
+	_nm.relay_all({"action": "game_shop_reroll", "pid": my_pid})
+	return true
+
+
 ## Хост: заполнить витрину магазина до SHOP_RESERVE_SIZE случайными ассетами.
 func _fill_shop_reserve() -> void:
 	shop_reserve = []
@@ -662,6 +672,10 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"game_shop_debt":
 			if _is_host():
 				_phase.host_apply_shop_debt(data.get("pid", ""))
+
+		"game_shop_reroll":
+			if _is_host():
+				_phase.host_apply_shop_reroll(data.get("pid", ""))
 
 		"game_resolve_mythos":
 			if _is_host():
