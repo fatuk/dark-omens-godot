@@ -36,18 +36,20 @@ static var PIVOT_Y_FRAC: float = 1.10  # центр поворота: доля �
 static var HAND_BELOW: float = -60.0   # насколько якорь веера ниже края экрана (минус = выше)
 static var ANIM:   float = 0.28    # длительность перекладки
 
-# Палитра из прототипа.
-const C_GOLD       := Color("c9a24e")
-const C_GOLD_EDGE  := Color("5c4317")
-const C_GOLD_RING  := Color("e8c66b")
-const C_FRAME      := Color("5e0f12")
-const C_FRAME_DARK := Color("4a0c10")
-const C_PLATE      := Color("b9c0e6")
-const C_BLUE       := Color("2f6fd0")
-const C_TITLE_BG   := Color("561012")
-const C_TITLE_TXT  := Color("ffe9a8")
-const C_DESC_TXT   := Color("27224a")
-const C_ART_EDGE   := Color("0b0712")
+# Палитра — токены Dark Omens (UIColors) + производные тёмные оттенки.
+# Ассеты добавятся позже; пока стиль строится на дизайн-токенах проекта.
+const C_CARD_BG    := UIColors.SURFACE          # фон карты
+const C_CARD_EDGE  := UIColors.ACCENT           # янтарная рамка карты
+const C_INNER_BG   := Color(0.06, 0.05, 0.11)   # тёмная внутренняя рамка
+const C_INNER_EDGE := UIColors.BORDER           # медный кант
+const C_PLATE_BG   := Color(0.10, 0.09, 0.16)   # плашки заголовка/описания
+const C_ART_HI     := Color(0.14, 0.12, 0.20)   # центр арт-слота
+const C_ART_LO     := UIColors.BG               # край арт-слота (void)
+const C_COST_BG    := Color(0.30, 0.07, 0.07)   # сургучная печать стоимости
+const C_TITLE_TXT  := UIColors.ACCENT           # янтарь
+const C_DESC_TXT   := UIColors.TEXT             # камень
+const C_COST_TXT   := UIColors.TEXT             # камень
+const C_GLYPH      := Color(0.55, 0.48, 0.35)   # тусклый янтарь (плейсхолдер арта)
 
 const MOD_ACTIVE   := Color(1.12, 1.12, 1.12, 1.0)
 const MOD_IDLE     := Color(0.92, 0.92, 0.92, 1.0)
@@ -127,7 +129,7 @@ func _build_card(data: Dictionary, idx: int) -> Control:
 	card.size          = Vector2(CARD_W, CARD_H)
 	card.pivot_offset  = Vector2(CARD_W * 0.5, CARD_H * PIVOT_Y_FRAC)
 	card.mouse_filter  = Control.MOUSE_FILTER_STOP
-	card.add_theme_stylebox_override("panel", _gold_sb())
+	card.add_theme_stylebox_override("panel", _outer_sb())
 
 	var inner := Panel.new()
 	inner.name = "Inner"
@@ -173,6 +175,7 @@ func _build_card(data: Dictionary, idx: int) -> Control:
 	glyph.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	glyph.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	glyph.add_theme_font_size_override("font_size", int(46 * S))
+	glyph.add_theme_color_override("font_color", C_GLYPH)
 	glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	art.add_child(glyph)
 	vb.add_child(art)
@@ -204,7 +207,7 @@ func _build_card(data: Dictionary, idx: int) -> Control:
 	costlbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	costlbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	costlbl.add_theme_font_size_override("font_size", 15)
-	costlbl.add_theme_color_override("font_color", Color.WHITE)
+	costlbl.add_theme_color_override("font_color", C_COST_TXT)
 	costlbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cost.add_child(costlbl)
 	inner.add_child(cost)
@@ -218,33 +221,33 @@ func _build_card(data: Dictionary, idx: int) -> Control:
 
 # ── StyleBox-фабрики ─────────────────────────────────────────────────────────
 
-func _gold_sb() -> StyleBoxFlat:
+func _outer_sb() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
-	s.bg_color = C_GOLD
-	s.set_corner_radius_all(int(9 * S))
-	s.set_border_width_all(1)
-	s.border_color = C_GOLD_EDGE
-	s.shadow_color  = Color(0.0, 0.0, 0.0, 0.55)
-	s.shadow_size   = int(8 * S)
+	s.bg_color = C_CARD_BG
+	s.set_corner_radius_all(int(8 * S))
+	s.set_border_width_all(2)
+	s.border_color = C_CARD_EDGE
+	s.shadow_color  = Color(0.0, 0.0, 0.0, 0.6)
+	s.shadow_size   = int(9 * S)
 	s.shadow_offset = Vector2(0.0, 6.0 * S)
 	return s
 
 
 func _frame_sb() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
-	s.bg_color = C_FRAME
+	s.bg_color = C_INNER_BG
 	s.set_corner_radius_all(int(6 * S))
 	s.set_border_width_all(1)
-	s.border_color = C_FRAME_DARK
+	s.border_color = C_INNER_EDGE
 	return s
 
 
 func _title_sb() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
-	s.bg_color = C_TITLE_BG
+	s.bg_color = C_PLATE_BG
 	s.set_corner_radius_all(int(4 * S))
 	s.set_border_width_all(1)
-	s.border_color = C_GOLD_EDGE
+	s.border_color = C_INNER_EDGE
 	s.content_margin_left   = 34 * S   # текст начинается ПОСЛЕ бейджа стоимости
 	s.content_margin_right  = 6 * S
 	s.content_margin_top    = 3 * S
@@ -254,32 +257,33 @@ func _title_sb() -> StyleBoxFlat:
 
 func _plate_sb() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
-	s.bg_color = C_PLATE
+	s.bg_color = C_PLATE_BG
 	s.set_corner_radius_all(int(4 * S))
 	s.set_border_width_all(1)
-	s.border_color = C_GOLD_EDGE
+	s.border_color = C_INNER_EDGE
 	s.set_content_margin_all(5 * S)
 	return s
 
 
 func _cost_sb() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
-	s.bg_color = C_BLUE
-	s.set_corner_radius_all(int(15 * S))   # = половина диаметра → круг
+	s.bg_color = C_COST_BG
+	s.set_corner_radius_all(int(15 * S))   # = половина диаметра → круг (сургуч)
 	s.set_border_width_all(2)
-	s.border_color = C_GOLD_RING
+	s.border_color = C_CARD_EDGE           # янтарное кольцо
 	return s
 
 
-# Радиальный градиент арта (как radial-gradient в макете).
+# Тёмная воронка арт-слота (плейсхолдер до ассетов): лёгкий оттенок карты в
+# центре → void к краям.
 func _art_tex(hex: String) -> GradientTexture2D:
 	var grad := Gradient.new()
-	grad.set_color(0, Color(hex))
-	grad.set_color(1, C_ART_EDGE)
+	grad.set_color(0, C_ART_HI.lerp(Color(hex), 0.22))
+	grad.set_color(1, C_ART_LO)
 	var tex := GradientTexture2D.new()
 	tex.gradient  = grad
 	tex.fill      = GradientTexture2D.FILL_RADIAL
-	tex.fill_from = Vector2(0.4, 0.3)   # «circle at 40% 30%»
+	tex.fill_from = Vector2(0.5, 0.42)
 	tex.fill_to   = Vector2(1.05, 1.15)
 	tex.width  = int(CARD_W)
 	tex.height = int(CARD_H)
