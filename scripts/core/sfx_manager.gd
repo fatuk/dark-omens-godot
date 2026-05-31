@@ -72,7 +72,13 @@ func play(stream: AudioStream) -> void:
 ## variations <= 1 → файл играется целиком через общий пул (только питч-джиттер).
 ## Лучше всего, если между вариациями в файле есть короткая тишина — тогда обрыв
 ## сегмента приходится на паузу и не щёлкает.
-func play_variation(stream: AudioStream, variations: int = 1, pitch_jitter: float = 0.0) -> void:
+## `segments` (опционально) — список [start_sec, end_sec] для точной нарезки под
+## реальный файл (например, вариации разной длины с паузами). Если задан — играет
+## случайный из них; иначе работает равная нарезка по `variations`.
+func play_variation(
+	stream: AudioStream, variations: int = 1, pitch_jitter: float = 0.0,
+	segments: Array = [],
+) -> void:
 	if stream == null:
 		return
 	var jitter: float = 1.0
@@ -80,6 +86,16 @@ func play_variation(stream: AudioStream, variations: int = 1, pitch_jitter: floa
 		jitter = 1.0 + randf_range(-pitch_jitter, pitch_jitter)
 
 	var total: float = stream.get_length()
+
+	# Явные сегменты — приоритет.
+	if not segments.is_empty():
+		var s: Array = segments[randi() % segments.size()]
+		var start: float = float(s[0])
+		var dur: float   = maxf(0.0, float(s[1]) - start)
+		_play_segment(stream, start, dur, jitter)
+		return
+
+	# Один кусок (нет нарезки) — целиком через пул, только питч.
 	if variations <= 1 or total <= 0.0:
 		var p: AudioStreamPlayer = _pool[_next]
 		_next = (_next + 1) % _POOL_SIZE
@@ -88,20 +104,27 @@ func play_variation(stream: AudioStream, variations: int = 1, pitch_jitter: floa
 		p.play()
 		return
 
-	# Многосекционный файл — отдельный плеер на эту вариацию: играем нужный кусок
-	# и глушим в конце (пул переиспользуется round-robin'ом, на нём отложенный
-	# stop мог бы оборвать чужое проигрывание).
+	# Равная нарезка на N кусков по времени.
 	var seg: float = total / float(variations)
 	var k: int = randi() % variations
+	_play_segment(stream, seg * float(k), seg, jitter)
+
+
+# Отдельный плеер на сегмент [start, start+dur]: играем с позиции и глушим в
+# конце (пул переиспользуется round-robin'ом — отложенный stop оборвал бы чужое).
+func _play_segment(stream: AudioStream, start: float, dur: float, pitch: float) -> void:
 	var tp := AudioStreamPlayer.new()
 	tp.bus         = BUS_NAME
-	tp.pitch_scale = jitter
+	tp.pitch_scale = pitch
 	tp.stream      = stream
 	add_child(tp)
-	tp.play(seg * float(k))
-	# Длительность сегмента на экране = seg / pitch (питч ускоряет/замедляет).
-	await get_tree().create_timer(seg / jitter).timeout
+	tp.play(start)
+	# Длительность на экране = dur / pitch (питч ускоряет/замедляет). Если dur не
+	# задан — доигрываем до конца файла.
+	var wait: float = (dur / pitch) if dur > 0.0 else maxf(0.05, stream.get_length() - start)
+	await get_tree().create_timer(maxf(0.02, wait)).timeout
 	if is_instance_valid(tp):
+		tp.stop()
 		tp.queue_free()
 
 

@@ -42,7 +42,12 @@ static var ANIM:   float = 0.28    # длительность перекладк
 static var SCROLL_VARIATIONS: int = 5      # на сколько вариаций нарезан файл
 static var SCROLL_PITCH: float = 0.06      # случайный сдвиг высоты ±
 
-const SCROLL_SFX_PATH := "res://assets/audio/sfx/card-scroll.wav"
+const SCROLL_SFX_PATH := "res://assets/audio/sfx/card-carousel-move.wav"
+
+# Явные сегменты вариаций [start_sec, end_sec] — если заданы, перемотка играет
+# случайный из них (точная нарезка под реальный файл). Пусто → равная нарезка
+# файла на SCROLL_VARIATIONS кусков по времени.
+static var SCROLL_SEGMENTS: Array = []
 
 # Палитра — токены Dark Omens (UIColors) + производные тёмные оттенки.
 # Ассеты добавятся позже; пока стиль строится на дизайн-токенах проекта.
@@ -385,7 +390,7 @@ func _scroll_stream() -> AudioStream:
 func _play_scroll() -> void:
 	var s: AudioStream = _scroll_stream()
 	if s != null:
-		SfxManager.play_variation(s, SCROLL_VARIATIONS, SCROLL_PITCH)
+		SfxManager.play_variation(s, SCROLL_VARIATIONS, SCROLL_PITCH, SCROLL_SEGMENTS)
 
 
 # ── Открытие / закрытие ─────────────────────────────────────────────────────
