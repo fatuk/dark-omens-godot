@@ -91,7 +91,7 @@ func _build_specs() -> Array:
 			"min": 0.5, "max": 2.5, "step": 0.05,
 			"default": HandCarousel.PIVOT_Y_FRAC, "set": _set_hand_pivot},
 		{"key": "hand_below", "label": "Низ веера",
-			"min": -60.0, "max": 140.0, "step": 1.0,
+			"min": -120.0, "max": 140.0, "step": 1.0,
 			"default": HandCarousel.HAND_BELOW, "set": _set_hand_below},
 		{"key": "hand_anim", "label": "Анимация",
 			"min": 0.05, "max": 0.80, "step": 0.01,

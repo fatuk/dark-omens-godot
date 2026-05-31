@@ -24,15 +24,17 @@ const PAD:    float = 5.0 * S      # золотая рамка вокруг inne
 # Тюнинг ПОЛОЖЕНИЯ карт и АНИМАЦИИ — правится вживую в дебаг-панели (Ctrl+M,
 # секция «ВЕЕР КАРТ»). static var, а не const: панель меняет значения без ссылки
 # на конкретный инстанс, а инстанс читает их при перекладке (см. relayout).
-static var SPREAD: float = 5.0          # градусов поворота между соседями
-static var GAP_X:  float = 64.0 * S     # горизонтальный шаг (< ширины → нахлёст)
-static var ARC:    float = 4.2 * S      # глубина дуги (края ниже центра)
-static var LIFT:   float = 78.0 * S     # подъём активной карты
-static var HSCALE: float = 1.42         # увеличение активной карты
-static var PUSH:   float = 46.0 * S     # расступание соседей
-static var PIVOT_Y_FRAC: float = 1.3    # центр поворота: доля высоты (ниже карты)
-static var HAND_BELOW: float = 26.0 * S # насколько якорь веера ниже края экрана
-static var ANIM:   float = 0.28         # длительность перекладки
+# Дефолты подобраны вживую в дебаг-панели (Ctrl+M, «ВЕЕР КАРТ») — абсолютные px,
+# без множителя S.
+static var SPREAD: float = 5.0     # градусов поворота между соседями
+static var GAP_X:  float = 87.0    # горизонтальный шаг (< ширины → нахлёст)
+static var ARC:    float = 2.3     # глубина дуги (края ниже центра)
+static var LIFT:   float = 9.0     # подъём активной карты
+static var HSCALE: float = 1.56    # увеличение активной карты
+static var PUSH:   float = 73.0    # расступание соседей
+static var PIVOT_Y_FRAC: float = 1.10  # центр поворота: доля высоты (ниже карты)
+static var HAND_BELOW: float = -60.0   # насколько якорь веера ниже края экрана (минус = выше)
+static var ANIM:   float = 0.28    # длительность перекладки
 
 # Палитра из прототипа.
 const C_GOLD       := Color("c9a24e")
