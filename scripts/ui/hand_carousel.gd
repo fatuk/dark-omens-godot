@@ -1,4 +1,5 @@
 extends CanvasLayer
+class_name HandCarousel
 
 ## Веер карт руки сыщика (прототип, порт из HTML/CSS-макета).
 ## Открывается/закрывается по Tab на карте. Пока с ФЕЙКОВЫМИ картами.
@@ -18,16 +19,20 @@ const S: float = 1.5
 
 const CARD_W: float = 132.0 * S
 const CARD_H: float = 196.0 * S
-const SPREAD: float = 5.0          # градусов поворота между соседями
-const GAP_X:  float = 64.0 * S     # горизонтальный шаг (< ширины → нахлёст)
-const ARC:    float = 4.2 * S      # глубина дуги (края ниже центра)
-const LIFT:   float = 78.0 * S     # подъём активной карты
-const HSCALE: float = 1.42         # увеличение активной карты
-const PUSH:   float = 46.0 * S     # расступание соседей
-const PIVOT_Y_FRAC: float = 1.3    # центр поворота: 130% высоты (ниже карты)
-const HAND_BELOW: float = 26.0 * S # насколько якорь веера ниже края экрана
-const ANIM:   float = 0.28         # длительность перекладки
 const PAD:    float = 5.0 * S      # золотая рамка вокруг inner
+
+# Тюнинг ПОЛОЖЕНИЯ карт и АНИМАЦИИ — правится вживую в дебаг-панели (Ctrl+M,
+# секция «ВЕЕР КАРТ»). static var, а не const: панель меняет значения без ссылки
+# на конкретный инстанс, а инстанс читает их при перекладке (см. relayout).
+static var SPREAD: float = 5.0          # градусов поворота между соседями
+static var GAP_X:  float = 64.0 * S     # горизонтальный шаг (< ширины → нахлёст)
+static var ARC:    float = 4.2 * S      # глубина дуги (края ниже центра)
+static var LIFT:   float = 78.0 * S     # подъём активной карты
+static var HSCALE: float = 1.42         # увеличение активной карты
+static var PUSH:   float = 46.0 * S     # расступание соседей
+static var PIVOT_Y_FRAC: float = 1.3    # центр поворота: доля высоты (ниже карты)
+static var HAND_BELOW: float = 26.0 * S # насколько якорь веера ниже края экрана
+static var ANIM:   float = 0.28         # длительность перекладки
 
 # Палитра из прототипа.
 const C_GOLD       := Color("c9a24e")
@@ -72,6 +77,7 @@ var _collapse_timer: Timer
 
 func _ready() -> void:
 	layer = 70   # над картой/панелями, под финальной outcome-модалкой (90)
+	add_to_group("hand_carousel")   # чтобы дебаг-панель (Ctrl+M) нашла инстанс
 	_mid = float(CARDS.size() - 1) / 2.0
 	_build()
 	visible = false
@@ -330,6 +336,15 @@ func _layout(animate: bool) -> void:
 func set_active(i: int) -> void:
 	_active = i
 	_layout(true)
+
+
+## Перечитать тюнинг-параметры (после правки в дебаг-панели): pivot зависит от
+## PIVOT_Y_FRAC и задаётся на карту, поэтому переприменяем его, затем перекладка.
+func relayout() -> void:
+	for card in _els:
+		card.pivot_offset = Vector2(CARD_W * 0.5, CARD_H * PIVOT_Y_FRAC)
+	if _open:
+		_layout(true)
 
 
 func _step(d: int) -> void:

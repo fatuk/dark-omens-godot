@@ -67,6 +67,35 @@ func _build_specs() -> Array:
 			"min": 0.0, "max": 0.30, "step": 0.01,
 			"default": SelectionIndicator.PULSE_AMOUNT,
 			"set": _set_pulse_amount},
+
+		{"section": "ВЕЕР КАРТ"},
+		{"key": "hand_spread", "label": "Поворот",
+			"min": 0.0, "max": 15.0, "step": 0.5,
+			"default": HandCarousel.SPREAD, "set": _set_hand_spread},
+		{"key": "hand_gap", "label": "Шаг X",
+			"min": 20.0, "max": 180.0, "step": 1.0,
+			"default": HandCarousel.GAP_X, "set": _set_hand_gap},
+		{"key": "hand_arc", "label": "Дуга",
+			"min": 0.0, "max": 30.0, "step": 0.1,
+			"default": HandCarousel.ARC, "set": _set_hand_arc},
+		{"key": "hand_lift", "label": "Подъём",
+			"min": 0.0, "max": 260.0, "step": 1.0,
+			"default": HandCarousel.LIFT, "set": _set_hand_lift},
+		{"key": "hand_scale", "label": "Увеличение",
+			"min": 1.0, "max": 2.2, "step": 0.01,
+			"default": HandCarousel.HSCALE, "set": _set_hand_scale},
+		{"key": "hand_push", "label": "Расступание",
+			"min": 0.0, "max": 160.0, "step": 1.0,
+			"default": HandCarousel.PUSH, "set": _set_hand_push},
+		{"key": "hand_pivot", "label": "Центр (xH)",
+			"min": 0.5, "max": 2.5, "step": 0.05,
+			"default": HandCarousel.PIVOT_Y_FRAC, "set": _set_hand_pivot},
+		{"key": "hand_below", "label": "Низ веера",
+			"min": -60.0, "max": 140.0, "step": 1.0,
+			"default": HandCarousel.HAND_BELOW, "set": _set_hand_below},
+		{"key": "hand_anim", "label": "Анимация",
+			"min": 0.05, "max": 0.80, "step": 0.01,
+			"default": HandCarousel.ANIM, "set": _set_hand_anim},
 	]
 
 
@@ -245,3 +274,25 @@ func _set_pulse_speed(v: float) -> void:
 
 func _set_pulse_amount(v: float) -> void:
 	SelectionIndicator.set_pulse(SelectionIndicator.get_pulse_speed(), v)
+
+
+# ── Веер карт (HandCarousel) ──────────────────────────────────────────────────
+# Параметры — static на HandCarousel; здесь только пишем их и просим живой
+# инстанс (если он есть на карте) переложиться. Вне карты карусели нет — тогда
+# значение просто сохранится в static и применится при следующем открытии.
+
+func _relayout_hand() -> void:
+	var h: Node = get_tree().get_first_node_in_group("hand_carousel")
+	if h != null:
+		h.call("relayout")
+
+
+func _set_hand_spread(v: float) -> void: HandCarousel.SPREAD = v;       _relayout_hand()
+func _set_hand_gap(v: float) -> void:    HandCarousel.GAP_X = v;        _relayout_hand()
+func _set_hand_arc(v: float) -> void:    HandCarousel.ARC = v;          _relayout_hand()
+func _set_hand_lift(v: float) -> void:   HandCarousel.LIFT = v;         _relayout_hand()
+func _set_hand_scale(v: float) -> void:  HandCarousel.HSCALE = v;       _relayout_hand()
+func _set_hand_push(v: float) -> void:   HandCarousel.PUSH = v;         _relayout_hand()
+func _set_hand_pivot(v: float) -> void:  HandCarousel.PIVOT_Y_FRAC = v; _relayout_hand()
+func _set_hand_below(v: float) -> void:  HandCarousel.HAND_BELOW = v;   _relayout_hand()
+func _set_hand_anim(v: float) -> void:   HandCarousel.ANIM = v   # применится на следующей перекладке
