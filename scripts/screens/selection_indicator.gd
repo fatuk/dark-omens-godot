@@ -31,7 +31,7 @@ const ARROW_H:     float = 13.0
 const ARROW_TIP_Y: float = -37.0
 
 const OFFSET_X: float = 0.0
-const OFFSET_Y: float = -1.5
+const OFFSET_Y: float = -2.3
 
 const PULSE_SPEED:  float = 3.0    # рад/сек, для пульсации радиуса кольца в шейдере
 const PULSE_AMOUNT: float = 0.02   # ±2% радиуса кольца
