@@ -1,4 +1,4 @@
-class_name Carousel3D
+class_name InvestigatorCarousel
 extends Control
 
 ## 3D-cover-flow карусели сыщиков. 5 видимых карточек: центр крупный, по 2
@@ -117,7 +117,7 @@ var _index:         int        = 0
 
 # ── 3D-сцена ─────────────────────────────────────────────────────────────────
 var _card_meshes: Array              = []   # MeshInstance3D[]
-var _card_views:  Array[CardView]    = []
+var _card_views:  Array[InvestigatorCard]    = []
 var _prev_btn:    TextureButton
 var _next_btn:    TextureButton
 var _world_vp:    SubViewport
@@ -237,7 +237,7 @@ func _build_3d_scene() -> void:
 	_world_vp.add_child(_camera)
 
 	# 5 пар (UI SubViewport + 3D MeshInstance с этой текстурой). UI viewport'ы
-	# off-screen дети self; внутри каждого — один CardView.
+	# off-screen дети self; внутри каждого — один InvestigatorCard.
 	for i: int in range(VISIBLE_SLOTS):
 		var ui_vp := _make_card_ui_subviewport()
 		ui_vp.name = "CardVP_%d" % i
@@ -250,7 +250,7 @@ func _build_3d_scene() -> void:
 		_apply_3d_slot(mesh, i)
 
 
-# Создаёт SubViewport с одним CardView внутри. Возвращает SubViewport (его
+# Создаёт SubViewport с одним InvestigatorCard внутри. Возвращает SubViewport (его
 # текстура натягивается на 3D-quad). size_2d_override → supersampling ×3.
 func _make_card_ui_subviewport() -> SubViewport:
 	var vp := SubViewport.new()
@@ -264,8 +264,8 @@ func _make_card_ui_subviewport() -> SubViewport:
 	# (5 viewport'ов × 1536² больше не молотят каждый кадр).
 	vp.render_target_update_mode = SubViewport.UPDATE_ONCE
 
-	var view := CardView.new(_placeholder_tex)
-	view.name = "CardView"
+	var view := InvestigatorCard.new(_placeholder_tex)
+	view.name = "InvestigatorCard"
 	vp.add_child(view)
 	_card_views.append(view)
 	return vp
@@ -419,7 +419,7 @@ func _animate_arrow_nudge(direction: int) -> void:
 # ── Заполнение карточек ──────────────────────────────────────────────────────
 
 func _populate_card(phys_idx: int, inv: Dictionary) -> void:
-	var view: CardView = _card_views[phys_idx]
+	var view: InvestigatorCard = _card_views[phys_idx]
 	view.set_data(inv)
 	var inv_name: String = inv.get("name", "")
 	view.set_taken(_taken.has(inv_name) and inv_name != selected_name())
@@ -452,7 +452,7 @@ func _refresh_taken_overlays() -> void:
 		_request_card_repaint(i)
 
 
-# CardView лежит внутри SubViewport'а с UPDATE_ONCE — после изменения данных
+# InvestigatorCard лежит внутри SubViewport'а с UPDATE_ONCE — после изменения данных
 # нужно явно попросить vp перерисоваться (один кадр и обратно в спящий режим).
 # Заодно дёргаем _world_vp — он использует ViewportTexture этих карточек, и
 # если он сейчас спит, нужно отрендерить ещё один кадр с обновлённой текстурой.

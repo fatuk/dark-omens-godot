@@ -4,8 +4,8 @@ extends Control
 ## сетевую glue (mark_taken/sync_taken) и сборку UI вокруг карусели.
 ##
 ## UI-кусочки вынесены в отдельные классы:
-##   • [Carousel3D] — 3D-cover-flow карусель с анимациями и hit-test'ом.
-##   • [CardView]   — слоистая разметка карточки (портрет/рамка/бейдж/цитата).
+##   • [InvestigatorCarousel] — 3D-cover-flow карусель с анимациями и hit-test'ом.
+##   • [InvestigatorCard]   — слоистая разметка карточки (портрет/рамка/бейдж/цитата).
 ##   • [InfoBar]    — нижняя панель статов/атрибутов/предметов.
 ##   • [PlayerDetailsContent] — содержимое модалки «Подробнее».
 ##   • [SelectionPrefs] — persist последнего выбора.
@@ -33,7 +33,7 @@ var _taken:         Dictionary = {}   # name -> taker_name
 
 # ── UI ────────────────────────────────────────────────────────────────────────
 var _root: VBoxContainer = null   # создаётся в _ready()
-var _carousel: Carousel3D = null
+var _carousel: InvestigatorCarousel = null
 var _info_bar: InfoBar
 var _back_btn:    Button
 var _confirm_btn: Button
@@ -112,7 +112,7 @@ func _load_investigators() -> void:
 
 func _build_ui() -> void:
 	_root.add_child(_build_title())
-	_carousel = Carousel3D.new()
+	_carousel = InvestigatorCarousel.new()
 	_carousel.name = "Carousel"
 	_carousel.index_changed.connect(_on_carousel_index_changed)
 	_carousel.center_clicked.connect(_on_confirm_pressed)

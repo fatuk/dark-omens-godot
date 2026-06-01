@@ -1,4 +1,4 @@
-class_name CardView
+class_name InvestigatorCard
 extends Control
 
 ## Карточка сыщика — слоистый UI, который picker рендерит в SubViewport
