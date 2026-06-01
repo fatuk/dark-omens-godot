@@ -11,26 +11,26 @@ extends CanvasLayer
 ## Бросок проверки и эффекты onSuccess/onFailure — авторитетно у хоста
 ## (GameState.resolve_encounter); окно лишь показывает синкнутый результат.
 
-@onready var _root:       Control        = $Root
-@onready var _panel:      PanelContainer = %Panel
-@onready var _title:      Label          = %Title
-@onready var _main_text:  Label          = %MainText
-@onready var _check:      Label          = %Check
-@onready var _roll_btn:   Button         = %RollBtn
-@onready var _dice:       Label          = %Dice
-@onready var _outcome:    Label          = %Outcome
-@onready var _finish_btn: Button         = %FinishBtn
+@onready var _root: Control = $Root
+@onready var _panel: PanelContainer = %Panel
+@onready var _title: Label = %Title
+@onready var _main_text: Label = %MainText
+@onready var _check: Label = %Check
+@onready var _roll_btn: Button = %RollBtn
+@onready var _dice: Label = %Dice
+@onready var _outcome: Label = %Outcome
+@onready var _finish_btn: Button = %FinishBtn
 
 # Ряд кликабельных кубиков (для переброса по выбору) — создаётся кодом над _dice.
 var _dice_holder: VBoxContainer
 
 # Навык → ключ перевода для подписи проверки.
 const _SKILL_KEYS := {
-	"lore":        "SKILL_LORE",
-	"influence":   "SKILL_INFLUENCE",
+	"lore": "SKILL_LORE",
+	"influence": "SKILL_INFLUENCE",
 	"observation": "SKILL_OBSERVATION",
-	"strength":    "SKILL_STRENGTH",
-	"will":        "SKILL_WILL",
+	"strength": "SKILL_STRENGTH",
+	"will": "SKILL_WILL",
 }
 
 
@@ -38,10 +38,10 @@ func _ready() -> void:
 	UIStyle.style_modal_panel(_panel)
 	UIStyle.style_button(_roll_btn)
 	UIStyle.style_button(_finish_btn)
-	_title.add_theme_color_override("font_color",     UIColors.ACCENT)
+	_title.add_theme_color_override("font_color", UIColors.ACCENT)
 	_main_text.add_theme_color_override("font_color", UIColors.TEXT)
-	_check.add_theme_color_override("font_color",     UIColors.MUTED)
-	_dice.add_theme_color_override("font_color",      UIColors.MUTED)
+	_check.add_theme_color_override("font_color", UIColors.MUTED)
+	_dice.add_theme_color_override("font_color", UIColors.MUTED)
 
 	# Контейнер ряда кубиков — над строкой _dice (успехи/концентрация).
 	_dice_holder = VBoxContainer.new()
@@ -49,12 +49,12 @@ func _ready() -> void:
 	_dice_holder.alignment = BoxContainer.ALIGNMENT_CENTER
 	var vbox: Node = _dice.get_parent()
 	vbox.add_child(_dice_holder)
-	vbox.move_child(_dice_holder, _dice.get_index())   # перед строкой _dice
+	vbox.move_child(_dice_holder, _dice.get_index())  # перед строкой _dice
 	_dice_holder.visible = false
 
 	_roll_btn.pressed.connect(_on_roll_pressed)
 	_finish_btn.pressed.connect(_on_finish_pressed)
-	UIStyle.scale_modal_text(_panel)   # текст модалок крупнее (×1.5)
+	UIStyle.scale_modal_text(_panel)  # текст модалок крупнее (×1.5)
 
 	GameState.state_changed.connect(_refresh)
 	_refresh()
@@ -78,7 +78,7 @@ func _refresh() -> void:
 	if card.is_empty():
 		_show_loading()
 	elif _is_branching(card):
-		_show_gate(card)   # gate и mystery — общая ветвящаяся структура
+		_show_gate(card)  # gate и mystery — общая ветвящаяся структура
 	elif card.has("resolution"):
 		_show_outcome(card)
 	else:
@@ -87,8 +87,9 @@ func _refresh() -> void:
 
 # ── Состояния окна ────────────────────────────────────────────────────────────
 
+
 func _show_loading() -> void:
-	_title.text     = "ENCOUNTER_TITLE"
+	_title.text = "ENCOUNTER_TITLE"
 	_main_text.text = "ENCOUNTER_GENERATING"
 	for node: Control in [_check, _roll_btn, _dice, _outcome, _finish_btn]:
 		node.visible = false
@@ -96,14 +97,14 @@ func _show_loading() -> void:
 
 
 func _show_card(card: Dictionary) -> void:
-	_title.text     = _title_text(card)
+	_title.text = _title_text(card)
 	_main_text.text = _main_or_stakes(card)
-	_check.text         = _check_label(card.get("test", {}))
-	_check.visible      = true
-	_roll_btn.visible   = true
-	_roll_btn.disabled  = false
-	_dice.visible       = false
-	_outcome.visible    = false
+	_check.text = _check_label(card.get("test", {}))
+	_check.visible = true
+	_roll_btn.visible = true
+	_roll_btn.disabled = false
+	_dice.visible = false
+	_outcome.visible = false
 	_finish_btn.visible = false
 	_render_dice({}, false)
 
@@ -111,20 +112,17 @@ func _show_card(card: Dictionary) -> void:
 func _show_outcome(card: Dictionary) -> void:
 	var res: Dictionary = card["resolution"]
 	var passed: bool = bool(res.get("passed", false))
-	_title.text     = _title_text(card)
+	_title.text = _title_text(card)
 	_main_text.text = _main_or_stakes(card)
-	_check.text     = _check_label(card.get("test", {}))
-	_check.visible  = true
+	_check.text = _check_label(card.get("test", {}))
+	_check.visible = true
 	_render_dice(res, true)
-	_outcome.text   = _outcome_text(card, passed)
-	_outcome.add_theme_color_override(
-		"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
-	)
-	_outcome.visible    = true
-	_roll_btn.visible   = false
-	_finish_btn.text    = "BTN_FINISH_BIG"
+	_outcome.text = _outcome_text(card, passed)
+	_outcome.add_theme_color_override("font_color", UIColors.SUCCESS if passed else UIColors.DANGER)
+	_outcome.visible = true
+	_roll_btn.visible = false
+	_finish_btn.text = "BTN_FINISH_BIG"
 	_finish_btn.visible = true
-
 
 
 # Двухфазные врата — дерево глубины 2. Стадия 0 (stage1) маршрутизирует: бросок
@@ -136,16 +134,16 @@ func _show_gate(card: Dictionary) -> void:
 	if node.is_empty():
 		_show_loading()
 		return
-	_title.text     = "%s  (%d/2)" % [_title_text(card), stage + 1]
+	_title.text = "%s  (%d/2)" % [_title_text(card), stage + 1]
 	_main_text.text = _main_or_stakes(node)
-	_check.text     = _check_label(node.get("test", {}))
-	_check.visible  = true
+	_check.text = _check_label(node.get("test", {}))
+	_check.visible = true
 
 	if not card.has("stage_resolution"):
-		_roll_btn.visible   = true
-		_roll_btn.disabled  = false
-		_dice.visible       = false
-		_outcome.visible    = false
+		_roll_btn.visible = true
+		_roll_btn.disabled = false
+		_dice.visible = false
+		_outcome.visible = false
 		_finish_btn.visible = false
 		_render_dice({}, false)
 		return
@@ -154,17 +152,14 @@ func _show_gate(card: Dictionary) -> void:
 	var passed: bool = bool(res.get("passed", false))
 	_render_dice(res, true)
 	_outcome.text = _outcome_text(node, passed)
-	_outcome.add_theme_color_override(
-		"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
-	)
-	_outcome.visible  = true
+	_outcome.add_theme_color_override("font_color", UIColors.SUCCESS if passed else UIColors.DANGER)
+	_outcome.visible = true
 	_roll_btn.visible = false
 	# После первой проверки (stage 0) всегда «Дальше» (обе ветви ведут ко второй
 	# проверке); после второй (stage 1) — «Завершить».
 	var more: bool = stage == 0
-	_finish_btn.text    = "ENCOUNTER_CONTINUE" if more else "BTN_FINISH_BIG"
+	_finish_btn.text = "ENCOUNTER_CONTINUE" if more else "BTN_FINISH_BIG"
 	_finish_btn.visible = true
-
 
 
 # Ветвящиеся встречи (gate и mystery) — одинаковая структура card.stage1 +
@@ -185,7 +180,7 @@ func _gate_node(card: Dictionary, stage: int) -> Dictionary:
 
 
 func _on_roll_pressed() -> void:
-	_roll_btn.disabled = true   # хост разрешит встречу и пришлёт результат синком
+	_roll_btn.disabled = true  # хост разрешит встречу и пришлёт результат синком
 	GameState.resolve_encounter()
 
 
@@ -235,6 +230,7 @@ func _on_finish_pressed() -> void:
 
 # ── Хелперы текста ────────────────────────────────────────────────────────────
 
+
 # Заголовок: имя карты (от LLM) либо локализованный фолбэк (механический режим).
 func _title_text(card: Dictionary) -> String:
 	var n: String = String(card.get("name", "")).strip_edges()
@@ -254,10 +250,15 @@ func _main_or_stakes(src: Dictionary) -> String:
 	if succ.is_empty() and fail.is_empty():
 		var kind: String = String(GameState.current_encounter.get("kind", ""))
 		return tr("ENCOUNTER_MYSTERY_TRIAL" if kind == "mystery" else "ENCOUNTER_GATE_TRIAL")
-	return "%s: %s\n%s: %s" % [
-		tr("ENC_REWARD"),  _describe_effects(succ),
-		tr("ENC_PENALTY"), _describe_effects(fail),
-	]
+	return (
+		"%s: %s\n%s: %s"
+		% [
+			tr("ENC_REWARD"),
+			_describe_effects(succ),
+			tr("ENC_PENALTY"),
+			_describe_effects(fail),
+		]
+	)
 
 
 # Текст исхода: художественный success/failureText, либо описание применённых
@@ -274,6 +275,7 @@ func _outcome_text(src: Dictionary, passed: bool) -> String:
 
 # ── Описание эффектов (для механического режима) ───────────────────────────────
 
+
 func _describe_effects(arr: Variant) -> String:
 	if not (arr is Array) or (arr as Array).is_empty():
 		return tr("ENC_EFF_NONE")
@@ -289,20 +291,38 @@ func _describe_one(eff: Dictionary) -> String:
 	var verb: String = String(eff.get("do", ""))
 	var amount: int = int(eff.get("amount", eff.get("count", 1)))
 	match verb:
-		"gainClue":      return tr("ENC_EFF_CLUE") % amount
-		"loseClue":      return tr("ENC_EFF_CLUE") % -amount
-		"healHealth":    return tr("ENC_EFF_HP")  % amount
-		"loseHealth":    return tr("ENC_EFF_HP")  % -amount
-		"healSanity":    return tr("ENC_EFF_SAN") % amount
-		"loseSanity":    return tr("ENC_EFF_SAN") % -amount
-		"gainSpell":     return tr("ENC_EFF_SPELL")
-		"gainArtifact":  return tr("ENC_EFF_ARTIFACT")
-		"gainAsset":     return tr("ENC_EFF_ASSET")
-		"improveSkill":  return tr("ENC_EFF_IMPROVE") % amount
-		"gainCondition": return tr("ENC_EFF_COND_GAIN") % tr(Conditions.name_key(String(eff.get("condition", ""))))
-		"loseCondition": return tr("ENC_EFF_COND_LOSE") % tr(Conditions.name_key(String(eff.get("condition", ""))))
-		"move":          return tr("ENC_EFF_MOVE")
-		"closeGate":     return tr("ENC_EFF_CLOSE_GATE")
+		"gainClue":
+			return tr("ENC_EFF_CLUE") % amount
+		"loseClue":
+			return tr("ENC_EFF_CLUE") % -amount
+		"healHealth":
+			return tr("ENC_EFF_HP") % amount
+		"loseHealth":
+			return tr("ENC_EFF_HP") % -amount
+		"healSanity":
+			return tr("ENC_EFF_SAN") % amount
+		"loseSanity":
+			return tr("ENC_EFF_SAN") % -amount
+		"gainSpell":
+			return tr("ENC_EFF_SPELL")
+		"gainArtifact":
+			return tr("ENC_EFF_ARTIFACT")
+		"gainAsset":
+			return tr("ENC_EFF_ASSET")
+		"improveSkill":
+			return tr("ENC_EFF_IMPROVE") % amount
+		"gainCondition":
+			return (
+				tr("ENC_EFF_COND_GAIN") % tr(Conditions.name_key(String(eff.get("condition", ""))))
+			)
+		"loseCondition":
+			return (
+				tr("ENC_EFF_COND_LOSE") % tr(Conditions.name_key(String(eff.get("condition", ""))))
+			)
+		"move":
+			return tr("ENC_EFF_MOVE")
+		"closeGate":
+			return tr("ENC_EFF_CLOSE_GATE")
 		"":
 			# Комбинатор: choice → ветви через «/», group → перечисление.
 			if eff.has("choice"):

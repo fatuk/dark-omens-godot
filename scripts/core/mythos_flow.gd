@@ -18,8 +18,8 @@ const _EffectRunner = preload("res://scripts/core/effect_runner.gd")
 # Колода и позиция — host-only. Колода восстанавливается по campaign.id из
 # снапшота при реджойне хоста (см. restore_deck), индекс синкается через
 # game_sync (см. GameState._broadcast_sync / _apply_snapshot).
-var deck:  Array = []
-var index: int   = 0
+var deck: Array = []
+var index: int = 0
 
 var _gs: Node
 
@@ -29,6 +29,7 @@ func _init(gs: Node) -> void:
 
 
 # ── Фаза ─────────────────────────────────────────────────────────────────────
+
 
 ## Вход в фазу Мифов из turn-flow (PhaseController.advance_encounter_turn /
 ## .enter_encounter).
@@ -51,10 +52,11 @@ func resolve() -> void:
 	if _gs._is_host():
 		_apply_resolve()
 	else:
-		_gs._nm.relay_all({ "action": "game_resolve_mythos" })
+		_gs._nm.relay_all({"action": "game_resolve_mythos"})
 
 
 # ── Host-only: вытяжка ───────────────────────────────────────────────────────
+
 
 # Хост: вытянуть следующую карту из deck в current_mythos.
 func _draw_card() -> void:
@@ -65,15 +67,17 @@ func _draw_card() -> void:
 		_gs.current_mythos = {}
 		if _gs.outcome.is_empty():
 			_gs.outcome = "defeat"
-			GameConsole.warn("[Финал] Колода Мифов исчерпана — Древний пробуждается, поражение партии")
+			GameConsole.warn(
+				"[Финал] Колода Мифов исчерпана — Древний пробуждается, поражение партии"
+			)
 		return
 	if deck.is_empty():
 		# Колода не загрузилась (сбой восстановления) — пустышка, чтобы цикл не вставал.
 		_gs.current_mythos = {
-			"name":       "Эхо Древних",
+			"name": "Эхо Древних",
 			"flavorText": "Колода Мифов недоступна.",
-			"text":       "Ничего нового не происходит — миф крутится по последнему витку.",
-			"onDraw":     [],
+			"text": "Ничего нового не происходит — миф крутится по последнему витку.",
+			"onDraw": [],
 		}
 		GameConsole.warn("[Mythos] Колода недоступна — карта-заглушка")
 		return
@@ -84,10 +88,10 @@ func _draw_card() -> void:
 
 # Задержки (сек) между эффектами — чтобы анимация предыдущего успела доиграть
 # на клиентах, прежде чем применяется следующий.
-const _DELAY_OMEN:    float = 2.7   # проворот диска омена
-const _DELAY_GATE:    float = 0.9   # открытие врат + монстр
+const _DELAY_OMEN: float = 2.7  # проворот диска омена
+const _DELAY_GATE: float = 0.9  # открытие врат + монстр
 const _DELAY_MONSTER: float = 0.6
-const _DELAY_SURGE:   float = 1.2
+const _DELAY_SURGE: float = 1.2
 const _DELAY_DEFAULT: float = 0.45
 
 
@@ -130,7 +134,7 @@ func _apply_effects(effects: Array) -> void:
 			var res: Dictionary = _EffectRunner.run([eff], dummy)
 			for node in res.get("board", []):
 				_gs._apply_board_effect(node)
-				verb = String(node.get("do", verb))   # реальный verb board-узла
+				verb = String(node.get("do", verb))  # реальный verb board-узла
 			for log_msg in res.get("logs", []):
 				GameConsole.log("[Mythos] %s" % String(log_msg))
 		# Рассылаем результат этого эффекта и ждём его анимацию перед следующим.
@@ -142,14 +146,19 @@ func _apply_effects(effects: Array) -> void:
 # Пауза под анимацию конкретного эффекта.
 func _effect_delay(verb: String) -> float:
 	match verb:
-		"advanceOmen", "moveOmen": return _DELAY_OMEN
-		"openGate":                return _DELAY_GATE
-		"spawnMonster":            return _DELAY_MONSTER
-		"monsterSurge":            return _DELAY_SURGE
+		"advanceOmen", "moveOmen":
+			return _DELAY_OMEN
+		"openGate":
+			return _DELAY_GATE
+		"spawnMonster":
+			return _DELAY_MONSTER
+		"monsterSurge":
+			return _DELAY_SURGE
 	return _DELAY_DEFAULT
 
 
 # ── Реджойн ──────────────────────────────────────────────────────────────────
+
 
 ## Хост: восстановить deck после реджойна. Полная библия живёт в relay-API
 ## (таблица `campaigns`), тянем её по campaign.id из снапшота. Индекс уже

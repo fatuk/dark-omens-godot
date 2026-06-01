@@ -15,18 +15,18 @@ extends CanvasLayer
 const _SETTINGS_DIALOG := preload("res://scenes/ui/settings_dialog.tscn")
 
 # ── Узлы (через unique_name_in_owner) ──────────────────────────────────────────
-@onready var _main_panel:  PanelContainer = %MainPanel
+@onready var _main_panel: PanelContainer = %MainPanel
 @onready var _continue_btn: Button = %ContinueBtn
 @onready var _settings_btn: Button = %SettingsBtn
-@onready var _menu_btn:     Button = %MenuBtn
-@onready var _quit_btn:     Button = %QuitBtn
+@onready var _menu_btn: Button = %MenuBtn
+@onready var _quit_btn: Button = %QuitBtn
 
 # ── Состояние ─────────────────────────────────────────────────────────────────
-var _open:            bool    = false
+var _open: bool = false
 var _settings_dialog: Control = null
 
-
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	_apply_styles()
@@ -42,6 +42,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ── Стили ─────────────────────────────────────────────────────────────────────
 
+
 func _apply_styles() -> void:
 	UIStyle.style_modal_panel(_main_panel)
 	var title := get_node("Root/Center/MainPanel/VBox/Title") as Label
@@ -51,9 +52,9 @@ func _apply_styles() -> void:
 	UIStyle.style_separator(get_node("Root/Center/MainPanel/VBox/Sep2") as HSeparator)
 	UIStyle.style_button(_continue_btn)
 	UIStyle.style_button(_settings_btn)
-	UIStyle.style_button(_menu_btn,  UIColors.WARNING)
-	UIStyle.style_button(_quit_btn,  UIColors.DANGER)
-	UIStyle.scale_modal_text(_main_panel)   # текст модалок крупнее (×1.5)
+	UIStyle.style_button(_menu_btn, UIColors.WARNING)
+	UIStyle.style_button(_quit_btn, UIColors.DANGER)
+	UIStyle.scale_modal_text(_main_panel)  # текст модалок крупнее (×1.5)
 
 
 func _wire_handlers() -> void:
@@ -64,6 +65,7 @@ func _wire_handlers() -> void:
 
 
 # ── Логика паузы ──────────────────────────────────────────────────────────────
+
 
 func _toggle() -> void:
 	_open = not _open
@@ -80,34 +82,36 @@ func _toggle() -> void:
 func _update_buttons_for_current_scene() -> void:
 	var scene := get_tree().current_scene
 	var path: String = scene.scene_file_path if is_instance_valid(scene) else ""
-	var on_pre_game: bool = "login" in path \
-		or "main_menu" in path or "home" in path
+	var on_pre_game: bool = "login" in path or "main_menu" in path or "home" in path
 	_continue_btn.visible = not on_pre_game
-	_menu_btn.visible     = not on_pre_game
+	_menu_btn.visible = not on_pre_game
 
 
 # ── Settings (через общий SettingsDialog) ─────────────────────────────────────
 
+
 func _open_settings() -> void:
 	if is_instance_valid(_settings_dialog):
-		return   # уже открыт
+		return  # уже открыт
 	_main_panel.visible = false
 	_settings_dialog = _SETTINGS_DIALOG.instantiate()
 	_settings_dialog.name = "SettingsDialog"
-	_settings_dialog.show_server_url = false   # в идущей игре сервер не меняется
+	_settings_dialog.show_server_url = false  # в идущей игре сервер не меняется
 	$Root.add_child(_settings_dialog)
 	# По обоим сигналам (saved + cancelled) поведение одно — вернуться к
 	# главной панели паузы. Сам диалог делает queue_free.
-	_settings_dialog.tree_exited.connect(func() -> void:
-		_settings_dialog = null
-		_main_panel.visible = true
+	_settings_dialog.tree_exited.connect(
+		func() -> void:
+			_settings_dialog = null
+			_main_panel.visible = true
 	)
 
 
 # ── Прочие кнопки ─────────────────────────────────────────────────────────────
 
+
 func _go_main_menu() -> void:
-	_open   = false
+	_open = false
 	visible = false
 	get_tree().paused = false
 	var nm: Node = get_node_or_null("/root/NetworkManager")

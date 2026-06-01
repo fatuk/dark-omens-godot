@@ -10,18 +10,18 @@ extends Control
 const _SETTINGS_DIALOG := preload("res://scenes/ui/settings_dialog.tscn")
 
 # ── Узлы ──────────────────────────────────────────────────────────────────────
-@onready var _play_btn:     Button = %PlayBtn
-@onready var _authors_btn:  Button = %AuthorsBtn
+@onready var _play_btn: Button = %PlayBtn
+@onready var _authors_btn: Button = %AuthorsBtn
 @onready var _settings_btn: Button = %SettingsBtn
-@onready var _quit_btn:     Button = %QuitBtn
-@onready var _version_lbl:  Label  = %VersionLabel
+@onready var _quit_btn: Button = %QuitBtn
+@onready var _version_lbl: Label = %VersionLabel
 
 # ── Состояние ─────────────────────────────────────────────────────────────────
 var _settings_dialog: Control = null
-var _authors_modal:   Control = null
-
+var _authors_modal: Control = null
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	MusicManager.play(MusicManager.TRACK_ELDER_SIGN)
@@ -36,6 +36,7 @@ func _ready() -> void:
 
 
 # ── Стили ─────────────────────────────────────────────────────────────────────
+
 
 func _apply_styles() -> void:
 	UIStyle.style_button(_play_btn)
@@ -54,6 +55,7 @@ func _version_text() -> String:
 
 
 # ── Обработчики кнопок ─────────────────────────────────────────────────────────
+
 
 func _on_play_pressed() -> void:
 	# login сам проверит сохранённую сессию и перекинет к экрану комнат.
@@ -76,6 +78,7 @@ func _on_quit_pressed() -> void:
 
 
 # ── Модальное окно «Авторы» ───────────────────────────────────────────────────
+
 
 func _on_authors_pressed() -> void:
 	if is_instance_valid(_authors_modal):

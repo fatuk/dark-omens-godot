@@ -31,6 +31,7 @@ static func get_data(inv_name: String) -> Dictionary:
 
 # ── Внутренние ────────────────────────────────────────────────────────────────
 
+
 static func _ensure_loaded() -> void:
 	if not _by_name.is_empty():
 		return

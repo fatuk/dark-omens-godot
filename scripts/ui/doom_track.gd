@@ -8,7 +8,7 @@ extends Control
 ## так что вместо «тейла-набалдашника» получается мягкое затухание прогресса.
 ## Дивайдеры между ячейками рисуются программно, max_doom настраивается под Древнего.
 
-const TWEEN_TIME:    float = 0.3
+const TWEEN_TIME: float = 0.3
 const DIVIDER_WIDTH: float = 2.0
 # Цвет из React-прототипа: #2b941161 (тёмно-зелёный с alpha ~0.38).
 const DIVIDER_COLOR: Color = Color(0.169, 0.580, 0.067, 0.380)
@@ -16,7 +16,7 @@ const DIVIDER_COLOR: Color = Color(0.169, 0.580, 0.067, 0.380)
 @export var max_doom: int = 12:
 	set(v):
 		max_doom = maxi(1, v)
-		filled   = clampi(filled, 0, max_doom)
+		filled = clampi(filled, 0, max_doom)
 		_rebuild_dividers()
 		_apply_pct(_pct_for(filled))
 
@@ -30,13 +30,13 @@ const DIVIDER_COLOR: Color = Color(0.169, 0.580, 0.067, 0.380)
 		if changed and _initialized:
 			SfxManager.play(SfxManager.SFX_DOOM_MOVE)
 
-@onready var _bg:       TextureRect = $Bg
-@onready var _fill:     TextureRect = %Fill
-@onready var _dividers: Control     = %Dividers
+@onready var _bg: TextureRect = $Bg
+@onready var _fill: TextureRect = %Fill
+@onready var _dividers: Control = %Dividers
 
 var _displayed_pct: float = 0.0
-var _tween:         Tween = null
-var _initialized:   bool  = false   # звук дум-трека — только после готовности
+var _tween: Tween = null
+var _initialized: bool = false  # звук дум-трека — только после готовности
 
 
 func _ready() -> void:
@@ -86,6 +86,7 @@ func _apply_pct(pct: float) -> void:
 
 # ── Дивайдеры между ячейками ──────────────────────────────────────────────────
 
+
 func _rebuild_dividers() -> void:
 	if not is_node_ready():
 		return
@@ -94,14 +95,14 @@ func _rebuild_dividers() -> void:
 	# (max_doom - 1) вертикальных линий: между ячейками
 	for i in range(1, max_doom):
 		var line := ColorRect.new()
-		line.name  = "D%d" % i
+		line.name = "D%d" % i
 		line.color = DIVIDER_COLOR
 		var x_frac: float = float(i) / float(max_doom)
-		line.anchor_left   = x_frac
-		line.anchor_right  = x_frac
-		line.anchor_top    = 0.0
+		line.anchor_left = x_frac
+		line.anchor_right = x_frac
+		line.anchor_top = 0.0
 		line.anchor_bottom = 1.0
-		line.offset_left   = -DIVIDER_WIDTH * 0.5
-		line.offset_right  =  DIVIDER_WIDTH * 0.5
-		line.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+		line.offset_left = -DIVIDER_WIDTH * 0.5
+		line.offset_right = DIVIDER_WIDTH * 0.5
+		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_dividers.add_child(line)

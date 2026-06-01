@@ -14,24 +14,24 @@ extends ColorRect
 signal submitted(room_name: String, password: String, max_players: int, ancient_one: String)
 signal cancelled
 
-const _AO_DATA         := "res://data/ancient_ones.json"
-const _MIN_PLAYERS     := 1
-const _MAX_PLAYERS     := 8
+const _AO_DATA := "res://data/ancient_ones.json"
+const _MIN_PLAYERS := 1
+const _MAX_PLAYERS := 8
 const _DEFAULT_PLAYERS := 4
 
 @onready var _panel: PanelContainer = %Panel
-@onready var _vbox:  VBoxContainer  = %VBox
+@onready var _vbox: VBoxContainer = %VBox
 
-var _name_input:   LineEdit
-var _pass_input:   LineEdit
+var _name_input: LineEdit
+var _pass_input: LineEdit
 var _count_option: OptionButton
-var _ao_option:    OptionButton
-var _error_label:  Label
-var _ao_entries:   Array = []   # [{id, nameKey}, ...] из ancient_ones.json
+var _ao_option: OptionButton
+var _error_label: Label
+var _ao_entries: Array = []  # [{id, nameKey}, ...] из ancient_ones.json
 
 
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_STOP   # клики мимо панели не падают вниз
+	mouse_filter = Control.MOUSE_FILTER_STOP  # клики мимо панели не падают вниз
 	UIStyle.style_modal_panel(_panel)
 	_ao_entries = DataLoader.load_array(_AO_DATA)
 	_build()
@@ -45,6 +45,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 # ── Сборка контента ───────────────────────────────────────────────────────────
+
 
 func _build() -> void:
 	_vbox.add_child(UIStyle.modal_header("MENU_BTN_CREATE_ROOM", _on_cancel))
@@ -98,7 +99,7 @@ func _build() -> void:
 
 	UIStyle.separator(_vbox)
 	_build_buttons()
-	UIStyle.scale_modal_text(_vbox)   # текст модалок крупнее (×1.5)
+	UIStyle.scale_modal_text(_vbox)  # текст модалок крупнее (×1.5)
 
 
 func _labeled_row(label_key: String, control: Control, node_name: String) -> HBoxContainer:
@@ -133,6 +134,7 @@ func _build_buttons() -> void:
 
 
 # ── Создать / Отмена ──────────────────────────────────────────────────────────
+
 
 func _on_create() -> void:
 	var rname := _name_input.text.strip_edges()

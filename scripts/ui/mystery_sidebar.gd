@@ -4,34 +4,35 @@ extends CanvasLayer
 ## раунда в game_panel. Слайд-ин слева, по образцу location_sidebar.
 
 const PANEL_WIDTH: float = 380.0
-const ANIM_TIME:   float = 0.22
+const ANIM_TIME: float = 0.22
 
-@onready var _panel:     PanelContainer = %Panel
-@onready var _title:     Label  = %Title
-@onready var _status:    Label  = %Status
-@onready var _flavor:    Label  = %Flavor
-@onready var _text:      Label  = %Text
-@onready var _solve:     Label  = %Solve
+@onready var _panel: PanelContainer = %Panel
+@onready var _title: Label = %Title
+@onready var _status: Label = %Status
+@onready var _flavor: Label = %Flavor
+@onready var _text: Label = %Text
+@onready var _solve: Label = %Solve
 @onready var _close_btn: Button = %CloseBtn
 
-var _is_open: bool  = false
-var _tween:   Tween = null
+var _is_open: bool = false
+var _tween: Tween = null
 
 
 func _ready() -> void:
 	UIStyle.style_panel(_panel, 18)
 	UIStyle.style_icon_button(_close_btn, UIColors.DANGER)
 	_close_btn.add_theme_font_size_override("font_size", 18)
-	_title.add_theme_color_override("font_color",  UIColors.ACCENT)
+	_title.add_theme_color_override("font_color", UIColors.ACCENT)
 	_status.add_theme_color_override("font_color", UIColors.WARNING)
 	_flavor.add_theme_color_override("font_color", UIColors.MUTED)
-	_text.add_theme_color_override("font_color",   UIColors.TEXT)
-	_solve.add_theme_color_override("font_color",  UIColors.ACCENT)
+	_text.add_theme_color_override("font_color", UIColors.TEXT)
+	_solve.add_theme_color_override("font_color", UIColors.ACCENT)
 	_close_btn.pressed.connect(close_panel)
 	_apply_offsets(true)
 
 
 # ── Public ────────────────────────────────────────────────────────────────────
+
 
 ## Открыть, если закрыт; закрыть, если открыт.
 func toggle() -> void:
@@ -52,26 +53,31 @@ func close_panel() -> void:
 
 # ── Контент ───────────────────────────────────────────────────────────────────
 
+
 func _refresh() -> void:
 	var m: Dictionary = GameState.current_mystery()
 	if m.is_empty():
-		_title.text  = "MYSTERY_NONE_TITLE"
+		_title.text = "MYSTERY_NONE_TITLE"
 		_status.text = ""
 		_flavor.text = "MYSTERY_NONE_BODY"
-		_text.text   = ""
-		_solve.text  = ""
+		_text.text = ""
+		_solve.text = ""
 		return
-	_title.text  = String(m.get("title", "MYSTERY_NONE_TITLE"))
-	_status.text = tr("MYSTERY_STATUS_FMT") % [
-		int(m.get("act", 1)), GameState.doom,
-		int(GameState.campaign.get("doomClock", 0)),
-	]
+	_title.text = String(m.get("title", "MYSTERY_NONE_TITLE"))
+	_status.text = (
+		tr("MYSTERY_STATUS_FMT")
+		% [
+			int(m.get("act", 1)),
+			GameState.doom,
+			int(GameState.campaign.get("doomClock", 0)),
+		]
+	)
 	_flavor.text = String(m.get("flavorText", ""))
-	_text.text   = String(m.get("text", ""))
+	_text.text = String(m.get("text", ""))
 	# Прогресс + список локаций (зачищенные помечены галочкой).
 	var sc: Dictionary = m.get("solveCondition", {})
 	var target: int = int(sc.get("n", 1))
-	var done: int   = GameState.mystery_progress
+	var done: int = GameState.mystery_progress
 	var locs_lines: PackedStringArray = PackedStringArray()
 	var locations: Array = m.get("locations", [])
 	for i in range(locations.size()):
@@ -96,6 +102,7 @@ func _localized_loc(loc_id: String) -> String:
 
 # ── Анимация выезда ───────────────────────────────────────────────────────────
 
+
 func _animate(hide_panel: bool) -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
@@ -103,15 +110,15 @@ func _animate(hide_panel: bool) -> void:
 	SfxManager.play(SfxManager.SFX_SIDEBAR_SLIDE)
 	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	var off_l: float = -PANEL_WIDTH if hide_panel else 0.0
-	var off_r: float = 0.0          if hide_panel else PANEL_WIDTH
-	_tween.tween_property(_panel, "offset_left",  off_l, ANIM_TIME)
+	var off_r: float = 0.0 if hide_panel else PANEL_WIDTH
+	_tween.tween_property(_panel, "offset_left", off_l, ANIM_TIME)
 	_tween.tween_property(_panel, "offset_right", off_r, ANIM_TIME)
 
 
 func _apply_offsets(hide_panel: bool) -> void:
 	if hide_panel:
-		_panel.offset_left  = -PANEL_WIDTH
+		_panel.offset_left = -PANEL_WIDTH
 		_panel.offset_right = 0.0
 	else:
-		_panel.offset_left  = 0.0
+		_panel.offset_left = 0.0
 		_panel.offset_right = PANEL_WIDTH

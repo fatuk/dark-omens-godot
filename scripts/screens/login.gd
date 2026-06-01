@@ -4,29 +4,29 @@ extends Control
 ## Разметка в scenes/login.tscn, тут только поведение и стилизация.
 
 # ── Узлы (через unique_name_in_owner) ──────────────────────────────────────────
-@onready var _bg:           ColorRect = $Bg
-@onready var _subtitle:     Label     = $Center/Root/Subtitle
+@onready var _bg: ColorRect = $Bg
+@onready var _subtitle: Label = $Center/Root/Subtitle
 
-@onready var _check_panel:  PanelContainer = %CheckPanel
-@onready var _email_panel:  PanelContainer = %EmailPanel
-@onready var _code_panel:   PanelContainer = %CodePanel
+@onready var _check_panel: PanelContainer = %CheckPanel
+@onready var _email_panel: PanelContainer = %EmailPanel
+@onready var _code_panel: PanelContainer = %CodePanel
 
-@onready var _email_input:  LineEdit  = %EmailInput
-@onready var _send_btn:     Button    = %SendBtn
+@onready var _email_input: LineEdit = %EmailInput
+@onready var _send_btn: Button = %SendBtn
 
-@onready var _code_label:   Label     = %CodeLabel
-@onready var _code_input:   LineEdit  = %CodeInput
-@onready var _verify_btn:   Button    = %VerifyBtn
-@onready var _back_btn:     Button    = %BackBtn
+@onready var _code_label: Label = %CodeLabel
+@onready var _code_input: LineEdit = %CodeInput
+@onready var _verify_btn: Button = %VerifyBtn
+@onready var _back_btn: Button = %BackBtn
 
-@onready var _status_label: Label     = %StatusLabel
+@onready var _status_label: Label = %StatusLabel
 
 # ── Состояние ──────────────────────────────────────────────────────────────────
 var _auth: Node
 var _current_email: String = ""
 
-
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	MusicManager.play(MusicManager.TRACK_ELDER_SIGN)
@@ -49,6 +49,7 @@ func _ready() -> void:
 
 # ── Применение Dark Omens-стилей к нодам из .tscn ─────────────────────────────
 
+
 func _apply_styles() -> void:
 	# Старый ColorRect фон заменяем на тайлированную main-gb.png.
 	_bg.queue_free()
@@ -68,8 +69,9 @@ func _apply_styles() -> void:
 		var hdr: Label = get_node(hdr_path)
 		hdr.add_theme_color_override("font_color", UIColors.ACCENT)
 
-	(get_node("Center/Root/CheckPanel/VBox/CheckLabel") as Label) \
-		.add_theme_color_override("font_color", UIColors.WARNING)
+	(get_node("Center/Root/CheckPanel/VBox/CheckLabel") as Label).add_theme_color_override(
+		"font_color", UIColors.WARNING
+	)
 
 	# Лейблы строк ввода и подпись «Код отправлен на ...»
 	for label_path in [
@@ -85,7 +87,7 @@ func _apply_styles() -> void:
 
 	UIStyle.style_button(_send_btn)
 	UIStyle.style_button(_verify_btn, UIColors.DANGER)
-	UIStyle.style_button(_back_btn,   UIColors.MUTED)
+	UIStyle.style_button(_back_btn, UIColors.MUTED)
 
 	_status_label.add_theme_color_override("font_color", UIColors.MUTED)
 
@@ -99,6 +101,7 @@ func _wire_handlers() -> void:
 
 
 # ── Обработчики кнопок ─────────────────────────────────────────────────────────
+
 
 func _on_send_pressed() -> void:
 	var email: String = _email_input.text.strip_edges().to_lower()
@@ -128,6 +131,7 @@ func _on_back_pressed() -> void:
 
 
 # ── Обработчики сигналов AuthManager ──────────────────────────────────────────
+
 
 func _on_otp_sent() -> void:
 	_send_btn.disabled = false
@@ -159,10 +163,11 @@ func _on_session_invalid() -> void:
 
 # ── Вспомогательные ───────────────────────────────────────────────────────────
 
+
 func _show_panel(which: String) -> void:
 	_check_panel.visible = which == "check"
 	_email_panel.visible = which == "email"
-	_code_panel.visible  = which == "code"
+	_code_panel.visible = which == "code"
 	if which == "email":
 		_send_btn.disabled = false
 		_email_input.grab_focus()

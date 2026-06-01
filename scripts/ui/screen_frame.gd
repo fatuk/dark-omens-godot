@@ -28,16 +28,16 @@ func _ready() -> void:
 	# (encounter_modal=80, modal_dialog=90, pause_menu=100) — рамка должна
 	# закрываться попапами, но окружать обычный UI.
 	layer = 75
-	process_mode = Node.PROCESS_MODE_ALWAYS   # видна на паузе
+	process_mode = Node.PROCESS_MODE_ALWAYS  # видна на паузе
 
 	_frame = NinePatchRect.new()
-	_frame.name          = "Frame"
-	_frame.texture       = _FRAME_TEX
-	_frame.mouse_filter  = Control.MOUSE_FILTER_IGNORE
-	_frame.scale         = Vector2(_DISPLAY_SCALE, _DISPLAY_SCALE)
-	_frame.patch_margin_left   = _CORNER_PX
-	_frame.patch_margin_right  = _CORNER_PX
-	_frame.patch_margin_top    = _CORNER_PX
+	_frame.name = "Frame"
+	_frame.texture = _FRAME_TEX
+	_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_frame.scale = Vector2(_DISPLAY_SCALE, _DISPLAY_SCALE)
+	_frame.patch_margin_left = _CORNER_PX
+	_frame.patch_margin_right = _CORNER_PX
+	_frame.patch_margin_top = _CORNER_PX
 	_frame.patch_margin_bottom = _CORNER_PX
 	add_child(_frame)
 
@@ -50,7 +50,7 @@ func _ready() -> void:
 func _update_size() -> void:
 	var win: Vector2 = get_viewport().get_visible_rect().size
 	_frame.position = Vector2.ZERO
-	_frame.size     = win / _DISPLAY_SCALE
+	_frame.size = win / _DISPLAY_SCALE
 
 
 ## CanvasLayer не наследует show/hide от CanvasItem — заворачиваем `visible`

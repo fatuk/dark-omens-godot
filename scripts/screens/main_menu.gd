@@ -6,42 +6,42 @@ extends Control
 ## Разметка статичной части в scenes/main_menu.tscn, тут только поведение,
 ## стилизация, динамика (карточки комнат, попап настроек).
 
-const _SETTINGS_DIALOG    := preload("res://scenes/ui/settings_dialog.tscn")
+const _SETTINGS_DIALOG := preload("res://scenes/ui/settings_dialog.tscn")
 const _CREATE_ROOM_DIALOG := preload("res://scenes/ui/create_room_dialog.tscn")
 
 # ── Узлы ──────────────────────────────────────────────────────────────────────
-@onready var _bg:           ColorRect = $Bg
-@onready var _player_label: Label     = %PlayerLabel
-@onready var _server_label: Label     = %ServerLabel
-@onready var _settings_btn: Button    = %SettingsBtn
-@onready var _logout_btn:   Button    = %LogoutBtn
+@onready var _bg: ColorRect = $Bg
+@onready var _player_label: Label = %PlayerLabel
+@onready var _server_label: Label = %ServerLabel
+@onready var _settings_btn: Button = %SettingsBtn
+@onready var _logout_btn: Button = %LogoutBtn
 
-@onready var _rooms_panel:  HBoxContainer  = %RoomsPanel
-@onready var _list_panel:   PanelContainer = %ListPanel
+@onready var _rooms_panel: HBoxContainer = %RoomsPanel
+@onready var _list_panel: PanelContainer = %ListPanel
 
-@onready var _create_room_btn: Button        = %CreateRoomBtn
-@onready var _refresh_btn:     Button        = %RefreshBtn
-@onready var _rooms_list:      VBoxContainer  = %RoomsList
-@onready var _join_pass_input: LineEdit       = %JoinPassInput
-@onready var _join_btn:        Button         = %JoinBtn
+@onready var _create_room_btn: Button = %CreateRoomBtn
+@onready var _refresh_btn: Button = %RefreshBtn
+@onready var _rooms_list: VBoxContainer = %RoomsList
+@onready var _join_pass_input: LineEdit = %JoinPassInput
+@onready var _join_btn: Button = %JoinBtn
 
-@onready var _status_label:    Label          = %StatusLabel
+@onready var _status_label: Label = %StatusLabel
 
 # ── Состояние ─────────────────────────────────────────────────────────────────
-var _nm:   Node
+var _nm: Node
 var _auth: Node
 var _selected_room_id: String = ""
-var _settings_dialog:  Control = null
-var _create_dialog:    Control = null
-
+var _settings_dialog: Control = null
+var _create_dialog: Control = null
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	MusicManager.play(MusicManager.TRACK_ELDER_SIGN)
 	_apply_styles()
 
-	_nm   = get_node("/root/NetworkManager")
+	_nm = get_node("/root/NetworkManager")
 	_auth = get_node("/root/AuthManager")
 	_nm.connected_to_relay.connect(_on_connected)
 	_nm.disconnected_from_relay.connect(_on_disconnected)
@@ -63,6 +63,7 @@ func _ready() -> void:
 
 # ── Стили ─────────────────────────────────────────────────────────────────────
 
+
 func _apply_styles() -> void:
 	# Старый ColorRect фон заменяем на тайлированную main-gb.png.
 	_bg.queue_free()
@@ -75,17 +76,21 @@ func _apply_styles() -> void:
 	($Center/Root/Header/DotSep as Label).add_theme_color_override("font_color", UIColors.MUTED)
 
 	UIStyle.style_button(_settings_btn, UIColors.MUTED)
-	UIStyle.style_button(_logout_btn,   UIColors.MUTED)
+	UIStyle.style_button(_logout_btn, UIColors.MUTED)
 
 	UIStyle.style_panel(_list_panel)
 
 	# Заголовок панели списка
-	(get_node("Center/Root/RoomsPanel/ListPanel/VBox/HeaderRow/Header") as Label) \
-		.add_theme_color_override("font_color", UIColors.ACCENT)
+	(
+		(get_node("Center/Root/RoomsPanel/ListPanel/VBox/HeaderRow/Header") as Label)
+		. add_theme_color_override("font_color", UIColors.ACCENT)
+	)
 
 	# Лейбл строки пароля при входе в комнату
-	(get_node("Center/Root/RoomsPanel/ListPanel/VBox/JoinPassRow/JoinPassLabel") as Label) \
-		.add_theme_color_override("font_color", UIColors.TEXT)
+	(
+		(get_node("Center/Root/RoomsPanel/ListPanel/VBox/JoinPassRow/JoinPassLabel") as Label)
+		. add_theme_color_override("font_color", UIColors.TEXT)
+	)
 
 	UIStyle.style_input(_join_pass_input)
 
@@ -105,6 +110,7 @@ func _wire_handlers() -> void:
 
 
 # ── Попап настроек ────────────────────────────────────────────────────────────
+
 
 func _on_settings_pressed() -> void:
 	if is_instance_valid(_settings_dialog):
@@ -128,6 +134,7 @@ func _on_relay_url_changed(new_url: String) -> void:
 
 # ── Авто-подключение ──────────────────────────────────────────────────────────
 
+
 func _auto_connect() -> void:
 	if _nm.is_connected_to_relay():
 		_show_status("Подключено · %s" % _nm.my_name, UIColors.SUCCESS)
@@ -149,6 +156,7 @@ func _auto_connect() -> void:
 
 
 # ── Обработчики кнопок ─────────────────────────────────────────────────────────
+
 
 func _on_logout_pressed() -> void:
 	_nm.disconnect_from_relay()
@@ -198,6 +206,7 @@ func _on_join_pressed() -> void:
 
 
 # ── Обработчики сигналов NetworkManager ───────────────────────────────────────
+
 
 func _on_connected() -> void:
 	_rooms_panel.modulate.a = 1.0
@@ -288,13 +297,14 @@ func _on_relay_error(message: String) -> void:
 
 # ── Вспомогательные ───────────────────────────────────────────────────────────
 
+
 func _make_room_row(room: Dictionary) -> Control:
-	var rname:  String = room.get("name", "???")
-	var count:  int    = int(room.get("playerCount", 0))
-	var max_p:  int    = int(room.get("maxPlayers", 8))
-	var locked: bool   = room.get("locked", false)
-	var empty:  bool   = room.get("empty", false)
-	var rid:    String = room.get("id", "")
+	var rname: String = room.get("name", "???")
+	var count: int = int(room.get("playerCount", 0))
+	var max_p: int = int(room.get("maxPlayers", 8))
+	var locked: bool = room.get("locked", false)
+	var empty: bool = room.get("empty", false)
+	var rid: String = room.get("id", "")
 
 	var row := HBoxContainer.new()
 	row.name = "Row"
@@ -319,8 +329,8 @@ func _make_room_row(room: Dictionary) -> Control:
 	room_btn.text = "%s%s   [%d/%d]" % [rname, " 🔒" if locked else "", count, max_p]
 	room_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	room_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	room_btn.add_theme_stylebox_override("normal",  style_n)
-	room_btn.add_theme_stylebox_override("hover",   style_h)
+	room_btn.add_theme_stylebox_override("normal", style_n)
+	room_btn.add_theme_stylebox_override("hover", style_h)
 	room_btn.add_theme_stylebox_override("pressed", style_h)
 	room_btn.add_theme_color_override("font_color", UIColors.TEXT)
 	room_btn.add_theme_font_size_override("font_size", 14)

@@ -32,8 +32,8 @@ var _reconnect_overlay: Control
 # pid → имя (для красивого лога при выходе игрока)
 var _player_names: Dictionary = {}
 
-
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	_nm = get_node("/root/NetworkManager")
@@ -77,17 +77,16 @@ func _ready() -> void:
 
 	_refresh_start_button()
 
-	GameConsole.log("Комната «%s» — вы вошли (%s)" % [
-		_nm.room_name,
-		"ведущий" if _nm.is_host() else "игрок"
-	])
+	GameConsole.log(
+		"Комната «%s» — вы вошли (%s)" % [_nm.room_name, "ведущий" if _nm.is_host() else "игрок"]
+	)
 	# Откладываем: picker сам откладывает автовыбор сохранённого сыщика,
 	# чтобы успели расставиться mark_taken. Auto-ready должен бежать после.
 	call_deferred("_check_auto_ready")
 	# Прыгаем на карту только если игра уже идёт И мы УЖЕ были в этой сессии
 	# (сервер восстановил наш investigator из game_players).
 	var my_pdata: Dictionary = _nm.players.get(_nm.my_id, {})
-	var my_inv:   String     = my_pdata.get("investigator", "")
+	var my_inv: String = my_pdata.get("investigator", "")
 	if _nm.game_started and not my_inv.is_empty():
 		GameConsole.log("Игра уже идёт, у нас есть сыщик — переходим на карту")
 		SceneManager.go("world_map")
@@ -95,11 +94,12 @@ func _ready() -> void:
 
 # ── Персистентность состояния лобби ───────────────────────────────────────────
 
+
 func _save_ready_state() -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(_prefs_path)
-	cfg.set_value(_PREFS_SECTION, "room_id",     _nm.room_id)
-	cfg.set_value(_PREFS_SECTION, "was_ready",   true)
+	cfg.set_value(_PREFS_SECTION, "room_id", _nm.room_id)
+	cfg.set_value(_PREFS_SECTION, "was_ready", true)
 	cfg.set_value(_PREFS_SECTION, "player_name", _nm.my_name)
 	cfg.save(_prefs_path)
 
@@ -115,8 +115,8 @@ func _check_auto_ready() -> void:
 	var cfg := ConfigFile.new()
 	if cfg.load(_prefs_path) != OK:
 		return
-	var saved_room:   String = cfg.get_value(_PREFS_SECTION, "room_id",     "")
-	var saved_ready:  bool   = cfg.get_value(_PREFS_SECTION, "was_ready",   false)
+	var saved_room: String = cfg.get_value(_PREFS_SECTION, "room_id", "")
+	var saved_ready: bool = cfg.get_value(_PREFS_SECTION, "was_ready", false)
 	var saved_player: String = cfg.get_value(_PREFS_SECTION, "player_name", "")
 	if not saved_ready or saved_room != _nm.room_id or saved_player != _nm.my_name:
 		return
@@ -129,7 +129,7 @@ func _check_auto_ready() -> void:
 	# но НЕ переходим сразу: ждём start_game от хоста (или сами нажмём «Начать»).
 	_was_ready = true
 	if _nm.players.has(_nm.my_id):
-		_nm.players[_nm.my_id]["ready"]        = true
+		_nm.players[_nm.my_id]["ready"] = true
 		_nm.players[_nm.my_id]["investigator"] = selected
 	_picker.lock_confirm()
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
@@ -137,6 +137,7 @@ func _check_auto_ready() -> void:
 
 
 # ── Выбор сыщика ─────────────────────────────────────────────────────────────
+
 
 func _on_selection_changed(inv_name: String) -> void:
 	# Локальное состояние + броадкаст: остальные игроки сразу видят
@@ -170,6 +171,7 @@ func _refresh_start_button() -> void:
 
 
 # ── Обработчики сигналов NetworkManager ───────────────────────────────────────
+
 
 func _on_player_connected(id: String, info: Dictionary) -> void:
 	_player_names[id] = info.get("name", id)
@@ -237,7 +239,7 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 				_nm.players[pid]["investigator"] = inv
 			_recompute_taken()
 		"set_ready":
-			var pid: String      = data.get("player_id", "")
+			var pid: String = data.get("player_id", "")
 			var inv_name: String = data.get("investigator", "")
 			if _nm.players.has(pid):
 				_nm.players[pid]["ready"] = true
@@ -255,6 +257,7 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 
 
 # ── Обработчики сигналов picker'а ─────────────────────────────────────────────
+
 
 func _on_back_pressed() -> void:
 	GameConsole.log("Вы покинули комнату «%s»" % _nm.room_name)
@@ -279,7 +282,7 @@ func _on_ready_pressed() -> void:
 	GameConsole.log("Вы готовы  ·  сыщик: %s" % selected)
 	_picker.lock_confirm()
 	if _nm.players.has(_nm.my_id):
-		_nm.players[_nm.my_id]["ready"]        = true
+		_nm.players[_nm.my_id]["ready"] = true
 		_nm.players[_nm.my_id]["investigator"] = selected
 	# Хост тоже рассылает — другие игроки увидят его статус и сыщика.
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
@@ -301,7 +304,7 @@ func _resend_ready() -> void:
 	if selected.is_empty():
 		return
 	if _nm.players.has(_nm.my_id):
-		_nm.players[_nm.my_id]["ready"]        = true
+		_nm.players[_nm.my_id]["ready"] = true
 		_nm.players[_nm.my_id]["investigator"] = selected
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
 
@@ -331,15 +334,20 @@ func _build_players_init() -> Array:
 	for pid: String in _nm.players:
 		var info: Dictionary = _nm.players[pid]
 		var inv_name: String = info.get("investigator", "")
-		var inv: Dictionary  = inv_data.get(inv_name, {})
-		arr.append({
-			"pid":          pid,
-			"user_id":      info.get("user_id", ""),
-			"name":         info.get("name", "???"),
-			"investigator": inv_name,
-			"hp_max":       int(inv.get("health", 5)),
-			"sanity_max":   int(inv.get("sanity", 5)),
-		})
+		var inv: Dictionary = inv_data.get(inv_name, {})
+		(
+			arr
+			. append(
+				{
+					"pid": pid,
+					"user_id": info.get("user_id", ""),
+					"name": info.get("name", "???"),
+					"investigator": inv_name,
+					"hp_max": int(inv.get("health", 5)),
+					"sanity_max": int(inv.get("sanity", 5)),
+				}
+			)
+		)
 	return arr
 
 
@@ -352,6 +360,7 @@ func _load_investigators_index() -> Dictionary:
 
 
 # ── Оверлей переподключения ──────────────────────────────────────────────────
+
 
 func _show_reconnect_overlay(text: String) -> void:
 	if is_instance_valid(_reconnect_overlay):

@@ -11,7 +11,7 @@ signal joined_room(room_id: String, room_name: String, is_host: bool, players: A
 signal player_joined(player: Dictionary)
 signal player_left(player_id: String, new_host_id: String, user_id: String)
 signal relay_received(from_id: String, data: Dictionary)
-signal game_state_received(state: Dictionary)   # снапшот стейта от сервера
+signal game_state_received(state: Dictionary)  # снапшот стейта от сервера
 signal relay_error(message: String)
 signal reconnecting(attempt: int)
 signal reconnected
@@ -25,24 +25,24 @@ signal player_disconnected(id: String)
 signal server_disconnected
 
 # ── Игровое состояние ──────────────────────────────────────────────────────────
-var my_id: String = ""        # id соединения — меняется при каждом реконнекте
-var my_user_id: String = ""   # стабильный id аккаунта (relay userId); пусто → аноним
+var my_id: String = ""  # id соединения — меняется при каждом реконнекте
+var my_user_id: String = ""  # стабильный id аккаунта (relay userId); пусто → аноним
 var my_name: String = ""
 var room_id: String = ""
 var room_name: String = ""
 var players: Dictionary = {}  # pid -> {id, user_id, name, ready, investigator}
 
 var _is_host_flag: bool = false
-var game_started: bool  = false  # true если игровая сессия уже запущена (из DB)
+var game_started: bool = false  # true если игровая сессия уже запущена (из DB)
 
 # Сохранённое состояние для rejoin при реконнекте
-var _saved_room_id:    String = ""
-var _saved_room_pass:  String = ""
-var _saved_ready:      bool   = false
+var _saved_room_id: String = ""
+var _saved_room_pass: String = ""
+var _saved_ready: bool = false
 var _saved_investigator: String = ""
 
-
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	# Должен обрабатывать сетевые события, даже когда дерево на паузе
@@ -57,12 +57,13 @@ func _ready() -> void:
 
 # ── Публичный API ──────────────────────────────────────────────────────────────
 
+
 func connect_to_relay(player_name: String, relay_url: String = "ws://127.0.0.1:3030") -> Error:
-	my_name    = player_name.strip_edges()
-	my_id      = ""
+	my_name = player_name.strip_edges()
+	my_id = ""
 	my_user_id = ""
-	room_id    = ""
-	room_name  = ""
+	room_id = ""
+	room_name = ""
 	players.clear()
 	_is_host_flag = false
 	return _transport().connect_to_server(relay_url)
@@ -79,7 +80,14 @@ func list_rooms() -> void:
 
 func create_room(p_room_name: String, password: String = "", max_players: int = 8) -> void:
 	_saved_room_pass = password
-	_send({"type": "create_room", "room_name": p_room_name, "password": password, "max_players": max_players})
+	_send(
+		{
+			"type": "create_room",
+			"room_name": p_room_name,
+			"password": password,
+			"max_players": max_players
+		}
+	)
 
 
 func join_room(p_room_id: String, password: String = "") -> void:
@@ -107,7 +115,7 @@ func delete_any_room(target_room_id: String) -> void:
 
 func relay_all(data: Dictionary) -> void:
 	if data.get("action", "") == "set_ready":
-		_saved_ready       = true
+		_saved_ready = true
 		_saved_investigator = data.get("investigator", "")
 	_send({"type": "relay", "data": data})
 
@@ -134,6 +142,7 @@ func is_host() -> bool:
 
 # ── Транспортные события ──────────────────────────────────────────────────────
 
+
 func _on_ws_open() -> void:
 	var hello: Dictionary = {"type": "hello", "name": my_name}
 	var auth: Node = get_node_or_null("/root/AuthManager")
@@ -159,9 +168,9 @@ func _on_raw_received(text: String) -> void:
 
 # ── Обработка сообщений ────────────────────────────────────────────────────────
 
+
 func _handle_message(msg: Dictionary) -> void:
 	match msg.get("type", ""):
-
 		"pong":
 			pass
 
@@ -178,24 +187,23 @@ func _handle_message(msg: Dictionary) -> void:
 
 		"joined_room":
 			var was_reconnect: bool = (
-				not _saved_room_id.is_empty() and
-				_saved_room_id == msg.get("room_id", "")
+				not _saved_room_id.is_empty() and _saved_room_id == msg.get("room_id", "")
 			)
-			room_id       = msg.get("room_id", "")
-			room_name     = msg.get("room_name", "")
+			room_id = msg.get("room_id", "")
+			room_name = msg.get("room_name", "")
 			_is_host_flag = msg.get("is_host", false)
-			game_started  = msg.get("game_started", false)
+			game_started = msg.get("game_started", false)
 			_saved_room_id = room_id
 			players.clear()
 			var raw_players: Array = msg.get("players", [])
 			for i in range(raw_players.size()):
 				var p: Dictionary = raw_players[i]
-				var pid: String   = p.get("id", "")
+				var pid: String = p.get("id", "")
 				players[pid] = {
-					"id":           pid,
-					"user_id":      p.get("user_id", ""),
-					"name":         p.get("name", ""),
-					"ready":        p.get("ready", false),
+					"id": pid,
+					"user_id": p.get("user_id", ""),
+					"name": p.get("name", ""),
+					"ready": p.get("ready", false),
 					"investigator": p.get("investigator", ""),
 				}
 			# Свой стабильный account-id берём из собственной записи в списке
@@ -207,11 +215,17 @@ func _handle_message(msg: Dictionary) -> void:
 			if was_reconnect:
 				reconnected.emit()
 				if _saved_ready:
-					_send({"type": "relay", "data": {
-						"action":       "set_ready",
-						"player_id":    my_id,
-						"investigator": _saved_investigator,
-					}})
+					_send(
+						{
+							"type": "relay",
+							"data":
+							{
+								"action": "set_ready",
+								"player_id": my_id,
+								"investigator": _saved_investigator,
+							}
+						}
+					)
 			joined_room.emit(room_id, room_name, _is_host_flag, raw_players)
 			# Снапшот игрового стейта (если сервер прислал) — кладём в GameState.
 			# GameState инициализируется до перехода в world_map.
@@ -221,12 +235,12 @@ func _handle_message(msg: Dictionary) -> void:
 
 		"player_joined":
 			var p: Dictionary = msg.get("player", {})
-			var pid: String   = p.get("id", "")
+			var pid: String = p.get("id", "")
 			players[pid] = {
-				"id":           pid,
-				"user_id":      p.get("user_id", ""),
-				"name":         p.get("name", ""),
-				"ready":        p.get("ready", false),
+				"id": pid,
+				"user_id": p.get("user_id", ""),
+				"name": p.get("name", ""),
+				"ready": p.get("ready", false),
 				"investigator": p.get("investigator", ""),
 			}
 			GameConsole.log("%s зашёл в комнату" % p.get("name", pid))
@@ -234,10 +248,10 @@ func _handle_message(msg: Dictionary) -> void:
 			player_connected.emit(pid, players[pid])
 
 		"player_left":
-			var pid: String      = msg.get("player_id", "")
+			var pid: String = msg.get("player_id", "")
 			var new_host: String = msg.get("new_host_id", "")
 			var left_uid: String = msg.get("user_id", "")
-			var pname: String    = players.get(pid, {}).get("name", pid)
+			var pname: String = players.get(pid, {}).get("name", pid)
 			players.erase(pid)
 			if not new_host.is_empty() and new_host == my_id:
 				_is_host_flag = true
@@ -248,15 +262,17 @@ func _handle_message(msg: Dictionary) -> void:
 			player_disconnected.emit(pid)
 
 		"relay":
-			var from_id: String  = msg.get("from_id", "")
+			var from_id: String = msg.get("from_id", "")
 			var data: Dictionary = msg.get("data", {})
 			relay_received.emit(from_id, data)
 			var action: String = data.get("action", "")
 			if action == "set_ready":
 				var pid: String = data.get("player_id", "")
 				if players.has(pid):
-					players[pid]["ready"]       = true
-					players[pid]["investigator"] = data.get("investigator", players[pid].get("investigator", ""))
+					players[pid]["ready"] = true
+					players[pid]["investigator"] = data.get(
+						"investigator", players[pid].get("investigator", "")
+					)
 
 		"room_deleted":
 			_clear_room_state()
@@ -279,6 +295,7 @@ func _handle_message(msg: Dictionary) -> void:
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
+
 func _send(data: Dictionary) -> void:
 	_transport().send_raw(data)
 
@@ -288,12 +305,12 @@ func _transport() -> Node:
 
 
 func _clear_room_state() -> void:
-	room_id          = ""
-	room_name        = ""
-	_saved_room_id   = ""
+	room_id = ""
+	room_name = ""
+	_saved_room_id = ""
 	_saved_room_pass = ""
-	_saved_ready     = false
+	_saved_ready = false
 	_saved_investigator = ""
 	players.clear()
 	_is_host_flag = false
-	game_started  = false
+	game_started = false

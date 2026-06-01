@@ -8,18 +8,19 @@ extends CanvasLayer
 ##   GameConsole.warn("предупреждение")
 ##   GameConsole.err("ошибка")
 
-const MAX_ENTRIES  := 300
-const FONT_SIZE    := 24
-const HEADER_SIZE  := 20
+const MAX_ENTRIES := 300
+const FONT_SIZE := 24
+const HEADER_SIZE := 20
 
-var _shown:  bool              = false
-var _root:   Control           = null
-var _panel:  PanelContainer    = null
-var _scroll: ScrollContainer   = null
-var _log_box: VBoxContainer    = null
-var _tween:  Tween             = null
+var _shown: bool = false
+var _root: Control = null
+var _panel: PanelContainer = null
+var _scroll: ScrollContainer = null
+var _log_box: VBoxContainer = null
+var _tween: Tween = null
 
 # ── Публичный API ─────────────────────────────────────────────────────────────
+
 
 func log(msg: String) -> void:
 	_add_entry("[%s]  %s" % [_ts(), msg], Color(0.82, 0.82, 0.82))
@@ -35,20 +36,25 @@ func err(msg: String) -> void:
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
+
 func _ready() -> void:
 	layer = 100
 	_build_ui()
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey and (event as InputEventKey).pressed \
-			and not (event as InputEventKey).echo:
+	if (
+		event is InputEventKey
+		and (event as InputEventKey).pressed
+		and not (event as InputEventKey).echo
+	):
 		if (event as InputEventKey).keycode == KEY_QUOTELEFT:
 			_toggle()
 			get_viewport().set_input_as_handled()
 
 
 # ── Построение UI ─────────────────────────────────────────────────────────────
+
 
 func _build_ui() -> void:
 	_root = Control.new()
@@ -61,24 +67,24 @@ func _build_ui() -> void:
 	# Панель: нижние 30% экрана, начальные смещения = 0
 	_panel = PanelContainer.new()
 	_panel.name = "Panel"
-	_panel.anchor_left   = 0.0
-	_panel.anchor_right  = 1.0
-	_panel.anchor_top    = 0.70
+	_panel.anchor_left = 0.0
+	_panel.anchor_right = 1.0
+	_panel.anchor_top = 0.70
 	_panel.anchor_bottom = 1.0
-	_panel.offset_left   = 0
-	_panel.offset_right  = 0
-	_panel.offset_top    = 0
+	_panel.offset_left = 0
+	_panel.offset_right = 0
+	_panel.offset_top = 0
 	_panel.offset_bottom = 0
-	_panel.mouse_filter  = Control.MOUSE_FILTER_STOP
+	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.04, 0.03, 0.08, 0.88)
 	style.border_color = Color(0.30, 0.24, 0.50, 0.70)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(0)
-	style.content_margin_left   = 14
-	style.content_margin_right  = 14
-	style.content_margin_top    = 8
+	style.content_margin_left = 14
+	style.content_margin_right = 14
+	style.content_margin_top = 8
 	style.content_margin_bottom = 8
 	_panel.add_theme_stylebox_override("panel", style)
 	_root.add_child(_panel)
@@ -99,16 +105,16 @@ func _build_ui() -> void:
 	sep.name = "Sep"
 	var sep_style := StyleBoxFlat.new()
 	sep_style.bg_color = Color(0.30, 0.24, 0.50, 0.35)
-	sep_style.content_margin_top    = 0
+	sep_style.content_margin_top = 0
 	sep_style.content_margin_bottom = 0
 	sep.add_theme_stylebox_override("separator", sep_style)
 	vbox.add_child(sep)
 
 	_scroll = ScrollContainer.new()
 	_scroll.name = "Scroll"
-	_scroll.size_flags_vertical    = Control.SIZE_EXPAND_FILL
+	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_scroll.vertical_scroll_mode   = ScrollContainer.SCROLL_MODE_AUTO
+	_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	vbox.add_child(_scroll)
 
 	_log_box = VBoxContainer.new()
@@ -120,6 +126,7 @@ func _build_ui() -> void:
 
 # ── Анимация ──────────────────────────────────────────────────────────────────
 
+
 func _toggle() -> void:
 	_shown = not _shown
 	if _tween and _tween.is_valid():
@@ -129,26 +136,27 @@ func _toggle() -> void:
 
 	if _shown:
 		# Сдвигаем панель вниз за экран перед показом
-		_panel.offset_top    = panel_h
+		_panel.offset_top = panel_h
 		_panel.offset_bottom = panel_h
 		_root.visible = true
 
 		_tween = create_tween()
 		_tween.set_ease(Tween.EASE_OUT)
 		_tween.set_trans(Tween.TRANS_QUART)
-		_tween.tween_property(_panel, "offset_top",    0.0, 0.28)
+		_tween.tween_property(_panel, "offset_top", 0.0, 0.28)
 		_tween.parallel().tween_property(_panel, "offset_bottom", 0.0, 0.28)
 		_scroll_bottom_deferred()
 	else:
 		_tween = create_tween()
 		_tween.set_ease(Tween.EASE_IN)
 		_tween.set_trans(Tween.TRANS_QUART)
-		_tween.tween_property(_panel, "offset_top",    panel_h, 0.22)
+		_tween.tween_property(_panel, "offset_top", panel_h, 0.22)
 		_tween.parallel().tween_property(_panel, "offset_bottom", panel_h, 0.22)
 		_tween.tween_callback(func() -> void: _root.visible = false)
 
 
 # ── Логика ────────────────────────────────────────────────────────────────────
+
 
 func _add_entry(text: String, color: Color) -> void:
 	if _log_box.get_child_count() >= MAX_ENTRIES:

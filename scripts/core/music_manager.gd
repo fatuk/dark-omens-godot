@@ -12,18 +12,18 @@ extends Node
 ##   MusicManager.set_volume(0.7)
 
 const TRACK_ELDER_SIGN: AudioStream = preload("res://assets/audio/music/Elder  sign.ogg")
-const TRACK_NO_CHOICE:  AudioStream = preload("res://assets/audio/music/No choice.ogg")
+const TRACK_NO_CHOICE: AudioStream = preload("res://assets/audio/music/No choice.ogg")
 
 const BUS_NAME := "Music"
 
-var volume: float = 0.5   # 0.0..1.0, линейная шкала (default override: SettingsStore.music_volume)
+var volume: float = 0.5  # 0.0..1.0, линейная шкала (default override: SettingsStore.music_volume)
 
 var _player: AudioStreamPlayer
 # Web autoplay policy: AudioContext suspended до первого user gesture.
 # Если вызвать play() раньше — звук не пойдёт. Откладываем play() до _input
 # на вебе; на нативе ставим флаг сразу в true.
 var _user_activated: bool = true
-var _pending_stream:  AudioStream = null
+var _pending_stream: AudioStream = null
 
 
 func _ready() -> void:
@@ -32,7 +32,7 @@ func _ready() -> void:
 	AudioBuses.ensure_bus(BUS_NAME)
 	_player = AudioStreamPlayer.new()
 	_player.name = "Player"
-	_player.bus  = BUS_NAME
+	_player.bus = BUS_NAME
 	add_child(_player)
 	_ensure_loop(TRACK_ELDER_SIGN)
 	_ensure_loop(TRACK_NO_CHOICE)

@@ -13,19 +13,19 @@ extends Node
 ## Mythos — хост вытягивает карту из mythosDeck, ВСЕ видят модалку, по
 ## кнопке «Дальше» хост применяет onDraw-эффекты и стартует новый раунд.
 
-signal state_changed                        # любое изменение стейта
-signal phase_changed(new_phase: String)     # переход фазы
+signal state_changed  # любое изменение стейта
+signal phase_changed(new_phase: String)  # переход фазы
 
 const ACTIONS_PER_ROUND := 2
 
 # ── Глобальный стейт ──────────────────────────────────────────────────────────
-var round_num:  int    = 0
-var phase:      String = ""           # "action" | "encounter" | "mythos" | ""
-var current_idx: int   = 0            # индекс в turn_order активного игрока
-var turn_order: Array  = []           # [user_id, ...] — отсортирован, стабилен
-var doom:       int    = 0
-var omens_step: int    = 0
-var active:     bool   = false        # игра запущена?
+var round_num: int = 0
+var phase: String = ""  # "action" | "encounter" | "mythos" | ""
+var current_idx: int = 0  # индекс в turn_order активного игрока
+var turn_order: Array = []  # [user_id, ...] — отсортирован, стабилен
+var doom: int = 0
+var omens_step: int = 0
+var active: bool = false  # игра запущена?
 
 # Карта встречи активного игрока (фаза encounter). {} — ещё генерится либо
 # встреч сейчас нет. Хост генерит через ContentApi и кладёт сюда, рассылает
@@ -100,37 +100,37 @@ var shop_reserve: Array = []
 # Активная Тайна — индекс 0/1/2 в campaign.mysteries[]. Не от doom: акт = это+1.
 # Партия проходит Тайны по порядку; каждая решается набором «зачётов» помеченных
 # локаций через двух-фазную mystery-встречу (см. encounter_flow + effect_runner).
-var active_mystery:   int   = 0
+var active_mystery: int = 0
 # Сколько локаций активной Тайны уже зачищено (mysteryProgress). При достижении
 # solveCondition.n активная Тайна решается, индекс ++ (если уже 3 → outcome).
-var mystery_progress: int   = 0
+var mystery_progress: int = 0
 # id зачищенных локаций активной Тайны (чтобы они исчезли из выбора встречи).
 # При решении Тайны очищается вместе с progress.
-var mystery_claimed:  Array = []
+var mystery_claimed: Array = []
 # Финал партии: "" — ещё идёт; "victory" — все 3 Тайны решены; "defeat" — doom
 # достиг doomClock. Клиент по этому полю показывает финальные модалки.
-var outcome:          String = ""
+var outcome: String = ""
 
 # Подсистемы. GameState — фасад и хранитель синкаемого state; подмодули —
 # host-only логика и owned state (колода мифов, эпоха генерации кампании,
 # префетч встреч). _phase владеет переходами и обработкой действий — без
 # собственных полей, тонкий контроллер.
-var _mythos:    MythosFlow
-var _campaign:  CampaignGen
+var _mythos: MythosFlow
+var _campaign: CampaignGen
 var _encounter: EncounterFlow
-var _phase:     PhaseController
-
+var _phase: PhaseController
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	_nm = get_node("/root/NetworkManager")
 	# Подмодули создаём ДО подписки на сигналы — иначе входящий снапшот может
 	# обратиться к ним раньше, чем они инициализированы.
-	_mythos    = MythosFlow.new(self)
-	_campaign  = CampaignGen.new(self)
+	_mythos = MythosFlow.new(self)
+	_campaign = CampaignGen.new(self)
 	_encounter = EncounterFlow.new(self)
-	_phase     = PhaseController.new(self)
+	_phase = PhaseController.new(self)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
 	_nm.player_connected.connect(_on_player_connected)
@@ -138,6 +138,7 @@ func _ready() -> void:
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
+
 
 func _is_host() -> bool:
 	return is_instance_valid(_nm) and _nm.is_host()
@@ -147,33 +148,38 @@ func _broadcast_sync() -> void:
 	# Только хост рассылает полное состояние
 	if not _is_host():
 		return
-	_nm.relay_all({
-		"action":      "game_sync",
-		"round_num":   round_num,
-		"phase":       phase,
-		"current_idx": current_idx,
-		"turn_order":  turn_order,
-		"doom":        doom,
-		"omens_step":  omens_step,
-		"players":     players,
-		"current_encounter": current_encounter,
-		"current_mythos":    current_mythos,
-		"mythos_index":      _mythos.index,
-		"gates":       gates,
-		"entities":    entities,
-		"monsters":    monsters,
-		"monster_bag": monster_bag,
-		"monster_surge": monster_surge,
-		"encounter_choices": encounter_choices,
-		"shop_reserve": shop_reserve,
-		"campaign":    campaign,
-		"campaign_pending": campaign_pending,
-		"active":      active,
-		"active_mystery":   active_mystery,
-		"mystery_progress": mystery_progress,
-		"mystery_claimed":  mystery_claimed,
-		"outcome":          outcome,
-	})
+	(
+		_nm
+		. relay_all(
+			{
+				"action": "game_sync",
+				"round_num": round_num,
+				"phase": phase,
+				"current_idx": current_idx,
+				"turn_order": turn_order,
+				"doom": doom,
+				"omens_step": omens_step,
+				"players": players,
+				"current_encounter": current_encounter,
+				"current_mythos": current_mythos,
+				"mythos_index": _mythos.index,
+				"gates": gates,
+				"entities": entities,
+				"monsters": monsters,
+				"monster_bag": monster_bag,
+				"monster_surge": monster_surge,
+				"encounter_choices": encounter_choices,
+				"shop_reserve": shop_reserve,
+				"campaign": campaign,
+				"campaign_pending": campaign_pending,
+				"active": active,
+				"active_mystery": active_mystery,
+				"mystery_progress": mystery_progress,
+				"mystery_claimed": mystery_claimed,
+				"outcome": outcome,
+			}
+		)
+	)
 
 
 func _emit_changed() -> void:
@@ -191,28 +197,29 @@ func _make_player_dict(
 	sanity_max: int,
 ) -> Dictionary:
 	return {
-		"user_id":        uid,
-		"name":           pname,
-		"investigator":   investigator,
-		"location":       location,
-		"connected":      true,
-		"actions_left":   ACTIONS_PER_ROUND,
-		"actions_used":   [],
+		"user_id": uid,
+		"name": pname,
+		"investigator": investigator,
+		"location": location,
+		"connected": true,
+		"actions_left": ACTIONS_PER_ROUND,
+		"actions_used": [],
 		"encounter_done": false,
-		"tickets":        0,
-		"concentration":  0,
-		"hp":             hp_max,
-		"sanity":         sanity_max,
-		"hp_max":         hp_max,
-		"sanity_max":     sanity_max,
-		"clues":          0,
-		"conditions":     [],
-		"items":          [],
-		"skill_mods":     {},
+		"tickets": 0,
+		"concentration": 0,
+		"hp": hp_max,
+		"sanity": sanity_max,
+		"hp_max": hp_max,
+		"sanity_max": sanity_max,
+		"clues": 0,
+		"conditions": [],
+		"items": [],
+		"skill_mods": {},
 	}
 
 
 # ── Хост: запуск игры ────────────────────────────────────────────────────────
+
 
 ## Вызывается хостом после нажатия «Начать игру».
 ## players_init: [{ pid, user_id, name, investigator, hp_max, sanity_max }, ...]
@@ -247,16 +254,16 @@ func start_game(players_init: Array) -> void:
 		turn_order.append(uid)
 	turn_order.sort()
 
-	round_num   = 1
-	phase       = "action"
+	round_num = 1
+	phase = "action"
 	current_idx = 0
-	doom        = 0
-	omens_step  = 0
-	active      = true
+	doom = 0
+	omens_step = 0
+	active = true
 
-	GameConsole.log("[Game] Игра начата · игроков: %d · ход: %s" % [
-		turn_order.size(), _name_of(_current_pid())
-	])
+	GameConsole.log(
+		"[Game] Игра начата · игроков: %d · ход: %s" % [turn_order.size(), _name_of(_current_pid())]
+	)
 	# Библия: прогрета в лобби — используем готовую (или дождёмся текущей
 	# генерации); не прогрета — запускаем генерацию сейчас (фолбэк).
 	if campaign.is_empty() and not campaign_pending:
@@ -266,7 +273,7 @@ func start_game(players_init: Array) -> void:
 	# библия ещё не готова) — тот же авторитет из CampaignGen. Соло-тест партии на
 	# N раскладывает поле и задаёт Наплыв как на N.
 	var setup_pc: int = int(campaign.get("playerCount", _campaign.balance_player_count()))
-	_setup_board(maxi(1, setup_pc))   # стартовая раскладка: врата+монстры, улики, Наплыв
+	_setup_board(maxi(1, setup_pc))  # стартовая раскладка: врата+монстры, улики, Наплыв
 	_broadcast_sync()
 	_emit_changed()
 	phase_changed.emit(phase)
@@ -274,19 +281,28 @@ func start_game(players_init: Array) -> void:
 
 # ── Хост: обработка действия (своего или чужого через game_action) ──────────
 
+
 ## Применить действие. Если ты НЕ хост, отправит запрос хосту через relay.
 func perform_action(action_type: String, payload: Dictionary = {}) -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
 		_phase.host_apply_action(my_pid, action_type, payload)
 	else:
-		_nm.relay_all({
-			"action": "game_action", "type": action_type,
-			"pid": my_pid, "payload": payload,
-		})
+		(
+			_nm
+			. relay_all(
+				{
+					"action": "game_action",
+					"type": action_type,
+					"pid": my_pid,
+					"payload": payload,
+				}
+			)
+		)
 
 
 # ── Encounter (фасады) ────────────────────────────────────────────────────────
+
 
 ## Игрок отмечает «встреча завершена» — передаёт ход следующему / в Mythos.
 func finish_encounter() -> void:
@@ -337,9 +353,10 @@ func advance_encounter_stage() -> void:
 
 # ── Travel (фасады) ───────────────────────────────────────────────────────────
 
+
 ## Переместиться в связанную локацию dest (расходует действие).
 func travel(dest: String) -> void:
-	perform_action("travel", { "to": dest })
+	perform_action("travel", {"to": dest})
 
 
 ## Может ли локальный игрок переместиться в dest прямо сейчас (для UI сайдбара).
@@ -358,6 +375,7 @@ func can_travel_to(dest: String) -> bool:
 
 
 # ── Магазин (фасады) ──────────────────────────────────────────────────────────
+
 
 ## Доступен ли магазин: мой ход, город, мой сыщик там, есть действие и покупка
 ## («acquire_assets») ещё не сделана в этом раунде (уникальное действие — раз за раунд).
@@ -452,7 +470,7 @@ func _draw_shop_assets(n: int) -> void:
 	for r: Variant in shop_reserve:
 		taken[String(r)] = true
 	for pid: Variant in players:
-		for it: Variant in (players[pid].get("items", []) as Array):
+		for it: Variant in players[pid].get("items", []) as Array:
 			taken[String(it)] = true
 	var pool: Array = []
 	for a in AssetCatalog.all():
@@ -474,12 +492,14 @@ func location_type(loc_id: String) -> String:
 
 # ── Mythos (фасад) ───────────────────────────────────────────────────────────
 
+
 ## Любой игрок подтверждает «Дальше» в модалке мифа. Делегат в MythosFlow.
 func resolve_mythos() -> void:
 	_mythos.resolve()
 
 
 # ── Уход игрока ──────────────────────────────────────────────────────────────
+
 
 # Игрок отключился (закрыл клиент, потерял связь, вышел кнопкой).
 # Слот НЕ удаляется и НЕ выбывает из turn_order — игрок помечается
@@ -536,10 +556,10 @@ func _on_player_connected(pid: String, info: Dictionary) -> void:
 ## уже идущей партии). user_id и имя берём из живого списка NetworkManager.
 func _handle_late_join(data: Dictionary) -> void:
 	var conn_id: String = String(data.get("player_id", ""))
-	var inv: String     = String(data.get("investigator", ""))
+	var inv: String = String(data.get("investigator", ""))
 	if conn_id.is_empty() or inv.is_empty():
 		return
-	var uid: String   = conn_id
+	var uid: String = conn_id
 	var pname: String = conn_id
 	var lobby: Dictionary = _nm.players
 	if lobby.has(conn_id):
@@ -549,7 +569,7 @@ func _handle_late_join(data: Dictionary) -> void:
 			uid = u
 		pname = String(rec.get("name", conn_id))
 	if players.has(uid):
-		return   # уже участник — обычный set_ready, не поздний вход
+		return  # уже участник — обычный set_ready, не поздний вход
 	_add_player_mid_game(uid, pname, inv)
 
 
@@ -559,7 +579,7 @@ func _add_player_mid_game(uid: String, pname: String, investigator: String) -> v
 	if uid.is_empty() or investigator.is_empty() or players.has(uid):
 		return
 	var inv: Dictionary = Investigators.get_data(investigator)
-	var hp_max: int  = int(inv.get("health", 5))
+	var hp_max: int = int(inv.get("health", 5))
 	var san_max: int = int(inv.get("sanity", 5))
 	players[uid] = _make_player_dict(
 		uid,
@@ -570,40 +590,39 @@ func _add_player_mid_game(uid: String, pname: String, investigator: String) -> v
 		san_max,
 	)
 	turn_order.append(uid)
-	GameConsole.log("[Game] %s присоединился к партии (игроков: %d)" % [
-		pname, turn_order.size()
-	])
+	GameConsole.log("[Game] %s присоединился к партии (игроков: %d)" % [pname, turn_order.size()])
 	_broadcast_sync()
 	_emit_changed()
 
 
 # ── Применить снапшот (от хоста через relay ИЛИ от сервера через joined_room) ─
 
+
 func _apply_snapshot(data: Dictionary) -> void:
-	round_num   = int(data.get("round_num",   0))
-	phase       = String(data.get("phase",    ""))
+	round_num = int(data.get("round_num", 0))
+	phase = String(data.get("phase", ""))
 	current_idx = int(data.get("current_idx", 0))
-	turn_order  = data.get("turn_order",  [])
-	doom        = int(data.get("doom",        0))
-	omens_step  = int(data.get("omens_step",  0))
-	players     = data.get("players",     {})
+	turn_order = data.get("turn_order", [])
+	doom = int(data.get("doom", 0))
+	omens_step = int(data.get("omens_step", 0))
+	players = data.get("players", {})
 	current_encounter = data.get("current_encounter", {})
-	current_mythos    = data.get("current_mythos",    {})
-	_mythos.index     = int(data.get("mythos_index", 0))
-	gates       = data.get("gates",       {})
-	entities    = data.get("entities",    {})
-	monsters    = data.get("monsters",    {})
+	current_mythos = data.get("current_mythos", {})
+	_mythos.index = int(data.get("mythos_index", 0))
+	gates = data.get("gates", {})
+	entities = data.get("entities", {})
+	monsters = data.get("monsters", {})
 	monster_bag = data.get("monster_bag", [])
 	monster_surge = int(data.get("monster_surge", 0))
 	encounter_choices = data.get("encounter_choices", [])
 	shop_reserve = data.get("shop_reserve", [])
-	campaign    = data.get("campaign",    {})
+	campaign = data.get("campaign", {})
 	campaign_pending = bool(data.get("campaign_pending", false))
-	active      = bool(data.get("active",     false))
-	active_mystery   = int(data.get("active_mystery",   0))
+	active = bool(data.get("active", false))
+	active_mystery = int(data.get("active_mystery", 0))
 	mystery_progress = int(data.get("mystery_progress", 0))
-	mystery_claimed  = data.get("mystery_claimed",  [])
-	outcome          = String(data.get("outcome",   ""))
+	mystery_claimed = data.get("mystery_claimed", [])
+	outcome = String(data.get("outcome", ""))
 	_emit_changed()
 	phase_changed.emit(phase)
 
@@ -627,6 +646,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 
 # ── Не-хост: приём от relay ──────────────────────────────────────────────────
 
+
 func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 	match data.get("action", ""):
 		"game_sync":
@@ -638,7 +658,7 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 			# Не-хост попросил выполнить действие — хост валидирует и применяет
 			if _is_host():
 				var pid: String = data.get("pid", "")
-				var t: String   = data.get("type", "")
+				var t: String = data.get("type", "")
 				_phase.host_apply_action(pid, t, data.get("payload", {}))
 
 		"game_finish_encounter":
@@ -690,6 +710,7 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 
 # ── Сервисное ────────────────────────────────────────────────────────────────
 
+
 func _current_pid() -> String:
 	if current_idx < 0 or current_idx >= turn_order.size():
 		return ""
@@ -710,9 +731,12 @@ func is_my_turn() -> bool:
 ## Узнать, моя ли очередь на встречу (только для phase=encounter).
 ## Встречи проходят последовательно по turn_order.
 func is_my_encounter_turn() -> bool:
-	return active and phase == "encounter" \
-		and _current_pid() == _nm.my_user_id \
+	return (
+		active
+		and phase == "encounter"
+		and _current_pid() == _nm.my_user_id
 		and not have_finished_encounter()
+	)
 
 
 ## Узнать, я ли уже завершил встречу (только для phase=encounter).
@@ -728,6 +752,7 @@ func my_player() -> Dictionary:
 
 
 # ── Helpers, общие для подмодулей ─────────────────────────────────────────────
+
 
 ## Текущий язык игры названием для relay ("Russian" / "English"). Используется
 ## EncounterFlow и CampaignGen в теле запроса к ContentApi.
@@ -786,6 +811,7 @@ func _apply_board_effect(node: Dictionary) -> void:
 
 # ── Цикл Тайн: зачёт / решение / финал ────────────────────────────────────────
 
+
 # Зачёт текущей локации активного игрока в активную Тайну (verb mysteryProgress).
 # При достижении solveCondition.n активная Тайна решается, индекс ++; на третьей
 # решённой → outcome="victory".
@@ -797,12 +823,12 @@ func _apply_mystery_progress() -> void:
 	if loc.is_empty():
 		return
 	if (mystery_claimed as Array).has(loc):
-		return   # уже была зачтена этим же активным игроком этой же Тайны
+		return  # уже была зачтена этим же активным игроком этой же Тайны
 	mystery_progress += 1
 	(mystery_claimed as Array).append(loc)
-	GameConsole.log("[Тайна] %s зачёл «%s» (%d/%d)" % [
-		_name_of(pid), loc, mystery_progress, _mystery_target()
-	])
+	GameConsole.log(
+		"[Тайна] %s зачёл «%s» (%d/%d)" % [_name_of(pid), loc, mystery_progress, _mystery_target()]
+	)
 	if mystery_progress >= _mystery_target():
 		_solve_active_mystery()
 
@@ -843,6 +869,7 @@ func _check_defeat() -> void:
 ## уточнить под реальную дорожку оменов.
 const OMEN_COLORS: Array = ["green", "blue", "red"]
 
+
 ## Цвет текущего омена (по omens_step).
 func current_omen_color() -> String:
 	return String(OMEN_COLORS[omens_step % OMEN_COLORS.size()])
@@ -877,15 +904,16 @@ func resolve_omen_doom() -> int:
 ## игроков сами (см. _monster_surge). NB: оверрайды Древних (карточки с символами
 ## в Памятке) пока НЕ применяются — это отдельная таблица per-Ancient (TODO).
 const REFERENCE: Dictionary = {
-	1: { "gates": 1, "clues": 1, "surge": 1 },
-	2: { "gates": 1, "clues": 2, "surge": 1 },
-	3: { "gates": 1, "clues": 2, "surge": 2 },
-	4: { "gates": 1, "clues": 3, "surge": 2 },
-	5: { "gates": 2, "clues": 3, "surge": 2 },
-	6: { "gates": 2, "clues": 3, "surge": 2 },
-	7: { "gates": 2, "clues": 4, "surge": 3 },
-	8: { "gates": 2, "clues": 4, "surge": 3 },
+	1: {"gates": 1, "clues": 1, "surge": 1},
+	2: {"gates": 1, "clues": 2, "surge": 1},
+	3: {"gates": 1, "clues": 2, "surge": 2},
+	4: {"gates": 1, "clues": 3, "surge": 2},
+	5: {"gates": 2, "clues": 3, "surge": 2},
+	6: {"gates": 2, "clues": 3, "surge": 2},
+	7: {"gates": 2, "clues": 4, "surge": 3},
+	8: {"gates": 2, "clues": 4, "surge": 3},
 }
+
 
 func _reference_for(player_count: int) -> Dictionary:
 	return REFERENCE.get(clampi(player_count, 1, 8), REFERENCE[1])
@@ -899,7 +927,7 @@ func _setup_board(player_count: int) -> void:
 	gates = {}
 	entities = {}
 	monsters = {}
-	_fill_shop_reserve()   # стартовая витрина магазина
+	_fill_shop_reserve()  # стартовая витрина магазина
 	# Наполняем «мешок» всеми не-эпическими монстрами (по одному id).
 	monster_bag = []
 	var pool: Array = MonsterCatalog.non_epic()
@@ -911,11 +939,16 @@ func _setup_board(player_count: int) -> void:
 		_open_gate()
 	for _i: int in int(ref.get("clues", 1)):
 		_place_clue()
-	GameConsole.log("[Старт] Раскладка: врат %d, улик %d, Наплыв %d (игроков %d)" % [
-		int(ref.get("gates", 1)), int(ref.get("clues", 1)), monster_surge, player_count])
+	GameConsole.log(
+		(
+			"[Старт] Раскладка: врат %d, улик %d, Наплыв %d (игроков %d)"
+			% [int(ref.get("gates", 1)), int(ref.get("clues", 1)), monster_surge, player_count]
+		)
+	)
 
 
 # ── Врата / монстры / улики (host-only мутации синкаемого state) ──────────────
+
 
 ## Открыть врата. loc_id пустой → случайная свободная локация; color пустой →
 ## по циклу цветов омена. Каждые новые врата выпускают 1 монстра.
@@ -934,7 +967,7 @@ func _open_gate(loc_id: String = "", color: String = "") -> void:
 			if did.is_empty() or gates.has(did):
 				continue
 			if String(l.get("gateColor", "")).is_empty():
-				continue   # не гейт-спейс
+				continue  # не гейт-спейс
 			candidates.append(did)
 		if candidates.is_empty():
 			GameConsole.warn("[Врата] нет свободных гейт-локаций")
@@ -947,7 +980,7 @@ func _open_gate(loc_id: String = "", color: String = "") -> void:
 		col = _gate_color_for(lid)
 	gates[lid] = col
 	GameConsole.log("[Врата] открылись (%s) на %s" % [col, lid])
-	_spawn_monster(lid)   # каждые новые врата → 1 монстр
+	_spawn_monster(lid)  # каждые новые врата → 1 монстр
 
 
 ## Каноничный цвет врат локации (из data/locations.json → gateColor). Локация
@@ -997,9 +1030,14 @@ func _spawn_monster(loc_id: String) -> void:
 	@warning_ignore("unsafe_method_access")
 	var hp: int = maxi(1, MonsterCatalog.toughness_for(m, balance_pc) if not m.is_empty() else 1)
 	var arr: Array = monsters.get(loc_id, [])
-	arr.append({ "id": mid, "health": hp })
+	arr.append({"id": mid, "health": hp})
 	monsters[loc_id] = arr
-	GameConsole.log("[Спаун] монстр %s (стойкость %d) на %s · в мешке %d" % [mid, hp, loc_id, monster_bag.size()])
+	GameConsole.log(
+		(
+			"[Спаун] монстр %s (стойкость %d) на %s · в мешке %d"
+			% [mid, hp, loc_id, monster_bag.size()]
+		)
+	)
 
 
 ## Вернуть монстра в «мешок» (после гибели/снятия с поля). Культист всегда в
@@ -1076,10 +1114,13 @@ func _monster_surge() -> void:
 	for i: int in range(matched.size()):
 		for _j: int in monster_surge:
 			_spawn_monster(matched[i])
-	GameConsole.log("[Наплыв] из %d врат (%s) по %d монстров" % [matched.size(), color, monster_surge])
+	GameConsole.log(
+		"[Наплыв] из %d врат (%s) по %d монстров" % [matched.size(), color, monster_surge]
+	)
 
 
 # ── Сценарная библия (фасады в CampaignGen) ───────────────────────────────────
+
 
 ## Модалка создания комнаты задаёт «зерно» будущей кампании. Делегат.
 func set_campaign_seed(ancient_one: String, player_count: int) -> void:
@@ -1110,19 +1151,20 @@ func reset_pregame() -> void:
 		return
 	_campaign.reset()
 	current_encounter = {}
-	current_mythos    = {}
-	_mythos.deck      = []
-	_mythos.index     = 0
-	gates             = {}
-	entities          = {}
-	monsters          = {}
-	monster_bag       = []
-	monster_surge     = 0
+	current_mythos = {}
+	_mythos.deck = []
+	_mythos.index = 0
+	gates = {}
+	entities = {}
+	monsters = {}
+	monster_bag = []
+	monster_surge = 0
 	encounter_choices = []
-	active            = false
+	active = false
 
 
 # ── Helpers для подмодулей ───────────────────────────────────────────────────
+
 
 ## Лениво загружает data/locations.json и кэширует. Используется travel-flow
 ## (проверка связности, имя/тип в запросе встречи) и CampaignGen (список

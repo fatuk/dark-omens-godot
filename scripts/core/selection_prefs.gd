@@ -5,7 +5,7 @@ extends RefCounted
 ## Используется picker'ом для автовыбора при повторном входе в лобби.
 
 const _SECTION := "investigator"
-const _KEY     := "last_investigator"
+const _KEY := "last_investigator"
 
 
 ## Путь prefs с учётом профиля запуска (см. Profile).

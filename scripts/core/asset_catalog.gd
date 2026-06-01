@@ -6,7 +6,7 @@ extends RefCounted
 
 const PATH := "res://data/assets.json"
 
-static var _list:  Array      = []
+static var _list: Array = []
 static var _by_id: Dictionary = {}
 
 

@@ -2,7 +2,6 @@
 ## Цвета — в UIColors. Используй UIColors.ACCENT, UIColors.DANGER и т.д.
 class_name UIStyle
 
-
 # ── Фон сцены ──────────────────────────────────────────────────────────────────
 
 ## Бесшовная фоновая текстура для всех экранов. PNG в @2× (734×790),
@@ -11,7 +10,7 @@ class_name UIStyle
 ## слегка подсвечивает тёмные пиксели. Без этого фон в игре заметно светлее
 ## референса в Photoshop (где он почти чёрный).
 const BG_TEX: Texture2D = preload("res://assets/main-gb.png")
-const BG_SCALE: float   = 0.5
+const BG_SCALE: float = 0.5
 const BG_MODULATE: Color = Color(1.0, 1.0, 1.0, 1.0)
 
 ## Шейдер тайлинга canvas-item: пересчитывает UV так, чтобы тайл имел
@@ -53,6 +52,7 @@ void fragment() {
 }
 """
 
+
 ## Добавляет тёмный фон на всю область родительского контрола.
 static func apply_bg(control: Control) -> void:
 	var bg := ColorRect.new()
@@ -75,21 +75,18 @@ static func _apply_tile_shader(rect: TextureRect, tile_size_px: Vector2) -> void
 	var mat := ShaderMaterial.new()
 	mat.shader = sh
 	mat.set_shader_parameter("tile_size_px", tile_size_px)
-	mat.set_shader_parameter("rect_size_px", Vector2(1920, 1080))   # init guess
+	mat.set_shader_parameter("rect_size_px", Vector2(1920, 1080))  # init guess
 	rect.material = mat
-	rect.resized.connect(func() -> void:
-		mat.set_shader_parameter("rect_size_px", rect.size)
-	)
+	rect.resized.connect(func() -> void: mat.set_shader_parameter("rect_size_px", rect.size))
 
 
 ## Создаёт TextureRect с шейдером, тайлирующим texture с указанным scale'ом.
 ## Тайл = texture.get_size() * scale. Caller отвечает за добавление в дерево.
 static func make_tiled_texture_rect(
-		texture: Texture2D = BG_TEX,
-		scale:   float     = BG_SCALE
+	texture: Texture2D = BG_TEX, scale: float = BG_SCALE
 ) -> TextureRect:
 	var rect := TextureRect.new()
-	rect.texture      = texture
+	rect.texture = texture
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_apply_tile_shader(rect, texture.get_size() * scale)
@@ -103,10 +100,10 @@ static func make_tiled_texture_rect(
 ## Включена виньетка — затемнение к углам экрана для атмосферы.
 static func apply_main_bg(parent: Node) -> TextureRect:
 	var rect := make_tiled_texture_rect()
-	rect.modulate = BG_MODULATE   # затемнение чтобы соответствовать PS-референсу
+	rect.modulate = BG_MODULATE  # затемнение чтобы соответствовать PS-референсу
 	(rect.material as ShaderMaterial).set_shader_parameter("vignette_strength", 0.7)
-	(rect.material as ShaderMaterial).set_shader_parameter("vignette_inner",    0.25)
-	(rect.material as ShaderMaterial).set_shader_parameter("vignette_outer",    0.85)
+	(rect.material as ShaderMaterial).set_shader_parameter("vignette_inner", 0.25)
+	(rect.material as ShaderMaterial).set_shader_parameter("vignette_outer", 0.85)
 	parent.add_child(rect)
 	parent.move_child(rect, 0)
 	return rect
@@ -120,6 +117,7 @@ const BTN_L_TEX: Texture2D = preload("res://assets/button/L_button.png")
 const BTN_C_TEX: Texture2D = preload("res://assets/button/C_button.png")
 const BTN_R_TEX: Texture2D = preload("res://assets/button/R_button.png")
 const BTN_ASSET_SCALE: float = 0.25
+
 
 ## Фабрика кнопки с фигурным L|C|R фоном (alias для Button.new() + style_button).
 ##   • L и R — фиксированные «шапки» по краям (ширина = ассет * scale)
@@ -137,27 +135,28 @@ static func textured_button(text: String) -> Button:
 static func _btn_cap(tex: Texture2D, size_px: Vector2) -> TextureRect:
 	var rect := TextureRect.new()
 	rect.name = "Rect"
-	rect.texture            = tex
+	rect.texture = tex
 	rect.custom_minimum_size = size_px
-	rect.expand_mode        = TextureRect.EXPAND_IGNORE_SIZE
-	rect.stretch_mode       = TextureRect.STRETCH_SCALE
-	rect.mouse_filter       = Control.MOUSE_FILTER_IGNORE
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	rect.stretch_mode = TextureRect.STRETCH_SCALE
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return rect
 
 
 static func _btn_center(tex: Texture2D, tile_size: Vector2) -> TextureRect:
 	var rect := TextureRect.new()
 	rect.name = "Rect"
-	rect.texture                  = tex
-	rect.size_flags_horizontal    = Control.SIZE_EXPAND_FILL
-	rect.custom_minimum_size.y    = tile_size.y
-	rect.expand_mode              = TextureRect.EXPAND_IGNORE_SIZE
-	rect.mouse_filter             = Control.MOUSE_FILTER_IGNORE
+	rect.texture = tex
+	rect.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rect.custom_minimum_size.y = tile_size.y
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_tile_shader(rect, tile_size)
 	return rect
 
 
 # ── Кнопка ─────────────────────────────────────────────────────────────────────
+
 
 ## Применяет основной (текстурированный) стиль ко всем «больших» кнопкам:
 ## L|C|R фон из ассетов button/, прозрачные styleboxes с content-margin'ами
@@ -175,15 +174,15 @@ static func style_button(btn: Button, _legacy_color: Color = UIColors.BORDER) ->
 	# зоне = визуально сдвигается вверх. Сдвиг = (bottom - top) / 2 = 3 px.
 	for state: String in ["normal", "hover", "pressed", "disabled", "focus"]:
 		var sb := StyleBoxEmpty.new()
-		sb.set_content_margin(SIDE_LEFT,  l_size.x)
+		sb.set_content_margin(SIDE_LEFT, l_size.x)
 		sb.set_content_margin(SIDE_RIGHT, r_size.x)
-		sb.set_content_margin(SIDE_TOP,    0)
+		sb.set_content_margin(SIDE_TOP, 0)
 		sb.set_content_margin(SIDE_BOTTOM, 6)
 		btn.add_theme_stylebox_override(state, sb)
 
-	btn.add_theme_color_override("font_color",          UIColors.ACCENT)
-	btn.add_theme_color_override("font_hover_color",    Color.WHITE)
-	btn.add_theme_color_override("font_pressed_color",  UIColors.ACCENT)
+	btn.add_theme_color_override("font_color", UIColors.ACCENT)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", UIColors.ACCENT)
 	btn.add_theme_color_override("font_disabled_color", UIColors.MUTED)
 	btn.add_theme_font_size_override("font_size", 16)
 
@@ -206,17 +205,18 @@ static func style_button(btn: Button, _legacy_color: Color = UIColors.BORDER) ->
 
 
 # Сдвиг кнопки вниз при клике (px) + длительность анимации.
-const _PRESS_OFFSET_Y: float  = 3.0
+const _PRESS_OFFSET_Y: float = 3.0
 const _PRESS_ANIM_TIME: float = 0.08
+
 
 # Привязывает визуальную реакцию на hover/press/disabled:
 #   • hover     → лёгкий тёплый брайтенинг через modulate
 #   • disabled  → приглушение
 #   • press     → анимация «нажатия» (сдвиг bg вниз с возвратом)
 static func _wire_button_hover(btn: Button, bg: Control) -> void:
-	var c_normal   := Color(1.00, 1.00, 1.00, 1.00)
-	var c_hover    := Color(1.20, 1.18, 1.10, 1.00)   # тёплый брайтенинг
-	var c_disabled := Color(0.45, 0.45, 0.48, 1.00)   # десатурация без прозрачности
+	var c_normal := Color(1.00, 1.00, 1.00, 1.00)
+	var c_hover := Color(1.20, 1.18, 1.10, 1.00)  # тёплый брайтенинг
+	var c_disabled := Color(0.45, 0.45, 0.48, 1.00)  # десатурация без прозрачности
 
 	var apply_color := func() -> void:
 		if btn.disabled:
@@ -228,7 +228,7 @@ static func _wire_button_hover(btn: Button, bg: Control) -> void:
 
 	btn.mouse_entered.connect(apply_color)
 	btn.mouse_exited.connect(apply_color)
-	btn.draw.connect(apply_color)   # cheap: ловит изменения .disabled извне
+	btn.draw.connect(apply_color)  # cheap: ловит изменения .disabled извне
 
 	btn.button_down.connect(func() -> void: _animate_press(btn, true))
 	btn.button_up.connect(func() -> void: _animate_press(btn, false))
@@ -256,7 +256,7 @@ static func attach_click_sfx(btn: BaseButton) -> void:
 # запоминается на каждый press_down (актуальна, даже если layout пересчитал
 # координаты между нажатиями), сбрасывается после возврата.
 static func _animate_press(btn: BaseButton, down: bool) -> void:
-	var meta_tw   := "__press_tween"
+	var meta_tw := "__press_tween"
 	var meta_base := "__base_pos_y"
 
 	if down and not btn.has_meta(meta_base):
@@ -269,8 +269,7 @@ static func _animate_press(btn: BaseButton, down: bool) -> void:
 		var old: Tween = btn.get_meta(meta_tw)
 		if old and old.is_valid():
 			old.kill()
-	var tw := btn.create_tween() \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	var tw := btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(btn, "position:y", target_y, _PRESS_ANIM_TIME)
 	if not down:
 		# После возврата забываем базу — следующий press её перечитает заново.
@@ -280,16 +279,17 @@ static func _animate_press(btn: BaseButton, down: bool) -> void:
 
 # ── Текстурная иконочная кнопка ─────────────────────────────────────────────
 
+
 ## Создаёт TextureButton (иконка без текста) с hover-брайтенингом и press-
 ## анимацией — аналог style_button для обычных Button'ов. По умолчанию scale=0.5
 ## — стандартный @2× коэффициент проекта. Для @4× ассетов (carousel/) ставь 0.25.
 static func texture_icon_button(tex: Texture2D, scale: float = 0.5) -> TextureButton:
 	var btn := TextureButton.new()
 	btn.name = "Button"
-	btn.texture_normal           = tex
-	btn.ignore_texture_size      = true
-	btn.stretch_mode             = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
-	btn.custom_minimum_size      = tex.get_size() * scale
+	btn.texture_normal = tex
+	btn.ignore_texture_size = true
+	btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+	btn.custom_minimum_size = tex.get_size() * scale
 	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_wire_texture_button_hover(btn)
 	return btn
@@ -299,8 +299,8 @@ static func texture_icon_button(tex: Texture2D, scale: float = 0.5) -> TextureBu
 # Аналогично _wire_button_hover для Button, но без отдельного __TexturedBg —
 # для иконки modulate применяется прямо на саму кнопку.
 static func _wire_texture_button_hover(btn: BaseButton) -> void:
-	var c_normal   := Color(1.00, 1.00, 1.00, 1.00)
-	var c_hover    := Color(1.20, 1.18, 1.10, 1.00)   # тёплый брайтенинг
+	var c_normal := Color(1.00, 1.00, 1.00, 1.00)
+	var c_hover := Color(1.20, 1.18, 1.10, 1.00)  # тёплый брайтенинг
 	var c_disabled := Color(0.45, 0.45, 0.48, 1.00)
 
 	var apply_color := func() -> void:
@@ -322,12 +322,12 @@ static func _wire_texture_button_hover(btn: BaseButton) -> void:
 ## Применяет компактный stylebox-стиль к маленьким иконочным кнопкам
 ## (×-close, etc.) — там, где L|C|R фон не помещается.
 static func style_icon_button(btn: Button, color: Color = UIColors.DANGER) -> void:
-	btn.add_theme_stylebox_override("normal",   _btn_style(Color(0.12, 0.10, 0.20), color))
-	btn.add_theme_stylebox_override("hover",    _btn_style(Color(0.20, 0.16, 0.30), UIColors.ACCENT))
-	btn.add_theme_stylebox_override("pressed",  _btn_style(Color(0.08, 0.06, 0.14), color))
+	btn.add_theme_stylebox_override("normal", _btn_style(Color(0.12, 0.10, 0.20), color))
+	btn.add_theme_stylebox_override("hover", _btn_style(Color(0.20, 0.16, 0.30), UIColors.ACCENT))
+	btn.add_theme_stylebox_override("pressed", _btn_style(Color(0.08, 0.06, 0.14), color))
 	btn.add_theme_stylebox_override("disabled", _btn_style(Color(0.08, 0.07, 0.12), UIColors.MUTED))
-	btn.add_theme_color_override("font_color",          color)
-	btn.add_theme_color_override("font_hover_color",    Color.WHITE)
+	btn.add_theme_color_override("font_color", color)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
 	btn.add_theme_color_override("font_disabled_color", UIColors.MUTED)
 	attach_click_sfx(btn)
 
@@ -343,6 +343,7 @@ static func button(text: String, border_color: Color = UIColors.BORDER) -> Butto
 
 # ── Панель ─────────────────────────────────────────────────────────────────────
 
+
 ## Применяет стили Dark Omens к существующему PanelContainer.
 static func style_panel(p: PanelContainer, padding: int = 16) -> void:
 	var style := StyleBoxFlat.new()
@@ -352,6 +353,7 @@ static func style_panel(p: PanelContainer, padding: int = 16) -> void:
 	style.set_corner_radius_all(6)
 	style.set_content_margin_all(padding)
 	p.add_theme_stylebox_override("panel", style)
+
 
 ## Создаёт PanelContainer с тёмным фоном (legacy API).
 static func panel(padding: int = 16) -> PanelContainer:
@@ -368,20 +370,21 @@ static func panel(padding: int = 16) -> PanelContainer:
 
 const _MODAL_BG_TEX: Texture2D = preload("res://assets/modal/modal-panel-bg.png")
 const _MODAL_CLOSE_TEX: Texture2D = preload("res://assets/modal/modal-close-btn.png")
-const _MODAL_FRAME_MARGIN: float = 80.0   # ассеты @2× (×0.5); угловой орнамент ~75px
+const _MODAL_FRAME_MARGIN: float = 80.0  # ассеты @2× (×0.5); угловой орнамент ~75px
+
 
 ## StyleBoxTexture с орнаментной рамкой. content_pad — отступ контента внутрь
 ## от рамки (по краям рамка ~14px + воздух).
 static func make_modal_stylebox(content_pad: int = 26) -> StyleBoxTexture:
 	var sb := StyleBoxTexture.new()
 	sb.texture = _MODAL_BG_TEX
-	sb.texture_margin_left   = _MODAL_FRAME_MARGIN
-	sb.texture_margin_right  = _MODAL_FRAME_MARGIN
-	sb.texture_margin_top    = _MODAL_FRAME_MARGIN
+	sb.texture_margin_left = _MODAL_FRAME_MARGIN
+	sb.texture_margin_right = _MODAL_FRAME_MARGIN
+	sb.texture_margin_top = _MODAL_FRAME_MARGIN
 	sb.texture_margin_bottom = _MODAL_FRAME_MARGIN
-	sb.content_margin_left   = float(content_pad)
-	sb.content_margin_right  = float(content_pad)
-	sb.content_margin_top    = float(content_pad)
+	sb.content_margin_left = float(content_pad)
+	sb.content_margin_right = float(content_pad)
+	sb.content_margin_top = float(content_pad)
 	sb.content_margin_bottom = float(content_pad)
 	return sb
 
@@ -411,6 +414,7 @@ static func style_modal_close_button(btn: Button) -> void:
 
 # ── Поле ввода ─────────────────────────────────────────────────────────────────
 
+
 ## Применяет стили Dark Omens к существующему LineEdit.
 static func style_input(le: LineEdit) -> void:
 	var style_n := StyleBoxFlat.new()
@@ -428,10 +432,11 @@ static func style_input(le: LineEdit) -> void:
 	style_f.set_content_margin_all(8)
 
 	le.add_theme_stylebox_override("normal", style_n)
-	le.add_theme_stylebox_override("focus",  style_f)
-	le.add_theme_color_override("font_color",             UIColors.TEXT)
+	le.add_theme_stylebox_override("focus", style_f)
+	le.add_theme_color_override("font_color", UIColors.TEXT)
 	le.add_theme_color_override("font_placeholder_color", UIColors.MUTED)
 	le.add_theme_font_size_override("font_size", 14)
+
 
 ## Создаёт стилизованный LineEdit (legacy API).
 static func input(placeholder: String = "", secret: bool = false) -> LineEdit:
@@ -446,10 +451,10 @@ static func input(placeholder: String = "", secret: bool = false) -> LineEdit:
 
 ## Создаёт строку «Метка + LineEdit» и возвращает [HBoxContainer, LineEdit].
 static func labeled_input(
-	label_text:  String,
+	label_text: String,
 	placeholder: String,
-	label_w:     int  = 100,
-	secret:      bool = false,
+	label_w: int = 100,
+	secret: bool = false,
 ) -> Array:
 	var hbox := HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 8)
@@ -471,29 +476,31 @@ static func labeled_input(
 
 # ── Выпадающий список ─────────────────────────────────────────────────────────
 
+
 ## Применяет стили Dark Omens к существующему OptionButton.
 static func style_option_button(ob: OptionButton) -> void:
 	var style_n := StyleBoxFlat.new()
-	style_n.bg_color    = Color(0.12, 0.10, 0.20)
+	style_n.bg_color = Color(0.12, 0.10, 0.20)
 	style_n.border_color = UIColors.BORDER
 	style_n.set_border_width_all(1)
 	style_n.set_corner_radius_all(5)
 	style_n.set_content_margin_all(10)
 
 	var style_h := StyleBoxFlat.new()
-	style_h.bg_color    = Color(0.20, 0.16, 0.30)
+	style_h.bg_color = Color(0.20, 0.16, 0.30)
 	style_h.border_color = UIColors.ACCENT
 	style_h.set_border_width_all(1)
 	style_h.set_corner_radius_all(5)
 	style_h.set_content_margin_all(10)
 
-	ob.add_theme_stylebox_override("normal",  style_n)
-	ob.add_theme_stylebox_override("hover",   style_h)
+	ob.add_theme_stylebox_override("normal", style_n)
+	ob.add_theme_stylebox_override("hover", style_h)
 	ob.add_theme_stylebox_override("pressed", style_h)
-	ob.add_theme_stylebox_override("focus",   style_h)
-	ob.add_theme_color_override("font_color",       UIColors.TEXT)
+	ob.add_theme_stylebox_override("focus", style_h)
+	ob.add_theme_color_override("font_color", UIColors.TEXT)
 	ob.add_theme_color_override("font_hover_color", Color.WHITE)
 	ob.add_theme_font_size_override("font_size", 14)
+
 
 ## Создаёт стилизованный OptionButton (legacy API).
 static func option_button(items: Array[String] = []) -> OptionButton:
@@ -508,14 +515,15 @@ static func option_button(items: Array[String] = []) -> OptionButton:
 
 # ── Слайдер громкости ──────────────────────────────────────────────────────────
 
+
 ## Строка «Метка + HSlider + 0-100%». Слайдер 0..1 со step=0.01; при движении
 ## вызывает `apply_fn.call(value)` для live-preview. Возвращает HSlider —
 ## вызывающая сторона читает финальное значение при «Save».
 static func volume_slider_row(
-	parent:    Control,
+	parent: Control,
 	label_key: String,
-	initial:   float,
-	apply_fn:  Callable,
+	initial: float,
+	apply_fn: Callable,
 ) -> HSlider:
 	var row := HBoxContainer.new()
 	row.name = "VolumeRow_%s" % label_key
@@ -535,8 +543,8 @@ static func volume_slider_row(
 	slider.name = "Slider"
 	slider.min_value = 0.0
 	slider.max_value = 1.0
-	slider.step      = 0.01
-	slider.value     = initial
+	slider.step = 0.01
+	slider.value = initial
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.custom_minimum_size = Vector2(0, 22)
 	row.add_child(slider)
@@ -551,22 +559,24 @@ static func volume_slider_row(
 	pct.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(pct)
 
-	slider.value_changed.connect(func(v: float) -> void:
-		apply_fn.call(v)
-		pct.text = "%d%%" % roundi(v * 100.0)
+	slider.value_changed.connect(
+		func(v: float) -> void:
+			apply_fn.call(v)
+			pct.text = "%d%%" % roundi(v * 100.0)
 	)
 	return slider
 
 
 # ── Лейбл ──────────────────────────────────────────────────────────────────────
 
+
 ## Однострочная фабрика стилизованного Label'а — заменяет 4-строчный паттерн
 ## (Label.new + text + font_size + font_color) на один вызов.
 static func label(
-	text:     String,
-	size:     int,
-	color:    Color = UIColors.TEXT,
-	align:    int   = HORIZONTAL_ALIGNMENT_LEFT,
+	text: String,
+	size: int,
+	color: Color = UIColors.TEXT,
+	align: int = HORIZONTAL_ALIGNMENT_LEFT,
 ) -> Label:
 	var lbl := Label.new()
 	lbl.text = text
@@ -589,7 +599,9 @@ static func modal_title(text: String, color: Color = UIColors.ACCENT) -> Label:
 ## углу (как у ModalDialog). on_close вызывается по нажатию крестика; если
 ## Callable пустой — крестик не добавляется. Добавляй первым ребёнком в VBox
 ## панели — крестик выезжает за край контента на орнаментную рамку.
-static func modal_header(title_text: String, on_close: Callable = Callable(), color: Color = UIColors.ACCENT) -> Control:
+static func modal_header(
+	title_text: String, on_close: Callable = Callable(), color: Color = UIColors.ACCENT
+) -> Control:
 	var header := Control.new()
 	header.name = "Header"
 	header.custom_minimum_size = Vector2(0, 40)
@@ -607,9 +619,9 @@ static func modal_header(title_text: String, on_close: Callable = Callable(), co
 		style_modal_close_button(close)
 		close.anchor_left = 1.0
 		close.anchor_right = 1.0
-		close.offset_left   = -10.0
-		close.offset_top    = -38.0
-		close.offset_right  = 38.0
+		close.offset_left = -10.0
+		close.offset_top = -38.0
+		close.offset_right = 38.0
 		close.offset_bottom = 10.0
 		close.pressed.connect(on_close)
 		header.add_child(close)
@@ -619,6 +631,7 @@ static func modal_header(title_text: String, on_close: Callable = Callable(), co
 
 ## Множитель размера шрифта в модалках.
 const MODAL_FONT_SCALE: float = 1.5
+
 
 ## Рекурсивно увеличивает размер шрифта всех текстовых контролов поддерева в
 ## factor раз. Вызывать ОДИН раз после построения контента модалки (повторный
@@ -639,6 +652,7 @@ static func scale_modal_text(node: Node, factor: float = MODAL_FONT_SCALE) -> vo
 ## Цвет разделителей в модалках — почти чёрный, под тёмную рамку.
 const MODAL_LINE_COLOR: Color = Color("#0b0b09")
 
+
 ## Создаёт горизонтальный разделитель и добавляет его в parent.
 static func separator(parent: Control, color: Color = MODAL_LINE_COLOR) -> void:
 	var sep := HSeparator.new()
@@ -657,14 +671,15 @@ static func style_separator(sep: HSeparator, color: Color = MODAL_LINE_COLOR) ->
 
 # ── Модальное окно ─────────────────────────────────────────────────────────────
 
+
 ## Создаёт модальное окно: затемнение + панель с заголовком.
 ## content_builder(vbox: VBoxContainer) вызывается для наполнения контента.
 ## Возвращает корневой ColorRect — вызови queue_free() чтобы закрыть.
 static func modal(
-	parent:          Control,
-	title:           String,
+	parent: Control,
+	title: String,
 	content_builder: Callable,
-	min_width:       int = 440,
+	min_width: int = 440,
 ) -> ColorRect:
 	var backdrop := ColorRect.new()
 	backdrop.name = "ModalBackdrop"
@@ -694,12 +709,13 @@ static func modal(
 	separator(vbox)
 
 	content_builder.call(vbox)
-	scale_modal_text(vbox)   # текст модалок крупнее (×1.5)
+	scale_modal_text(vbox)  # текст модалок крупнее (×1.5)
 
 	return backdrop
 
 
 # ── Оверлей переподключения ────────────────────────────────────────────────────
+
 
 ## Создаёт полупрозрачный оверлей с текстом и добавляет его в parent.
 ## Возвращает ColorRect оверлея.
@@ -714,7 +730,7 @@ static func reconnect_overlay(parent: Control, text: String) -> ColorRect:
 	lbl.name = "Message"
 	lbl.text = text
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	lbl.add_theme_font_size_override("font_size", 22)
 	lbl.add_theme_color_override("font_color", UIColors.WARNING)
@@ -725,6 +741,7 @@ static func reconnect_overlay(parent: Control, text: String) -> ColorRect:
 
 
 # ── Внутренние ────────────────────────────────────────────────────────────────
+
 
 static func _btn_style(bg: Color, border: Color) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()

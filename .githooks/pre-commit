@@ -14,15 +14,24 @@ staged=$(git diff --cached --name-only --diff-filter=ACM -- '*.gd')
 
 fail=0
 
-# 1) gdlint (gdtoolkit) — стиль, неиспользуемое, сложность, имена. Конфиг — gdlintrc.
+# 1) gdformat --check — код должен быть по канону gdformat.
+if python -m gdtoolkit.formatter --version >/dev/null 2>&1; then
+	# shellcheck disable=SC2086
+	python -m gdtoolkit.formatter --check $staged || {
+		fail=1
+		echo "  -> отформатируй: gdformat <файлы> (или: python -m gdtoolkit.formatter <файлы>)"
+	}
+fi
+
+# 2) gdlint (gdtoolkit) — стиль, неиспользуемое, сложность, имена. Конфиг — gdlintrc.
 if python -m gdtoolkit.linter --version >/dev/null 2>&1; then
 	# shellcheck disable=SC2086
 	python -m gdtoolkit.linter $staged || fail=1
 else
-	echo "WARN: gdlint не найден (pip install --user gdtoolkit) — пропускаю gdlint"
+	echo "WARN: gdtoolkit не найден (pip install --user gdtoolkit) — пропускаю gdlint/gdformat"
 fi
 
-# 2) Имена программных нод: после Type.new() в дереве/возврате нужен node.name.
+# 3) Имена программных нод: после Type.new() в дереве/возврате нужен node.name.
 # shellcheck disable=SC2086
 python .tools/lint_node_names.py $staged || fail=1
 

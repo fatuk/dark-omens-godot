@@ -28,7 +28,7 @@ extends RefCounted
 
 const PATH := "res://data/monsters.json"
 
-static var _list:  Array      = []
+static var _list: Array = []
 static var _by_id: Dictionary = {}
 
 
@@ -68,7 +68,9 @@ static func non_epic() -> Array:
 
 ## Эффективная стойкость с учётом эпик-масштабирования по числу сыщиков.
 static func toughness_for(m: Dictionary, investigator_count: int) -> int:
-	return int(m.get("toughness", 0)) + int(m.get("toughnessPerInvestigator", 0)) * investigator_count
+	return (
+		int(m.get("toughness", 0)) + int(m.get("toughnessPerInvestigator", 0)) * investigator_count
+	)
 
 
 static func _load() -> void:

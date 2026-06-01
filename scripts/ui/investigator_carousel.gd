@@ -19,12 +19,11 @@ extends Control
 ##   index_changed(idx)  — на любой shift (включая первичный set_data)
 ##   center_clicked()    — клик по центральной карточке
 
-
-const ARROW_TEX_LEFT:  Texture2D = preload("res://assets/carousel/L_arrow.png")
+const ARROW_TEX_LEFT: Texture2D = preload("res://assets/carousel/L_arrow.png")
 const ARROW_TEX_RIGHT: Texture2D = preload("res://assets/carousel/R_arrow.png")
 
 const VISIBLE_SLOTS := 5
-const CENTER_SLOT   := 2
+const CENTER_SLOT := 2
 
 # Per-card UI рендерится в SubViewport такого размера; затем как текстура
 # натягивается на 3D-quad. Аспект 1:1 — центральная карточка квадратная,
@@ -35,9 +34,9 @@ const CENTER_SLOT   := 2
 # (шрифты, отступы, размеры бейджа). SubViewport.size_2d_override стрейтчит
 # UI с CARD_UI_SIZE до CARD_TEX_SIZE — это даёт supersampling × 3 и резкий
 # текст без перетряхивания всех числовых отступов вёрстки.
-const CARD_TEX_SIZE  := Vector2i(1536, 1536)
-const CARD_UI_SIZE   := Vector2i(512, 512)
-const CARD_QUAD_SIZE := Vector2(1.8, 1.8)   # размер 3D-меша (мировые единицы)
+const CARD_TEX_SIZE := Vector2i(1536, 1536)
+const CARD_UI_SIZE := Vector2i(512, 512)
+const CARD_QUAD_SIZE := Vector2(1.8, 1.8)  # размер 3D-меша (мировые единицы)
 
 # 3D-позиции/повороты/масштаб для каждого слота. Лёгкая «книжная» развёртка —
 # слабые углы поворота и почти одинаковый Z, чтобы общий вид оставался
@@ -46,24 +45,24 @@ const CARD_QUAD_SIZE := Vector2(1.8, 1.8)   # размер 3D-меша (миро
 const SLOT_3D_POSITIONS := [
 	Vector3(-2.8, 0.0, -0.4),  # far left
 	Vector3(-1.7, 0.0, -0.1),  # left
-	Vector3( 0.0, 0.0,  0.3),  # center (немного вперёд)
-	Vector3( 1.7, 0.0, -0.1),  # right
-	Vector3( 2.8, 0.0, -0.4),  # far right
+	Vector3(0.0, 0.0, 0.3),  # center (немного вперёд)
+	Vector3(1.7, 0.0, -0.1),  # right
+	Vector3(2.8, 0.0, -0.4),  # far right
 ]
 const SLOT_3D_ROTATIONS_DEG := [-20.0, -10.0, 0.0, 10.0, 20.0]
 # Half-width карточки = CARD_QUAD_SIZE.x/2 * scale. Сумма соседних half-width'ов
 # должна быть < соответствующего spacing в SLOT_3D_POSITIONS — иначе карточки
 # перекрываются. Текущие значения дают ~0.08 world unit зазор между всеми
 # соседними слотами при scale center=1.3.
-const SLOT_SCALES     := [0.85, 1.05, 1.3, 1.05, 0.85]
+const SLOT_SCALES := [0.85, 1.05, 1.3, 1.05, 0.85]
 const SLOT_BRIGHTNESS := [0.45, 0.65, 1.00, 0.65, 0.45]
 
 # Мягкая drop-тень под карточками — дочерний quad чуть больше карточки,
 # тёмный полупрозрачный, со сдвигом вниз. Как ребёнок меша наследует
 # трансформ — анимировать отдельно не нужно.
-const SHADOW_QUAD_SCALE: float = 1.2                  # размер тени относительно карточки
-const SHADOW_OFFSET     := Vector3(0.0, -0.15, 0.0)   # сдвиг: вниз
-const SHADOW_ALPHA:      float = 0.85
+const SHADOW_QUAD_SCALE: float = 1.2  # размер тени относительно карточки
+const SHADOW_OFFSET := Vector3(0.0, -0.15, 0.0)  # сдвиг: вниз
+const SHADOW_ALPHA: float = 0.85
 
 # Глобальный сдвиг карточек по Y в 3D. 0 = карточки центрированы в viewport'е
 # (после увеличения FOV-зумом они почти заполняют его по высоте, сдвиг больше
@@ -97,10 +96,9 @@ const ANIM_DURATION: float = 0.50
 # Стрелка слегка дёргается «наружу» при перелистывании в её сторону.
 # Параметры подобраны короткими, чтобы укладываться внутрь ANIM_DURATION
 # и не отвлекать от анимации карточек.
-const ARROW_NUDGE_PX:           float = 12.0
+const ARROW_NUDGE_PX: float = 12.0
 const ARROW_NUDGE_OUT_DURATION: float = 0.10
 const ARROW_NUDGE_BACK_DURATION: float = 0.18
-
 
 ## Любая смена центра — включая первичный set_data и shift по стрелке/клику.
 signal index_changed(idx: int)
@@ -108,31 +106,29 @@ signal index_changed(idx: int)
 ## Клик по центральной карточке.
 signal center_clicked
 
-
 # ── Данные (своя копия — picker может иметь свою) ────────────────────────────
-var _investigators: Array      = []
-var _taken:         Dictionary = {}
-var _index:         int        = 0
-
+var _investigators: Array = []
+var _taken: Dictionary = {}
+var _index: int = 0
 
 # ── 3D-сцена ─────────────────────────────────────────────────────────────────
-var _card_meshes: Array                 = []   # MeshInstance3D[]
-var _cards:       Array[InvestigatorCard] = []
-var _prev_btn:    TextureButton
-var _next_btn:    TextureButton
-var _world_vp:    SubViewport
-var _camera:      Camera3D
+var _card_meshes: Array = []  # MeshInstance3D[]
+var _cards: Array[InvestigatorCard] = []
+var _prev_btn: TextureButton
+var _next_btn: TextureButton
+var _world_vp: SubViewport
+var _camera: Camera3D
 var _placeholder_tex: ImageTexture
 var _card_shadow_tex: ImageTexture
 
-
 # ── Lifecycle ────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	_placeholder_tex = _build_placeholder_texture()
 	_card_shadow_tex = _build_card_shadow_texture()
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	size_flags_vertical   = Control.SIZE_EXPAND_FILL
+	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# Минимум намеренно невысокий: карусель и так SIZE_EXPAND_FILL — заберёт
 	# всё свободное место. Высокий минимум (был 760) при крупной InfoBar
 	# выдавливал action-bar за нижний край окна.
@@ -149,10 +145,11 @@ func _ready() -> void:
 
 # ── Public API ───────────────────────────────────────────────────────────────
 
+
 ## Заполняет карусель данными и снапает на start_index. Эмитит index_changed.
 func set_data(investigators: Array, taken: Dictionary, start_index: int = 0) -> void:
 	_investigators = investigators
-	_taken         = taken.duplicate()
+	_taken = taken.duplicate()
 	if _investigators.is_empty():
 		return
 	var n: int = _investigators.size()
@@ -181,7 +178,7 @@ func _force_initial_render() -> void:
 	await tree.process_frame
 	# За время await ноду могли удалить — проверяем перед обращением к _world_vp.
 	if is_instance_valid(_world_vp):
-		_on_mesh_tween_finished()   # усыпит _world_vp, если активных tween'ов нет
+		_on_mesh_tween_finished()  # усыпит _world_vp, если активных tween'ов нет
 
 
 ## Обновляет map занятости (без анимации).
@@ -201,6 +198,7 @@ func selected_name() -> String:
 
 
 # ── Сборка 3D-сцены ──────────────────────────────────────────────────────────
+
 
 func _build_3d_scene() -> void:
 	# SubViewportContainer хостит 3D-сцену и stretch'ит её на размер self.
@@ -226,13 +224,13 @@ func _build_3d_scene() -> void:
 	# обратно в _on_mesh_tween_finished. Repaint per-card vp бампает наш UPDATE_ONCE
 	# (см. _request_card_repaint).
 	_world_vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-	_world_vp.msaa_3d = Viewport.MSAA_4X   # сглаживание — иначе края полигонов лесенкой
+	_world_vp.msaa_3d = Viewport.MSAA_4X  # сглаживание — иначе края полигонов лесенкой
 	spvc.add_child(_world_vp)
 
 	_camera = Camera3D.new()
 	_camera.name = "Camera"
-	_camera.position   = CAM_POSITION
-	_camera.fov        = CAM_FOV
+	_camera.position = CAM_POSITION
+	_camera.fov = CAM_FOV
 	_camera.projection = Camera3D.PROJECTION_PERSPECTIVE
 	_world_vp.add_child(_camera)
 
@@ -278,11 +276,11 @@ func _make_3d_card_mesh(ui_vp: SubViewport) -> MeshInstance3D:
 	quad.size = CARD_QUAD_SIZE
 
 	var mat := StandardMaterial3D.new()
-	mat.shading_mode      = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.albedo_texture    = ui_vp.get_texture()
-	mat.transparency      = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.cull_mode         = BaseMaterial3D.CULL_DISABLED   # видны с обеих сторон
-	mat.texture_filter    = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.albedo_texture = ui_vp.get_texture()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED  # видны с обеих сторон
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 
 	# Имя проставляется снаружи (per-slot index) — здесь только конструируем.
 	var mi := MeshInstance3D.new()
@@ -300,17 +298,17 @@ func _make_card_shadow() -> MeshInstance3D:
 	quad.size = CARD_QUAD_SIZE * SHADOW_QUAD_SCALE
 
 	var mat := StandardMaterial3D.new()
-	mat.shading_mode   = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.albedo_texture = _card_shadow_tex
-	mat.albedo_color   = Color(1.0, 1.0, 1.0, SHADOW_ALPHA)
-	mat.transparency   = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.cull_mode      = BaseMaterial3D.CULL_DISABLED
+	mat.albedo_color = Color(1.0, 1.0, 1.0, SHADOW_ALPHA)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 
 	var sh := MeshInstance3D.new()
 	sh.name = "CardShadow"
 	sh.mesh = quad
 	sh.material_override = mat
-	sh.position = SHADOW_OFFSET   # local: за карточкой (z<0), сдвинута вниз
+	sh.position = SHADOW_OFFSET  # local: за карточкой (z<0), сдвинута вниз
 	return sh
 
 
@@ -320,8 +318,8 @@ func _slot_transform(slot: int) -> Dictionary:
 	var s: float = SLOT_SCALES[slot]
 	var b: float = SLOT_BRIGHTNESS[slot]
 	return {
-		"pos":   SLOT_3D_POSITIONS[slot] + Vector3(0.0, SLOT_Y_OFFSET, 0.0),
-		"rot":   Vector3(0.0, deg_to_rad(SLOT_3D_ROTATIONS_DEG[slot]), 0.0),
+		"pos": SLOT_3D_POSITIONS[slot] + Vector3(0.0, SLOT_Y_OFFSET, 0.0),
+		"rot": Vector3(0.0, deg_to_rad(SLOT_3D_ROTATIONS_DEG[slot]), 0.0),
 		"scale": Vector3(s, s, 1.0),
 		"color": Color(b, b, b, 1.0),
 	}
@@ -338,7 +336,7 @@ func _apply_3d_slot(mesh: MeshInstance3D, slot: int) -> void:
 	var t := _slot_transform(slot)
 	mesh.position = t.pos
 	mesh.rotation = t.rot
-	mesh.scale    = t.scale
+	mesh.scale = t.scale
 	var mat := mesh.material_override as StandardMaterial3D
 	if mat:
 		mat.albedo_color = t.color
@@ -349,6 +347,7 @@ func _apply_3d_slot(mesh: MeshInstance3D, slot: int) -> void:
 
 
 # ── Стрелки ──────────────────────────────────────────────────────────────────
+
 
 func _build_arrows() -> void:
 	_prev_btn = _make_arrow_btn(ARROW_TEX_LEFT)
@@ -367,9 +366,9 @@ func _build_arrows() -> void:
 func _make_arrow_btn(tex: Texture2D) -> TextureButton:
 	var b := TextureButton.new()
 	b.name = "Button"
-	b.texture_normal         = tex
-	b.ignore_texture_size    = true
-	b.stretch_mode           = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+	b.texture_normal = tex
+	b.ignore_texture_size = true
+	b.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
 	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	return b
 
@@ -379,17 +378,17 @@ func _make_arrow_btn(tex: Texture2D) -> TextureButton:
 # 0.5 был в 2× крупнее макета.
 func _position_arrow(btn: TextureButton, x_anchor: float) -> void:
 	var tex_size: Vector2 = btn.texture_normal.get_size() * 0.25
-	btn.anchor_left   = x_anchor
-	btn.anchor_right  = x_anchor
-	btn.anchor_top    = ARROW_Y_ANCHOR
+	btn.anchor_left = x_anchor
+	btn.anchor_right = x_anchor
+	btn.anchor_top = ARROW_Y_ANCHOR
 	btn.anchor_bottom = ARROW_Y_ANCHOR
-	btn.offset_left   = -tex_size.x * 0.5
-	btn.offset_right  =  tex_size.x * 0.5
-	btn.offset_top    = -tex_size.y * 0.5
-	btn.offset_bottom =  tex_size.y * 0.5
+	btn.offset_left = -tex_size.x * 0.5
+	btn.offset_right = tex_size.x * 0.5
+	btn.offset_top = -tex_size.y * 0.5
+	btn.offset_bottom = tex_size.y * 0.5
 	# Запоминаем «домашние» offset'ы — к ним возвращаемся после nudge'а
 	# (см. _animate_arrow_nudge).
-	btn.set_meta("rest_offset_left",  btn.offset_left)
+	btn.set_meta("rest_offset_left", btn.offset_left)
 	btn.set_meta("rest_offset_right", btn.offset_right)
 
 
@@ -411,15 +410,27 @@ func _animate_arrow_nudge(direction: int) -> void:
 	var d: float = float(direction) * ARROW_NUDGE_PX
 	var tw := btn.create_tween().set_trans(Tween.TRANS_QUAD)
 	# Phase 1 — дёрг наружу (оба offset'а параллельно).
-	tw.tween_property(btn, "offset_left",  rest_l + d, ARROW_NUDGE_OUT_DURATION).set_ease(Tween.EASE_OUT)
-	tw.parallel().tween_property(btn, "offset_right", rest_r + d, ARROW_NUDGE_OUT_DURATION).set_ease(Tween.EASE_OUT)
+	tw.tween_property(btn, "offset_left", rest_l + d, ARROW_NUDGE_OUT_DURATION).set_ease(
+		Tween.EASE_OUT
+	)
+	(
+		tw
+		. parallel()
+		. tween_property(btn, "offset_right", rest_r + d, ARROW_NUDGE_OUT_DURATION)
+		. set_ease(Tween.EASE_OUT)
+	)
 	# Phase 2 — возврат в rest (chain ждёт phase 1).
-	tw.chain().tween_property(btn, "offset_left",  rest_l, ARROW_NUDGE_BACK_DURATION).set_ease(Tween.EASE_IN)
-	tw.parallel().tween_property(btn, "offset_right", rest_r, ARROW_NUDGE_BACK_DURATION).set_ease(Tween.EASE_IN)
+	tw.chain().tween_property(btn, "offset_left", rest_l, ARROW_NUDGE_BACK_DURATION).set_ease(
+		Tween.EASE_IN
+	)
+	tw.parallel().tween_property(btn, "offset_right", rest_r, ARROW_NUDGE_BACK_DURATION).set_ease(
+		Tween.EASE_IN
+	)
 	btn.set_meta("__nudge_tw", tw)
 
 
 # ── Заполнение карточек ──────────────────────────────────────────────────────
+
 
 func _populate_card(phys_idx: int, inv: Dictionary) -> void:
 	var view: InvestigatorCard = _cards[phys_idx]
@@ -491,6 +502,7 @@ func _on_mesh_tween_finished() -> void:
 
 # ── Клики по карточкам ───────────────────────────────────────────────────────
 
+
 # gui_input на self. Левый клик → ray-cast в плоскость карточек, попавший
 # слот определяет дельту перематывания (slot - CENTER_SLOT).
 func _on_gui_input(event: InputEvent) -> void:
@@ -522,13 +534,12 @@ func _hit_test_card(local_click_pos: Vector2) -> int:
 		return -1
 	var vp_size: Vector2 = Vector2(_world_vp.size)
 	var vp_pos := Vector2(
-		local_click_pos.x * (vp_size.x / size.x),
-		local_click_pos.y * (vp_size.y / size.y)
+		local_click_pos.x * (vp_size.x / size.x), local_click_pos.y * (vp_size.y / size.y)
 	)
 	var ray_origin: Vector3 = _camera.project_ray_origin(vp_pos)
-	var ray_dir:    Vector3 = _camera.project_ray_normal(vp_pos)
+	var ray_dir: Vector3 = _camera.project_ray_normal(vp_pos)
 
-	var best_slot: int   = -1
+	var best_slot: int = -1
 	var best_dist: float = INF
 	var half := CARD_QUAD_SIZE * 0.5
 	for i: int in range(_card_meshes.size()):
@@ -553,6 +564,7 @@ func _hit_test_card(local_click_pos: Vector2) -> int:
 
 # ── Анимация shift'а ─────────────────────────────────────────────────────────
 
+
 # Сдвиг карусели на delta позиций (знаковый). delta=+1/-1 — соседний шаг,
 # delta=±2 — прыжок через одну (клик по дальней боковой карточке).
 #
@@ -576,7 +588,7 @@ func _animated_shift(delta: int) -> void:
 		_kill_mesh_tween(_card_meshes[i], i)
 
 	var n: int = _investigators.size()
-	var step: int = delta                       # знаковая величина (±1, ±2, …)
+	var step: int = delta  # знаковая величина (±1, ±2, …)
 	var step_sign: int = 1 if step > 0 else -1
 	_index = ((_index + step) % n + n) % n
 
@@ -588,8 +600,9 @@ func _animated_shift(delta: int) -> void:
 			_animate_mesh_to_slot(mesh, new_slot)
 			mesh.set_meta("logical_slot", new_slot)
 		else:
-			var wrap_slot: int = (new_slot + VISIBLE_SLOTS) if new_slot < 0 \
-				else (new_slot - VISIBLE_SLOTS)
+			var wrap_slot: int = (
+				(new_slot + VISIBLE_SLOTS) if new_slot < 0 else (new_slot - VISIBLE_SLOTS)
+			)
 			_wrap_mesh(mesh, i, step_sign, wrap_slot)
 			mesh.set_meta("logical_slot", wrap_slot)
 
@@ -619,11 +632,12 @@ func _kill_mesh_tween(mesh: MeshInstance3D, phys_idx: int) -> void:
 func _animate_mesh_to_slot(mesh: MeshInstance3D, slot: int) -> void:
 	var t := _slot_transform(slot)
 	var mat := mesh.material_override as StandardMaterial3D
-	var tw := mesh.create_tween().set_parallel(true) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tw.tween_property(mesh, "position", t.pos,   ANIM_DURATION)
-	tw.tween_property(mesh, "rotation", t.rot,   ANIM_DURATION)
-	tw.tween_property(mesh, "scale",    t.scale, ANIM_DURATION)
+	var tw := mesh.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
+		Tween.EASE_OUT
+	)
+	tw.tween_property(mesh, "position", t.pos, ANIM_DURATION)
+	tw.tween_property(mesh, "rotation", t.rot, ANIM_DURATION)
+	tw.tween_property(mesh, "scale", t.scale, ANIM_DURATION)
 	if mat:
 		tw.tween_property(mat, "albedo_color", t.color, ANIM_DURATION)
 	tw.finished.connect(_on_mesh_tween_finished)
@@ -634,22 +648,21 @@ func _animate_mesh_to_slot(mesh: MeshInstance3D, slot: int) -> void:
 # Wrap-анимация одним прерываемым tween-чейном: phase 1 (вылет+fade out) →
 # callback (data swap + teleport на entry side) → phase 2 (въезд+fade in).
 # Без await — иначе при kill'е промежуточный код повиснет.
-func _wrap_mesh(mesh: MeshInstance3D, phys_idx: int, direction: int,
-		wrap_slot: int) -> void:
+func _wrap_mesh(mesh: MeshInstance3D, phys_idx: int, direction: int, wrap_slot: int) -> void:
 	var off_dist: float = 7.0
 	# direction>0 — карусель прокручивается вперёд: карточка вылетает влево,
 	# появляется справа (wrap_slot=VISIBLE_SLOTS-1). Зеркально для direction<0.
-	var off_x:   float = -off_dist if direction > 0 else  off_dist
-	var entry_x: float =  off_dist if direction > 0 else -off_dist
+	var off_x: float = -off_dist if direction > 0 else off_dist
+	var entry_x: float = off_dist if direction > 0 else -off_dist
 
 	var t := _slot_transform(wrap_slot)
 	var mat := mesh.material_override as StandardMaterial3D
-	var smat := _card_shadow_mat(mesh)   # тень фейдится в ногу с карточкой
-	var off_pos   := Vector3(off_x,   mesh.position.y, mesh.position.z)
-	var entry_pos := Vector3(entry_x, t.pos.y,         t.pos.z)
+	var smat := _card_shadow_mat(mesh)  # тень фейдится в ногу с карточкой
+	var off_pos := Vector3(off_x, mesh.position.y, mesh.position.z)
+	var entry_pos := Vector3(entry_x, t.pos.y, t.pos.z)
 	var transparent_color: Color = t.color
 	transparent_color.a = 0.0
-	var shadow_hidden  := Color(1.0, 1.0, 1.0, 0.0)
+	var shadow_hidden := Color(1.0, 1.0, 1.0, 0.0)
 	var shadow_visible := Color(1.0, 1.0, 1.0, SHADOW_ALPHA)
 
 	var tw := mesh.create_tween().set_trans(Tween.TRANS_CUBIC)
@@ -659,30 +672,45 @@ func _wrap_mesh(mesh: MeshInstance3D, phys_idx: int, direction: int,
 	if mat:
 		var fade := mat.albedo_color
 		fade.a = 0.0
-		tw.parallel().tween_property(mat, "albedo_color", fade, ANIM_DURATION * 0.5).set_ease(Tween.EASE_IN)
+		tw.parallel().tween_property(mat, "albedo_color", fade, ANIM_DURATION * 0.5).set_ease(
+			Tween.EASE_IN
+		)
 	if smat:
-		tw.parallel().tween_property(smat, "albedo_color", shadow_hidden, ANIM_DURATION * 0.5).set_ease(Tween.EASE_IN)
+		(
+			tw
+			. parallel()
+			. tween_property(smat, "albedo_color", shadow_hidden, ANIM_DURATION * 0.5)
+			. set_ease(Tween.EASE_IN)
+		)
 
 	# Mid: подменяем данные + телепорт на entry side.
-	tw.chain().tween_callback(func() -> void:
-		var n: int = _investigators.size()
-		var data_idx: int = (_index + wrap_slot - CENTER_SLOT + n) % n
-		_populate_card(phys_idx, _investigators[data_idx])
-		mesh.position = entry_pos
-		mesh.rotation = t.rot
-		mesh.scale    = t.scale
-		if mat:
-			mat.albedo_color = transparent_color
-		if smat:
-			smat.albedo_color = shadow_hidden
+	tw.chain().tween_callback(
+		func() -> void:
+			var n: int = _investigators.size()
+			var data_idx: int = (_index + wrap_slot - CENTER_SLOT + n) % n
+			_populate_card(phys_idx, _investigators[data_idx])
+			mesh.position = entry_pos
+			mesh.rotation = t.rot
+			mesh.scale = t.scale
+			if mat:
+				mat.albedo_color = transparent_color
+			if smat:
+				smat.albedo_color = shadow_hidden
 	)
 
 	# Phase 2 (parallel): въезд в слот + alpha→target (карточка и тень).
 	tw.tween_property(mesh, "position", t.pos, ANIM_DURATION * 0.5).set_ease(Tween.EASE_OUT)
 	if mat:
-		tw.parallel().tween_property(mat, "albedo_color", t.color, ANIM_DURATION * 0.5).set_ease(Tween.EASE_OUT)
+		tw.parallel().tween_property(mat, "albedo_color", t.color, ANIM_DURATION * 0.5).set_ease(
+			Tween.EASE_OUT
+		)
 	if smat:
-		tw.parallel().tween_property(smat, "albedo_color", shadow_visible, ANIM_DURATION * 0.5).set_ease(Tween.EASE_OUT)
+		(
+			tw
+			. parallel()
+			. tween_property(smat, "albedo_color", shadow_visible, ANIM_DURATION * 0.5)
+			. set_ease(Tween.EASE_OUT)
+		)
 
 	tw.finished.connect(_on_mesh_tween_finished)
 	mesh.set_meta("__tween", tw)
@@ -690,6 +718,7 @@ func _wrap_mesh(mesh: MeshInstance3D, phys_idx: int, direction: int,
 
 
 # ── Текстуры (placeholder и тень) ────────────────────────────────────────────
+
 
 func _build_placeholder_texture() -> ImageTexture:
 	# Заметно ярче UIColors.SURFACE — чтобы карточка с отсутствующим портретом
@@ -711,6 +740,6 @@ func _build_card_shadow_texture() -> ImageTexture:
 		for x in range(s):
 			var edge: float = float(mini(mini(x, s - 1 - x), mini(y, s - 1 - y)))
 			var a: float = clampf(edge / falloff, 0.0, 1.0)
-			a = a * a * (3.0 - 2.0 * a)   # smoothstep — мягче на стыке
+			a = a * a * (3.0 - 2.0 * a)  # smoothstep — мягче на стыке
 			img.set_pixel(x, y, Color(0.0, 0.0, 0.0, a))
 	return ImageTexture.create_from_image(img)

@@ -5,15 +5,15 @@ extends CanvasLayer
 ## Строится кодом (без .tscn), добавляется из world_map._build_outcome_modal.
 
 var _backdrop: ColorRect
-var _panel:    PanelContainer
-var _title:    Label
-var _body:     Label
-var _btn:      Button
-var _shown_for: String = ""   # за какой outcome модалка уже показана (без пересборки)
+var _panel: PanelContainer
+var _title: Label
+var _body: Label
+var _btn: Button
+var _shown_for: String = ""  # за какой outcome модалка уже показана (без пересборки)
 
 
 func _ready() -> void:
-	layer = 90   # поверх всех игровых слоёв и модалок
+	layer = 90  # поверх всех игровых слоёв и модалок
 	_build()
 	GameState.state_changed.connect(_refresh)
 	_refresh()
@@ -21,10 +21,10 @@ func _ready() -> void:
 
 func _build() -> void:
 	_backdrop = ColorRect.new()
-	_backdrop.name  = "Backdrop"
+	_backdrop.name = "Backdrop"
 	_backdrop.color = Color(0, 0, 0, 0.78)
 	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP   # блокируем клики по карте
+	_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP  # блокируем клики по карте
 	add_child(_backdrop)
 
 	var center := CenterContainer.new()
@@ -61,7 +61,7 @@ func _build() -> void:
 	_btn.pressed.connect(_go_menu)
 	vbox.add_child(_btn)
 
-	UIStyle.scale_modal_text(_panel)   # текст модалок крупнее (×1.5)
+	UIStyle.scale_modal_text(_panel)  # текст модалок крупнее (×1.5)
 	_backdrop.visible = false
 
 
@@ -77,12 +77,12 @@ func _refresh() -> void:
 	if o == "victory":
 		_title.text = "OUTCOME_VICTORY_TITLE"
 		_title.add_theme_color_override("font_color", UIColors.SUCCESS)
-		_body.text  = "OUTCOME_VICTORY_BODY"
+		_body.text = "OUTCOME_VICTORY_BODY"
 	else:
 		_title.text = "OUTCOME_DEFEAT_TITLE"
 		_title.add_theme_color_override("font_color", UIColors.DANGER)
-		_body.text  = "OUTCOME_DEFEAT_BODY"
-	SfxManager.play(SfxManager.SFX_MYTHOS_START)   # тревожный аккорд финала
+		_body.text = "OUTCOME_DEFEAT_BODY"
+	SfxManager.play(SfxManager.SFX_MYTHOS_START)  # тревожный аккорд финала
 	_backdrop.visible = true
 
 

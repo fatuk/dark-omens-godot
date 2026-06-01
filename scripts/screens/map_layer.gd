@@ -14,52 +14,52 @@ const TILE_H: int = 4000
 
 # ── Цвета связей ──────────────────────────────────────────────────────────────
 
-const COLOR_SHIP:      Color = Color(0.275, 0.510, 0.706, 0.90)  # #4682B4
-const COLOR_TRAIN:     Color = Color(0.627, 0.322, 0.176, 0.90)  # #A0522D
+const COLOR_SHIP: Color = Color(0.275, 0.510, 0.706, 0.90)  # #4682B4
+const COLOR_TRAIN: Color = Color(0.627, 0.322, 0.176, 0.90)  # #A0522D
 const COLOR_UNCHARTED: Color = Color(1.000, 0.843, 0.000, 0.90)  # #FFD700
 
 # ── Параметры отрисовки ───────────────────────────────────────────────────────
 
-const LINE_W:         float = 1.8
-const GC_STEPS:       int   = 48
+const LINE_W: float = 1.8
+const GC_STEPS: int = 48
 ## Экранный размер маркера локации (в пикселях). Лерпится по zoom:
 ## на дальнем зуме маркер компактный (_FAR), на близком — крупный (_NEAR,
 ## исторические 100/50, которыми пользовались до уменьшения общего масштаба).
-const MARKER_SCREEN_FAR:   float = 67.0
-const MARKER_SCREEN_NEAR:  float = 100.0
+const MARKER_SCREEN_FAR: float = 67.0
+const MARKER_SCREEN_NEAR: float = 100.0
 ## Сдвиг центра бордера выбора вниз относительно центра медальона (экранные px).
-const SELECTION_Y_OFFSET:  float = 2.0
+const SELECTION_Y_OFFSET: float = 2.0
 ## Отступ от центра маркера до верха подписи. Лерпится синхронно с маркером,
 ## чтобы подпись не отрывалась/не наезжала при изменении масштаба.
-const LABEL_SCREEN_Y_FAR:  float = 33.0
+const LABEL_SCREEN_Y_FAR: float = 33.0
 const LABEL_SCREEN_Y_NEAR: float = 50.0
-const LABEL_FONT:     int   = 14    # шрифт в экранных пикселях
+const LABEL_FONT: int = 14  # шрифт в экранных пикселях
 ## Фото-карточка сыщика (avatar-pin): целевая экранная высота, подъём над
 ## локацией (низ карточки у точки локации), горизонтальный разнос при веере.
 ## Высота лерпится по зуму (как маркер): на дальнем зуме ≈1.5× меньше, на
 ## ближнем — полный размер. Подъём/разнос масштабируются тем же фактором,
 ## чтобы основание карточки оставалось привязанным к точке локации.
 const INVESTIGATOR_CARD_H_NEAR: float = 150.0
-const INVESTIGATOR_CARD_H_FAR:  float = 100.0   # ≈1.5× меньше на дальнем зуме
-const INVESTIGATOR_OFFSET_Y:    float = -112.0   # подъём над жетоном локации
-const INVESTIGATOR_FAN_X:       float = 55.0
+const INVESTIGATOR_CARD_H_FAR: float = 100.0  # ≈1.5× меньше на дальнем зуме
+const INVESTIGATOR_OFFSET_Y: float = -112.0  # подъём над жетоном локации
+const INVESTIGATOR_FAN_X: float = 55.0
 
 ## Открытые врата: два слоя (outer/inner) на маркере локации. Оба вращаются,
 ## inner ощутимо быстрее. Размер обоих ≈ MARKER_SCREEN (заполняют кружок).
 const GATE_OUTER_TEX: Dictionary = {
-	"red":   preload("res://assets/gates/gate-red-outer.png"),
+	"red": preload("res://assets/gates/gate-red-outer.png"),
 	"green": preload("res://assets/gates/gate-green-outer.png"),
-	"blue":  preload("res://assets/gates/gate-blue-outer.png"),
+	"blue": preload("res://assets/gates/gate-blue-outer.png"),
 }
 const GATE_INNER_TEX: Dictionary = {
-	"red":   preload("res://assets/gates/gate-red-inner.png"),
+	"red": preload("res://assets/gates/gate-red-inner.png"),
 	"green": preload("res://assets/gates/gate-green-inner.png"),
-	"blue":  preload("res://assets/gates/gate-blue-inner.png"),
+	"blue": preload("res://assets/gates/gate-blue-inner.png"),
 }
 ## Скорости вращения (рад/сек), оба по часовой — как в web-прототипе:
 ## outer — полный оборот за 15с, inner — за 8с.
-const GATE_OUTER_SPEED: float = TAU / 15.0   # ≈0.419
-const GATE_INNER_SPEED: float = TAU / 8.0    # ≈0.785
+const GATE_OUTER_SPEED: float = TAU / 15.0  # ≈0.419
+const GATE_INNER_SPEED: float = TAU / 8.0  # ≈0.785
 ## Множитель размера врат относительно маркера локации — врата немного крупнее,
 ## чтобы полностью перекрывать кружок.
 const GATE_SIZE_MULT: float = 1.1
@@ -68,9 +68,9 @@ const GATE_SIZE_MULT: float = 1.1
 ## стопкой ПОД маркером (позади него, с небольшим сдвигом вниз, наслоены со
 ## сдвигом), при ВЫБОРЕ локации анимированно выезжают вправо в ряд.
 const ENTITY_TEX: Dictionary = {
-	"clue":    preload("res://assets/map/clue-icon.png"),
+	"clue": preload("res://assets/map/clue-icon.png"),
 	"monster": preload("res://assets/map/monster-icon.png"),
-	"rumor":   preload("res://assets/map/rumor-icon.png"),
+	"rumor": preload("res://assets/map/rumor-icon.png"),
 }
 # NB: параметры раскладки сущностей — var (не const), чтобы подбирать их
 # вживую через MCP без пересборки. Имена в UPPER_CASE сохранены ради ссылок
@@ -81,16 +81,16 @@ var ENTITY_SIZE_FRAC: float = 1.0
 ## с медальоном), стартовый сдвиг колоды вправо (чтобы первый жетон idx0 чуть
 ## выступал из-за медальона, а не прятался под ним) и сдвиг наслоения вправо
 ## (экранные px). Жетоны рисуются позади медальона (z=1 < 2) — выглядывают вправо.
-var ENTITY_STACK_Y:  float = 0.0
+var ENTITY_STACK_Y: float = 0.0
 var ENTITY_STACK_X0: float = 20.0
 var ENTITY_STACK_DX: float = 18.0
 ## Выезд в ряд у выбранной локации: шаг между иконками + сдвиг начала ряда вправо.
 ## ROW_X0 ≈ размер маркера, чтобы первый жетон (idx0) выходил из-за медальона,
 ## а не прятался под ним.
-var ENTITY_ROW_GAP:  float = 42.0
-var ENTITY_ROW_X0:   float = 40.0
+var ENTITY_ROW_GAP: float = 42.0
+var ENTITY_ROW_X0: float = 40.0
 ## Скорость сглаживания раскрытия/сворачивания ряда.
-var ENTITY_HOVER_LERP:        float = 12.0
+var ENTITY_HOVER_LERP: float = 12.0
 
 # ── Зависимости ───────────────────────────────────────────────────────────────
 
@@ -105,46 +105,46 @@ var zoom_max: float = 1.2
 
 # ── Данные ────────────────────────────────────────────────────────────────────
 
-var _locs:             Dictionary = {}
-var _edges:            Array      = []
-var _markers:          Array      = []   # [{sprite, label, indicator, pos, loc_name}]
-var _textures:         Dictionary = {}
-var _selected_name:    String     = ""
+var _locs: Dictionary = {}
+var _edges: Array = []
+var _markers: Array = []  # [{sprite, label, indicator, pos, loc_name}]
+var _textures: Dictionary = {}
+var _selected_name: String = ""
 
 # Маркеры сыщиков — поверх маркеров локаций.
-var _inv_markers:   Array     = []    # [{sprite, base, screen_off, base_scale}]
-var _inv_signature: String    = ""    # для пропуска лишних перестроений
-var _token_tex:     Texture2D = null  # запасной жетон (нет файла портрета)
+var _inv_markers: Array = []  # [{sprite, base, screen_off, base_scale}]
+var _inv_signature: String = ""  # для пропуска лишних перестроений
+var _token_tex: Texture2D = null  # запасной жетон (нет файла портрета)
 
 # Открытые врата: по 3 пары (outer+inner) на каждые врата для wrap-копий.
 # Накопленные углы общие на все спрайты — wrap-копии крутятся синхронно.
-var _gate_markers:     Array  = []    # [{outer, inner, outer_h, inner_h}]
-var _gate_signature:   String = ""    # ключ для пропуска лишних перестроений
-var _gate_outer_angle: float  = 0.0
-var _gate_inner_angle: float  = 0.0
+var _gate_markers: Array = []  # [{outer, inner, outer_h, inner_h}]
+var _gate_signature: String = ""  # ключ для пропуска лишних перестроений
+var _gate_outer_angle: float = 0.0
+var _gate_inner_angle: float = 0.0
 
 # Сущности на локациях — иконки стопкой над маркером (выезжают в ряд при выборе).
-var _entity_markers:   Array     = []    # [{sprite, base, idx, tex_h, loc_id, hover}]
-var _entity_signature: String    = ""
+var _entity_markers: Array = []  # [{sprite, base, idx, tex_h, loc_id, hover}]
+var _entity_signature: String = ""
 # Какие локации сейчас под курсором (для SFX по фронту наведения/ухода).
 var _entity_hover_state: Dictionary = {}  # {loc_id: true}
 
 # Маркеры локаций активной Тайны — иконка mystery-icon над медальоном. Рисуем
 # только незачищенные локации текущей Тайны (set_mystery_marks из world_map).
-var _mystery_markers:   Array  = []   # [{sprite, tex_h, pos}]
+var _mystery_markers: Array = []  # [{sprite, tex_h, pos}]
 var _mystery_signature: String = ""
-var _mystery_pulse:     float  = 0.0  # фаза пульсации прозрачности (в _process)
+var _mystery_pulse: float = 0.0  # фаза пульсации прозрачности (в _process)
 const MYSTERY_TEX: Texture2D = preload("res://assets/map/mystery-icon.png")
 ## Желаемый экранный размер иконки Тайны относительно медальона локации.
 const MYSTERY_SIZE_MULT: float = 0.95
 
-
 # ── Загрузка ──────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	_textures = {
-		"city":       load("res://assets/city.png"),
-		"sea":        load("res://assets/sea.png"),
+		"city": load("res://assets/city.png"),
+		"sea": load("res://assets/sea.png"),
 		"wilderness": load("res://assets/wilderness.png"),
 	}
 
@@ -182,14 +182,14 @@ func load_from_file(path: String) -> void:
 		var lat: float = float(coords[0])
 		var lon: float = float(coords[1])
 		_locs[loc_id] = {
-			"pos":               _geo_to_pixel(lat, lon),
-			"lat":               lat,
-			"lon":               lon,
-			"type":              loc.get("type", "city"),
-			"connections":       loc.get("connections", []),
-			"name":              String(loc.get("name", loc_id)),  # translation key
+			"pos": _geo_to_pixel(lat, lon),
+			"lat": lat,
+			"lon": lon,
+			"type": loc.get("type", "city"),
+			"connections": loc.get("connections", []),
+			"name": String(loc.get("name", loc_id)),  # translation key
 			"realWorldLocation": loc.get("realWorldLocation", ""),
-			"description":       loc.get("description", ""),
+			"description": loc.get("description", ""),
 		}
 
 	_build_edges()
@@ -198,6 +198,7 @@ func load_from_file(path: String) -> void:
 
 
 # ── Обновление масштаба каждый кадр ──────────────────────────────────────────
+
 
 ## t∈[0,1]: 0 на дальнем зуме (zoom_min), 1 на близком (zoom_max). Используется
 ## для лерпа размеров маркера и зависимых от него UI-элементов.
@@ -216,25 +217,25 @@ func _marker_screen_size() -> float:
 func _process(delta: float) -> void:
 	if not is_instance_valid(camera):
 		return
-	var z: float   = camera.zoom.x
+	var z: float = camera.zoom.x
 	var inv: float = 1.0 / z
-	var t: float   = _zoom_t()
-	var marker_screen: float = lerpf(MARKER_SCREEN_FAR,  MARKER_SCREEN_NEAR,  t)
-	var label_y:       float = lerpf(LABEL_SCREEN_Y_FAR, LABEL_SCREEN_Y_NEAR, t)
+	var t: float = _zoom_t()
+	var marker_screen: float = lerpf(MARKER_SCREEN_FAR, MARKER_SCREEN_NEAR, t)
+	var label_y: float = lerpf(LABEL_SCREEN_Y_FAR, LABEL_SCREEN_Y_NEAR, t)
 	# Множитель «насколько крупнее маркер сейчас по сравнению с FAR»:
 	# 1.0 на дальнем зуме, ≈1.49 на близком. Им же масштабируется индикатор
 	# подсветки (RING/GLOW в SelectionIndicator заданы под FAR-размер).
 	var marker_factor: float = marker_screen / MARKER_SCREEN_FAR
 
 	# Мировой размер = желаемый экранный размер / зум
-	var sp_scale:  Vector2 = Vector2.ONE * (marker_screen / 150.0) * inv
+	var sp_scale: Vector2 = Vector2.ONE * (marker_screen / 150.0) * inv
 	var ind_scale: Vector2 = Vector2.ONE * inv * marker_factor
 
 	for i: int in range(_markers.size()):
-		var m: Dictionary       = _markers[i]
-		var sp: Sprite2D        = m.sprite    as Sprite2D
-		var lb: Label           = m.label     as Label
-		var ind: Node2D         = m.indicator as Node2D
+		var m: Dictionary = _markers[i]
+		var sp: Sprite2D = m.sprite as Sprite2D
+		var lb: Label = m.label as Label
+		var ind: Node2D = m.indicator as Node2D
 
 		if is_instance_valid(sp):
 			sp.scale = sp_scale
@@ -245,25 +246,24 @@ func _process(delta: float) -> void:
 			ind.position = m.pos + Vector2(0.0, SELECTION_Y_OFFSET * inv)
 
 		if is_instance_valid(lb) and lb.size.x > 0.0:
-			lb.scale    = Vector2.ONE * inv
-			lb.position = m.pos + Vector2(
-				-lb.size.x * inv * 0.5,   # горизонтальное центрирование
-				label_y * inv             # отступ ниже маркера (лерп по zoom)
-			)
+			lb.scale = Vector2.ONE * inv
+			lb.position = m.pos + Vector2(-lb.size.x * inv * 0.5, label_y * inv)  # горизонтальное центрирование  # отступ ниже маркера (лерп по zoom)
 
 	# Фото-карточки сыщиков — высота лерпится по зуму (FAR/NEAR). Подъём над
 	# локацией масштабируется тем же фактором, чтобы основание карточки
 	# оставалось привязанным к точке локации при любом зуме.
-	var inv_factor: float = lerpf(INVESTIGATOR_CARD_H_FAR, INVESTIGATOR_CARD_H_NEAR, t) / INVESTIGATOR_CARD_H_NEAR
+	var inv_factor: float = (
+		lerpf(INVESTIGATOR_CARD_H_FAR, INVESTIGATOR_CARD_H_NEAR, t) / INVESTIGATOR_CARD_H_NEAR
+	)
 	for i: int in range(_inv_markers.size()):
 		var im: Dictionary = _inv_markers[i]
-		var isp: Node2D    = im.sprite as Node2D
+		var isp: Node2D = im.sprite as Node2D
 		if not is_instance_valid(isp):
 			continue
 		var ibase: Vector2 = im.base
-		var ioff:  Vector2 = im.screen_off
-		var iscale: float  = im.base_scale
-		isp.scale    = Vector2.ONE * iscale * inv * inv_factor
+		var ioff: Vector2 = im.screen_off
+		var iscale: float = im.base_scale
+		isp.scale = Vector2.ONE * iscale * inv * inv_factor
 		isp.position = ibase + ioff * inv * inv_factor
 
 	# Открытые врата — заполняют кружок маркера, оба слоя вращаются.
@@ -277,10 +277,10 @@ func _process(delta: float) -> void:
 			var outer: Sprite2D = g.outer as Sprite2D
 			var inner: Sprite2D = g.inner as Sprite2D
 			if is_instance_valid(outer):
-				outer.scale    = Vector2.ONE * (gate_screen / float(g.outer_h)) * inv
+				outer.scale = Vector2.ONE * (gate_screen / float(g.outer_h)) * inv
 				outer.rotation = _gate_outer_angle
 			if is_instance_valid(inner):
-				inner.scale    = Vector2.ONE * (gate_screen / float(g.inner_h)) * inv
+				inner.scale = Vector2.ONE * (gate_screen / float(g.inner_h)) * inv
 				inner.rotation = _gate_inner_angle
 
 	# Маркеры Тайны — иконка поверх медальона, постоянный экранный размер +
@@ -293,15 +293,15 @@ func _process(delta: float) -> void:
 			var mm: Dictionary = _mystery_markers[i]
 			var ms: Sprite2D = mm.sprite as Sprite2D
 			if is_instance_valid(ms):
-				ms.scale     = Vector2.ONE * (myst_screen / float(mm.tex_h)) * inv
+				ms.scale = Vector2.ONE * (myst_screen / float(mm.tex_h)) * inv
 				ms.modulate.a = pulse
 
 	# Сущности — стопкой над маркером; раскрываются в ряд только когда локация
 	# ВЫБРАНА (не по ховеру). Все tile-копии выбранной локации раскрываются вместе.
 	if not _entity_markers.is_empty():
 		var ent_size: float = marker_screen * ENTITY_SIZE_FRAC
-		var lerp_t:   float = clampf(ENTITY_HOVER_LERP * delta, 0.0, 1.0)
-		var now_expanded: Dictionary = {}   # {loc_id: true} в этом кадре
+		var lerp_t: float = clampf(ENTITY_HOVER_LERP * delta, 0.0, 1.0)
+		var now_expanded: Dictionary = {}  # {loc_id: true} в этом кадре
 		for i: int in range(_entity_markers.size()):
 			var e: Dictionary = _entity_markers[i]
 			var esp: Sprite2D = e.sprite as Sprite2D
@@ -316,10 +316,10 @@ func _process(delta: float) -> void:
 			# и дистанция выезда растут вместе с размером иконок при зуме (иначе
 			# на близком зуме крупные иконки наезжали бы друг на друга).
 			var stack_x: float = (float(idx) * ENTITY_STACK_DX + ENTITY_STACK_X0) * marker_factor
-			var row_x:   float = (float(idx) * ENTITY_ROW_GAP + ENTITY_ROW_X0) * marker_factor
-			var off_x:   float = lerpf(stack_x, row_x, float(e.hover))
+			var row_x: float = (float(idx) * ENTITY_ROW_GAP + ENTITY_ROW_X0) * marker_factor
+			var off_x: float = lerpf(stack_x, row_x, float(e.hover))
 			esp.position = e.base + Vector2(off_x, ENTITY_STACK_Y * marker_factor) * inv
-			esp.scale    = Vector2.ONE * (ent_size / float(e.tex_h)) * inv
+			esp.scale = Vector2.ONE * (ent_size / float(e.tex_h)) * inv
 
 		# SFX по фронту: локация с жетонами стала выбранной → reveal, снята → blur.
 		# Сравниваем с состоянием прошлого кадра (по loc_id, без дублей на tile-копии).
@@ -334,10 +334,11 @@ func _process(delta: float) -> void:
 
 # ── Маркеры ───────────────────────────────────────────────────────────────────
 
+
 func _spawn_markers() -> void:
 	for loc_name: String in _locs:
 		var loc: Dictionary = _locs[loc_name]
-		var tex: Texture2D  = _textures.get(loc.type, _textures["city"]) as Texture2D
+		var tex: Texture2D = _textures.get(loc.type, _textures["city"]) as Texture2D
 
 		for dx: int in [-TILE_W, 0, TILE_W]:
 			var world_pos: Vector2 = loc.pos + Vector2(dx, 0)
@@ -345,12 +346,12 @@ func _spawn_markers() -> void:
 			var tile_idx: int = sign(dx)
 
 			var sprite := Sprite2D.new()
-			sprite.name     = "Marker_%s_%d" % [loc_name, tile_idx]
-			sprite.texture  = tex
+			sprite.name = "Marker_%s_%d" % [loc_name, tile_idx]
+			sprite.texture = tex
 			# Mipmaps: гасят мерцание медальонов при панорамировании карты.
 			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 			sprite.position = world_pos
-			sprite.z_index  = 2   # медальон локации — над колодой сущностей (z=1)
+			sprite.z_index = 2  # медальон локации — над колодой сущностей (z=1)
 			add_child(sprite)
 
 			var lbl := Label.new()
@@ -365,29 +366,35 @@ func _spawn_markers() -> void:
 			bg.bg_color = Color(0.05, 0.05, 0.08, 0.82)
 			bg.set_corner_radius_all(6)
 			bg.set_content_margin_all(4)
-			bg.content_margin_left  = 10.0
+			bg.content_margin_left = 10.0
 			bg.content_margin_right = 10.0
 			lbl.add_theme_stylebox_override("normal", bg)
-			lbl.z_index = 2   # подпись читаема поверх колоды сущностей
+			lbl.z_index = 2  # подпись читаема поверх колоды сущностей
 			add_child(lbl)
 
 			var indicator := SelectionIndicator.new()
-			indicator.name     = "Indicator_%s_%d" % [loc_name, tile_idx]
+			indicator.name = "Indicator_%s_%d" % [loc_name, tile_idx]
 			indicator.position = world_pos
-			indicator.visible  = false
-			indicator.z_index  = 2   # вровень с медальоном
+			indicator.visible = false
+			indicator.z_index = 2  # вровень с медальоном
 			add_child(indicator)
 
-			_markers.append({
-				"sprite":    sprite,
-				"label":     lbl,
-				"indicator": indicator,
-				"pos":       world_pos,
-				"loc_name":  loc_name,
-			})
+			(
+				_markers
+				. append(
+					{
+						"sprite": sprite,
+						"label": lbl,
+						"indicator": indicator,
+						"pos": world_pos,
+						"loc_name": loc_name,
+					}
+				)
+			)
 
 
 # ── Рёбра ─────────────────────────────────────────────────────────────────────
+
 
 func _build_edges() -> void:
 	_edges.clear()
@@ -401,21 +408,27 @@ func _build_edges() -> void:
 			if not _locs.has(other):
 				continue
 			var a: String = loc_name if loc_name < other else other
-			var b: String = other    if loc_name < other else loc_name
+			var b: String = other if loc_name < other else loc_name
 			var key: String = a + "|" + b + "|" + ctype
 			if seen.has(key):
 				continue
 			seen[key] = true
-			_edges.append({
-				"lat0":  _locs[loc_name].lat,
-				"lon0":  _locs[loc_name].lon,
-				"lat1":  _locs[other].lat,
-				"lon1":  _locs[other].lon,
-				"ctype": ctype,
-			})
+			(
+				_edges
+				. append(
+					{
+						"lat0": _locs[loc_name].lat,
+						"lon0": _locs[loc_name].lon,
+						"lat1": _locs[other].lat,
+						"lon1": _locs[other].lon,
+						"ctype": ctype,
+					}
+				)
+			)
 
 
 # ── Отрисовка дуг ─────────────────────────────────────────────────────────────
+
 
 func _draw() -> void:
 	for dx: int in [-TILE_W, 0, TILE_W]:
@@ -429,7 +442,7 @@ func _draw() -> void:
 func _draw_great_circle(lat0: float, lon0: float, lat1: float, lon1: float, color: Color) -> void:
 	var v0: Vector3 = _ll_to_vec3(lat0, lon0)
 	var v1: Vector3 = _ll_to_vec3(lat1, lon1)
-	var dot: float  = clampf(v0.dot(v1), -1.0, 1.0)
+	var dot: float = clampf(v0.dot(v1), -1.0, 1.0)
 	var theta: float = acos(dot)
 
 	if theta < 0.0001:
@@ -439,9 +452,9 @@ func _draw_great_circle(lat0: float, lon0: float, lat1: float, lon1: float, colo
 	var sin_t: float = sin(theta)
 	var all_pts: Array[Vector2] = []
 	for i: int in range(GC_STEPS + 1):
-		var t: float   = float(i) / float(GC_STEPS)
-		var w0: float  = sin((1.0 - t) * theta) / sin_t
-		var w1: float  = sin(t * theta) / sin_t
+		var t: float = float(i) / float(GC_STEPS)
+		var w0: float = sin((1.0 - t) * theta) / sin_t
+		var w1: float = sin(t * theta) / sin_t
 		var v: Vector3 = (v0 * w0 + v1 * w1).normalized()
 		var lat: float = asin(clampf(v.z, -1.0, 1.0)) * 180.0 / PI
 		var lon: float = atan2(v.y, v.x) * 180.0 / PI
@@ -462,6 +475,7 @@ func _draw_great_circle(lat0: float, lon0: float, lat1: float, lon1: float, colo
 
 # ── Вспомогательные ───────────────────────────────────────────────────────────
 
+
 func _ll_to_vec3(lat: float, lon: float) -> Vector3:
 	var lat_r: float = lat * PI / 180.0
 	var lon_r: float = lon * PI / 180.0
@@ -469,18 +483,21 @@ func _ll_to_vec3(lat: float, lon: float) -> Vector3:
 
 
 func _geo_to_pixel(lat: float, lon: float) -> Vector2:
-	var x: float     = (lon + 180.0) / 360.0 * float(TILE_W)
+	var x: float = (lon + 180.0) / 360.0 * float(TILE_W)
 	var lat_r: float = lat * PI / 180.0
-	var y_m: float   = log(tan(PI / 4.0 + lat_r / 2.0))
-	var y: float     = (PI - y_m) / (2.0 * PI) * float(TILE_H)
+	var y_m: float = log(tan(PI / 4.0 + lat_r / 2.0))
+	var y: float = (PI - y_m) / (2.0 * PI) * float(TILE_H)
 	return Vector2(x, y) + offset
 
 
 func _conn_color(ctype: String) -> Color:
 	match ctype:
-		"ship":      return COLOR_SHIP
-		"train":     return COLOR_TRAIN
-		"uncharted": return COLOR_UNCHARTED
+		"ship":
+			return COLOR_SHIP
+		"train":
+			return COLOR_TRAIN
+		"uncharted":
+			return COLOR_UNCHARTED
 	return COLOR_SHIP
 
 
@@ -495,13 +512,13 @@ func loc_world_pos(loc_id: String) -> Vector2:
 
 # Состояние текущей анимации перемещения (читается _travel_step).
 var _tr_from: String = ""
-var _tr_to:   String = ""
-var _tr_pin:  Node2D  = null
-var _tr_dot:  Node2D  = null
-var _tr_base_scale: float   = 1.0
+var _tr_to: String = ""
+var _tr_pin: Node2D = null
+var _tr_dot: Node2D = null
+var _tr_base_scale: float = 1.0
 var _tr_screen_off: Vector2 = Vector2.ZERO
 
-const TRAVEL_DUR: float = 1.7   # длительность анимации перемещения, сек
+const TRAVEL_DUR: float = 1.7  # длительность анимации перемещения, сек
 
 
 ## Тип связи между a и b ("ship"/"train"/"uncharted"), "ship" по умолчанию.
@@ -551,7 +568,7 @@ func play_travel(inv_id: String, from_loc: String, to_loc: String, ctype: String
 	if gc_point(from_loc, to_loc, 0.0) == Vector2.INF:
 		return
 	_tr_from = from_loc
-	_tr_to   = to_loc
+	_tr_to = to_loc
 	_tr_base_scale = INVESTIGATOR_CARD_H_NEAR / InvestigatorPin.card_height()
 	_tr_screen_off = Vector2(0.0, INVESTIGATOR_OFFSET_Y)
 
@@ -564,8 +581,8 @@ func play_travel(inv_id: String, from_loc: String, to_loc: String, ctype: String
 	_tr_dot = dot
 
 	var pin := InvestigatorPin.new()
-	pin.name    = "TravelPin"
-	pin.z_index = 7   # поверх ВСЕХ айтемов (врата z=5, метка Тайны z=6) — едущая иконка всегда видна
+	pin.name = "TravelPin"
+	pin.z_index = 7  # поверх ВСЕХ айтемов (врата z=5, метка Тайны z=6) — едущая иконка всегда видна
 	add_child(pin)
 	pin.setup(_investigator_texture(inv_id))
 	_tr_pin = pin
@@ -589,13 +606,16 @@ func _travel_step(t: float) -> void:
 		return
 	var inv: float = (1.0 / camera.zoom.x) if is_instance_valid(camera) else 0.5
 	# Тот же масштаб, что у покоящихся пинов (см. _process) — иконка не «раздувается».
-	var inv_factor: float = lerpf(INVESTIGATOR_CARD_H_FAR, INVESTIGATOR_CARD_H_NEAR, _zoom_t()) / INVESTIGATOR_CARD_H_NEAR
+	var inv_factor: float = (
+		lerpf(INVESTIGATOR_CARD_H_FAR, INVESTIGATOR_CARD_H_NEAR, _zoom_t())
+		/ INVESTIGATOR_CARD_H_NEAR
+	)
 	if is_instance_valid(_tr_pin):
-		(_tr_pin as Node2D).scale    = Vector2.ONE * _tr_base_scale * inv * inv_factor
+		(_tr_pin as Node2D).scale = Vector2.ONE * _tr_base_scale * inv * inv_factor
 		(_tr_pin as Node2D).position = p + _tr_screen_off * inv * inv_factor
 	if is_instance_valid(_tr_dot):
 		(_tr_dot as Node2D).position = p
-		(_tr_dot as Node2D).scale    = Vector2.ONE * inv
+		(_tr_dot as Node2D).scale = Vector2.ONE * inv
 
 
 # Залитый кружок-точка цвета пути.
@@ -607,11 +627,12 @@ func _make_travel_dot(color: Color, r: float) -> Polygon2D:
 		var ang: float = TAU * float(i) / 24.0
 		pts.append(Vector2(cos(ang), sin(ang)) * r)
 	poly.polygon = pts
-	poly.color   = Color(color.r, color.g, color.b, 1.0)
+	poly.color = Color(color.r, color.g, color.b, 1.0)
 	return poly
 
 
 # ── Пик и подсветка ───────────────────────────────────────────────────────────
+
 
 ## Возвращает имя локации под мировой позицией world_pos, либо "" если промах.
 ## Радиус пика берётся равным экранному размеру маркера (с учётом текущего зума).
@@ -647,18 +668,23 @@ func get_location(loc_id: String) -> Dictionary:
 		var to_name: String = to_id
 		if _locs.has(to_id):
 			to_name = String(_locs[to_id].get("name", to_id))
-		conns.append({
-			"to":   to_id,
-			"name": to_name,                       # translation key
-			"type": String(c.get("type", "ship")),
-		})
+		(
+			conns
+			. append(
+				{
+					"to": to_id,
+					"name": to_name,  # translation key
+					"type": String(c.get("type", "ship")),
+				}
+			)
+		)
 	return {
-		"id":                loc_id,
-		"name":              String(loc.get("name", loc_id)),
-		"type":              loc.get("type", "city"),
+		"id": loc_id,
+		"name": String(loc.get("name", loc_id)),
+		"type": loc.get("type", "city"),
 		"realWorldLocation": loc.get("realWorldLocation", ""),
-		"description":       loc.get("description", ""),
-		"connections":       conns,
+		"description": loc.get("description", ""),
+		"connections": conns,
 	}
 
 
@@ -681,13 +707,14 @@ func set_selected(loc_name: String) -> void:
 		var ind: Node2D = m.indicator as Node2D
 		if not is_instance_valid(ind):
 			continue
-		var on: bool = (m.loc_name == loc_name)
+		var on: bool = m.loc_name == loc_name
 		ind.visible = on
 		if on:
 			ind.scale = Vector2.ONE * inv * marker_factor  # сразу нужный размер до первого _process
 
 
 # ── Маркеры сыщиков ───────────────────────────────────────────────────────────
+
 
 ## Размещает маркеры сыщиков на карте. list: [{pid, investigator, location}].
 ## Перестраивает, только если состав/локации изменились (сигнатура).
@@ -716,7 +743,10 @@ func set_investigators(list: Array) -> void:
 	var inv0: float = (1.0 / camera.zoom.x) if is_instance_valid(camera) else 2.0
 	# Тот же фактор высоты карточки, что в _process — иначе пин стоит на другой
 	# высоте 1 кадр после создания (дёрганье в конце travel, раздвоение в начале).
-	var if0: float = lerpf(INVESTIGATOR_CARD_H_FAR, INVESTIGATOR_CARD_H_NEAR, _zoom_t()) / INVESTIGATOR_CARD_H_NEAR
+	var if0: float = (
+		lerpf(INVESTIGATOR_CARD_H_FAR, INVESTIGATOR_CARD_H_NEAR, _zoom_t())
+		/ INVESTIGATOR_CARD_H_NEAR
+	)
 	var placed: Dictionary = {}
 
 	for i: int in range(list.size()):
@@ -739,19 +769,24 @@ func set_investigators(list: Array) -> void:
 		for dx: int in [-TILE_W, 0, TILE_W]:
 			var base: Vector2 = loc_pos + Vector2(dx, 0)
 			var pin := InvestigatorPin.new()
-			pin.name    = "Inv_%s_%d" % [String(entry.get("pid", "")), sign(dx)]
-			pin.z_index = 7   # пины сыщиков — поверх ВСЕХ айтемов (врата z=5, метка Тайны z=6)
-			pin.scale    = Vector2.ONE * base_scale * inv0 * if0
+			pin.name = "Inv_%s_%d" % [String(entry.get("pid", "")), sign(dx)]
+			pin.z_index = 7  # пины сыщиков — поверх ВСЕХ айтемов (врата z=5, метка Тайны z=6)
+			pin.scale = Vector2.ONE * base_scale * inv0 * if0
 			pin.position = base + screen_off * inv0 * if0
 			add_child(pin)
 			pin.setup(tex)
-			_inv_markers.append({
-				"sprite":     pin,
-				"pid":        String(entry.get("pid", "")),   # для hide_investigator (имя ноды санитизируется — матчить нельзя)
-				"base":       base,
-				"screen_off": screen_off,
-				"base_scale": base_scale,
-			})
+			(
+				_inv_markers
+				. append(
+					{
+						"sprite": pin,
+						"pid": String(entry.get("pid", "")),  # для hide_investigator (имя ноды санитизируется — матчить нельзя)
+						"base": base,
+						"screen_off": screen_off,
+						"base_scale": base_scale,
+					}
+				)
+			)
 
 
 ## Текстура маркера: портрет сыщика, либо общий жетон-кружок, если файла нет.
@@ -780,12 +815,13 @@ func _make_token_texture() -> Texture2D:
 
 # ── Открытые врата ────────────────────────────────────────────────────────────
 
+
 ## Размещает символы открытых врат на маркерах локаций. gates — словарь
 ## {loc_id: "red"|"green"|"blue"}. Перестраивает только при смене состава/цветов
 ## (сигнатура). Размеры и углы вращения применяются в _process per-frame.
 func set_gates(gates: Dictionary) -> void:
 	var keys: Array = gates.keys()
-	keys.sort()   # стабильный порядок для сигнатуры
+	keys.sort()  # стабильный порядок для сигнатуры
 	var sig: String = ""
 	for k in keys:
 		sig += "%s=%s;" % [String(k), String(gates[k])]
@@ -795,8 +831,10 @@ func set_gates(gates: Dictionary) -> void:
 
 	for i: int in range(_gate_markers.size()):
 		var old: Dictionary = _gate_markers[i]
-		if is_instance_valid(old.outer): (old.outer as Sprite2D).queue_free()
-		if is_instance_valid(old.inner): (old.inner as Sprite2D).queue_free()
+		if is_instance_valid(old.outer):
+			(old.outer as Sprite2D).queue_free()
+		if is_instance_valid(old.inner):
+			(old.inner as Sprite2D).queue_free()
 	_gate_markers.clear()
 
 	for loc_id_v: Variant in keys:
@@ -817,27 +855,34 @@ func set_gates(gates: Dictionary) -> void:
 			# сыщиков (4). Оба слоя на одном z; inner добавлен позже —
 			# рисуется поверх outer.
 			var outer := Sprite2D.new()
-			outer.name          = "GateOuter_%s_%d" % [loc_id, sign(dx)]
-			outer.texture       = outer_tex
-			outer.position      = world_pos
-			outer.z_index       = 5
+			outer.name = "GateOuter_%s_%d" % [loc_id, sign(dx)]
+			outer.texture = outer_tex
+			outer.position = world_pos
+			outer.z_index = 5
 			# Mipmaps сглаживают край при downscale (дальний зум) и вращении —
 			# MSAA 2D в gl_compatibility недоступен, mipmaps работают.
 			outer.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 			add_child(outer)
 
 			var inner := Sprite2D.new()
-			inner.name          = "GateInner_%s_%d" % [loc_id, sign(dx)]
-			inner.texture       = inner_tex
-			inner.position      = world_pos
-			inner.z_index       = 5
+			inner.name = "GateInner_%s_%d" % [loc_id, sign(dx)]
+			inner.texture = inner_tex
+			inner.position = world_pos
+			inner.z_index = 5
 			inner.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 			add_child(inner)
 
-			_gate_markers.append({
-				"outer": outer, "inner": inner,
-				"outer_h": outer_h, "inner_h": inner_h,
-			})
+			(
+				_gate_markers
+				. append(
+					{
+						"outer": outer,
+						"inner": inner,
+						"outer_h": outer_h,
+						"inner_h": inner_h,
+					}
+				)
+			)
 
 
 ## Маркеры локаций активной Тайны — ромбы цвета `color` над медальоном (z=3).
@@ -866,16 +911,17 @@ func set_mystery_marks(loc_ids: Array) -> void:
 		for dx: int in [-TILE_W, 0, TILE_W]:
 			var world_pos: Vector2 = loc_pos + Vector2(dx, 0)
 			var sprite := Sprite2D.new()
-			sprite.name          = "MysteryMark_%s_%d" % [lid, sign(dx)]
-			sprite.texture       = MYSTERY_TEX
+			sprite.name = "MysteryMark_%s_%d" % [lid, sign(dx)]
+			sprite.texture = MYSTERY_TEX
 			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-			sprite.position      = world_pos
-			sprite.z_index       = 6   # метка Тайны — над вратами(5), под пином сыщика(7)
+			sprite.position = world_pos
+			sprite.z_index = 6  # метка Тайны — над вратами(5), под пином сыщика(7)
 			add_child(sprite)
-			_mystery_markers.append({ "sprite": sprite, "tex_h": tex_h, "pos": world_pos })
+			_mystery_markers.append({"sprite": sprite, "tex_h": tex_h, "pos": world_pos})
 
 
 # ── Сущности на локациях ──────────────────────────────────────────────────────
+
 
 ## Размещает иконки сущностей стопкой над маркерами. by_loc — {loc_id: [type,…]}
 ## где type ∈ {"clue","monster","rumor"}. Перестраивает только при смене состава
@@ -902,7 +948,7 @@ func set_entities(by_loc: Dictionary) -> void:
 			continue
 		var types_v: Variant = by_loc[loc_id]
 		if not (types_v is Array):
-			continue   # старая модель {loc_id: count} — игнорируем
+			continue  # старая модель {loc_id: count} — игнорируем
 		var types: Array = types_v
 		if types.is_empty():
 			continue
@@ -918,15 +964,24 @@ func set_entities(by_loc: Dictionary) -> void:
 			for dx: int in [-TILE_W, 0, TILE_W]:
 				var base: Vector2 = loc_pos + Vector2(dx, 0)
 				var sprite := Sprite2D.new()
-				sprite.name          = "Entity_%s_%d_%d" % [loc_id, idx, sign(dx)]
-				sprite.texture       = tex
-				sprite.position      = base
+				sprite.name = "Entity_%s_%d_%d" % [loc_id, idx, sign(dx)]
+				sprite.texture = tex
+				sprite.position = base
 				# z=1: над фоном/дугами, но ПОД медальоном локации (z=2) —
 				# колода выглядывает из-под него. z<0 ушло бы за фон карты.
-				sprite.z_index       = 1
+				sprite.z_index = 1
 				sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 				add_child(sprite)
-				_entity_markers.append({
-					"sprite": sprite, "base": base, "idx": idx, "tex_h": tex_h,
-					"loc_id": loc_id, "hover": 0.0,
-				})
+				(
+					_entity_markers
+					. append(
+						{
+							"sprite": sprite,
+							"base": base,
+							"idx": idx,
+							"tex_h": tex_h,
+							"loc_id": loc_id,
+							"hover": 0.0,
+						}
+					)
+				)

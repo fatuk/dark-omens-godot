@@ -8,9 +8,9 @@ extends RefCounted
 ## Правила Dark Omens: d6, успех = 5 или 6, проверка пройдена при ≥1 успехе,
 ## переброс за концентрацию — только провального куба.
 
-const SIDES: int       = 6
-const SUCCESS_MIN: int  = 5   # успех проверки: выпало 5 или 6
-const PASS_MIN: int     = 1   # проверка пройдена, если успехов не меньше
+const SIDES: int = 6
+const SUCCESS_MIN: int = 5  # успех проверки: выпало 5 или 6
+const PASS_MIN: int = 1  # проверка пройдена, если успехов не меньше
 
 
 ## Один куб (1..SIDES).
@@ -53,4 +53,4 @@ static func reroll_failure(dice: Array, idx: int) -> bool:
 ## для встреч и боя.
 static func result(dice: Array) -> Dictionary:
 	var s: int = count_successes(dice)
-	return { "dice": dice, "successes": s, "passed": s >= PASS_MIN }
+	return {"dice": dice, "successes": s, "passed": s >= PASS_MIN}

@@ -23,6 +23,7 @@ static func name_key(id: String) -> String:
 
 # ── Внутренние ────────────────────────────────────────────────────────────────
 
+
 static func _ensure_loaded() -> void:
 	if not _by_id.is_empty():
 		return

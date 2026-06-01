@@ -20,10 +20,10 @@ extends Node
 # Таймауты под время генерации LLM: встреча — десятки секунд,
 # сценарная библия — пара минут.
 const TIMEOUT_ENCOUNTER: float = 60.0
-const TIMEOUT_CAMPAIGN:  float = 240.0
-
+const TIMEOUT_CAMPAIGN: float = 240.0
 
 # ── Публичное API ─────────────────────────────────────────────────────────────
+
 
 ## Сгенерировать карточки встреч. `req` — тело запроса /encounters/generate
 ## (kind, investigator, realLocation/otherWorld, conditions, count, language,
@@ -34,7 +34,7 @@ func generate_encounter(req: Dictionary) -> Dictionary:
 	if not res["ok"]:
 		return res
 	var json: Dictionary = res["json"]
-	return { "ok": true, "error": "", "encounters": json.get("encounters", []) }
+	return {"ok": true, "error": "", "encounters": json.get("encounters", [])}
 
 
 ## Сгенерировать сценарную библию. `req` — тело /campaign/generate
@@ -45,7 +45,7 @@ func generate_campaign(req: Dictionary) -> Dictionary:
 	if not res["ok"]:
 		return res
 	var json: Dictionary = res["json"]
-	return { "ok": true, "error": "", "campaign": json.get("campaign", {}) }
+	return {"ok": true, "error": "", "campaign": json.get("campaign", {})}
 
 
 ## Достать ранее сохранённую кампанию по id.
@@ -56,10 +56,11 @@ func get_campaign(id: String) -> Dictionary:
 	if not res["ok"]:
 		return res
 	var json: Dictionary = res["json"]
-	return { "ok": true, "error": "", "campaign": json.get("campaign", {}) }
+	return {"ok": true, "error": "", "campaign": json.get("campaign", {})}
 
 
 # ── Транспорт ─────────────────────────────────────────────────────────────────
+
 
 func _post(path: String, body: Dictionary, timeout: float) -> Dictionary:
 	return await _request(HTTPClient.METHOD_POST, path, JSON.stringify(body), timeout)
@@ -74,14 +75,16 @@ func _request(method: int, path: String, body: String, timeout: float) -> Dictio
 		return _err("Нет сессии — сначала войдите в аккаунт")
 
 	var http := HTTPRequest.new()
-	http.name    = "GenRequest"
+	http.name = "GenRequest"
 	http.timeout = timeout
 	add_child(http)
 
-	var headers := PackedStringArray([
-		"Content-Type: application/json",
-		"Authorization: Bearer " + token,
-	])
+	var headers := PackedStringArray(
+		[
+			"Content-Type: application/json",
+			"Authorization: Bearer " + token,
+		]
+	)
 	var err: Error = http.request(AuthManager.api_base + path, headers, method, body)
 	if err != OK:
 		http.queue_free()
@@ -92,7 +95,7 @@ func _request(method: int, path: String, body: String, timeout: float) -> Dictio
 	http.queue_free()
 
 	var result: int = r[0]
-	var code:   int = r[1]
+	var code: int = r[1]
 	var bytes: PackedByteArray = r[3]
 
 	if result != HTTPRequest.RESULT_SUCCESS:
@@ -107,8 +110,8 @@ func _request(method: int, path: String, body: String, timeout: float) -> Dictio
 		var e: Variant = json.get("error", "Ошибка сервера (%d)" % code)
 		return _err(e if e is String else JSON.stringify(e))
 
-	return { "ok": true, "error": "", "json": json }
+	return {"ok": true, "error": "", "json": json}
 
 
 func _err(msg: String) -> Dictionary:
-	return { "ok": false, "error": msg, "json": {} }
+	return {"ok": false, "error": msg, "json": {}}

@@ -8,8 +8,8 @@ extends CanvasLayer
 ## set_enabled() / is_enabled().
 
 const SETTINGS_FILE := "user://settings.cfg"
-const SECTION       := "display"
-const KEY           := "post_fx_enabled"
+const SECTION := "display"
+const KEY := "post_fx_enabled"
 
 var _enabled: bool = true
 
@@ -25,11 +25,12 @@ func is_enabled() -> bool:
 
 func set_enabled(on: bool) -> void:
 	_enabled = on
-	visible  = on
+	visible = on
 	_save_setting()
 
 
 # ── Persist ───────────────────────────────────────────────────────────────────
+
 
 func _load_setting() -> void:
 	var cfg := ConfigFile.new()
@@ -40,6 +41,6 @@ func _load_setting() -> void:
 
 func _save_setting() -> void:
 	var cfg := ConfigFile.new()
-	cfg.load(SETTINGS_FILE)   # ок если файла нет
+	cfg.load(SETTINGS_FILE)  # ок если файла нет
 	cfg.set_value(SECTION, KEY, _enabled)
 	cfg.save(SETTINGS_FILE)

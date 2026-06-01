@@ -17,11 +17,11 @@ extends Node
 signal locale_changed(new_locale: String)
 
 const SETTINGS_FILE := "user://settings.cfg"
-const SECTION       := "i18n"
-const KEY           := "locale"
+const SECTION := "i18n"
+const KEY := "locale"
 
 const SUPPORTED: Array[String] = ["ru", "en"]
-const DEFAULT:   String        = "ru"
+const DEFAULT: String = "ru"
 
 
 func _ready() -> void:
@@ -45,6 +45,7 @@ func set_locale(locale: String) -> void:
 
 # ── Внутренние ───────────────────────────────────────────────────────────────
 
+
 func _apply(locale: String) -> void:
 	if not SUPPORTED.has(locale):
 		locale = DEFAULT
@@ -61,6 +62,6 @@ func _load_setting() -> String:
 
 func _save_setting(locale: String) -> void:
 	var cfg := ConfigFile.new()
-	cfg.load(SETTINGS_FILE)   # ок если файла нет
+	cfg.load(SETTINGS_FILE)  # ок если файла нет
 	cfg.set_value(SECTION, KEY, locale)
 	cfg.save(SETTINGS_FILE)

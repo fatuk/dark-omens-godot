@@ -45,9 +45,13 @@ static func _make_row(pid: String, info: Dictionary, host_id: String) -> Control
 	row.add_theme_constant_override("separation", 12)
 
 	var is_host := pid == host_id
-	var crown := UIStyle.label(
-		"♛" if is_host else "◆", 16,
-		UIColors.ACCENT if is_host else UIColors.MUTED,
+	var crown := (
+		UIStyle
+		. label(
+			"♛" if is_host else "◆",
+			16,
+			UIColors.ACCENT if is_host else UIColors.MUTED,
+		)
 	)
 	crown.name = "Crown"
 	crown.custom_minimum_size.x = 24
@@ -77,16 +81,16 @@ static func _make_row(pid: String, info: Dictionary, host_id: String) -> Control
 
 
 static func _make_status_tag(pid: String, info: Dictionary, host_id: String) -> Label:
-	var key:   String
+	var key: String
 	var color: Color
 	if pid == host_id:
-		key   = "LOBBY_TAG_HOST"
+		key = "LOBBY_TAG_HOST"
 		color = UIColors.ACCENT
 	elif info.get("ready", false):
-		key   = "LOBBY_TAG_READY"
+		key = "LOBBY_TAG_READY"
 		color = UIColors.READY
 	else:
-		key   = "LOBBY_TAG_WAITING"
+		key = "LOBBY_TAG_WAITING"
 		color = UIColors.MUTED
 	var tag := UIStyle.label(key, 13, color, HORIZONTAL_ALIGNMENT_RIGHT)
 	tag.name = "Tag"

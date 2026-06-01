@@ -9,44 +9,44 @@ extends CanvasLayer
 ## анимация выезда панели.
 
 const _PREFS_SECTION := "player"
-const _DATA_PATH     := "res://data/investigators.json"
+const _DATA_PATH := "res://data/investigators.json"
 
-const BAR_H     := 280.0   # высота выезжающей панели
-const ANIM_DUR  :=   0.28
+const BAR_H := 280.0  # высота выезжающей панели
+const ANIM_DUR := 0.28
 
 # Маркеры типов имущества (GameState items) → ключи перевода.
 const _ITEM_WORDS := {
-	"gainAsset":       "ITEM_ASSET",
-	"gainSpell":       "ITEM_SPELL",
-	"gainArtifact":    "ITEM_ARTIFACT",
+	"gainAsset": "ITEM_ASSET",
+	"gainSpell": "ITEM_SPELL",
+	"gainArtifact": "ITEM_ARTIFACT",
 	"gainImprovement": "ITEM_IMPROVEMENT",
 }
 
 # ── Узлы ──────────────────────────────────────────────────────────────────────
-@onready var _info_panel:    Control = %InfoPanel
-@onready var _portrait_btn:  Button  = %PortraitBtn
-@onready var _balloon:       Control = %Balloon
+@onready var _info_panel: Control = %InfoPanel
+@onready var _portrait_btn: Button = %PortraitBtn
+@onready var _balloon: Control = %Balloon
 
-@onready var _portrait_tex:  TextureRect = %Texture
-@onready var _name_label:    Label = %NameLabel
-@onready var _occ_label:     Label = %OccLabel
-@onready var _quote_label:   Label = %QuoteLabel
+@onready var _portrait_tex: TextureRect = %Texture
+@onready var _name_label: Label = %NameLabel
+@onready var _occ_label: Label = %OccLabel
+@onready var _quote_label: Label = %QuoteLabel
 
-@onready var _hp_value:      Label         = $InfoPanel/InfoCol/StatsRow/HpPill/Value
-@onready var _san_value:     Label         = $InfoPanel/InfoCol/StatsRow/SanPill/Value
-@onready var _skills_label:  Label         = %SkillsLabel
-@onready var _roles_row:     HBoxContainer = %RolesRow
-@onready var _card_fan:      Control       = %CardFan
+@onready var _hp_value: Label = $InfoPanel/InfoCol/StatsRow/HpPill/Value
+@onready var _san_value: Label = $InfoPanel/InfoCol/StatsRow/SanPill/Value
+@onready var _skills_label: Label = %SkillsLabel
+@onready var _roles_row: HBoxContainer = %RolesRow
+@onready var _card_fan: Control = %CardFan
 
 # ── Состояние ──────────────────────────────────────────────────────────────────
-var _inv_name: String     = ""
+var _inv_name: String = ""
 var _inv_data: Dictionary = {}
-var _shown:    bool       = false
-var _tween:    Tween      = null
-var _live_label: Label    = null   # строка живых статусов/состояний/имущества
-
+var _shown: bool = false
+var _tween: Tween = null
+var _live_label: Label = null  # строка живых статусов/состояний/имущества
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	_load_data()
@@ -74,19 +74,24 @@ func _refresh_identity() -> void:
 
 # ── Применение Dark Omens-цветов к статичным лейблам ──────────────────────────
 
+
 func _apply_styles() -> void:
 	# HP / Рассудок: иконка цветная, число — TEXT, подпись — MUTED
 	($InfoPanel/InfoCol/StatsRow/HpPill/Icon as Label).add_theme_color_override(
-		"font_color", Color(0.85, 0.22, 0.22))
+		"font_color", Color(0.85, 0.22, 0.22)
+	)
 	_hp_value.add_theme_color_override("font_color", UIColors.TEXT)
 	($InfoPanel/InfoCol/StatsRow/HpPill/Sub as Label).add_theme_color_override(
-		"font_color", UIColors.MUTED)
+		"font_color", UIColors.MUTED
+	)
 
 	($InfoPanel/InfoCol/StatsRow/SanPill/Icon as Label).add_theme_color_override(
-		"font_color", Color(0.28, 0.55, 0.90))
+		"font_color", Color(0.28, 0.55, 0.90)
+	)
 	_san_value.add_theme_color_override("font_color", UIColors.TEXT)
 	($InfoPanel/InfoCol/StatsRow/SanPill/Sub as Label).add_theme_color_override(
-		"font_color", UIColors.MUTED)
+		"font_color", UIColors.MUTED
+	)
 
 	_skills_label.add_theme_color_override("font_color", UIColors.MUTED)
 	_name_label.add_theme_color_override("font_color", UIColors.TEXT)
@@ -96,27 +101,34 @@ func _apply_styles() -> void:
 
 # ── Заполнение текста / портрета / ролей ──────────────────────────────────────
 
+
 func _populate_data() -> void:
 	# Портрет
 	_portrait_tex.texture = _load_portrait()
 	# displayName/occupation/quote — translation keys; Godot переводит автоматически.
 	# (Кавычки «...» теперь внутри переведённой строки в CSV.)
-	_name_label.text  = _inv_data.get("displayName",
-		_inv_data.get("name", _inv_name if not _inv_name.is_empty() else "???"))
-	_occ_label.text   = _inv_data.get("occupation", "")
+	_name_label.text = _inv_data.get(
+		"displayName", _inv_data.get("name", _inv_name if not _inv_name.is_empty() else "???")
+	)
+	_occ_label.text = _inv_data.get("occupation", "")
 	_quote_label.text = _inv_data.get("quote", "")
 
 	# HP / Рассудок
-	_hp_value.text  = "%.1f" % float(_inv_data.get("health", 0))
+	_hp_value.text = "%.1f" % float(_inv_data.get("health", 0))
 	_san_value.text = "%.1f" % float(_inv_data.get("sanity", 0))
 
 	# Навыки
 	var sk: Dictionary = _inv_data.get("skills", {})
-	_skills_label.text = "Lore %d  ·  Infl %d  ·  Obs %d\nStr %d  ·  Will %d" % [
-		int(sk.get("lore", 0)), int(sk.get("influence", 0)),
-		int(sk.get("observation", 0)), int(sk.get("strength", 0)),
-		int(sk.get("will", 0))
-	]
+	_skills_label.text = (
+		"Lore %d  ·  Infl %d  ·  Obs %d\nStr %d  ·  Will %d"
+		% [
+			int(sk.get("lore", 0)),
+			int(sk.get("influence", 0)),
+			int(sk.get("observation", 0)),
+			int(sk.get("strength", 0)),
+			int(sk.get("will", 0))
+		]
+	)
 
 	# Роли — динамическое количество бейджей
 	for child in _roles_row.get_children():
@@ -134,9 +146,9 @@ func _make_role_badge(badge_text: String) -> PanelContainer:
 	style.border_color = UIColors.ACCENT
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(4)
-	style.content_margin_left   = 10
-	style.content_margin_right  = 10
-	style.content_margin_top    = 4
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 4
 	style.content_margin_bottom = 4
 	pc.add_theme_stylebox_override("panel", style)
 
@@ -150,6 +162,7 @@ func _make_role_badge(badge_text: String) -> PanelContainer:
 
 
 # ── Живые данные игрока (статусы, состояния, имущество) ───────────────────────
+
 
 func _build_live_area() -> void:
 	# Декоративные слоты предметов больше не нужны — живые данные показываем
@@ -173,8 +186,8 @@ func _build_live_area() -> void:
 func _refresh_live() -> void:
 	var p: Dictionary = GameState.my_player()
 	if p.is_empty():
-		return   # не в игре — оставляем статичные значения
-	_hp_value.text  = "%d / %d" % [int(p.get("hp", 0)), int(p.get("hp_max", 0))]
+		return  # не в игре — оставляем статичные значения
+	_hp_value.text = "%d / %d" % [int(p.get("hp", 0)), int(p.get("hp_max", 0))]
 	_san_value.text = "%d / %d" % [int(p.get("sanity", 0)), int(p.get("sanity_max", 0))]
 	if is_instance_valid(_live_label):
 		_live_label.text = _live_text(p)
@@ -182,26 +195,53 @@ func _refresh_live() -> void:
 
 func _live_text(p: Dictionary) -> String:
 	var lines := PackedStringArray()
-	lines.append("%s: %d   ·   %s: %d   ·   %s: %d" % [
-		tr("INV_PANEL_CLUES"),   int(p.get("clues", 0)),
-		tr("INV_PANEL_TICKETS"), int(p.get("tickets", 0)),
-		tr("INV_PANEL_FOCUS"),   int(p.get("concentration", 0)),
-	])
+	(
+		lines
+		. append(
+			(
+				"%s: %d   ·   %s: %d   ·   %s: %d"
+				% [
+					tr("INV_PANEL_CLUES"),
+					int(p.get("clues", 0)),
+					tr("INV_PANEL_TICKETS"),
+					int(p.get("tickets", 0)),
+					tr("INV_PANEL_FOCUS"),
+					int(p.get("concentration", 0)),
+				]
+			)
+		)
+	)
 
 	var conds: Array = p.get("conditions", [])
 	var cond_names := PackedStringArray()
 	for i: int in range(conds.size()):
 		cond_names.append(tr(Conditions.name_key(String(conds[i]))))
-	lines.append("%s: %s" % [
-		tr("INV_PANEL_CONDITIONS"),
-		", ".join(cond_names) if cond_names.size() > 0 else tr("INV_PANEL_NONE"),
-	])
+	(
+		lines
+		. append(
+			(
+				"%s: %s"
+				% [
+					tr("INV_PANEL_CONDITIONS"),
+					", ".join(cond_names) if cond_names.size() > 0 else tr("INV_PANEL_NONE"),
+				]
+			)
+		)
+	)
 
 	var items: Array = p.get("items", [])
-	lines.append("%s: %s" % [
-		tr("INV_PANEL_ITEMS"),
-		_items_text(items) if items.size() > 0 else tr("INV_PANEL_NONE"),
-	])
+	(
+		lines
+		. append(
+			(
+				"%s: %s"
+				% [
+					tr("INV_PANEL_ITEMS"),
+					_items_text(items) if items.size() > 0 else tr("INV_PANEL_NONE"),
+				]
+			)
+		)
+	)
 	return "\n".join(lines)
 
 
@@ -220,13 +260,15 @@ func _items_text(items: Array) -> String:
 
 # ── Обработчики ───────────────────────────────────────────────────────────────
 
+
 func _wire_handlers() -> void:
 	_portrait_btn.mouse_entered.connect(func() -> void: _balloon.visible = true)
-	_portrait_btn.mouse_exited.connect(func() -> void:  _balloon.visible = false)
+	_portrait_btn.mouse_exited.connect(func() -> void: _balloon.visible = false)
 	_portrait_btn.pressed.connect(_toggle)
 
 
 # ── Анимация выезжающей панели ────────────────────────────────────────────────
+
 
 func _toggle() -> void:
 	_shown = not _shown
@@ -235,7 +277,7 @@ func _toggle() -> void:
 
 	if _shown:
 		_info_panel.offset_top = 0.0
-		_info_panel.visible    = true
+		_info_panel.visible = true
 		_tween = create_tween()
 		_tween.set_ease(Tween.EASE_OUT)
 		_tween.set_trans(Tween.TRANS_QUART)
@@ -250,6 +292,7 @@ func _toggle() -> void:
 
 # ── Загрузка данных сыщика ────────────────────────────────────────────────────
 
+
 func _load_data() -> void:
 	_inv_name = ""
 	# Приоритет 1: GameState (ключ по стабильному user_id) — истина во время
@@ -261,7 +304,7 @@ func _load_data() -> void:
 	if _inv_name.is_empty():
 		var nm: Node = get_node_or_null("/root/NetworkManager")
 		if nm:
-			var my_id: String       = (nm as Node).get("my_id")
+			var my_id: String = (nm as Node).get("my_id")
 			var players: Dictionary = (nm as Node).get("players")
 			if players.has(my_id):
 				_inv_name = String(players[my_id].get("investigator", ""))

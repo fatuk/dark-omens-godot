@@ -13,7 +13,7 @@ extends RefCounted
 ## players, …) — модуль пишет в них напрямую и зовёт _gs._broadcast_sync()/
 ## _gs._emit_changed() / _gs.phase_changed.emit().
 
-const REST_HEAL_HP:     int = 1
+const REST_HEAL_HP: int = 1
 const REST_HEAL_SANITY: int = 1
 
 var _gs: Node
@@ -24,6 +24,7 @@ func _init(gs: Node) -> void:
 
 
 # ── Действия игрока ──────────────────────────────────────────────────────────
+
 
 ## Хост: валидирует и применяет действие игрока. Возвращает true при успехе.
 ## Зовётся из GameState.perform_action (для своего действия) и из relay-router
@@ -45,20 +46,20 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	# Одно и то же действие нельзя повторять в раунде (pass не в счёт).
 	var used: Array = p.get("actions_used", [])
 	if action_type != "pass" and used.has(action_type):
-		GameConsole.warn("[Game] %s — «%s» уже использовано в этом раунде" % [
-			_gs._name_of(pid), action_type
-		])
+		GameConsole.warn(
+			"[Game] %s — «%s» уже использовано в этом раунде" % [_gs._name_of(pid), action_type]
+		)
 		return false
 
 	match action_type:
 		"buy_ticket":
-			p["tickets"]      = int(p.get("tickets", 0)) + 1
+			p["tickets"] = int(p.get("tickets", 0)) + 1
 			p["actions_left"] = int(p["actions_left"]) - 1
 		"take_concentration":
 			p["concentration"] = int(p.get("concentration", 0)) + 1
-			p["actions_left"]  = int(p["actions_left"]) - 1
+			p["actions_left"] = int(p["actions_left"]) - 1
 		"rest":
-			p["hp"]     = mini(int(p["hp_max"]),     int(p["hp"])     + REST_HEAL_HP)
+			p["hp"] = mini(int(p["hp_max"]), int(p["hp"]) + REST_HEAL_HP)
 			p["sanity"] = mini(int(p["sanity_max"]), int(p["sanity"]) + REST_HEAL_SANITY)
 			p["actions_left"] = int(p["actions_left"]) - 1
 		"travel":
@@ -66,7 +67,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			if not can_travel(pid, dest):
 				GameConsole.warn("[Game] %s — недопустимое перемещение" % _gs._name_of(pid))
 				return false
-			p["location"]     = dest
+			p["location"] = dest
 			p["actions_left"] = int(p["actions_left"]) - 1
 		"acquire_assets":
 			# Поход в магазин — уникальное действие (раз за раунд). Фиксируется уже
@@ -77,7 +78,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				GameConsole.warn("[Магазин] %s не в городе" % _gs._name_of(pid))
 				return false
 			p["actions_left"] = int(p["actions_left"]) - 1
-			p["shopping"]     = true   # не передаём ход, пока магазин открыт
+			p["shopping"] = true  # не передаём ход, пока магазин открыт
 			GameConsole.log("[Магазин] %s пошёл за покупками" % _gs._name_of(pid))
 		"pass":
 			p["actions_left"] = 0
@@ -89,9 +90,12 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 		used.append(action_type)
 		p["actions_used"] = used
 
-	GameConsole.log("[Game] %s · %s · осталось действий: %d" % [
-		_gs._name_of(pid), action_type, int(p["actions_left"])
-	])
+	GameConsole.log(
+		(
+			"[Game] %s · %s · осталось действий: %d"
+			% [_gs._name_of(pid), action_type, int(p["actions_left"])]
+		)
+	)
 	# Пока игрок в магазине (модалка открыта) — ход не передаём, даже если это
 	# было последнее действие. Передача произойдёт при закрытии (host_apply_shop_close).
 	if int(p["actions_left"]) == 0 and not bool(p.get("shopping", false)):
@@ -119,7 +123,7 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 		if not AssetCatalog.by_id(aid).is_empty():
 			items.append(aid)
 	p["items"] = items
-	_gs._refill_shop_reserve(assets)   # купленные → заменить новыми
+	_gs._refill_shop_reserve(assets)  # купленные → заменить новыми
 	GameConsole.log("[Магазин] %s купил %d товар(ов)" % [_gs._name_of(pid), assets.size()])
 	_gs._broadcast_sync()
 	_gs._emit_changed()
@@ -224,6 +228,7 @@ func host_apply_finish_encounter(pid: String) -> bool:
 
 # ── Поток фаз ────────────────────────────────────────────────────────────────
 
+
 ## Передать ход в action-фазе. Если списком кончились — переход в encounter.
 ## Public — зовётся из _on_player_left когда отключился current.
 func advance_action_turn() -> void:
@@ -236,8 +241,8 @@ func advance_action_turn() -> void:
 ## encounter_done у всех, запускает _encounter.generate. Если живых игроков
 ## не осталось — пропуск сразу в mythos.
 func enter_encounter() -> void:
-	_gs.phase       = "encounter"
-	_gs.current_idx = 0   # первый игрок начинает встречу, остальные ждут своей очереди
+	_gs.phase = "encounter"
+	_gs.current_idx = 0  # первый игрок начинает встречу, остальные ждут своей очереди
 	for pid: String in _gs.players:
 		_gs.players[pid]["encounter_done"] = false
 	# Все игроки отключены — фаза встреч пропускается.
@@ -263,14 +268,14 @@ func advance_encounter_turn() -> void:
 ## Стартует новый раунд (зовётся из MythosFlow после применения карты мифов):
 ## раунд++, фаза action, action-окно у всех восстановлено, встречи закрыты.
 func start_new_round() -> void:
-	_gs.round_num  += 1
-	_gs.phase       = "action"
+	_gs.round_num += 1
+	_gs.phase = "action"
 	_gs.current_idx = 0
 	for pid: String in _gs.players:
-		_gs.players[pid]["actions_left"]   = _gs.ACTIONS_PER_ROUND
-		_gs.players[pid]["actions_used"]   = []
+		_gs.players[pid]["actions_left"] = _gs.ACTIONS_PER_ROUND
+		_gs.players[pid]["actions_used"] = []
 		_gs.players[pid]["encounter_done"] = false
-	skip_disconnected()   # начинаем раунд с первого подключённого игрока
+	skip_disconnected()  # начинаем раунд с первого подключённого игрока
 	GameConsole.log("[Game] Раунд %d · ход: %s" % [_gs.round_num, _gs._name_of(_gs._current_pid())])
 	_gs.phase_changed.emit(_gs.phase)
 
@@ -287,6 +292,7 @@ func skip_disconnected() -> bool:
 
 
 # ── Travel ──────────────────────────────────────────────────────────────────
+
 
 ## Проверка связности: dest достижима из текущей локации игрока pid.
 func can_travel(pid: String, dest: String) -> bool:

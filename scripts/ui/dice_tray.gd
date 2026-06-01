@@ -15,8 +15,8 @@ extends HBoxContainer
 signal die_selected(index: int)
 
 const DIE_SIZE: Vector2 = Vector2(44, 44)
-const _BG_NORMAL  := Color(0.10, 0.10, 0.13, 0.92)
-const _BG_HOVER   := Color(0.20, 0.17, 0.10, 0.96)
+const _BG_NORMAL := Color(0.10, 0.10, 0.13, 0.92)
+const _BG_HOVER := Color(0.20, 0.17, 0.10, 0.96)
 
 
 func _init() -> void:
@@ -47,15 +47,19 @@ func _clear() -> void:
 
 # value <= 0 → ещё не брошен (рубашка). ЕДИНАЯ точка отрисовки куба.
 func _make_die(value: int, can_reroll: bool, index: int) -> Control:
-	var pending: bool   = value <= 0
-	var success: bool   = (not pending) and Dice.is_success(value)
+	var pending: bool = value <= 0
+	var success: bool = (not pending) and Dice.is_success(value)
 	var clickable: bool = can_reroll and not pending and not success
 
 	var edge: Color
-	if pending:      edge = UIColors.MUTED
-	elif success:    edge = UIColors.SUCCESS
-	elif clickable:  edge = UIColors.ACCENT
-	else:            edge = UIColors.MUTED
+	if pending:
+		edge = UIColors.MUTED
+	elif success:
+		edge = UIColors.SUCCESS
+	elif clickable:
+		edge = UIColors.ACCENT
+	else:
+		edge = UIColors.MUTED
 
 	var chip := Button.new()
 	chip.name = "Die"
@@ -65,7 +69,7 @@ func _make_die(value: int, can_reroll: bool, index: int) -> Control:
 	chip.add_theme_font_size_override("font_size", 20)
 	var fcol: Color = UIColors.SUCCESS if success else UIColors.TEXT
 	chip.add_theme_color_override("font_color", fcol)
-	chip.add_theme_color_override("font_disabled_color", fcol)   # не сереть в disabled
+	chip.add_theme_color_override("font_disabled_color", fcol)  # не сереть в disabled
 	chip.add_theme_color_override("font_hover_color", fcol)
 
 	var sb := StyleBoxFlat.new()

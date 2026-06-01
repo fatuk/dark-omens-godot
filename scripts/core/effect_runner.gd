@@ -11,43 +11,88 @@
 
 # Глаголы, меняющие игрока. Прочие — уровня поля, складываются в board.
 const _PLAYER_VERBS := [
-	"loseHealth", "healHealth", "loseSanity", "healSanity",
-	"gainClue", "loseClue", "spendClue",
-	"gainCondition", "loseCondition",
-	"gainAsset", "gainSpell", "gainArtifact", "gainImprovement",
-	"loseAsset", "loseSpell", "loseImprovement",
-	"gainFocus", "loseFocus", "improveSkill", "impairSkill",
-	"becomeDelayed", "move", "text",
+	"loseHealth",
+	"healHealth",
+	"loseSanity",
+	"healSanity",
+	"gainClue",
+	"loseClue",
+	"spendClue",
+	"gainCondition",
+	"loseCondition",
+	"gainAsset",
+	"gainSpell",
+	"gainArtifact",
+	"gainImprovement",
+	"loseAsset",
+	"loseSpell",
+	"loseImprovement",
+	"gainFocus",
+	"loseFocus",
+	"improveSkill",
+	"impairSkill",
+	"becomeDelayed",
+	"move",
+	"text",
 	# v2/v3: пассивные модификаторы проверок/боя/правил — собираются в
 	# player.passive_mods, слой разрешения читает их (см. EFFECT-DSL.md §11–12).
-	"rerollDice", "rollAdditionalDice", "addToDie", "convertDie",
-	"reduceMonsterDamage", "reduceMonsterHorror", "preventLoss",
-	"substituteSkill", "substituteResource", "enhanceReroll", "rerollMatching",
-	"minDice", "immuneTo", "protectResource",
+	"rerollDice",
+	"rollAdditionalDice",
+	"addToDie",
+	"convertDie",
+	"reduceMonsterDamage",
+	"reduceMonsterHorror",
+	"preventLoss",
+	"substituteSkill",
+	"substituteResource",
+	"enhanceReroll",
+	"rerollMatching",
+	"minDice",
+	"immuneTo",
+	"protectResource",
 	# v4: ограничения (пассивы состояний)
-	"cannotMove", "cannotAct", "cannotRecover", "removeFromBoard", "immuneToEffects",
+	"cannotMove",
+	"cannotAct",
+	"cannotRecover",
+	"removeFromBoard",
+	"immuneToEffects",
 ]
 
 # Глаголы-пассивы: не мутируют игрока сразу, а копятся как модификаторы.
 const _PASSIVE_VERBS := [
-	"rerollDice", "rollAdditionalDice", "addToDie", "convertDie",
-	"reduceMonsterDamage", "reduceMonsterHorror", "preventLoss",
-	"substituteSkill", "substituteResource", "enhanceReroll", "rerollMatching",
-	"minDice", "immuneTo", "protectResource",
-	"cannotMove", "cannotAct", "cannotRecover", "removeFromBoard", "immuneToEffects",
+	"rerollDice",
+	"rollAdditionalDice",
+	"addToDie",
+	"convertDie",
+	"reduceMonsterDamage",
+	"reduceMonsterHorror",
+	"preventLoss",
+	"substituteSkill",
+	"substituteResource",
+	"enhanceReroll",
+	"rerollMatching",
+	"minDice",
+	"immuneTo",
+	"protectResource",
+	"cannotMove",
+	"cannotAct",
+	"cannotRecover",
+	"removeFromBoard",
+	"immuneToEffects",
 ]
 
 
 static func run(effects: Array, player: Dictionary) -> Dictionary:
-	var logs: Array   = []
+	var logs: Array = []
 	var board: Array = []
 	for i in range(effects.size()):
 		var node: Dictionary = effects[i]
 		_run_node(node, player, logs, board)
-	return { "logs": logs, "board": board }
+	return {"logs": logs, "board": board}
 
 
 # ── Обход дерева ──────────────────────────────────────────────────────────────
+
 
 static func _run_node(node: Dictionary, player: Dictionary, logs: Array, board: Array) -> void:
 	if node.has("group"):
@@ -88,7 +133,7 @@ static func _run_action(node: Dictionary, player: Dictionary, logs: Array, board
 		return
 	var verb: String = String(node["do"])
 	if not _PLAYER_VERBS.has(verb):
-		board.append(node)   # уровень поля — применит GameState
+		board.append(node)  # уровень поля — применит GameState
 		return
 	var times: int = _repeat(node)
 	for _i in times:
@@ -97,7 +142,10 @@ static func _run_action(node: Dictionary, player: Dictionary, logs: Array, board
 
 # ── Действия по игроку ────────────────────────────────────────────────────────
 
-static func _apply_player_verb(verb: String, node: Dictionary, player: Dictionary, logs: Array) -> void:
+
+static func _apply_player_verb(
+	verb: String, node: Dictionary, player: Dictionary, logs: Array
+) -> void:
 	var n: int = _amount(node)
 	match verb:
 		"loseHealth":
@@ -110,7 +158,9 @@ static func _apply_player_verb(verb: String, node: Dictionary, player: Dictionar
 			player["sanity"] = maxi(0, int(player.get("sanity", 0)) - n)
 			logs.append("−%d рассудка" % n)
 		"healSanity":
-			player["sanity"] = mini(int(player.get("sanity_max", 0)), int(player.get("sanity", 0)) + n)
+			player["sanity"] = mini(
+				int(player.get("sanity_max", 0)), int(player.get("sanity", 0)) + n
+			)
 			logs.append("+%d рассудка" % n)
 		"gainClue":
 			player["clues"] = int(player.get("clues", 0)) + n
@@ -165,7 +215,7 @@ static func _apply_player_verb(verb: String, node: Dictionary, player: Dictionar
 			player["conditions"] = dconds
 			logs.append("задержка")
 		"move", "text":
-			pass   # move — трекинга позиции пока нет; text — только показ
+			pass  # move — трекинга позиции пока нет; text — только показ
 		_:
 			if _PASSIVE_VERBS.has(verb):
 				# Пассивный модификатор: сохраняем узел целиком — боевой/проверочный
@@ -177,6 +227,7 @@ static func _apply_player_verb(verb: String, node: Dictionary, player: Dictionar
 
 
 # ── Хелперы ───────────────────────────────────────────────────────────────────
+
 
 ## Величина действия: amount либо count, по умолчанию 1.
 static func _amount(node: Dictionary) -> int:

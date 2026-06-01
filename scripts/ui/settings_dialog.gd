@@ -23,33 +23,34 @@ var show_server_url: bool = true
 
 # ── UI-узлы ───────────────────────────────────────────────────────────────────
 @onready var _panel: PanelContainer = %Panel
-@onready var _vbox:  VBoxContainer  = %VBox
+@onready var _vbox: VBoxContainer = %VBox
 
-var _url_input:    LineEdit
-var _res_option:   OptionButton
-var _fs_check:     CheckBox
-var _fx_check:     CheckBox
-var _llm_check:    CheckBox
+var _url_input: LineEdit
+var _res_option: OptionButton
+var _fs_check: CheckBox
+var _fx_check: CheckBox
+var _llm_check: CheckBox
 var _music_slider: HSlider
-var _sfx_slider:   HSlider
-var _lang_option:  OptionButton
+var _sfx_slider: HSlider
+var _lang_option: OptionButton
 
 # ── Snapshot live-preview значений на момент открытия (для Cancel) ────────────
 var _music_snap: float = 1.0
-var _sfx_snap:   float = 1.0
+var _sfx_snap: float = 1.0
 
 
 func _ready() -> void:
 	# Чтобы работало в PauseMenu (tree.paused).
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	mouse_filter = Control.MOUSE_FILTER_STOP   # клики мимо панели не падают вниз
+	mouse_filter = Control.MOUSE_FILTER_STOP  # клики мимо панели не падают вниз
 	UIStyle.style_modal_panel(_panel)
 	_music_snap = MusicManager.volume
-	_sfx_snap   = SfxManager.volume
+	_sfx_snap = SfxManager.volume
 	_build()
 
 
 # ── Сборка контента ───────────────────────────────────────────────────────────
+
 
 func _build() -> void:
 	_vbox.add_child(UIStyle.modal_header("SETTINGS_TITLE", _on_cancel))
@@ -74,7 +75,7 @@ func _build() -> void:
 	UIStyle.separator(_vbox)
 
 	_build_buttons()
-	UIStyle.scale_modal_text(_vbox)   # текст модалок крупнее (×1.5)
+	UIStyle.scale_modal_text(_vbox)  # текст модалок крупнее (×1.5)
 
 
 func _build_server_section() -> void:
@@ -119,9 +120,7 @@ func _build_display_section() -> void:
 	_fs_check.button_pressed = SettingsStore.fullscreen
 	_fs_check.add_theme_color_override("font_color", UIColors.TEXT)
 	_fs_check.add_theme_font_size_override("font_size", 14)
-	_fs_check.toggled.connect(func(on: bool) -> void:
-		_res_option.disabled = on
-	)
+	_fs_check.toggled.connect(func(on: bool) -> void: _res_option.disabled = on)
 	fs_row.add_child(_fs_check)
 	var fs_lbl := _plain_label("SETTINGS_FULLSCREEN")
 	fs_lbl.name = "FullscreenLabel"
@@ -150,7 +149,7 @@ func _build_audio_section() -> void:
 	)
 	_music_slider.name = "MusicSlider"
 	_sfx_slider = UIStyle.volume_slider_row(
-		_vbox, "SETTINGS_VOLUME_SFX",   SfxManager.volume,   SfxManager.set_volume
+		_vbox, "SETTINGS_VOLUME_SFX", SfxManager.volume, SfxManager.set_volume
 	)
 	_sfx_slider.name = "SfxSlider"
 
@@ -217,11 +216,12 @@ func _build_buttons() -> void:
 
 # ── Save/Cancel ───────────────────────────────────────────────────────────────
 
+
 func _on_save() -> void:
 	if show_server_url and is_instance_valid(_url_input):
 		SettingsStore.set_relay_url(_url_input.text)
 	SettingsStore.resolution_idx = _res_option.selected
-	SettingsStore.fullscreen     = _fs_check.button_pressed
+	SettingsStore.fullscreen = _fs_check.button_pressed
 	SettingsStore.apply_display()
 
 	# Громкости уже применены через live-preview; фиксируем финальное значение.
@@ -247,6 +247,7 @@ func _on_cancel() -> void:
 
 
 # ── Хелперы ───────────────────────────────────────────────────────────────────
+
 
 func _section_header(key: String, node_name: String = "") -> void:
 	var lbl := Label.new()

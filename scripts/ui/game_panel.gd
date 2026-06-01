@@ -3,11 +3,11 @@ extends CanvasLayer
 ## HUD-панель основной игровой информации.
 ## Тонкий API — наружу выставлены простые сеттеры.
 
-@onready var _phase:  Label   = %PhaseLabel
-@onready var _player: Label   = %PlayerLabel
-@onready var _doom:   Control = %DoomTrack
-@onready var _omens:  Control = %OmensDial
-@onready var _info:   Control = %InfoOrb
+@onready var _phase: Label = %PhaseLabel
+@onready var _player: Label = %PlayerLabel
+@onready var _doom: Control = %DoomTrack
+@onready var _omens: Control = %OmensDial
+@onready var _info: Control = %InfoOrb
 
 ## Клик по орбу раунда — для открытия сайдбара текущей Мистерии.
 signal round_clicked

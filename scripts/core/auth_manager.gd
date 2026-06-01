@@ -15,22 +15,22 @@ var api_base: String:
 		return SettingsStore.api_base()
 
 # ── Сигналы ────────────────────────────────────────────────────────────────────
-signal otp_sent                            # код отправлен на почту
-signal otp_failed(error: String)           # ошибка при запросе кода
-signal login_succeeded(user: Dictionary)   # успешный вход / подтверждение сессии
-signal login_failed(error: String)         # неверный код или истёк
-signal session_invalid                     # сохранённый токен недействителен
-signal logged_out                          # пользователь вышел
+signal otp_sent  # код отправлен на почту
+signal otp_failed(error: String)  # ошибка при запросе кода
+signal login_succeeded(user: Dictionary)  # успешный вход / подтверждение сессии
+signal login_failed(error: String)  # неверный код или истёк
+signal session_invalid  # сохранённый токен недействителен
+signal logged_out  # пользователь вышел
 
 # ── Состояние ──────────────────────────────────────────────────────────────────
-var current_user: Dictionary = {}   # {id, email, name}
+var current_user: Dictionary = {}  # {id, email, name}
 var session_token: String = ""
 
 var _http: HTTPRequest
-var _pending: String = ""   # "otp_request" | "otp_verify" | "check_session" | "logout"
-
+var _pending: String = ""  # "otp_request" | "otp_verify" | "check_session" | "logout"
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	_http = HTTPRequest.new()
@@ -45,6 +45,7 @@ func _ready() -> void:
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
+
 func is_logged_in() -> bool:
 	return not session_token.is_empty() and not current_user.is_empty()
 
@@ -58,8 +59,9 @@ func check_session() -> void:
 	if _pending != "":
 		return
 	_pending = "check_session"
-	var err := _http.request(api_base + "/auth/me",
-		["Authorization: Bearer " + session_token], HTTPClient.METHOD_GET)
+	var err := _http.request(
+		api_base + "/auth/me", ["Authorization: Bearer " + session_token], HTTPClient.METHOD_GET
+	)
 	if err != OK:
 		push_warning("AuthManager: HTTPRequest.request failed (err=%d)" % err)
 		_pending = ""
@@ -71,9 +73,12 @@ func request_otp(email: String) -> void:
 	if _pending != "":
 		return
 	_pending = "otp_request"
-	var err := _http.request(api_base + "/auth/request",
-		["Content-Type: application/json"], HTTPClient.METHOD_POST,
-		JSON.stringify({"email": email}))
+	var err := _http.request(
+		api_base + "/auth/request",
+		["Content-Type: application/json"],
+		HTTPClient.METHOD_POST,
+		JSON.stringify({"email": email})
+	)
 	if err != OK:
 		push_warning("AuthManager: HTTPRequest.request failed (err=%d)" % err)
 		_pending = ""
@@ -113,6 +118,7 @@ func logout() -> void:
 
 # ── Обработка ответа ──────────────────────────────────────────────────────────
 
+
 func _on_request_completed(
 	result: int,
 	response_code: int,
@@ -123,13 +129,23 @@ func _on_request_completed(
 	_pending = ""
 
 	if result != HTTPRequest.RESULT_SUCCESS:
-		push_warning("AuthManager: %s failed — %s (http=%d)" % [
-			pending, _result_name(result), response_code,
-		])
+		push_warning(
+			(
+				"AuthManager: %s failed — %s (http=%d)"
+				% [
+					pending,
+					_result_name(result),
+					response_code,
+				]
+			)
+		)
 		match pending:
-			"otp_request":   otp_failed.emit("Нет соединения с сервером")
-			"otp_verify":    login_failed.emit("Нет соединения с сервером")
-			"check_session": session_invalid.emit()
+			"otp_request":
+				otp_failed.emit("Нет соединения с сервером")
+			"otp_verify":
+				login_failed.emit("Нет соединения с сервером")
+			"check_session":
+				session_invalid.emit()
 		return
 
 	var text: String = body.get_string_from_utf8()
@@ -146,7 +162,7 @@ func _on_request_completed(
 		"otp_verify":
 			if response_code == 200:
 				session_token = json.get("token", "")
-				current_user  = json.get("user", {})
+				current_user = json.get("user", {})
 				_save_session()
 				login_succeeded.emit(current_user)
 			else:
@@ -159,7 +175,7 @@ func _on_request_completed(
 			elif response_code == 401:
 				# Токен явно инвалидирован сервером — стираем
 				session_token = ""
-				current_user  = {}
+				current_user = {}
 				_save_session()
 				session_invalid.emit()
 			else:
@@ -168,29 +184,44 @@ func _on_request_completed(
 				session_invalid.emit()
 
 		"logout":
-			pass   # уже обработано в logout()
+			pass  # уже обработано в logout()
 
 
 func _result_name(r: int) -> String:
 	match r:
-		HTTPRequest.RESULT_SUCCESS:           return "SUCCESS"
-		HTTPRequest.RESULT_CHUNKED_BODY_SIZE_MISMATCH: return "CHUNKED_BODY_SIZE_MISMATCH"
-		HTTPRequest.RESULT_CANT_CONNECT:      return "CANT_CONNECT"
-		HTTPRequest.RESULT_CANT_RESOLVE:      return "CANT_RESOLVE"
-		HTTPRequest.RESULT_CONNECTION_ERROR:  return "CONNECTION_ERROR"
-		HTTPRequest.RESULT_TLS_HANDSHAKE_ERROR: return "TLS_HANDSHAKE_ERROR"
-		HTTPRequest.RESULT_NO_RESPONSE:       return "NO_RESPONSE"
-		HTTPRequest.RESULT_BODY_SIZE_LIMIT_EXCEEDED: return "BODY_SIZE_LIMIT_EXCEEDED"
-		HTTPRequest.RESULT_BODY_DECOMPRESS_FAILED: return "BODY_DECOMPRESS_FAILED"
-		HTTPRequest.RESULT_REQUEST_FAILED:    return "REQUEST_FAILED"
-		HTTPRequest.RESULT_DOWNLOAD_FILE_CANT_OPEN: return "DOWNLOAD_FILE_CANT_OPEN"
-		HTTPRequest.RESULT_DOWNLOAD_FILE_WRITE_ERROR: return "DOWNLOAD_FILE_WRITE_ERROR"
-		HTTPRequest.RESULT_REDIRECT_LIMIT_REACHED: return "REDIRECT_LIMIT_REACHED"
-		HTTPRequest.RESULT_TIMEOUT:           return "TIMEOUT"
+		HTTPRequest.RESULT_SUCCESS:
+			return "SUCCESS"
+		HTTPRequest.RESULT_CHUNKED_BODY_SIZE_MISMATCH:
+			return "CHUNKED_BODY_SIZE_MISMATCH"
+		HTTPRequest.RESULT_CANT_CONNECT:
+			return "CANT_CONNECT"
+		HTTPRequest.RESULT_CANT_RESOLVE:
+			return "CANT_RESOLVE"
+		HTTPRequest.RESULT_CONNECTION_ERROR:
+			return "CONNECTION_ERROR"
+		HTTPRequest.RESULT_TLS_HANDSHAKE_ERROR:
+			return "TLS_HANDSHAKE_ERROR"
+		HTTPRequest.RESULT_NO_RESPONSE:
+			return "NO_RESPONSE"
+		HTTPRequest.RESULT_BODY_SIZE_LIMIT_EXCEEDED:
+			return "BODY_SIZE_LIMIT_EXCEEDED"
+		HTTPRequest.RESULT_BODY_DECOMPRESS_FAILED:
+			return "BODY_DECOMPRESS_FAILED"
+		HTTPRequest.RESULT_REQUEST_FAILED:
+			return "REQUEST_FAILED"
+		HTTPRequest.RESULT_DOWNLOAD_FILE_CANT_OPEN:
+			return "DOWNLOAD_FILE_CANT_OPEN"
+		HTTPRequest.RESULT_DOWNLOAD_FILE_WRITE_ERROR:
+			return "DOWNLOAD_FILE_WRITE_ERROR"
+		HTTPRequest.RESULT_REDIRECT_LIMIT_REACHED:
+			return "REDIRECT_LIMIT_REACHED"
+		HTTPRequest.RESULT_TIMEOUT:
+			return "TIMEOUT"
 	return "UNKNOWN"
 
 
 # ── Сохранение токена ─────────────────────────────────────────────────────────
+
 
 func _load_session() -> void:
 	var cfg := ConfigFile.new()

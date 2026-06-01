@@ -17,28 +17,28 @@ extends Control
 ##   set_taken(taken: bool)    — показать/скрыть оверлей «занято»
 
 const _OVERLAY_TEX: Texture2D = preload("res://assets/card-frame/card-overlay.png")
-const _FRAME_TEX:   Texture2D = preload("res://assets/card-frame/card-frame.png")
-const _BADGE_TEX:   Texture2D = preload("res://assets/card-frame/card-badge.png")
+const _FRAME_TEX: Texture2D = preload("res://assets/card-frame/card-frame.png")
+const _BADGE_TEX: Texture2D = preload("res://assets/card-frame/card-badge.png")
 
 # Геометрия бейджа — подобрана под текущий card-badge.png. При смене ассета
 # проверить, что текст и завитки не вылезают.
-const _BADGE_TEX_SCALE: float = 0.25   # @4× ассет → отображаем в 1×
-const _BADGE_BOTTOM_GAP: float = 70.0   # отступ от нижнего края, освобождает место под цитату
-const _BADGE_TEXT_OFFSET_TOP:    int = 9
+const _BADGE_TEX_SCALE: float = 0.25  # @4× ассет → отображаем в 1×
+const _BADGE_BOTTOM_GAP: float = 70.0  # отступ от нижнего края, освобождает место под цитату
+const _BADGE_TEXT_OFFSET_TOP: int = 9
 const _BADGE_TEXT_OFFSET_BOTTOM: int = -17
-const _BADGE_TEXT_OFFSET_X:      int = 40
+const _BADGE_TEXT_OFFSET_X: int = 40
 
 # Полоса цитаты под бейджем.
-const _QUOTE_OFFSET_TOP:    int = -63
+const _QUOTE_OFFSET_TOP: int = -63
 const _QUOTE_OFFSET_BOTTOM: int = -13
-const _QUOTE_OFFSET_X:      int = 40
+const _QUOTE_OFFSET_X: int = 40
 # Цитата — тем же цветом, что и имя сыщика (верхний текст).
 const _QUOTE_COLOR := UIColors.TEXT
 var _placeholder_tex: ImageTexture
 
 var _portrait: TextureRect
 var _name_lbl: Label
-var _occ_lbl:  Label
+var _occ_lbl: Label
 var _quote_lbl: Label
 var _taken_ov: Control
 
@@ -56,11 +56,12 @@ func _ready() -> void:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+
 func set_data(inv: Dictionary) -> void:
 	var inv_name: String = inv.get("name", "")
 	_portrait.texture = _load_portrait(inv_name)
 	_name_lbl.text = inv.get("displayName", inv_name)
-	_occ_lbl.text  = inv.get("occupation", "")
+	_occ_lbl.text = inv.get("occupation", "")
 	var quote_key: String = inv.get("quote", "")
 	# Цитата — translation key; tr() явно, т.к. иначе rebuild при locale_changed
 	# не догонит уже выставленный текст без перевода (Godot переводит автоматом
@@ -74,15 +75,16 @@ func set_taken(taken: bool) -> void:
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 
+
 func _build() -> void:
 	# Слой 1: портрет.
 	_portrait = TextureRect.new()
-	_portrait.name          = "Portrait"
-	_portrait.texture       = _placeholder_tex
-	_portrait.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
-	_portrait.stretch_mode  = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_portrait.name = "Portrait"
+	_portrait.texture = _placeholder_tex
+	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	_portrait.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_portrait.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_portrait)
 
 	# Слой 2: card-overlay, blend=multiply — тонирует портрет.
@@ -113,15 +115,15 @@ func _build_badge() -> Control:
 
 	var box := Control.new()
 	box.name = "Badge"
-	box.anchor_left   = 0.5
-	box.anchor_right  = 0.5
-	box.anchor_top    = 1.0
+	box.anchor_left = 0.5
+	box.anchor_right = 0.5
+	box.anchor_top = 1.0
 	box.anchor_bottom = 1.0
-	box.offset_left   = -badge_size.x * 0.5
-	box.offset_right  =  badge_size.x * 0.5
-	box.offset_top    = -badge_size.y - _BADGE_BOTTOM_GAP
+	box.offset_left = -badge_size.x * 0.5
+	box.offset_right = badge_size.x * 0.5
+	box.offset_top = -badge_size.y - _BADGE_BOTTOM_GAP
 	box.offset_bottom = -_BADGE_BOTTOM_GAP
-	box.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var bg := _make_full_rect_texture(_BADGE_TEX, null)
 	bg.name = "BadgeBg"
@@ -130,10 +132,10 @@ func _build_badge() -> Control:
 	var name_vb := VBoxContainer.new()
 	name_vb.name = "Text"
 	name_vb.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	name_vb.offset_left   =  _BADGE_TEXT_OFFSET_X
-	name_vb.offset_right  = -_BADGE_TEXT_OFFSET_X
-	name_vb.offset_top    =  _BADGE_TEXT_OFFSET_TOP
-	name_vb.offset_bottom =  _BADGE_TEXT_OFFSET_BOTTOM
+	name_vb.offset_left = _BADGE_TEXT_OFFSET_X
+	name_vb.offset_right = -_BADGE_TEXT_OFFSET_X
+	name_vb.offset_top = _BADGE_TEXT_OFFSET_TOP
+	name_vb.offset_bottom = _BADGE_TEXT_OFFSET_BOTTOM
 	name_vb.alignment = BoxContainer.ALIGNMENT_CENTER
 	name_vb.add_theme_constant_override("separation", 0)
 	name_vb.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -156,10 +158,10 @@ func _build_quote_label() -> Label:
 	var lbl := UIStyle.label("", 14, _QUOTE_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Quote"
 	lbl.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	lbl.offset_left   =  _QUOTE_OFFSET_X
-	lbl.offset_right  = -_QUOTE_OFFSET_X
-	lbl.offset_top    =  _QUOTE_OFFSET_TOP
-	lbl.offset_bottom =  _QUOTE_OFFSET_BOTTOM
+	lbl.offset_left = _QUOTE_OFFSET_X
+	lbl.offset_right = -_QUOTE_OFFSET_X
+	lbl.offset_top = _QUOTE_OFFSET_TOP
+	lbl.offset_bottom = _QUOTE_OFFSET_BOTTOM
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_apply_card_text_shadow(lbl)
@@ -169,7 +171,7 @@ func _build_quote_label() -> Label:
 
 func _build_taken_overlay() -> Control:
 	var ov := ColorRect.new()
-	ov.name  = "TakenOverlay"
+	ov.name = "TakenOverlay"
 	ov.color = Color(0, 0, 0, 0.6)
 	ov.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ov.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -183,14 +185,15 @@ func _build_taken_overlay() -> Control:
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+
 func _make_full_rect_texture(tex: Texture2D, mat: Material) -> TextureRect:
 	var r := TextureRect.new()
 	r.name = "Rect"
-	r.texture       = tex
-	r.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
-	r.stretch_mode  = TextureRect.STRETCH_SCALE
+	r.texture = tex
+	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	r.stretch_mode = TextureRect.STRETCH_SCALE
 	r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	r.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if mat:
 		r.material = mat
 	return r

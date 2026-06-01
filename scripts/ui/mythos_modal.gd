@@ -8,16 +8,16 @@ extends CanvasLayer
 ##
 ## Контент строится кодом — паттерн settings_dialog / create_room_dialog.
 
-@onready var _root:  ColorRect      = $Root
+@onready var _root: ColorRect = $Root
 @onready var _panel: PanelContainer = %Panel
-@onready var _vbox:  VBoxContainer  = %VBox
+@onready var _vbox: VBoxContainer = %VBox
 
-var _title_lbl:   Label
-var _flavor_lbl:  Label
-var _text_lbl:    Label
-var _eff_header:  Label
-var _eff_box:     VBoxContainer
-var _next_btn:    Button
+var _title_lbl: Label
+var _flavor_lbl: Label
+var _text_lbl: Label
+var _eff_header: Label
+var _eff_box: VBoxContainer
+var _next_btn: Button
 
 # Кеш ключа текущей карты — чтобы не пересобирать UI на каждый _refresh,
 # если карта не сменилась.
@@ -32,6 +32,7 @@ func _ready() -> void:
 
 
 # ── Сборка ────────────────────────────────────────────────────────────────────
+
 
 func _build() -> void:
 	_title_lbl = UIStyle.modal_title("", UIColors.DANGER)
@@ -75,15 +76,14 @@ func _build() -> void:
 	_next_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_next_btn.pressed.connect(_on_next)
 	_vbox.add_child(_next_btn)
-	UIStyle.scale_modal_text(_vbox)   # текст модалок крупнее (×1.5)
+	UIStyle.scale_modal_text(_vbox)  # текст модалок крупнее (×1.5)
 
 
 # ── Отрисовка по стейту ───────────────────────────────────────────────────────
 
+
 func _refresh() -> void:
-	var show_modal: bool = (
-		GameState.phase == "mythos" and not GameState.current_mythos.is_empty()
-	)
+	var show_modal: bool = GameState.phase == "mythos" and not GameState.current_mythos.is_empty()
 	_root.visible = show_modal
 	if not show_modal:
 		_last_card_key = ""
@@ -97,12 +97,12 @@ func _refresh() -> void:
 		return  # ничего не сменилось — UI уже правильный
 	_last_card_key = card_key
 	_next_btn.disabled = false
-	SfxManager.play(SfxManager.SFX_MYTHOS_START)   # звук появления карты мифа
+	SfxManager.play(SfxManager.SFX_MYTHOS_START)  # звук появления карты мифа
 
-	_title_lbl.text  = String(card.get("name", tr("MYTHOS_TITLE_FALLBACK")))
+	_title_lbl.text = String(card.get("name", tr("MYTHOS_TITLE_FALLBACK")))
 	_flavor_lbl.text = String(card.get("flavorText", ""))
 	_flavor_lbl.visible = not _flavor_lbl.text.is_empty()
-	_text_lbl.text   = String(card.get("text", ""))
+	_text_lbl.text = String(card.get("text", ""))
 	_text_lbl.visible = not _text_lbl.text.is_empty()
 	_render_effects(card.get("onDraw", []))
 
@@ -128,7 +128,7 @@ func _render_effects(effects: Array) -> void:
 		lbl.add_theme_color_override("font_color", UIColors.TEXT)
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_eff_box.add_child(lbl)
-	UIStyle.scale_modal_text(_eff_box)   # эффекты пересобираются — масштаб заново
+	UIStyle.scale_modal_text(_eff_box)  # эффекты пересобираются — масштаб заново
 
 
 # Человекочитаемое описание узла Effect-DSL — для отображения, не применение.
@@ -138,19 +138,32 @@ func _describe_effect(eff: Dictionary) -> String:
 	var target: String = String(eff.get("target", ""))
 	var s: String
 	match verb:
-		"advanceDoom":         s = tr("MYTHOS_EFF_ADVANCE_DOOM") % n
-		"advanceOmen", "moveOmen": s = tr("MYTHOS_EFF_ADVANCE_OMEN") % n
-		"openGate":            s = tr("MYTHOS_EFF_OPEN_GATE") % n
-		"spawnMonster":        s = tr("MYTHOS_EFF_SPAWN_MONSTER") % n
-		"monsterSurge":        s = tr("MYTHOS_EFF_SURGE")
-		"placeClue":           s = tr("MYTHOS_EFF_PLACE_CLUE") % n
-		"placeEldritchToken":  s = tr("MYTHOS_EFF_PLACE_ELDRITCH") % n
-		"placeRumor":          s = tr("MYTHOS_EFF_PLACE_RUMOR")
-		"resolveReckoning":    s = tr("MYTHOS_EFF_RESOLVE_RECKONING")
-		"loseHealth":          s = tr("MYTHOS_EFF_LOSE_HEALTH") % n
-		"loseSanity":          s = tr("MYTHOS_EFF_LOSE_SANITY") % n
-		"gainCondition":       s = tr("MYTHOS_EFF_GAIN_CONDITION") % String(eff.get("condition", "?"))
-		"text":                s = String(eff.get("text", tr("MYTHOS_EFF_TEXT_FALLBACK")))
+		"advanceDoom":
+			s = tr("MYTHOS_EFF_ADVANCE_DOOM") % n
+		"advanceOmen", "moveOmen":
+			s = tr("MYTHOS_EFF_ADVANCE_OMEN") % n
+		"openGate":
+			s = tr("MYTHOS_EFF_OPEN_GATE") % n
+		"spawnMonster":
+			s = tr("MYTHOS_EFF_SPAWN_MONSTER") % n
+		"monsterSurge":
+			s = tr("MYTHOS_EFF_SURGE")
+		"placeClue":
+			s = tr("MYTHOS_EFF_PLACE_CLUE") % n
+		"placeEldritchToken":
+			s = tr("MYTHOS_EFF_PLACE_ELDRITCH") % n
+		"placeRumor":
+			s = tr("MYTHOS_EFF_PLACE_RUMOR")
+		"resolveReckoning":
+			s = tr("MYTHOS_EFF_RESOLVE_RECKONING")
+		"loseHealth":
+			s = tr("MYTHOS_EFF_LOSE_HEALTH") % n
+		"loseSanity":
+			s = tr("MYTHOS_EFF_LOSE_SANITY") % n
+		"gainCondition":
+			s = tr("MYTHOS_EFF_GAIN_CONDITION") % String(eff.get("condition", "?"))
+		"text":
+			s = String(eff.get("text", tr("MYTHOS_EFF_TEXT_FALLBACK")))
 		_:
 			if verb.is_empty():
 				s = tr("MYTHOS_EFF_COMBINATOR")
@@ -163,16 +176,23 @@ func _describe_effect(eff: Dictionary) -> String:
 
 func _describe_target(t: String) -> String:
 	match t:
-		"lead":             return tr("MYTHOS_TGT_LEAD")
-		"each":             return tr("MYTHOS_TGT_EACH")
-		"eachOnCity":       return tr("MYTHOS_TGT_EACH_CITY")
-		"eachOnWilderness": return tr("MYTHOS_TGT_EACH_WILD")
-		"eachOnSea":        return tr("MYTHOS_TGT_EACH_SEA")
-		_:                  return t
+		"lead":
+			return tr("MYTHOS_TGT_LEAD")
+		"each":
+			return tr("MYTHOS_TGT_EACH")
+		"eachOnCity":
+			return tr("MYTHOS_TGT_EACH_CITY")
+		"eachOnWilderness":
+			return tr("MYTHOS_TGT_EACH_WILD")
+		"eachOnSea":
+			return tr("MYTHOS_TGT_EACH_SEA")
+		_:
+			return t
 
 
 # ── Кнопка ────────────────────────────────────────────────────────────────────
 
+
 func _on_next() -> void:
-	_next_btn.disabled = true   # защита от двойного клика / двойного relay
+	_next_btn.disabled = true  # защита от двойного клика / двойного relay
 	GameState.resolve_mythos()

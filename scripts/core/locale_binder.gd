@@ -19,8 +19,8 @@ class_name LocaleBinder
 ## Внутри: вешает meta на ноду + один глобальный subscriber на I18n.locale_changed.
 ## На смене языка проходим по всем нодам в группе и пересчитываем text.
 
-const META_KEY  := "_locale_binder_getter"
-const GROUP     := "_locale_bound"
+const META_KEY := "_locale_binder_getter"
+const GROUP := "_locale_bound"
 
 static var _wired: bool = false
 
@@ -48,6 +48,7 @@ static func unbind(node: Control) -> void:
 
 
 # ── Внутренние ────────────────────────────────────────────────────────────────
+
 
 static func _ensure_wired() -> void:
 	if _wired:

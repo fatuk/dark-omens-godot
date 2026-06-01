@@ -10,30 +10,30 @@ extends Node
 ##   SfxManager.play(SfxManager.SFX_SLIDE)
 ##   SfxManager.set_volume(0.5)
 
-const SFX_SLIDE:          AudioStream = preload("res://assets/audio/sfx/slide.wav")
-const SFX_BTN_CLICK:      AudioStream = preload("res://assets/audio/sfx/btn-click.wav")
-const SFX_SIDEBAR_SLIDE:  AudioStream = preload("res://assets/audio/sfx/sidebar-slide.wav")
+const SFX_SLIDE: AudioStream = preload("res://assets/audio/sfx/slide.wav")
+const SFX_BTN_CLICK: AudioStream = preload("res://assets/audio/sfx/btn-click.wav")
+const SFX_SIDEBAR_SLIDE: AudioStream = preload("res://assets/audio/sfx/sidebar-slide.wav")
 ## Наведение/уход курсора с жетонов локации (колода выезжает/прячется).
 const SFX_MAP_ITEM_HOVER: AudioStream = preload("res://assets/audio/sfx/map-item-hover.wav")
-const SFX_MAP_ITEM_BLUR:  AudioStream = preload("res://assets/audio/sfx/map-item-blur.wav")
+const SFX_MAP_ITEM_BLUR: AudioStream = preload("res://assets/audio/sfx/map-item-blur.wav")
 ## Сдвиг омена (компасный диск проворачивается на новую ступень).
-const SFX_OMEN_MOVE:      AudioStream = preload("res://assets/audio/sfx/omen-move.wav")
+const SFX_OMEN_MOVE: AudioStream = preload("res://assets/audio/sfx/omen-move.wav")
 ## Открытие модалки карты Мифов.
-const SFX_MYTHOS_START:   AudioStream = preload("res://assets/audio/sfx/myth-start.wav")
+const SFX_MYTHOS_START: AudioStream = preload("res://assets/audio/sfx/myth-start.wav")
 ## Движение дум-трека (Рок продвинулся).
-const SFX_DOOM_MOVE:      AudioStream = preload("res://assets/audio/sfx/doom-track-move.wav")
+const SFX_DOOM_MOVE: AudioStream = preload("res://assets/audio/sfx/doom-track-move.wav")
 ## Открытие врат на локации.
-const SFX_OPEN_GATE:      AudioStream = preload("res://assets/audio/sfx/open-gate.wav")
+const SFX_OPEN_GATE: AudioStream = preload("res://assets/audio/sfx/open-gate.wav")
 ## Выкладывание улики на локацию.
-const SFX_CLUE_OPEN:      AudioStream = preload("res://assets/audio/sfx/clue-open.wav")
+const SFX_CLUE_OPEN: AudioStream = preload("res://assets/audio/sfx/clue-open.wav")
 ## Подсматривание следующего омена по наведению (peek in) и возврат (peek out).
-const SFX_OMEN_PICK_IN:   AudioStream = preload("res://assets/audio/sfx/omen-pick-in.wav")
-const SFX_OMEN_PICK_OUT:  AudioStream = preload("res://assets/audio/sfx/omen-pick-out.wav")
+const SFX_OMEN_PICK_IN: AudioStream = preload("res://assets/audio/sfx/omen-pick-in.wav")
+const SFX_OMEN_PICK_OUT: AudioStream = preload("res://assets/audio/sfx/omen-pick-out.wav")
 
 const BUS_NAME := "Sfx"
 const _POOL_SIZE: int = 4
 
-var volume: float = 0.5   # 0.0..1.0, линейная шкала (default override: SettingsStore.sfx_volume)
+var volume: float = 0.5  # 0.0..1.0, линейная шкала (default override: SettingsStore.sfx_volume)
 
 var _pool: Array[AudioStreamPlayer] = []
 var _next: int = 0
@@ -46,7 +46,7 @@ func _ready() -> void:
 	for i in range(_POOL_SIZE):
 		var p := AudioStreamPlayer.new()
 		p.name = "Player_%d" % i
-		p.bus  = BUS_NAME
+		p.bus = BUS_NAME
 		add_child(p)
 		_pool.append(p)
 	# SettingsStore зарегистрирован раньше — его поля уже загружены.
@@ -76,7 +76,9 @@ func play(stream: AudioStream) -> void:
 ## реальный файл (например, вариации разной длины с паузами). Если задан — играет
 ## случайный из них; иначе работает равная нарезка по `variations`.
 func play_variation(
-	stream: AudioStream, variations: int = 1, pitch_jitter: float = 0.0,
+	stream: AudioStream,
+	variations: int = 1,
+	pitch_jitter: float = 0.0,
 	segments: Array = [],
 ) -> void:
 	if stream == null:
@@ -91,7 +93,7 @@ func play_variation(
 	if not segments.is_empty():
 		var s: Array = segments[randi() % segments.size()]
 		var start: float = float(s[0])
-		var dur: float   = maxf(0.0, float(s[1]) - start)
+		var dur: float = maxf(0.0, float(s[1]) - start)
 		_play_segment(stream, start, dur, jitter)
 		return
 
@@ -115,9 +117,9 @@ func play_variation(
 func _play_segment(stream: AudioStream, start: float, dur: float, pitch: float) -> void:
 	var tp := AudioStreamPlayer.new()
 	tp.name = "Player"
-	tp.bus         = BUS_NAME
+	tp.bus = BUS_NAME
 	tp.pitch_scale = pitch
-	tp.stream      = stream
+	tp.stream = stream
 	add_child(tp)
 	tp.play(start)
 	# Длительность на экране = dur / pitch (питч ускоряет/замедляет). Если dur не

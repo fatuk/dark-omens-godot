@@ -18,28 +18,28 @@ const GROUP := "selection_indicators"
 # #8fbd4d — лаймовый
 const COLOR: Color = Color(0.561, 0.741, 0.302, 0.95)
 
-const RING_RADIUS:    float = 35.0
+const RING_RADIUS: float = 35.0
 const RING_THICKNESS: float = 1.9
 
-const GLOW_INNER:     float = 80.0
-const GLOW_OUTER:     float = 39.0
-const GLOW_STRENGTH:  float = 0.17
-const GLOW_FALLOFF:   float = 8.1
+const GLOW_INNER: float = 80.0
+const GLOW_OUTER: float = 39.0
+const GLOW_STRENGTH: float = 0.17
+const GLOW_FALLOFF: float = 8.1
 
-const ARROW_W:     float = 13.0
-const ARROW_H:     float = 13.0
+const ARROW_W: float = 13.0
+const ARROW_H: float = 13.0
 const ARROW_TIP_Y: float = -37.0
 
 const OFFSET_X: float = 0.0
 const OFFSET_Y: float = -2.3
 
-const PULSE_SPEED:  float = 3.0    # рад/сек, для пульсации радиуса кольца в шейдере
-const PULSE_AMOUNT: float = 0.02   # ±2% радиуса кольца
+const PULSE_SPEED: float = 3.0  # рад/сек, для пульсации радиуса кольца в шейдере
+const PULSE_AMOUNT: float = 0.02  # ±2% радиуса кольца
 
 # Тень под стрелкой.
-const SHADOW_COLOR:       Color   = Color(0.0, 0.0, 0.0, 0.45)
-const SHADOW_OFFSET:      Vector2 = Vector2(1.5, 2.5)
-const SHADOW_SCALE_MULT:  float   = 1.12
+const SHADOW_COLOR: Color = Color(0.0, 0.0, 0.0, 0.45)
+const SHADOW_OFFSET: Vector2 = Vector2(1.5, 2.5)
+const SHADOW_SCALE_MULT: float = 1.12
 
 const SPRITE_SIZE: float = 200.0
 
@@ -81,16 +81,16 @@ void fragment() {
 """
 
 # Один общий материал и текстура на все индикаторы.
-static var _shared_mat:   ShaderMaterial = null
-static var _shared_tex:   Texture2D      = null
-static var _offset:       Vector2        = Vector2(OFFSET_X, OFFSET_Y)
-static var _pulse_speed:  float          = PULSE_SPEED
-static var _pulse_amount: float          = PULSE_AMOUNT
+static var _shared_mat: ShaderMaterial = null
+static var _shared_tex: Texture2D = null
+static var _offset: Vector2 = Vector2(OFFSET_X, OFFSET_Y)
+static var _pulse_speed: float = PULSE_SPEED
+static var _pulse_amount: float = PULSE_AMOUNT
 
 var _glow: Polygon2D = null
 
-
 # ── Static API ────────────────────────────────────────────────────────────────
+
 
 static func get_shared_material() -> ShaderMaterial:
 	if _shared_mat == null:
@@ -98,16 +98,16 @@ static func get_shared_material() -> ShaderMaterial:
 		sh.code = SHADER_CODE
 		_shared_mat = ShaderMaterial.new()
 		_shared_mat.shader = sh
-		_shared_mat.set_shader_parameter("color",         Vector4(COLOR.r, COLOR.g, COLOR.b, COLOR.a))
-		_shared_mat.set_shader_parameter("ring_r",        RING_RADIUS)
-		_shared_mat.set_shader_parameter("ring_w",        RING_THICKNESS)
-		_shared_mat.set_shader_parameter("glow_inner",    GLOW_INNER)
-		_shared_mat.set_shader_parameter("glow_outer",    GLOW_OUTER)
+		_shared_mat.set_shader_parameter("color", Vector4(COLOR.r, COLOR.g, COLOR.b, COLOR.a))
+		_shared_mat.set_shader_parameter("ring_r", RING_RADIUS)
+		_shared_mat.set_shader_parameter("ring_w", RING_THICKNESS)
+		_shared_mat.set_shader_parameter("glow_inner", GLOW_INNER)
+		_shared_mat.set_shader_parameter("glow_outer", GLOW_OUTER)
 		_shared_mat.set_shader_parameter("glow_strength", GLOW_STRENGTH)
-		_shared_mat.set_shader_parameter("glow_falloff",  GLOW_FALLOFF)
-		_shared_mat.set_shader_parameter("offset",        _offset)
-		_shared_mat.set_shader_parameter("pulse_speed",   _pulse_speed)
-		_shared_mat.set_shader_parameter("pulse_amount",  _pulse_amount)
+		_shared_mat.set_shader_parameter("glow_falloff", GLOW_FALLOFF)
+		_shared_mat.set_shader_parameter("offset", _offset)
+		_shared_mat.set_shader_parameter("pulse_speed", _pulse_speed)
+		_shared_mat.set_shader_parameter("pulse_amount", _pulse_amount)
 	return _shared_mat
 
 
@@ -122,10 +122,10 @@ static func get_offset() -> Vector2:
 
 
 static func set_pulse(speed: float, amount: float) -> void:
-	_pulse_speed  = speed
+	_pulse_speed = speed
 	_pulse_amount = amount
 	var mat := get_shared_material()
-	mat.set_shader_parameter("pulse_speed",  speed)
+	mat.set_shader_parameter("pulse_speed", speed)
 	mat.set_shader_parameter("pulse_amount", amount)
 	# arrow перерисуется сам в _process, но дёрнем сразу — на случай ставшего нулевым размаха.
 	_redraw_all()
@@ -158,18 +158,23 @@ static func _redraw_all() -> void:
 
 # ── Жизненный цикл ────────────────────────────────────────────────────────────
 
+
 func _ready() -> void:
 	add_to_group(GROUP)
 
 	var s: float = SPRITE_SIZE * 0.5
 	_glow = Polygon2D.new()
-	_glow.name    = "Glow"
+	_glow.name = "Glow"
 	_glow.texture = _get_shared_texture()
-	_glow.polygon = PackedVector2Array([
-		Vector2(-s, -s), Vector2( s, -s),
-		Vector2( s,  s), Vector2(-s,  s),
-	])
-	_glow.color    = Color.WHITE
+	_glow.polygon = PackedVector2Array(
+		[
+			Vector2(-s, -s),
+			Vector2(s, -s),
+			Vector2(s, s),
+			Vector2(-s, s),
+		]
+	)
+	_glow.color = Color.WHITE
 	_glow.material = get_shared_material()
 	add_child(_glow)
 
@@ -178,25 +183,29 @@ func _draw() -> void:
 	var ox: float = _offset.x
 	var oy: float = _offset.y
 
-	var aw: float     = ARROW_W * 0.5
+	var aw: float = ARROW_W * 0.5
 	var base_y: float = oy + ARROW_TIP_Y - ARROW_H
 
 	# Тень: чуть больше + сдвинута вниз-вправо. Рисуем ПЕРВОЙ — окажется снизу.
-	var sw: float  = aw * SHADOW_SCALE_MULT
-	var sh: float  = ARROW_H * SHADOW_SCALE_MULT
+	var sw: float = aw * SHADOW_SCALE_MULT
+	var sh: float = ARROW_H * SHADOW_SCALE_MULT
 	var sox: float = ox + SHADOW_OFFSET.x
 	var soy: float = base_y + SHADOW_OFFSET.y
-	var shadow := PackedVector2Array([
-		Vector2(sox - sw, soy),
-		Vector2(sox + sw, soy),
-		Vector2(sox,      soy + sh),
-	])
+	var shadow := PackedVector2Array(
+		[
+			Vector2(sox - sw, soy),
+			Vector2(sox + sw, soy),
+			Vector2(sox, soy + sh),
+		]
+	)
 	draw_colored_polygon(shadow, SHADOW_COLOR)
 
 	# Основная стрелка
-	var arrow := PackedVector2Array([
-		Vector2(ox - aw, base_y),
-		Vector2(ox + aw, base_y),
-		Vector2(ox,      base_y + ARROW_H),
-	])
+	var arrow := PackedVector2Array(
+		[
+			Vector2(ox - aw, base_y),
+			Vector2(ox + aw, base_y),
+			Vector2(ox, base_y + ARROW_H),
+		]
+	)
 	draw_colored_polygon(arrow, COLOR)

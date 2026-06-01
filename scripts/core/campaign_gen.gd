@@ -35,10 +35,11 @@ func _init(gs: Node) -> void:
 
 # ── Public API ───────────────────────────────────────────────────────────────
 
+
 ## Модалка создания комнаты передаёт сюда выбор хоста. Подхватится в prewarm().
 func set_seed(ancient_one: String, player_count: int) -> void:
-	_seed_ancient_one   = ancient_one
-	_room_player_count  = maxi(1, player_count)
+	_seed_ancient_one = ancient_one
+	_room_player_count = maxi(1, player_count)
 
 
 ## Авторитетное число игроков для баланса = размер комнаты; если он неизвестен
@@ -59,10 +60,10 @@ func prewarm() -> void:
 	if not _gs._is_host():
 		return
 	if _gs.campaign_pending or not _gs.campaign.is_empty():
-		return   # генерация уже идёт либо библия уже готова
-	var pc: int = balance_player_count()   # размер комнаты (не лобби), если задан
+		return  # генерация уже идёт либо библия уже готова
+	var pc: int = balance_player_count()  # размер комнаты (не лобби), если задан
 	var ao: String = _seed_ancient_one
-	_seed_ancient_one = ""                 # Древний — одноразовый, размер комнаты живёт
+	_seed_ancient_one = ""  # Древний — одноразовый, размер комнаты живёт
 	GameConsole.log("[Game] Прогрев кампании в лобби (игроков комнаты: %d)..." % pc)
 	_start_generation(pc, ao)
 
@@ -81,11 +82,12 @@ func reset() -> void:
 	if not _gs._is_host():
 		return
 	_epoch += 1
-	_gs.campaign         = {}
+	_gs.campaign = {}
 	_gs.campaign_pending = false
 
 
 # ── Анализ ───────────────────────────────────────────────────────────────────
+
 
 ## Текущий акт (1–3) — по индексу активной Тайны. Прогресс игроков, не doom:
 ## решили Тайну акта 1 → акт 2, и т.д. doom отдельно — часы поражения.
@@ -113,6 +115,7 @@ func current_mystery() -> Dictionary:
 
 # ── Корутина генерации ───────────────────────────────────────────────────────
 
+
 # Один цикл генерации сценарной библии (~минуты). Корутина — вызывается без
 # await. Эпоха защищает от устаревших результатов.
 func _start_generation(player_count: int, ancient_one: String) -> void:
@@ -120,13 +123,13 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 		return
 	_epoch += 1
 	var epoch: int = _epoch
-	_gs.campaign         = {}
+	_gs.campaign = {}
 	_gs.campaign_pending = true
 	# Новая кампания — сбрасываем цикл Тайн (active_mystery/прогресс/финал).
-	_gs.active_mystery   = 0
+	_gs.active_mystery = 0
 	_gs.mystery_progress = 0
-	_gs.mystery_claimed  = []
-	_gs.outcome          = ""
+	_gs.mystery_claimed = []
+	_gs.outcome = ""
 	_gs._emit_changed()
 
 	var api: Node = _gs.get_node_or_null("/root/ContentApi")
@@ -145,20 +148,23 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 	var res: Dictionary = await api.generate_campaign(req)
 
 	if epoch != _epoch:
-		return   # перебито новым циклом или reset — результат устарел
+		return  # перебито новым циклом или reset — результат устарел
 	if bool(res.get("ok", false)):
 		var full: Dictionary = res.get("campaign", {})
-		_gs.campaign     = _summary(full)
+		_gs.campaign = _summary(full)
 		# Размер партии, под который сгенерена кампания (мифос-колода, цели Тайн).
 		# Стартовая раскладка (_setup_board) обязана взять ИМЕННО его, а не число
 		# подключённых: иначе соло-тест партии на 5–8 даст раскладку как на 1.
 		_gs.campaign["playerCount"] = maxi(1, player_count)
-		_gs._mythos.deck  = full.get("mythosDeck", [])
+		_gs._mythos.deck = full.get("mythosDeck", [])
 		_gs._mythos.index = 0
 		var ao: Dictionary = _gs.campaign.get("ancientOne", {})
-		GameConsole.log("[Game] Кампания готова — Древний: %s, карт Мифов: %d" % [
-			String(ao.get("name", "?")), _gs._mythos.deck.size()
-		])
+		GameConsole.log(
+			(
+				"[Game] Кампания готова — Древний: %s, карт Мифов: %d"
+				% [String(ao.get("name", "?")), _gs._mythos.deck.size()]
+			)
+		)
 	else:
 		GameConsole.warn("[Game] Генерация кампании не удалась: %s" % String(res.get("error", "")))
 	_gs.campaign_pending = false
@@ -181,17 +187,22 @@ func _build_request(player_count: int, ancient_one: String) -> Dictionary:
 		var name_key: String = String(loc.get("name", loc.get("id", "")))
 		# id шлём отдельно — relay сопоставляет с config/ancients.json по нему
 		# (стабильный ключ, не зависит от языка).
-		locs.append({
-			"id":   String(loc.get("id", "")),
-			"name": tr(name_key),
-			"type": String(loc.get("type", "city")),
-		})
+		(
+			locs
+			. append(
+				{
+					"id": String(loc.get("id", "")),
+					"name": tr(name_key),
+					"type": String(loc.get("type", "city")),
+				}
+			)
+		)
 	var req: Dictionary = {
-		"locations":   locs,
+		"locations": locs,
 		"playerCount": maxi(1, player_count),
-		"language":    _gs._relay_language(),
+		"language": _gs._relay_language(),
 		# Off → сервер собирает шаблонную библию без LLM (см. SettingsStore.use_llm).
-		"useLLM":      SettingsStore.use_llm,
+		"useLLM": SettingsStore.use_llm,
 	}
 	# Древний задан в модалке создания комнаты — иначе модель придумывает сама.
 	if not ancient_one.is_empty():
@@ -206,19 +217,24 @@ func _summary(full: Dictionary) -> Dictionary:
 	var src: Array = full.get("mysteries", [])
 	for i in range(src.size()):
 		var m: Dictionary = src[i]
-		mysteries.append({
-			"act":            int(m.get("act", 0)),
-			"title":          String(m.get("title", "")),
-			"flavorText":     String(m.get("flavorText", "")),
-			"text":           String(m.get("text", "")),
-			"solveCondition": m.get("solveCondition", {}),
-			# Помеченные локации Тайны — без них нет маркеров и mystery-встреч.
-			"locations":      m.get("locations", []),
-		})
+		(
+			mysteries
+			. append(
+				{
+					"act": int(m.get("act", 0)),
+					"title": String(m.get("title", "")),
+					"flavorText": String(m.get("flavorText", "")),
+					"text": String(m.get("text", "")),
+					"solveCondition": m.get("solveCondition", {}),
+					# Помеченные локации Тайны — без них нет маркеров и mystery-встреч.
+					"locations": m.get("locations", []),
+				}
+			)
+		)
 	return {
-		"id":         String(full.get("id", "")),
-		"doomClock":  int(full.get("doomClock", 0)),
+		"id": String(full.get("id", "")),
+		"doomClock": int(full.get("doomClock", 0)),
 		"ancientOne": full.get("ancientOne", {}),
-		"theme":      full.get("theme", []),
-		"mysteries":  mysteries,
+		"theme": full.get("theme", []),
+		"mysteries": mysteries,
 	}

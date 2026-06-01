@@ -9,15 +9,15 @@ extends HBoxContainer
 # Атрибуты (translation_key, ключ в skills{}). Поле field совпадает с именем
 # PNG-иконки в assets/virtues-panel/.
 const ATTRIBUTES := [
-	["SKILL_STRENGTH",    "strength"],
-	["SKILL_LORE",        "lore"],
-	["SKILL_WILL",        "will"],
-	["SKILL_INFLUENCE",   "influence"],
+	["SKILL_STRENGTH", "strength"],
+	["SKILL_LORE", "lore"],
+	["SKILL_WILL", "will"],
+	["SKILL_INFLUENCE", "influence"],
 	["SKILL_OBSERVATION", "observation"],
 ]
 
 # Ассеты левой панели (player-hud). @2× — выводим с _HUD_SCALE.
-const _HUD_SCALE:    float = 0.5
+const _HUD_SCALE: float = 0.5
 const _TICKET_SCALE: float = 0.34
 # Наклон второго билета (градусы, по часовой). Он лежит поверх первого —
 # лёгкий поворот даёт ощущение небрежно брошенной стопки.
@@ -27,8 +27,8 @@ const _TICKET_TILT_DEG: float = 7.0
 const _HUD_BAR_WIDTH: float = 180.0
 # Тень билета: размытый силуэт-копия, сдвинутая влево-вниз, под билетом.
 const _TICKET_SHADOW_OFFSET := Vector2(-6.0, 6.0)
-const _TICKET_SHADOW_ALPHA:  float = 0.55
-const _TICKET_SHADOW_BLUR:   float = 6.0   # радиус размытия (в TEXTURE_PIXEL_SIZE)
+const _TICKET_SHADOW_ALPHA: float = 0.55
+const _TICKET_SHADOW_BLUR: float = 6.0  # радиус размытия (в TEXTURE_PIXEL_SIZE)
 
 # Шейдер тени: 5×5 box-blur alpha-маски текстуры → мягкий чёрный силуэт.
 const _SHADOW_BLUR_SHADER := """
@@ -47,24 +47,24 @@ void fragment() {
 }
 """
 const _HUD_PANEL_BG: Texture2D = preload("res://assets/player-hud/player-hud-bg.png")
-const _HUD_ROW_BG:   Texture2D = preload("res://assets/player-hud/hud-item-bg.png")
-const _HUD_BAR_BG:   Texture2D = preload("res://assets/player-hud/bar-bg.png")
-const _HEALTH_ICON:  Texture2D = preload("res://assets/player-hud/health-icon.png")
-const _HEALTH_BAR:   Texture2D = preload("res://assets/player-hud/health-bar.png")
-const _SANITY_ICON:  Texture2D = preload("res://assets/player-hud/sanity-icon.png")
-const _SANITY_BAR:   Texture2D = preload("res://assets/player-hud/sanity-ba.png")
+const _HUD_ROW_BG: Texture2D = preload("res://assets/player-hud/hud-item-bg.png")
+const _HUD_BAR_BG: Texture2D = preload("res://assets/player-hud/bar-bg.png")
+const _HEALTH_ICON: Texture2D = preload("res://assets/player-hud/health-icon.png")
+const _HEALTH_BAR: Texture2D = preload("res://assets/player-hud/health-bar.png")
+const _SANITY_ICON: Texture2D = preload("res://assets/player-hud/sanity-icon.png")
+const _SANITY_BAR: Texture2D = preload("res://assets/player-hud/sanity-ba.png")
 const _TRAIN_TICKET: Texture2D = preload("res://assets/player-hud/train-ticket.png")
 const _OCEAN_TICKET: Texture2D = preload("res://assets/player-hud/ocean-ticket.png")
 
 # Ассеты панели атрибутов. Все @2× — выводим в half-size.
 const _ATTR_PANEL_TEX: Texture2D = preload("res://assets/virtues-panel/virues-panel.png")
-const _DICE_TEX:       Texture2D = preload("res://assets/virtues-panel/cube.png")
-const _DIVIDER_TEX:    Texture2D = preload("res://assets/virtues-panel/divider.png")
+const _DICE_TEX: Texture2D = preload("res://assets/virtues-panel/cube.png")
+const _DIVIDER_TEX: Texture2D = preload("res://assets/virtues-panel/divider.png")
 const _ATTR_ICONS: Dictionary = {
-	"strength":    preload("res://assets/virtues-panel/strength.png"),
-	"lore":        preload("res://assets/virtues-panel/lore.png"),
-	"will":        preload("res://assets/virtues-panel/will.png"),
-	"influence":   preload("res://assets/virtues-panel/influence.png"),
+	"strength": preload("res://assets/virtues-panel/strength.png"),
+	"lore": preload("res://assets/virtues-panel/lore.png"),
+	"will": preload("res://assets/virtues-panel/will.png"),
+	"influence": preload("res://assets/virtues-panel/influence.png"),
 	"observation": preload("res://assets/virtues-panel/observation.png"),
 }
 
@@ -74,15 +74,15 @@ const _ATTR_ICONS: Dictionary = {
 const _ASSET_SCALE: float = 0.5
 # Иконки атрибутов рендерятся мельче общего @2×-масштаба: ячейка панели низкая
 # (~160px), а с full-size иконкой (~74px) колонка с dice-секцией не влезала.
-const _ICON_SCALE:  float = 0.40
-const _TITLE_Y:            int = 6
-const _TITLE_H:            int = 26
+const _ICON_SCALE: float = 0.40
+const _TITLE_Y: int = 6
+const _TITLE_H: int = 26
 # Инсеты блока колонок от краёв панели. LEFT/RIGHT раздельные — позволяют
 # не только сжать ряд, но и сдвинуть его целиком (увеличь LEFT и уменьши
 # RIGHT на ту же величину → весь ряд уезжает вправо).
-const _COLS_MARGIN_LEFT:   int = 5
-const _COLS_MARGIN_RIGHT:  int = 3
-const _COLS_MARGIN_TOP:    int = 40
+const _COLS_MARGIN_LEFT: int = 5
+const _COLS_MARGIN_RIGHT: int = 3
+const _COLS_MARGIN_TOP: int = 40
 const _COLS_MARGIN_BOTTOM: int = 12
 
 # Цвет крупных цифр атрибутов — тёплое золото под бронзовые иконки.
@@ -91,8 +91,8 @@ const _ATTR_VALUE_COLOR := Color("c39b6a")
 # Эффект «дешифровки» при смене сыщика: цифра атрибута сначала пробегает
 # несколько случайных ктулху-рун (шрифт CTHUR), затем проявляется число.
 const _RUNE_FONT: Font = preload("res://assets/fonts/CTHUR___.TTF")
-const _SCRAMBLE_STEPS:     int   = 8       # сколько кадров мелькнёт
-const _SCRAMBLE_STEP_TIME: float = 0.08    # длительность одного кадра
+const _SCRAMBLE_STEPS: int = 8  # сколько кадров мелькнёт
+const _SCRAMBLE_STEP_TIME: float = 0.08  # длительность одного кадра
 # Сколько рун мелькает в одном кадре. У атрибута значение — одна цифра, хватает
 # одной руны; у баров HP/санити значение длиннее («NN / NN») — используем 3.
 const _BAR_SCRAMBLE_RUNES: int = 2
@@ -100,11 +100,11 @@ const _BAR_SCRAMBLE_RUNES: int = 2
 # ВРЕМЕННО / тест: модификаторы атрибутов до появления upgrade-системы.
 # Атрибут с бонусом > 0 показывает строку «+N 🎲». Удалить, когда бонусы
 # начнут приходить из реальных данных.
-const _TEST_BONUSES := { "will": 2 }
+const _TEST_BONUSES := {"will": 2}
 
-var _hp_label:     Label
+var _hp_label: Label
 var _sanity_label: Label
-var _attr_value_lbls: Dictionary = {}   # field name -> Label
+var _attr_value_lbls: Dictionary = {}  # field name -> Label
 var _ticket_shadow_mat: ShaderMaterial  # общий blur-материал теней билетов
 
 
@@ -129,8 +129,9 @@ func _build_ticket_shadow_material() -> ShaderMaterial:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+
 func update(inv: Dictionary) -> void:
-	var hp_max:  int = int(inv.get("health", 0))
+	var hp_max: int = int(inv.get("health", 0))
 	var san_max: int = int(inv.get("sanity", 0))
 	# В picker'е бар всегда полный (показываем max/max) — числа в значении.
 	# Перед новыми числами на месте значения пробегают ктулху-руны (как у
@@ -155,15 +156,17 @@ func _scramble_to(lbl: Label, final_text: String, rune_count: int = 1) -> void:
 
 	var tw := create_tween()
 	for i in range(_SCRAMBLE_STEPS):
-		tw.tween_callback(func() -> void:
-			lbl.add_theme_font_override("font", _RUNE_FONT)
-			lbl.text = _random_runes(rune_count)
+		tw.tween_callback(
+			func() -> void:
+				lbl.add_theme_font_override("font", _RUNE_FONT)
+				lbl.text = _random_runes(rune_count)
 		)
 		tw.tween_interval(_SCRAMBLE_STEP_TIME)
 	# Финал: возвращаем обычный шрифт темы и настоящую цифру.
-	tw.tween_callback(func() -> void:
-		lbl.remove_theme_font_override("font")
-		lbl.text = final_text
+	tw.tween_callback(
+		func() -> void:
+			lbl.remove_theme_font_override("font")
+			lbl.text = final_text
 	)
 	lbl.set_meta("__scramble_tw", tw)
 
@@ -179,6 +182,7 @@ func _random_runes(count: int) -> String:
 
 # ── Stats ─────────────────────────────────────────────────────────────────────
 
+
 # Левая панель: декоративный фон player-hud-bg + поверх 2 строки статов
 # (HP/санити) на ассетах player-hud + ряд билетов снизу. Панель фиксированного
 # размера (= фон @_HUD_SCALE) — у фона запечены угловые орнаменты.
@@ -188,9 +192,9 @@ func _build_stats_panel() -> Control:
 	panel.custom_minimum_size = _HUD_PANEL_BG.get_size() * _HUD_SCALE
 
 	var bg := TextureRect.new()
-	bg.name         = "Background"
-	bg.texture      = _HUD_PANEL_BG
-	bg.expand_mode  = TextureRect.EXPAND_IGNORE_SIZE
+	bg.name = "Background"
+	bg.texture = _HUD_PANEL_BG
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	bg.stretch_mode = TextureRect.STRETCH_SCALE
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -209,17 +213,18 @@ func _build_stats_panel() -> Control:
 
 
 # Строка стата: фон hud-item-bg + иконка-медальон слева + (лейбл / бар+значение).
-func _make_hud_stat_row(node_name: String, label_key: String,
-		icon_tex: Texture2D, fill_tex: Texture2D, is_hp: bool) -> Control:
+func _make_hud_stat_row(
+	node_name: String, label_key: String, icon_tex: Texture2D, fill_tex: Texture2D, is_hp: bool
+) -> Control:
 	var row := Control.new()
 	row.name = node_name
-	row.custom_minimum_size   = _HUD_ROW_BG.get_size() * _HUD_SCALE
+	row.custom_minimum_size = _HUD_ROW_BG.get_size() * _HUD_SCALE
 	row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
 	var bg := TextureRect.new()
-	bg.name         = "Background"
-	bg.texture      = _HUD_ROW_BG
-	bg.expand_mode  = TextureRect.EXPAND_IGNORE_SIZE
+	bg.name = "Background"
+	bg.texture = _HUD_ROW_BG
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	bg.stretch_mode = TextureRect.STRETCH_SCALE
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -228,18 +233,18 @@ func _make_hud_stat_row(node_name: String, label_key: String,
 	var content := HBoxContainer.new()
 	content.name = "Content"
 	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	content.offset_left   =  8
-	content.offset_right  = -10
-	content.offset_top    =  6
+	content.offset_left = 8
+	content.offset_right = -10
+	content.offset_top = 6
 	content.offset_bottom = -6
 	content.add_theme_constant_override("separation", 8)
 	row.add_child(content)
 
 	var icon := TextureRect.new()
-	icon.name             = "Icon"
-	icon.texture          = icon_tex
-	icon.expand_mode      = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode     = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.name = "Icon"
+	icon.texture = icon_tex
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.custom_minimum_size = icon_tex.get_size() * _HUD_SCALE
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	content.add_child(icon)
@@ -247,7 +252,7 @@ func _make_hud_stat_row(node_name: String, label_key: String,
 	var info := VBoxContainer.new()
 	info.name = "Info"
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info.size_flags_vertical   = Control.SIZE_SHRINK_CENTER
+	info.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	info.add_theme_constant_override("separation", 3)
 	content.add_child(info)
 
@@ -282,14 +287,14 @@ func _make_hud_stat_row(node_name: String, label_key: String,
 func _make_hud_bar(fill_tex: Texture2D) -> Control:
 	var bar := Control.new()
 	bar.name = "Bar"
-	bar.custom_minimum_size   = Vector2(_HUD_BAR_WIDTH, _HUD_BAR_BG.get_size().y * _HUD_SCALE)
+	bar.custom_minimum_size = Vector2(_HUD_BAR_WIDTH, _HUD_BAR_BG.get_size().y * _HUD_SCALE)
 	bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	bar.size_flags_vertical   = Control.SIZE_SHRINK_CENTER
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	var groove := TextureRect.new()
-	groove.name         = "Groove"
-	groove.texture      = _HUD_BAR_BG
-	groove.expand_mode  = TextureRect.EXPAND_IGNORE_SIZE
+	groove.name = "Groove"
+	groove.texture = _HUD_BAR_BG
+	groove.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	groove.stretch_mode = TextureRect.STRETCH_SCALE
 	groove.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	groove.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -299,16 +304,16 @@ func _make_hud_bar(fill_tex: Texture2D) -> Control:
 	var inset_x: float = (_HUD_BAR_BG.get_size().x - fill_tex.get_size().x) * 0.5 * _HUD_SCALE
 	var inset_y: float = (_HUD_BAR_BG.get_size().y - fill_tex.get_size().y) * 0.5 * _HUD_SCALE
 	var fill := TextureRect.new()
-	fill.name         = "Fill"
-	fill.texture      = fill_tex
-	fill.expand_mode  = TextureRect.EXPAND_IGNORE_SIZE
+	fill.name = "Fill"
+	fill.texture = fill_tex
+	fill.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	fill.stretch_mode = TextureRect.STRETCH_SCALE
 	fill.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	fill.offset_left   =  inset_x
-	fill.offset_right  = -inset_x
-	fill.offset_top    =  inset_y
+	fill.offset_left = inset_x
+	fill.offset_right = -inset_x
+	fill.offset_top = inset_y
 	fill.offset_bottom = -inset_y
-	fill.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bar.add_child(fill)
 	return bar
 
@@ -328,8 +333,9 @@ func _make_tickets_row() -> Control:
 	return hb
 
 
-func _make_ticket(tex: Texture2D, node_name: String, ticket_height: float,
-		tilt_deg: float = 0.0) -> Control:
+func _make_ticket(
+	tex: Texture2D, node_name: String, ticket_height: float, tilt_deg: float = 0.0
+) -> Control:
 	# Размер: фиксированная высота, ширина — по аспекту текстуры.
 	var tex_size: Vector2 = tex.get_size()
 	var ticket_size := Vector2(ticket_height * tex_size.x / tex_size.y, ticket_height)
@@ -346,32 +352,32 @@ func _make_ticket(tex: Texture2D, node_name: String, ticket_height: float,
 	var tilt := Control.new()
 	tilt.name = "Tilt"
 	tilt.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	tilt.pivot_offset     = ticket_size * 0.5
+	tilt.pivot_offset = ticket_size * 0.5
 	tilt.rotation_degrees = tilt_deg
-	tilt.mouse_filter     = Control.MOUSE_FILTER_IGNORE
+	tilt.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.add_child(tilt)
 
 	# Тень — силуэт-копия билета: blur-шейдер размывает alpha-маску текстуры
 	# и красит в чёрный. Сдвинута влево-вниз, нарисована ПОД билетом —
 	# у перекрывающихся билетов верхний отбрасывает тень на нижний.
 	var shadow := TextureRect.new()
-	shadow.name         = "Shadow"
-	shadow.texture      = tex
-	shadow.material     = _ticket_shadow_mat
-	shadow.expand_mode  = TextureRect.EXPAND_IGNORE_SIZE
+	shadow.name = "Shadow"
+	shadow.texture = tex
+	shadow.material = _ticket_shadow_mat
+	shadow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	shadow.stretch_mode = TextureRect.STRETCH_SCALE
 	shadow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shadow.offset_left   = _TICKET_SHADOW_OFFSET.x
-	shadow.offset_right  = _TICKET_SHADOW_OFFSET.x
-	shadow.offset_top    = _TICKET_SHADOW_OFFSET.y
+	shadow.offset_left = _TICKET_SHADOW_OFFSET.x
+	shadow.offset_right = _TICKET_SHADOW_OFFSET.x
+	shadow.offset_top = _TICKET_SHADOW_OFFSET.y
 	shadow.offset_bottom = _TICKET_SHADOW_OFFSET.y
-	shadow.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tilt.add_child(shadow)
 
 	var ticket := TextureRect.new()
-	ticket.name         = "Ticket"
-	ticket.texture      = tex
-	ticket.expand_mode  = TextureRect.EXPAND_IGNORE_SIZE
+	ticket.name = "Ticket"
+	ticket.texture = tex
+	ticket.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	ticket.stretch_mode = TextureRect.STRETCH_SCALE
 	ticket.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ticket.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -380,6 +386,7 @@ func _make_ticket(tex: Texture2D, node_name: String, ticket_height: float,
 
 
 # ── Attributes ────────────────────────────────────────────────────────────────
+
 
 # Панель атрибутов = декоративный PNG virues-panel.png с пятью встроенными
 # ячейками + накладываемый поверх контент (title + 5 колонок). Панель
@@ -395,19 +402,19 @@ func _build_attributes_panel() -> Control:
 	# stats/items по бокам забирают остаток через свой EXPAND.
 
 	var bg := TextureRect.new()
-	bg.name          = "Background"
-	bg.texture       = _ATTR_PANEL_TEX
-	bg.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
-	bg.stretch_mode  = TextureRect.STRETCH_SCALE
+	bg.name = "Background"
+	bg.texture = _ATTR_PANEL_TEX
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(bg)
 
 	# Заголовок в верхней полосе PNG.
 	var hdr := UIStyle.label("SECTION_ATTRIBUTES", 14, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	hdr.name = "Header"
 	hdr.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	hdr.offset_top    = _TITLE_Y
+	hdr.offset_top = _TITLE_Y
 	hdr.offset_bottom = _TITLE_Y + _TITLE_H
 	panel.add_child(hdr)
 
@@ -415,9 +422,9 @@ func _build_attributes_panel() -> Control:
 	var cols := HBoxContainer.new()
 	cols.name = "Columns"
 	cols.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	cols.offset_left   =  _COLS_MARGIN_LEFT
-	cols.offset_right  = -_COLS_MARGIN_RIGHT
-	cols.offset_top    =  _COLS_MARGIN_TOP
+	cols.offset_left = _COLS_MARGIN_LEFT
+	cols.offset_right = -_COLS_MARGIN_RIGHT
+	cols.offset_top = _COLS_MARGIN_TOP
 	cols.offset_bottom = -_COLS_MARGIN_BOTTOM
 	cols.add_theme_constant_override("separation", 0)
 	panel.add_child(cols)
@@ -441,20 +448,20 @@ func _make_attr_box(label_key: String, field: String) -> Control:
 	col.add_child(name_lbl)
 
 	var icon := TextureRect.new()
-	icon.name             = "Icon"
-	icon.texture          = _ATTR_ICONS[field]
-	icon.expand_mode      = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode     = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.custom_minimum_size      = (_ATTR_ICONS[field] as Texture2D).get_size() * _ICON_SCALE
-	icon.size_flags_horizontal    = Control.SIZE_SHRINK_CENTER
+	icon.name = "Icon"
+	icon.texture = _ATTR_ICONS[field]
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.custom_minimum_size = (_ATTR_ICONS[field] as Texture2D).get_size() * _ICON_SCALE
+	icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	col.add_child(icon)
 
 	var val := UIStyle.label("—", 26, _ATTR_VALUE_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	val.name = "Value"
 	# Фиксированная высота + вертикальный центр — руны при scramble'е другой
 	# метрики, чем цифры; без этого само число дёргалось бы по высоте.
-	val.custom_minimum_size.y  = 36
-	val.vertical_alignment     = VERTICAL_ALIGNMENT_CENTER
+	val.custom_minimum_size.y = 36
+	val.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	col.add_child(val)
 	_attr_value_lbls[field] = val
 
@@ -493,11 +500,11 @@ func _make_dice_section(field: String) -> Control:
 	section.add_child(sp_top)
 
 	var divider := TextureRect.new()
-	divider.name          = "Divider"
-	divider.texture       = _DIVIDER_TEX
-	divider.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
-	divider.stretch_mode  = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	divider.custom_minimum_size   = _DIVIDER_TEX.get_size() * _ASSET_SCALE
+	divider.name = "Divider"
+	divider.texture = _DIVIDER_TEX
+	divider.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	divider.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	divider.custom_minimum_size = _DIVIDER_TEX.get_size() * _ASSET_SCALE
 	divider.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	section.add_child(divider)
 
@@ -518,10 +525,10 @@ func _make_dice_section(field: String) -> Control:
 	row.add_child(mod_lbl)
 
 	var dice := TextureRect.new()
-	dice.name          = "Dice"
-	dice.texture       = _DICE_TEX
-	dice.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
-	dice.stretch_mode  = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	dice.name = "Dice"
+	dice.texture = _DICE_TEX
+	dice.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	dice.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	# Кубик мельче остальных ассетов панели — _ASSET_SCALE * 0.5.
 	dice.custom_minimum_size = _DICE_TEX.get_size() * _ASSET_SCALE * 0.5
 	row.add_child(dice)
@@ -529,6 +536,7 @@ func _make_dice_section(field: String) -> Control:
 
 
 # ── Items ─────────────────────────────────────────────────────────────────────
+
 
 func _build_items_panel() -> PanelContainer:
 	var p := PanelContainer.new()
@@ -540,7 +548,9 @@ func _build_items_panel() -> PanelContainer:
 	vb.name = "VBox"
 	vb.add_theme_constant_override("separation", 6)
 	p.add_child(vb)
-	var hdr := UIStyle.label("SECTION_STARTING_ITEMS", 11, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	var hdr := UIStyle.label(
+		"SECTION_STARTING_ITEMS", 11, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	hdr.name = "Header"
 	vb.add_child(hdr)
 	var hb := HBoxContainer.new()

@@ -10,102 +10,223 @@ extends CanvasLayer
 ##   {"key": ..., "label": ..., "min": ..., "max": ...,
 ##    "step": ..., "default": ..., "set": Callable}  — слайдер
 
-@onready var _root: Control       = $Root
+@onready var _root: Control = $Root
 @onready var _vbox: VBoxContainer = %VBox
 
 # Кэш: key -> {slider: HSlider, val: Label, default: float, set: Callable}.
 var _rows: Dictionary = {}
 
-
 # ── Спеки параметров ──────────────────────────────────────────────────────────
+
 
 func _build_specs() -> Array:
 	return [
 		{"section": "POST FX"},
-		{"key": "sepia", "label": "Сепия",
-			"min": 0.0, "max": 1.0, "step": 0.01, "default": 0.22,
-			"set": _set_sepia},
-
+		{
+			"key": "sepia",
+			"label": "Сепия",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.22,
+			"set": _set_sepia
+		},
 		{"section": "ВЫДЕЛЕНИЕ ЛОКАЦИИ"},
-		{"key": "ring_r", "label": "Радиус",
-			"min": 20.0, "max": 100.0, "step": 1.0,
+		{
+			"key": "ring_r",
+			"label": "Радиус",
+			"min": 20.0,
+			"max": 100.0,
+			"step": 1.0,
 			"default": SelectionIndicator.RING_RADIUS,
-			"set": _set_ring_r},
-		{"key": "ring_w", "label": "Толщина",
-			"min": 0.5, "max": 15.0, "step": 0.1,
+			"set": _set_ring_r
+		},
+		{
+			"key": "ring_w",
+			"label": "Толщина",
+			"min": 0.5,
+			"max": 15.0,
+			"step": 0.1,
 			"default": SelectionIndicator.RING_THICKNESS,
-			"set": _set_ring_w},
-		{"key": "glow_in", "label": "Halo внутр.",
-			"min": 20.0, "max": 120.0, "step": 1.0,
+			"set": _set_ring_w
+		},
+		{
+			"key": "glow_in",
+			"label": "Halo внутр.",
+			"min": 20.0,
+			"max": 120.0,
+			"step": 1.0,
 			"default": SelectionIndicator.GLOW_INNER,
-			"set": _set_glow_in},
-		{"key": "glow_out", "label": "Halo внеш.",
-			"min": 30.0, "max": 200.0, "step": 1.0,
+			"set": _set_glow_in
+		},
+		{
+			"key": "glow_out",
+			"label": "Halo внеш.",
+			"min": 30.0,
+			"max": 200.0,
+			"step": 1.0,
 			"default": SelectionIndicator.GLOW_OUTER,
-			"set": _set_glow_out},
-		{"key": "glow_str", "label": "Сила halo",
-			"min": 0.0, "max": 1.5, "step": 0.01,
+			"set": _set_glow_out
+		},
+		{
+			"key": "glow_str",
+			"label": "Сила halo",
+			"min": 0.0,
+			"max": 1.5,
+			"step": 0.01,
 			"default": SelectionIndicator.GLOW_STRENGTH,
-			"set": _set_glow_str},
-		{"key": "glow_fall", "label": "Спад halo",
-			"min": 0.5, "max": 20.0, "step": 0.1,
+			"set": _set_glow_str
+		},
+		{
+			"key": "glow_fall",
+			"label": "Спад halo",
+			"min": 0.5,
+			"max": 20.0,
+			"step": 0.1,
 			"default": SelectionIndicator.GLOW_FALLOFF,
-			"set": _set_glow_fall},
-		{"key": "off_x", "label": "Сдвиг X",
-			"min": -50.0, "max": 50.0, "step": 0.5,
+			"set": _set_glow_fall
+		},
+		{
+			"key": "off_x",
+			"label": "Сдвиг X",
+			"min": -50.0,
+			"max": 50.0,
+			"step": 0.5,
 			"default": SelectionIndicator.OFFSET_X,
-			"set": _set_off_x},
-		{"key": "off_y", "label": "Сдвиг Y",
-			"min": -50.0, "max": 50.0, "step": 0.5,
+			"set": _set_off_x
+		},
+		{
+			"key": "off_y",
+			"label": "Сдвиг Y",
+			"min": -50.0,
+			"max": 50.0,
+			"step": 0.5,
 			"default": SelectionIndicator.OFFSET_Y,
-			"set": _set_off_y},
-		{"key": "pulse_spd", "label": "Пульс скор.",
-			"min": 0.0, "max": 12.0, "step": 0.1,
+			"set": _set_off_y
+		},
+		{
+			"key": "pulse_spd",
+			"label": "Пульс скор.",
+			"min": 0.0,
+			"max": 12.0,
+			"step": 0.1,
 			"default": SelectionIndicator.PULSE_SPEED,
-			"set": _set_pulse_speed},
-		{"key": "pulse_amt", "label": "Пульс размах",
-			"min": 0.0, "max": 0.30, "step": 0.01,
+			"set": _set_pulse_speed
+		},
+		{
+			"key": "pulse_amt",
+			"label": "Пульс размах",
+			"min": 0.0,
+			"max": 0.30,
+			"step": 0.01,
 			"default": SelectionIndicator.PULSE_AMOUNT,
-			"set": _set_pulse_amount},
-
+			"set": _set_pulse_amount
+		},
 		{"section": "ВЕЕР КАРТ"},
-		{"key": "hand_spread", "label": "Поворот",
-			"min": 0.0, "max": 15.0, "step": 0.5,
-			"default": HandCarousel.SPREAD, "set": _set_hand_spread},
-		{"key": "hand_gap", "label": "Шаг X",
-			"min": 20.0, "max": 180.0, "step": 1.0,
-			"default": HandCarousel.GAP_X, "set": _set_hand_gap},
-		{"key": "hand_arc", "label": "Дуга",
-			"min": 0.0, "max": 30.0, "step": 0.1,
-			"default": HandCarousel.ARC, "set": _set_hand_arc},
-		{"key": "hand_lift", "label": "Подъём",
-			"min": 0.0, "max": 260.0, "step": 1.0,
-			"default": HandCarousel.LIFT, "set": _set_hand_lift},
-		{"key": "hand_scale", "label": "Увеличение",
-			"min": 1.0, "max": 2.2, "step": 0.01,
-			"default": HandCarousel.HSCALE, "set": _set_hand_scale},
-		{"key": "hand_push", "label": "Расступание",
-			"min": 0.0, "max": 160.0, "step": 1.0,
-			"default": HandCarousel.PUSH, "set": _set_hand_push},
-		{"key": "hand_pivot", "label": "Центр (xH)",
-			"min": 0.5, "max": 2.5, "step": 0.05,
-			"default": HandCarousel.PIVOT_Y_FRAC, "set": _set_hand_pivot},
-		{"key": "hand_below", "label": "Низ веера",
-			"min": -120.0, "max": 140.0, "step": 1.0,
-			"default": HandCarousel.HAND_BELOW, "set": _set_hand_below},
-		{"key": "hand_anim", "label": "Анимация",
-			"min": 0.05, "max": 0.80, "step": 0.01,
-			"default": HandCarousel.ANIM, "set": _set_hand_anim},
-		{"key": "hand_sfx_var", "label": "Звук вариаций",
-			"min": 1.0, "max": 16.0, "step": 1.0,
-			"default": float(HandCarousel.SCROLL_VARIATIONS), "set": _set_hand_sfx_var},
-		{"key": "hand_sfx_pitch", "label": "Звук питч",
-			"min": 0.0, "max": 0.30, "step": 0.01,
-			"default": HandCarousel.SCROLL_PITCH, "set": _set_hand_sfx_pitch},
+		{
+			"key": "hand_spread",
+			"label": "Поворот",
+			"min": 0.0,
+			"max": 15.0,
+			"step": 0.5,
+			"default": HandCarousel.SPREAD,
+			"set": _set_hand_spread
+		},
+		{
+			"key": "hand_gap",
+			"label": "Шаг X",
+			"min": 20.0,
+			"max": 180.0,
+			"step": 1.0,
+			"default": HandCarousel.GAP_X,
+			"set": _set_hand_gap
+		},
+		{
+			"key": "hand_arc",
+			"label": "Дуга",
+			"min": 0.0,
+			"max": 30.0,
+			"step": 0.1,
+			"default": HandCarousel.ARC,
+			"set": _set_hand_arc
+		},
+		{
+			"key": "hand_lift",
+			"label": "Подъём",
+			"min": 0.0,
+			"max": 260.0,
+			"step": 1.0,
+			"default": HandCarousel.LIFT,
+			"set": _set_hand_lift
+		},
+		{
+			"key": "hand_scale",
+			"label": "Увеличение",
+			"min": 1.0,
+			"max": 2.2,
+			"step": 0.01,
+			"default": HandCarousel.HSCALE,
+			"set": _set_hand_scale
+		},
+		{
+			"key": "hand_push",
+			"label": "Расступание",
+			"min": 0.0,
+			"max": 160.0,
+			"step": 1.0,
+			"default": HandCarousel.PUSH,
+			"set": _set_hand_push
+		},
+		{
+			"key": "hand_pivot",
+			"label": "Центр (xH)",
+			"min": 0.5,
+			"max": 2.5,
+			"step": 0.05,
+			"default": HandCarousel.PIVOT_Y_FRAC,
+			"set": _set_hand_pivot
+		},
+		{
+			"key": "hand_below",
+			"label": "Низ веера",
+			"min": -120.0,
+			"max": 140.0,
+			"step": 1.0,
+			"default": HandCarousel.HAND_BELOW,
+			"set": _set_hand_below
+		},
+		{
+			"key": "hand_anim",
+			"label": "Анимация",
+			"min": 0.05,
+			"max": 0.80,
+			"step": 0.01,
+			"default": HandCarousel.ANIM,
+			"set": _set_hand_anim
+		},
+		{
+			"key": "hand_sfx_var",
+			"label": "Звук вариаций",
+			"min": 1.0,
+			"max": 16.0,
+			"step": 1.0,
+			"default": float(HandCarousel.SCROLL_VARIATIONS),
+			"set": _set_hand_sfx_var
+		},
+		{
+			"key": "hand_sfx_pitch",
+			"label": "Звук питч",
+			"min": 0.0,
+			"max": 0.30,
+			"step": 0.01,
+			"default": HandCarousel.SCROLL_PITCH,
+			"set": _set_hand_sfx_pitch
+		},
 	]
 
 
 # ── Жизненный цикл ────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -123,6 +244,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 # ── Построение UI ─────────────────────────────────────────────────────────────
+
 
 func _build_ui() -> void:
 	_add_title("  SHADER DEBUG  ·  Ctrl+M")
@@ -157,12 +279,12 @@ func _add_section(title: String) -> void:
 
 
 func _add_row(spec: Dictionary) -> void:
-	var key:     String   = String(spec.key)
-	var min_v:   float    = float(spec.min)
-	var max_v:   float    = float(spec.max)
-	var step:   float     = float(spec.step)
-	var init_v: float     = float(spec.default)
-	var setter: Callable  = spec.set as Callable
+	var key: String = String(spec.key)
+	var min_v: float = float(spec.min)
+	var max_v: float = float(spec.max)
+	var step: float = float(spec.step)
+	var init_v: float = float(spec.default)
+	var setter: Callable = spec.set as Callable
 
 	var row := HBoxContainer.new()
 	row.name = "Row"
@@ -180,10 +302,10 @@ func _add_row(spec: Dictionary) -> void:
 	sl.name = "Slider"
 	sl.min_value = min_v
 	sl.max_value = max_v
-	sl.step      = step
-	sl.value     = init_v
+	sl.step = step
+	sl.value = init_v
 	sl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sl.size_flags_vertical   = Control.SIZE_SHRINK_CENTER
+	sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(sl)
 
 	var val := Label.new()
@@ -192,7 +314,7 @@ func _add_row(spec: Dictionary) -> void:
 	val.custom_minimum_size = Vector2(44, 0)
 	val.add_theme_font_size_override("font_size", 11)
 	val.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	val.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+	val.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(val)
 
 	_vbox.add_child(row)
@@ -201,9 +323,10 @@ func _add_row(spec: Dictionary) -> void:
 	# Применяем дефолт сразу — на случай если константы расходятся с тем, что
 	# уже выставлено в материале.
 	setter.call(init_v)
-	sl.value_changed.connect(func(v: float) -> void:
-		setter.call(v)
-		val.text = _fmt(v, step)
+	sl.value_changed.connect(
+		func(v: float) -> void:
+			setter.call(v)
+			val.text = _fmt(v, step)
 	)
 
 
@@ -223,8 +346,8 @@ func _add_reset_button() -> void:
 func _on_reset() -> void:
 	for key: String in _rows:
 		var r: Dictionary = _rows[key]
-		var sl: HSlider   = r.slider
-		sl.value          = r.default   # триггерит value_changed → setter + val.text
+		var sl: HSlider = r.slider
+		sl.value = r.default  # триггерит value_changed → setter + val.text
 
 
 func _fmt(v: float, step: float) -> String:
@@ -234,6 +357,7 @@ func _fmt(v: float, step: float) -> String:
 
 
 # ── Setters: один на параметр ─────────────────────────────────────────────────
+
 
 func _post_fx_mat() -> ShaderMaterial:
 	var overlay: ColorRect = PostFx.get_node("Overlay") as ColorRect
@@ -246,7 +370,8 @@ func _sel_mat() -> ShaderMaterial:
 
 func _set_sepia(v: float) -> void:
 	var m := _post_fx_mat()
-	if m: m.set_shader_parameter("sepia_amount", v)
+	if m:
+		m.set_shader_parameter("sepia_amount", v)
 
 
 func _set_ring_r(v: float) -> void:
@@ -296,20 +421,60 @@ func _set_pulse_amount(v: float) -> void:
 # инстанс (если он есть на карте) переложиться. Вне карты карусели нет — тогда
 # значение просто сохранится в static и применится при следующем открытии.
 
+
 func _relayout_hand() -> void:
 	var h: Node = get_tree().get_first_node_in_group("hand_carousel")
 	if h != null:
 		h.call("relayout")
 
 
-func _set_hand_spread(v: float) -> void: HandCarousel.SPREAD = v;       _relayout_hand()
-func _set_hand_gap(v: float) -> void:    HandCarousel.GAP_X = v;        _relayout_hand()
-func _set_hand_arc(v: float) -> void:    HandCarousel.ARC = v;          _relayout_hand()
-func _set_hand_lift(v: float) -> void:   HandCarousel.LIFT = v;         _relayout_hand()
-func _set_hand_scale(v: float) -> void:  HandCarousel.HSCALE = v;       _relayout_hand()
-func _set_hand_push(v: float) -> void:   HandCarousel.PUSH = v;         _relayout_hand()
-func _set_hand_pivot(v: float) -> void:  HandCarousel.PIVOT_Y_FRAC = v; _relayout_hand()
-func _set_hand_below(v: float) -> void:  HandCarousel.HAND_BELOW = v;   _relayout_hand()
-func _set_hand_anim(v: float) -> void:   HandCarousel.ANIM = v   # применится на следующей перекладке
-func _set_hand_sfx_var(v: float) -> void:   HandCarousel.SCROLL_VARIATIONS = int(round(v))
-func _set_hand_sfx_pitch(v: float) -> void: HandCarousel.SCROLL_PITCH = v
+func _set_hand_spread(v: float) -> void:
+	HandCarousel.SPREAD = v
+	_relayout_hand()
+
+
+func _set_hand_gap(v: float) -> void:
+	HandCarousel.GAP_X = v
+	_relayout_hand()
+
+
+func _set_hand_arc(v: float) -> void:
+	HandCarousel.ARC = v
+	_relayout_hand()
+
+
+func _set_hand_lift(v: float) -> void:
+	HandCarousel.LIFT = v
+	_relayout_hand()
+
+
+func _set_hand_scale(v: float) -> void:
+	HandCarousel.HSCALE = v
+	_relayout_hand()
+
+
+func _set_hand_push(v: float) -> void:
+	HandCarousel.PUSH = v
+	_relayout_hand()
+
+
+func _set_hand_pivot(v: float) -> void:
+	HandCarousel.PIVOT_Y_FRAC = v
+	_relayout_hand()
+
+
+func _set_hand_below(v: float) -> void:
+	HandCarousel.HAND_BELOW = v
+	_relayout_hand()
+
+
+func _set_hand_anim(v: float) -> void:
+	HandCarousel.ANIM = v  # применится на следующей перекладке
+
+
+func _set_hand_sfx_var(v: float) -> void:
+	HandCarousel.SCROLL_VARIATIONS = int(round(v))
+
+
+func _set_hand_sfx_pitch(v: float) -> void:
+	HandCarousel.SCROLL_PITCH = v

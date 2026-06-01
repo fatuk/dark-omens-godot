@@ -5,20 +5,20 @@ extends CanvasLayer
 ## после чего хост генерирует встречу выбранного вида и эта модалка скрывается
 ## (encounter_choices очищается), уступая место окну встречи.
 
-@onready var _root:  Control        = $Root
+@onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
-@onready var _vbox:  VBoxContainer  = %VBox
+@onready var _vbox: VBoxContainer = %VBox
 
 # kind → ключ перевода подписи кнопки.
 const _KIND_KEYS := {
-	"general":  "ENCOUNTER_CHOICE_GENERAL",
+	"general": "ENCOUNTER_CHOICE_GENERAL",
 	"research": "ENCOUNTER_CHOICE_RESEARCH",
-	"gate":     "ENCOUNTER_CHOICE_GATE",
-	"combat":   "ENCOUNTER_CHOICE_COMBAT",
-	"mystery":  "ENCOUNTER_CHOICE_MYSTERY",
+	"gate": "ENCOUNTER_CHOICE_GATE",
+	"combat": "ENCOUNTER_CHOICE_COMBAT",
+	"mystery": "ENCOUNTER_CHOICE_MYSTERY",
 }
 
-var _sig: String = ""   # подпись текущего набора кнопок (чтобы не перестраивать зря)
+var _sig: String = ""  # подпись текущего набора кнопок (чтобы не перестраивать зря)
 
 
 func _ready() -> void:
@@ -52,9 +52,9 @@ func _build(choices: Array) -> void:
 		var kind: String = String(choices[i])
 		var btn := Button.new()
 		btn.name = "Button"
-		btn.text = String(_KIND_KEYS.get(kind, kind))   # ключ перевода
+		btn.text = String(_KIND_KEYS.get(kind, kind))  # ключ перевода
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		UIStyle.style_button(btn)
 		btn.pressed.connect(func() -> void: GameState.choose_encounter(kind))
 		_vbox.add_child(btn)
-	UIStyle.scale_modal_text(_vbox)   # текст модалок крупнее (×1.5)
+	UIStyle.scale_modal_text(_vbox)  # текст модалок крупнее (×1.5)

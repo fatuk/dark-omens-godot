@@ -16,7 +16,7 @@ const CURSOR_SIZE: Vector2 = Vector2(97.5, 131.5)
 const FADE_TIME: float = 0.12
 
 @onready var _icon_default: TextureRect = %IconDefault
-@onready var _icon_active:  TextureRect = %IconActive
+@onready var _icon_active: TextureRect = %IconActive
 
 var _is_active_now: bool = false
 var _tween: Tween = null
@@ -26,7 +26,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 	_icon_default.size = CURSOR_SIZE
-	_icon_active.size  = CURSOR_SIZE
+	_icon_active.size = CURSOR_SIZE
 
 
 func _process(_dt: float) -> void:
@@ -35,7 +35,7 @@ func _process(_dt: float) -> void:
 		return
 	var pos := vp.get_mouse_position()
 	_icon_default.position = pos
-	_icon_active.position  = pos
+	_icon_active.position = pos
 	var hovered: Control = vp.gui_get_hovered_control()
 	var active := _is_interactive(hovered)
 	if active != _is_active_now:
@@ -48,9 +48,9 @@ func _animate_to(active: bool) -> void:
 		_tween.kill()
 	_tween = create_tween().set_parallel(true)
 	# Интерполируем альфы в обе стороны: активный 0↔1, обычный 1↔0.
-	var target_active: float  = 1.0 if active else 0.0
+	var target_active: float = 1.0 if active else 0.0
 	var target_default: float = 0.0 if active else 1.0
-	_tween.tween_property(_icon_active,  "modulate:a", target_active,  FADE_TIME)
+	_tween.tween_property(_icon_active, "modulate:a", target_active, FADE_TIME)
 	_tween.tween_property(_icon_default, "modulate:a", target_default, FADE_TIME)
 
 

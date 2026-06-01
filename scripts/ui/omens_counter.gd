@@ -9,12 +9,12 @@ extends Control
 ## плавно подкручивается на +0.3 шага, чтобы юзер мог «подсмотреть»
 ## следующий омен. Уход мыши — возвращает на current_step.
 
-const STEP_DEG:        float = 45.0
-const START_ANGLE_DEG: float = -82.0   # как в React-прототипе
-const PEEK_AMOUNT:     float = 0.3
-const TWEEN_TIME:      float = 0.3     # секунды — короткий peek по наведению
-const OMEN_MOVE_TIME:  float = 0.3     # фолбэк длительности сдвига (берём длину omen-move.wav)
-const MASK_RADIUS:     float = 46.0    # радиус видимого окошка в canvas-координатах
+const STEP_DEG: float = 45.0
+const START_ANGLE_DEG: float = -82.0  # как в React-прототипе
+const PEEK_AMOUNT: float = 0.3
+const TWEEN_TIME: float = 0.3  # секунды — короткий peek по наведению
+const OMEN_MOVE_TIME: float = 0.3  # фолбэк длительности сдвига (берём длину omen-move.wav)
+const MASK_RADIUS: float = 46.0  # радиус видимого окошка в canvas-координатах
 
 @export var current_step: float = 0.0:
 	set(v):

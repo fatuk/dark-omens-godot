@@ -25,6 +25,7 @@ static func load_dict(path: String) -> Dictionary:
 
 # ── Внутренние ────────────────────────────────────────────────────────────────
 
+
 static func _read(path: String) -> String:
 	if not FileAccess.file_exists(path):
 		push_error("DataLoader: %s не найден" % path)

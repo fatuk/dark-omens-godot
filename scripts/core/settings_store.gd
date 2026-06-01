@@ -17,29 +17,29 @@ signal relay_url_changed(new_url: String)
 const SETTINGS_FILE := "user://settings.cfg"
 ## Прод-relay на Render. Для локальной разработки — ws://127.0.0.1:3030
 ## (через диалог настроек в игре).
-const DEFAULT_URL   := "wss://dark-omens-backend.onrender.com"
+const DEFAULT_URL := "wss://dark-omens-backend.onrender.com"
 
 const RESOLUTIONS: Array[Vector2i] = [
-	Vector2i(1280,  720),
-	Vector2i(1366,  768),
-	Vector2i(1600,  900),
+	Vector2i(1280, 720),
+	Vector2i(1366, 768),
+	Vector2i(1600, 900),
 	Vector2i(1920, 1080),
 	Vector2i(2560, 1440),
 ]
 
 # ── Состояние ─────────────────────────────────────────────────────────────────
-var relay_url:      String = DEFAULT_URL
-var resolution_idx: int    = 3        # 1920×1080 по умолчанию
-var fullscreen:     bool   = false
-var music_volume:   float  = 0.5      # 0..1, читается Music/SfxManager на _ready
-var sfx_volume:     float  = 0.5
+var relay_url: String = DEFAULT_URL
+var resolution_idx: int = 3  # 1920×1080 по умолчанию
+var fullscreen: bool = false
+var music_volume: float = 0.5  # 0..1, читается Music/SfxManager на _ready
+var sfx_volume: float = 0.5
 ## Генерировать ли художественные тексты встреч через LLM. Off → хост шлёт
 ## useLLM:false и встреча собирается из одной механики (быстро, без токенов) —
 ## игрок видит только механические проверки. Применяется на стороне ХОСТА.
-var use_llm:        bool   = true
-
+var use_llm: bool = true
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
+
 
 func _ready() -> void:
 	# Чтобы настройки можно было менять из меню паузы (где tree.paused = true).
@@ -59,6 +59,7 @@ func _ready() -> void:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+
 ## Применяет текущее display-состояние к окну. Вызывать после изменения
 ## resolution_idx / fullscreen.
 func apply_display() -> void:
@@ -71,8 +72,10 @@ func apply_display() -> void:
 		# целочисленная арифметика, дробная часть тут не нужна.
 		@warning_ignore("integer_division")
 		DisplayServer.window_set_position(
-			DisplayServer.screen_get_position() +
-			(DisplayServer.screen_get_size() - RESOLUTIONS[resolution_idx]) / 2
+			(
+				DisplayServer.screen_get_position()
+				+ (DisplayServer.screen_get_size() - RESOLUTIONS[resolution_idx]) / 2
+			)
 		)
 
 
@@ -101,10 +104,10 @@ func api_base() -> String:
 ## ниже, например staging.
 func _build_default_url() -> String:
 	if OS.has_feature("editor"):
-		return "ws://127.0.0.1:3030"        # локальная разработка
+		return "ws://127.0.0.1:3030"  # локальная разработка
 	if OS.has_feature("staging"):
 		return "wss://dark-omens-staging.onrender.com"
-	return DEFAULT_URL                       # любой релизный билд → прод
+	return DEFAULT_URL  # любой релизный билд → прод
 
 
 ## Меняет URL в рантайме (поле в настройках доступно только в редакторе). Не
@@ -123,20 +126,21 @@ func set_relay_url(url: String) -> void:
 ## Music/SfxManager (они единственный источник правды для текущего значения).
 func save() -> void:
 	var cfg := ConfigFile.new()
-	cfg.load(SETTINGS_FILE)   # ок если файла нет
+	cfg.load(SETTINGS_FILE)  # ок если файла нет
 	# relay URL намеренно НЕ сохраняем — сервер задаётся сборкой (_build_default_url).
 	cfg.set_value("display", "fullscreen", fullscreen)
 	var r: Vector2i = RESOLUTIONS[resolution_idx]
 	cfg.set_value("display", "resolution", "%dx%d" % [r.x, r.y])
 	cfg.set_value("audio", "music", MusicManager.volume)
-	cfg.set_value("audio", "sfx",   SfxManager.volume)
+	cfg.set_value("audio", "sfx", SfxManager.volume)
 	music_volume = MusicManager.volume
-	sfx_volume   = SfxManager.volume
+	sfx_volume = SfxManager.volume
 	cfg.set_value("gameplay", "use_llm", use_llm)
 	cfg.save(SETTINGS_FILE)
 
 
 # ── Internal ──────────────────────────────────────────────────────────────────
+
 
 func _load() -> void:
 	var cfg := ConfigFile.new()
@@ -152,5 +156,5 @@ func _load() -> void:
 			resolution_idx = i
 			break
 	music_volume = float(cfg.get_value("audio", "music", 0.5))
-	sfx_volume   = float(cfg.get_value("audio", "sfx",   0.5))
-	use_llm      = bool(cfg.get_value("gameplay", "use_llm", true))
+	sfx_volume = float(cfg.get_value("audio", "sfx", 0.5))
+	use_llm = bool(cfg.get_value("gameplay", "use_llm", true))

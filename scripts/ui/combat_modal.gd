@@ -5,9 +5,9 @@ extends CanvasLayer
 ## (выдержать ужас), затем СИЛА (одолеть монстра). Итог — победа или нет.
 ## Раундов и отступления нет. Бой авторитетно у хоста (resolve_encounter).
 
-@onready var _root:  Control        = $Root
+@onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
-@onready var _vbox:  VBoxContainer  = %VBox
+@onready var _vbox: VBoxContainer = %VBox
 
 
 func _ready() -> void:
@@ -54,7 +54,7 @@ func _build(card: Dictionary) -> void:
 		# Одна кнопка катит текущий шаг: сначала Воля, затем Сила (отдельные броски).
 		var key: String = "COMBAT_ROLL_WILL" if not card.has("will") else "COMBAT_ROLL_STRENGTH"
 		btns.add_child(_button(key, func() -> void: GameState.resolve_encounter()))
-	UIStyle.scale_modal_text(_vbox)   # текст модалок крупнее (×1.5), пересборка — заново
+	UIStyle.scale_modal_text(_vbox)  # текст модалок крупнее (×1.5), пересборка — заново
 
 
 # Переброс выбранного куба активной проверки боя (Воля/Сила) за 1 концентрацию.
@@ -72,6 +72,7 @@ func _dice_tray(values: Array, can_reroll: bool) -> DiceTray:
 
 # ── Колонки ───────────────────────────────────────────────────────────────────
 
+
 func _player_col() -> VBoxContainer:
 	var p: Dictionary = GameState.my_player()
 	var col := VBoxContainer.new()
@@ -79,8 +80,23 @@ func _player_col() -> VBoxContainer:
 	col.add_theme_constant_override("separation", 4)
 	col.custom_minimum_size = Vector2(190, 0)
 	col.add_child(_lbl(String(p.get("name", "?")), 16, UIColors.TEXT))
-	col.add_child(_lbl("%s: %d / %d" % [tr("COMBAT_HEALTH"), int(p.get("hp", 0)), int(p.get("hp_max", 0))], 13, UIColors.SUCCESS))
-	col.add_child(_lbl("%s: %d / %d" % [tr("COMBAT_SANITY"), int(p.get("sanity", 0)), int(p.get("sanity_max", 0))], 13, Color(0.4, 0.7, 0.9)))
+	col.add_child(
+		_lbl(
+			"%s: %d / %d" % [tr("COMBAT_HEALTH"), int(p.get("hp", 0)), int(p.get("hp_max", 0))],
+			13,
+			UIColors.SUCCESS
+		)
+	)
+	col.add_child(
+		_lbl(
+			(
+				"%s: %d / %d"
+				% [tr("COMBAT_SANITY"), int(p.get("sanity", 0)), int(p.get("sanity_max", 0))]
+			),
+			13,
+			Color(0.4, 0.7, 0.9)
+		)
+	)
 	return col
 
 
@@ -114,19 +130,39 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 	if done:
 		var s: Dictionary = res.get("strength", {})
 		col.add_child(_dice_tray(s.get("dice", []), can_focus))
-		col.add_child(_lbl("%s: %d · %s −%d" % [
-			tr("ENCOUNTER_SUCCESSES"), int(s.get("successes", 0)),
-			tr("SIDEBAR_TOUGHNESS"), int(res.get("dealt", 0))], 12, UIColors.TEXT))
+		col.add_child(
+			_lbl(
+				(
+					"%s: %d · %s −%d"
+					% [
+						tr("ENCOUNTER_SUCCESSES"),
+						int(s.get("successes", 0)),
+						tr("SIDEBAR_TOUGHNESS"),
+						int(res.get("dealt", 0))
+					]
+				),
+				12,
+				UIColors.TEXT
+			)
+		)
 		if int(res.get("hp_loss", 0)) > 0:
-			col.add_child(_lbl("−%d %s" % [int(res["hp_loss"]), tr("COMBAT_HEALTH")], 12, UIColors.DANGER))
+			col.add_child(
+				_lbl("−%d %s" % [int(res["hp_loss"]), tr("COMBAT_HEALTH")], 12, UIColors.DANGER)
+			)
 	else:
 		col.add_child(_lbl(tr("COMBAT_STRENGTH_HINT"), 11, UIColors.MUTED))
 
 	# Итог
 	if done:
 		var won: bool = bool(res.get("won", false))
-		col.add_child(_lbl(tr("COMBAT_WIN" if won else "COMBAT_LOSS"), 18,
-			UIColors.SUCCESS if won else UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER))
+		col.add_child(
+			_lbl(
+				tr("COMBAT_WIN" if won else "COMBAT_LOSS"),
+				18,
+				UIColors.SUCCESS if won else UIColors.DANGER,
+				HORIZONTAL_ALIGNMENT_CENTER
+			)
+		)
 	return col
 
 
@@ -140,14 +176,36 @@ func _monster_col(card: Dictionary) -> VBoxContainer:
 	# enc.health — здоровье монстра НА СТАРТЕ боя; после атаки показываем итоговое
 	# (resolution.health_after), т.к. эффекты применяются только при завершении.
 	var res: Dictionary = card.get("resolution", {})
-	var mon_health: int = int(res.get("health_after", card.get("health", 0))) if not res.is_empty() else int(card.get("health", 0))
-	col.add_child(_lbl("%s: %d / %d" % [tr("SIDEBAR_TOUGHNESS"), mon_health, int(card.get("toughness", 0))], 14, UIColors.WARNING))
-	col.add_child(_lbl("%s: %d · %s: %d" % [
-		tr("COMBAT_MDMG"), int(combat.get("damage", 0)),
-		tr("SIDEBAR_HORROR"), int(horror.get("damage", 0))], 12, UIColors.TEXT))
+	var mon_health: int = (
+		int(res.get("health_after", card.get("health", 0)))
+		if not res.is_empty()
+		else int(card.get("health", 0))
+	)
+	col.add_child(
+		_lbl(
+			"%s: %d / %d" % [tr("SIDEBAR_TOUGHNESS"), mon_health, int(card.get("toughness", 0))],
+			14,
+			UIColors.WARNING
+		)
+	)
+	col.add_child(
+		_lbl(
+			(
+				"%s: %d · %s: %d"
+				% [
+					tr("COMBAT_MDMG"),
+					int(combat.get("damage", 0)),
+					tr("SIDEBAR_HORROR"),
+					int(horror.get("damage", 0))
+				]
+			),
+			12,
+			UIColors.TEXT
+		)
+	)
 	var ab: String = String(card.get("abilityKey", ""))
 	if not ab.is_empty():
-		var al := _lbl(ab, 11, UIColors.MUTED)   # ключ перевода способности
+		var al := _lbl(ab, 11, UIColors.MUTED)  # ключ перевода способности
 		al.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		al.custom_minimum_size = Vector2(190, 0)
 		col.add_child(al)
@@ -156,7 +214,10 @@ func _monster_col(card: Dictionary) -> VBoxContainer:
 
 # ── Хелперы ───────────────────────────────────────────────────────────────────
 
-func _lbl(text: String, size: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
+
+func _lbl(
+	text: String, size: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT
+) -> Label:
 	var l := Label.new()
 	l.name = "Label"
 	l.text = text

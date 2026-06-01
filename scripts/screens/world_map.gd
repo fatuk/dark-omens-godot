@@ -6,8 +6,8 @@ extends Node2D
 # Здесь дублировать не надо: world_map двигает камеру по тем же координатам,
 # что MapLayer рисует маркеры.
 
-const ZOOM_MIN:  float = 0.5
-const ZOOM_MAX:  float = 1.2
+const ZOOM_MIN: float = 0.5
+const ZOOM_MAX: float = 1.2
 const ZOOM_STEP: float = 0.15
 const ZOOM_SPEED: float = 12.0  # скорость интерполяции (выше = быстрее)
 
@@ -16,23 +16,23 @@ const ZOOM_SPEED: float = 12.0  # скорость интерполяции (в�
 ## Меньше этого числа экранных пикселей считаем за клик, не за драг.
 const CLICK_THRESHOLD: float = 6.0
 
-var _dragging:      bool    = false
-var _drag_origin:   Vector2 = Vector2.ZERO
-var _cam_origin:    Vector2 = Vector2.ZERO
-var _drag_distance: float   = 0.0
+var _dragging: bool = false
+var _drag_origin: Vector2 = Vector2.ZERO
+var _cam_origin: Vector2 = Vector2.ZERO
+var _drag_distance: float = 0.0
 
 # ── Инерция (как в Google Maps) ──────────────────────────────────────────────
 
 ## Экспоненциальное затухание скорости. Выше = быстрее тормозит.
-const INERTIA_FRICTION:  float = 2.5
+const INERTIA_FRICTION: float = 2.5
 ## Ниже этой скорости (world units/сек) — обнуляем инерцию.
 const INERTIA_MIN_SPEED: float = 6.0
 ## Окно для расчёта flick-скорости. Берём delta между самым старым сэмплом
 ## в окне и последним — даже если в самом конце мышь замедлилась, флик-моментум
 ## сохраняется. То же делают touch UI на iOS/Android.
-const FLICK_WINDOW_MS:   int   = 100
+const FLICK_WINDOW_MS: int = 100
 
-var _inertia_velocity: Vector2 = Vector2.ZERO   # world units/сек
+var _inertia_velocity: Vector2 = Vector2.ZERO  # world units/сек
 # Кольцевые сэмплы (t_ms, screen_pos) последних мотион-эвентов в окне FLICK_WINDOW_MS.
 var _drag_samples: Array = []
 
@@ -46,32 +46,32 @@ var _zoom_target: float = 0.5
 # панорамирования не накладывались.
 var _known_gate_locs: Dictionary = {}
 var _known_clue_locs: Dictionary = {}
-var _gates_seen:       bool       = false
-var _clues_seen:       bool       = false
-var _focus_queue:      Array      = []     # [{ "loc": String, "sound": AudioStream|null }]
-var _focus_busy:       bool       = false
+var _gates_seen: bool = false
+var _clues_seen: bool = false
+var _focus_queue: Array = []  # [{ "loc": String, "sound": AudioStream|null }]
+var _focus_busy: bool = false
 
 # Анимация перемещения сыщиков: где стояли на прошлом синке + флаг проигрывания.
-var _inv_locs:    Dictionary = {}    # {pid: loc_id}
-var _inv_seen:    bool       = false # первый рефреш — без анимации
-var _travelling:  bool       = false # идёт анимация перемещения (гард от ре-входа рефреша)
+var _inv_locs: Dictionary = {}  # {pid: loc_id}
+var _inv_seen: bool = false  # первый рефреш — без анимации
+var _travelling: bool = false  # идёт анимация перемещения (гард от ре-входа рефреша)
 
 # ── Ноды ──────────────────────────────────────────────────────────────────────
 
-@onready var _camera:     Camera2D    = $Camera2D
+@onready var _camera: Camera2D = $Camera2D
 @onready var _game_panel: CanvasLayer = $GamePanel
-@onready var _sidebar:    CanvasLayer = $LocationSidebar
-@onready var _mystery:    CanvasLayer = $MysterySidebar
+@onready var _sidebar: CanvasLayer = $LocationSidebar
+@onready var _mystery: CanvasLayer = $MysterySidebar
 
 var _map_layer: MapLayer
 
 # Интро-гейт: блокирующая модалка-цепочка (загрузка → Древний → первая
 # Тайна → карта), строится в коде.
-var _campaign_gate: CanvasLayer   = null
-var _gate_vbox:     VBoxContainer = null
-var _intro_step:    int           = 0   # 0=загрузка 1=Древний 2=Тайна 3=готово
-var _gate_rendered: int           = -1  # последний отрисованный шаг
-var _revealed_mystery: int        = -1  # индекс Тайны, чей ревил уже показали
+var _campaign_gate: CanvasLayer = null
+var _gate_vbox: VBoxContainer = null
+var _intro_step: int = 0  # 0=загрузка 1=Древний 2=Тайна 3=готово
+var _gate_rendered: int = -1  # последний отрисованный шаг
+var _revealed_mystery: int = -1  # индекс Тайны, чей ревил уже показали
 
 
 func _ready() -> void:
@@ -89,7 +89,7 @@ func _ready() -> void:
 	_map_layer = MapLayer.new()
 	_map_layer.name = "MapLayer"
 	add_child(_map_layer)
-	_map_layer.camera   = _camera
+	_map_layer.camera = _camera
 	# Лерп MARKER_SCREEN_FAR↔_NEAR в MapLayer привязан к этому диапазону.
 	_map_layer.zoom_min = ZOOM_MIN
 	_map_layer.zoom_max = ZOOM_MAX
@@ -142,15 +142,15 @@ func _refresh_investigators() -> void:
 	if not is_instance_valid(_map_layer) or _travelling:
 		return
 	var list: Array = []
-	var moves: Array = []   # [{pid, inv, from, to}] — кто сменил локацию
+	var moves: Array = []  # [{pid, inv, from, to}] — кто сменил локацию
 	for pid: String in GameState.players:
 		var p: Dictionary = GameState.players[pid]
 		var inv: String = String(p.get("investigator", ""))
 		var loc: String = String(p.get("location", ""))
-		list.append({ "pid": pid, "investigator": inv, "location": loc })
+		list.append({"pid": pid, "investigator": inv, "location": loc})
 		var prev: String = String(_inv_locs.get(pid, ""))
 		if _inv_seen and not prev.is_empty() and prev != loc:
-			moves.append({ "pid": pid, "inv": inv, "from": prev, "to": loc })
+			moves.append({"pid": pid, "inv": inv, "from": prev, "to": loc})
 		_inv_locs[pid] = loc
 
 	# Первый рефреш или нет перемещений — просто расставляем пины.
@@ -229,7 +229,7 @@ func _refresh_gates() -> void:
 
 # Поставить локацию в очередь фокуса камеры (+опц. звук) и запустить обработку.
 func _enqueue_focus(loc: String, sound: AudioStream) -> void:
-	_focus_queue.append({ "loc": loc, "sound": sound })
+	_focus_queue.append({"loc": loc, "sound": sound})
 	if not _focus_busy:
 		_run_focus_queue()
 
@@ -302,9 +302,12 @@ func _refresh_entities() -> void:
 
 func _phase_label_for(p: String) -> String:
 	match p:
-		"action":    return "PHASE_ACTION"
-		"encounter": return "PHASE_ENCOUNTER"
-		"mythos":    return "PHASE_MYTHOS"
+		"action":
+			return "PHASE_ACTION"
+		"encounter":
+			return "PHASE_ENCOUNTER"
+		"mythos":
+			return "PHASE_MYTHOS"
 	return ""
 
 
@@ -373,12 +376,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ── Драг + инерция ───────────────────────────────────────────────────────────
 
+
 func _start_drag(pos: Vector2) -> void:
-	_dragging         = true
-	_drag_origin      = pos
-	_cam_origin       = _camera.position
-	_drag_distance    = 0.0
-	_inertia_velocity = Vector2.ZERO   # отменяем текущий «полёт»
+	_dragging = true
+	_drag_origin = pos
+	_cam_origin = _camera.position
+	_drag_distance = 0.0
+	_inertia_velocity = Vector2.ZERO  # отменяем текущий «полёт»
 	_drag_samples.clear()
 	_push_sample(pos)
 
@@ -404,7 +408,7 @@ func _release_with_inertia() -> void:
 		return
 
 	var first: Dictionary = _drag_samples[0]
-	var last:  Dictionary = _drag_samples[-1]
+	var last: Dictionary = _drag_samples[-1]
 	# dt считаем от первого сэмпла до МОМЕНТА RELEASE (now), а не до last.t.
 	# Так короткая пауза между последним движением и отпусканием увеличивает
 	# знаменатель → скорость падает пропорционально длине паузы.
@@ -419,6 +423,7 @@ func _release_with_inertia() -> void:
 
 
 # ── Клик по локации ──────────────────────────────────────────────────────────
+
 
 func _handle_click(screen_pos: Vector2) -> void:
 	var vp_size: Vector2 = get_viewport().get_visible_rect().size
@@ -439,11 +444,12 @@ func _handle_click(screen_pos: Vector2) -> void:
 
 const _SHOP_MODAL := preload("res://scenes/ui/shop_modal.tscn")
 
+
 func _on_shop_requested() -> void:
 	# Не плодим дубликаты, если уже открыт.
 	if has_node("ShopModal"):
 		return
-	GameState.ensure_shop_reserve()   # дотянуть витрину, если пуста (без полного сброса)
+	GameState.ensure_shop_reserve()  # дотянуть витрину, если пуста (без полного сброса)
 	var modal := _SHOP_MODAL.instantiate()
 	modal.name = "ShopModal"
 	add_child(modal)
@@ -464,17 +470,18 @@ func _on_round_clicked() -> void:
 
 # ── Интро-гейт: загрузка → Древний → первая Тайна → карта ────────────────────
 
+
 ## Строит блокирующую модалку поверх всех слоёв. Контент шага наполняет
 ## _render_gate().
 func _build_campaign_gate() -> void:
 	var layer := CanvasLayer.new()
-	layer.name    = "CampaignGate"
-	layer.layer   = 90
+	layer.name = "CampaignGate"
+	layer.layer = 90
 	layer.visible = false
 	add_child(layer)
 
 	var backdrop := ColorRect.new()
-	backdrop.name  = "Backdrop"
+	backdrop.name = "Backdrop"
 	backdrop.color = Color(0.03, 0.03, 0.07, 0.96)
 	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -508,14 +515,17 @@ func _refresh_campaign_gate() -> void:
 	elif _intro_step == 0:
 		# кампания готова: показываем Древнего; нет кампании — сразу на карту
 		_intro_step = 1 if not GameState.campaign.is_empty() else 3
-	elif _intro_step == 3 and GameState.phase == "action" \
-			and GameState.outcome.is_empty() \
-			and GameState.active_mystery != _revealed_mystery \
-			and not GameState.current_mystery().is_empty():
+	elif (
+		_intro_step == 3
+		and GameState.phase == "action"
+		and GameState.outcome.is_empty()
+		and GameState.active_mystery != _revealed_mystery
+		and not GameState.current_mystery().is_empty()
+	):
 		# Тайна сменилась (решена в прошлом раунде) — после мифа, в начале нового
 		# раунда (фаза action), показываем ревил новой Тайны (гейт-шаг 2).
 		_intro_step = 2
-		_gate_rendered = -1   # форс перерисовки: шаг тот же (2), но контент новый
+		_gate_rendered = -1  # форс перерисовки: шаг тот же (2), но контент новый
 	_campaign_gate.visible = _intro_step < 3
 	if _campaign_gate.visible and _intro_step != _gate_rendered:
 		_gate_rendered = _intro_step
@@ -550,7 +560,7 @@ func _render_gate() -> void:
 				_gate_body(flavor)
 			_gate_body(String(m.get("text", "")))
 			_gate_button("INTRO_START", _on_gate_start)
-	UIStyle.scale_modal_text(_gate_vbox)   # текст модалок крупнее (×1.5)
+	UIStyle.scale_modal_text(_gate_vbox)  # текст модалок крупнее (×1.5)
 
 
 func _on_gate_next() -> void:
@@ -564,6 +574,7 @@ func _on_gate_start() -> void:
 
 
 # ── Хелперы наполнения гейта ──────────────────────────────────────────────────
+
 
 func _gate_eyebrow(text: String) -> void:
 	var lbl := UIStyle.label(text, 12, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
@@ -601,12 +612,13 @@ func _gate_button(text: String, handler: Callable) -> void:
 
 # ── Утилиты ───────────────────────────────────────────────────────────────────
 
+
 ## Целое 1..3999 → римские цифры. Для номера раунда хватит с большим запасом.
 func _to_roman(n: int) -> String:
 	if n <= 0:
 		return "0"
 	const VALS := [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
-	const SYMS := ["M",  "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
+	const SYMS := ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
 	var result := ""
 	var v: int = n
 	for i in VALS.size():
@@ -618,12 +630,14 @@ func _to_roman(n: int) -> String:
 
 # ── Зум ───────────────────────────────────────────────────────────────────────
 
+
 # Устарело — оставлено для совместимости, используй _zoom_target напрямую
 func _set_zoom(value: float) -> void:
 	_zoom_target = clamp(value, ZOOM_MIN, ZOOM_MAX)
 
 
 # ── Границы и горизонтальная бесконечность ────────────────────────────────────
+
 
 func _apply_bounds() -> void:
 	# Горизонтальный wrap: камера всегда остаётся в [0, TILE_W)
