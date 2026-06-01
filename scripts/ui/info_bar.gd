@@ -56,6 +56,11 @@ const _SANITY_BAR: Texture2D = preload("res://assets/player-hud/sanity-ba.png")
 const _TRAIN_TICKET: Texture2D = preload("res://assets/player-hud/train-ticket.png")
 const _OCEAN_TICKET: Texture2D = preload("res://assets/player-hud/ocean-ticket.png")
 
+# Иконки-медальоны токенов (выводятся в ряду ресурсов рядом с билетами).
+const _CLUE_ICON: Texture2D = preload("res://assets/map/clue-icon.png")
+const _RESOURCE_ICON: Texture2D = preload("res://assets/map/resource-icon.png")
+const _TOKEN_ICON_H: float = 52.0  # высота медальона токена (px)
+
 # Ассеты панели атрибутов. Все @2× — выводим в half-size.
 const _ATTR_PANEL_TEX: Texture2D = preload("res://assets/virtues-panel/virues-panel.png")
 const _DICE_TEX: Texture2D = preload("res://assets/virtues-panel/cube.png")
@@ -106,12 +111,44 @@ var _hp_label: Label
 var _sanity_label: Label
 var _attr_value_lbls: Dictionary = {}  # field name -> Label
 var _ticket_shadow_mat: ShaderMaterial  # общий blur-материал теней билетов
+var _items_row: HBoxContainer  # ряд карточек стартового имущества (заполняется в update)
+var _tickets_row: HBoxContainer  # ряд билетов (заполняется в update из startingTickets)
+var _item_deck: Array = []  # payload'ы карт имущества (для веера по клику)
+var _fan: HandCarousel  # веер-просмотр карт имущества (создаётся лениво)
+
+# Высота миниатюры карты имущества (px); ширина — по аспекту GameCard.
+const _ITEM_CARD_H: float = 168.0
+# «Нормальный» размер карты (как в магазине / по наведению в веере). Миниатюра —
+# это полноразмерная карта, уменьшенная через scale (так шрифт/рамка выглядят
+# как на полной карте, а не свёрстаны в маленьком размере).
+const _ITEM_FULL_H: float = 459.0
+const _ITEM_SLOTS: int = 3  # макс. карт; под столько резервируем ширину панели
+const _ITEM_SEP: int = 8  # отступ между карточками
+const _ITEMS_BG_MARGIN: int = 24  # 9-slice угол (в HALF-res текстуре, см. ниже)
+const _ITEMS_BG_PAD: int = 18  # инсет контента от рамки фона
+
+# Трейт ассета → ключ перевода для подзаголовка карточки (как в магазине).
+const _TRAIT_KEY := {
+	"weapon": "TRAIT_WEAPON",
+	"magical": "TRAIT_MAGICAL",
+	"relic": "TRAIT_RELIC",
+	"tome": "TRAIT_TOME",
+	"teamwork": "TRAIT_TEAMWORK",
+	"item": "TRAIT_ITEM",
+	"trinket": "TRAIT_TRINKET",
+	"task": "TRAIT_TASK",
+	"service": "TRAIT_SERVICE",
+	"ally": "TRAIT_ALLY",
+}
 
 
 func _ready() -> void:
 	_ticket_shadow_mat = _build_ticket_shadow_material()
 	add_theme_constant_override("separation", 16)
-	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# По центру, по ширине контента — панель НЕ растягивается на весь экран
+	# (по бокам остаётся пусто).
+	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	alignment = BoxContainer.ALIGNMENT_CENTER
 	add_child(_build_stats_panel())
 	add_child(_build_attributes_panel())
 	add_child(_build_items_panel())
@@ -142,6 +179,8 @@ func update(inv: Dictionary) -> void:
 	var sk: Dictionary = inv.get("skills", {})
 	for field: String in _attr_value_lbls.keys():
 		_scramble_to(_attr_value_lbls[field], str(int(sk.get(field, 0))))
+	_render_items(inv.get("startingItems", []))
+	_render_resources(inv)
 
 
 # Анимация «дешифровки»: на месте числа пробегает _SCRAMBLE_STEPS кадров по
@@ -318,19 +357,100 @@ func _make_hud_bar(fill_tex: Texture2D) -> Control:
 	return bar
 
 
-# Ряд билетов под статами. Билеты слегка нахлёстываются (отриц. separation).
+# Ряд ресурсов под статами — заполняется в update(): билеты + токены (улики,
+# ресурсы). Фикс. высота — чтобы строка не схлопывалась без ресурсов и панель не
+# дёргалась при смене сыщика. Между группами — положительный отступ (нахлёст
+# билетов — внутри своей под-группы).
 func _make_tickets_row() -> Control:
+	_tickets_row = HBoxContainer.new()
+	_tickets_row.name = "ResourcesRow"
+	_tickets_row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_tickets_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_tickets_row.add_theme_constant_override("separation", 16)
+	_tickets_row.custom_minimum_size.y = _TRAIN_TICKET.get_size().y * _TICKET_SCALE
+	return _tickets_row
+
+
+# Ресурсы под статами: билеты (startingTickets) + токены улик/ресурсов из
+# startingItems ({clue:N}/{resource:N}). На старте сыщик не имеет 2 билетов И
+# токенов одновременно — ряд всегда влезает.
+func _render_resources(inv: Dictionary) -> void:
+	if not is_instance_valid(_tickets_row):
+		return
+	for c in _tickets_row.get_children():
+		c.queue_free()
+	var tk: Dictionary = inv.get("startingTickets", {})
+	var train: int = int(tk.get("train", 0))
+	var ship: int = int(tk.get("ship", 0))
+	if train > 0 or ship > 0:
+		_tickets_row.add_child(_make_tickets_group(train, ship))
+	var items: Array = inv.get("startingItems", [])
+	var clue: int = _token_count(items, "clue")
+	var resource: int = _token_count(items, "resource")
+	if clue > 0:
+		_tickets_row.add_child(_make_token(_CLUE_ICON, clue))
+	if resource > 0:
+		_tickets_row.add_child(_make_token(_RESOURCE_ICON, resource))
+
+
+# Сумма токенов вида {key: N} в списке стартового имущества.
+func _token_count(items: Array, key: String) -> int:
+	var n: int = 0
+	for e in items:
+		if e is Dictionary and (e as Dictionary).has(key):
+			n += int((e as Dictionary)[key])
+	return n
+
+
+# Под-группа билетов (поездные + морские) с нахлёстом (отриц. separation внутри).
+# PNG чуть разного размера (train 161×146, ocean 152×143) — нормализуем по высоте.
+func _make_tickets_group(train_n: int, ship_n: int) -> Control:
 	var hb := HBoxContainer.new()
-	hb.name = "TicketsRow"
-	hb.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	hb.alignment = BoxContainer.ALIGNMENT_CENTER
+	hb.name = "Tickets"
 	hb.add_theme_constant_override("separation", -20)
-	# Оба билета выводим одной высотой — PNG'шки чуть разного размера
-	# (train 161×146, ocean 152×143), без нормализации океанский визуально мельче.
+	hb.alignment = BoxContainer.ALIGNMENT_CENTER
+	hb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var ticket_h: float = _TRAIN_TICKET.get_size().y * _TICKET_SCALE
-	hb.add_child(_make_ticket(_TRAIN_TICKET, "TrainTicket", ticket_h))
-	hb.add_child(_make_ticket(_OCEAN_TICKET, "OceanTicket", ticket_h, _TICKET_TILT_DEG))
+	var idx: int = 0
+	for i: int in range(maxi(0, train_n)):
+		hb.add_child(_make_ticket(_TRAIN_TICKET, "TrainTicket%d" % i, ticket_h, _ticket_tilt(idx)))
+		idx += 1
+	for i: int in range(maxi(0, ship_n)):
+		hb.add_child(_make_ticket(_OCEAN_TICKET, "OceanTicket%d" % i, ticket_h, _ticket_tilt(idx)))
+		idx += 1
 	return hb
+
+
+# Токен-чип: круглый медальон-иконка + число.
+func _make_token(icon_tex: Texture2D, count: int) -> Control:
+	var hb := HBoxContainer.new()
+	hb.name = "Token"
+	hb.add_theme_constant_override("separation", 3)
+	hb.alignment = BoxContainer.ALIGNMENT_CENTER
+	hb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	var icon := TextureRect.new()
+	icon.name = "Icon"
+	icon.texture = icon_tex
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var s: float = _TOKEN_ICON_H / icon_tex.get_size().y
+	icon.custom_minimum_size = icon_tex.get_size() * s
+	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hb.add_child(icon)
+
+	var lbl := UIStyle.label("×%d" % count, 20, _ATTR_VALUE_COLOR)
+	lbl.name = "Count"
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	hb.add_child(lbl)
+	return hb
+
+
+# Наклон для эффекта брошенной стопки: первый билет ровно, дальше — вразнобой.
+func _ticket_tilt(idx: int) -> float:
+	if idx == 0:
+		return 0.0
+	return _TICKET_TILT_DEG * (1.0 if idx % 2 == 1 else -1.0)
 
 
 func _make_ticket(
@@ -537,13 +657,39 @@ func _make_dice_section(field: String) -> Control:
 
 # ── Items ─────────────────────────────────────────────────────────────────────
 
+# player-hud-bg @2× → half-res ImageTexture для 9-slice (углы рисуются 1:1 в px
+# текстуры, поэтому без уменьшения были бы вдвое крупнее). Кэш — общий.
+static var _hud_bg_half_cache: ImageTexture = null
 
+
+static func _hud_bg_half() -> Texture2D:
+	if _hud_bg_half_cache == null:
+		var img: Image = _HUD_PANEL_BG.get_image()
+		if img.is_compressed():
+			img.decompress()
+		img.resize(
+			int(img.get_width() * 0.5), int(img.get_height() * 0.5), Image.INTERPOLATE_LANCZOS
+		)
+		_hud_bg_half_cache = ImageTexture.create_from_image(img)
+	return _hud_bg_half_cache
+
+
+# Панель стартового имущества: заголовок + ряд карточек (GameCard). Ряд
+# наполняется в update() из inv.startingItems (id ассетов AssetCatalog). Панель по
+# ширине контента — НЕ растягивается (общий ряд InfoBar центрирован).
 func _build_items_panel() -> PanelContainer:
 	var p := PanelContainer.new()
 	p.name = "ItemsPanel"
-	UIStyle.style_panel(p, 14)
-	p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	p.size_flags_stretch_ratio = 1.0
+	# Оформление как у панели статов — player-hud-bg.png. 9-slice: угловые орнаменты
+	# не тянутся, центр/края растягиваются под размер панели. Текстура @2× —
+	# уменьшаем вдвое (9-slice рисует углы 1:1 в px текстуры; без этого орнаменты
+	# были бы вдвое крупнее, чем у панели статов).
+	var sb := StyleBoxTexture.new()
+	sb.texture = _hud_bg_half()
+	sb.set_texture_margin_all(_ITEMS_BG_MARGIN)
+	sb.set_content_margin_all(_ITEMS_BG_PAD)
+	p.add_theme_stylebox_override("panel", sb)
+	p.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	var vb := VBoxContainer.new()
 	vb.name = "VBox"
 	vb.add_theme_constant_override("separation", 6)
@@ -553,30 +699,118 @@ func _build_items_panel() -> PanelContainer:
 	)
 	hdr.name = "Header"
 	vb.add_child(hdr)
-	var hb := HBoxContainer.new()
-	hb.name = "Row"
-	hb.add_theme_constant_override("separation", 6)
-	hb.alignment = BoxContainer.ALIGNMENT_CENTER
-	vb.add_child(hb)
-	for i: int in range(3):
-		var slot := _make_item_slot()
-		slot.name = "Slot_%d" % i
-		hb.add_child(slot)
+	_items_row = HBoxContainer.new()
+	_items_row.name = "Row"
+	_items_row.add_theme_constant_override("separation", _ITEM_SEP)
+	_items_row.alignment = BoxContainer.ALIGNMENT_BEGIN  # карты по левому краю
+	_items_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# Резервируем ширину под МАКС _ITEM_SLOTS карт — при меньшем числе панель НЕ
+	# сжимается (карты центрируются), секции не скачут при смене сыщика.
+	var card_w: float = _ITEM_CARD_H * GameCard.ASPECT
+	_items_row.custom_minimum_size.x = (
+		float(_ITEM_SLOTS) * card_w + float(_ITEM_SLOTS - 1) * float(_ITEM_SEP)
+	)
+	vb.add_child(_items_row)
+	_render_items([])  # до первого update — пустые рамки
 	return p
 
 
-func _make_item_slot() -> Control:
-	var slot := PanelContainer.new()
-	slot.name = "ItemSlot"
-	slot.custom_minimum_size = Vector2(64, 80)
-	var s := StyleBoxFlat.new()
-	s.bg_color = Color(0.08, 0.07, 0.13)
-	s.border_color = UIColors.BORDER
-	s.set_border_width_all(1)
-	s.set_corner_radius_all(4)
-	slot.add_theme_stylebox_override("panel", s)
-	var lbl := UIStyle.label("—", 14, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
-	lbl.name = "Placeholder"
-	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	slot.add_child(lbl)
+# Перестроить ряд карточек по списку id ассетов. Пусто → _ITEM_SLOTS пустых рамок.
+# Заодно собираем _item_deck (payload'ы) — по клику открываем веер с этими картами.
+func _render_items(items: Array) -> void:
+	if not is_instance_valid(_items_row):
+		return
+	for c in _items_row.get_children():
+		c.queue_free()
+	_item_deck.clear()
+	# Каждый элемент — объект: {"asset": id} (карта) или токен {"clue": N} и т.п.
+	# Карточки рисуем только для ассетов; токены (clue/resource/focus) — не карты.
+	for i: int in range(items.size()):
+		var aid: String = _entry_asset_id(items[i])
+		if aid.is_empty():
+			continue
+		var a: Dictionary = AssetCatalog.by_id(aid)
+		if a.is_empty():
+			continue
+		var payload: Dictionary = _asset_payload(a)
+		_item_deck.append(payload)
+		_items_row.add_child(_make_card_node(payload, true))  # кликабельна → веер
+	if _item_deck.is_empty():  # нет карт-ассетов → пустые рамки-плейсхолдеры
+		for i: int in range(_ITEM_SLOTS):
+			_items_row.add_child(_make_card_node())
+
+
+# id ассета из элемента startingItems: {"asset": id} → id; токен/иное → "".
+# Строку тоже принимаем (на случай старого формата).
+func _entry_asset_id(entry: Variant) -> String:
+	if entry is String:
+		return String(entry)
+	if entry is Dictionary and (entry as Dictionary).has("asset"):
+		return String((entry as Dictionary)["asset"])
+	return ""
+
+
+# Payload карты ассета для GameCard.set_card (название/трейт/способность/стоимость).
+func _asset_payload(a: Dictionary) -> Dictionary:
+	var traits: Array = a.get("traits", [])
+	var trait_id: String = String(traits[-1]) if not traits.is_empty() else "item"
+	return {
+		"cost": int(a.get("cost", 0)),
+		"title": a.get("nameKey", ""),
+		"subtitle": _TRAIT_KEY.get(trait_id, trait_id.to_upper()),
+		"desc": a.get("abilityKey", ""),
+	}
+
+
+# Миниатюра карты имущества: GameCard В ПОЛНЫЙ РАЗМЕР (_ITEM_FULL_H), уменьшенный
+# через scale до высоты _ITEM_CARD_H — превью с теми же пропорциями шрифта/рамки,
+# что у полной карты. Слот-обёртка занимает в раскладке место миниатюры. Пустой
+# payload → пустая рамка. clickable=true → слот по клику открывает веер.
+func _make_card_node(payload: Dictionary = {}, clickable: bool = false) -> Control:
+	var full_w: float = _ITEM_FULL_H * GameCard.ASPECT
+	var scale_f: float = _ITEM_CARD_H / _ITEM_FULL_H
+
+	var slot := Control.new()
+	slot.name = "ItemCardSlot"
+	slot.custom_minimum_size = Vector2(full_w * scale_f, _ITEM_CARD_H)
+	slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	if clickable:
+		slot.mouse_filter = Control.MOUSE_FILTER_STOP
+		slot.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		slot.gui_input.connect(_on_item_clicked)
+	else:
+		slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var card := GameCard.new()
+	card.name = "ItemCard"
+	card.custom_minimum_size = Vector2(full_w, _ITEM_FULL_H)
+	card.size = Vector2(full_w, _ITEM_FULL_H)
+	card.pivot_offset = Vector2.ZERO
+	card.scale = Vector2(scale_f, scale_f)
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot.add_child(card)
+
+	if payload.is_empty():
+		card.set_card({"cost": "", "title": "", "subtitle": "", "desc": ""})
+	else:
+		card.set_card(payload)
 	return slot
+
+
+# Клик по карте имущества — открыть веер со ВСЕМИ картами сыщика для просмотра.
+func _on_item_clicked(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_open_items_fan()
+
+
+func _open_items_fan() -> void:
+	if _item_deck.is_empty():
+		return
+	if not is_instance_valid(_fan):
+		_fan = HandCarousel.new()
+		_fan.name = "ItemsFan"
+		_fan.tab_enabled = false  # в пикере Tab не трогаем; открыли кликом
+		add_child(_fan)
+		_fan.set_hint("Esc / клик по фону — закрыть   ·   ← →  /  колесо — листать")
+	_fan.set_cards(_item_deck)
+	_fan.open()

@@ -1,6 +1,7 @@
 [
   {
 	"name": "Silas Marsh",
+	"startingItems": [{"asset": "fishing_net"}],
 	"displayName": "INV_SILAS_MARSH_NAME",
 	"occupation": "INV_SILAS_MARSH_OCC",
 	"startingLocation": "Sydney",
@@ -21,6 +22,7 @@
   },
   {
 	"name": "Monterey Jack",
+	"startingItems": [{"asset": "bull_whip"}],
 	"displayName": "INV_MONTEREY_JACK_NAME",
 	"occupation": "INV_MONTEREY_JACK_OCC",
 	"startingLocation": "The Pyramids",
@@ -41,6 +43,7 @@
   },
   {
 	"name": "Darrell Simmons",
+	"startingItems": [{"asset": "camera"}, {"asset": "seek_the_truth"}],
 	"displayName": "INV_DARRELL_SIMMONS_NAME",
 	"occupation": "INV_DARRELL_SIMMONS_OCC",
 	"startingLocation": "20",
@@ -61,6 +64,7 @@
   },
   {
 	"name": "Trish Scarborough",
+	"startingItems": [{"asset": "45_automatic"}],
 	"displayName": "INV_TRISH_SCARBOROUGH_NAME",
 	"occupation": "INV_TRISH_SCARBOROUGH_OCC",
 	"startingLocation": "16",
@@ -81,6 +85,7 @@
   },
   {
 	"name": "Zoey Samaras",
+	"startingItems": [{"asset": "holy_cross"}],
 	"displayName": "INV_ZOEY_SAMARAS_NAME",
 	"occupation": "INV_ZOEY_SAMARAS_OCC",
 	"startingLocation": "Rome",
@@ -101,6 +106,7 @@
   },
   {
 	"name": "Jacqueline Fine",
+	"startingItems": [{"clue": 1}],
 	"displayName": "INV_JACQUELINE_FINE_NAME",
 	"occupation": "INV_JACQUELINE_FINE_OCC",
 	"startingLocation": "5",
@@ -122,6 +128,7 @@
   },
   {
 	"name": "Dexter Drake",
+	"startingItems": [{"asset": "arcane_assistant"}],
 	"displayName": "INV_DEXTER_DRAKE_NAME",
 	"occupation": "INV_DEXTER_DRAKE_OCC",
 	"startingLocation": "Tokyo",
@@ -142,6 +149,7 @@
   },
   {
 	"name": "Diana Stanley",
+	"startingItems": [{"asset": "arcane_manuscripts"}],
 	"displayName": "INV_DIANA_STANLEY_NAME",
 	"occupation": "INV_DIANA_STANLEY_OCC",
 	"startingLocation": "7",
@@ -163,6 +171,7 @@
   },
   {
 	"name": "Amanda Sharpe",
+	"startingItems": [],
 	"displayName": "INV_AMANDA_SHARPE_NAME",
 	"occupation": "INV_AMANDA_SHARPE_OCC",
 	"startingLocation": "Istanbul",
@@ -183,6 +192,7 @@
   },
   {
 	"name": "Gloria Goldberg",
+	"startingItems": [],
 	"displayName": "INV_GLORIA_GOLDBERG_NAME",
 	"occupation": "INV_GLORIA_GOLDBERG_OCC",
 	"startingLocation": "Arkham",
@@ -204,6 +214,7 @@
   },
   {
 	"name": "Kate Winthrop",
+	"startingItems": [{"clue": 1}],
 	"displayName": "INV_KATE_WINTHROP_NAME",
 	"occupation": "INV_KATE_WINTHROP_OCC",
 	"startingLocation": "Buenos Aires",
@@ -225,6 +236,7 @@
   },
   {
 	"name": "Minh Thi Phan",
+	"startingItems": [{"clue": 1}],
 	"displayName": "INV_MINH_THI_PHAN_NAME",
 	"occupation": "INV_MINH_THI_PHAN_OCC",
 	"startingLocation": "Tokyo",
@@ -245,6 +257,7 @@
   },
   {
 	"name": "Rita Young",
+	"startingItems": [{"clue": 1}],
 	"displayName": "INV_RITA_YOUNG_NAME",
 	"occupation": "INV_RITA_YOUNG_OCC",
 	"startingLocation": "Shanghai",
@@ -265,6 +278,7 @@
   },
   {
 	"name": "Joe Diamond",
+	"startingItems": [{"asset": "32_colt_pocket"}],
 	"displayName": "INV_JOE_DIAMOND_NAME",
 	"occupation": "INV_JOE_DIAMOND_OCC",
 	"startingLocation": "San Francisco",
@@ -285,6 +299,7 @@
   },
   {
 	"name": "William Yorick",
+	"startingItems": [{"asset": "alchemical_concoction"}],
 	"displayName": "INV_WILLIAM_YORICK_NAME",
 	"occupation": "INV_WILLIAM_YORICK_OCC",
 	"startingLocation": "Sydney",
@@ -305,6 +320,7 @@
   },
   {
 	"name": "Agatha Crane",
+	"startingItems": [],
 	"displayName": "INV_AGATHA_CRANE_NAME",
 	"occupation": "INV_AGATHA_CRANE_OCC",
 	"startingLocation": "Tokyo",
@@ -326,6 +342,7 @@
   },
   {
 	"name": "Daniela Reyes",
+	"startingItems": [{"clue": 1}, {"resource": 1}],
 	"displayName": "INV_DANIELA_REYES_NAME",
 	"occupation": "INV_DANIELA_REYES_OCC",
 	"startingLocation": "San Francisco",
@@ -346,6 +363,7 @@
   },
   {
 	"name": "Ashcan Pete",
+	"startingItems": [{"clue": 1}],
 	"displayName": "INV_ASHCAN_PETE_NAME",
 	"occupation": "INV_ASHCAN_PETE_OCC",
 	"startingLocation": "14",
@@ -366,6 +384,7 @@
   },
   {
 	"name": "Michael McGlen",
+	"startingItems": [{"asset": "tommy_gun"}],
 	"displayName": "INV_MICHAEL_MCGLEN_NAME",
 	"occupation": "INV_MICHAEL_MCGLEN_OCC",
 	"startingLocation": "London",
@@ -386,6 +405,7 @@
   },
   {
 	"name": "Tommy Muldoon",
+	"startingItems": [{"asset": "carbine_rifle"}],
 	"displayName": "INV_TOMMY_MULDOON_NAME",
 	"occupation": "INV_TOMMY_MULDOON_OCC",
 	"startingLocation": "1",
@@ -406,6 +426,7 @@
   },
   {
 	"name": "Sefina Rousseau",
+	"startingItems": [{"clue": 1}, {"asset": "treasured_memento"}],
 	"displayName": "INV_SEFINA_ROUSSEAU_NAME",
 	"occupation": "INV_SEFINA_ROUSSEAU_OCC",
 	"startingLocation": "Sydney",
@@ -426,6 +447,7 @@
   },
   {
 	"name": "Harvey Walters",
+	"startingItems": [{"asset": "ancient_tome"}],
 	"displayName": "INV_HARVEY_WALTERS_NAME",
 	"occupation": "INV_HARVEY_WALTERS_OCC",
 	"startingLocation": "Arkham",
@@ -446,6 +468,7 @@
   },
   {
 	"name": "Marie Lambeau",
+	"startingItems": [{"asset": "ritual_dagger"}],
 	"displayName": "INV_MARIE_LAMBEAU_NAME",
 	"occupation": "INV_MARIE_LAMBEAU_OCC",
 	"startingLocation": "20",
@@ -466,6 +489,7 @@
   },
   {
 	"name": "George Barnaby",
+	"startingItems": [{"asset": "investment"}, {"asset": "pocket_watch"}],
 	"displayName": "INV_GEORGE_BARNABY_NAME",
 	"occupation": "INV_GEORGE_BARNABY_OCC",
 	"startingLocation": "17",
@@ -486,6 +510,7 @@
   },
   {
 	"name": "Wendy Adams",
+	"startingItems": [{"clue": 1}],
 	"displayName": "INV_WENDY_ADAMS_NAME",
 	"occupation": "INV_WENDY_ADAMS_OCC",
 	"startingLocation": "16",
@@ -506,6 +531,7 @@
   },
   {
 	"name": "Lola Hayes",
+	"startingItems": [{"asset": "18_derringer"}],
 	"displayName": "INV_LOLA_HAYES_NAME",
 	"occupation": "INV_LOLA_HAYES_OCC",
 	"startingLocation": "Tokyo",
@@ -526,6 +552,7 @@
   },
   {
 	"name": "Rex Murphy",
+	"startingItems": [{"asset": "lucky_talisman"}],
 	"displayName": "INV_REX_MURPHY_NAME",
 	"occupation": "INV_REX_MURPHY_OCC",
 	"startingLocation": "1",
@@ -546,6 +573,7 @@
   },
   {
 	"name": "Lily Chen",
+	"startingItems": [{"asset": "lucky_rabbits_foot"}, {"asset": "protective_amulet"}],
 	"displayName": "INV_LILY_CHEN_NAME",
 	"occupation": "INV_LILY_CHEN_OCC",
 	"startingLocation": "Shanghai",
@@ -566,6 +594,7 @@
   },
   {
 	"name": "Bob Jenkins",
+	"startingItems": [{"clue": 1}, {"asset": "winchester_rifle"}],
 	"displayName": "INV_BOB_JENKINS_NAME",
 	"occupation": "INV_BOB_JENKINS_OCC",
 	"startingLocation": "London",
@@ -586,6 +615,7 @@
   },
   {
 	"name": "Jim Culver",
+	"startingItems": [{"clue": 1}],
 	"displayName": "INV_JIM_CULVER_NAME",
 	"occupation": "INV_JIM_CULVER_OCC",
 	"startingLocation": "6",
@@ -607,6 +637,8 @@
   },
   {
 	"name": "Jenny Barnes",
+	"startingTickets": {"ship": 1},
+	"startingItems": [{"asset": "25_automatic"}, {"asset": "fine_jewelry"}],
 	"displayName": "INV_JENNY_BARNES_NAME",
 	"occupation": "INV_JENNY_BARNES_OCC",
 	"startingLocation": "8",
@@ -627,6 +659,7 @@
   },
   {
 	"name": "Ursula Downs",
+	"startingItems": [{"asset": "mineralogy_research"}],
 	"displayName": "INV_URSULA_DOWNS_NAME",
 	"occupation": "INV_URSULA_DOWNS_OCC",
 	"startingLocation": "The Heart of Africa",
@@ -647,6 +680,7 @@
   },
   {
 	"name": "Wilson Richards",
+	"startingItems": [{"asset": "blunderbuss"}],
 	"displayName": "INV_WILSON_RICHARDS_NAME",
 	"occupation": "INV_WILSON_RICHARDS_OCC",
 	"startingLocation": "Arkham",
@@ -667,6 +701,7 @@
   },
   {
 	"name": "Luke Robinson",
+	"startingItems": [{"clue": 1}, {"asset": "dream_box"}],
 	"displayName": "INV_LUKE_ROBINSON_NAME",
 	"occupation": "INV_LUKE_ROBINSON_OCC",
 	"startingLocation": "Arkham",
@@ -687,6 +722,7 @@
   },
   {
 	"name": "Leo Anderson",
+	"startingItems": [{"asset": "hired_muscle"}],
 	"displayName": "INV_LEO_ANDERSON_NAME",
 	"occupation": "INV_LEO_ANDERSON_OCC",
 	"startingLocation": "Buenos Aires",
@@ -707,6 +743,7 @@
   },
   {
 	"name": "Preston Fairmont",
+	"startingItems": [{"asset": "fine_clothes"}],
 	"displayName": "INV_PRESTON_FAIRMONT_NAME",
 	"occupation": "INV_PRESTON_FAIRMONT_OCC",
 	"startingLocation": "Istanbul",
@@ -727,6 +764,7 @@
   },
   {
 	"name": "Norman Withers",
+	"startingItems": [],
 	"displayName": "INV_NORMAN_WITHERS_NAME",
 	"occupation": "INV_NORMAN_WITHERS_OCC",
 	"startingLocation": "Arkham",
@@ -747,6 +785,7 @@
   },
   {
 	"name": "Father Mateo",
+	"startingItems": [{"asset": "king_james_bible"}],
 	"displayName": "INV_FATHER_MATEO_NAME",
 	"occupation": "INV_FATHER_MATEO_OCC",
 	"startingLocation": "Rome",
@@ -768,6 +807,7 @@
   },
   {
 	"name": "Charlie Kane",
+	"startingItems": [{"asset": "personal_assistant"}],
 	"displayName": "INV_CHARLIE_KANE_NAME",
 	"occupation": "INV_CHARLIE_KANE_OCC",
 	"startingLocation": "San Francisco",
@@ -788,6 +828,7 @@
   },
   {
 	"name": "Akachi Onyele",
+	"startingItems": [{"clue": 1}],
 	"displayName": "INV_AKACHI_ONYELE_NAME",
 	"occupation": "INV_AKACHI_ONYELE_OCC",
 	"startingLocation": "15",
@@ -808,6 +849,7 @@
   },
   {
 	"name": "Mark Harrigan",
+	"startingItems": [{"asset": "38_revolver"}, {"asset": "kerosene"}],
 	"displayName": "INV_MARK_HARRIGAN_NAME",
 	"occupation": "INV_MARK_HARRIGAN_OCC",
 	"startingLocation": "14",
@@ -828,6 +870,7 @@
   },
   {
 	"name": "Calvin Wright",
+	"startingItems": [{"resource": 1}, {"clue": 1}, {"asset": "spirit_dagger"}],
 	"displayName": "INV_CALVIN_WRIGHT_NAME",
 	"occupation": "INV_CALVIN_WRIGHT_OCC",
 	"startingLocation": "Buenos Aires",
@@ -848,6 +891,7 @@
   },
   {
 	"name": "Mandy Thompson",
+	"startingItems": [{"asset": "magnifying_glass"}],
 	"displayName": "INV_MANDY_THOMPSON_NAME",
 	"occupation": "INV_MANDY_THOMPSON_OCC",
 	"startingLocation": "Shanghai",
@@ -868,6 +912,7 @@
   },
   {
 	"name": "Daisy Walker",
+	"startingItems": [],
 	"displayName": "INV_DAISY_WALKER_NAME",
 	"occupation": "INV_DAISY_WALKER_OCC",
 	"startingLocation": "Istanbul",
@@ -888,6 +933,7 @@
   },
   {
 	"name": "Roland Banks",
+	"startingItems": [{"asset": "mauser_c96"}],
 	"displayName": "INV_ROLAND_BANKS_NAME",
 	"occupation": "INV_ROLAND_BANKS_OCC",
 	"startingLocation": "San Francisco",
@@ -909,6 +955,7 @@
   },
   {
 	"name": "Hank Samson",
+	"startingItems": [{"asset": "sledgehammer"}],
 	"displayName": "INV_HANK_SAMSON_NAME",
 	"occupation": "INV_HANK_SAMSON_OCC",
 	"startingLocation": "6",
@@ -929,6 +976,7 @@
   },
   {
 	"name": "\"Skids\" O'Toole",
+	"startingItems": [{"asset": "axe"}],
 	"displayName": "INV_SKIDS_O_TOOLE_NAME",
 	"occupation": "INV_SKIDS_O_TOOLE_OCC",
 	"startingLocation": "Buenos Aires",
@@ -949,6 +997,7 @@
   },
   {
 	"name": "Carolyn Fern",
+	"startingItems": [{"asset": "dream_diary"}],
 	"displayName": "INV_CAROLYN_FERN_NAME",
 	"occupation": "INV_CAROLYN_FERN_OCC",
 	"startingLocation": "Rome",
@@ -969,6 +1018,7 @@
   },
   {
 	"name": "Vincent Lee",
+	"startingItems": [{"asset": "bandages"}],
 	"displayName": "INV_VINCENT_LEE_NAME",
 	"occupation": "INV_VINCENT_LEE_OCC",
 	"startingLocation": "17",
@@ -989,6 +1039,7 @@
   },
   {
 	"name": "Agnes Baker",
+	"startingItems": [{"asset": "profane_tome"}],
 	"displayName": "INV_AGNES_BAKER_NAME",
 	"occupation": "INV_AGNES_BAKER_OCC",
 	"startingLocation": "London",
@@ -1009,6 +1060,7 @@
   },
   {
 	"name": "Finn Edwards",
+	"startingItems": [{"asset": "cat_burglar"}, {"asset": "whiskey"}],
 	"displayName": "INV_FINN_EDWARDS_NAME",
 	"occupation": "INV_FINN_EDWARDS_OCC",
 	"startingLocation": "5",
@@ -1029,6 +1081,7 @@
   },
   {
 	"name": "Patrice Hathaway",
+	"startingItems": [{"clue": 1}],
 	"displayName": "INV_PATRICE_HATHAWAY_NAME",
 	"occupation": "INV_PATRICE_HATHAWAY_OCC",
 	"startingLocation": "Sydney",
@@ -1049,6 +1102,7 @@
   },
   {
 	"name": "Carson Sinclair",
+	"startingItems": [{"asset": "lucky_cigarette_case"}],
 	"displayName": "INV_CARSON_SINCLAIR_NAME",
 	"occupation": "INV_CARSON_SINCLAIR_OCC",
 	"startingLocation": "London",
@@ -1070,6 +1124,7 @@
   },
   {
 	"name": "Tony Morgan",
+	"startingItems": [{"asset": "handcuffs"}],
 	"displayName": "INV_TONY_MORGAN_NAME",
 	"occupation": "INV_TONY_MORGAN_OCC",
 	"startingLocation": "7",
@@ -1090,6 +1145,8 @@
   },
   {
 	"name": "Sister Mary",
+	"startingTickets": {"ship": 1},
+	"startingItems": [{"clue": 1}, {"asset": "holy_water"}],
 	"displayName": "INV_SISTER_MARY_NAME",
 	"occupation": "INV_SISTER_MARY_OCC",
 	"startingLocation": "15",

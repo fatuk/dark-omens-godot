@@ -137,6 +137,9 @@ const CARDS: Array[Dictionary] = [
 	},
 ]
 
+var tab_enabled: bool = true  # Tab открывает/закрывает (рука в игре); в пикере — false
+var _deck: Array = []  # payload'ы карт (GameCard.set_card); пусто → дефолтная фейк-рука
+var _hint_text: String = "Tab — закрыть   ·   ← →  /  колесо — выбор   ·   ЛКМ — сыграть"
 var _backdrop: ColorRect
 var _hint: Label
 var _els: Array[Control] = []
@@ -152,27 +155,62 @@ var _scroll_tried: bool = false  # пытались ли уже загрузит
 func _ready() -> void:
 	layer = 70  # над картой/панелями, под финальной outcome-модалкой (90)
 	add_to_group("hand_carousel")  # чтобы дебаг-панель (Ctrl+M) нашла инстанс
-	_mid = float(CARDS.size() - 1) / 2.0
-	_build()
+	_build_chrome()
+	if _deck.is_empty():
+		_deck = _default_deck()  # дефолтная фейк-рука (если set_cards не звали)
+	_rebuild_cards()
 	visible = false
 	get_viewport().size_changed.connect(_on_resize)
+
+
+## Задать произвольный набор карт (payload'ы GameCard.set_card) — для переиспользования
+## веера вне игры (напр. просмотр имущества сыщика в пикере).
+func set_cards(cards: Array) -> void:
+	_deck = cards.duplicate()
+	if is_inside_tree():
+		_rebuild_cards()
+
+
+## Текст подсказки внизу (в пикере «сыграть» неуместно — задаём своё).
+func set_hint(text: String) -> void:
+	_hint_text = text
+	if is_instance_valid(_hint):
+		_hint.text = text
+
+
+# Дефолтная фейк-рука из CARDS (тестовый арт на всех картах).
+func _default_deck() -> Array:
+	var out: Array = []
+	for i in range(CARDS.size()):
+		var d: Dictionary = CARDS[i]
+		out.append(
+			{
+				"cost": d["cost"],
+				"title": d["title"],
+				"desc": d["desc"],
+				"art": _TEST_ART,
+				"glyph": d["glyph"]
+			}
+		)
+	return out
 
 
 # ── Сборка ─────────────────────────────────────────────────────────────────────
 
 
-func _build() -> void:
+func _build_chrome() -> void:
 	_backdrop = ColorRect.new()
 	_backdrop.name = "Backdrop"
 	_backdrop.color = Color(0.0, 0.0, 0.0, 0.55)
 	_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP  # глушим клики по карте
+	_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP  # глушим клики по фону + закрытие
 	_backdrop.z_index = -1
+	_backdrop.gui_input.connect(_on_backdrop_input)
 	add_child(_backdrop)
 
 	_hint = Label.new()
 	_hint.name = "Hint"
-	_hint.text = "Tab — закрыть   ·   ← →  /  колесо — выбор   ·   ЛКМ — сыграть"
+	_hint.text = _hint_text
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.add_theme_font_size_override("font_size", 18)
 	_hint.add_theme_color_override("font_color", UIColors.MUTED)
@@ -188,10 +226,18 @@ func _build() -> void:
 	_collapse_timer.timeout.connect(_on_collapse_timeout)
 	add_child(_collapse_timer)
 
-	for i in range(CARDS.size()):
-		var card: Control = _build_card(CARDS[i], i)
+
+# Пересобрать карты из _deck (после set_cards). Хром (фон/подсказка) не трогаем.
+func _rebuild_cards() -> void:
+	for c in _els:
+		c.queue_free()
+	_els.clear()
+	_mid = float(maxi(1, _deck.size()) - 1) / 2.0
+	for i in range(_deck.size()):
+		var card: Control = _build_card(_deck[i], i)
 		add_child(card)
 		_els.append(card)
+	_active = -1
 
 
 func _build_card(data: Dictionary, idx: int) -> Control:
@@ -201,24 +247,24 @@ func _build_card(data: Dictionary, idx: int) -> Control:
 	card.size = Vector2(CARD_W, CARD_H)
 	card.pivot_offset = Vector2(CARD_W * 0.5, CARD_H * PIVOT_Y_FRAC)
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
-	(
-		card
-		. set_card(
-			{
-				"cost": data["cost"],
-				"title": data["title"],
-				"desc": data["desc"],
-				"art": _TEST_ART,  # тестовый арт на всех картах руки
-				"glyph": data["glyph"],  # фолбэк, если арта нет (сейчас перекрыт артом)
-			}
-		)
-	)
+	card.set_card(data)  # payload готов у вызывающего (set_cards / _default_deck)
 
 	# Сигналы наведения/клика на саму карту.
 	card.mouse_entered.connect(_on_card_enter.bind(idx))
 	card.mouse_exited.connect(_on_card_exit)
 	card.gui_input.connect(_on_card_gui_input.bind(card))
 	return card
+
+
+# Клик по фону (не по карте) — закрыть веер.
+func _on_backdrop_input(event: InputEvent) -> void:
+	if (
+		_open
+		and event is InputEventMouseButton
+		and event.pressed
+		and event.button_index == MOUSE_BUTTON_LEFT
+	):
+		close()
 
 
 # ── Геометрия веера ─────────────────────────────────────────────────────────
@@ -359,8 +405,15 @@ func toggle() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	# Tab — открыть/закрыть (перехватываем до ui_focus_next).
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_TAB:
+	# Tab — открыть/закрыть (перехватываем до ui_focus_next). Только если включено
+	# (рука в игре); в пикере веер открывают кликом по карте, Tab не трогаем.
+	if (
+		tab_enabled
+		and event is InputEventKey
+		and event.pressed
+		and not event.echo
+		and event.keycode == KEY_TAB
+	):
 		toggle()
 		get_viewport().set_input_as_handled()
 		return
