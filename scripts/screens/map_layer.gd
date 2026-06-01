@@ -460,17 +460,24 @@ func _draw_great_circle(lat0: float, lon0: float, lat1: float, lon1: float, colo
 		var lon: float = atan2(v.y, v.x) * 180.0 / PI
 		all_pts.append(_geo_to_pixel(lat, lon))
 
-	# Разбиваем при пересечении антимеридиана
-	var seg := PackedVector2Array()
+	# Разворачиваем x в непрерывную последовательность (убираем скачок на
+	# антимеридиане), чтобы линия НЕ рвалась на шве: раньше её резали в точке
+	# пересечения, и оставалась дыра в один шаг сэмпла (край тайла не достигался).
+	# Три тайл-копии (внешний цикл ±TILE_W) покрывают непрерывную линию по обе
+	# стороны шва.
 	var half_w: float = float(TILE_W) * 0.5
+	var pts := PackedVector2Array()
+	var acc: float = 0.0
 	for i: int in range(all_pts.size()):
-		if i > 0 and absf(all_pts[i].x - all_pts[i - 1].x) > half_w:
-			if seg.size() >= 2:
-				draw_polyline(seg, color, LINE_W, true)
-			seg.clear()
-		seg.append(all_pts[i])
-	if seg.size() >= 2:
-		draw_polyline(seg, color, LINE_W, true)
+		if i > 0:
+			var dx: float = all_pts[i].x - all_pts[i - 1].x
+			if dx > half_w:
+				acc -= float(TILE_W)
+			elif dx < -half_w:
+				acc += float(TILE_W)
+		pts.append(all_pts[i] + Vector2(acc, 0.0))
+	if pts.size() >= 2:
+		draw_polyline(pts, color, LINE_W, true)
 
 
 # ── Вспомогательные ───────────────────────────────────────────────────────────
@@ -513,8 +520,7 @@ func loc_world_pos(loc_id: String) -> Vector2:
 # Состояние текущей анимации перемещения (читается _travel_step).
 var _tr_from: String = ""
 var _tr_to: String = ""
-var _tr_pin: Node2D = null
-var _tr_dot: Node2D = null
+var _tr_copies: Array = []  # [{pin, dot, dx}] — 3 wrap-копии (как у маркеров/линий)
 var _tr_base_scale: float = 1.0
 var _tr_screen_off: Vector2 = Vector2.ZERO
 
@@ -572,32 +578,33 @@ func play_travel(inv_id: String, from_loc: String, to_loc: String, ctype: String
 	_tr_base_scale = INVESTIGATOR_CARD_H_NEAR / InvestigatorPin.card_height()
 	_tr_screen_off = Vector2(0.0, INVESTIGATOR_OFFSET_Y)
 
-	# Одна точка цвета пути, едет вместе с пином. z=1 — ПОД медальонами локаций
-	# (z=2): проходя локацию, точка уходит за её иконку. Радиус задаём в локальных
-	# координатах, экранный размер держим масштабом по зуму в _travel_step.
-	var dot := _make_travel_dot(_conn_color(ctype), 9.0)
-	dot.z_index = 1
-	add_child(dot)
-	_tr_dot = dot
-
-	var pin := InvestigatorPin.new()
-	pin.name = "TravelPin"
-	pin.z_index = 7  # поверх ВСЕХ айтемов (врата z=5, метка Тайны z=6) — едущая иконка всегда видна
-	add_child(pin)
-	pin.setup(_investigator_texture(inv_id))
-	_tr_pin = pin
+	# Три wrap-копии (как у маркеров/линий): при пересечении шва карты пин не
+	# пропадает — набор копий {p−TILE_W, p, p+TILE_W} остаётся непрерывным через шов,
+	# и хотя бы одна копия всегда в видимой части. Точка цвета пути z=1 (ПОД
+	# медальонами локаций z=2), пин z=7 (поверх всех айтемов).
+	_tr_copies.clear()
+	for dx: int in [-TILE_W, 0, TILE_W]:
+		var dot := _make_travel_dot(_conn_color(ctype), 9.0)
+		dot.z_index = 1
+		add_child(dot)
+		var pin := InvestigatorPin.new()
+		pin.name = "TravelPin_%d" % sign(dx)
+		pin.z_index = 7
+		add_child(pin)
+		pin.setup(_investigator_texture(inv_id))
+		_tr_copies.append({"pin": pin, "dot": dot, "dx": float(dx)})
 
 	_travel_step(0.0)
 	var tw := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tw.tween_method(_travel_step, 0.0, 1.0, TRAVEL_DUR)
 	await tw.finished
 
-	if is_instance_valid(_tr_pin):
-		_tr_pin.queue_free()
-	if is_instance_valid(_tr_dot):
-		_tr_dot.queue_free()
-	_tr_pin = null
-	_tr_dot = null
+	for c in _tr_copies:
+		if is_instance_valid(c["pin"]):
+			(c["pin"] as Node).queue_free()
+		if is_instance_valid(c["dot"]):
+			(c["dot"] as Node).queue_free()
+	_tr_copies.clear()
 
 
 func _travel_step(t: float) -> void:
@@ -610,12 +617,19 @@ func _travel_step(t: float) -> void:
 		lerpf(INVESTIGATOR_CARD_H_FAR, INVESTIGATOR_CARD_H_NEAR, _zoom_t())
 		/ INVESTIGATOR_CARD_H_NEAR
 	)
-	if is_instance_valid(_tr_pin):
-		(_tr_pin as Node2D).scale = Vector2.ONE * _tr_base_scale * inv * inv_factor
-		(_tr_pin as Node2D).position = p + _tr_screen_off * inv * inv_factor
-	if is_instance_valid(_tr_dot):
-		(_tr_dot as Node2D).position = p
-		(_tr_dot as Node2D).scale = Vector2.ONE * inv
+	var pin_scale: Vector2 = Vector2.ONE * _tr_base_scale * inv * inv_factor
+	var pin_off: Vector2 = _tr_screen_off * inv * inv_factor
+	var dot_scale: Vector2 = Vector2.ONE * inv
+	for c in _tr_copies:
+		var off: Vector2 = Vector2(c["dx"], 0.0)
+		var pin: Node2D = c["pin"] as Node2D
+		if is_instance_valid(pin):
+			pin.scale = pin_scale
+			pin.position = p + off + pin_off
+		var dot: Node2D = c["dot"] as Node2D
+		if is_instance_valid(dot):
+			dot.position = p + off
+			dot.scale = dot_scale
 
 
 # Залитый кружок-точка цвета пути.
