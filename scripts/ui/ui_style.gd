@@ -633,12 +633,13 @@ static func modal_header(
 const MODAL_FONT_SCALE: float = 1.5
 
 
-## Рекурсивно увеличивает размер шрифта всех текстовых контролов поддерева в
-## factor раз. Вызывать ОДИН раз после построения контента модалки (повторный
-## вызов на тех же узлах удвоит масштаб — для перестраиваемых модалок звать после
-## каждой пересборки, узлы там создаются заново).
+## Рекурсивно увеличивает размер шрифта текстовых контролов поддерева в factor раз.
+## КНОПКИ НЕ трогаем (Button/OptionButton) — у них свой стиль и размер; масштабируем
+## только текст (Label) и поля ввода (LineEdit). Вызывать ОДИН раз после построения
+## контента модалки (повторный вызов на тех же узлах удвоит масштаб — для
+## перестраиваемых модалок звать после каждой пересборки, узлы создаются заново).
 static func scale_modal_text(node: Node, factor: float = MODAL_FONT_SCALE) -> void:
-	if node is Label or node is Button or node is LineEdit or node is OptionButton:
+	if node is Label or node is LineEdit:
 		var c := node as Control
 		var cur: int = c.get_theme_font_size("font_size")
 		if cur > 0:
