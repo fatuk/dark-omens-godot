@@ -14,9 +14,24 @@ const FRAME_TEX: Texture2D = preload("res://assets/asset-card/asset-card.png")
 ## растянется. 1768×2796.
 const ASPECT: float = 1768.0 / 2796.0
 
+## Радиус скругления углов арт-слоя (px). Арт лежит ПОД рамкой; в прозрачных
+## скруглённых углах рамки торчали бы прямоугольные углы арта — режем по радиусу.
+const ART_CORNER_RADIUS: float = 24.0
+
+const _ROUND_CORNERS_SHADER := """
+shader_type canvas_item;
+uniform float radius_px = 24.0;
+uniform vec2 rect_px = vec2(100.0, 100.0);
+void fragment() {
+	vec2 q = abs(UV * rect_px - rect_px * 0.5) - (rect_px * 0.5 - vec2(radius_px));
+	float dist = length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0) - radius_px;
+	COLOR.a *= 1.0 - smoothstep(-1.0, 1.0, dist);
+}
+"""
+
 # Зоны контента — доли рамки (x, y, w, h ∈ 0..1). Подобраны под asset-card.png.
-const Z_COST := Rect2(0.040, 0.035, 0.160, 0.100)  # центр ≈ (0.12, 0.085) — герб-компас
-const Z_ART := Rect2(0.284, 0.138, 0.464, 0.259)
+const Z_COST := Rect2(0.075, 0.050, 0.160, 0.100)  # центр ≈ (0.12, 0.085) — герб-компас
+const Z_ART := Rect2(0.025, 0.025, 0.950, 0.515)  # арт ПОД рамкой, 95% ширины, упёрт вверх
 const Z_TITLE := Rect2(0.110, 0.555, 0.780, 0.092)
 const Z_DESC := Rect2(0.120, 0.695, 0.760, 0.235)
 
@@ -41,18 +56,8 @@ func _init() -> void:
 
 
 func _build() -> void:
-	# Рамка — на всю карту.
-	var frame := TextureRect.new()
-	frame.name = "Frame"
-	frame.texture = FRAME_TEX
-	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	frame.stretch_mode = TextureRect.STRETCH_SCALE
-	frame.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(frame)
-
-	# Арт-слот: заглушка-заливка (закрывает белый бокс рамки) + опц. текстура + глиф.
+	# Арт — ПОД рамкой: виден сквозь прозрачное окно рамки (мягкие края окна
+	# растушёвывают его). Слот шире окна, COVER заполняет ширину.
 	var art_zone := _zone("Art", Z_ART)
 	_art_fill = ColorRect.new()
 	_art_fill.name = "ArtFill"
@@ -71,6 +76,31 @@ func _build() -> void:
 	art_zone.add_child(_art)
 	_glyph = _centered_label("Glyph", 40, C_GLYPH)
 	art_zone.add_child(_glyph)
+
+	# Скругляем углы арт-слоя по радиусу (один материал на заливку и текстуру);
+	# rect_px обновляем по фактическому размеру зоны.
+	var round_mat := ShaderMaterial.new()
+	var round_sh := Shader.new()
+	round_sh.code = _ROUND_CORNERS_SHADER
+	round_mat.shader = round_sh
+	round_mat.set_shader_parameter("radius_px", ART_CORNER_RADIUS)
+	_art_fill.material = round_mat
+	_art.material = round_mat
+	art_zone.resized.connect(
+		func() -> void: round_mat.set_shader_parameter("rect_px", art_zone.size)
+	)
+
+	# Рамка — ПОВЕРХ арта: бронзовый кант и плашки рисуются над артом, прозрачное
+	# окно открывает арт.
+	var frame := TextureRect.new()
+	frame.name = "Frame"
+	frame.texture = FRAME_TEX
+	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	frame.stretch_mode = TextureRect.STRETCH_SCALE
+	frame.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(frame)
 
 	# Стоимость — в гербе сверху-слева.
 	var cost_zone := _zone("Cost", Z_COST)

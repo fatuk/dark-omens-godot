@@ -13,7 +13,7 @@ extends CanvasLayer
 ## применяет хост на «Купить» (GameState.shop_buy_asset), долг — сразу
 ## (GameState.shop_take_debt).
 
-const _CARD_MIN := Vector2(210, 332)  # пропорции рамки asset-card (аспект ≈0.632)
+const _CARD_MIN := Vector2(290, 459)  # = размер наведённой карты веера (186·1.56 × 294·1.56)
 const _EYE := "◉"
 
 const _TRAIT_KEY := {
@@ -118,22 +118,22 @@ func _build() -> void:
 	vb.add_child(_dice_box)
 	_render_dice([])  # пустой пул до броска
 
-	# Ряд кнопок: бросок · долг · купить.
+	# Ряд кнопок: долг · бросок · купить.
 	var btns := HBoxContainer.new()
 	btns.name = "Buttons"
 	btns.add_theme_constant_override("separation", 16)
 	vb.add_child(btns)
-
-	_roll_btn = UIStyle.button("SHOP_ROLL", UIColors.ACCENT)
-	_roll_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_roll_btn.pressed.connect(_on_roll)
-	btns.add_child(_roll_btn)
 
 	_debt_btn = UIStyle.button("SHOP_TAKE_DEBT", UIColors.WARNING)
 	_debt_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_debt_btn.pressed.connect(_on_take_debt)
 	_debt_btn.visible = not _has_debt()  # уже есть «Долг» → не предлагаем ещё
 	btns.add_child(_debt_btn)
+
+	_roll_btn = UIStyle.button("SHOP_ROLL", UIColors.ACCENT)
+	_roll_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_roll_btn.pressed.connect(_on_roll)
+	btns.add_child(_roll_btn)
 
 	_buy_btn = UIStyle.button("SHOP_BUY", UIColors.ACCENT)
 	_buy_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
