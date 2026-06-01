@@ -82,27 +82,50 @@ func _build() -> void:
 	vb.add_child(UIStyle.label("SHOP_SUBTITLE", 14, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
 	UIStyle.separator(vb)
 
-	var main := HBoxContainer.new()
-	main.add_theme_constant_override("separation", 16)
-	main.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vb.add_child(main)
-
-	# Витрина.
+	# Витрина — ряд карт по центру.
 	var cards := HBoxContainer.new()
-	cards.add_theme_constant_override("separation", 12)
+	cards.alignment = BoxContainer.ALIGNMENT_CENTER
+	cards.add_theme_constant_override("separation", 14)
 	cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	main.add_child(cards)
-	# Витрина — из синкаемого резерва (после покупки хост заменяет купленные новыми).
+	vb.add_child(cards)
+	# из синкаемого резерва (после покупки хост заменяет купленные новыми).
 	for a in _offer():
 		cards.add_child(_build_asset_card(a))
 
-	# Правая колонка: проверка Влияния + справка.
-	var right := VBoxContainer.new()
-	right.add_theme_constant_override("separation", 12)
-	right.custom_minimum_size = Vector2(300, 0)
-	main.add_child(right)
-	right.add_child(_build_influence_panel())
-	right.add_child(_build_howto_panel())
+	UIStyle.separator(vb)
+
+	# Монеты · доступно — над кубами.
+	_coins_lbl = UIStyle.label("", 16, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
+	vb.add_child(_coins_lbl)
+
+	# Кубы Влияния — по центру.
+	_dice_box = HBoxContainer.new()
+	_dice_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	_dice_box.add_theme_constant_override("separation", 6)
+	_dice_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vb.add_child(_dice_box)
+	_render_dice([])   # пустой пул до броска
+
+	# Ряд кнопок: бросок · долг · купить.
+	var btns := HBoxContainer.new()
+	btns.add_theme_constant_override("separation", 16)
+	vb.add_child(btns)
+
+	_roll_btn = UIStyle.button("SHOP_ROLL", UIColors.ACCENT)
+	_roll_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_roll_btn.pressed.connect(_on_roll)
+	btns.add_child(_roll_btn)
+
+	_debt_btn = UIStyle.button("SHOP_TAKE_DEBT", UIColors.WARNING)
+	_debt_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_debt_btn.pressed.connect(_on_take_debt)
+	_debt_btn.visible = not _has_debt()   # уже есть «Долг» → не предлагаем ещё
+	btns.add_child(_debt_btn)
+
+	_buy_btn = UIStyle.button("SHOP_BUY", UIColors.ACCENT)
+	_buy_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_buy_btn.pressed.connect(_on_buy)
+	btns.add_child(_buy_btn)
 
 	# Закрытие — только крестиком в шапке (кнопки «Отменить» нет).
 	UIStyle.scale_modal_text(panel)   # текст модалок крупнее (×1.5)
@@ -150,58 +173,8 @@ func _build_asset_card(a: Dictionary) -> Control:
 	return card
 
 
-func _build_influence_panel() -> PanelContainer:
-	var p := PanelContainer.new()
-	UIStyle.style_panel(p, 14)
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 8)
-	p.add_child(col)
-	col.add_child(UIStyle.label("SHOP_INFLUENCE_CHECK", 14, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER))
-	UIStyle.separator(col)
-
-	col.add_child(UIStyle.label("SHOP_DICE_POOL", 11, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
-	_dice_box = HBoxContainer.new()
-	_dice_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	_dice_box.add_theme_constant_override("separation", 6)
-	col.add_child(_dice_box)
-	_render_dice([])   # пустой пул до броска
-
-	_roll_btn = UIStyle.button("SHOP_ROLL", UIColors.ACCENT)
-	_roll_btn.pressed.connect(_on_roll)
-	col.add_child(_roll_btn)
-
-	UIStyle.separator(col)
-	_coins_lbl = UIStyle.label("", 14, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
-	col.add_child(_coins_lbl)
-
-	_debt_btn = UIStyle.button("SHOP_TAKE_DEBT", UIColors.DANGER)
-	_debt_btn.pressed.connect(_on_take_debt)
-	# Если состояние «Долг» уже есть — не предлагаем брать ещё (дублей быть не может).
-	_debt_btn.visible = not _has_debt()
-	col.add_child(_debt_btn)
-	return p
-
-
 func _has_debt() -> bool:
 	return (GameState.my_player().get("conditions", []) as Array).has("debt")
-
-
-func _build_howto_panel() -> PanelContainer:
-	var p := PanelContainer.new()
-	UIStyle.style_panel(p, 14)
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 6)
-	p.add_child(col)
-	col.add_child(UIStyle.label("SHOP_HOW_TITLE", 14, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER))
-	UIStyle.separator(col)
-	var t := UIStyle.label("SHOP_ROLL_HINT", 12, UIColors.TEXT)
-	t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	col.add_child(t)
-	UIStyle.separator(col)
-	_buy_btn = UIStyle.button("SHOP_BUY", UIColors.ACCENT)
-	_buy_btn.pressed.connect(_on_buy)
-	col.add_child(_buy_btn)
-	return p
 
 
 # ── Кубы ───────────────────────────────────────────────────────────────────────
