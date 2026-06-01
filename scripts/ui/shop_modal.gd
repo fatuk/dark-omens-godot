@@ -66,15 +66,18 @@ func _build() -> void:
 	add_child(bg)
 
 	var center := CenterContainer.new()
+	center.name = "Center"
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.add_child(center)
 
 	var panel := PanelContainer.new()
+	panel.name = "Panel"
 	UIStyle.style_modal_panel(panel)
 	panel.custom_minimum_size = Vector2(1120, 0)
 	center.add_child(panel)
 
 	var vb := VBoxContainer.new()
+	vb.name = "VBox"
 	vb.add_theme_constant_override("separation", 10)
 	panel.add_child(vb)
 
@@ -84,6 +87,7 @@ func _build() -> void:
 
 	# Витрина — ряд карт по центру.
 	var cards := HBoxContainer.new()
+	cards.name = "Cards"
 	cards.alignment = BoxContainer.ALIGNMENT_CENTER
 	cards.add_theme_constant_override("separation", 14)
 	cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -100,6 +104,7 @@ func _build() -> void:
 
 	# Кубы Влияния — по центру.
 	_dice_box = HBoxContainer.new()
+	_dice_box.name = "DiceBox"
 	_dice_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	_dice_box.add_theme_constant_override("separation", 6)
 	_dice_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -108,6 +113,7 @@ func _build() -> void:
 
 	# Ряд кнопок: бросок · долг · купить.
 	var btns := HBoxContainer.new()
+	btns.name = "Buttons"
 	btns.add_theme_constant_override("separation", 16)
 	vb.add_child(btns)
 
@@ -155,6 +161,7 @@ func _build_asset_card(a: Dictionary) -> Control:
 	# ключи переводов, Label в GameCard их автопереводит. Стоимость — в гербе
 	# рамки, поэтому отдельную строку «проверка» не дублируем.
 	var card := GameCard.new()
+	card.name = "Card"
 	card.custom_minimum_size = _CARD_MIN
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -185,6 +192,7 @@ func _render_dice(rolls: Array) -> void:
 	# Единый компонент проверки. После броска провальные кубы кликабельны для
 	# переброса за концентрацию (как во встречах/бою).
 	var tray := DiceTray.new()
+	tray.name = "DiceTray"
 	_dice_box.add_child(tray)
 	if rolls.is_empty():
 		tray.show_pending(_influence_pool())   # кубы до броска

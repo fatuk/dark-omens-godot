@@ -254,6 +254,7 @@ func _build_3d_scene() -> void:
 # текстура натягивается на 3D-quad). size_2d_override → supersampling ×3.
 func _make_card_ui_subviewport() -> SubViewport:
 	var vp := SubViewport.new()
+	vp.name = "Viewport"
 	vp.size = CARD_TEX_SIZE
 	vp.size_2d_override = CARD_UI_SIZE
 	vp.size_2d_override_stretch = true
@@ -285,6 +286,7 @@ func _make_3d_card_mesh(ui_vp: SubViewport) -> MeshInstance3D:
 
 	# Имя проставляется снаружи (per-slot index) — здесь только конструируем.
 	var mi := MeshInstance3D.new()
+	mi.name = "Mesh"
 	mi.mesh = quad
 	mi.material_override = mat
 	mi.add_child(_make_card_shadow())
@@ -364,6 +366,7 @@ func _build_arrows() -> void:
 
 func _make_arrow_btn(tex: Texture2D) -> TextureButton:
 	var b := TextureButton.new()
+	b.name = "Button"
 	b.texture_normal         = tex
 	b.ignore_texture_size    = true
 	b.stretch_mode           = TextureButton.STRETCH_KEEP_ASPECT_CENTERED

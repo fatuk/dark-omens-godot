@@ -51,6 +51,7 @@ func _build(choices: Array) -> void:
 	for i: int in range(choices.size()):
 		var kind: String = String(choices[i])
 		var btn := Button.new()
+		btn.name = "Button"
 		btn.text = String(_KIND_KEYS.get(kind, kind))   # ключ перевода
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		UIStyle.style_button(btn)

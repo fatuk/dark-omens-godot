@@ -185,6 +185,7 @@ func _build_taken_overlay() -> Control:
 
 func _make_full_rect_texture(tex: Texture2D, mat: Material) -> TextureRect:
 	var r := TextureRect.new()
+	r.name = "Rect"
 	r.texture       = tex
 	r.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
 	r.stretch_mode  = TextureRect.STRETCH_SCALE

@@ -297,6 +297,7 @@ func _make_room_row(room: Dictionary) -> Control:
 	var rid:    String = room.get("id", "")
 
 	var row := HBoxContainer.new()
+	row.name = "Row"
 	row.add_theme_constant_override("separation", 4)
 
 	var style_n := StyleBoxFlat.new()

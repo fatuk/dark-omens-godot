@@ -210,6 +210,7 @@ func _render_dice(res: Dictionary, roll_shown: bool) -> void:
 	var committed: bool = bool(GameState.current_encounter.get("committed", false))
 	var can: bool = foc > 0 and not committed
 	var tray := DiceTray.new()
+	tray.name = "DiceTray"
 	tray.die_selected.connect(_on_die_clicked)
 	tray.show_roll(res.get("dice", []), can)
 	_dice_holder.add_child(tray)

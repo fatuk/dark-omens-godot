@@ -34,6 +34,7 @@ var _pending: String = ""   # "otp_request" | "otp_verify" | "check_session" | "
 
 func _ready() -> void:
 	_http = HTTPRequest.new()
+	_http.name = "HttpRequest"
 	# Таймаут на сетевой запрос: если сервер завис, не висим вечно
 	# (Docker port-forwarding на Windows иногда «икает», TCP не закрывается).
 	_http.timeout = 10.0

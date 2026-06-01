@@ -89,11 +89,14 @@ func _build_shop_button() -> void:
 func _build_items_section() -> void:
 	var vbox: Node = _neighbors.get_parent()   # Panel/Margin/VBox
 	_items_sep = HSeparator.new()
+	_items_sep.name = "ItemsSeparator"
 	_items_hdr = Label.new()
+	_items_hdr.name = "ItemsHeader"
 	_items_hdr.text = "SIDEBAR_ITEMS"
 	_items_hdr.add_theme_font_size_override("font_size", 11)
 	_items_hdr.add_theme_color_override("font_color", UIColors.MUTED)
 	_items_list = VBoxContainer.new()
+	_items_list.name = "ItemsList"
 	_items_list.add_theme_constant_override("separation", 6)
 	vbox.add_child(_items_sep)
 	vbox.add_child(_items_hdr)
@@ -200,6 +203,7 @@ func _populate_items(loc_id: String) -> void:
 
 func _make_category_header(key: String, count: int) -> Label:
 	var l := Label.new()
+	l.name = "Label"
 	l.text = "%s — %d" % [tr(key), count]
 	l.add_theme_font_size_override("font_size", 13)
 	l.add_theme_color_override("font_color", UIColors.WARNING)
@@ -208,12 +212,15 @@ func _make_category_header(key: String, count: int) -> Label:
 
 func _make_monster_card(m: Dictionary, cur_health: int = -1) -> PanelContainer:
 	var pc := PanelContainer.new()
+	pc.name = "Panel"
 	UIStyle.style_panel(pc, 10)
 	var vb := VBoxContainer.new()
+	vb.name = "VBox"
 	vb.add_theme_constant_override("separation", 2)
 	pc.add_child(vb)
 
 	var nm := Label.new()
+	nm.name = "Name"
 	nm.text = String(m.get("nameKey", ""))   # MON_*_NAME — Godot переведёт
 	nm.add_theme_font_size_override("font_size", 14)
 	nm.add_theme_color_override("font_color", UIColors.ACCENT)
@@ -223,6 +230,7 @@ func _make_monster_card(m: Dictionary, cur_health: int = -1) -> PanelContainer:
 		var inv: int = maxi(1, GameState.players.size())
 		var tough: int = MonsterCatalog.toughness_for(m, inv)
 		var st := Label.new()
+		st.name = "Stat"
 		# Текущее здоровье экземпляра / макс (если ранен — видно в бою).
 		st.text = ("%s: %d / %d" % [tr("SIDEBAR_TOUGHNESS"), cur_health, tough]) if cur_health >= 0 \
 			else ("%s: %d" % [tr("SIDEBAR_TOUGHNESS"), tough])
@@ -233,12 +241,14 @@ func _make_monster_card(m: Dictionary, cur_health: int = -1) -> PanelContainer:
 		vb.add_child(_stat_line("SIDEBAR_COMBAT", m.get("combat", {})))
 	elif bool(m.get("useAncientOne", false)):
 		var ao := Label.new()
+		ao.name = "Ability"
 		ao.text = "SIDEBAR_USE_ANCIENT_ONE"
 		ao.add_theme_font_size_override("font_size", 12)
 		ao.add_theme_color_override("font_color", UIColors.MUTED)
 		vb.add_child(ao)
 
 	var ab := Label.new()
+	ab.name = "Ability"
 	ab.text = String(m.get("ability", {}).get("textKey", ""))
 	ab.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ab.add_theme_font_size_override("font_size", 11)
@@ -250,6 +260,7 @@ func _make_monster_card(m: Dictionary, cur_health: int = -1) -> PanelContainer:
 # Строка проверки: «Ужас: Воля −1 · урон 2».
 func _stat_line(label_key: String, stat: Dictionary) -> Label:
 	var l := Label.new()
+	l.name = "Label"
 	var skill: String = String(stat.get("skill", "none"))
 	var skill_tr: String = tr("SKILL_" + skill.to_upper())
 	var mod: int = int(stat.get("modificator", 0))
@@ -268,6 +279,7 @@ func _populate_neighbors(conns: Array) -> void:
 
 	if conns.is_empty():
 		var none := Label.new()
+		none.name = "Empty"
 		none.text = "SIDEBAR_NO_NEIGHBORS"
 		none.add_theme_color_override("font_color", UIColors.MUTED)
 		none.add_theme_font_size_override("font_size", 13)
@@ -284,6 +296,7 @@ func _populate_neighbors(conns: Array) -> void:
 
 func _make_neighbor_row(to_id: String, to_name: String, ctype: String) -> Button:
 	var btn := Button.new()
+	btn.name = "Button"
 	# to_name — translation key (LOC_*_NAME), Godot переводит автоматически.
 	btn.text = to_name
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -293,6 +306,7 @@ func _make_neighbor_row(to_id: String, to_name: String, ctype: String) -> Button
 	btn.add_theme_font_size_override("font_size", 13)
 	# Подпись «морем/поездом/путь» в правом углу — храним ключ, Godot переведёт.
 	var hint := Label.new()
+	hint.name = "Hint"
 	hint.text = String(CONN_TR_KEYS.get(ctype, ctype))
 	hint.add_theme_font_size_override("font_size", 11)
 	hint.add_theme_color_override("font_color", CONN_COLORS.get(ctype, UIColors.MUTED))

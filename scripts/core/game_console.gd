@@ -155,6 +155,7 @@ func _add_entry(text: String, color: Color) -> void:
 		_log_box.get_child(0).free()
 
 	var lbl := Label.new()
+	lbl.name = "Label"
 	lbl.text = text
 	lbl.add_theme_font_size_override("font_size", FONT_SIZE)
 	lbl.add_theme_color_override("font_color", color)

@@ -114,6 +114,7 @@ func play_variation(
 # конце (пул переиспользуется round-robin'ом — отложенный stop оборвал бы чужое).
 func _play_segment(stream: AudioStream, start: float, dur: float, pitch: float) -> void:
 	var tp := AudioStreamPlayer.new()
+	tp.name = "Player"
 	tp.bus         = BUS_NAME
 	tp.pitch_scale = pitch
 	tp.stream      = stream

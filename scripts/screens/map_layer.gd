@@ -601,6 +601,7 @@ func _travel_step(t: float) -> void:
 # Залитый кружок-точка цвета пути.
 func _make_travel_dot(color: Color, r: float) -> Polygon2D:
 	var poly := Polygon2D.new()
+	poly.name = "Poly"
 	var pts := PackedVector2Array()
 	for i: int in range(24):
 		var ang: float = TAU * float(i) / 24.0

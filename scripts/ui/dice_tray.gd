@@ -58,6 +58,7 @@ func _make_die(value: int, can_reroll: bool, index: int) -> Control:
 	else:            edge = UIColors.MUTED
 
 	var chip := Button.new()
+	chip.name = "Die"
 	chip.text = "" if pending else str(value)
 	chip.custom_minimum_size = DIE_SIZE
 	chip.focus_mode = Control.FOCUS_NONE

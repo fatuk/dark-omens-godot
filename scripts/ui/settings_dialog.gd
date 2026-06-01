@@ -260,6 +260,7 @@ func _section_header(key: String, node_name: String = "") -> void:
 
 func _form_label(text: String) -> Label:
 	var lbl := Label.new()
+	lbl.name = "Label"
 	lbl.text = text
 	lbl.custom_minimum_size.x = 110
 	lbl.add_theme_font_size_override("font_size", 14)
@@ -270,6 +271,7 @@ func _form_label(text: String) -> Label:
 
 func _plain_label(key: String) -> Label:
 	var lbl := Label.new()
+	lbl.name = "Label"
 	lbl.text = key
 	lbl.add_theme_font_size_override("font_size", 14)
 	lbl.add_theme_color_override("font_color", UIColors.TEXT)

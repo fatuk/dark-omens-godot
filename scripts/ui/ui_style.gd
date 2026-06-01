@@ -56,6 +56,7 @@ void fragment() {
 ## Добавляет тёмный фон на всю область родительского контрола.
 static func apply_bg(control: Control) -> void:
 	var bg := ColorRect.new()
+	bg.name = "Background"
 	bg.color = UIColors.BG
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	control.add_child(bg)
@@ -127,6 +128,7 @@ const BTN_ASSET_SCALE: float = 0.25
 ##   • ширина = текст + L + R (Button auto-измеряется по контенту)
 static func textured_button(text: String) -> Button:
 	var btn := Button.new()
+	btn.name = "Button"
 	btn.text = text
 	style_button(btn)
 	return btn
@@ -134,6 +136,7 @@ static func textured_button(text: String) -> Button:
 
 static func _btn_cap(tex: Texture2D, size_px: Vector2) -> TextureRect:
 	var rect := TextureRect.new()
+	rect.name = "Rect"
 	rect.texture            = tex
 	rect.custom_minimum_size = size_px
 	rect.expand_mode        = TextureRect.EXPAND_IGNORE_SIZE
@@ -144,6 +147,7 @@ static func _btn_cap(tex: Texture2D, size_px: Vector2) -> TextureRect:
 
 static func _btn_center(tex: Texture2D, tile_size: Vector2) -> TextureRect:
 	var rect := TextureRect.new()
+	rect.name = "Rect"
 	rect.texture                  = tex
 	rect.size_flags_horizontal    = Control.SIZE_EXPAND_FILL
 	rect.custom_minimum_size.y    = tile_size.y
@@ -281,6 +285,7 @@ static func _animate_press(btn: BaseButton, down: bool) -> void:
 ## — стандартный @2× коэффициент проекта. Для @4× ассетов (carousel/) ставь 0.25.
 static func texture_icon_button(tex: Texture2D, scale: float = 0.5) -> TextureButton:
 	var btn := TextureButton.new()
+	btn.name = "Button"
 	btn.texture_normal           = tex
 	btn.ignore_texture_size      = true
 	btn.stretch_mode             = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
@@ -330,6 +335,7 @@ static func style_icon_button(btn: Button, color: Color = UIColors.DANGER) -> vo
 ## Создаёт стилизованную кнопку (legacy API для динамического UI).
 static func button(text: String, border_color: Color = UIColors.BORDER) -> Button:
 	var btn := Button.new()
+	btn.name = "Button"
 	btn.text = text
 	style_button(btn, border_color)
 	return btn
@@ -350,6 +356,7 @@ static func style_panel(p: PanelContainer, padding: int = 16) -> void:
 ## Создаёт PanelContainer с тёмным фоном (legacy API).
 static func panel(padding: int = 16) -> PanelContainer:
 	var p := PanelContainer.new()
+	p.name = "Panel"
 	style_panel(p, padding)
 	return p
 
@@ -429,6 +436,7 @@ static func style_input(le: LineEdit) -> void:
 ## Создаёт стилизованный LineEdit (legacy API).
 static func input(placeholder: String = "", secret: bool = false) -> LineEdit:
 	var le := LineEdit.new()
+	le.name = "LineEdit"
 	le.placeholder_text = placeholder
 	le.secret = secret
 	le.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -447,6 +455,7 @@ static func labeled_input(
 	hbox.add_theme_constant_override("separation", 8)
 
 	var lbl := Label.new()
+	lbl.name = "Label"
 	lbl.text = label_text
 	lbl.custom_minimum_size.x = label_w
 	lbl.add_theme_font_size_override("font_size", 14)
@@ -489,6 +498,7 @@ static func style_option_button(ob: OptionButton) -> void:
 ## Создаёт стилизованный OptionButton (legacy API).
 static func option_button(items: Array[String] = []) -> OptionButton:
 	var ob := OptionButton.new()
+	ob.name = "OptionButton"
 	ob.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	style_option_button(ob)
 	for item in items:
@@ -632,6 +642,7 @@ const MODAL_LINE_COLOR: Color = Color("#0b0b09")
 ## Создаёт горизонтальный разделитель и добавляет его в parent.
 static func separator(parent: Control, color: Color = MODAL_LINE_COLOR) -> void:
 	var sep := HSeparator.new()
+	sep.name = "Separator"
 	style_separator(sep, color)
 	parent.add_child(sep)
 

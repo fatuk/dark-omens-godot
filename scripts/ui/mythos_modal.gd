@@ -122,6 +122,7 @@ func _render_effects(effects: Array) -> void:
 	_eff_header.visible = true
 	for i in range(effects.size()):
 		var lbl := Label.new()
+		lbl.name = "Label"
 		lbl.text = "• " + _describe_effect(effects[i])
 		lbl.add_theme_font_size_override("font_size", 13)
 		lbl.add_theme_color_override("font_color", UIColors.TEXT)

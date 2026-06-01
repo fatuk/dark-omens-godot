@@ -41,6 +41,7 @@ static func build(nm: Node) -> Control:
 
 static func _make_row(pid: String, info: Dictionary, host_id: String) -> Control:
 	var row := HBoxContainer.new()
+	row.name = "Row"
 	row.add_theme_constant_override("separation", 12)
 
 	var is_host := pid == host_id

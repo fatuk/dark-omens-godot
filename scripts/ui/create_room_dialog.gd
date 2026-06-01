@@ -106,6 +106,7 @@ func _labeled_row(label_key: String, control: Control, node_name: String) -> HBo
 	row.name = node_name
 	row.add_theme_constant_override("separation", 8)
 	var lbl := Label.new()
+	lbl.name = "Label"
 	lbl.text = label_key
 	lbl.custom_minimum_size.x = 110
 	lbl.add_theme_font_size_override("font_size", 14)

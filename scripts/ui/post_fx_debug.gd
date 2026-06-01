@@ -136,6 +136,7 @@ func _build_ui() -> void:
 
 func _add_title(text: String) -> void:
 	var lbl := Label.new()
+	lbl.name = "Label"
 	lbl.text = text
 	lbl.add_theme_font_size_override("font_size", 13)
 	lbl.add_theme_color_override("font_color", UIColors.ACCENT)
@@ -144,9 +145,11 @@ func _add_title(text: String) -> void:
 
 func _add_section(title: String) -> void:
 	var spacer := Control.new()
+	spacer.name = "Spacer"
 	spacer.custom_minimum_size = Vector2(0, 6)
 	_vbox.add_child(spacer)
 	var lbl := Label.new()
+	lbl.name = "Label"
 	lbl.text = title
 	lbl.add_theme_font_size_override("font_size", 11)
 	lbl.add_theme_color_override("font_color", UIColors.WARNING)
@@ -162,9 +165,11 @@ func _add_row(spec: Dictionary) -> void:
 	var setter: Callable  = spec.set as Callable
 
 	var row := HBoxContainer.new()
+	row.name = "Row"
 	row.add_theme_constant_override("separation", 6)
 
 	var lbl := Label.new()
+	lbl.name = "Label"
 	lbl.text = String(spec.label)
 	lbl.custom_minimum_size = Vector2(86, 0)
 	lbl.add_theme_font_size_override("font_size", 11)
@@ -172,6 +177,7 @@ func _add_row(spec: Dictionary) -> void:
 	row.add_child(lbl)
 
 	var sl := HSlider.new()
+	sl.name = "Slider"
 	sl.min_value = min_v
 	sl.max_value = max_v
 	sl.step      = step
@@ -181,6 +187,7 @@ func _add_row(spec: Dictionary) -> void:
 	row.add_child(sl)
 
 	var val := Label.new()
+	val.name = "Value"
 	val.text = _fmt(init_v, step)
 	val.custom_minimum_size = Vector2(44, 0)
 	val.add_theme_font_size_override("font_size", 11)
@@ -202,9 +209,11 @@ func _add_row(spec: Dictionary) -> void:
 
 func _add_reset_button() -> void:
 	var spacer := Control.new()
+	spacer.name = "Spacer"
 	spacer.custom_minimum_size = Vector2(0, 6)
 	_vbox.add_child(spacer)
 	var btn := Button.new()
+	btn.name = "Button"
 	btn.text = "BTN_RESET"
 	UIStyle.style_button(btn, UIColors.WARNING)
 	btn.pressed.connect(_on_reset)
