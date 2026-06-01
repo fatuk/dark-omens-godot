@@ -1,0 +1,34 @@
+#!/bin/sh
+# Pre-commit для dark-omens: линтит ТОЛЬКО staged .gd файлы (пред-существующие
+# нарушения в нетронутых файлах не блокируют — чинятся по мере касания).
+#
+# Включить в свежем клоне (один раз):
+#   git config core.hooksPath .githooks
+# И поставить gdtoolkit:
+#   pip install --user gdtoolkit
+#
+# Обойти разово (не рекомендуется): git commit --no-verify
+
+staged=$(git diff --cached --name-only --diff-filter=ACM -- '*.gd')
+[ -z "$staged" ] && exit 0
+
+fail=0
+
+# 1) gdlint (gdtoolkit) — стиль, неиспользуемое, сложность, имена. Конфиг — gdlintrc.
+if python -m gdtoolkit.linter --version >/dev/null 2>&1; then
+	# shellcheck disable=SC2086
+	python -m gdtoolkit.linter $staged || fail=1
+else
+	echo "WARN: gdlint не найден (pip install --user gdtoolkit) — пропускаю gdlint"
+fi
+
+# 2) Имена программных нод: после Type.new() в дереве/возврате нужен node.name.
+# shellcheck disable=SC2086
+python .tools/lint_node_names.py $staged || fail=1
+
+if [ "$fail" -ne 0 ]; then
+	echo ""
+	echo "Линтер нашёл проблемы (см. выше). Исправь, либо разово: git commit --no-verify"
+	exit 1
+fi
+exit 0

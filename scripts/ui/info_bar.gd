@@ -31,7 +31,7 @@ const _TICKET_SHADOW_ALPHA:  float = 0.55
 const _TICKET_SHADOW_BLUR:   float = 6.0   # радиус размытия (в TEXTURE_PIXEL_SIZE)
 
 # Шейдер тени: 5×5 box-blur alpha-маски текстуры → мягкий чёрный силуэт.
-const _SHADOW_BLUR_SHADER := "
+const _SHADOW_BLUR_SHADER := """
 shader_type canvas_item;
 uniform float blur : hint_range(0.0, 32.0) = 6.0;
 uniform float shadow_alpha : hint_range(0.0, 1.0) = 0.55;
@@ -45,7 +45,7 @@ void fragment() {
 	}
 	COLOR = vec4(0.0, 0.0, 0.0, (a / 25.0) * shadow_alpha);
 }
-"
+"""
 const _HUD_PANEL_BG: Texture2D = preload("res://assets/player-hud/player-hud-bg.png")
 const _HUD_ROW_BG:   Texture2D = preload("res://assets/player-hud/hud-item-bg.png")
 const _HUD_BAR_BG:   Texture2D = preload("res://assets/player-hud/bar-bg.png")
@@ -557,6 +557,7 @@ func _build_items_panel() -> PanelContainer:
 
 func _make_item_slot() -> Control:
 	var slot := PanelContainer.new()
+	slot.name = "ItemSlot"
 	slot.custom_minimum_size = Vector2(64, 80)
 	var s := StyleBoxFlat.new()
 	s.bg_color = Color(0.08, 0.07, 0.13)

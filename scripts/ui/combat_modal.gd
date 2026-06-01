@@ -35,6 +35,7 @@ func _build(card: Dictionary) -> void:
 	_vbox.add_child(UIStyle.modal_title(String(card.get("monsterName", "ENCOUNTER_TITLE"))))
 
 	var cols := HBoxContainer.new()
+	cols.name = "Columns"
 	cols.add_theme_constant_override("separation", 20)
 	cols.alignment = BoxContainer.ALIGNMENT_CENTER
 	_vbox.add_child(cols)
@@ -43,6 +44,7 @@ func _build(card: Dictionary) -> void:
 	cols.add_child(_monster_col(card))
 
 	var btns := HBoxContainer.new()
+	btns.name = "Buttons"
 	btns.add_theme_constant_override("separation", 12)
 	btns.alignment = BoxContainer.ALIGNMENT_CENTER
 	_vbox.add_child(btns)
@@ -73,6 +75,7 @@ func _dice_tray(values: Array, can_reroll: bool) -> DiceTray:
 func _player_col() -> VBoxContainer:
 	var p: Dictionary = GameState.my_player()
 	var col := VBoxContainer.new()
+	col.name = "PlayerColumn"
 	col.add_theme_constant_override("separation", 4)
 	col.custom_minimum_size = Vector2(190, 0)
 	col.add_child(_lbl(String(p.get("name", "?")), 16, UIColors.TEXT))
@@ -83,6 +86,7 @@ func _player_col() -> VBoxContainer:
 
 func _center_col(card: Dictionary) -> VBoxContainer:
 	var col := VBoxContainer.new()
+	col.name = "CenterColumn"
 	col.add_theme_constant_override("separation", 6)
 	col.custom_minimum_size = Vector2(260, 0)
 
@@ -110,7 +114,9 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 	if done:
 		var s: Dictionary = res.get("strength", {})
 		col.add_child(_dice_tray(s.get("dice", []), can_focus))
-		col.add_child(_lbl("%s: %d · %s −%d" % [tr("ENCOUNTER_SUCCESSES"), int(s.get("successes", 0)), tr("SIDEBAR_TOUGHNESS"), int(res.get("dealt", 0))], 12, UIColors.TEXT))
+		col.add_child(_lbl("%s: %d · %s −%d" % [
+			tr("ENCOUNTER_SUCCESSES"), int(s.get("successes", 0)),
+			tr("SIDEBAR_TOUGHNESS"), int(res.get("dealt", 0))], 12, UIColors.TEXT))
 		if int(res.get("hp_loss", 0)) > 0:
 			col.add_child(_lbl("−%d %s" % [int(res["hp_loss"]), tr("COMBAT_HEALTH")], 12, UIColors.DANGER))
 	else:
@@ -126,6 +132,7 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 
 func _monster_col(card: Dictionary) -> VBoxContainer:
 	var col := VBoxContainer.new()
+	col.name = "MonsterColumn"
 	col.add_theme_constant_override("separation", 4)
 	col.custom_minimum_size = Vector2(190, 0)
 	var combat: Dictionary = card.get("combat", {})
@@ -135,7 +142,9 @@ func _monster_col(card: Dictionary) -> VBoxContainer:
 	var res: Dictionary = card.get("resolution", {})
 	var mon_health: int = int(res.get("health_after", card.get("health", 0))) if not res.is_empty() else int(card.get("health", 0))
 	col.add_child(_lbl("%s: %d / %d" % [tr("SIDEBAR_TOUGHNESS"), mon_health, int(card.get("toughness", 0))], 14, UIColors.WARNING))
-	col.add_child(_lbl("%s: %d · %s: %d" % [tr("COMBAT_MDMG"), int(combat.get("damage", 0)), tr("SIDEBAR_HORROR"), int(horror.get("damage", 0))], 12, UIColors.TEXT))
+	col.add_child(_lbl("%s: %d · %s: %d" % [
+		tr("COMBAT_MDMG"), int(combat.get("damage", 0)),
+		tr("SIDEBAR_HORROR"), int(horror.get("damage", 0))], 12, UIColors.TEXT))
 	var ab: String = String(card.get("abilityKey", ""))
 	if not ab.is_empty():
 		var al := _lbl(ab, 11, UIColors.MUTED)   # ключ перевода способности
@@ -149,6 +158,7 @@ func _monster_col(card: Dictionary) -> VBoxContainer:
 
 func _lbl(text: String, size: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var l := Label.new()
+	l.name = "Label"
 	l.text = text
 	l.add_theme_font_size_override("font_size", size)
 	l.add_theme_color_override("font_color", color)
@@ -158,6 +168,7 @@ func _lbl(text: String, size: int, color: Color, align: HorizontalAlignment = HO
 
 func _button(key: String, on_press: Callable, color: Color = UIColors.ACCENT) -> Button:
 	var b := Button.new()
+	b.name = "Button"
 	b.text = key
 	UIStyle.style_button(b, color)
 	b.pressed.connect(on_press)

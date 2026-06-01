@@ -112,9 +112,10 @@ func _build() -> void:
 	add_child(_hint)
 
 	_collapse_timer = Timer.new()
+	_collapse_timer.name = "CollapseTimer"
 	_collapse_timer.one_shot = true
 	_collapse_timer.wait_time = 0.06   # дебаунс: переход между нахлёстом не схлопывает веер
-	_collapse_timer.timeout.connect(func() -> void: if _open: set_active(-1))
+	_collapse_timer.timeout.connect(_on_collapse_timeout)
 	add_child(_collapse_timer)
 
 	for i in range(CARDS.size()):
@@ -308,6 +309,12 @@ func _on_card_exit() -> void:
 	if not _open:
 		return
 	_collapse_timer.start()   # схлопнуть, если в течение дебаунса не наведём другую
+
+
+# Дебаунс схлопывания: курсор ушёл со всех карт — снять выделение.
+func _on_collapse_timeout() -> void:
+	if _open:
+		set_active(-1)
 
 
 func _on_card_gui_input(event: InputEvent, card: Control) -> void:
