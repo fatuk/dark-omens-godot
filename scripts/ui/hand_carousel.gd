@@ -18,6 +18,10 @@ class_name HandCarousel
 const CARD_W: float = 186.0
 const CARD_H: float = 294.0
 
+# Тестовый арт для ВСЕХ карт руки (пока нет уникальных артов карт). Кладётся в
+# арт-слот рамки GameCard; перекрывает глиф-заглушку.
+const _TEST_ART: Texture2D = preload("res://assets/asset-card/18 Derringer.png")
+
 # Тюнинг ПОЛОЖЕНИЯ карт и АНИМАЦИИ — правится вживую в дебаг-панели (Ctrl+M,
 # секция «ВЕЕР КАРТ»). static var, а не const: панель меняет значения без ссылки
 # на конкретный инстанс, а инстанс читает их при перекладке (см. relayout).
@@ -204,7 +208,8 @@ func _build_card(data: Dictionary, idx: int) -> Control:
 				"cost": data["cost"],
 				"title": data["title"],
 				"desc": data["desc"],
-				"glyph": data["glyph"],  # арт-слот: глиф-заглушка до реальных ассетов карт
+				"art": _TEST_ART,  # тестовый арт на всех картах руки
+				"glyph": data["glyph"],  # фолбэк, если арта нет (сейчас перекрыт артом)
 			}
 		)
 	)
