@@ -15,12 +15,12 @@ const FRAME_TEX: Texture2D = preload("res://assets/asset-card/asset-card.png")
 const ASPECT: float = 1768.0 / 2796.0
 
 # Зоны контента — доли рамки (x, y, w, h ∈ 0..1). Подобраны под asset-card.png.
-const Z_COST  := Rect2(0.030, 0.018, 0.160, 0.100)
+const Z_COST  := Rect2(0.040, 0.035, 0.160, 0.100)   # центр ≈ (0.12, 0.085) — герб-компас
 const Z_ART   := Rect2(0.284, 0.138, 0.464, 0.259)
 const Z_TITLE := Rect2(0.110, 0.555, 0.780, 0.092)
 const Z_DESC  := Rect2(0.120, 0.695, 0.760, 0.235)
 
-const C_COST_TXT  := Color(0.96, 0.93, 0.86)   # светлый — на тёмном гербе стоимости
+const C_COST_TXT  := UIColors.ACCENT           # янтарь — как заголовок
 const C_TITLE_TXT := UIColors.ACCENT           # янтарь на синей плашке
 const C_SUB_TXT   := Color(0.62, 0.72, 0.82)   # приглушённый голубой — трейт
 const C_DESC_TXT  := Color(0.18, 0.14, 0.09)   # тёмный — на пергаменте
