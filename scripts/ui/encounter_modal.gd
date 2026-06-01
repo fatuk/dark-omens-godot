@@ -21,8 +21,11 @@ extends CanvasLayer
 @onready var _outcome: Label = %Outcome
 @onready var _finish_btn: Button = %FinishBtn
 
-# Ряд кликабельных кубиков (для переброса по выбору) — создаётся кодом над _dice.
+# Ряд кубиков (DiceTray) — создаётся кодом над строкой _dice.
 var _dice_holder: VBoxContainer
+var _tray: DiceTray  # единый лоток, создаётся лениво и переиспользуется
+var _last_dice: Array = []  # последний показанный бросок (спин — только на свежем)
+var _pending_n: int = -1  # сколько рубашек показано до броска
 
 # Навык → ключ перевода для подписи проверки.
 const _SKILL_KEYS := {
@@ -49,7 +52,7 @@ func _ready() -> void:
 	_dice_holder.alignment = BoxContainer.ALIGNMENT_CENTER
 	var vbox: Node = _dice.get_parent()
 	vbox.add_child(_dice_holder)
-	vbox.move_child(_dice_holder, _dice.get_index())  # перед строкой _dice
+	vbox.move_child(_dice_holder, _roll_btn.get_index())  # кубы НАД кнопкой броска
 	_dice_holder.visible = false
 
 	_roll_btn.pressed.connect(_on_roll_pressed)
@@ -93,7 +96,7 @@ func _show_loading() -> void:
 	_main_text.text = "ENCOUNTER_GENERATING"
 	for node: Control in [_check, _roll_btn, _dice, _outcome, _finish_btn]:
 		node.visible = false
-	_render_dice({}, false)
+	_hide_dice()
 
 
 func _show_card(card: Dictionary) -> void:
@@ -103,10 +106,9 @@ func _show_card(card: Dictionary) -> void:
 	_check.visible = true
 	_roll_btn.visible = true
 	_roll_btn.disabled = false
-	_dice.visible = false
 	_outcome.visible = false
 	_finish_btn.visible = false
-	_render_dice({}, false)
+	_show_dice_pending(_check_pool(card.get("test", {})))  # рубашки до броска
 
 
 func _show_outcome(card: Dictionary) -> void:
@@ -116,7 +118,7 @@ func _show_outcome(card: Dictionary) -> void:
 	_main_text.text = _main_or_stakes(card)
 	_check.text = _check_label(card.get("test", {}))
 	_check.visible = true
-	_render_dice(res, true)
+	_show_dice_result(res)
 	_outcome.text = _outcome_text(card, passed)
 	_outcome.add_theme_color_override("font_color", UIColors.SUCCESS if passed else UIColors.DANGER)
 	_outcome.visible = true
@@ -142,15 +144,14 @@ func _show_gate(card: Dictionary) -> void:
 	if not card.has("stage_resolution"):
 		_roll_btn.visible = true
 		_roll_btn.disabled = false
-		_dice.visible = false
 		_outcome.visible = false
 		_finish_btn.visible = false
-		_render_dice({}, false)
+		_show_dice_pending(_check_pool(node.get("test", {})))  # рубашки до броска
 		return
 
 	var res: Dictionary = card["stage_resolution"]
 	var passed: bool = bool(res.get("passed", false))
-	_render_dice(res, true)
+	_show_dice_result(res)
 	_outcome.text = _outcome_text(node, passed)
 	_outcome.add_theme_color_override("font_color", UIColors.SUCCESS if passed else UIColors.DANGER)
 	_outcome.visible = true
@@ -189,32 +190,91 @@ func _on_die_clicked(index: int) -> void:
 	GameState.reroll_encounter(index)
 
 
-# Рендер ряда кубиков + строки «успехов: N · подсказка». roll_shown=false прячет.
-# Провальные кубики кликабельны для переброса, если есть концентрация и встреча
-# не зафиксирована.
-func _render_dice(res: Dictionary, roll_shown: bool) -> void:
+# Единый лоток — создаётся лениво и переиспользуется, чтобы спин не рвался при
+# ре-рендере на синке.
+func _ensure_tray() -> void:
+	if is_instance_valid(_tray):
+		return
+	_tray = DiceTray.new()
+	_tray.name = "DiceTray"
+	_tray.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_tray.die_selected.connect(_on_die_clicked)
+	_dice_holder.add_child(_tray)
+
+
+# До броска — рубашки по числу кубов проверки (как в магазине).
+func _show_dice_pending(pool: int) -> void:
 	if not is_instance_valid(_dice_holder):
 		return
-	for c in _dice_holder.get_children():
-		c.queue_free()
-	if not roll_shown or res.is_empty():
-		_dice_holder.visible = false
-		_dice.visible = false
+	_ensure_tray()
+	if _pending_n != pool or not _last_dice.is_empty():
+		_tray.show_pending(pool)
+		_pending_n = pool
+		_last_dice = []
+	_dice_holder.visible = true
+	_dice.visible = false
+
+
+# Результат: свежий бросок → спин всех; переброс одного куба → крутится только он;
+# повторный синк того же броска → не трогаем (не рвём анимацию).
+func _show_dice_result(res: Dictionary) -> void:
+	if not is_instance_valid(_dice_holder):
 		return
+	_ensure_tray()
+	var dice: Array = res.get("dice", [])
 	var foc: int = int(GameState.my_player().get("concentration", 0))
 	var committed: bool = bool(GameState.current_encounter.get("committed", false))
 	var can: bool = foc > 0 and not committed
-	var tray := DiceTray.new()
-	tray.name = "DiceTray"
-	tray.die_selected.connect(_on_die_clicked)
-	tray.show_roll(res.get("dice", []), can)
-	_dice_holder.add_child(tray)
+	if dice != _last_dice:
+		var prev: Array = _last_dice
+		var diff: int = _single_diff(prev, dice)
+		_last_dice = dice.duplicate()
+		_pending_n = -1
+		if prev.is_empty():
+			_tray.play_roll(dice, can)  # первый бросок — спин всех
+		elif diff >= 0:
+			_tray.reroll_die(diff, int(dice[diff]), can)  # переброс — крутится один
+		else:
+			_tray.show_roll(dice, can)  # неоднозначно — статикой
 	_dice_holder.visible = true
 	var summary: String = "%s: %d" % [tr("ENCOUNTER_SUCCESSES"), int(res.get("successes", 0))]
 	if can:
 		summary += "  ·  " + (tr("ENCOUNTER_REROLL_HINT") % foc)
 	_dice.text = summary
 	_dice.visible = true
+
+
+func _hide_dice() -> void:
+	_last_dice = []
+	_pending_n = -1
+	if is_instance_valid(_dice_holder):
+		_dice_holder.visible = false
+	_dice.visible = false
+
+
+# Индекс единственного отличия наборов (спин только переброшенного куба); -1 если
+# отличий нет или больше одного / разные размеры.
+func _single_diff(a: Array, b: Array) -> int:
+	if a.size() != b.size():
+		return -1
+	var idx: int = -1
+	for i in range(a.size()):
+		if int(a[i]) != int(b[i]):
+			if idx >= 0:
+				return -1
+			idx = i
+	return idx
+
+
+# Пул d6 проверки = навык + модификаторы навыка + модификатор карты (как у хоста
+# в EncounterFlow._roll_check). Для показа рубашек до броска.
+func _check_pool(test: Dictionary) -> int:
+	var me: Dictionary = GameState.my_player()
+	var inv: Dictionary = Investigators.get_data(String(me.get("investigator", "")))
+	var skill: String = String(test.get("skill", "will"))
+	var base: int = int((inv.get("skills", {}) as Dictionary).get(skill, 1))
+	var mods: int = int((me.get("skill_mods", {}) as Dictionary).get(skill, 0))
+	return maxi(1, base + mods + int(test.get("modifier", 0)))
 
 
 # Кнопка под исходом: после первой проверки врат (stage 0) — «Дальше» ко второй

@@ -38,6 +38,7 @@ var _selected: Dictionary = {}  # asset_id -> cost
 
 # Узлы для обновления.
 var _dice_box: HBoxContainer
+var _tray: DiceTray  # текущий лоток кубов (для переброса одного куба)
 var _coins_lbl: Label
 var _roll_btn: Button
 var _debt_btn: Button
@@ -204,7 +205,7 @@ func _has_debt() -> bool:
 # ── Кубы ───────────────────────────────────────────────────────────────────────
 
 
-func _render_dice(rolls: Array) -> void:
+func _render_dice(rolls: Array, animate: bool = false) -> void:
 	for c in _dice_box.get_children():
 		c.queue_free()
 	# Единый компонент проверки. После броска провальные кубы кликабельны для
@@ -212,11 +213,15 @@ func _render_dice(rolls: Array) -> void:
 	var tray := DiceTray.new()
 	tray.name = "DiceTray"
 	_dice_box.add_child(tray)
+	_tray = tray
 	if rolls.is_empty():
 		tray.show_pending(_influence_pool())  # кубы до броска
 	else:
 		tray.die_selected.connect(_on_die_clicked)
-		tray.show_roll(rolls, _focus() > 0)
+		if animate:
+			tray.play_roll(rolls, _focus() > 0)  # свежий бросок/переброс — со спином
+		else:
+			tray.show_roll(rolls, _focus() > 0)
 
 
 func _influence_pool() -> int:
@@ -237,7 +242,7 @@ func _on_roll() -> void:
 	GameState.shop_begin()  # бросок = совершённое действие (раз за раунд)
 	_rolls = Dice.roll(_influence_pool())
 	_recompute_coins()
-	_render_dice(_rolls)
+	_render_dice(_rolls, true)  # спин
 	_roll_btn.disabled = true
 	_refresh()
 
@@ -272,7 +277,8 @@ func _on_die_clicked(index: int) -> void:
 		return  # успех или неверный индекс — фокус не тратим
 	GameState.shop_reroll()
 	_recompute_coins()
-	_render_dice(_rolls)
+	if _tray:
+		_tray.reroll_die(index, int(_rolls[index]), _focus() > 0)  # крутится ТОЛЬКО этот куб
 	_refresh()
 
 

@@ -9,6 +9,13 @@ extends CanvasLayer
 @onready var _panel: PanelContainer = %Panel
 @onready var _vbox: VBoxContainer = %VBox
 
+# Персистентные лотки кубов (Воля/Сила) — переживают пересборку _vbox, чтобы спин
+# не рвался. _last_* — история бросков (спин только на свежем результате).
+var _will_tray: DiceTray
+var _str_tray: DiceTray
+var _last_will: Array = []
+var _last_str: Array = []
+
 
 func _ready() -> void:
 	UIStyle.style_modal_panel(_panel)
@@ -26,11 +33,19 @@ func _refresh() -> void:
 
 
 func _build(card: Dictionary) -> void:
+	# Сохранить персистентные лотки от удаления при пересборке колонок.
+	for t in [_will_tray, _str_tray]:
+		if is_instance_valid(t) and t.get_parent() != null:
+			t.get_parent().remove_child(t)
 	for c in _vbox.get_children():
 		c.queue_free()
 
 	var res: Dictionary = card.get("resolution", {})
 	var done: bool = not res.is_empty()
+	# Свежий бой (Волю ещё не катили) — сброс истории бросков.
+	if card.get("will", {}).is_empty() and not done:
+		_last_will = []
+		_last_str = []
 
 	_vbox.add_child(UIStyle.modal_title(String(card.get("monsterName", "ENCOUNTER_TITLE"))))
 
@@ -62,12 +77,63 @@ func _on_die_clicked(index: int) -> void:
 	GameState.reroll_encounter(index)
 
 
-# Единый компонент ряда кубиков (Воля/Сила): только активный ряд кликабелен.
-func _dice_tray(values: Array, can_reroll: bool) -> DiceTray:
-	var t := DiceTray.new()
-	t.die_selected.connect(_on_die_clicked)
-	t.show_roll(values, can_reroll)
-	return t
+# Лоток создаётся лениво и переиспользуется (персистентный — переживает пересборку
+# колонок). Только активный ряд (Воля до Силы, либо Сила) кликабелен.
+func _ensure_tray(t: DiceTray) -> DiceTray:
+	if is_instance_valid(t):
+		return t
+	var nt := DiceTray.new()
+	nt.name = "DiceTray"
+	nt.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	nt.die_selected.connect(_on_die_clicked)
+	return nt
+
+
+# Показать бросок: свежий → спин всех; переброс одного куба → крутится он; тот же
+# бросок (ре-синк) → статикой (обновить кликабельность, не рвать спин).
+func _configure_tray(tray: DiceTray, dice: Array, last: Array, can: bool) -> void:
+	if last.is_empty():
+		tray.play_roll(dice, can)
+	elif dice == last:
+		tray.show_roll(dice, can)
+	else:
+		var diff: int = _single_diff(last, dice)
+		if diff >= 0:
+			tray.reroll_die(diff, int(dice[diff]), can)
+		else:
+			tray.show_roll(dice, can)
+
+
+# Индекс единственного отличия наборов (-1 если нет / несколько / разный размер).
+func _single_diff(a: Array, b: Array) -> int:
+	if a.size() != b.size():
+		return -1
+	var idx: int = -1
+	for i in range(a.size()):
+		if int(a[i]) != int(b[i]):
+			if idx >= 0:
+				return -1
+			idx = i
+	return idx
+
+
+# Пул d6 проверки (как у хоста в EncounterFlow._roll_check) — для рубашек до броска.
+func _check_pool(skill: String, modifier: int) -> int:
+	var me: Dictionary = GameState.my_player()
+	var inv: Dictionary = Investigators.get_data(String(me.get("investigator", "")))
+	var base: int = int((inv.get("skills", {}) as Dictionary).get(skill, 1))
+	var mods: int = int((me.get("skill_mods", {}) as Dictionary).get(skill, 0))
+	return maxi(1, base + mods + modifier)
+
+
+func _will_pool(card: Dictionary) -> int:
+	var h: Dictionary = card.get("horror", {})
+	return _check_pool(String(h.get("skill", "will")), int(h.get("modificator", 0)))
+
+
+func _str_pool(card: Dictionary) -> int:
+	var c: Dictionary = card.get("combat", {})
+	return _check_pool(String(c.get("skill", "strength")), int(c.get("modificator", 0)))
 
 
 # ── Колонки ───────────────────────────────────────────────────────────────────
@@ -115,42 +181,53 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 
 	# Шаг 1 — Воля (ужас): отдельный бросок. Перебрасывается, пока не катнули Силу.
 	col.add_child(_lbl(tr("COMBAT_WILL"), 15, Color(0.4, 0.7, 0.9)))
+	_will_tray = _ensure_tray(_will_tray)
+	col.add_child(_will_tray)
 	if has_will:
-		col.add_child(_dice_tray(will.get("dice", []), can_focus and not done))
+		var wd: Array = will.get("dice", [])
+		_configure_tray(_will_tray, wd, _last_will, can_focus and not done)
+		_last_will = wd.duplicate()
 		var sl: int = int(card.get("sanity_loss", 0))
 		var line: String = "%s: %d" % [tr("ENCOUNTER_SUCCESSES"), int(will.get("successes", 0))]
 		if sl > 0:
 			line += " · −%d %s" % [sl, tr("COMBAT_SANITY")]
 		col.add_child(_lbl(line, 12, UIColors.TEXT))
 	else:
-		col.add_child(_lbl(tr("COMBAT_WILL_HINT"), 11, UIColors.MUTED))
+		_will_tray.show_pending(_will_pool(card))  # рубашки до броска Воли
+		_last_will = []
 
-	# Шаг 2 — Сила (атака): второй отдельный бросок (активный для переброса).
-	col.add_child(_lbl(tr("COMBAT_STRENGTH"), 15, UIColors.ACCENT))
-	if done:
-		var s: Dictionary = res.get("strength", {})
-		col.add_child(_dice_tray(s.get("dice", []), can_focus))
-		col.add_child(
-			_lbl(
-				(
-					"%s: %d · %s −%d"
-					% [
-						tr("ENCOUNTER_SUCCESSES"),
-						int(s.get("successes", 0)),
-						tr("SIDEBAR_TOUGHNESS"),
-						int(res.get("dealt", 0))
-					]
-				),
-				12,
-				UIColors.TEXT
-			)
-		)
-		if int(res.get("hp_loss", 0)) > 0:
+	# Шаг 2 — Сила (атака): показываем ТОЛЬКО после броска Воли (последовательно).
+	if has_will:
+		col.add_child(_lbl(tr("COMBAT_STRENGTH"), 15, UIColors.ACCENT))
+		_str_tray = _ensure_tray(_str_tray)
+		col.add_child(_str_tray)
+		if done:
+			var s: Dictionary = res.get("strength", {})
+			var sd: Array = s.get("dice", [])
+			_configure_tray(_str_tray, sd, _last_str, can_focus)
+			_last_str = sd.duplicate()
 			col.add_child(
-				_lbl("−%d %s" % [int(res["hp_loss"]), tr("COMBAT_HEALTH")], 12, UIColors.DANGER)
+				_lbl(
+					(
+						"%s: %d · %s −%d"
+						% [
+							tr("ENCOUNTER_SUCCESSES"),
+							int(s.get("successes", 0)),
+							tr("SIDEBAR_TOUGHNESS"),
+							int(res.get("dealt", 0))
+						]
+					),
+					12,
+					UIColors.TEXT
+				)
 			)
-	else:
-		col.add_child(_lbl(tr("COMBAT_STRENGTH_HINT"), 11, UIColors.MUTED))
+			if int(res.get("hp_loss", 0)) > 0:
+				col.add_child(
+					_lbl("−%d %s" % [int(res["hp_loss"]), tr("COMBAT_HEALTH")], 12, UIColors.DANGER)
+				)
+		else:
+			_str_tray.show_pending(_str_pool(card))  # рубашки до броска Силы
+			_last_str = []
 
 	# Итог
 	if done:

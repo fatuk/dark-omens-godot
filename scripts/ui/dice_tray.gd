@@ -1,22 +1,76 @@
 class_name DiceTray
 extends HBoxContainer
 
-## Единый компонент отрисовки броска кубиков — ВСЕ проверки выглядят одинаково.
-## Логика броска — в Dice; здесь только показ результата и выбор куба к перебросу.
+## Единый лоток проверки кубов в стиле «слот-машины»: рамка с окном, в окне
+## крутится лента граней-текстур и тормозит на финале (как в прототипе).
+## Один компонент на ВСЕ проверки (встречи, бой, магазин) — единый вид и логика.
 ##
 ## API:
-##   tray.show_roll(values, can_reroll)  — показать результат (кликабельны провалы)
-##   tray.show_pending(count)            — кубы «рубашкой вверх» до броска
-##   signal die_selected(index)          — клик по перебрасываемому кубу
+##   show_roll(values, can_reroll)  — показать результат СРАЗУ (для синка/ре-рендера)
+##   play_roll(values, can_reroll)  — показать со СПИНОМ (свежий бросок)
+##   show_pending(count)            — пустые кубы до броска (рубашки)
+##   reroll_die(index, value, can)  — перекрутить ОДИН куб
+## Сигнал die_selected(index) — клик по провальному кубу (переброс за фокус).
 ##
-## ЕДИНАЯ точка отрисовки одного куба — _make_die(). Когда появятся ассеты граней
-## кубов, менять нужно только её, и все проверки обновятся разом.
+## Грани и рамка — ассеты (assets/dice). Размытие движения — вертикальный
+## Gaussian-шейдер прямо на грани (_BLUR_SHADER), сила драйвится тви́ном спина.
+## Успех/провал/переброс показываем свечением за рамкой (_style_glow).
 
 signal die_selected(index: int)
 
-const DIE_SIZE: Vector2 = Vector2(44, 44)
-const _BG_NORMAL := Color(0.10, 0.10, 0.13, 0.92)
-const _BG_HOVER := Color(0.20, 0.17, 0.10, 0.96)
+# Ассеты костей.
+const FRAME_TEX: Texture2D = preload("res://assets/dice/die-frame.png")
+const FACE_TEX := {
+	1: preload("res://assets/dice/side1.png"),
+	2: preload("res://assets/dice/side2.png"),
+	3: preload("res://assets/dice/side3.png"),
+	4: preload("res://assets/dice/sode4.png"),  # опечатка в имени файла (side4)
+	5: preload("res://assets/dice/side5.png"),
+	6: preload("res://assets/dice/side6.png"),
+}
+
+# Размер куба = аспект рамки (326×364 ≈ 0.896). Грань/свечение/блюр масштабируются
+# пропорционально от этих чисел.
+const DIE_W: float = 130.0
+const DIE_H: float = 145.0
+
+# Грань (квадрат) сидит ПО ЦЕНТРУ рамки, меньше выреза — вокруг неё видно
+# свечение-подложку и кант рамки (как в референсе).
+const FACE_FRAC: float = 0.56  # сторона грани в долях ширины куба
+const _FACE: float = FACE_FRAC * DIE_W
+const GLOW_INSET: float = 0.15  # свечение заполняет внутренний вырез рамки
+
+# Тайминги спина.
+const SPIN_BASE: float = 0.76  # длительность первого куба (сек)
+const SPIN_STAGGER: float = 0.20  # +на каждый следующий куб (оседают по очереди)
+const STRIP_MIN: int = 18  # сколько случайных граней прокрутить до финала
+const LOCK_FLASH: float = 0.42  # вспышка при остановке
+const BLUR_MAX: float = 0.30  # макс. вертикальный смаз (доля высоты грани, UV)
+
+# Свечение-подложка (за гранью, во внутреннем вырезе рамки).
+const C_GLOW_SUCCESS := UIColors.SUCCESS  # успех (≥5) — зелёное свечение
+const C_GLOW_REROLL := UIColors.ACCENT  # провал + есть фокус → янтарь (кликабельно)
+
+# Вертикальный motion-blur грани: несколько тапов по Y с треугольным весом.
+const _BLUR_SHADER := """
+shader_type canvas_item;
+uniform float blur = 0.0; // доля высоты текстуры
+void fragment() {
+	vec4 acc = vec4(0.0);
+	float total = 0.0;
+	const int N = 8;
+	for (int i = -N; i <= N; i++) {
+		float t = float(i) / float(N);   // -1..1
+		float wgt = 1.0 - abs(t);         // треугольный вес ≈ Gaussian
+		vec2 uv = vec2(UV.x, clamp(UV.y + t * blur, 0.0, 1.0));
+		acc += texture(TEXTURE, uv) * wgt;
+		total += wgt;
+	}
+	COLOR = acc / total;
+}
+"""
+
+var _dice: Array = []  # [{root, glow, reel, blur_mat, value, index, clickable, pending}]
 
 
 func _init() -> void:
@@ -25,68 +79,267 @@ func _init() -> void:
 	alignment = BoxContainer.ALIGNMENT_CENTER
 
 
-## Показать результат броска. can_reroll → провальные кубы (d<5) кликабельны
-## (янтарная рамка) для переброса за концентрацию; успешные — зелёные, не жмутся.
+# ── API ───────────────────────────────────────────────────────────────────────
+
+
+## Показать результат сразу (без анимации) — для ре-рендера на синке.
 func show_roll(values: Array, can_reroll: bool = false) -> void:
-	_clear()
-	for i in range(values.size()):
-		add_child(_make_die(int(values[i]), can_reroll, i))
+	_build(values, can_reroll)
+	for d in _dice:
+		_settle(d, false)
 
 
-## Показать `count` кубов до броска («рубашкой вверх»).
+## Показать бросок со спином (свежий бросок). Кубы оседают по очереди.
+func play_roll(values: Array, can_reroll: bool = false) -> void:
+	_build(values, can_reroll)
+	_shake()
+	for i in range(_dice.size()):
+		_spin(_dice[i], SPIN_BASE + i * SPIN_STAGGER)
+
+
+## Пустые кубы (рубашки) до броска.
 func show_pending(count: int) -> void:
-	_clear()
-	for i in range(maxi(0, count)):
-		add_child(_make_die(0, false, i))
+	_build([], false, maxi(0, count))
 
 
-func _clear() -> void:
+## Перебросить ОДИН куб (по индексу): крутится только он. Остальные лишь
+## обновляют доступность — фокус мог иссякнуть (can_reroll = есть ли ещё фокус).
+func reroll_die(index: int, new_value: int, can_reroll: bool) -> void:
+	if index < 0 or index >= _dice.size():
+		return
+	_dice[index]["value"] = new_value
+	for d in _dice:
+		d["clickable"] = can_reroll and not d["pending"] and not Dice.is_success(int(d["value"]))
+		_apply_click(d)
+	for i in range(_dice.size()):
+		if i != index:
+			_settle(_dice[i], false)  # обновить свечение без кручения
+	_spin(_dice[index], SPIN_BASE)
+
+
+# ── Сборка ──────────────────────────────────────────────────────────────────
+
+
+func _build(values: Array, can_reroll: bool, pending: int = 0) -> void:
 	for c in get_children():
 		c.queue_free()
+	_dice.clear()
+	var n: int = values.size() if not values.is_empty() else pending
+	for i in range(n):
+		var val: int = int(values[i]) if i < values.size() else 0
+		_dice.append(_make_die(val, can_reroll, i, values.is_empty()))
 
 
-# value <= 0 → ещё не брошен (рубашка). ЕДИНАЯ точка отрисовки куба.
-func _make_die(value: int, can_reroll: bool, index: int) -> Control:
-	var pending: bool = value <= 0
-	var success: bool = (not pending) and Dice.is_success(value)
-	var clickable: bool = can_reroll and not pending and not success
+func _make_die(value: int, can_reroll: bool, index: int, is_pending: bool) -> Dictionary:
+	var root := Control.new()
+	root.name = "Die%d" % index
+	root.custom_minimum_size = Vector2(DIE_W, DIE_H)
+	root.size = Vector2(DIE_W, DIE_H)
 
-	var edge: Color
-	if pending:
-		edge = UIColors.MUTED
-	elif success:
-		edge = UIColors.SUCCESS
-	elif clickable:
-		edge = UIColors.ACCENT
-	else:
-		edge = UIColors.MUTED
+	# Рамка (текстура) — кант + тёмный центр. Свечение и грань идут ПОВЕРХ.
+	var frame := TextureRect.new()
+	frame.name = "Frame"
+	frame.texture = FRAME_TEX
+	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	frame.stretch_mode = TextureRect.STRETCH_SCALE
+	frame.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(frame)
 
-	var chip := Button.new()
-	chip.name = "Die"
-	chip.text = "" if pending else str(value)
-	chip.custom_minimum_size = DIE_SIZE
-	chip.focus_mode = Control.FOCUS_NONE
-	chip.add_theme_font_size_override("font_size", 20)
-	var fcol: Color = UIColors.SUCCESS if success else UIColors.TEXT
-	chip.add_theme_color_override("font_color", fcol)
-	chip.add_theme_color_override("font_disabled_color", fcol)  # не сереть в disabled
-	chip.add_theme_color_override("font_hover_color", fcol)
+	# Свечение-подложка — радиальная заливка во внутреннем вырезе (за гранью).
+	var glow := TextureRect.new()
+	glow.name = "Glow"
+	glow.texture = _glow_texture()
+	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	glow.stretch_mode = TextureRect.STRETCH_SCALE
+	glow.position = Vector2(GLOW_INSET * DIE_W, GLOW_INSET * DIE_H)
+	glow.size = Vector2((1.0 - 2.0 * GLOW_INSET) * DIE_W, (1.0 - 2.0 * GLOW_INSET) * DIE_H)
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	glow.visible = false
+	root.add_child(glow)
 
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = _BG_NORMAL
-	sb.set_corner_radius_all(6)
-	sb.set_border_width_all(2)
-	sb.border_color = edge
-	chip.add_theme_stylebox_override("normal", sb)
-	chip.add_theme_stylebox_override("disabled", sb)
-	var sb_hi := sb.duplicate() as StyleBoxFlat
-	sb_hi.bg_color = _BG_HOVER
-	chip.add_theme_stylebox_override("hover", sb_hi)
-	chip.add_theme_stylebox_override("pressed", sb_hi)
+	# Окно с гранью — квадрат ПО ЦЕНТРУ; в нём ездит лента.
+	var window := Control.new()
+	window.name = "Window"
+	window.position = Vector2((DIE_W - _FACE) * 0.5, (DIE_H - _FACE) * 0.5)
+	window.size = Vector2(_FACE, _FACE)
+	window.clip_contents = true
+	window.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(window)
 
+	var reel := Control.new()
+	reel.name = "Reel"
+	reel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	window.add_child(reel)
+
+	# Материал блюра — один на куб (общий для всех граней ленты).
+	var blur_mat := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = _BLUR_SHADER
+	blur_mat.shader = sh
+	blur_mat.set_shader_parameter("blur", 0.0)
+
+	var clickable: bool = can_reroll and not is_pending and not Dice.is_success(value)
+	var die := {
+		"root": root,
+		"glow": glow,
+		"reel": reel,
+		"blur_mat": blur_mat,
+		"value": value,
+		"index": index,
+		"clickable": clickable,
+		"pending": is_pending,
+	}
+
+	# Клик по кубу → переброс (только если провал и есть право).
+	root.mouse_filter = Control.MOUSE_FILTER_STOP if clickable else Control.MOUSE_FILTER_IGNORE
 	if clickable:
+		root.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		var idx: int = index
-		chip.pressed.connect(func() -> void: die_selected.emit(idx))
+		root.gui_input.connect(
+			func(ev: InputEvent) -> void:
+				if (
+					ev is InputEventMouseButton
+					and (ev as InputEventMouseButton).pressed
+					and (ev as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT
+				):
+					die_selected.emit(idx)
+		)
+
+	add_child(root)
+	# Стартово — одна финальная грань (статика); спин перезаполнит ленту сам.
+	_set_reel(die, [value])
+	return die
+
+
+# Заполнить ленту гранями vals (сверху вниз) текстурами. reel.y = 0.
+func _set_reel(die: Dictionary, vals: Array) -> void:
+	var reel: Control = die["reel"]
+	for c in reel.get_children():
+		c.queue_free()
+	for i in range(vals.size()):
+		var face := TextureRect.new()
+		face.name = "Face%d" % i
+		face.texture = FACE_TEX.get(int(vals[i]), null)  # 0 → пусто (рубашка)
+		face.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		face.stretch_mode = TextureRect.STRETCH_SCALE
+		face.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		face.material = die["blur_mat"]
+		face.position = Vector2(0, i * _FACE)
+		face.size = Vector2(_FACE, _FACE)
+		face.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		reel.add_child(face)
+	reel.position.y = 0.0
+
+
+# ── Анимация ──────────────────────────────────────────────────────────────────
+
+
+# Спин: лента случайных граней едет вверх и тормозит на финале (cubic-out).
+func _spin(die: Dictionary, dur: float) -> void:
+	if die["pending"]:
+		return
+	var strip: Array = []
+	var extra: int = randi() % 6
+	for _i in range(STRIP_MIN + extra):
+		strip.append(randi() % 6 + 1)
+	strip.append(int(die["value"]))
+	_set_reel(die, strip)
+
+	var last: int = strip.size() - 1
+	var tw := create_tween()
+	tw.set_parallel(true)
+	(
+		tw
+		. tween_property(die["reel"], "position:y", -last * _FACE, dur)
+		. set_trans(Tween.TRANS_CUBIC)
+		. set_ease(Tween.EASE_OUT)
+	)
+	# Размытие движения: смаз держится почти весь спин и спадает к остановке.
+	(
+		tw
+		. tween_method(func(b: float) -> void: _set_die_blur(die, b), BLUR_MAX, 0.0, dur)
+		. set_trans(Tween.TRANS_QUAD)
+		. set_ease(Tween.EASE_IN)
+	)
+	tw.set_parallel(false)
+	tw.tween_callback(func() -> void: _settle(die, true))
+
+
+# Сила вертикального блюра грани (один uniform на куб).
+func _set_die_blur(die: Dictionary, b: float) -> void:
+	die["blur_mat"].set_shader_parameter("blur", b)
+
+
+# Финал: одна грань, свечение по состоянию, опц. вспышка.
+func _settle(die: Dictionary, flash: bool) -> void:
+	var val: int = int(die["value"])
+	_set_reel(die, [val])
+	_set_die_blur(die, 0.0)
+
+	if die["pending"]:
+		_style_glow(die["glow"], Color.BLACK, false)
+	elif Dice.is_success(val):
+		_style_glow(die["glow"], C_GLOW_SUCCESS, true)
+	elif die["clickable"]:
+		_style_glow(die["glow"], C_GLOW_REROLL, true)
 	else:
-		chip.disabled = true
-	return chip
+		_style_glow(die["glow"], Color.BLACK, false)  # провал без переброса — без ореола
+
+	if flash:
+		var root: Control = die["root"]
+		root.modulate = Color(1.45, 1.4, 1.2)
+		var tw := create_tween()
+		tw.tween_property(root, "modulate", Color(1, 1, 1), LOCK_FLASH)
+
+
+# Лёгкий «толчок» лотка при броске (масштаб не сбрасывается контейнером).
+func _shake() -> void:
+	pivot_offset = size * 0.5
+	scale = Vector2(0.94, 0.94)
+	var tw := create_tween()
+	tw.tween_property(self, "scale", Vector2.ONE, 0.34).set_trans(Tween.TRANS_BACK).set_ease(
+		Tween.EASE_OUT
+	)
+
+
+# ── Состояние ───────────────────────────────────────────────────────────────
+
+
+# Доступность клика по кубу (фокус мог иссякнуть → куб «гаснет», клики не ловит).
+func _apply_click(die: Dictionary) -> void:
+	var c: bool = die["clickable"]
+	var root: Control = die["root"]
+	root.mouse_filter = Control.MOUSE_FILTER_STOP if c else Control.MOUSE_FILTER_IGNORE
+	root.mouse_default_cursor_shape = (Control.CURSOR_POINTING_HAND if c else Control.CURSOR_ARROW)
+
+
+# Свечение-подложка по состоянию (модуляция радиальной текстуры). on=false → скрыта.
+func _style_glow(glow: TextureRect, color: Color, on: bool) -> void:
+	glow.visible = on
+	if on:
+		glow.modulate = Color(color.r, color.g, color.b, 1.0)
+
+
+# Радиальная подложка свечения (белая, ядро держится до 65% → к краю прозрачно).
+# Кэшируется и переиспользуется всеми кубами (цвет задаётся через modulate).
+static var _glow_cache: GradientTexture2D = null
+
+
+static func _glow_texture() -> GradientTexture2D:
+	if _glow_cache == null:
+		var g := Gradient.new()
+		g.offsets = PackedFloat32Array([0.0, 0.65, 1.0])
+		g.colors = PackedColorArray(
+			[Color(1, 1, 1, 0.85), Color(1, 1, 1, 0.6), Color(1, 1, 1, 0.0)]
+		)
+		var t := GradientTexture2D.new()
+		t.gradient = g
+		t.fill = GradientTexture2D.FILL_RADIAL
+		t.fill_from = Vector2(0.5, 0.5)
+		t.fill_to = Vector2(1.0, 0.5)
+		t.width = 96
+		t.height = 96
+		_glow_cache = t
+	return _glow_cache
