@@ -116,8 +116,8 @@ var _index:         int        = 0
 
 
 # ── 3D-сцена ─────────────────────────────────────────────────────────────────
-var _card_meshes: Array              = []   # MeshInstance3D[]
-var _card_views:  Array[InvestigatorCard]    = []
+var _card_meshes: Array                 = []   # MeshInstance3D[]
+var _cards:       Array[InvestigatorCard] = []
 var _prev_btn:    TextureButton
 var _next_btn:    TextureButton
 var _world_vp:    SubViewport
@@ -267,7 +267,7 @@ func _make_card_ui_subviewport() -> SubViewport:
 	var view := InvestigatorCard.new(_placeholder_tex)
 	view.name = "InvestigatorCard"
 	vp.add_child(view)
-	_card_views.append(view)
+	_cards.append(view)
 	return vp
 
 
@@ -419,7 +419,7 @@ func _animate_arrow_nudge(direction: int) -> void:
 # ── Заполнение карточек ──────────────────────────────────────────────────────
 
 func _populate_card(phys_idx: int, inv: Dictionary) -> void:
-	var view: InvestigatorCard = _card_views[phys_idx]
+	var view: InvestigatorCard = _cards[phys_idx]
 	view.set_data(inv)
 	var inv_name: String = inv.get("name", "")
 	view.set_taken(_taken.has(inv_name) and inv_name != selected_name())
@@ -448,7 +448,7 @@ func _refresh_taken_overlays() -> void:
 		var slot: int = int(mesh.get_meta("logical_slot", i))
 		var data_idx: int = (_index + slot - CENTER_SLOT + n) % n
 		var inv_name: String = _investigators[data_idx].get("name", "")
-		_card_views[i].set_taken(_taken.has(inv_name) and inv_name != current)
+		_cards[i].set_taken(_taken.has(inv_name) and inv_name != current)
 		_request_card_repaint(i)
 
 
@@ -457,7 +457,7 @@ func _refresh_taken_overlays() -> void:
 # Заодно дёргаем _world_vp — он использует ViewportTexture этих карточек, и
 # если он сейчас спит, нужно отрендерить ещё один кадр с обновлённой текстурой.
 func _request_card_repaint(phys_idx: int) -> void:
-	var vp := _card_views[phys_idx].get_parent() as SubViewport
+	var vp := _cards[phys_idx].get_parent() as SubViewport
 	if vp:
 		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
 	if _world_vp and _world_vp.render_target_update_mode != SubViewport.UPDATE_ALWAYS:
