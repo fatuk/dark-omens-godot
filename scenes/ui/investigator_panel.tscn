@@ -1,12 +1,23 @@
-[gd_scene load_steps=8 format=3 uid="uid://dinvestpanel0001"]
+[gd_scene format=3 uid="uid://c3btdfjhuxxxg"]
 
 [ext_resource type="Script" uid="uid://bp20jobt76yse" path="res://scripts/ui/investigator_panel.gd" id="1_script"]
 
-; ── Стили ──────────────────────────────────────────────────────────────────
 [sub_resource type="StyleBoxFlat" id="bg_style"]
 bg_color = Color(0.05, 0.04, 0.09, 0.88)
 border_width_top = 1
 border_color = Color(0.3, 0.24, 0.5, 0.7)
+
+[sub_resource type="StyleBoxFlat" id="item_slot_style"]
+bg_color = Color(0.18, 0.13, 0.09, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.45, 0.35, 0.2, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxFlat" id="port_normal"]
 bg_color = Color(0.08, 0.07, 0.13, 1)
@@ -48,25 +59,11 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
-[sub_resource type="StyleBoxFlat" id="item_slot_style"]
-bg_color = Color(0.18, 0.13, 0.09, 0.9)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.45, 0.35, 0.2, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-
-; ── Сцена ──────────────────────────────────────────────────────────────────
-[node name="InvestigatorPanel" type="CanvasLayer"]
+[node name="InvestigatorPanel" type="CanvasLayer" unique_id=1257084925]
 layer = 10
 script = ExtResource("1_script")
 
-; ── Выезжающая панель снизу (видна когда InfoPanel.visible=true) ─────────
-[node name="InfoPanel" type="Control" parent="."]
+[node name="InfoPanel" type="Control" parent="." unique_id=1068355598]
 unique_name_in_owner = true
 visible = false
 layout_mode = 3
@@ -77,116 +74,114 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="Bg" type="Panel" parent="InfoPanel"]
+[node name="Bg" type="Panel" parent="InfoPanel" unique_id=307389966]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("bg_style")
 
-[node name="InfoCol" type="VBoxContainer" parent="InfoPanel"]
+[node name="InfoCol" type="VBoxContainer" parent="InfoPanel" unique_id=1357645243]
 unique_name_in_owner = true
 layout_mode = 0
+anchor_bottom = 1.0
 offset_left = 170.0
 offset_right = 450.0
-anchor_bottom = 1.0
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="StatsRow" type="HBoxContainer" parent="InfoPanel/InfoCol"]
+[node name="StatsRow" type="HBoxContainer" parent="InfoPanel/InfoCol" unique_id=1959023522]
 layout_mode = 2
 theme_override_constants/separation = 32
 
-[node name="HpPill" type="HBoxContainer" parent="InfoPanel/InfoCol/StatsRow"]
+[node name="HpPill" type="HBoxContainer" parent="InfoPanel/InfoCol/StatsRow" unique_id=251950789]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="Icon" type="Label" parent="InfoPanel/InfoCol/StatsRow/HpPill"]
+[node name="Icon" type="Label" parent="InfoPanel/InfoCol/StatsRow/HpPill" unique_id=167717238]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "❤"
 
-[node name="Value" type="Label" parent="InfoPanel/InfoCol/StatsRow/HpPill"]
+[node name="Value" type="Label" parent="InfoPanel/InfoCol/StatsRow/HpPill" unique_id=386351300]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "0.0"
 
-[node name="Sub" type="Label" parent="InfoPanel/InfoCol/StatsRow/HpPill"]
+[node name="Sub" type="Label" parent="InfoPanel/InfoCol/StatsRow/HpPill" unique_id=645081388]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "HP"
 vertical_alignment = 1
 
-[node name="SanPill" type="HBoxContainer" parent="InfoPanel/InfoCol/StatsRow"]
+[node name="SanPill" type="HBoxContainer" parent="InfoPanel/InfoCol/StatsRow" unique_id=1957859462]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="Icon" type="Label" parent="InfoPanel/InfoCol/StatsRow/SanPill"]
+[node name="Icon" type="Label" parent="InfoPanel/InfoCol/StatsRow/SanPill" unique_id=524979350]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "✦"
 
-[node name="Value" type="Label" parent="InfoPanel/InfoCol/StatsRow/SanPill"]
+[node name="Value" type="Label" parent="InfoPanel/InfoCol/StatsRow/SanPill" unique_id=565640673]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "0.0"
 
-[node name="Sub" type="Label" parent="InfoPanel/InfoCol/StatsRow/SanPill"]
+[node name="Sub" type="Label" parent="InfoPanel/InfoCol/StatsRow/SanPill" unique_id=1698524243]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "INV_PANEL_SANITY"
 vertical_alignment = 1
 
-[node name="SkillsLabel" type="Label" parent="InfoPanel/InfoCol"]
+[node name="SkillsLabel" type="Label" parent="InfoPanel/InfoCol" unique_id=1136370145]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 26
 horizontal_alignment = 1
 
-[node name="RolesRow" type="HBoxContainer" parent="InfoPanel/InfoCol"]
+[node name="RolesRow" type="HBoxContainer" parent="InfoPanel/InfoCol" unique_id=1368578560]
 unique_name_in_owner = true
 layout_mode = 2
-alignment = 1
 theme_override_constants/separation = 6
+alignment = 1
 
-; ── Слоты предметов (фиксированно 2) ─────────────────────────────────────
-[node name="Slot1" type="Panel" parent="InfoPanel"]
+[node name="Slot1" type="Panel" parent="InfoPanel" unique_id=1206852702]
 layout_mode = 0
+anchor_top = 0.5
+anchor_bottom = 0.5
 offset_left = 480.0
 offset_top = -56.0
 offset_right = 552.0
 offset_bottom = 56.0
-anchor_top = 0.5
-anchor_bottom = 0.5
 theme_override_styles/panel = SubResource("item_slot_style")
 
-[node name="Slot2" type="Panel" parent="InfoPanel"]
+[node name="Slot2" type="Panel" parent="InfoPanel" unique_id=230204851]
 layout_mode = 0
+anchor_top = 0.5
+anchor_bottom = 0.5
 offset_left = 558.0
 offset_top = -56.0
 offset_right = 630.0
 offset_bottom = 56.0
-anchor_top = 0.5
-anchor_bottom = 0.5
 theme_override_styles/panel = SubResource("item_slot_style")
 
-; ── Веер карт (заполняется в скрипте) ────────────────────────────────────
-[node name="CardFan" type="Control" parent="InfoPanel"]
+[node name="CardFan" type="Control" parent="InfoPanel" unique_id=1109390750]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
-; ── Кнопка-портрет (всегда видна, в левом нижнем углу) ───────────────────
-[node name="PortraitBtn" type="Button" parent="."]
+[node name="PortraitBtn" type="Button" parent="." unique_id=1967416814]
 unique_name_in_owner = true
 clip_contents = true
-focus_mode = 0
-flat = true
-layout_mode = 3
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -194,60 +189,61 @@ offset_left = 8.0
 offset_top = -208.0
 offset_right = 158.0
 offset_bottom = -8.0
+grow_vertical = 0
+focus_mode = 0
 theme_override_styles/normal = SubResource("port_normal")
-theme_override_styles/hover = SubResource("port_hover")
 theme_override_styles/pressed = SubResource("port_normal")
+theme_override_styles/hover = SubResource("port_hover")
 theme_override_styles/disabled = SubResource("port_normal")
+flat = true
 
-[node name="Texture" type="TextureRect" parent="PortraitBtn"]
+[node name="Texture" type="TextureRect" parent="PortraitBtn" unique_id=1788279710]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Overlay" type="ColorRect" parent="PortraitBtn"]
+[node name="Overlay" type="ColorRect" parent="PortraitBtn" unique_id=639344854]
 layout_mode = 0
-offset_top = -44.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -44.0
 mouse_filter = 2
 color = Color(0.04, 0.03, 0.08, 0.8)
 
-[node name="NameLabel" type="Label" parent="PortraitBtn"]
+[node name="NameLabel" type="Label" parent="PortraitBtn" unique_id=1693111890]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = -42.0
-offset_bottom = -22.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-mouse_filter = 2
+offset_top = -42.0
+offset_bottom = -22.0
 theme_override_font_sizes/font_size = 13
 text = "???"
 horizontal_alignment = 1
 
-[node name="OccLabel" type="Label" parent="PortraitBtn"]
+[node name="OccLabel" type="Label" parent="PortraitBtn" unique_id=1769300117]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = -22.0
-offset_bottom = -2.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-mouse_filter = 2
+offset_top = -22.0
+offset_bottom = -2.0
 theme_override_font_sizes/font_size = 11
 horizontal_alignment = 1
 
-; ── Балун с цитатой (над портретом, виден только при ховере) ─────────────
-[node name="Balloon" type="PanelContainer" parent="."]
+[node name="Balloon" type="PanelContainer" parent="." unique_id=1473977274]
 unique_name_in_owner = true
 visible = false
-layout_mode = 3
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -255,9 +251,10 @@ offset_left = 8.0
 offset_top = -312.0
 offset_right = 238.0
 offset_bottom = -212.0
+grow_vertical = 0
 theme_override_styles/panel = SubResource("balloon_style")
 
-[node name="QuoteLabel" type="Label" parent="Balloon"]
+[node name="QuoteLabel" type="Label" parent="Balloon" unique_id=2097784131]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
