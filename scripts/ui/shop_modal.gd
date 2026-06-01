@@ -13,7 +13,7 @@ extends CanvasLayer
 ## применяет хост на «Купить» (GameState.shop_buy_asset), долг — сразу
 ## (GameState.shop_take_debt).
 
-const _CARD_MIN := Vector2(220, 300)
+const _CARD_MIN := Vector2(210, 332)   # пропорции рамки asset-card (аспект ≈0.632)
 const _EYE := "◉"
 
 const _TRAIT_KEY := {
@@ -122,42 +122,29 @@ func _offer() -> Array:
 	return out
 
 
-func _build_asset_card(a: Dictionary) -> PanelContainer:
-	var card := PanelContainer.new()
-	UIStyle.style_panel(card, 12)
+func _build_asset_card(a: Dictionary) -> Control:
+	var aid:  String = String(a.get("id", ""))
+	var cost: int    = int(a.get("cost", 0))
+	var traits: Array = a.get("traits", [])
+	var trait_id: String = String(traits[-1]) if not traits.is_empty() else "item"
+
+	# Единый компонент карты (та же рамка, что у карт руки). nameKey/abilityKey —
+	# ключи переводов, Label в GameCard их автопереводит. Стоимость — в гербе
+	# рамки, поэтому отдельную строку «проверка» не дублируем.
+	var card := GameCard.new()
 	card.custom_minimum_size = _CARD_MIN
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	var aid:  String = String(a.get("id", ""))
-	var cost: int    = int(a.get("cost", 0))
+	card.set_card({
+		"cost":     cost,
+		"title":    a.get("nameKey", ""),
+		"subtitle": _TRAIT_KEY.get(trait_id, trait_id.to_upper()),
+		"desc":     a.get("abilityKey", ""),
+	})
 	card.gui_input.connect(func(ev: InputEvent) -> void:
 		if ev is InputEventMouseButton and (ev as InputEventMouseButton).pressed \
 				and (ev as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
 			_toggle_card(aid, cost))
-
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 6)
-	card.add_child(col)
-
-	var head := HBoxContainer.new()
-	var nm := UIStyle.label(String(a.get("nameKey", "")), 15, UIColors.ACCENT)
-	nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	nm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	head.add_child(nm)
-	head.add_child(UIStyle.label(str(cost), 18, UIColors.WARNING))
-	col.add_child(head)
-
-	var traits: Array = a.get("traits", [])
-	var trait_id: String = String(traits[-1]) if not traits.is_empty() else "item"
-	col.add_child(UIStyle.label(String(_TRAIT_KEY.get(trait_id, trait_id.to_upper())), 11, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
-	UIStyle.separator(col)
-
-	var eff := UIStyle.label(String(a.get("abilityKey", "")), 12, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	eff.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	eff.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	col.add_child(eff)
-
-	col.add_child(UIStyle.label("%s %s %d" % [tr("SHOP_CHECK"), _EYE, cost], 12, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
 
 	_cards.append({ "id": aid, "cost": cost, "panel": card })
 	return card
@@ -321,7 +308,7 @@ func _refresh() -> void:
 	if _buy_btn:
 		_buy_btn.disabled = _selected.is_empty()
 	for e in _cards:
-		var panel: PanelContainer = e.panel
+		var panel: Control = e.panel
 		var sel: bool = _selected.has(e.id)
 		var affordable: bool = sel or int(e.cost) <= remaining
 		if sel:
