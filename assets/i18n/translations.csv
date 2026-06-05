@@ -674,6 +674,7 @@ ENCOUNTER_CHOICE_RESEARCH,Исследование (улика),Research (clue)
 ENCOUNTER_CHOICE_GATE,Войти во врата,Enter the gate
 ENCOUNTER_CHOICE_COMBAT,Бой,Combat
 ENCOUNTER_CONTINUE,Дальше,Continue
+ENCOUNTER_ACCEPT,Принять исход,Accept the outcome
 ENCOUNTER_GATE_TRIAL,Испытание Иного мира — пройдите проверку.,An Other World ordeal — make the check.
 ENCOUNTER_MYSTERY_TRIAL,Расследование на месте Тайны — пройдите проверку.,Investigating the Mystery site — make the check.
 ENCOUNTER_PROCEED,Вы идёте дальше.,You press on.
@@ -725,7 +726,7 @@ MYSTERY_SOLVE_MONSTER,победить монстра тайны,defeat the Myst
 MYSTERY_SOLVE_UNKNOWN,см. описание тайны,see the Mystery description
 
 CAMPAIGN_GATE_TITLE,Создание кампании,Creating the campaign
-CAMPAIGN_GATE_BODY,"Генерируется уникальный сценарий вашей партии — Древний, Мистерии и колода Мифов. Это займёт минуту-другую.","A unique scenario for your game is being generated — the Ancient One, the Mysteries and the Mythos deck. This will take a minute or two."
+CAMPAIGN_GATE_BODY,"Собираем сценарий вашей партии — Древний, Тайны и колода Мифов.","Assembling your game's scenario — the Ancient One, the Mysteries and the Mythos deck."
 
 INTRO_ANCIENT_EYEBROW,Древний,The Ancient One
 INTRO_MYSTERY_EYEBROW,Первая тайна,The First Mystery
@@ -1352,6 +1353,7 @@ SETTINGS_USE_LLM,Тексты встреч (ИИ),Encounter text (AI)
 SETTINGS_USE_LLM_HINT,"Выкл. — встречи без художественного текста: только механические проверки (быстро, без затрат на ИИ).","Off — encounters show mechanical checks only, no narrative (fast, no AI cost)."
 ENC_REWARD,Успех,Success
 ENC_PENALTY,Провал,Failure
+ENC_LOC_BONUS,Бонус места:,Location bonus:
 ENC_EFF_NONE,—,—
 ENC_EFF_CLUE,Улики: %+d,Clues: %+d
 ENC_EFF_HP,Здоровье: %+d,Health: %+d

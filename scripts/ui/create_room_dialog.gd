@@ -27,15 +27,16 @@ var _pass_input: LineEdit
 var _count_option: OptionButton
 var _ao_option: OptionButton
 var _error_label: Label
-var _ao_entries: Array = []  # [{id, nameKey}, ...] из ancient_ones.json
+var _ao_entries: Array = []  # [{id, name}, ...] — name уже локализован для показа
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP  # клики мимо панели не падают вниз
 	UIStyle.style_modal_panel(_panel)
-	_ao_entries = DataLoader.load_array(_AO_DATA)
+	_ao_entries = _fallback_entries()  # статичный список — пока не пришёл актуальный
 	_build()
 	_name_input.grab_focus()
+	_load_ancients()  # подтянуть актуальный список из relay (async)
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -79,12 +80,8 @@ func _build() -> void:
 	_count_option.selected = _DEFAULT_PLAYERS - _MIN_PLAYERS
 	_vbox.add_child(_labeled_row("FORM_PLAYER_COUNT", _count_option, "CountRow"))
 
-	# Древний (первый пункт — «Случайный»)
-	var ao_names: Array[String] = [tr("AO_RANDOM")]
-	for i in range(_ao_entries.size()):
-		var e: Dictionary = _ao_entries[i]
-		ao_names.append(tr(String(e.get("nameKey", ""))))
-	_ao_option = UIStyle.option_button(ao_names)
+	# Древний — актуальный список (CMS + конфиг), без «Случайного»
+	_ao_option = UIStyle.option_button(_ao_names())
 	_ao_option.name = "AncientOption"
 	_ao_option.selected = 0
 	_vbox.add_child(_labeled_row("FORM_ANCIENT_ONE", _ao_option, "AncientRow"))
@@ -119,6 +116,50 @@ func _labeled_row(label_key: String, control: Control, node_name: String) -> HBo
 	return row
 
 
+# ── Список Древних ────────────────────────────────────────────────────────────
+
+
+## Запасной список из статичного ancient_ones.json (если relay недоступен).
+func _fallback_entries() -> Array:
+	var out: Array = []
+	for e in DataLoader.load_array(_AO_DATA):
+		var d: Dictionary = e
+		out.append({"id": String(d.get("id", "")), "name": tr(String(d.get("nameKey", "")))})
+	return out
+
+
+## Имена для дропдауна из текущих _ao_entries.
+func _ao_names() -> Array[String]:
+	var names: Array[String] = []
+	for e in _ao_entries:
+		var d: Dictionary = e
+		names.append(String(d.get("name", "")))
+	return names
+
+
+## Подтянуть актуальный список Древних из relay и перезаполнить дропдаун.
+func _load_ancients() -> void:
+	var api: Node = get_node_or_null("/root/ContentApi")
+	if api == null:
+		return
+	var list: Array = await api.get_ancients(TranslationServer.get_locale())
+	if list.is_empty():
+		return  # relay недоступен/пусто — остаётся запасной список
+	var entries: Array = []
+	for a in list:
+		var d: Dictionary = a
+		entries.append({"id": String(d.get("id", "")), "name": String(d.get("name", ""))})
+	_ao_entries = entries
+	if not is_instance_valid(_ao_option):
+		return  # диалог закрыли, пока шёл запрос
+	_ao_option.clear()
+	for e in _ao_entries:
+		var ed: Dictionary = e
+		_ao_option.add_item(String(ed.get("name", "")))
+	if _ao_option.item_count > 0:
+		_ao_option.selected = 0
+
+
 func _build_buttons() -> void:
 	var btns := HBoxContainer.new()
 	btns.name = "Buttons"
@@ -146,9 +187,9 @@ func _on_create() -> void:
 	var max_players: int = _MIN_PLAYERS + _count_option.selected
 	var ancient: String = ""
 	var idx: int = _ao_option.selected
-	if idx > 0 and idx - 1 < _ao_entries.size():
-		var e: Dictionary = _ao_entries[idx - 1]
-		ancient = tr(String(e.get("nameKey", "")))
+	if idx >= 0 and idx < _ao_entries.size():
+		var e: Dictionary = _ao_entries[idx]
+		ancient = String(e.get("name", ""))
 	submitted.emit(rname, _pass_input.text, max_players, ancient)
 	queue_free()
 

@@ -10,6 +10,10 @@ extends RefCounted
 
 const _EffectRunner = preload("res://scripts/core/effect_runner.gd")
 
+# Шанс, что бонус локации (rewardAffinity) сработает на успехе встречи (Вариант A).
+const _LOC_BONUS_CHANCE := 0.5
+const _SKILLS := ["lore", "influence", "observation", "strength", "will"]
+
 var _gs: Node
 
 # Токен генерации: каждый новый generate() инкрементит его. После await писать
@@ -350,6 +354,7 @@ func host_apply_resolve(pid: String) -> bool:
 	# между броском и «Завершить» можно было перебрасывать за концентрацию.
 	var roll: Dictionary = _roll_check(pid, _gs.current_encounter.get("test", {}))
 	_gs.current_encounter["resolution"] = roll
+	_update_loc_bonus(pid, bool(roll["passed"]))  # бонус локации на успехе
 	(
 		GameConsole
 		. log(
@@ -466,6 +471,9 @@ func _commit_outcome(pid: String) -> void:
 		# Исследование: забранная улика исчезает с локации игрока.
 		if clues_gained > 0 and kind == "research":
 			_remove_clues_at(String(_gs.players[pid].get("location", "")), clues_gained)
+		# Бонус локации (на успехе) — поверх результата карточки.
+		if bool(res.get("passed", false)):
+			_apply_effects(enc.get("loc_bonus", []), pid)
 
 
 # Применение итогов боя при завершении: потеря рассудка (Воля) + урон сыщику и
@@ -517,6 +525,8 @@ func host_apply_reroll(pid: String, die_index: int) -> bool:
 		return false
 	roll = Dice.result(dice)
 	enc[key] = roll
+	if key == "resolution":
+		_update_loc_bonus(pid, bool(roll["passed"]))  # переоценка бонуса локации
 	p["concentration"] = int(p.get("concentration", 0)) - 1
 	GameConsole.log(
 		(
@@ -606,9 +616,6 @@ func _build_request(p: Dictionary, kind: String = "general") -> Dictionary:
 		"conditions": [],
 		"count": 1,
 		"language": _gs._relay_language(),
-		# Хост решает, генерить ли художественные тексты через LLM. Off →
-		# механические проверки (см. SettingsStore.use_llm / settings_dialog).
-		"useLLM": SettingsStore.use_llm,
 	}
 	# Библия готова — встреча несёт контекст кампании (Древний, акт, doom).
 	var cid: String = String(_gs.campaign.get("id", ""))
@@ -683,3 +690,73 @@ func _apply_effects(effects: Array, pid: String) -> void:
 	var logs: Array = res.get("logs", [])
 	for i in range(logs.size()):
 		GameConsole.log("[Эффект] %s" % String(logs[i]))
+
+
+# ── Бонус локации (Вариант A: rewardAffinity в data/locations.json) ───────────────
+
+
+# Пересчёт бонуса по текущему исходу. Решается ОДИН раз при переходе в успех
+# (кэш loc_bonus_decided) — чтобы перебросы не «мигали» бонусом. Провал → нет бонуса.
+func _update_loc_bonus(pid: String, passed: bool) -> void:
+	var enc: Dictionary = _gs.current_encounter
+	if not passed:
+		enc["loc_bonus"] = []
+		enc["loc_bonus_decided"] = false
+		return
+	if bool(enc.get("loc_bonus_decided", false)):
+		return
+	enc["loc_bonus"] = _location_bonus(pid)
+	enc["loc_bonus_decided"] = true
+
+
+# С шансом _LOC_BONUS_CHANCE взвешенно выбираем глагол из rewardAffinity локации
+# игрока и строим эффект-ноду. [] — бонуса нет (нет affinity или не выпал шанс).
+func _location_bonus(pid: String) -> Array:
+	var loc_id: String = String(_gs.players[pid].get("location", ""))
+	var aff: Dictionary = _gs.location_reward_affinity(loc_id)
+	if aff.is_empty() or randf() >= _LOC_BONUS_CHANCE:
+		return []
+	var verb: String = _weighted_pick(aff)
+	return [_bonus_node(verb)] if not verb.is_empty() else []
+
+
+func _weighted_pick(weights: Dictionary) -> String:
+	var total: float = 0.0
+	for k: Variant in weights:
+		total += maxf(0.0, float(weights[k]))
+	if total <= 0.0:
+		return ""
+	var r: float = randf() * total
+	for k: Variant in weights:
+		r -= maxf(0.0, float(weights[k]))
+		if r < 0.0:
+			return String(k)
+	return ""
+
+
+# Эффект-нода бонуса по спецификации "verb" или "verb:param":
+#   improveSkill:observation — качает КОНКРЕТНЫЙ навык (без param — случайный);
+#   gainClue:2 / placeClue:2 / healSanity:2 — param как количество.
+# Поддержаны проверенные глаголы (board placeClue + player gainClue/improveSkill/
+# gainFocus/healSanity/gainAsset).
+func _bonus_node(spec: String) -> Dictionary:
+	var parts: PackedStringArray = spec.split(":")
+	var verb: String = parts[0]
+	var param: String = parts[1] if parts.size() > 1 else ""
+	var n: int = maxi(1, param.to_int()) if param.is_valid_int() else 1
+	match verb:
+		"placeClue":
+			return {"do": "placeClue", "count": n}
+		"gainClue":
+			return {"do": "gainClue", "count": n}
+		"improveSkill":
+			var skill: String = param if _SKILLS.has(param) else _SKILLS[randi() % _SKILLS.size()]
+			return {"do": "improveSkill", "skill": skill, "amount": 1}
+		"gainFocus":
+			return {"do": "gainFocus", "amount": n}
+		"healSanity":
+			return {"do": "healSanity", "amount": n}
+		"gainAsset":
+			return {"do": "gainAsset"}
+		_:
+			return {"do": verb, "count": n}

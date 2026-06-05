@@ -201,8 +201,6 @@ func _build_request(player_count: int, ancient_one: String) -> Dictionary:
 		"locations": locs,
 		"playerCount": maxi(1, player_count),
 		"language": _gs._relay_language(),
-		# Off → сервер собирает шаблонную библию без LLM (см. SettingsStore.use_llm).
-		"useLLM": SettingsStore.use_llm,
 	}
 	# Древний задан в модалке создания комнаты — иначе модель придумывает сама.
 	if not ancient_one.is_empty():

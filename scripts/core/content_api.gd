@@ -59,6 +59,18 @@ func get_campaign(id: String) -> Dictionary:
 	return {"ok": true, "error": "", "campaign": json.get("campaign", {})}
 
 
+## Актуальный список Древних (CMS + конфиг) для дропдауна «Создать комнату».
+## Возвращает Array из {id, name}; при ошибке — пустой массив.
+func get_ancients(lang: String) -> Array:
+	var res: Dictionary = await _request(
+		HTTPClient.METHOD_GET, "/ancients?lang=" + lang.uri_encode(), "", TIMEOUT_ENCOUNTER
+	)
+	if not res["ok"]:
+		return []
+	var json: Dictionary = res["json"]
+	return json.get("ancients", [])
+
+
 # ── Транспорт ─────────────────────────────────────────────────────────────────
 
 

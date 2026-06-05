@@ -26,6 +26,9 @@ var _dice_holder: VBoxContainer
 var _tray: DiceTray  # единый лоток, создаётся лениво и переиспользуется
 var _last_dice: Array = []  # последний показанный бросок (спин — только на свежем)
 var _pending_n: int = -1  # сколько рубашек показано до броска
+# Пока есть перебросы (концентрация), исход ПРОВАЛА скрыт, чтобы не спойлить до
+# решения перебросить/принять. true → игрок «принял» (раскрыл) текущий провал.
+var _revealed: bool = false
 
 # Навык → ключ перевода для подписи проверки.
 const _SKILL_KEYS := {
@@ -119,11 +122,18 @@ func _show_outcome(card: Dictionary) -> void:
 	_check.text = _check_label(card.get("test", {}))
 	_check.visible = true
 	_show_dice_result(res)
-	_outcome.text = _outcome_text(card, passed)
-	_outcome.add_theme_color_override("font_color", UIColors.SUCCESS if passed else UIColors.DANGER)
-	_outcome.visible = true
+	# Провал прячем, пока есть перебросы и игрок ещё не «принял» исход.
+	var hide_fail: bool = not passed and not _revealed and _rerolls_available()
+	if hide_fail:
+		_outcome.visible = false
+	else:
+		_outcome.text = _outcome_text(card, passed)
+		_outcome.add_theme_color_override(
+			"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
+		)
+		_outcome.visible = true
 	_roll_btn.visible = false
-	_finish_btn.text = "BTN_FINISH_BIG"
+	_finish_btn.text = "ENCOUNTER_ACCEPT" if hide_fail else "BTN_FINISH_BIG"
 	_finish_btn.visible = true
 
 
@@ -152,14 +162,24 @@ func _show_gate(card: Dictionary) -> void:
 	var res: Dictionary = card["stage_resolution"]
 	var passed: bool = bool(res.get("passed", false))
 	_show_dice_result(res)
-	_outcome.text = _outcome_text(node, passed)
-	_outcome.add_theme_color_override("font_color", UIColors.SUCCESS if passed else UIColors.DANGER)
-	_outcome.visible = true
+	# Провал прячем, пока есть перебросы и игрок ещё не «принял» исход.
+	var hide_fail: bool = not passed and not _revealed and _rerolls_available()
+	if hide_fail:
+		_outcome.visible = false
+	else:
+		_outcome.text = _outcome_text(node, passed)
+		_outcome.add_theme_color_override(
+			"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
+		)
+		_outcome.visible = true
 	_roll_btn.visible = false
 	# После первой проверки (stage 0) всегда «Дальше» (обе ветви ведут ко второй
 	# проверке); после второй (stage 1) — «Завершить».
 	var more: bool = stage == 0
-	_finish_btn.text = "ENCOUNTER_CONTINUE" if more else "BTN_FINISH_BIG"
+	if hide_fail:
+		_finish_btn.text = "ENCOUNTER_ACCEPT"
+	else:
+		_finish_btn.text = "ENCOUNTER_CONTINUE" if more else "BTN_FINISH_BIG"
 	_finish_btn.visible = true
 
 
@@ -181,11 +201,15 @@ func _gate_node(card: Dictionary, stage: int) -> Dictionary:
 
 
 func _on_roll_pressed() -> void:
+	_revealed = false  # свежая проверка — провал снова можно скрыть до решения
 	_roll_btn.disabled = true  # хост разрешит встречу и пришлёт результат синком
 	GameState.resolve_encounter()
 
 
 func _on_die_clicked(index: int) -> void:
+	# После «принятия» исхода перебросы запрещены (хост о флаге UI не знает).
+	if _revealed or not _rerolls_available():
+		return
 	# Переброс выбранного куба за 1 концентрацию; хост пришлёт обновлённый бросок.
 	GameState.reroll_encounter(index)
 
@@ -224,7 +248,8 @@ func _show_dice_result(res: Dictionary) -> void:
 	var dice: Array = res.get("dice", [])
 	var foc: int = int(GameState.my_player().get("concentration", 0))
 	var committed: bool = bool(GameState.current_encounter.get("committed", false))
-	var can: bool = foc > 0 and not committed
+	# После «принятия» исхода (_revealed) перебросы недоступны.
+	var can: bool = foc > 0 and not committed and not _revealed
 	if dice != _last_dice:
 		var prev: Array = _last_dice
 		var diff: int = _single_diff(prev, dice)
@@ -281,11 +306,32 @@ func _check_pool(test: Dictionary) -> int:
 # проверке при ЛЮБОМ исходе (ветка выбирается по успеху/провалу); иначе — конец.
 func _on_finish_pressed() -> void:
 	var card: Dictionary = GameState.current_encounter
+	# Если провал скрыт (есть перебросы) — первый клик РАСКРЫВАЕТ исход и блокирует
+	# перебросы; завершение/переход — следующим кликом.
+	if not _revealed and _current_failed(card) and _rerolls_available():
+		_revealed = true
+		_refresh()
+		return
 	if _is_branching(card):
 		if int(card.get("stage", 0)) == 0 and card.has("stage_resolution"):
 			GameState.advance_encounter_stage()
 			return
 	GameState.finish_encounter()
+
+
+# Доступны ли перебросы (есть концентрация и проверка ещё не закоммичена хостом).
+func _rerolls_available() -> bool:
+	var foc: int = int(GameState.my_player().get("concentration", 0))
+	var committed: bool = bool(GameState.current_encounter.get("committed", false))
+	return foc > 0 and not committed
+
+
+# Текущий показанный результат — провал? (flat: resolution; gate: stage_resolution).
+func _current_failed(card: Dictionary) -> bool:
+	var res: Dictionary = card.get("stage_resolution", card.get("resolution", {}))
+	if res.is_empty():
+		return false
+	return not bool(res.get("passed", false))
 
 
 # ── Хелперы текста ────────────────────────────────────────────────────────────
@@ -325,12 +371,22 @@ func _main_or_stakes(src: Dictionary) -> String:
 # эффектов, если текста нет (механический режим); пустой исход → «идём дальше».
 func _outcome_text(src: Dictionary, passed: bool) -> String:
 	var txt: String = String(src.get("successText" if passed else "failureText", "")).strip_edges()
-	if not txt.is_empty():
-		return txt
 	var arr: Array = src.get("onSuccess" if passed else "onFailure", [])
-	if arr.is_empty():
-		return tr("ENCOUNTER_PROCEED")
-	return _describe_effects(arr)
+	var out: String
+	# Механический режим (без флейвора) — только описание эффектов / «идём дальше».
+	if txt.is_empty():
+		out = _describe_effects(arr) if not arr.is_empty() else tr("ENCOUNTER_PROCEED")
+	elif not arr.is_empty():
+		# Есть флейвор: под ним отдельной строкой — что именно получил/потерял.
+		out = "%s\n\n%s" % [txt, _describe_effects(arr)]
+	else:
+		out = txt
+	# Бонус локации (на успехе) — отдельной строкой под исходом.
+	if passed:
+		var bonus: Array = GameState.current_encounter.get("loc_bonus", [])
+		if not bonus.is_empty():
+			out += "\n%s %s" % [tr("ENC_LOC_BONUS"), _describe_effects(bonus)]
+	return out
 
 
 # ── Описание эффектов (для механического режима) ───────────────────────────────

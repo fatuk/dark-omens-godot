@@ -33,10 +33,6 @@ var resolution_idx: int = 3  # 1920×1080 по умолчанию
 var fullscreen: bool = false
 var music_volume: float = 0.5  # 0..1, читается Music/SfxManager на _ready
 var sfx_volume: float = 0.5
-## Генерировать ли художественные тексты встреч через LLM. Off → хост шлёт
-## useLLM:false и встреча собирается из одной механики (быстро, без токенов) —
-## игрок видит только механические проверки. Применяется на стороне ХОСТА.
-var use_llm: bool = true
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -135,7 +131,6 @@ func save() -> void:
 	cfg.set_value("audio", "sfx", SfxManager.volume)
 	music_volume = MusicManager.volume
 	sfx_volume = SfxManager.volume
-	cfg.set_value("gameplay", "use_llm", use_llm)
 	cfg.save(SETTINGS_FILE)
 
 
@@ -157,4 +152,3 @@ func _load() -> void:
 			break
 	music_volume = float(cfg.get_value("audio", "music", 0.5))
 	sfx_volume = float(cfg.get_value("audio", "sfx", 0.5))
-	use_llm = bool(cfg.get_value("gameplay", "use_llm", true))
