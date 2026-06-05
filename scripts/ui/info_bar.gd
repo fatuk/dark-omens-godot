@@ -754,12 +754,26 @@ func _entry_asset_id(entry: Variant) -> String:
 func _asset_payload(a: Dictionary) -> Dictionary:
 	var traits: Array = a.get("traits", [])
 	var trait_id: String = String(traits[-1]) if not traits.is_empty() else "item"
-	return {
+	var payload: Dictionary = {
 		"cost": int(a.get("cost", 0)),
 		"title": a.get("nameKey", ""),
 		"subtitle": _TRAIT_KEY.get(trait_id, trait_id.to_upper()),
 		"desc": a.get("abilityKey", ""),
 	}
+	var art: Texture2D = _asset_art(a)
+	if art != null:
+		payload["art"] = art
+	return payload
+
+
+# Арт ассета по конвенции имени файла: assets/asset-card/<id.capitalize()>.png
+# (id "18_derringer" → "18 Derringer.png"). Нет файла → null (рамка без арта).
+func _asset_art(a: Dictionary) -> Texture2D:
+	var id: String = String(a.get("id", ""))
+	if id.is_empty():
+		return null
+	var path: String = "res://assets/asset-card/%s.png" % id.capitalize()
+	return load(path) if ResourceLoader.exists(path) else null
 
 
 # Миниатюра карты имущества: GameCard В ПОЛНЫЙ РАЗМЕР (_ITEM_FULL_H), уменьшенный
