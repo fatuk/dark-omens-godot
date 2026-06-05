@@ -248,7 +248,7 @@ static func attach_click_sfx(btn: BaseButton) -> void:
 	if btn.has_meta("__click_sfx_wired"):
 		return
 	btn.set_meta("__click_sfx_wired", true)
-	btn.button_down.connect(func() -> void: SfxManager.play(SfxManager.SFX_BTN_CLICK))
+	btn.button_down.connect(func() -> void: SfxManager.play(SfxManager.SFX_BTN_CLICK, true))
 
 
 # Press-анимация: двигаем сам Button (а с ним — и фон, и текст) по Y вниз

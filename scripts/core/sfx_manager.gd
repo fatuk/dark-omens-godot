@@ -33,10 +33,19 @@ const SFX_OMEN_PICK_OUT: AudioStream = preload("res://assets/audio/sfx/omen-pick
 const BUS_NAME := "Sfx"
 const _POOL_SIZE: int = 4
 
+## Оживление частых повторов (клики кнопок, карусель): вместо джиттера громкости
+## (плохо считывался) — полосовой фильтр на средних частотах со случайным центром
+## за каждое проигрывание. Меняющийся тембр читается заметнее. Шина-вариация на
+## каждый плеер пула (round-robin → перекрытия не делят один фильтр).
+const FILTER_CENTER_HZ: float = 1500.0  # центр полосы (средние частоты)
+const FILTER_JITTER_HZ: float = 300.0  # ± случайный сдвиг центра за проигрывание
+const FILTER_RESONANCE: float = 0.5  # Q полосы (ниже — шире, мягче окрас)
+
 var volume: float = 0.5  # 0.0..1.0, линейная шкала (default override: SettingsStore.sfx_volume)
 
 var _pool: Array[AudioStreamPlayer] = []
 var _next: int = 0
+var _var_filters: Array = []  # band-pass-фильтр на каждой шине-вариации (по плееру)
 
 
 func _ready() -> void:
@@ -49,17 +58,52 @@ func _ready() -> void:
 		p.bus = BUS_NAME
 		add_child(p)
 		_pool.append(p)
+	_setup_var_buses()
 	# SettingsStore зарегистрирован раньше — его поля уже загружены.
 	set_volume(SettingsStore.sfx_volume)
 
 
-## Проиграть SFX. Берёт следующий плеер из пула — даже если предыдущий
-## ещё играет, новый звук стартует поверх (овелап).
-func play(stream: AudioStream) -> void:
+# По шине-вариации на каждый плеер пула: band-pass-фильтр, маршрут → Sfx (наследует
+# громкость). Идемпотентно — шины AudioServer переживают перезагрузку сцены.
+func _setup_var_buses() -> void:
+	_var_filters.clear()
+	for i in range(_POOL_SIZE):
+		var bus_name := "SfxVar%d" % i
+		var idx: int = AudioServer.get_bus_index(bus_name)
+		if idx == -1:
+			idx = AudioServer.bus_count
+			AudioServer.add_bus(idx)
+			AudioServer.set_bus_name(idx, bus_name)
+		AudioServer.set_bus_send(idx, BUS_NAME)
+		var filt: AudioEffectBandPassFilter
+		if AudioServer.get_bus_effect_count(idx) > 0:
+			filt = AudioServer.get_bus_effect(idx, 0)
+		else:
+			filt = AudioEffectBandPassFilter.new()
+			AudioServer.add_bus_effect(idx, filt)
+		filt.cutoff_hz = FILTER_CENTER_HZ
+		filt.resonance = FILTER_RESONANCE
+		_var_filters.append(filt)
+
+
+## Проиграть SFX. Берёт следующий плеер из пула — даже если предыдущий ещё играет,
+## новый звук стартует поверх (овелап). filtered=true — играть через шину-вариацию
+## со случайным центром band-pass (оживляет частые повторы: клики, карусель).
+func play(stream: AudioStream, filtered: bool = false) -> void:
 	if stream == null:
 		return
-	var p: AudioStreamPlayer = _pool[_next]
+	var i: int = _next
 	_next = (_next + 1) % _POOL_SIZE
+	var p: AudioStreamPlayer = _pool[i]
+	# Сбрасываем питч — пул переиспользуется.
+	p.pitch_scale = 1.0
+	if filtered and i < _var_filters.size():
+		(_var_filters[i] as AudioEffectBandPassFilter).cutoff_hz = (
+			FILTER_CENTER_HZ + randf_range(-FILTER_JITTER_HZ, FILTER_JITTER_HZ)
+		)
+		p.bus = "SfxVar%d" % i
+	else:
+		p.bus = BUS_NAME
 	p.stream = stream
 	p.play()
 
@@ -102,6 +146,7 @@ func play_variation(
 		var p: AudioStreamPlayer = _pool[_next]
 		_next = (_next + 1) % _POOL_SIZE
 		p.pitch_scale = jitter
+		p.bus = BUS_NAME  # пул мог остаться на шине-вариации от play(filtered)
 		p.stream = stream
 		p.play()
 		return

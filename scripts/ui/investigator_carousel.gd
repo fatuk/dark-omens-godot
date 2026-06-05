@@ -580,7 +580,7 @@ func _animated_shift(delta: int) -> void:
 	# Сейчас delta всегда ±1/±2, assert ловит регрессию.
 	assert(absi(delta) < VISIBLE_SLOTS, "delta too large for current wrap formula")
 
-	SfxManager.play(SfxManager.SFX_SLIDE)
+	SfxManager.play(SfxManager.SFX_SLIDE, true)  # через band-pass-вариацию (тембр)
 	_animate_arrow_nudge(1 if delta > 0 else -1)
 
 	# Прерываем любую незаконченную анимацию: kill tween'ов + snap к logical_slot.
