@@ -870,7 +870,7 @@
   },
   {
 	"name": "Calvin Wright",
-	"startingItems": [{"resource": 1}, {"clue": 1}, {"asset": "spirit_dagger"}],
+	"startingItems": [{"resource": 1}, {"clue": 1}, {"resource": 1}, {"asset": "spirit_dagger"}],
 	"displayName": "INV_CALVIN_WRIGHT_NAME",
 	"occupation": "INV_CALVIN_WRIGHT_OCC",
 	"startingLocation": "Buenos Aires",
@@ -1102,7 +1102,7 @@
   },
   {
 	"name": "Carson Sinclair",
-	"startingItems": [{"asset": "lucky_cigarette_case"}],
+	"startingItems": [{"clue": 1}, {"asset": "lucky_cigarette_case"}],
 	"displayName": "INV_CARSON_SINCLAIR_NAME",
 	"occupation": "INV_CARSON_SINCLAIR_OCC",
 	"startingLocation": "London",
