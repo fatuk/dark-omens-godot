@@ -157,9 +157,41 @@ func host_apply_choose(pid: String, kind: String) -> bool:
 	GameConsole.log("[Game] %s выбрал встречу: %s" % [_gs._name_of(pid), kind])
 	if kind == "combat":
 		_begin_combat(pid)
+	elif kind == "eldritch":
+		_begin_eldritch_move(pid)
 	else:
 		generate(kind)
 	return true
+
+
+# Хост: собрать локальную карту bind-хода (без relay) из применимого хука набора.
+# Проверка/стоимость/эффект берутся из данных хука (data.progress). На успехе
+# (_commit_eldritch) списывается cost и применяется effect (жетон на карту Тайны);
+# для Азатота заодно снимается board-жетон с клетки. Тексты локализуем сразу.
+func _begin_eldritch_move(pid: String) -> void:
+	if not _gs._is_host():
+		return
+	var loc: String = String(_gs.players[pid].get("location", ""))
+	# Применимый encounter-хук набора (cost/test/effect — из данных карточки).
+	var hook: Dictionary = _gs.mystery_encounter_hook(loc, pid)
+	if hook.is_empty():
+		generate("general")  # хук уже неприменим (страховка)
+		return
+	# Проверка — из хука; нет test → по умолчанию Знание.
+	var test: Dictionary = hook.get("test", {"skill": "lore", "modifier": 0})
+	_gs.current_encounter = {
+		"kind": "eldritch",
+		"name": _gs.tr("ENCOUNTER_ELDRITCH_NAME"),
+		"mainText": _gs.tr("ENCOUNTER_ELDRITCH_BODY"),
+		"test": test,
+		"successText": _gs.tr("ENCOUNTER_ELDRITCH_SUCCESS"),
+		"failureText": _gs.tr("ENCOUNTER_ELDRITCH_FAILURE"),
+		"eldritch_loc": loc,
+		"hook": hook,
+	}
+	GameConsole.log("[Знамение] %s изучает место, чтобы связать его с Тайной" % _gs._name_of(pid))
+	_gs._broadcast_sync()
+	_gs._emit_changed()
 
 
 # ── Бой (локально, по статам монстра из MonsterCatalog) ───────────────────────
@@ -320,11 +352,17 @@ func _compute_choices(pid: String) -> Array:
 		out.append("research")
 	if _gs.gates.has(loc):
 		out.append("gate")
-	# Тайна: локация в mysteries[active].locations И не в mystery_claimed.
+	# Тайна (location-счётчик): локация помечена И не зачищена. Для tokensOnCard
+	# этот путь не используется — там прогресс через bind-ход (ниже).
 	var mystery: Dictionary = _gs._campaign.current_mystery()
 	var locs: Array = mystery.get("locations", [])
-	if locs.has(loc) and not (_gs.mystery_claimed as Array).has(loc):
+	var is_tokens: bool = _gs.mystery_kind() == "tokensOnCard"
+	if not is_tokens and locs.has(loc) and not (_gs.mystery_claimed as Array).has(loc):
 		out.append("mystery")
+	# Bind-ход: encounter-хук набора жетонов применим на этой клетке (жетон Знамения
+	# или метка Тайны) и игрок может оплатить cost — см. GameState.mystery_encounter_hook.
+	if not _gs.mystery_encounter_hook(loc, pid).is_empty():
+		out.append("eldritch")
 	return out
 
 
@@ -455,6 +493,9 @@ func _commit_outcome(pid: String) -> void:
 	if kind == "combat":
 		_commit_combat(pid)
 		return
+	if kind == "eldritch":
+		_commit_eldritch(pid)
+		return
 	if kind == "gate" or kind == "mystery":
 		var branches: Dictionary = enc.get("branches", {})
 		var node: Dictionary = branches.get(String(enc.get("branch", "success")), {})
@@ -567,6 +608,43 @@ func _reroll_combat_die(pid: String, die_index: int) -> bool:
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
+
+
+# Итог Eldritch-хода. Успех: −2 улики, жетон Знамения с клетки → на карту Тайны.
+# Провал: ничего не теряем (жетон остаётся). Решение Тайны проверяется в конце
+# Фазы Мифов (GameState.check_mystery_tokens_solve), не здесь.
+func _commit_eldritch(pid: String) -> void:
+	var enc: Dictionary = _gs.current_encounter
+	if not bool((enc.get("resolution", {}) as Dictionary).get("passed", false)):
+		return  # провал — ничего не теряем
+	var hook: Dictionary = enc.get("hook", {})
+	if hook.is_empty():
+		return
+	var loc: String = String(enc.get("eldritch_loc", _gs.players[pid].get("location", "")))
+	# Азатот: переносим board-жетон (снимаем с клетки). Тунгуска: жетона нет → no-op.
+	if (_gs.entities.get(loc, []) as Array).has("eldritch_token"):
+		_remove_eldritch_at(loc)
+	# Списать cost + применить effect (placeEldritchToken where:self → счётчик).
+	_gs.mystery_apply_hook(hook, pid)
+	GameConsole.log(
+		(
+			"[Знамение] %s связал место с Тайной (на карте: %d)"
+			% [_gs._name_of(pid), _gs.mystery_tokens_on_card]
+		)
+	)
+
+
+# Снимает один жетон Знамения с локации (синкаемое entities).
+func _remove_eldritch_at(loc_id: String) -> void:
+	if loc_id.is_empty() or not _gs.entities.has(loc_id):
+		return
+	var arr: Array = _gs.entities[loc_id]
+	if (arr as Array).has("eldritch_token"):
+		arr.erase("eldritch_token")
+	if (arr as Array).is_empty():
+		_gs.entities.erase(loc_id)
+	else:
+		_gs.entities[loc_id] = arr
 
 
 # Снимает до n улик ("clue") с локации (синкаемое entities). Зовётся, когда

@@ -71,6 +71,7 @@ const ENTITY_TEX: Dictionary = {
 	"clue": preload("res://assets/map/clue-icon.png"),
 	"monster": preload("res://assets/map/monster-icon.png"),
 	"rumor": preload("res://assets/map/rumor-icon.png"),
+	"eldritch_token": MYSTERY_TEX,  # та же иконка, что у метки Тайны (без дубля preload)
 }
 # NB: параметры раскладки сущностей — var (не const), чтобы подбирать их
 # вживую через MCP без пересборки. Имена в UPPER_CASE сохранены ради ссылок

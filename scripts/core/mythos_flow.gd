@@ -110,6 +110,8 @@ func _apply_resolve() -> void:
 	# Эффекты — последовательно, с ожиданием анимации каждого. Дум от омена
 	# считается внутри шага омена (до открытия новых врат) — см. _apply_board_effect.
 	await _apply_effects(effects)
+	# Конец Фазы Мифов: Тайны типа tokensOnCard решаются именно здесь.
+	_gs.check_mystery_tokens_solve()
 	_gs._phase.start_new_round()
 	_gs._broadcast_sync()
 	_gs._emit_changed()

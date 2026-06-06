@@ -74,9 +74,13 @@ func _refresh() -> void:
 	)
 	_flavor.text = String(m.get("flavorText", ""))
 	_text.text = String(m.get("text", ""))
-	# Прогресс + список локаций (зачищенные помечены галочкой).
+	# Прогресс. Для tokensOnCard — счётчик жетонов на карте (локации не помечаются);
+	# иначе — прежний прогресс по зачищенным локациям (галочки).
 	var sc: Dictionary = m.get("solveCondition", {})
 	var target: int = int(sc.get("n", 1))
+	if String(sc.get("kind", "")) == "tokensOnCard":
+		_solve.text = tr("MYSTERY_TOKENS_FMT") % [GameState.mystery_tokens_on_card, target]
+		return
 	var done: int = GameState.mystery_progress
 	var locs_lines: PackedStringArray = PackedStringArray()
 	var locations: Array = m.get("locations", [])

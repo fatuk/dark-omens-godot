@@ -1367,7 +1367,13 @@ ENC_EFF_COND_LOSE,Снять состояние: %s,Remove: %s
 ENC_EFF_MOVE,Принудительный ход,Forced move
 ENC_EFF_CLOSE_GATE,Врата закрываются,Gate sealed
 ENCOUNTER_CHOICE_MYSTERY,Тайна,Mystery
+ENCOUNTER_CHOICE_ELDRITCH,Связать знамение (−2),Bind the omen (−2)
 MYSTERY_PROGRESS_FMT,Прогресс: %d / %d локаций,Progress: %d / %d locations
+MYSTERY_TOKENS_FMT,Жетоны знамения: %d / %d,Omen tokens: %d / %d
+ENCOUNTER_ELDRITCH_NAME,Связать знамение,Binding the Omen
+ENCOUNTER_ELDRITCH_BODY,"Знаки беды стянулись здесь в тугой узел. Вглядываясь в них (−2 улики), ты пытаешься притянуть эту печать ближе к разгадке Тайны.","Signs of doom knot tight on this space. Peering into them (−2 Clues), you try to draw this seal closer to the Mystery's unraveling."
+ENCOUNTER_ELDRITCH_SUCCESS,Узор поддаётся: жетон знамения ложится на карту Тайны.,The pattern yields: the omen token settles onto the Mystery card.
+ENCOUNTER_ELDRITCH_FAILURE,Знаки ускользают — жетон остаётся на месте.,The signs slip away — the token stays put.
 OUTCOME_VICTORY_TITLE,Тайна раскрыта,The Mystery Unveiled
 OUTCOME_VICTORY_BODY,"Партия решила все Тайны. Древний остаётся скован за гранью — этот мир уцелел.","Your party has solved every Mystery. The Old One remains bound beyond the veil — this world endures."
 OUTCOME_DEFEAT_TITLE,Древний пробуждается,The Old One Awakens

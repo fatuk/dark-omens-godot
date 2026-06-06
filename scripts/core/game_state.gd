@@ -107,6 +107,13 @@ var mystery_progress: int = 0
 # id зачищенных локаций активной Тайны (чтобы они исчезли из выбора встречи).
 # При решении Тайны очищается вместе с progress.
 var mystery_claimed: Array = []
+# Жетоны Знамения (Eldritch), перенесённые на карту активной Тайны (solveCondition
+# kind=="tokensOnCard"). Растёт, когда сыщик тратит улики на клетке с жетоном;
+# проверяется в конце Фазы Мифов. При решении Тайны сбрасывается.
+var mystery_tokens_on_card: int = 0
+# Индекс Тайны, чей onEnter уже применён (хост-локальный гард идемпотентности —
+# onEnter может зваться из нескольких хуков: старт партии / приход библии / решение).
+var _on_enter_applied_idx: int = -1
 # Финал партии: "" — ещё идёт; "victory" — все 3 Тайны решены; "defeat" — doom
 # достиг doomClock. Клиент по этому полю показывает финальные модалки.
 var outcome: String = ""
@@ -176,6 +183,7 @@ func _broadcast_sync() -> void:
 				"active_mystery": active_mystery,
 				"mystery_progress": mystery_progress,
 				"mystery_claimed": mystery_claimed,
+				"mystery_tokens_on_card": mystery_tokens_on_card,
 				"outcome": outcome,
 			}
 		)
@@ -274,6 +282,7 @@ func start_game(players_init: Array) -> void:
 	# N раскладывает поле и задаёт Наплыв как на N.
 	var setup_pc: int = int(campaign.get("playerCount", _campaign.balance_player_count()))
 	_setup_board(maxi(1, setup_pc))  # стартовая раскладка: врата+монстры, улики, Наплыв
+	_apply_mystery_on_enter()  # onEnter первой Тайны (если библия уже готова; иначе при её приходе)
 	_broadcast_sync()
 	_emit_changed()
 	phase_changed.emit(phase)
@@ -631,6 +640,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	active_mystery = int(data.get("active_mystery", 0))
 	mystery_progress = int(data.get("mystery_progress", 0))
 	mystery_claimed = data.get("mystery_claimed", [])
+	mystery_tokens_on_card = int(data.get("mystery_tokens_on_card", 0))
 	outcome = String(data.get("outcome", ""))
 	_emit_changed()
 	phase_changed.emit(phase)
@@ -804,6 +814,15 @@ func _apply_board_effect(node: Dictionary) -> void:
 		"placeRumor":
 			for _i: int in n:
 				_place_rumor()
+		"placeEldritchToken":
+			# where=="self" → жетон(ы) на карту активной Тайны (счётчик).
+			# Иначе → разложить N жетонов Знамения на случайные поля.
+			if String(node.get("where", "")) == "self":
+				mystery_tokens_on_card += n
+				GameConsole.log("[Тайна] жетонов на карте Тайны: %d" % mystery_tokens_on_card)
+			else:
+				for _i: int in n:
+					_place_eldritch_token()
 		"monsterSurge":
 			_monster_surge()
 		"mysteryProgress":
@@ -848,6 +867,178 @@ func _mystery_target() -> int:
 	return maxi(1, int(sc.get("n", 1)))
 
 
+## Тип условия решения активной Тайны: "tokensOnCard" | "cluesOnCard" |
+## "monsterDefeated" | "" (старый location-счётчик). Источник — solveCondition.kind.
+func mystery_kind() -> String:
+	var m: Dictionary = _campaign.current_mystery()
+	return String((m.get("solveCondition", {}) as Dictionary).get("kind", ""))
+
+
+# ── Data-driven хуки набора жетонов (data.progress) ───────────────────────────
+# Хук: { on, when?, test?, cost?, effect }. on — событие-триггер; when —
+# условие (omenMatch/locationMarked); test — проверка (для encounter-хуков); cost —
+# ресурс «можете потратить»; effect — DSL-узлы (placeEldritchToken where:self и др.).
+# См. dark-omens-relay/MYSTERY-PROGRESS.md.
+
+
+## Хуки набора активной Тайны. Старый формат (один объект progressHook)
+## нормализуем в массив. [] — хуков нет.
+func mystery_progress_hooks() -> Array:
+	var m: Dictionary = _campaign.current_mystery()
+	var p: Variant = m.get("progress", null)
+	if p is Array:
+		return p
+	var single: Variant = m.get("progressHook", null)
+	if single is Dictionary and not (single as Dictionary).is_empty():
+		return [single]
+	return []
+
+
+## Первый подходящий хук для события (on==event и when выполнено). {} — нет.
+## Работает только для tokensOnCard-Тайн.
+func mystery_hook_for(event: String, ctx: Dictionary = {}) -> Dictionary:
+	if mystery_kind() != "tokensOnCard":
+		return {}
+	var hooks: Array = mystery_progress_hooks()
+	for i: int in range(hooks.size()):
+		var h: Dictionary = hooks[i]
+		if String(h.get("on", h.get("trigger", ""))) != event:
+			continue
+		if _eval_hook_when(h.get("when", {}), ctx):
+			return h
+	return {}
+
+
+# Предикаты when против контекста события (ctx: loc/color/...). Пусто → всегда true.
+func _eval_hook_when(when_v: Variant, ctx: Dictionary) -> bool:
+	if not (when_v is Dictionary) or (when_v as Dictionary).is_empty():
+		return true
+	var w: Dictionary = when_v
+	if bool(w.get("omenMatch", false)) and String(ctx.get("color", "")) != current_omen_color():
+		return false  # врата должны быть цвета текущего омена
+	if bool(w.get("locationMarked", false)):
+		var locs: Array = _campaign.current_mystery().get("locations", [])
+		if not locs.has(String(ctx.get("loc", ""))):
+			return false
+	return true
+
+
+## Хук, доступный как ВСТРЕЧА на локации (encounterAt*-триггеры), если игрок может
+## оплатить cost. {} — нет. encounterAtEldritchToken → клетка с жетоном Знамения;
+## encounterAtMysteryToken → помеченная локация Тайны.
+func mystery_encounter_hook(loc: String, pid: String) -> Dictionary:
+	if mystery_kind() != "tokensOnCard":
+		return {}
+	var event: String = ""
+	if (entities.get(loc, []) as Array).has("eldritch_token"):
+		event = "encounterAtEldritchToken"
+	elif (_campaign.current_mystery().get("locations", []) as Array).has(loc):
+		event = "encounterAtMysteryToken"
+	else:
+		return {}
+	var hook: Dictionary = mystery_hook_for(event, {"loc": loc})
+	if hook.is_empty() or not mystery_can_pay(hook, pid):
+		return {}
+	return hook
+
+
+## Может ли игрок оплатить cost хука (spend <resource> amount). Без cost → true.
+func mystery_can_pay(hook: Dictionary, pid: String) -> bool:
+	var cost: Dictionary = hook.get("cost", {})
+	if cost.is_empty():
+		return true
+	return _player_resource(pid, String(cost.get("spend", ""))) >= int(cost.get("amount", 1))
+
+
+## Хост: применить хук — списать cost, применить effect (DSL-узлы). true — применён.
+func mystery_apply_hook(hook: Dictionary, pid: String) -> bool:
+	if not _is_host() or not mystery_can_pay(hook, pid):
+		return false
+	var cost: Dictionary = hook.get("cost", {})
+	if not cost.is_empty():
+		_spend_resource(pid, String(cost.get("spend", "")), int(cost.get("amount", 1)))
+	var effect: Array = hook.get("effect", [])
+	for i: int in range(effect.size()):
+		var node: Dictionary = effect[i]
+		if node is Dictionary:
+			_apply_board_effect(node)  # placeEldritchToken where:self → счётчик и т.п.
+	return true
+
+
+# Хост: реакция-триггеры (gateClosed/monsterDefeated). Пока БЕЗ opt-in промпта —
+# применяется автоматически, если игрок может оплатить (см. MYSTERY-PROGRESS.md).
+func _try_mystery_hook(event: String, ctx: Dictionary, pid: String) -> void:
+	var hook: Dictionary = mystery_hook_for(event, ctx)
+	if hook.is_empty() or not mystery_can_pay(hook, pid):
+		return
+	if mystery_apply_hook(hook, pid):
+		GameConsole.log("[Тайна] хук «%s» сработал у %s" % [event, _name_of(pid)])
+
+
+func _player_resource(pid: String, res: String) -> int:
+	if not players.has(pid):
+		return 0
+	var p: Dictionary = players[pid]
+	match res:
+		"clue", "clues":
+			return int(p.get("clues", 0))
+		"sanity":
+			return int(p.get("sanity", 0))
+		"health", "hp":
+			return int(p.get("hp", 0))
+		"focus", "concentration":
+			return int(p.get("concentration", 0))
+		_:
+			return 0
+
+
+func _spend_resource(pid: String, res: String, amt: int) -> void:
+	if not players.has(pid):
+		return
+	var p: Dictionary = players[pid]
+	match res:
+		"clue", "clues":
+			p["clues"] = maxi(0, int(p.get("clues", 0)) - amt)
+		"sanity":
+			p["sanity"] = maxi(0, int(p.get("sanity", 0)) - amt)
+		"health", "hp":
+			p["hp"] = maxi(0, int(p.get("hp", 0)) - amt)
+		"focus", "concentration":
+			p["concentration"] = maxi(0, int(p.get("concentration", 0)) - amt)
+
+
+## Хост: проверка решения Тайны по жетонам на карте. Зовётся в КОНЦЕ Фазы Мифов
+## (см. MythosFlow). Для прочих kind — no-op.
+func check_mystery_tokens_solve() -> void:
+	if not _is_host() or not outcome.is_empty():
+		return
+	if mystery_kind() != "tokensOnCard":
+		return
+	if mystery_tokens_on_card >= _mystery_target():
+		GameConsole.log(
+			"[Тайна] жетонов на карте %d/%d — решено" % [mystery_tokens_on_card, _mystery_target()]
+		)
+		_solve_active_mystery()
+
+
+## Хост: применить onEnter активной Тайны (board-эффекты, напр. раскладка жетонов
+## Знамения). Зовётся при активации Тайны — на старте кампании и после решения
+## предыдущей. onEnter протаскивается в сводку библии (CampaignGen._summary).
+func _apply_mystery_on_enter() -> void:
+	if not _is_host():
+		return
+	var m: Dictionary = _campaign.current_mystery()
+	# Библия ещё не готова → выходим без отметки гарда (повторим, когда придёт).
+	if m.is_empty() or _on_enter_applied_idx == active_mystery:
+		return
+	_on_enter_applied_idx = active_mystery
+	var on_enter: Array = m.get("onEnter", [])
+	for i: int in range(on_enter.size()):
+		var node: Dictionary = on_enter[i]
+		if node is Dictionary:
+			_apply_board_effect(node)
+
+
 # Активная Тайна решена: переходим к следующей или фиксируем победу.
 func _solve_active_mystery() -> void:
 	var solved_idx: int = active_mystery
@@ -855,10 +1046,13 @@ func _solve_active_mystery() -> void:
 	active_mystery += 1
 	mystery_progress = 0
 	mystery_claimed = []
+	mystery_tokens_on_card = 0
 	var total: int = (campaign.get("mysteries", []) as Array).size()
 	if active_mystery >= total:
 		outcome = "victory"
 		GameConsole.log("[Финал] все Тайны решены — победа партии")
+	else:
+		_apply_mystery_on_enter()  # активировалась следующая Тайна
 
 
 # Doom достиг doomClock → партия проиграла. Хук на advanceDoom.
@@ -1014,8 +1208,11 @@ func _close_gate_at_active_player() -> void:
 		return
 	var loc: String = String(players.get(pid, {}).get("location", ""))
 	if gates.has(loc):
+		var color: String = String(gates[loc])
 		gates.erase(loc)
 		GameConsole.log("[Врата] закрыты на %s" % loc)
+		# Триггер Тайны: закрытие врат (напр. «врата цвета омена → −1 улика → жетон»)
+		_try_mystery_hook("gateClosed", {"loc": loc, "color": color}, pid)
 
 
 ## Заспаунить монстра на локации, ВЫТЯНУВ случайный id из «мешка» (без повторов).
@@ -1088,6 +1285,29 @@ func _place_clue() -> void:
 	cell.append("clue")
 	entities[pick] = cell
 	GameConsole.log("[Улика] на %s" % pick)
+
+
+## Положить жетон Знамения (Eldritch) на случайную локацию без такого жетона
+## (≤1 на локацию — иначе их не отличить визуально и нечего «снимать» встречей).
+func _place_eldritch_token() -> void:
+	if not _is_host():
+		return
+	var candidates: Array = []
+	var locations: Array = _load_locations()
+	for i: int in range(locations.size()):
+		var lid: String = String(locations[i].get("id", ""))
+		if lid.is_empty():
+			continue
+		var arr: Array = entities.get(lid, [])
+		if not (arr as Array).has("eldritch_token"):
+			candidates.append(lid)
+	if candidates.is_empty():
+		return
+	var pick: String = String(candidates[randi() % candidates.size()])
+	var cell: Array = entities.get(pick, [])
+	cell.append("eldritch_token")
+	entities[pick] = cell
+	GameConsole.log("[Знамение] жетон на %s" % pick)
 
 
 ## Положить слух на случайную локацию.
