@@ -224,9 +224,22 @@ func _make_player_dict(
 		"sanity_max": sanity_max,
 		"clues": 0,
 		"conditions": [],
-		"items": [],
+		"items": _starting_items(investigator),
 		"skill_mods": {},
 	}
+
+
+# Стартовые карты-активы сыщика (id ассетов) из investigators.json → в инвентарь.
+# Токены (clue/focus и т.п.) пропускаем — это не карты. Формат items — id-строки
+# (как в магазине), их понимают AssetCatalog.deck_for_items и веер руки.
+func _starting_items(investigator: String) -> Array:
+	var out: Array = []
+	var si: Array = Investigators.get_data(investigator).get("startingItems", [])
+	for entry: Variant in si:
+		var aid: String = AssetCatalog.entry_id(entry)
+		if not aid.is_empty() and not AssetCatalog.by_id(aid).is_empty():
+			out.append(aid)
+	return out
 
 
 # ── Хост: запуск игры ────────────────────────────────────────────────────────

@@ -127,20 +127,6 @@ const _ITEM_SEP: int = 8  # отступ между карточками
 const _ITEMS_BG_MARGIN: int = 24  # 9-slice угол (в HALF-res текстуре, см. ниже)
 const _ITEMS_BG_PAD: int = 18  # инсет контента от рамки фона
 
-# Трейт ассета → ключ перевода для подзаголовка карточки (как в магазине).
-const _TRAIT_KEY := {
-	"weapon": "TRAIT_WEAPON",
-	"magical": "TRAIT_MAGICAL",
-	"relic": "TRAIT_RELIC",
-	"tome": "TRAIT_TOME",
-	"teamwork": "TRAIT_TEAMWORK",
-	"item": "TRAIT_ITEM",
-	"trinket": "TRAIT_TRINKET",
-	"task": "TRAIT_TASK",
-	"service": "TRAIT_SERVICE",
-	"ally": "TRAIT_ALLY",
-}
-
 
 func _ready() -> void:
 	_ticket_shadow_mat = _build_ticket_shadow_material()
@@ -726,54 +712,18 @@ func _render_items(items: Array) -> void:
 	# Каждый элемент — объект: {"asset": id} (карта) или токен {"clue": N} и т.п.
 	# Карточки рисуем только для ассетов; токены (clue/resource/focus) — не карты.
 	for i: int in range(items.size()):
-		var aid: String = _entry_asset_id(items[i])
+		var aid: String = AssetCatalog.entry_id(items[i])
 		if aid.is_empty():
 			continue
 		var a: Dictionary = AssetCatalog.by_id(aid)
 		if a.is_empty():
 			continue
-		var payload: Dictionary = _asset_payload(a)
+		var payload: Dictionary = AssetCatalog.card_payload(a)
 		_item_deck.append(payload)
 		_items_row.add_child(_make_card_node(payload, true))  # кликабельна → веер
 	if _item_deck.is_empty():  # нет карт-ассетов → пустые рамки-плейсхолдеры
 		for i: int in range(_ITEM_SLOTS):
 			_items_row.add_child(_make_card_node())
-
-
-# id ассета из элемента startingItems: {"asset": id} → id; токен/иное → "".
-# Строку тоже принимаем (на случай старого формата).
-func _entry_asset_id(entry: Variant) -> String:
-	if entry is String:
-		return String(entry)
-	if entry is Dictionary and (entry as Dictionary).has("asset"):
-		return String((entry as Dictionary)["asset"])
-	return ""
-
-
-# Payload карты ассета для GameCard.set_card (название/трейт/способность/стоимость).
-func _asset_payload(a: Dictionary) -> Dictionary:
-	var traits: Array = a.get("traits", [])
-	var trait_id: String = String(traits[-1]) if not traits.is_empty() else "item"
-	var payload: Dictionary = {
-		"cost": int(a.get("cost", 0)),
-		"title": a.get("nameKey", ""),
-		"subtitle": _TRAIT_KEY.get(trait_id, trait_id.to_upper()),
-		"desc": a.get("abilityKey", ""),
-	}
-	var art: Texture2D = _asset_art(a)
-	if art != null:
-		payload["art"] = art
-	return payload
-
-
-# Арт ассета по конвенции имени файла: assets/asset-card/<id.capitalize()>.png
-# (id "18_derringer" → "18 Derringer.png"). Нет файла → null (рамка без арта).
-func _asset_art(a: Dictionary) -> Texture2D:
-	var id: String = String(a.get("id", ""))
-	if id.is_empty():
-		return null
-	var path: String = "res://assets/asset-card/%s.png" % id.capitalize()
-	return load(path) if ResourceLoader.exists(path) else null
 
 
 # Миниатюра карты имущества: GameCard В ПОЛНЫЙ РАЗМЕР (_ITEM_FULL_H), уменьшенный

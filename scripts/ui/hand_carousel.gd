@@ -1,8 +1,10 @@
 extends CanvasLayer
 class_name HandCarousel
 
-## Веер карт руки сыщика (прототип, порт из HTML/CSS-макета).
-## Открывается/закрывается по Tab на карте. Пока с ФЕЙКОВЫМИ картами.
+## Веер карт руки сыщика (порт из HTML/CSS-макета).
+## Открывается/закрывается по Tab. Карты задаются извне через set_cards()
+## (в игре — реальное имущество игрока, см. WorldMap._refresh_hand; в пикере —
+## имущество выбранного сыщика). Без set_cards — дефолтная демо-рука (_default_deck).
 ##
 ## Навигация: ← / → или колесо мыши — листать; наведение мышью — выбрать;
 ## клик ЛКМ — «вспышка»; Esc или Tab — закрыть.
@@ -169,6 +171,8 @@ func set_cards(cards: Array) -> void:
 	_deck = cards.duplicate()
 	if is_inside_tree():
 		_rebuild_cards()
+		if _open:  # инвентарь сменился при открытом веере — переразложить карты
+			_layout(false)
 
 
 ## Текст подсказки внизу (в пикере «сыграть» неуместно — задаём своё).
@@ -298,6 +302,8 @@ func _base_transform(i: int) -> Dictionary:
 
 
 func _layout(animate: bool) -> void:
+	if _els.is_empty():
+		return  # пустая рука — нечего раскладывать (иначе твин без твинеров)
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
 	if animate:
@@ -338,6 +344,8 @@ func relayout() -> void:
 
 func _step(d: int) -> void:
 	var n: int = _els.size()
+	if n == 0:
+		return  # пустая рука — листать нечего (и защита от % 0)
 	if _active == -1:
 		_active = int(round(_mid))
 	_active = (_active + d + n) % n
@@ -365,8 +373,8 @@ func _play_scroll() -> void:
 
 
 func open() -> void:
-	if _open:
-		return
+	if _open or _els.is_empty():
+		return  # пустую руку не открываем
 	_open = true
 	visible = true
 	_active = -1

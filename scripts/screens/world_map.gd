@@ -65,6 +65,9 @@ var _travelling: bool = false  # идёт анимация перемещени�
 
 var _map_layer: MapLayer
 
+# Веер карт руки (Tab). Наполняется реальным имуществом локального игрока.
+var _hand_carousel: CanvasLayer = null
+
 # Интро-гейт: блокирующая модалка-цепочка (загрузка → Древний → первая
 # Тайна → карта), строится в коде.
 var _campaign_gate: CanvasLayer = null
@@ -198,11 +201,23 @@ func _build_outcome_modal() -> void:
 	add_child(om)
 
 
-# Веер карт руки (прототип) — открывается по Tab. Пока фейковые карты.
+# Веер карт руки — открывается по Tab. Карты берём из реального имущества
+# локального игрока (GameState), обновляем при каждом изменении стейта.
 func _build_hand_carousel() -> void:
 	var hc: CanvasLayer = load("res://scripts/ui/hand_carousel.gd").new()
 	hc.name = "HandCarousel"
 	add_child(hc)
+	_hand_carousel = hc
+	GameState.state_changed.connect(_refresh_hand)
+	_refresh_hand()
+
+
+# Перечитать руку из имущества локального игрока (id ассетов → карты GameCard).
+func _refresh_hand() -> void:
+	if not is_instance_valid(_hand_carousel):
+		return
+	var items: Array = GameState.my_player().get("items", [])
+	_hand_carousel.set_cards(AssetCatalog.deck_for_items(items))
 
 
 func _refresh_gates() -> void:
