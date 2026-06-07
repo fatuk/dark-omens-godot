@@ -484,37 +484,44 @@ func host_apply_advance_stage(pid: String) -> bool:
 ## PhaseController.host_apply_finish_encounter) — эффекты отвязаны от броска,
 ## чтобы между ними был доступен переброс за фокус. Идемпотентна (флаг committed).
 ## combat применяет свои эффекты сам (в _resolve_combat) — здесь пропускается.
+##
+## Резюмируемость: если программа эффектов содержит интерактивный choice, слот
+## ставит current_encounter.pending_choice и НЕ ставит committed — ход замирает,
+## модалка показывает выбор. После записи решения (record_effect_choice) функция
+## зовётся снова и переигрывает программу детерминированно (см. _run_effect_slot).
 func _commit_outcome(pid: String) -> void:
 	var enc: Dictionary = _gs.current_encounter
 	if bool(enc.get("committed", false)) or enc.is_empty():
 		return
 	var kind: String = String(enc.get("kind", ""))
-	enc["committed"] = true
+	# Атомарные ветки (без интерактивного выбора эффектов) — как раньше.
 	if kind == "combat":
+		enc["committed"] = true
 		_commit_combat(pid)
 		return
 	if kind == "eldritch":
+		enc["committed"] = true
 		_commit_eldritch(pid)
 		return
 	if kind == "gate" or kind == "mystery":
 		var branches: Dictionary = enc.get("branches", {})
 		var node: Dictionary = branches.get(String(enc.get("branch", "success")), {})
 		var res: Dictionary = enc.get("stage_resolution", {})
-		_apply_effects(
-			node.get("onSuccess" if bool(res.get("passed", false)) else "onFailure", []), pid
-		)
+		var key: String = "onSuccess" if bool(res.get("passed", false)) else "onFailure"
+		if not _run_effect_slot(node.get(key, []), pid, "main"):
+			return  # ждём выбор игрока
 	else:
 		var res: Dictionary = enc.get("resolution", {})
-		var arr: Array = enc.get("onSuccess" if bool(res.get("passed", false)) else "onFailure", [])
-		var clues_before: int = int(_gs.players[pid].get("clues", 0))
-		_apply_effects(arr, pid)
-		var clues_gained: int = int(_gs.players[pid].get("clues", 0)) - clues_before
-		# Исследование: забранная улика исчезает с локации игрока.
-		if clues_gained > 0 and kind == "research":
-			_remove_clues_at(String(_gs.players[pid].get("location", "")), clues_gained)
-		# Бонус локации (на успехе) — поверх результата карточки.
-		if bool(res.get("passed", false)):
-			_apply_effects(enc.get("loc_bonus", []), pid)
+		var passed: bool = bool(res.get("passed", false))
+		var key: String = "onSuccess" if passed else "onFailure"
+		if not _run_effect_slot(enc.get(key, []), pid, "main"):
+			return  # ждём выбор игрока
+		# Исследование: забранная улика исчезает с локации (один раз, после слота).
+		_apply_research_clue_removal(pid, kind)
+		# Бонус локации (на успехе) — отдельный слот поверх результата карточки.
+		if passed and not _run_effect_slot(enc.get("loc_bonus", []), pid, "bonus"):
+			return
+	enc["committed"] = true
 
 
 # Применение итогов боя при завершении: потеря рассудка (Воля) + урон сыщику и
@@ -755,19 +762,158 @@ func _roll_check(pid: String, test: Dictionary) -> Dictionary:
 	return Dice.result(Dice.roll(pool))
 
 
-# Применяет программу эффектов: интерпретатор — игроку, эффекты поля — через
-# _gs._apply_board_effect (общая точка с MythosFlow).
-func _apply_effects(effects: Array, pid: String) -> void:
+# Применяет программу эффектов ОДНИМ слотом (транзакционно и резюмируемо).
+# Возвращает true — слот завершён (мутации игрока зафиксированы, поле и логи
+# применены); false — встретился интерактивный choice, выставлен
+# current_encounter.pending_choice, мутации отброшены (ждём решения игрока).
+#
+# Детерминизм при возобновлении: бросаем по копии игрока (dup), эффекты пишем
+# обратно только при полном завершении слота; решения/броски хранятся в
+# current_encounter (effect_decisions/effect_rolls) и переигрываются. Завершённые
+# слоты помечаются в effect_done_slots и при повторном заходе пропускаются —
+# иначе ранее применённые мутации наложились бы повторно.
+func _run_effect_slot(effects: Array, pid: String, slot: String) -> bool:
+	var enc: Dictionary = _gs.current_encounter
+	var done: Array = enc.get("effect_done_slots", [])
+	if (done as Array).has(slot):
+		return true
 	if effects.is_empty() or not _gs.players.has(pid):
-		return
-	var res: Dictionary = _EffectRunner.run(effects, _gs.players[pid])
+		done.append(slot)
+		enc["effect_done_slots"] = done
+		return true
+	# Транзакция: применяем к копии игрока — на паузе (choice) копия отбрасывается.
+	var dup: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
+	var flow: Dictionary = {
+		"interactive": true,
+		"decisions": enc.get("effect_decisions", {}),
+		"rolls": enc.get("effect_rolls", {}),
+		"pending": {},
+		"slot": slot + "/",
+	}
+	var clues_before: int = int(dup.get("clues", 0))
+	var res: Dictionary = _EffectRunner.run(effects, dup, _effect_ctx(pid), flow)
+	enc["effect_rolls"] = flow.get("rolls", {})  # сохранить записанные броски
+	var pending: Dictionary = res.get("pending", {})
+	if not pending.is_empty():
+		enc["pending_choice"] = pending  # модалка покажет выбор; ход замирает
+		return false
+	# Слот завершён — фиксируем мутации игрока, поле и логи.
+	_gs.players[pid] = dup
+	if slot == "main":
+		enc["_clues_gained"] = int(dup.get("clues", 0)) - clues_before
 	var board: Array = res.get("board", [])
 	for i in range(board.size()):
-		var node: Dictionary = board[i]
-		_gs._apply_board_effect(node)
+		_gs._apply_board_effect(board[i] as Dictionary)
 	var logs: Array = res.get("logs", [])
 	for i in range(logs.size()):
 		GameConsole.log("[Эффект] %s" % String(logs[i]))
+	done.append(slot)
+	enc["effect_done_slots"] = done
+	return true
+
+
+# Исследование: снять с локации забранные в основном слоте улики (один раз).
+func _apply_research_clue_removal(pid: String, kind: String) -> void:
+	var enc: Dictionary = _gs.current_encounter
+	if kind != "research" or bool(enc.get("_clues_removed", false)):
+		return
+	var gained: int = int(enc.get("_clues_gained", 0))
+	if gained > 0:
+		_remove_clues_at(String(_gs.players[pid].get("location", "")), gained)
+	enc["_clues_removed"] = true
+
+
+## Хост: записать решение игрока по активному choice. Возвращает true, если
+## решение принято (далее зовущий переигрывает _commit_outcome). Зовётся из
+## PhaseController.host_apply_effect_choice.
+func record_effect_choice(pid: String, index: int) -> bool:
+	if _gs.phase != "encounter" or _gs._current_pid() != pid:
+		return false
+	var enc: Dictionary = _gs.current_encounter
+	var pending: Dictionary = enc.get("pending_choice", {})
+	if pending.is_empty():
+		return false
+	var options: Array = pending.get("options", [])
+	if index < 0 or index >= (options as Array).size():
+		return false
+	# choice → пишем индекс ветки; target → id выбранного сыщика (его читает _run_action).
+	var value: Variant = index
+	if String(pending.get("kind", "choice")) == "target":
+		value = String((options[index] as Dictionary).get("pid", ""))
+	var dec: Dictionary = enc.get("effect_decisions", {})
+	dec[String(pending.get("path", ""))] = value
+	enc["effect_decisions"] = dec
+	enc["pending_choice"] = {}  # снято — _commit_outcome переиграет с решением
+	return true
+
+
+# Контекст исполнения Effect-DSL для активного игрока: навыки, тип локации, роль
+# ведущего и срез поля (врата/монстры/улики). Нужен интерпретатору для реального
+# test, предикатов when и счётчиков repeat (см. effect_runner.gd).
+func _effect_ctx(pid: String) -> Dictionary:
+	var p: Dictionary = _gs.players.get(pid, {})
+	var loc: String = String(p.get("location", ""))
+	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
+	var ctx: Dictionary = {
+		"skills": inv.get("skills", {}),
+		"loc_type": _location_info(loc).get("type", "city"),
+		"is_lead": (not (_gs.turn_order as Array).is_empty()) and String(_gs.turn_order[0]) == pid,
+		"gates_matching_omen": _gs._count_gates_of_color(_gs.current_omen_color()),
+		"gates_on_board": (_gs.gates as Dictionary).size(),
+		"monsters_on_board": _count_all_monsters(),
+		"clues_on_board": _count_all_entities("clue"),
+	}
+	var tough: int = _active_monster_toughness(loc)
+	if tough >= 0:
+		ctx["monster_toughness"] = tough
+	ctx["other_pids"] = _other_investigators(pid)
+	return ctx
+
+
+# Прочие подключённые сыщики (кроме активного) как [{pid, name}] — варианты для
+# интерактивного выбора цели (передача активов/улик: target chosenInvestigator).
+func _other_investigators(active_pid: String) -> Array:
+	var out: Array = []
+	for pid_v: Variant in _gs.turn_order:
+		var pid: String = String(pid_v)
+		if pid == active_pid or not _gs.players.has(pid):
+			continue
+		if not bool(_gs.players[pid].get("connected", true)):
+			continue
+		out.append({"pid": pid, "name": _gs._name_of(pid)})
+	return out
+
+
+# Всего экземпляров монстров на поле (по всем локациям).
+func _count_all_monsters() -> int:
+	var n: int = 0
+	for lid_v: Variant in _gs.monsters:
+		n += (_gs.monsters[lid_v] as Array).size()
+	return n
+
+
+# Сколько меток tag (напр. "clue") лежит на поле суммарно.
+func _count_all_entities(tag: String) -> int:
+	var n: int = 0
+	for lid_v: Variant in _gs.entities:
+		for e_v: Variant in _gs.entities[lid_v] as Array:
+			if String(e_v) == tag:
+				n += 1
+	return n
+
+
+# Стойкость первого монстра на локации (для when/repeat по монстру). −1 — монстра нет.
+func _active_monster_toughness(loc: String) -> int:
+	var mons: Array = _gs.monsters.get(loc, [])
+	if (mons as Array).is_empty():
+		return -1
+	var inst_v: Variant = mons[0]
+	var mid: String = String(inst_v.get("id", "")) if inst_v is Dictionary else String(inst_v)
+	var m: Dictionary = MonsterCatalog.by_id(mid)
+	if m.is_empty():
+		return -1
+	@warning_ignore("unsafe_method_access")
+	return MonsterCatalog.toughness_for(m, maxi(1, _gs.players.size()))
 
 
 # ── Бонус локации (Вариант A: rewardAffinity в data/locations.json) ───────────────

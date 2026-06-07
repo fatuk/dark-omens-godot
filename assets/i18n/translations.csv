@@ -678,6 +678,8 @@ ENCOUNTER_ACCEPT,Принять исход,Accept the outcome
 ENCOUNTER_GATE_TRIAL,Испытание Иного мира — пройдите проверку.,An Other World ordeal — make the check.
 ENCOUNTER_MYSTERY_TRIAL,Расследование на месте Тайны — пройдите проверку.,Investigating the Mystery site — make the check.
 ENCOUNTER_PROCEED,Вы идёте дальше.,You press on.
+ENCOUNTER_CHOOSE,Сделайте выбор,Make a choice
+ENCOUNTER_CHOOSE_TARGET,Кому передать?,Give to whom?
 COMBAT_HEALTH,Здоровье,Health
 COMBAT_SANITY,Рассудок,Sanity
 COMBAT_MDMG,Урон,Damage

@@ -23,6 +23,8 @@ extends CanvasLayer
 
 # Ряд кубиков (DiceTray) — создаётся кодом над строкой _dice.
 var _dice_holder: VBoxContainer
+# Контейнер кнопок интерактивного выбора (choice в эффектах) — создаётся кодом.
+var _choice_holder: VBoxContainer
 var _tray: DiceTray  # единый лоток, создаётся лениво и переиспользуется
 var _last_dice: Array = []  # последний показанный бросок (спин — только на свежем)
 var _pending_n: int = -1  # сколько рубашек показано до броска
@@ -58,6 +60,14 @@ func _ready() -> void:
 	vbox.move_child(_dice_holder, _roll_btn.get_index())  # кубы НАД кнопкой броска
 	_dice_holder.visible = false
 
+	# Контейнер кнопок интерактивного выбора — под текстом, на месте кнопки броска.
+	_choice_holder = VBoxContainer.new()
+	_choice_holder.name = "ChoiceHolder"
+	_choice_holder.add_theme_constant_override("separation", 8)
+	vbox.add_child(_choice_holder)
+	vbox.move_child(_choice_holder, _roll_btn.get_index())
+	_choice_holder.visible = false
+
 	_roll_btn.pressed.connect(_on_roll_pressed)
 	_finish_btn.pressed.connect(_on_finish_pressed)
 	UIStyle.scale_modal_text(_panel)  # текст модалок крупнее (×1.5)
@@ -81,6 +91,12 @@ func _refresh() -> void:
 	if String(card.get("kind", "")) == "combat":
 		_root.visible = false
 		return
+	# Интерактивный выбор ветки эффектов (choice) — поверх любого состояния:
+	# коммит встал на паузу и ждёт решения активного игрока.
+	if not (card.get("pending_choice", {}) as Dictionary).is_empty():
+		_show_choice(card)
+		return
+	_clear_choice()
 	if card.is_empty():
 		_show_loading()
 	elif _is_branching(card):
@@ -100,6 +116,65 @@ func _show_loading() -> void:
 	for node: Control in [_check, _roll_btn, _dice, _outcome, _finish_btn]:
 		node.visible = false
 	_hide_dice()
+
+
+# Интерактивный выбор: подсказка + кнопка на каждую ветку pending_choice.options.
+# Клик → GameState.choose_effect(index); хост запишет выбор и доиграет коммит.
+func _show_choice(card: Dictionary) -> void:
+	var pending: Dictionary = card.get("pending_choice", {})
+	var is_target: bool = String(pending.get("kind", "choice")) == "target"
+	_title.text = _title_text(card)
+	_main_text.text = tr("ENCOUNTER_CHOOSE_TARGET" if is_target else "ENCOUNTER_CHOOSE")
+	for node: Control in [_check, _roll_btn, _dice, _outcome, _finish_btn]:
+		node.visible = false
+	_hide_dice()
+	_clear_choice()
+	var options: Array = pending.get("options", [])
+	for i in range(options.size()):
+		var b: Variant = options[i]
+		var btn := Button.new()
+		btn.name = "ChoiceBtn%d" % i
+		# target → имя сыщика; choice → описание ветки эффектов.
+		if is_target:
+			btn.text = String((b as Dictionary).get("name", "?")) if b is Dictionary else "?"
+		else:
+			btn.text = _branch_label(b if b is Dictionary else {})
+		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		UIStyle.style_button(btn)
+		var idx: int = i
+		btn.pressed.connect(func() -> void: _on_choice_pressed(idx))
+		_choice_holder.add_child(btn)
+	_choice_holder.visible = true
+
+
+func _clear_choice() -> void:
+	if not is_instance_valid(_choice_holder):
+		return
+	for c: Node in _choice_holder.get_children():
+		c.queue_free()
+	_choice_holder.visible = false
+
+
+func _on_choice_pressed(index: int) -> void:
+	_clear_choice()  # блокируем повторные клики до синка от хоста
+	GameState.choose_effect(index)
+
+
+# Метка кнопки ветки choice: художественный text → описание group/вложенного
+# choice/проверки → описание одиночного эффекта (механический режим, как ставки).
+func _branch_label(b: Dictionary) -> String:
+	var txt: String = String(b.get("text", "")).strip_edges()
+	if not txt.is_empty():
+		return txt
+	if b.has("group"):
+		return _describe_effects(b.get("group", []))
+	if b.has("choice"):
+		return _describe_effects(b.get("choice", [])).replace(", ", " / ")
+	if b.has("test"):
+		var sk: String = String(_SKILL_KEYS.get(String(b.get("test", "will")), "SKILL_WILL"))
+		return "%s: %s" % [tr("ENCOUNTER_CHECK"), tr(sk)]
+	return _describe_one(b)
 
 
 func _show_card(card: Dictionary) -> void:

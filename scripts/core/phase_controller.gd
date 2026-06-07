@@ -204,10 +204,35 @@ func host_apply_finish_encounter(pid: String) -> bool:
 	if _gs._current_pid() != pid:
 		GameConsole.warn("[Game] %s завершает встречу не в свой ход" % _gs._name_of(pid))
 		return false
+	return _commit_and_advance(pid)
 
+
+## Хост: игрок выбрал ветку интерактивного choice в эффектах встречи. Записываем
+## решение и переигрываем коммит (если выбор закрыл паузу — ход идёт дальше).
+## Зовётся из GameState.choose_effect и relay-router на game_choose_effect.
+func host_apply_effect_choice(pid: String, index: int) -> bool:
+	if _gs.phase != "encounter" or not _gs.players.has(pid):
+		return false
+	if _gs._current_pid() != pid:
+		return false
+	if not _gs._encounter.record_effect_choice(pid, index):
+		return false
+	return _commit_and_advance(pid)
+
+
+# Применить итоговые эффекты встречи и, если они полностью применились (не ждут
+# выбора игрока), передать ход дальше. Если коммит встал на паузу из-за choice —
+# просто синкаем состояние с pending_choice (модалка покажет выбор), ход замирает.
+func _commit_and_advance(pid: String) -> bool:
 	# Применяем итоговые эффекты встречи ЗДЕСЬ (не при броске) — чтобы между
 	# броском и завершением был доступен переброс за концентрацию.
 	_gs._encounter._commit_outcome(pid)
+
+	# Интерактивный choice не разрешён — ход замирает, ждём выбора игрока.
+	if not bool(_gs.current_encounter.get("committed", false)):
+		_gs._broadcast_sync()
+		_gs._emit_changed()
+		return true
 
 	# Бой может продолжиться (ещё монстры на клетке) или перейти к выбору не-боевой
 	# встречи — тогда ход того же игрока НЕ завершаем.
