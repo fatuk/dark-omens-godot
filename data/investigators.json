@@ -975,7 +975,7 @@
 	}
   },
   {
-	"name": "\"Skids\" O'Toole",
+	"name": "Skids O'Toole",
 	"startingItems": [{"asset": "axe"}],
 	"displayName": "INV_SKIDS_O_TOOLE_NAME",
 	"occupation": "INV_SKIDS_O_TOOLE_OCC",
