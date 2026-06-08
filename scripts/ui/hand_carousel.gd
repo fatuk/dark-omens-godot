@@ -1,6 +1,14 @@
 extends CanvasLayer
 class_name HandCarousel
 
+## Клик по НЕистощённой карте — запрос активации (item_index в player.items).
+## Слушает WorldMap → GameState.activate_card; в пикере слушателя нет (просмотр).
+signal card_played(item_index: int)
+
+## «Закинули» жетон (currency) на проверку → зарядить валюту переброса; куб игрок
+## выбирает тапом по кубу (как и обычный переброс).
+signal token_played(currency: String)
+
 ## Веер карт руки сыщика (порт из HTML/CSS-макета).
 ## Открывается/закрывается по Tab. Карты задаются извне через set_cards()
 ## (в игре — реальное имущество игрока, см. WorldMap._refresh_hand; в пикере —
@@ -64,6 +72,18 @@ static var SCROLL_SEGMENTS: Array = [
 const MOD_ACTIVE := Color(1.12, 1.12, 1.12, 1.0)
 const MOD_IDLE := Color(0.92, 0.92, 0.92, 1.0)
 const MOD_HIDDEN := Color(0.92, 0.92, 0.92, 0.0)
+const MOD_EXHAUSTED := Color(0.45, 0.45, 0.5, 1.0)  # истощённая карта — приглушена
+
+# Разыгрывание карты перетаскиванием «на кубы»: тащим карту из веера вверх и
+# отпускаем над проверкой — если курсор выше этой доли высоты экрана, карта сыграна.
+const DRAG_PLAY_Y_FRAC := 0.65
+
+# Сдвиг меньше этого (px) считаем КЛИКОМ (а не перетаскиванием) — клик тоже разыгрывает.
+const CLICK_DIST := 8.0
+
+# Размер кликабельной стрелки переключения секций.
+const ARROW_W := 80.0
+const ARROW_H := 120.0
 
 # Фейковая рука (10 карт из прототипа).
 const CARDS: Array[Dictionary] = [
@@ -141,10 +161,11 @@ const CARDS: Array[Dictionary] = [
 
 var tab_enabled: bool = true  # Tab открывает/закрывает (рука в игре); в пикере — false
 var _deck: Array = []  # payload'ы карт (GameCard.set_card); пусто → дефолтная фейк-рука
-var _hint_text: String = "Tab — закрыть   ·   ← →  /  колесо — выбор   ·   ЛКМ — сыграть"
+var _hint_text: String = ""  # пусто = подсказки нет (в игре скрыта; пикер задаёт через set_hint)
 var _backdrop: ColorRect
 var _hint: Label
 var _els: Array[Control] = []
+var _exhausted: Array = []  # параллельно _els: истощена ли карта (нельзя активировать)
 var _active: int = -1
 var _open: bool = false
 var _mid: float = 0.0
@@ -152,34 +173,75 @@ var _tween: Tween
 var _collapse_timer: Timer
 var _scroll_sfx: AudioStream = null
 var _scroll_tried: bool = false  # пытались ли уже загрузить звук перемотки
+var _drag_idx: int = -1  # индекс перетаскиваемой карты (-1 — не тащим)
+var _drag_grab: Vector2  # смещение «позиция карты − курсор» в момент захвата
+var _drag_start: Vector2  # позиция курсора в момент нажатия (для распознавания клика)
+var _playing: bool = false  # идёт анимация розыгрыша карты (пересборку откладываем)
+var _sections: Array = []  # [{title, items}] — секции веера (имущество/жетоны/…)
+var _section_idx: int = 0  # активная секция
+var _arrow_l: Control  # ◄ переключение секции влево
+var _arrow_r: Control  # ► переключение секции вправо
+var _section_title: Label  # название активной секции (сверху по центру)
 
 
 func _ready() -> void:
-	layer = 70  # над картой/панелями, под финальной outcome-модалкой (90)
+	# Поверх ВСЕХ игровых/диалоговых модалок (encounter 80 … outcome/dialog 90),
+	# чтобы веер можно было открыть во время проверки и активировать карты. Ниже
+	# системных слоёв: пауза/консоль (100), пост-эффект плёнки (200), курсор (1024).
+	layer = 95
 	add_to_group("hand_carousel")  # чтобы дебаг-панель (Ctrl+M) нашла инстанс
 	_build_chrome()
-	if _deck.is_empty():
-		_deck = _default_deck()  # дефолтная фейк-рука (если set_cards не звали)
-	_rebuild_cards()
+	if _sections.is_empty():
+		_sections = [{"title": "", "items": _default_deck()}]  # дефолтная фейк-рука
+	_apply_section(false)
 	visible = false
 	get_viewport().size_changed.connect(_on_resize)
 
 
-## Задать произвольный набор карт (payload'ы GameCard.set_card) — для переиспользования
-## веера вне игры (напр. просмотр имущества сыщика в пикере).
+## Совместимость: одна безымянная секция (пикер просмотра имущества сыщика).
 func set_cards(cards: Array) -> void:
-	_deck = cards.duplicate()
+	set_sections([{"title": "", "items": cards}] if not cards.is_empty() else [])
+
+
+## Задать секции веера: [{title, items}]. Пустые секции отбирает вызывающий
+## (WorldMap._refresh_hand). Активная секция клампится; заголовок/стрелки обновляются.
+func set_sections(sections: Array) -> void:
+	if _playing:
+		return  # идёт анимация розыгрыша — пересборку откладываем (иначе карту-анимацию снесёт)
+	_sections = sections
+	_section_idx = clampi(_section_idx, 0, maxi(0, sections.size() - 1))
 	if is_inside_tree():
-		_rebuild_cards()
-		if _open:  # инвентарь сменился при открытом веере — переразложить карты
-			_layout(false)
+		_apply_section(false)
 
 
-## Текст подсказки внизу (в пикере «сыграть» неуместно — задаём своё).
+# Применить активную секцию: _deck = её items, пересборка карт, заголовок/стрелки,
+# и (при открытом вевере) разложить. slide_dir != 0 → новый веер ВЛЕТАЕТ со стороны
+# нажатой стрелки (+1 справа, −1 слева): карты стартуют за краем экрана и едут внутрь.
+func _apply_section(animate: bool, slide_dir: int = 0) -> void:
+	_deck = (_sections[_section_idx]["items"] as Array) if not _sections.is_empty() else []
+	_rebuild_cards()
+	_update_section_chrome()
+	if not _open:
+		return
+	if slide_dir != 0:
+		var off := Vector2(get_viewport().get_visible_rect().size.x * float(signi(slide_dir)), 0.0)
+		for i in range(_els.size()):
+			var b: Dictionary = _base_transform(i)
+			_els[i].position = (b["pos"] as Vector2) + off  # старт за краем экрана
+			_els[i].rotation = float(b["rot"])
+			_els[i].scale = Vector2(b["scl"], b["scl"])
+			_els[i].modulate = MOD_IDLE
+		_layout(true)  # тянем к базовым позициям → слайд внутрь
+	else:
+		_layout(animate)
+
+
+## Текст подсказки (пикер задаёт свою). Пусто → подсказка скрыта.
 func set_hint(text: String) -> void:
 	_hint_text = text
 	if is_instance_valid(_hint):
 		_hint.text = text
+		_hint.visible = not text.is_empty()
 
 
 # Дефолтная фейк-рука из CARDS (тестовый арт на всех картах).
@@ -203,11 +265,13 @@ func _default_deck() -> Array:
 
 
 func _build_chrome() -> void:
+	# Без затемнения: веер открывается ПОВЕРХ проверки, фон видно. Backdrop прозрачен
+	# и служит лишь невидимым перехватчиком клика «мимо карт» → закрыть веер.
 	_backdrop = ColorRect.new()
 	_backdrop.name = "Backdrop"
-	_backdrop.color = Color(0.0, 0.0, 0.0, 0.55)
+	_backdrop.color = Color(0.0, 0.0, 0.0, 0.0)
 	_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP  # глушим клики по фону + закрытие
+	_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP  # клик мимо карт — закрытие
 	_backdrop.z_index = -1
 	_backdrop.gui_input.connect(_on_backdrop_input)
 	add_child(_backdrop)
@@ -215,6 +279,7 @@ func _build_chrome() -> void:
 	_hint = Label.new()
 	_hint.name = "Hint"
 	_hint.text = _hint_text
+	_hint.visible = not _hint_text.is_empty()  # в игре пусто → скрыта; пикер задаёт через set_hint
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.add_theme_font_size_override("font_size", 18)
 	_hint.add_theme_color_override("font_color", UIColors.MUTED)
@@ -222,6 +287,22 @@ func _build_chrome() -> void:
 	_hint.offset_top = 26.0
 	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_hint)
+
+	# Заголовок активной секции — ПОД колодой по центру (позиция в _position_chrome).
+	_section_title = Label.new()
+	_section_title.name = "SectionTitle"
+	_section_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_section_title.add_theme_font_size_override("font_size", 28)
+	_section_title.add_theme_color_override("font_color", UIColors.ACCENT)
+	_section_title.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	_section_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_section_title)
+
+	# Стрелки переключения секций ◄ ► по бокам (видны только при >1 секции).
+	_arrow_l = _make_arrow("◄", -1)
+	_arrow_r = _make_arrow("►", 1)
+	add_child(_arrow_l)
+	add_child(_arrow_r)
 
 	_collapse_timer = Timer.new()
 	_collapse_timer.name = "CollapseTimer"
@@ -231,16 +312,81 @@ func _build_chrome() -> void:
 	add_child(_collapse_timer)
 
 
+# Кликабельная стрелка переключения секции (dir = -1 влево / +1 вправо).
+func _make_arrow(glyph: String, dir: int) -> Control:
+	var a := Label.new()
+	a.name = "Arrow%d" % dir
+	a.text = glyph
+	a.add_theme_font_size_override("font_size", 52)
+	a.add_theme_color_override("font_color", UIColors.ACCENT)
+	a.size = Vector2(ARROW_W, ARROW_H)
+	a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	a.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	a.mouse_filter = Control.MOUSE_FILTER_STOP
+	a.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	a.z_index = 3000  # поверх карт; позиция — сбоку от веера (_position_arrows)
+	a.gui_input.connect(func(ev: InputEvent) -> void: _on_arrow_input(ev, dir))
+	return a
+
+
+# Стрелки — ВПРИТЫК к бокам веера (а не к краям экрана), по его вертикали; заголовок
+# секции — ПОД нижним краем колоды по центру.
+func _position_chrome() -> void:
+	if not is_instance_valid(_arrow_l) or not is_instance_valid(_arrow_r):
+		return
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var cx: float = vp.x * 0.5
+	var half: float = _mid * GAP_X + CARD_W * 0.6 + 40.0  # полуширина веера + отступ
+	var cy: float = _p0().y + CARD_H * 0.5  # вертикальный центр веера
+	_arrow_l.position = Vector2(cx - half - ARROW_W, cy - ARROW_H * 0.5)
+	_arrow_r.position = Vector2(cx + half, cy - ARROW_H * 0.5)
+	# Подпись секции — под колодой (нижний край карт + отступ).
+	if is_instance_valid(_section_title):
+		var ty: float = _p0().y + CARD_H + 6.0
+		_section_title.offset_top = ty
+		_section_title.offset_bottom = ty + 40.0
+
+
+func _on_arrow_input(ev: InputEvent, dir: int) -> void:
+	if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+		_switch_section(dir)
+
+
+# Переключить активную секцию (по кругу среди непустых). Стрелки/клавиши ← →.
+func _switch_section(d: int) -> void:
+	var n: int = _sections.size()
+	if n <= 1:
+		return
+	_section_idx = (_section_idx + d + n) % n
+	_active = -1
+	_apply_section(true, d)  # d>0 — влетает справа, d<0 — слева
+	_play_scroll()
+
+
+# Обновить заголовок секции и видимость стрелок (стрелки — только при >1 секции).
+func _update_section_chrome() -> void:
+	var has: bool = not _sections.is_empty()
+	if is_instance_valid(_section_title):
+		_section_title.text = String(_sections[_section_idx].get("title", "")) if has else ""
+	var multi: bool = _sections.size() > 1
+	if is_instance_valid(_arrow_l):
+		_arrow_l.visible = multi
+	if is_instance_valid(_arrow_r):
+		_arrow_r.visible = multi
+
+
 # Пересобрать карты из _deck (после set_cards). Хром (фон/подсказка) не трогаем.
 func _rebuild_cards() -> void:
 	for c in _els:
 		c.queue_free()
 	_els.clear()
+	_exhausted.clear()
 	_mid = float(maxi(1, _deck.size()) - 1) / 2.0
 	for i in range(_deck.size()):
 		var card: Control = _build_card(_deck[i], i)
 		add_child(card)
 		_els.append(card)
+		_exhausted.append(bool((_deck[i] as Dictionary).get("exhausted", false)))
 	_active = -1
 
 
@@ -256,7 +402,7 @@ func _build_card(data: Dictionary, idx: int) -> Control:
 	# Сигналы наведения/клика на саму карту.
 	card.mouse_entered.connect(_on_card_enter.bind(idx))
 	card.mouse_exited.connect(_on_card_exit)
-	card.gui_input.connect(_on_card_gui_input.bind(card))
+	card.gui_input.connect(_on_card_gui_input.bind(idx))
 	return card
 
 
@@ -315,6 +461,8 @@ func _layout(animate: bool) -> void:
 		var b: Dictionary = _base_transform(i)
 		card.z_index = int(b["z"])
 		var mod: Color = MOD_ACTIVE if _active == i else MOD_IDLE
+		if _active != i and i < _exhausted.size() and bool(_exhausted[i]):
+			mod = MOD_EXHAUSTED  # истощённая карта приглушена (нельзя активировать)
 		var scl := Vector2(b["scl"], b["scl"])
 		if animate:
 			_tween.tween_property(card, "position", b["pos"], ANIM)
@@ -326,6 +474,7 @@ func _layout(animate: bool) -> void:
 			card.rotation = b["rot"]
 			card.scale = scl
 			card.modulate = mod
+	_position_chrome()  # стрелки сбоку от веера + подпись секции под колодой
 
 
 func set_active(i: int) -> void:
@@ -409,6 +558,11 @@ func toggle() -> void:
 		open()
 
 
+## Открыт ли веер (для гарда зума карты при открытом вевере).
+func is_open() -> bool:
+	return _open
+
+
 # ── Ввод ───────────────────────────────────────────────────────────────────
 
 
@@ -427,13 +581,27 @@ func _input(event: InputEvent) -> void:
 		return
 	if not _open:
 		return
+	# Перетаскивание карты: ведём за курсором; отпускание — сыграть (над кубами) / вернуть.
+	# Прочий ввод (колесо/клавиши) во время перетаскивания игнорируем.
+	if _drag_idx >= 0:
+		if event is InputEventMouseMotion:
+			_drag_to(get_viewport().get_mouse_position())
+			get_viewport().set_input_as_handled()
+		elif (
+			event is InputEventMouseButton
+			and not event.pressed
+			and event.button_index == MOUSE_BUTTON_LEFT
+		):
+			_end_drag()
+			get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
 			KEY_LEFT:
-				_step(-1)
+				_switch_section(-1)  # ← → листают СЕКЦИИ (карты — колесом/наведением)
 				get_viewport().set_input_as_handled()
 			KEY_RIGHT:
-				_step(1)
+				_switch_section(1)
 				get_viewport().set_input_as_handled()
 			KEY_ESCAPE:
 				close()
@@ -448,8 +616,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _on_card_enter(idx: int) -> void:
-	if not _open:
-		return
+	if not _open or _drag_idx >= 0:
+		return  # во время перетаскивания наведение не переключает активную карту
 	_collapse_timer.stop()
 	if _active != idx:  # звук только при смене активной карты (не на дрожании курсора)
 		set_active(idx)
@@ -457,9 +625,79 @@ func _on_card_enter(idx: int) -> void:
 
 
 func _on_card_exit() -> void:
-	if not _open:
+	if not _open or _drag_idx >= 0:
 		return
 	_collapse_timer.start()  # схлопнуть, если в течение дебаунса не наведём другую
+
+
+# Начать перетаскивание карты idx: поднять над веером, запомнить смещение от курсора.
+func _begin_drag(idx: int) -> void:
+	_drag_idx = idx
+	_collapse_timer.stop()
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	var card: Control = _els[idx]
+	card.z_index = 2000
+	card.rotation = 0.0
+	card.scale = Vector2(HSCALE, HSCALE)
+	card.modulate = MOD_ACTIVE
+	_drag_start = get_viewport().get_mouse_position()
+	_drag_grab = card.position - _drag_start
+
+
+# Вести перетаскиваемую карту за курсором (сохраняя точку захвата).
+func _drag_to(mouse: Vector2) -> void:
+	if _drag_idx >= 0 and _drag_idx < _els.size():
+		_els[_drag_idx].position = mouse + _drag_grab
+
+
+# Отпустить элемент. Жетон → на провальный куб под курсором (переброс валютой);
+# карта → выше DRAG_PLAY_Y_FRAC высоты экрана (на проверку). Иначе — вернуть в веер.
+func _end_drag() -> void:
+	var idx: int = _drag_idx
+	_drag_idx = -1
+	if idx < 0 or idx >= _els.size():
+		return
+	var item: Dictionary = _deck[idx] if idx < _deck.size() else {}
+	var pos: Vector2 = get_viewport().get_mouse_position()
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	# Вытащил элемент на проверку (выше порога) → разыграть и СПРЯТАТЬ веер. Карта
+	# применяется; жетон «закидывается» (заряжает валюту переброса) — куб игрок
+	# выберет тапом. Мимо проверки — элемент возвращается в веер.
+	# Сначала emit (на хосте синхронно пересобирает веер), затем close — анимация
+	# закрытия идёт по обновлённому раскладу.
+	# Разыгрываем, если вытащили на проверку (выше порога) ЛИБО это клик (карта почти
+	# не сдвинулась) — клик по карте тоже её разыгрывает.
+	var on_check: bool = pos.y < vp.y * DRAG_PLAY_Y_FRAC
+	var is_click: bool = pos.distance_to(_drag_start) < CLICK_DIST
+	if (on_check or is_click) and not (idx < _exhausted.size() and bool(_exhausted[idx])):
+		_play_and_close(idx, item)
+		return
+	_layout(true)  # бросил мимо — вернуть в веер
+
+
+# Анимация розыгрыша: карта ОДНОВРЕМЕННО увеличивается и уходит в прозрачность, затем
+# применяется и веер закрывается. На время анимации пересборка веера заблокирована
+# (_playing), поэтому пересборка после emit сама уберёт выцветшую карту.
+func _play_and_close(idx: int, item: Dictionary) -> void:
+	if idx < 0 or idx >= _els.size():
+		return
+	_playing = true
+	var card: Control = _els[idx]
+	card.z_index = 2500  # поверх соседей
+	var t := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	t.tween_property(card, "scale", card.scale * 1.4, ANIM)
+	t.tween_property(card, "modulate:a", 0.0, ANIM)
+	t.set_parallel(false)
+	t.tween_callback(
+		func() -> void:
+			_playing = false
+			if String(item.get("kind", "asset")) == "token":
+				token_played.emit(String(item.get("currency", "")))
+			else:
+				card_played.emit(int(item.get("item_index", -1)))
+			close()
+	)
 
 
 # Дебаунс схлопывания: курсор ушёл со всех карт — снять выделение.
@@ -468,17 +706,17 @@ func _on_collapse_timeout() -> void:
 		set_active(-1)
 
 
-func _on_card_gui_input(event: InputEvent, card: Control) -> void:
+func _on_card_gui_input(event: InputEvent, idx: int) -> void:
 	if not _open:
 		return
+	# ЛКМ по карте — НАЧАТЬ перетаскивание (играем не тапом, а вытаскиванием на кубы).
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_flash(card)
-
-
-func _flash(card: Control) -> void:
-	var t := create_tween()
-	t.tween_property(card, "modulate", Color(2.0, 1.7, 1.3, 1.0), 0.0)
-	t.tween_property(card, "modulate", MOD_ACTIVE, ANIM).set_ease(Tween.EASE_OUT)
+		if idx < 0 or idx >= _els.size():
+			return
+		if idx < _exhausted.size() and bool(_exhausted[idx]):
+			return  # истощённую карту не разыгрываем
+		_begin_drag(idx)
+		get_viewport().set_input_as_handled()
 
 
 func _on_resize() -> void:

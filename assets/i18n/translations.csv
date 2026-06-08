@@ -687,6 +687,8 @@ COMBAT_ROLL,Бросить кубики,Roll dice
 COMBAT_ROLL_WILL,Бросок на Волю,Roll Will
 COMBAT_ROLL_STRENGTH,Бросок на Силу,Roll Strength
 COMBAT_WILL,Шаг 1: Воля,Step 1: Will
+COMBAT_STEP1,Шаг 1: %s,Step 1: %s
+COMBAT_STEP2,Шаг 2: %s,Step 2: %s
 COMBAT_WILL_HINT,Успехи блокируют урон по рассудку,Successes block Sanity damage
 COMBAT_STRENGTH,Шаг 2: Сила,Step 2: Strength
 COMBAT_STRENGTH_HINT,Успехи бьют монстра и гасят урон по вам,Successes hit the monster and reduce damage to you
@@ -696,6 +698,16 @@ ENCOUNTER_CHECK,Проверка,Test
 ENCOUNTER_ROLL,Бросить кубики,Roll the dice
 ENCOUNTER_REROLL,Переброс · концентрация %d,Reroll · focus %d
 ENCOUNTER_REROLL_HINT,нажмите кубик для переброса (концентрация %d),tap a die to reroll (focus %d)
+ENCOUNTER_REROLL_FREE,нажмите кубик для переброса (бесплатно: %d),tap a die to reroll (free: %d)
+ENCOUNTER_REROLL_CLUE,нажмите кубик для переброса (улик: %d),tap a die to reroll (clues: %d)
+ENCOUNTER_REROLL_ALL,Перебросить кубы,Reroll dice
+ENCOUNTER_REROLL_TAP,нажмите кубик для переброса,tap a die to reroll
+ENCOUNTER_REROLL_DRAG,перетащите жетон на проверку для переброса,drag a token onto the test to reroll
+HAND_ASSETS,Имущество,Assets
+HAND_TOKENS,Жетоны,Tokens
+TOKEN_CONCENTRATION,Концентрация,Focus
+TOKEN_CLUE,Улика,Clue
+TOKEN_REROLL_HINT,перетащите на куб,drag onto a die
 ENCOUNTER_DICE,Кубики,Dice
 ENCOUNTER_SUCCESSES,успехов,successes
 ENCOUNTER_DEFAULT_BG,"сыщик, идущий по следу кошмара",an investigator on the trail of a nightmare

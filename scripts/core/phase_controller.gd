@@ -80,6 +80,12 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			p["actions_left"] = int(p["actions_left"]) - 1
 			p["shopping"] = true  # не передаём ход, пока магазин открыт
 			GameConsole.log("[Магазин] %s пошёл за покупками" % _gs._name_of(pid))
+			# Бросок Влияния — через единую проверку (CheckFlow). Проверка уже
+			# стартована при открытии магазина (pre-roll, с учётом активированных
+			# карт); страховка — если её нет, стартуем здесь. Монеты = успехи.
+			if String(_gs.active_check.get("owner", "")) != "shop":
+				_gs._check.start("shop", pid, "influence", 0, "acquireAssets")
+			_gs._check.roll(pid)
 		"pass":
 			p["actions_left"] = 0
 		_:
@@ -121,7 +127,7 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 	for aid_v: Variant in assets:
 		var aid: String = String(aid_v)
 		if not AssetCatalog.by_id(aid).is_empty():
-			items.append(aid)
+			items.append({"id": aid, "exhausted": false})
 	p["items"] = items
 	_gs._refill_shop_reserve(assets)  # купленные → заменить новыми
 	GameConsole.log("[Магазин] %s купил %d товар(ов)" % [_gs._name_of(pid), assets.size()])
@@ -136,10 +142,13 @@ func host_apply_shop_close(pid: String) -> bool:
 	if not _gs.players.has(pid):
 		return false
 	var p: Dictionary = _gs.players[pid]
-	if not bool(p.get("shopping", false)):
-		return false
+	# Магазин могли открыть без броска (проверка стартует на открытии) — снимаем
+	# pre-roll проверку в любом случае.
+	if String(_gs.active_check.get("owner", "")) == "shop":
+		_gs._check.clear()
+	var was_shopping: bool = bool(p.get("shopping", false))
 	p["shopping"] = false
-	if int(p.get("actions_left", 0)) == 0:
+	if was_shopping and int(p.get("actions_left", 0)) == 0:
 		advance_action_turn()
 	_gs._broadcast_sync()
 	_gs._emit_changed()
@@ -169,25 +178,8 @@ func host_apply_shop_debt(pid: String) -> bool:
 	return true
 
 
-## Хост: списать 1 концентрацию за переброс куба в магазине. Сам переброс и
-## пересчёт монет — на клиенте (бросок магазина клиентский), здесь авторитетно
-## тратится только синкаемый фокус. Можно только активному игроку, который сейчас
-## в магазине (shopping) и имеет концентрацию.
-func host_apply_shop_reroll(pid: String) -> bool:
-	if not _gs.players.has(pid):
-		return false
-	if _gs._current_pid() != pid:
-		return false
-	var p: Dictionary = _gs.players[pid]
-	if not bool(p.get("shopping", false)):
-		return false
-	if int(p.get("concentration", 0)) <= 0:
-		return false
-	p["concentration"] = int(p["concentration"]) - 1
-	GameConsole.log("[Магазин] %s · переброс за фокус (−1)" % _gs._name_of(pid))
-	_gs._broadcast_sync()
-	_gs._emit_changed()
-	return true
+# Переброс куба магазина теперь идёт через единый CheckFlow.reroll (active_check):
+# бесплатные перебросы от карт → концентрация → улика. См. GameState.shop_reroll.
 
 
 ## Хост: игрок завершил встречу — отметить и передать ход дальше.
@@ -300,6 +292,7 @@ func start_new_round() -> void:
 		_gs.players[pid]["actions_left"] = _gs.ACTIONS_PER_ROUND
 		_gs.players[pid]["actions_used"] = []
 		_gs.players[pid]["encounter_done"] = false
+		_gs._refresh_items(_gs.players[pid])  # снять истощение активов (Refresh-шаг)
 	skip_disconnected()  # начинаем раунд с первого подключённого игрока
 	GameConsole.log("[Game] Раунд %d · ход: %s" % [_gs.round_num, _gs._name_of(_gs._current_pid())])
 	_gs.phase_changed.emit(_gs.phase)

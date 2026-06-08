@@ -27,6 +27,7 @@ var _dice_holder: VBoxContainer
 var _choice_holder: VBoxContainer
 var _tray: DiceTray  # единый лоток, создаётся лениво и переиспользуется
 var _last_dice: Array = []  # последний показанный бросок (спин — только на свежем)
+var _last_can: bool = false  # последняя кликабельность кубов (обновление без смены кубов)
 var _pending_n: int = -1  # сколько рубашек показано до броска
 # Пока есть перебросы (концентрация), исход ПРОВАЛА скрыт, чтобы не спойлить до
 # решения перебросить/принять. true → игрок «принял» (раскрыл) текущий провал.
@@ -76,6 +77,35 @@ func _ready() -> void:
 	_refresh()
 
 
+# Активная проверка встречи (единая, CheckFlow), если она относится к встрече.
+func _chk() -> Dictionary:
+	var c: Dictionary = GameState.active_check
+	return c if String(c.get("owner", "")) == "encounter" else {}
+
+
+func _chk_rolled() -> bool:
+	return bool(_chk().get("rolled", false))
+
+
+# Доступен ли «перебросить все провальные кубы разом» (Счастливый талисман):
+# проверка брошена, запас есть, исход ещё не принят и встреча не зафиксирована.
+func _reroll_all_available() -> bool:
+	if _revealed or bool(GameState.current_encounter.get("committed", false)):
+		return false
+	var c: Dictionary = _chk()
+	return int(c.get("reroll_all_allowance", 0)) - int(c.get("reroll_all_used", 0)) > 0
+
+
+# Кнопка броска переиспользуется как «Перебросить кубы», пока доступен reroll-all.
+func _set_reroll_all_btn() -> void:
+	if _reroll_all_available():
+		_roll_btn.text = "ENCOUNTER_REROLL_ALL"
+		_roll_btn.disabled = false
+		_roll_btn.visible = true
+	else:
+		_roll_btn.visible = false
+
+
 func _refresh() -> void:
 	var mine: bool = GameState.is_my_encounter_turn()
 	# Пока активный игрок выбирает тип встречи — окно встречи скрыто
@@ -101,7 +131,7 @@ func _refresh() -> void:
 		_show_loading()
 	elif _is_branching(card):
 		_show_gate(card)  # gate и mystery — общая ветвящаяся структура
-	elif card.has("resolution"):
+	elif _chk_rolled():
 		_show_outcome(card)
 	else:
 		_show_card(card)
@@ -182,6 +212,7 @@ func _show_card(card: Dictionary) -> void:
 	_main_text.text = _main_or_stakes(card)
 	_check.text = _check_label(card.get("test", {}))
 	_check.visible = true
+	_roll_btn.text = "ENCOUNTER_ROLL"
 	_roll_btn.visible = true
 	_roll_btn.disabled = false
 	_outcome.visible = false
@@ -190,15 +221,17 @@ func _show_card(card: Dictionary) -> void:
 
 
 func _show_outcome(card: Dictionary) -> void:
-	var res: Dictionary = card["resolution"]
+	var res: Dictionary = _chk()
 	var passed: bool = bool(res.get("passed", false))
 	_title.text = _title_text(card)
 	_main_text.text = _main_or_stakes(card)
 	_check.text = _check_label(card.get("test", {}))
 	_check.visible = true
 	_show_dice_result(res)
-	# Провал прячем, пока есть перебросы и игрок ещё не «принял» исход.
-	var hide_fail: bool = not passed and not _revealed and _rerolls_available()
+	# Провал прячем, пока есть перебросы (поштучно или «всё») и игрок не «принял».
+	var hide_fail: bool = (
+		not passed and not _revealed and (_rerolls_available() or _reroll_all_available())
+	)
 	if hide_fail:
 		_outcome.visible = false
 	else:
@@ -207,7 +240,7 @@ func _show_outcome(card: Dictionary) -> void:
 			"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
 		)
 		_outcome.visible = true
-	_roll_btn.visible = false
+	_set_reroll_all_btn()  # кнопка броска → «Перебросить кубы», пока доступен reroll-all
 	_finish_btn.text = "ENCOUNTER_ACCEPT" if hide_fail else "BTN_FINISH_BIG"
 	_finish_btn.visible = true
 
@@ -226,7 +259,8 @@ func _show_gate(card: Dictionary) -> void:
 	_check.text = _check_label(node.get("test", {}))
 	_check.visible = true
 
-	if not card.has("stage_resolution"):
+	if not _chk_rolled():
+		_roll_btn.text = "ENCOUNTER_ROLL"
 		_roll_btn.visible = true
 		_roll_btn.disabled = false
 		_outcome.visible = false
@@ -234,11 +268,13 @@ func _show_gate(card: Dictionary) -> void:
 		_show_dice_pending(_check_pool(node.get("test", {})))  # рубашки до броска
 		return
 
-	var res: Dictionary = card["stage_resolution"]
+	var res: Dictionary = _chk()
 	var passed: bool = bool(res.get("passed", false))
 	_show_dice_result(res)
-	# Провал прячем, пока есть перебросы и игрок ещё не «принял» исход.
-	var hide_fail: bool = not passed and not _revealed and _rerolls_available()
+	# Провал прячем, пока есть перебросы (поштучно или «всё») и игрок не «принял».
+	var hide_fail: bool = (
+		not passed and not _revealed and (_rerolls_available() or _reroll_all_available())
+	)
 	if hide_fail:
 		_outcome.visible = false
 	else:
@@ -247,7 +283,7 @@ func _show_gate(card: Dictionary) -> void:
 			"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
 		)
 		_outcome.visible = true
-	_roll_btn.visible = false
+	_set_reroll_all_btn()  # кнопка броска → «Перебросить кубы», пока доступен reroll-all
 	# После первой проверки (stage 0) всегда «Дальше» (обе ветви ведут ко второй
 	# проверке); после второй (stage 1) — «Завершить».
 	var more: bool = stage == 0
@@ -276,17 +312,21 @@ func _gate_node(card: Dictionary, stage: int) -> Dictionary:
 
 
 func _on_roll_pressed() -> void:
+	# Повторное нажатие после броска = «перебросить все кубы» (Счастливый талисман).
+	if _chk_rolled():
+		if _reroll_all_available():
+			GameState.reroll_all_dice()  # хост перебросит провальные и пришлёт синком
+		return
 	_revealed = false  # свежая проверка — провал снова можно скрыть до решения
 	_roll_btn.disabled = true  # хост разрешит встречу и пришлёт результат синком
 	GameState.resolve_encounter()
 
 
 func _on_die_clicked(index: int) -> void:
-	# После «принятия» исхода перебросы запрещены (хост о флаге UI не знает).
-	if _revealed or not _rerolls_available():
+	# Тапом — только бесплатно или заряженным жетоном; после «принятия» — нет.
+	if _revealed or not GameState.can_reroll_now():
 		return
-	# Переброс выбранного куба за 1 концентрацию; хост пришлёт обновлённый бросок.
-	GameState.reroll_encounter(index)
+	GameState.reroll_die(index)
 
 
 # Единый лоток — создаётся лениво и переиспользуется, чтобы спин не рвался при
@@ -321,10 +361,11 @@ func _show_dice_result(res: Dictionary) -> void:
 		return
 	_ensure_tray()
 	var dice: Array = res.get("dice", [])
-	var foc: int = int(GameState.my_player().get("concentration", 0))
+	var free: int = _free_rerolls()  # бесплатные перебросы от карт
 	var committed: bool = bool(GameState.current_encounter.get("committed", false))
-	# После «принятия» исхода (_revealed) перебросы недоступны.
-	var can: bool = foc > 0 and not committed and not _revealed
+	# Тапом перебросить можно ТОЛЬКО бесплатно (карта) или заряженным жетоном.
+	# Концентрация/улика — лишь через розыгрыш жетона. После «принятия» (_revealed) — нет.
+	var can: bool = GameState.can_reroll_now() and not committed and not _revealed
 	if dice != _last_dice:
 		var prev: Array = _last_dice
 		var diff: int = _single_diff(prev, dice)
@@ -333,13 +374,28 @@ func _show_dice_result(res: Dictionary) -> void:
 		if prev.is_empty():
 			_tray.play_roll(dice, can)  # первый бросок — спин всех
 		elif diff >= 0:
-			_tray.reroll_die(diff, int(dice[diff]), can)  # переброс — крутится один
+			_tray.reroll_die(diff, int(dice[diff]), can)  # переброс одного — крутится он
+		elif prev.size() == dice.size():
+			_tray.play_roll(dice, can)  # тот же размер, изменилось несколько → reroll-all (спин всех)
 		else:
-			_tray.show_roll(dice, can)  # неоднозначно — статикой
+			_tray.show_roll(dice, can)  # размер изменился (докинули кубы) → статикой
+		_last_can = can
+	elif can != _last_can:
+		# Кубы те же, но кликабельность изменилась (активировали карту-переброс
+		# после броска) — обновляем лоток, иначе кубик не нажать.
+		_tray.show_roll(dice, can)
+		_last_can = can
 	_dice_holder.visible = true
 	var summary: String = "%s: %d" % [tr("ENCOUNTER_SUCCESSES"), int(res.get("successes", 0))]
 	if can:
-		summary += "  ·  " + (tr("ENCOUNTER_REROLL_HINT") % foc)
+		# Готовы к перебросу: бесплатный — или заряжен жетон → нажать куб.
+		if free > 0:
+			summary += "  ·  " + (tr("ENCOUNTER_REROLL_FREE") % free)
+		else:
+			summary += "  ·  " + tr("ENCOUNTER_REROLL_TAP")
+	elif not _revealed and GameState.has_reroll_resource():
+		# Есть концентрация/улика, но жетон ещё не разыгран → подсказываем перетащить.
+		summary += "  ·  " + tr("ENCOUNTER_REROLL_DRAG")
 	_dice.text = summary
 	_dice.visible = true
 
@@ -367,14 +423,16 @@ func _single_diff(a: Array, b: Array) -> int:
 
 
 # Пул d6 проверки = навык + модификаторы навыка + модификатор карты (как у хоста
-# в EncounterFlow._roll_check). Для показа рубашек до броска.
+# в CheckFlow.pool). Для показа рубашек до броска.
 func _check_pool(test: Dictionary) -> int:
 	var me: Dictionary = GameState.my_player()
 	var inv: Dictionary = Investigators.get_data(String(me.get("investigator", "")))
 	var skill: String = String(test.get("skill", "will"))
 	var base: int = int((inv.get("skills", {}) as Dictionary).get(skill, 1))
 	var mods: int = int((me.get("skill_mods", {}) as Dictionary).get(skill, 0))
-	return maxi(1, base + mods + int(test.get("modifier", 0)))
+	# Доп. кубы от активированных карт до броска (Фаза 5) — рубашки растут заранее.
+	var amods: Array = _chk().get("active_mods", [])
+	return maxi(1, base + mods + int(test.get("modifier", 0)) + Dice.pre_roll_bonus(amods, skill))
 
 
 # Кнопка под исходом: после первой проверки врат (stage 0) — «Дальше» ко второй
@@ -388,23 +446,32 @@ func _on_finish_pressed() -> void:
 		_refresh()
 		return
 	if _is_branching(card):
-		if int(card.get("stage", 0)) == 0 and card.has("stage_resolution"):
+		if int(card.get("stage", 0)) == 0 and _chk_rolled():
 			GameState.advance_encounter_stage()
 			return
 	GameState.finish_encounter()
 
 
-# Доступны ли перебросы (есть концентрация и проверка ещё не закоммичена хостом).
+# Доступны ли перебросы: есть фокус ИЛИ бесплатные перебросы от карт, и проверка
+# ещё не закоммичена.
+# Можно ли ВООБЩЕ перебросить (для скрытия исхода): бесплатно / концентрация / улика
+# (последние — через розыгрыш жетона). Пока ресурс есть — провал не показываем.
 func _rerolls_available() -> bool:
-	var foc: int = int(GameState.my_player().get("concentration", 0))
-	var committed: bool = bool(GameState.current_encounter.get("committed", false))
-	return foc > 0 and not committed
+	if bool(GameState.current_encounter.get("committed", false)):
+		return false
+	return GameState.has_reroll_resource()
 
 
-# Текущий показанный результат — провал? (flat: resolution; gate: stage_resolution).
-func _current_failed(card: Dictionary) -> bool:
-	var res: Dictionary = card.get("stage_resolution", card.get("resolution", {}))
-	if res.is_empty():
+# Остаток бесплатных перебросов от карт на текущей проверке (allowance − использовано).
+func _free_rerolls() -> int:
+	var c: Dictionary = _chk()
+	return maxi(0, int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0)))
+
+
+# Текущий показанный результат — провал? (из активной проверки встречи).
+func _current_failed(_card: Dictionary) -> bool:
+	var res: Dictionary = _chk()
+	if not bool(res.get("rolled", false)):
 		return false
 	return not bool(res.get("passed", false))
 
@@ -531,5 +598,6 @@ func _check_label(test: Dictionary) -> String:
 	var skill_name: String = tr(String(_SKILL_KEYS.get(skill, "SKILL_WILL")))
 	var line: String = "%s: %s" % [tr("ENCOUNTER_CHECK"), skill_name]
 	if modifier != 0:
-		line += " %+d" % modifier
+		# Модификатор монстра/карты — как в бою: «… +1» / «… −3» (юникод-минус).
+		line += "  %s%d" % ["+" if modifier > 0 else "−", absi(modifier)]
 	return line

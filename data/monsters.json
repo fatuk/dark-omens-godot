@@ -120,7 +120,8 @@
 		"horror": {
 			"skill": "influence",
 			"modificator": -1,
-			"damage": 2
+			"damage": 2,
+			"defeatOnPass": true
 		},
 		"combat": {
 			"skill": "strength",

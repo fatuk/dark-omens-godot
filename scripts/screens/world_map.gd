@@ -208,16 +208,97 @@ func _build_hand_carousel() -> void:
 	hc.name = "HandCarousel"
 	add_child(hc)
 	_hand_carousel = hc
+	# Карту вытащили на проверку — запрос применения (хост валидирует фазу/ход/контекст).
+	hc.card_played.connect(func(item_index: int) -> void: GameState.activate_card(item_index))
+	# Жетон закинули на проверку — заряжаем валюту переброса; куб игрок выберет тапом.
+	hc.token_played.connect(func(currency: String) -> void: GameState.set_pending_reroll(currency))
 	GameState.state_changed.connect(_refresh_hand)
 	_refresh_hand()
 
 
-# Перечитать руку из имущества локального игрока (id ассетов → карты GameCard).
+# Перечитать веер: секции имущества и жетонов из стейта игрока. Пустые секции не
+# показываем (их отбираем здесь). Видны только во время своей применимости.
 func _refresh_hand() -> void:
 	if not is_instance_valid(_hand_carousel):
 		return
-	var items: Array = GameState.my_player().get("items", [])
-	_hand_carousel.set_cards(AssetCatalog.deck_for_items(items))
+	var sections: Array = []
+	var assets: Array = _hand_assets_section()
+	if not assets.is_empty():
+		sections.append({"title": tr("HAND_ASSETS"), "items": assets})
+	var tokens: Array = _hand_tokens_section()
+	if not tokens.is_empty():
+		sections.append({"title": tr("HAND_TOKENS"), "items": tokens})
+	_hand_carousel.set_sections(sections)
+
+
+# Секция «Имущество»: карты руки. Разыгранную/истощённую в текущей проверке карту
+# убираем (item.exhausted — раунд; active_check.exhausted_cards — на проверку).
+func _hand_assets_section() -> Array:
+	var deck: Array = AssetCatalog.deck_for_items(GameState.my_player().get("items", []))
+	var per_check: Array = GameState.active_check.get("exhausted_cards", [])
+	var out: Array = []
+	for p_v: Variant in deck:
+		var pcard: Dictionary = p_v
+		var spent: bool = (
+			bool(pcard.get("exhausted", false))
+			or (per_check as Array).has(int(pcard.get("item_index", -1)))
+		)
+		if spent:
+			continue  # использованную в этой проверке/раунде карту прячем
+		pcard["kind"] = "asset"
+		# Не подходит текущей проверке (навык/тайминг/контекст) → гасим (нельзя сыграть),
+		# чтобы было видно: эта карта тут бесполезна (напр. +Воля против проверки Влияния).
+		if not _card_applicable_now(pcard):
+			pcard["exhausted"] = true
+		out.append(pcard)
+	return out
+
+
+# Применима ли карта к ТЕКУЩЕЙ активной проверке: есть ли у неё мод (action/whileOwned),
+# подходящий по контексту + навыку шага + таймингу (до/после броска). Вне проверки — да.
+func _card_applicable_now(pcard: Dictionary) -> bool:
+	var c: Dictionary = GameState.active_check
+	if c.is_empty():
+		return true
+	var asset: Dictionary = AssetCatalog.by_id(String(pcard.get("id", "")))
+	if asset.is_empty():
+		return true
+	var ctx: String = String(c.get("context", ""))
+	var skill: String = String(c.get("skill", ""))
+	var rolled: bool = bool(c.get("rolled", false))
+	var mods: Array = AssetCatalog.action_check_mods(asset, ctx).duplicate()
+	mods.append_array(AssetCatalog.passive_check_mods(asset, ctx))
+	for m_v: Variant in mods:
+		if Dice.mod_skill_ok(m_v, skill) and Dice.mod_is_pre_roll(m_v) != rolled:
+			return true
+	return false
+
+
+# Секция «Жетоны»: по одному элементу на жетон концентрации/улики. Видна только
+# когда проверка брошена (есть что перебрасывать) и не зафиксирована.
+func _hand_tokens_section() -> Array:
+	var chk: Dictionary = GameState.active_check
+	if not bool(chk.get("rolled", false)):
+		return []
+	var me: Dictionary = GameState.my_player()
+	var out: Array = []
+	for _i in range(int(me.get("concentration", 0))):
+		out.append(_token_payload("concentration"))
+	for _i in range(int(me.get("clues", 0))):
+		out.append(_token_payload("clue"))
+	return out
+
+
+# Payload жетона для GameCard (вариант A — в размер карты: глиф + подпись, без цены).
+func _token_payload(currency: String) -> Dictionary:
+	var is_focus: bool = currency == "concentration"
+	return {
+		"kind": "token",
+		"currency": currency,
+		"title": tr("TOKEN_CONCENTRATION") if is_focus else tr("TOKEN_CLUE"),
+		"glyph": "✦" if is_focus else "◆",
+		"desc": tr("TOKEN_REROLL_HINT"),
+	}
 
 
 func _refresh_gates() -> void:
@@ -356,6 +437,11 @@ func _process(delta: float) -> void:
 		_apply_bounds()
 
 
+# Открыт ли веер карт руки (тогда колесо/клики уходят ему, а не карте мира).
+func _fan_open() -> bool:
+	return is_instance_valid(_hand_carousel) and _hand_carousel.is_open()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
@@ -376,9 +462,11 @@ func _unhandled_input(event: InputEvent) -> void:
 					_dragging = false
 					_release_with_inertia()
 			MOUSE_BUTTON_WHEEL_UP:
-				_zoom_target = clamp(_zoom_target + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+				if not _fan_open():  # при открытом вевере колесо листает карты, не зумит карту
+					_zoom_target = clamp(_zoom_target + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
 			MOUSE_BUTTON_WHEEL_DOWN:
-				_zoom_target = clamp(_zoom_target - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+				if not _fan_open():
+					_zoom_target = clamp(_zoom_target - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
 
 	elif event is InputEventMouseMotion and _dragging:
 		var motion := event as InputEventMouseMotion
@@ -465,6 +553,7 @@ func _on_shop_requested() -> void:
 	if has_node("ShopModal"):
 		return
 	GameState.ensure_shop_reserve()  # дотянуть витрину, если пуста (без полного сброса)
+	GameState.shop_open()  # старт pre-roll проверки Влияния (карты активируются до броска)
 	var modal := _SHOP_MODAL.instantiate()
 	modal.name = "ShopModal"
 	add_child(modal)

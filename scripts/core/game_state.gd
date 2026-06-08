@@ -35,6 +35,16 @@ var active: bool = false  # игра запущена?
 # синком всем.
 var current_encounter: Dictionary = {}
 
+# Единая активная проверка (встреча/магазин/бой) — хост-авторитетна, синкается.
+# Управляется CheckFlow (_check); потоки начинают проверку и читают результат.
+# {} — активной проверки нет. См. check_flow.gd.
+var active_check: Dictionary = {}
+
+# UI-локально: «заряженная» жетоном валюта переброса ("concentration"/"clue"/"") —
+# игрок закинул жетон на проверку, следующий тап по кубу тратит ИМЕННО её. Не
+# синкается (намерение локального игрока), потребляется в reroll_die.
+var pending_reroll_currency: String = ""
+
 # Компактная сводка сгенерированной кампании: {id, doomClock, ancientOne,
 # theme, mysteries}. {} — кампания ещё генерится либо не настроена. Полная
 # библия хранится на сервере и тянется по id при генерации встреч.
@@ -129,6 +139,7 @@ var _mythos: MythosFlow
 var _campaign: CampaignGen
 var _encounter: EncounterFlow
 var _phase: PhaseController
+var _check: CheckFlow
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -141,6 +152,7 @@ func _ready() -> void:
 	_campaign = CampaignGen.new(self)
 	_encounter = EncounterFlow.new(self)
 	_phase = PhaseController.new(self)
+	_check = CheckFlow.new(self)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
 	_nm.player_connected.connect(_on_player_connected)
@@ -171,6 +183,7 @@ func _broadcast_sync() -> void:
 				"omens_step": omens_step,
 				"players": players,
 				"current_encounter": current_encounter,
+				"active_check": active_check,
 				"current_mythos": current_mythos,
 				"mythos_index": _mythos.index,
 				"gates": gates,
@@ -229,17 +242,26 @@ func _make_player_dict(
 	}
 
 
-# Стартовые карты-активы сыщика (id ассетов) из investigators.json → в инвентарь.
-# Токены (clue/focus и т.п.) пропускаем — это не карты. Формат items — id-строки
-# (как в магазине), их понимают AssetCatalog.deck_for_items и веер руки.
+# Стартовые карты-активы сыщика из investigators.json → в инвентарь. Токены
+# (clue/focus и т.п.) пропускаем — это не карты. Формат item — инстанс
+# {id, exhausted}: exhausted нужен для oncePerRound-активаций (рефреш в начале
+# раунда). entry_id/deck_for_items понимают и инстанс, и старую id-строку.
 func _starting_items(investigator: String) -> Array:
 	var out: Array = []
 	var si: Array = Investigators.get_data(investigator).get("startingItems", [])
 	for entry: Variant in si:
 		var aid: String = AssetCatalog.entry_id(entry)
 		if not aid.is_empty() and not AssetCatalog.by_id(aid).is_empty():
-			out.append(aid)
+			out.append({"id": aid, "exhausted": false})
 	return out
+
+
+# Снять истощение со всех активов игрока — Refresh-шаг начала раунда. Инстансы
+# в массиве — ссылки, мутируем по месту.
+func _refresh_items(p: Dictionary) -> void:
+	for it_v: Variant in p.get("items", []):
+		if it_v is Dictionary:
+			(it_v as Dictionary)["exhausted"] = false
 
 
 # ── Хост: запуск игры ────────────────────────────────────────────────────────
@@ -348,13 +370,66 @@ func resolve_encounter() -> void:
 		_nm.relay_all({"action": "game_resolve_encounter", "pid": my_pid})
 
 
-## Активный игрок перебрасывает ОДИН выбранный куб проверки за 1 концентрацию.
-func reroll_encounter(die_index: int) -> void:
+## Активный игрок перебрасывает ОДИН выбранный куб проверки. currency — явная
+## валюта (перетащили жетон) или "" = авто-приоритет (тап по кубу).
+func reroll_encounter(die_index: int, currency: String = "") -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
-		_encounter.host_apply_reroll(my_pid, die_index)
+		_encounter.host_apply_reroll(my_pid, die_index, currency)
 	else:
-		_nm.relay_all({"action": "game_reroll_encounter", "pid": my_pid, "die": die_index})
+		(
+			_nm
+			. relay_all(
+				{
+					"action": "game_reroll_encounter",
+					"pid": my_pid,
+					"die": die_index,
+					"currency": currency,
+				}
+			)
+		)
+
+
+## Тап по кубу — переброс. Если игрок «закинул» жетон (pending_reroll_currency),
+## тратится ИМЕННО эта валюта (один раз). Без жетона — только БЕСПЛАТНЫЙ переброс от
+## карт (concentration/улика без розыгрыша жетона не тратятся). Маршрут по владельцу.
+func reroll_die(die_index: int) -> void:
+	var cur: String = pending_reroll_currency
+	pending_reroll_currency = ""  # потребили намерение (один жетон = один переброс)
+	if cur.is_empty():
+		cur = "free"  # без жетона — только бесплатный переброс от карт
+	if String(active_check.get("owner", "")) == "shop":
+		shop_reroll(die_index, cur)
+	else:
+		reroll_encounter(die_index, cur)
+
+
+## UI: «зарядить» валюту переброса (закинули жетон на проверку) и перерисовать —
+## чтобы кубы стали кликабельны.
+func set_pending_reroll(currency: String) -> void:
+	pending_reroll_currency = currency
+	_emit_changed()
+
+
+## Можно ли перебросить куб ПРЯМО СЕЙЧАС (тапом): есть бесплатный переброс от карт
+## ИЛИ заряжен жетон. Без розыгрыша жетона/карты перебросов нет.
+func can_reroll_now() -> bool:
+	var c: Dictionary = active_check
+	if c.is_empty() or not bool(c.get("rolled", false)):
+		return false
+	var free: int = int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0))
+	return free > 0 or not pending_reroll_currency.is_empty()
+
+
+## Есть ли ВООБЩЕ чем перебросить (бесплатно / концентрация / улика) — для скрытия
+## исхода: пока игрок может разыграть жетон, провал не показываем.
+func has_reroll_resource() -> bool:
+	var c: Dictionary = active_check
+	if c.is_empty() or not bool(c.get("rolled", false)):
+		return false
+	var free: int = int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0))
+	var me: Dictionary = my_player()
+	return free > 0 or int(me.get("concentration", 0)) > 0 or int(me.get("clues", 0)) > 0
 
 
 ## Активный игрок выбрал тип встречи (general/research/gate/combat). Хост
@@ -384,6 +459,27 @@ func choose_effect(index: int) -> void:
 		_phase.host_apply_effect_choice(my_pid, index)
 	else:
 		_nm.relay_all({"action": "game_choose_effect", "pid": my_pid, "index": index})
+
+
+## Активный игрок активирует карту руки (item_index в player.items) во время
+## проверки встречи — её способность правит текущий бросок. Хост применяет.
+func activate_card(item_index: int) -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_check.activate(my_pid, item_index)  # единая активная проверка (встреча/магазин/бой)
+	else:
+		_nm.relay_all({"action": "game_activate_card", "pid": my_pid, "index": item_index})
+
+
+## Активный игрок перебрасывает ВСЕ провальные кубы разом — эффект карты
+## «перебросить сколько угодно кубов» (Счастливый талисман). Бесплатно (одно
+## использование на активацию такой карты). Работает в любой проверке.
+func reroll_all_dice() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_check.reroll_all(my_pid)
+	else:
+		_nm.relay_all({"action": "game_reroll_all", "pid": my_pid})
 
 
 # ── Travel (фасады) ───────────────────────────────────────────────────────────
@@ -427,6 +523,19 @@ func can_shop(loc_id: String) -> bool:
 	return String(me.get("location", "")) == loc_id
 
 
+## Открытие магазина — старт проверки Влияния в pre-roll состоянии (БЕЗ траты
+## действия), чтобы карты руки можно было активировать до броска. Действие
+## тратится только на «Бросить кубы» (shop_begin → acquire_assets).
+func shop_open() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_check.start("shop", my_pid, "influence", 0, "acquireAssets")
+		_broadcast_sync()
+		_emit_changed()
+	else:
+		_nm.relay_all({"action": "game_shop_open", "pid": my_pid})
+
+
 ## Бросок кубов = совершение действия «acquire_assets» (раз за раунд). Тратит
 ## действие сразу — отмена покупки уже не вернёт поход в магазин в этом раунде.
 func shop_begin() -> void:
@@ -461,14 +570,24 @@ func shop_take_debt() -> void:
 		_nm.relay_all({"action": "game_shop_debt", "pid": my_pid})
 
 
-## Переброс куба в магазине за концентрацию — хост списывает фокус. Возвращает
-## true, если фокус был и списан (клиент тогда применяет переброс локально).
-func shop_reroll() -> bool:
+## Переброс куба магазина (die_index) — через общий механизм проверки (бесплатные
+## от карт → концентрация → улика). Хост авторитетно правит active_check.
+func shop_reroll(die_index: int, currency: String = "") -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
-		return _phase.host_apply_shop_reroll(my_pid)
-	_nm.relay_all({"action": "game_shop_reroll", "pid": my_pid})
-	return true
+		_check.reroll(my_pid, die_index, currency)
+	else:
+		(
+			_nm
+			. relay_all(
+				{
+					"action": "game_shop_reroll",
+					"pid": my_pid,
+					"die": die_index,
+					"currency": currency,
+				}
+			)
+		)
 
 
 ## Хост: заполнить витрину магазина до SHOP_RESERVE_SIZE случайными ассетами.
@@ -506,7 +625,7 @@ func _draw_shop_assets(n: int) -> void:
 		taken[String(r)] = true
 	for pid: Variant in players:
 		for it: Variant in players[pid].get("items", []) as Array:
-			taken[String(it)] = true
+			taken[AssetCatalog.entry_id(it)] = true  # item — инстанс {id,…} или id-строка
 	var pool: Array = []
 	for a in AssetCatalog.all():
 		var aid: String = String((a as Dictionary).get("id", ""))
@@ -651,6 +770,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	omens_step = int(data.get("omens_step", 0))
 	players = data.get("players", {})
 	current_encounter = data.get("current_encounter", {})
+	active_check = data.get("active_check", {})
 	current_mythos = data.get("current_mythos", {})
 	_mythos.index = int(data.get("mythos_index", 0))
 	gates = data.get("gates", {})
@@ -672,7 +792,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	phase_changed.emit(phase)
 
 	# Хост реджойнулся в фазу встреч, а карта в снапшоте — пустая (хост ушёл
-	# в момент await api.generate_encounter, снапшот сохранился в loading-
+	# в момент await api.draw_encounter, снапшот сохранился в loading-
 	# состоянии). Без перезапуска генерации модалка зависнет на «загрузке».
 	# call_deferred — чтобы не дёргать сеть из коллбэка снапшота.
 	if _is_host() and active and phase == "encounter" and current_encounter.is_empty():
@@ -716,7 +836,9 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 
 		"game_reroll_encounter":
 			if _is_host():
-				_encounter.host_apply_reroll(data.get("pid", ""), int(data.get("die", -1)))
+				_encounter.host_apply_reroll(
+					data.get("pid", ""), int(data.get("die", -1)), String(data.get("currency", ""))
+				)
 
 		"game_choose_encounter":
 			if _is_host():
@@ -730,6 +852,10 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 			if _is_host():
 				_phase.host_apply_effect_choice(data.get("pid", ""), int(data.get("index", -1)))
 
+		"game_activate_card":
+			if _is_host():
+				_check.activate(data.get("pid", ""), int(data.get("index", -1)))
+
 		"game_shop_grant":
 			if _is_host():
 				_phase.host_apply_shop_grant(data.get("pid", ""), data.get("assets", []))
@@ -742,9 +868,21 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 			if _is_host():
 				_phase.host_apply_shop_debt(data.get("pid", ""))
 
+		"game_shop_open":
+			if _is_host():
+				_check.start("shop", data.get("pid", ""), "influence", 0, "acquireAssets")
+				_broadcast_sync()
+				_emit_changed()
+
 		"game_shop_reroll":
 			if _is_host():
-				_phase.host_apply_shop_reroll(data.get("pid", ""))
+				_check.reroll(
+					data.get("pid", ""), int(data.get("die", -1)), String(data.get("currency", ""))
+				)
+
+		"game_reroll_all":
+			if _is_host():
+				_check.reroll_all(data.get("pid", ""))
 
 		"game_resolve_mythos":
 			if _is_host():

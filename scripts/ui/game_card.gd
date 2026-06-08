@@ -134,7 +134,10 @@ func _build() -> void:
 ## Заполнить карту. Поля: cost, title, subtitle?, desc, art? (Texture2D),
 ## art_color? (Color заглушки), glyph? (символ-заглушка).
 func set_card(d: Dictionary) -> void:
-	_cost.text = str(d.get("cost", 0))
+	# Стоимость — герб-компас; для жетонов/карт без цены поле не задаём → герб скрыт.
+	_cost.visible = d.has("cost")
+	if _cost.visible:
+		_cost.text = str(d["cost"])
 	_title.text = String(d.get("title", ""))
 	_sub.text = String(d.get("subtitle", ""))
 	_sub.visible = not _sub.text.is_empty()

@@ -54,3 +54,110 @@ static func reroll_failure(dice: Array, idx: int) -> bool:
 static func result(dice: Array) -> Dictionary:
 	var s: int = count_successes(dice)
 	return {"dice": dice, "successes": s, "passed": s >= PASS_MIN}
+
+
+# ── Конвейер модификаторов проверки (активируемые карты, Фаза 5) ───────────────
+# mods — список effect-нод активированных карт (do: rollAdditionalDice / addToDie /
+# convertDie / improveSkill). До броска меняют пул, после броска — грани/подсчёт.
+
+
+# Подходит ли мод текущему навыку проверки: без поля skill — всегда; пустой
+# целевой навык (skill == "") — не фильтруем; иначе skill мода должен совпасть.
+# Карты боя (combatEncounter) несут skill: strength/will — на «не свой» шаг проверки
+# (Воля против Силы) их модификаторы применяться не должны.
+static func mod_skill_ok(m: Dictionary, skill: String) -> bool:
+	return skill.is_empty() or not m.has("skill") or String(m.get("skill", "")) == skill
+
+
+# Глаголы, меняющие ПУЛ (число кубов) — применяются ТОЛЬКО до броска: в уже
+# брошенный набор их не докинуть. Прочие check-mod-глаголы (addToDie/convertDie/
+# rerollDice/rerollMatching/enhanceReroll) — результат/перебросы, только ПОСЛЕ.
+const PRE_ROLL_VERBS: Array = ["improveSkill", "impairSkill", "rollAdditionalDice", "minDice"]
+
+
+## Применяется ли мод ДО броска (усиление пула) — иначе после (результат/переброс).
+static func mod_is_pre_roll(m: Dictionary) -> bool:
+	return PRE_ROLL_VERBS.has(String(m.get("do", "")))
+
+
+## Доп. кубы к ПУЛУ от активных модификаторов (применяется ДО броска):
+## rollAdditionalDice — складываются (разные источники); improveSkill — НЕ
+## складываются (бонусы навыка/оружие не суммируются: берём МАКСИМУМ по навыку,
+## игрок выбирает лучшее); impairSkill — штрафы вычитаются. skill="" — без фильтра.
+static func pre_roll_bonus(mods: Array, skill: String) -> int:
+	var dice_bonus: int = 0  # rollAdditionalDice − impairSkill (складываются)
+	var best_skill: int = 0  # improveSkill — берём максимум (не складываются)
+	for m_v: Variant in mods:
+		var m: Dictionary = m_v
+		if not mod_skill_ok(m, skill):
+			continue
+		match String(m.get("do", "")):
+			"rollAdditionalDice":
+				dice_bonus += int(m.get("count", m.get("amount", 1)))
+			"improveSkill":
+				best_skill = maxi(best_skill, int(m.get("amount", 0)))
+			"impairSkill":
+				dice_bonus -= int(m.get("amount", 0))
+	return dice_bonus + best_skill
+
+
+## Применить пост-бросковые addToDie к набору: +amount к count кубам, жадно — тем,
+## кого бонус доводит до успеха (наибольший провальный). Возвращает НОВЫЙ массив.
+static func apply_add_to_die(dice: Array, mods: Array, skill: String = "") -> Array:
+	var out: Array = dice.duplicate()
+	for m_v: Variant in mods:
+		var m: Dictionary = m_v
+		if String(m.get("do", "")) != "addToDie" or not mod_skill_ok(m, skill):
+			continue
+		var amount: int = int(m.get("amount", 1))
+		var count: int = maxi(1, int(m.get("count", 1)))
+		for _c in range(count):
+			var idx: int = _best_die_for_bonus(out)
+			if idx < 0:
+				break  # все кубы уже успешны — бонус некуда деть
+			out[idx] = mini(SIDES, int(out[idx]) + amount)
+	return out
+
+
+# Индекс наибольшего провального куба (<SUCCESS_MIN) — лучший кандидат под +бонус.
+# Все кубы успешны → -1.
+static func _best_die_for_bonus(dice: Array) -> int:
+	var best: int = -1
+	var best_val: int = 0
+	for i in range(dice.size()):
+		var v: int = int(dice[i])
+		if v < SUCCESS_MIN and v > best_val:
+			best_val = v
+			best = i
+	return best
+
+
+## Подсчёт успехов с учётом convertDie ({on:"6", successes:N} — грань on даёт N
+## успехов; negate — грань успех снимает). Без convert-нод — как count_successes.
+static func count_successes_with(dice: Array, mods: Array, skill: String = "") -> int:
+	var total: int = 0
+	for i in range(dice.size()):
+		total += _die_successes(int(dice[i]), mods, skill)
+	return total
+
+
+static func _die_successes(value: int, mods: Array, skill: String = "") -> int:
+	var base: int = 1 if value >= SUCCESS_MIN else 0
+	for m_v: Variant in mods:
+		var m: Dictionary = m_v
+		if String(m.get("do", "")) != "convertDie" or not mod_skill_ok(m, skill):
+			continue
+		if value == String(m.get("on", "")).to_int():
+			if bool(m.get("negate", false)):
+				return 0
+			return maxi(base, int(m.get("successes", 1)))
+	return base
+
+
+## Результат проверки с пост-бросковыми модификаторами: применяет addToDie к копии
+## кубов, считает успехи с convertDie. skill (если задан) отсекает моды «не своего»
+## навыка (карты боя на чужой шаг). { dice (модиф.), successes, passed }.
+static func result_with(dice: Array, mods: Array, skill: String = "") -> Dictionary:
+	var modded: Array = apply_add_to_die(dice, mods, skill)
+	var s: int = count_successes_with(modded, mods, skill)
+	return {"dice": modded, "successes": s, "passed": s >= PASS_MIN}

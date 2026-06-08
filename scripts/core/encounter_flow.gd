@@ -53,6 +53,7 @@ func generate(kind: String = "general") -> void:
 		GameConsole.warn("[Game] ContentApi недоступен — ставим встречу-заглушку")
 		if token == _gen_token:
 			_gs.current_encounter = _fallback_card()
+			_start_check_for_encounter(pid)
 			_gs._broadcast_sync()
 			_gs._emit_changed()
 		return
@@ -63,7 +64,7 @@ func generate(kind: String = "general") -> void:
 	var captured_round: int = _gs.round_num
 	GameConsole.log("[Game] Генерация встречи для %s..." % _gs._name_of(pid))
 	@warning_ignore("unsafe_method_access")
-	var res: Dictionary = await api.generate_encounter(req)
+	var res: Dictionary = await api.draw_encounter(req)
 
 	# Перекрыт более новым generate() — этот ответ устарел, выбрасываем.
 	if token != _gen_token:
@@ -80,6 +81,7 @@ func generate(kind: String = "general") -> void:
 	else:
 		_gs.current_encounter = _fallback_card()
 		GameConsole.warn("[Game] Генерация встречи не удалась: %s" % String(res.get("error", "")))
+	_start_check_for_encounter(pid)
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 
@@ -189,6 +191,7 @@ func _begin_eldritch_move(pid: String) -> void:
 		"eldritch_loc": loc,
 		"hook": hook,
 	}
+	_start_check_for_encounter(pid)
 	GameConsole.log("[Знамение] %s изучает место, чтобы связать его с Тайной" % _gs._name_of(pid))
 	_gs._broadcast_sync()
 	_gs._emit_changed()
@@ -232,9 +235,23 @@ func _begin_combat(pid: String) -> void:
 		"toughness": tough,  # изначальная стойкость (для шкалы)
 		"health": cur,  # текущее здоровье экземпляра
 	}
+	_start_combat_will(pid)  # проверка Воли (pre-roll) — окно активации карт до броска
 	GameConsole.log("[Бой] %s vs %s (здоровье %d/%d)" % [_gs._name_of(pid), mid, cur, tough])
 	_gs._broadcast_sync()
 	_gs._emit_changed()
+
+
+# Старт проверки ВОЛИ боя (pre-roll, контекст combatEncounter) — единый механизм
+# CheckFlow: активация карт/перебросы как у встреч. Навык/модификатор — из horror.
+func _start_combat_will(pid: String) -> void:
+	var h: Dictionary = _gs.current_encounter.get("horror", {})
+	_gs._check.start(
+		"combat",
+		pid,
+		String(h.get("skill", "will")),
+		int(h.get("modificator", 0)),
+		"combatEncounter"
+	)
 
 
 # Хост: бой в ДВА отдельных броска (одна кнопка — один шаг). Раундов/отступления нет.
@@ -246,66 +263,75 @@ func _resolve_combat(pid: String) -> bool:
 	var enc: Dictionary = _gs.current_encounter
 	if enc.has("resolution"):
 		return false
+	var c: Dictionary = _gs.active_check
 
-	# ── Шаг 1: бросок ВОЛИ (если ещё не катали) ──
-	# Только бросок + расчёт; рассудок/здоровье/монстр применяются при завершении
-	# (_commit_outcome), чтобы между бросками был доступен переброс за концентрацию.
+	# ── Шаг 1: ВОЛЯ (ужас) ── Бросок и заморозка снимка; рассудок применяется при
+	# завершении (_commit_combat). Между бросками доступны активация карт/перебросы.
 	if not enc.has("will"):
-		var h: Dictionary = enc.get("horror", {})
-		var w_roll: Dictionary = _roll_check(
-			pid, {"skill": h.get("skill", "will"), "modifier": int(h.get("modificator", 0))}
+		# Первое нажатие — бросаем Волю (проверка стартована в _begin_combat, pre-roll).
+		if not bool(c.get("rolled", false)):
+			return _gs._check.roll(pid)
+		# «Дальше»: замораживаем Волю (+ потеря рассудка) и стартуем проверку Силы в
+		# PRE-ROLL — окно для карт усиления (оружие +Сила применяется ДО броска), сам
+		# бросок Силы — следующим нажатием.
+		var horror: Dictionary = enc.get("horror", {})
+		var hd: int = int(horror.get("damage", 0))
+		var w_succ: int = int(c.get("successes", 0))
+		enc["will"] = {"dice": (c.get("dice", []) as Array).duplicate(), "successes": w_succ}
+		enc["sanity_loss"] = maxi(0, hd - w_succ)
+		# Спец-способность монстра: пройденный horror-тест (Crazed Mob — Влияние)
+		# сразу побеждает монстра — шаг атаки (Сила) пропускаем.
+		if bool(c.get("passed", false)) and bool(horror.get("defeatOnPass", false)):
+			enc["defeated_on_horror"] = true
+			enc["resolution"] = {
+				"won": true,
+				"strength": {"dice": [], "successes": 0},
+				"hp_loss": 0,
+				"dealt": int(enc.get("toughness", 0)),
+				"health_after": 0,
+			}
+			_gs._check.clear()  # шага Силы нет
+			GameConsole.log(
+				"[Бой] %s · прошёл проверку → монстр повержен (без боя)" % _gs._name_of(pid)
+			)
+			_gs._broadcast_sync()
+			_gs._emit_changed()
+			return true
+		var cb: Dictionary = enc.get("combat", {})
+		_gs._check.start(
+			"combat",
+			pid,
+			String(cb.get("skill", "strength")),
+			int(cb.get("modificator", 0)),
+			"combatEncounter"
 		)
-		enc["will"] = w_roll
-		enc["sanity_loss"] = maxi(0, int(h.get("damage", 0)) - int(w_roll["successes"]))
 		GameConsole.log(
 			(
 				"[Бой] %s · Воля %d · рассудок −%d"
-				% [_gs._name_of(pid), int(w_roll["successes"]), int(enc["sanity_loss"])]
+				% [_gs._name_of(pid), w_succ, int(enc["sanity_loss"])]
 			)
 		)
 		_gs._broadcast_sync()
 		_gs._emit_changed()
 		return true
 
-	# ── Шаг 2: бросок СИЛЫ (атака) ── (enc.health — здоровье монстра НА СТАРТЕ боя,
-	# не мутируем; health_after хранится в resolution и применяется при завершении).
-	var c: Dictionary = enc.get("combat", {})
-	var s_roll: Dictionary = _roll_check(
-		pid, {"skill": c.get("skill", "strength"), "modifier": int(c.get("modificator", 0))}
-	)
-	enc["resolution"] = _combat_strength_result(enc, s_roll)
-	var r: Dictionary = enc["resolution"]
-	(
-		GameConsole
-		. log(
-			(
-				"[Бой] %s · %s (атака %d, монстр %d→%d, здоровье −%d)"
-				% [
-					_gs._name_of(pid),
-					"повержен" if bool(r["won"]) else "выжил",
-					int(r["dealt"]),
-					int(enc.get("health", 0)),
-					int(r["health_after"]),
-					int(r["hp_loss"]),
-				]
-			)
-		)
-	)
-	_gs._broadcast_sync()
-	_gs._emit_changed()
-	return true
+	# ── Шаг 2: СИЛА (атака) ── Сила стартована в pre-roll («Дальше»). Первое нажатие —
+	# бросок; затем «Завершить» (finish_encounter → _commit_combat) фиксирует итог.
+	if not bool(c.get("rolled", false)):
+		return _gs._check.roll(pid)
+	return false  # Сила брошена — дальше «Завершить»
 
 
-# Производные значения броска СИЛЫ из стартового здоровья монстра (enc.health) —
-# чистый расчёт без применения (для resolve и переброса).
-func _combat_strength_result(enc: Dictionary, s_roll: Dictionary) -> Dictionary:
-	var c: Dictionary = enc.get("combat", {})
-	var hits: int = int(s_roll["successes"])
+# Итог боя из стартового здоровья монстра (enc.health) и активной проверки Силы —
+# чистый расчёт без применения (для _commit_combat).
+func _combat_resolution(enc: Dictionary, c: Dictionary) -> Dictionary:
+	var cb: Dictionary = enc.get("combat", {})
+	var hits: int = int(c.get("successes", 0))
 	var health_after: int = maxi(0, int(enc.get("health", 0)) - hits)
 	return {
 		"won": health_after <= 0,
-		"strength": s_roll,
-		"hp_loss": maxi(0, int(c.get("damage", 0)) - hits),
+		"strength": {"dice": (c.get("dice", []) as Array).duplicate(), "successes": hits},
+		"hp_loss": maxi(0, int(cb.get("damage", 0)) - hits),
 		"dealt": hits,
 		"health_after": health_after,
 	}
@@ -379,35 +405,36 @@ func host_apply_resolve(pid: String) -> bool:
 		return false  # карта ещё генерится
 
 	var enc_kind: String = String(_gs.current_encounter.get("kind", ""))
-	# gate / mystery — двухфазные ветвящиеся (общая структура); combat — отдельно.
-	if enc_kind == "gate" or enc_kind == "mystery":
-		return _resolve_gate_stage(pid)
 	if enc_kind == "combat":
-		return _resolve_combat(pid)
+		return _resolve_combat(pid)  # бой — отдельный поток (свой resolution)
 
-	if _gs.current_encounter.has("resolution"):
-		return false  # уже разрешена
-
-	# Только бросок — эффекты применяются при завершении (_commit_outcome), чтобы
-	# между броском и «Завершить» можно было перебрасывать за концентрацию.
-	var roll: Dictionary = _roll_check(pid, _gs.current_encounter.get("test", {}))
-	_gs.current_encounter["resolution"] = roll
-	_update_loc_bonus(pid, bool(roll["passed"]))  # бонус локации на успехе
+	# Плоская встреча и врата — единая проверка (active_check). Проверка стартована
+	# при показе карты; здесь только бросок (страховка — стартуем, если её нет).
+	if bool(_gs.active_check.get("rolled", false)):
+		return false  # уже брошено
+	if String(_gs.active_check.get("owner", "")) != "encounter":
+		_start_check_for_encounter(pid)
+	if not _gs._check.roll(pid):
+		return false
+	# Бонус локации (на успехе) — для невратовых встреч; решаем на броске, чтобы
+	# показать в исходе (current_encounter.loc_bonus).
+	if enc_kind != "gate" and enc_kind != "mystery":
+		_update_loc_bonus(pid, bool(_gs.active_check.get("passed", false)))
+		_gs._broadcast_sync()
+		_gs._emit_changed()
 	(
 		GameConsole
 		. log(
 			(
-				"[Game] %s · встреча %s · успехов: %d"
+				"[Game] %s · проверка %s · успехов: %d"
 				% [
 					_gs._name_of(pid),
-					"пройдена" if roll["passed"] else "провалена",
-					int(roll["successes"]),
+					"пройдена" if _gs.active_check.get("passed", false) else "провалена",
+					int(_gs.active_check.get("successes", 0)),
 				]
 			)
 		)
 	)
-	_gs._broadcast_sync()
-	_gs._emit_changed()
 	return true
 
 
@@ -419,40 +446,6 @@ func _gate_node(card: Dictionary, stage: int) -> Dictionary:
 	var branches: Dictionary = card.get("branches", {})
 	var branch: String = String(card.get("branch", "success"))
 	return branches.get(branch, {})
-
-
-# Резолв текущей фазы gate-встречи (дерево глубины 2). Стадия 0 — ТОЛЬКО
-# маршрутизация: катим проверку, эффектов нет, исход решает, в какую ветку идём
-# (переход — host_apply_advance_stage). Стадия 1 — вторая проверка ветки: катим
-# и применяем её onSuccess/onFailure (положительный исход закрывает врата).
-func _resolve_gate_stage(pid: String) -> bool:
-	if _gs.current_encounter.has("stage_resolution"):
-		return false  # фаза уже разрешена — ждём «Дальше»/«Завершить»
-	var stage: int = int(_gs.current_encounter.get("stage", 0))
-	var node: Dictionary = _gate_node(_gs.current_encounter, stage)
-	if node.is_empty():
-		return false
-	# Только бросок. Эффекты второй проверки применяются при завершении встречи
-	# (_commit_outcome) — между броском и «Завершить» доступен переброс за фокус.
-	var roll: Dictionary = _roll_check(pid, node.get("test", {}))
-	_gs.current_encounter["stage_resolution"] = roll
-	(
-		GameConsole
-		. log(
-			(
-				"[Game] %s · врата, фаза %d %s · успехов: %d"
-				% [
-					_gs._name_of(pid),
-					stage + 1,
-					"пройдена" if roll["passed"] else "провалена",
-					int(roll["successes"]),
-				]
-			)
-		)
-	)
-	_gs._broadcast_sync()
-	_gs._emit_changed()
-	return true
 
 
 ## Хост: после первой проверки врат перейти ко второй. В отличие от линейной
@@ -467,17 +460,56 @@ func host_apply_advance_stage(pid: String) -> bool:
 		return false
 	if int(_gs.current_encounter.get("stage", 0)) != 0:
 		return false  # переход только с первой проверки на вторую
-	var res: Dictionary = _gs.current_encounter.get("stage_resolution", {})
-	if res.is_empty():
+	if not bool(_gs.active_check.get("rolled", false)):
 		return false  # первую проверку ещё не катили
-	var branch: String = "success" if bool(res.get("passed", false)) else "failure"
+	var branch: String = "success" if bool(_gs.active_check.get("passed", false)) else "failure"
 	_gs.current_encounter["branch"] = branch
 	_gs.current_encounter["stage"] = 1
-	_gs.current_encounter.erase("stage_resolution")
+	# Вторая проверка — новая (свои модификаторы/перебросы/истощение). _start
+	# перетирает active_check проверкой стадии 2 (pre-roll).
+	_start_check_for_encounter(pid)
 	GameConsole.log("[Game] %s · врата, ветка → %s" % [_gs._name_of(pid), branch])
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
+
+
+# Старт проверки встречи (pre-roll) для текущей карты — окно активации карт ДО
+# броска. Активация/перебросы/модификаторы — единый механизм CheckFlow
+# (active_check). Бой не использует active_check (отдельный поток); пустую карту
+# пропускаем. Зовётся при показе карты (generate/eldritch) и на смене стадии врат.
+func _start_check_for_encounter(pid: String) -> void:
+	var enc: Dictionary = _gs.current_encounter
+	if enc.is_empty() or String(enc.get("kind", "")) == "combat":
+		return
+	var test: Dictionary = _active_test(enc)
+	_gs._check.start(
+		"encounter",
+		pid,
+		String(test.get("skill", "will")),
+		int(test.get("modifier", 0)),
+		_check_context()
+	)
+
+
+# Контекст текущей проверки для сопоставления способностей активов: research →
+# researchEncounter, gate → otherWorldEncounter, прочее (general/mystery/eldritch)
+# → generalEncounter. Бой (combat_modal) сюда не относится.
+func _check_context() -> String:
+	match String(_gs.current_encounter.get("kind", "")):
+		"research":
+			return "researchEncounter"
+		"gate":
+			return "otherWorldEncounter"
+		_:
+			return "generalEncounter"
+
+
+# Текущая проверка встречи (навык/контекст): плоская — enc.test; врата — узел стадии.
+func _active_test(enc: Dictionary) -> Dictionary:
+	if String(enc.get("kind", "")) in ["gate", "mystery"]:
+		return _gate_node(enc, int(enc.get("stage", 0))).get("test", {})
+	return enc.get("test", {})
 
 
 ## Хост: применить ИТОГОВЫЕ эффекты встречи. Зовётся при завершении (из
@@ -503,16 +535,14 @@ func _commit_outcome(pid: String) -> void:
 		enc["committed"] = true
 		_commit_eldritch(pid)
 		return
+	var passed: bool = bool(_gs.active_check.get("passed", false))
 	if kind == "gate" or kind == "mystery":
 		var branches: Dictionary = enc.get("branches", {})
 		var node: Dictionary = branches.get(String(enc.get("branch", "success")), {})
-		var res: Dictionary = enc.get("stage_resolution", {})
-		var key: String = "onSuccess" if bool(res.get("passed", false)) else "onFailure"
+		var key: String = "onSuccess" if passed else "onFailure"
 		if not _run_effect_slot(node.get(key, []), pid, "main"):
 			return  # ждём выбор игрока
 	else:
-		var res: Dictionary = enc.get("resolution", {})
-		var passed: bool = bool(res.get("passed", false))
 		var key: String = "onSuccess" if passed else "onFailure"
 		if not _run_effect_slot(enc.get(key, []), pid, "main"):
 			return  # ждём выбор игрока
@@ -522,6 +552,7 @@ func _commit_outcome(pid: String) -> void:
 		if passed and not _run_effect_slot(enc.get("loc_bonus", []), pid, "bonus"):
 			return
 	enc["committed"] = true
+	_gs._check.clear()  # проверка завершена — снять active_check
 
 
 # Применение итогов боя при завершении: потеря рассудка (Воля) + урон сыщику и
@@ -532,89 +563,35 @@ func _commit_combat(pid: String) -> void:
 	var sl: int = int(enc.get("sanity_loss", 0))
 	if sl > 0:
 		p["sanity"] = maxi(0, int(p.get("sanity", 0)) - sl)
-	if enc.has("resolution"):
-		var r: Dictionary = enc["resolution"]
-		var hp_loss: int = int(r.get("hp_loss", 0))
-		if hp_loss > 0:
-			p["hp"] = maxi(0, int(p.get("hp", 0)) - hp_loss)
-		var loc: String = String(p.get("location", ""))
-		if bool(r.get("won", false)):
-			_remove_monster_instance(loc, 0)
-			_gs.return_monster_to_bag(String(enc.get("monsterId", "")))  # монстр умер → в мешок
-		else:
-			_set_monster_health(loc, 0, int(r.get("health_after", 0)))
+	# Зафиксировать итог Силы из активной проверки (если ещё не зафиксирован).
+	if not enc.has("resolution"):
+		enc["resolution"] = _combat_resolution(enc, _gs.active_check)
+	var r: Dictionary = enc["resolution"]
+	var hp_loss: int = int(r.get("hp_loss", 0))
+	if hp_loss > 0:
+		p["hp"] = maxi(0, int(p.get("hp", 0)) - hp_loss)
+	var loc: String = String(p.get("location", ""))
+	if bool(r.get("won", false)):
+		_remove_monster_instance(loc, 0)
+		_gs.return_monster_to_bag(String(enc.get("monsterId", "")))  # монстр умер → в мешок
+	else:
+		_set_monster_health(loc, 0, int(r.get("health_after", 0)))
+	_gs._check.clear()  # проверка боя завершена — снять active_check
 
 
-## Хост: переброс ОДНОГО выбранного куба (die_index) активной проверки за 1
-## концентрацию. Куб должен быть провальным (d<5) — успех (≥5) не перебрасывается.
+## Хост: переброс ОДНОГО выбранного куба (die_index) активной проверки. currency —
+## явная валюта (жетон) или "" = авто-приоритет. Куб должен быть провальным.
 ## Доступен, пока встреча не зафиксирована. Зовётся из GameState.reroll_encounter /
 ## relay-router. Возвращает true при перебросе.
-func host_apply_reroll(pid: String, die_index: int) -> bool:
+func host_apply_reroll(pid: String, die_index: int, currency: String = "") -> bool:
 	if _gs.phase != "encounter" or _gs._current_pid() != pid or not _gs.players.has(pid):
 		return false
 	var enc: Dictionary = _gs.current_encounter
 	if enc.is_empty() or bool(enc.get("committed", false)):
 		return false
-	var p: Dictionary = _gs.players[pid]
-	if int(p.get("concentration", 0)) <= 0:
-		return false  # нет концентрации
-	var kind: String = String(enc.get("kind", ""))
-
-	if kind == "combat":
-		return _reroll_combat_die(pid, die_index)
-
-	# Активный бросок: для ветвящихся — stage_resolution, иначе resolution.
-	var key: String = "stage_resolution" if (kind == "gate" or kind == "mystery") else "resolution"
-	if not enc.has(key):
-		return false  # ещё не бросали
-	var roll: Dictionary = enc[key]
-	var dice: Array = roll.get("dice", [])
-	if not Dice.reroll_failure(dice, die_index):
-		return false
-	roll = Dice.result(dice)
-	enc[key] = roll
-	if key == "resolution":
-		_update_loc_bonus(pid, bool(roll["passed"]))  # переоценка бонуса локации
-	p["concentration"] = int(p.get("concentration", 0)) - 1
-	GameConsole.log(
-		(
-			"[Переброс] %s · фокус −1 · куб #%d · успехов: %d"
-			% [_gs._name_of(pid), die_index, int(roll["successes"])]
-		)
-	)
-	_gs._broadcast_sync()
-	_gs._emit_changed()
-	return true
-
-
-# Переброс одного куба активной проверки боя: пока нет resolution — Воля (пересчёт
-# sanity_loss), иначе Сила (пересчёт исхода атаки). Тратит 1 концентрацию.
-func _reroll_combat_die(pid: String, die_index: int) -> bool:
-	var enc: Dictionary = _gs.current_encounter
-	var p: Dictionary = _gs.players[pid]
-	if enc.has("resolution"):
-		var s: Dictionary = (enc["resolution"] as Dictionary).get("strength", {})
-		var dice: Array = s.get("dice", [])
-		if not Dice.reroll_failure(dice, die_index):
-			return false
-		enc["resolution"] = _combat_strength_result(enc, Dice.result(dice))
-		GameConsole.log("[Переброс] %s · бой/Сила · куб #%d" % [_gs._name_of(pid), die_index])
-	elif enc.has("will"):
-		var w: Dictionary = enc["will"]
-		var dice: Array = w.get("dice", [])
-		if not Dice.reroll_failure(dice, die_index):
-			return false
-		w = Dice.result(dice)
-		enc["will"] = w
-		var hd: int = int((enc.get("horror", {}) as Dictionary).get("damage", 0))
-		enc["sanity_loss"] = maxi(0, hd - int(w["successes"]))
-		GameConsole.log("[Переброс] %s · бой/Воля · куб #%d" % [_gs._name_of(pid), die_index])
-	else:
-		return false  # ещё не бросали
-	p["concentration"] = int(p.get("concentration", 0)) - 1
-	_gs._broadcast_sync()
-	_gs._emit_changed()
-	return true
+	# Единый механизм перебросов для ВСЕХ проверок (включая бой). Активная проверка —
+	# текущий шаг (Воля или Сила).
+	return _gs._check.reroll(pid, die_index, currency)
 
 
 # Итог Eldritch-хода. Успех: −2 улики, жетон Знамения с клетки → на карту Тайны.
@@ -622,7 +599,7 @@ func _reroll_combat_die(pid: String, die_index: int) -> bool:
 # Фазы Мифов (GameState.check_mystery_tokens_solve), не здесь.
 func _commit_eldritch(pid: String) -> void:
 	var enc: Dictionary = _gs.current_encounter
-	if not bool((enc.get("resolution", {}) as Dictionary).get("passed", false)):
+	if not bool(_gs.active_check.get("passed", false)):
 		return  # провал — ничего не теряем
 	var hook: Dictionary = enc.get("hook", {})
 	if hook.is_empty():
@@ -675,7 +652,7 @@ func _remove_clues_at(loc_id: String, n: int) -> void:
 # ── Сборка запроса и фолбэк ──────────────────────────────────────────────────
 
 
-# Тело запроса /encounters/generate для игрока (kind ∈ general/research/gate).
+# Тело запроса /encounters/draw для игрока (kind ∈ general/research/gate).
 func _build_request(p: Dictionary, kind: String = "general") -> Dictionary:
 	var inv_id: String = String(p.get("investigator", ""))
 	var inv: Dictionary = Investigators.get_data(inv_id)
@@ -741,25 +718,7 @@ func _fallback_card() -> Dictionary:
 	}
 
 
-# ── Бросок и эффекты ─────────────────────────────────────────────────────────
-
-
-# Бросок проверки: пул d6 = навык сыщика + модификаторы навыка + модификатор
-# карты, успех на 5–6, пройдено при хотя бы одном успехе. test — словарь
-# {skill, modifier} текущей проверки (плоская встреча или стадия gate).
-func _roll_check(pid: String, test: Dictionary) -> Dictionary:
-	var p: Dictionary = _gs.players.get(pid, {})
-	var skill: String = String(test.get("skill", "will"))
-	var modifier: int = int(test.get("modifier", 0))
-
-	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-	var inv_skills: Dictionary = inv.get("skills", {})
-	var skill_mods: Dictionary = p.get("skill_mods", {})
-	var pool: int = maxi(
-		1, int(inv_skills.get(skill, 1)) + int(skill_mods.get(skill, 0)) + modifier
-	)
-
-	return Dice.result(Dice.roll(pool))
+# ── Эффекты ──────────────────────────────────────────────────────────────────
 
 
 # Применяет программу эффектов ОДНИМ слотом (транзакционно и резюмируемо).

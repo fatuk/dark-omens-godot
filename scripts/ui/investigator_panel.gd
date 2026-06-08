@@ -249,7 +249,8 @@ func _live_text(p: Dictionary) -> String:
 func _items_text(items: Array) -> String:
 	var counts: Dictionary = {}
 	for i: int in range(items.size()):
-		var key: String = String(_ITEM_WORDS.get(String(items[i]), "ITEM_OTHER"))
+		# item — инстанс {id, exhausted} или старая id-строка; берём id через entry_id.
+		var key: String = String(_ITEM_WORDS.get(AssetCatalog.entry_id(items[i]), "ITEM_OTHER"))
 		counts[key] = int(counts.get(key, 0)) + 1
 	var parts := PackedStringArray()
 	for key: String in counts:

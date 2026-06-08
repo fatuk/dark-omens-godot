@@ -1,8 +1,8 @@
 extends Node
 
-## ContentApi — клиент HTTP-генерации контента: встречи и сценарные библии
-## через relay-API (/encounters/generate, /campaign/generate, /campaign/:id).
-## Autoload-синглтон /root/ContentApi.
+## ContentApi — клиент HTTP-контента: встречи (выборка из корпуса CMS) и
+## сценарные библии через relay-API (/encounters/draw, /campaign/generate,
+## /campaign/:id). Autoload-синглтон /root/ContentApi.
 ##
 ## Генерацию зовёт ТОЛЬКО хост; не-хосты получают готовый контент по WS-relay
 ## (см. GameState). Сам сервис политику host-only не навязывает — это решает
@@ -11,26 +11,26 @@ extends Node
 ## Все публичные методы — await-корутины. Возвращают Dictionary вида
 ##   { "ok": bool, "error": String, ...полезная нагрузка }
 ## Пример:
-##   var res: Dictionary = await ContentApi.generate_encounter({ ... })
+##   var res: Dictionary = await ContentApi.draw_encounter({ ... })
 ##   if res["ok"]:
 ##       for card in res["encounters"]: ...
 ##   else:
 ##       push_warning(res["error"])
 
-# Таймауты под время генерации LLM: встреча — десятки секунд,
-# сценарная библия — пара минут.
+# Таймауты: встреча — выборка из корпуса (быстро, но с запасом на сеть),
+# сценарная библия — генерация LLM, до пары минут.
 const TIMEOUT_ENCOUNTER: float = 60.0
 const TIMEOUT_CAMPAIGN: float = 240.0
 
 # ── Публичное API ─────────────────────────────────────────────────────────────
 
 
-## Сгенерировать карточки встреч. `req` — тело запроса /encounters/generate
+## Выбрать карточки встреч из корпуса CMS. `req` — тело запроса /encounters/draw
 ## (kind, investigator, realLocation/otherWorld, conditions, count, language,
 ## campaignId/act/doom — см. relay requestSchema). При успехе в ответе ключ
 ## `encounters` — массив карточек.
-func generate_encounter(req: Dictionary) -> Dictionary:
-	var res: Dictionary = await _post("/encounters/generate", req, TIMEOUT_ENCOUNTER)
+func draw_encounter(req: Dictionary) -> Dictionary:
+	var res: Dictionary = await _post("/encounters/draw", req, TIMEOUT_ENCOUNTER)
 	if not res["ok"]:
 		return res
 	var json: Dictionary = res["json"]
