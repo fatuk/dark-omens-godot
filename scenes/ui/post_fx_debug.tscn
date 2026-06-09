@@ -12,10 +12,11 @@ layout_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = -340.0
 offset_top = 16.0
 offset_right = -16.0
-offset_bottom = 540.0
+offset_bottom = -16.0
 grow_horizontal = 0
 mouse_filter = 1
 
@@ -30,7 +31,12 @@ mouse_filter = 1
 [node name="Margin" type="MarginContainer" parent="Root/Panel"]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Root/Panel/Margin"]
+[node name="Scroll" type="ScrollContainer" parent="Root/Panel/Margin"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBox" type="VBoxContainer" parent="Root/Panel/Margin/Scroll"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 6

@@ -20,34 +20,16 @@ uniform float ground    : hint_range(0.0, 1.0) = 0.65;
 // Клочковатость: выше — резче клубы и чище разрывы между ними.
 uniform float wispiness : hint_range(0.0, 1.0) = 0.45;
 
-// Хеш без синуса (по мотивам Dave Hoskins) — стабилен на GL Compatibility.
-vec2 hash2(vec2 p) {
-	vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
-	p3 += dot(p3, p3.yzx + 33.33);
-	return fract((p3.xx + p3.yz) * p3.zy) * 2.0 - 1.0;
-}
+// Запечённый бесшовный fbm-шум (NoiseTexture2D + FastNoiseLite, 4 октавы). Заменяет
+// per-pixel расчёт (144 hash/пиксель → ~9 сэмплов текстуры). repeat_enable → координаты
+// можно гонять бесконечно, текстура тайлится.
+uniform sampler2D noise_tex : repeat_enable, filter_linear;
+// Период тайла в координатах p (больше — реже повтор по экрану; меньше — мельче клубы).
+uniform float noise_period : hint_range(1.0, 12.0) = 4.0;
 
-// Градиентный шум (Перлин-стайл), примерно в диапазоне [-1, 1].
-float gnoise(vec2 p) {
-	vec2 i = floor(p);
-	vec2 f = fract(p);
-	vec2 u = f * f * (3.0 - 2.0 * f);
-	return mix(mix(dot(hash2(i + vec2(0.0, 0.0)), f - vec2(0.0, 0.0)),
-				   dot(hash2(i + vec2(1.0, 0.0)), f - vec2(1.0, 0.0)), u.x),
-			   mix(dot(hash2(i + vec2(0.0, 1.0)), f - vec2(0.0, 1.0)),
-				   dot(hash2(i + vec2(1.0, 1.0)), f - vec2(1.0, 1.0)), u.x), u.y);
-}
-
-// Фрактальный шум — 4 октавы.
+// «fbm» теперь = один сэмпл запечённой fbm-текстуры, маппинг [0,1] → [-1,1].
 float fbm(vec2 p) {
-	float v = 0.0;
-	float a = 0.5;
-	for (int i = 0; i < 4; i++) {
-		v += a * gnoise(p);
-		p = p * 2.03 + vec2(19.3, 7.7);
-		a *= 0.5;
-	}
-	return v;
+	return texture(noise_tex, p / noise_period).r * 2.0 - 1.0;
 }
 
 // Один слой тумана: доменно-искажённый fbm, плотность в [0, 1].

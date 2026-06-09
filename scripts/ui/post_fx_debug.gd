@@ -222,6 +222,79 @@ func _build_specs() -> Array:
 			"default": HandCarousel.SCROLL_PITCH,
 			"set": _set_hand_sfx_pitch
 		},
+		{"section": "ТУМАН"},
+		{
+			"key": "fog_speed",
+			"label": "Скорость",
+			"min": 0.0,
+			"max": 0.15,
+			"step": 0.005,
+			"default": 0.01,
+			"set": _set_fog_speed
+		},
+		{
+			"key": "fog_scale",
+			"label": "Масштаб",
+			"min": 0.5,
+			"max": 6.0,
+			"step": 0.05,
+			"default": 0.6,
+			"set": _set_fog_scale
+		},
+		{
+			"key": "fog_density",
+			"label": "Плотность",
+			"min": 0.0,
+			"max": 2.0,
+			"step": 0.05,
+			"default": 0.05,
+			"set": _set_fog_density
+		},
+		{
+			"key": "fog_ground",
+			"label": "Низ. градиент",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.05,
+			"default": 0.1,
+			"set": _set_fog_ground
+		},
+		{
+			"key": "fog_wisp",
+			"label": "Клочковатость",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.05,
+			"default": 0.35,
+			"set": _set_fog_wisp
+		},
+		{
+			"key": "fog_period",
+			"label": "Период тайла",
+			"min": 1.0,
+			"max": 12.0,
+			"step": 0.5,
+			"default": 3.5,
+			"set": _set_fog_period
+		},
+		{
+			"key": "fog_freq",
+			"label": "Частота шума",
+			"min": 0.001,
+			"max": 0.04,
+			"step": 0.001,
+			"default": 0.01,
+			"set": _set_fog_freq
+		},
+		{
+			"key": "fog_oct",
+			"label": "Октавы",
+			"min": 1.0,
+			"max": 5.0,
+			"step": 1.0,
+			"default": 4.0,
+			"set": _set_fog_oct
+		},
 	]
 
 
@@ -478,3 +551,67 @@ func _set_hand_sfx_var(v: float) -> void:
 
 func _set_hand_sfx_pitch(v: float) -> void:
 	HandCarousel.SCROLL_PITCH = v
+
+
+# ── Туман (home.tscn, узел в группе "fog") ────────────────────────────────────
+# Униформы шейдера пишем прямо в материал; частоту/октавы — в FastNoiseLite
+# внутри NoiseTexture2D (текстура регенерируется на лету). Вне home-сцены тумана
+# нет — сеттеры тогда просто ничего не делают.
+
+
+func _fog_mat() -> ShaderMaterial:
+	var n := get_tree().get_first_node_in_group("fog")
+	if n is ColorRect:
+		return (n as ColorRect).material as ShaderMaterial
+	return null
+
+
+func _fog_noise() -> FastNoiseLite:
+	var m := _fog_mat()
+	if m:
+		var tex := m.get_shader_parameter("noise_tex") as NoiseTexture2D
+		if tex:
+			return tex.noise as FastNoiseLite
+	return null
+
+
+func _set_fog_param(param: String, v: float) -> void:
+	var m := _fog_mat()
+	if m:
+		m.set_shader_parameter(param, v)
+
+
+func _set_fog_speed(v: float) -> void:
+	_set_fog_param("speed", v)
+
+
+func _set_fog_scale(v: float) -> void:
+	_set_fog_param("scale", v)
+
+
+func _set_fog_density(v: float) -> void:
+	_set_fog_param("density", v)
+
+
+func _set_fog_ground(v: float) -> void:
+	_set_fog_param("ground", v)
+
+
+func _set_fog_wisp(v: float) -> void:
+	_set_fog_param("wispiness", v)
+
+
+func _set_fog_period(v: float) -> void:
+	_set_fog_param("noise_period", v)
+
+
+func _set_fog_freq(v: float) -> void:
+	var n := _fog_noise()
+	if n:
+		n.frequency = v
+
+
+func _set_fog_oct(v: float) -> void:
+	var n := _fog_noise()
+	if n:
+		n.fractal_octaves = int(round(v))
