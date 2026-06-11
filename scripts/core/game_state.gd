@@ -237,6 +237,7 @@ func _make_player_dict(
 		"sanity_max": sanity_max,
 		"clues": 0,
 		"conditions": [],
+		"conditions_flipped": {},  # {cond_id: outcome_id} — перевёрнутые в расплату
 		"items": _starting_items(investigator),
 		"skill_mods": {},
 	}
@@ -1025,8 +1026,108 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			_remove_monster_at_active(true, n)  # победить (вернуть id в мешок)
 		"damageMonster":
 			_damage_monster_at_active(n)
+		"resolveReckoning":
+			host_resolve_reckoning()
 		_:
 			GameConsole.log("[Эффект] %s — пока не поддержано движком" % verb)
+
+
+# ── Расплата (Reckoning): onReckoning состояний + двусторонний flip ────────────
+
+
+## Хост: шаг Расплаты. Зовётся board-verb'ом resolveReckoning (мифос-карта
+## reckoning). Проходит onReckoning всех держателей состояний и исполняет через
+## интерпретатор; flipCard/discardCard обрабатываются над носителем-состоянием.
+## Синк/emit — на зовущей стороне (как у прочих board-verb'ов).
+func host_resolve_reckoning() -> void:
+	if not _is_host():
+		return
+	GameConsole.log("[Расплата] начало")
+	for pid_v: Variant in players.keys():
+		_reckon_player(String(pid_v))
+
+
+func _reckon_player(pid: String) -> void:
+	var p: Dictionary = players.get(pid, {})
+	# Снимок списка: outcome-эффекты могут менять состав состояний в процессе.
+	var conds: Array = (p.get("conditions", []) as Array).duplicate()
+	if conds.is_empty():
+		return
+	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
+	var ctx: Dictionary = {"skills": inv.get("skills", {})}
+	for i in range(conds.size()):
+		var cid: String = String(conds[i])
+		if (p.get("conditions_flipped", {}) as Dictionary).has(cid):
+			continue  # уже перевёрнуто — фронтовой onReckoning не действует
+		if not (p.get("conditions", []) as Array).has(cid):
+			continue  # снято в ходе этой же расплаты
+		var def: Dictionary = Conditions.get_def(cid)
+		var program: Array = def.get("onReckoning", [])
+		if (program as Array).is_empty():
+			continue
+		var res: Dictionary = _EffectRunner.run(program, p, ctx)
+		for l_v: Variant in res.get("logs", []):
+			GameConsole.log("[Расплата] %s · %s: %s" % [_name_of(pid), cid, String(l_v)])
+		for node_v: Variant in res.get("board", []):
+			_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx)
+
+
+# board-узел из onReckoning состояния: flipCard/discardCard — над носителем cid,
+# прочее (advanceDoom и т.п.) — обычным board-эффектом.
+func _apply_reckon_board(
+	pid: String, cid: String, def: Dictionary, node: Dictionary, ctx: Dictionary
+) -> void:
+	match String(node.get("do", "")):
+		"flipCard":
+			_flip_condition(pid, cid, def, ctx)
+		"discardCard":
+			_discard_condition(pid, cid)
+		_:
+			_apply_board_effect(node)
+
+
+# Перевернуть состояние: вытянуть случайный reckoningOutcome его вида, применить
+# effects, затем then: flip (пометить перевёрнутым) | discard (снять).
+func _flip_condition(pid: String, cid: String, def: Dictionary, ctx: Dictionary) -> void:
+	var p: Dictionary = players.get(pid, {})
+	var outcomes: Array = Conditions.outcomes_of_kind(String(def.get("kind", "")))
+	if outcomes.is_empty():
+		_set_flipped(p, cid, "")
+		GameConsole.log("[Расплата] %s · %s перевёрнуто" % [_name_of(pid), cid])
+		return
+	var outcome: Dictionary = outcomes[randi() % outcomes.size()]
+	var res: Dictionary = _EffectRunner.run(outcome.get("effects", []), p, ctx)
+	for l_v: Variant in res.get("logs", []):
+		GameConsole.log(
+			(
+				"[Расплата] %s · исход «%s»: %s"
+				% [_name_of(pid), String(outcome.get("id", "")), String(l_v)]
+			)
+		)
+	for node_v: Variant in res.get("board", []):
+		_apply_board_effect(node_v as Dictionary)
+	if String(outcome.get("then", "flip")) == "discard":
+		_discard_condition(pid, cid)
+	else:
+		_set_flipped(p, cid, String(outcome.get("id", "")))
+		GameConsole.log(
+			"[Расплата] %s · %s → «%s»" % [_name_of(pid), cid, String(outcome.get("id", ""))]
+		)
+
+
+func _set_flipped(p: Dictionary, cid: String, outcome_id: String) -> void:
+	var fl: Dictionary = p.get("conditions_flipped", {})
+	fl[cid] = outcome_id
+	p["conditions_flipped"] = fl
+
+
+func _discard_condition(pid: String, cid: String) -> void:
+	var p: Dictionary = players.get(pid, {})
+	var conds: Array = p.get("conditions", [])
+	conds.erase(cid)
+	p["conditions"] = conds
+	(p.get("conditions_flipped", {}) as Dictionary).erase(cid)
+	GameConsole.log("[Расплата] %s · %s сброшено" % [_name_of(pid), cid])
 
 
 # ── Адресные эффекты (target) и передачи между сыщиками ────────────────────────
@@ -1380,10 +1481,9 @@ func _check_defeat() -> void:
 
 # ── Цвета омена / врат ────────────────────────────────────────────────────────
 
-## Порядок цветов омена. Цвет врат = знак омена; Наплыв бьёт по вратам цвета
-## текущего омена. NB: соответствие шага омена цвету — заглушка по 3 цветам,
-## уточнить под реальную дорожку оменов.
-const OMEN_COLORS: Array = ["green", "blue", "red"]
+## Порядок цветов омена — ОБЩИЙ трек для всех Древних: green → blue → red → blue,
+## далее по кругу. Цвет врат = знак омена; Наплыв бьёт по вратам цвета текущего омена.
+const OMEN_COLORS: Array = ["green", "blue", "red", "blue"]
 
 
 ## Цвет текущего омена (по omens_step).

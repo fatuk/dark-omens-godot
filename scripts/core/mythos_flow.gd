@@ -110,11 +110,25 @@ func _apply_resolve() -> void:
 	# Эффекты — последовательно, с ожиданием анимации каждого. Дум от омена
 	# считается внутри шага омена (до открытия новых врат) — см. _apply_board_effect.
 	await _apply_effects(effects)
+	# Карта-Расплата (её onReckoning содержит resolveReckoning) → выполняем шаг
+	# Расплаты: onReckoning состояний и пр. (см. GameState.host_resolve_reckoning).
+	var on_reck: Array = card.get("onReckoning", [])
+	if _is_reckoning_card(on_reck):
+		await _apply_effects(on_reck)
 	# Конец Фазы Мифов: Тайны типа tokensOnCard решаются именно здесь.
 	_gs.check_mystery_tokens_solve()
 	_gs._phase.start_new_round()
 	_gs._broadcast_sync()
 	_gs._emit_changed()
+
+
+# Карта-триггер Расплаты: её onReckoning содержит узел resolveReckoning.
+func _is_reckoning_card(on_reck: Array) -> bool:
+	for i in range(on_reck.size()):
+		var node: Dictionary = on_reck[i]
+		if node is Dictionary and String(node.get("do", "")) == "resolveReckoning":
+			return true
+	return false
 
 
 # Эффекты карты Мифов, по одному. Узлы с target (target=each) — к каждому

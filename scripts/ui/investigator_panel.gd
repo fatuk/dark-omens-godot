@@ -213,9 +213,21 @@ func _live_text(p: Dictionary) -> String:
 	)
 
 	var conds: Array = p.get("conditions", [])
+	var flipped: Dictionary = p.get("conditions_flipped", {})
 	var cond_names := PackedStringArray()
 	for i: int in range(conds.size()):
-		cond_names.append(tr(Conditions.name_key(String(conds[i]))))
+		var cid: String = String(conds[i])
+		if flipped.has(cid):
+			# Перевёрнутое в расплату — показываем имя исхода (метка ↯).
+			var od: Dictionary = Conditions.outcome_def(String(flipped[cid]))
+			var olabel: String = (
+				tr(String(od.get("name", "")))
+				if not od.is_empty()
+				else tr(Conditions.name_key(cid))
+			)
+			cond_names.append("↯ " + olabel)
+		else:
+			cond_names.append(tr(Conditions.name_key(cid)))
 	(
 		lines
 		. append(

@@ -330,6 +330,7 @@ static func _apply_player_verb(
 			var rconds: Array = player.get("conditions", [])
 			rconds.erase(rid)
 			player["conditions"] = rconds
+			(player.get("conditions_flipped", {}) as Dictionary).erase(rid)
 			logs.append("снято состояние «%s»" % rid)
 		"gainAsset", "gainSpell", "gainArtifact", "gainImprovement":
 			# MVP: маркер предмета; полноценный карточный контент — отдельный слой.
