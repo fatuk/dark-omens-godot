@@ -111,7 +111,7 @@ func _apply_resolve() -> void:
 	# считается внутри шага омена (до открытия новых врат) — см. _apply_board_effect.
 	await _apply_effects(effects)
 	# Карта-Расплата (её onReckoning содержит resolveReckoning) → выполняем шаг
-	# Расплаты: onReckoning состояний и пр. (см. GameState.host_resolve_reckoning).
+	# Расплаты: onReckoning состояний и пр. (см. ConditionFlow.host_resolve_reckoning).
 	var on_reck: Array = card.get("onReckoning", [])
 	if _is_reckoning_card(on_reck):
 		await _apply_effects(on_reck)
@@ -142,7 +142,7 @@ func _apply_effects(effects: Array) -> void:
 			for uid: String in _gs.players:
 				if not bool(_gs.players[uid].get("connected", true)):
 					continue
-				if _gs.player_has_constraint(uid, "immuneToEffects"):
+				if _gs._cond.player_has_constraint(uid, "immuneToEffects"):
 					continue  # whileHeld immuneToEffects (Lost in Time)
 				var res: Dictionary = _EffectRunner.run([eff], _gs.players[uid])
 				for log_msg in res.get("logs", []):

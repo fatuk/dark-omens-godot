@@ -146,7 +146,7 @@ func _refresh_investigators() -> void:
 	var moves: Array = []  # [{pid, inv, from, to}] — кто сменил локацию
 	for pid: String in GameState.players:
 		var p: Dictionary = GameState.players[pid]
-		if GameState.player_has_constraint(pid, "removeFromBoard"):
+		if GameState._cond.player_has_constraint(pid, "removeFromBoard"):
 			continue  # whileHeld removeFromBoard (Lost in Time) — фишка снята с поля
 		var inv: String = String(p.get("investigator", ""))
 		var loc: String = String(p.get("location", ""))

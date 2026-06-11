@@ -140,6 +140,7 @@ var _campaign: CampaignGen
 var _encounter: EncounterFlow
 var _phase: PhaseController
 var _check: CheckFlow
+var _cond: ConditionFlow
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -153,6 +154,7 @@ func _ready() -> void:
 	_encounter = EncounterFlow.new(self)
 	_phase = PhaseController.new(self)
 	_check = CheckFlow.new(self)
+	_cond = ConditionFlow.new(self)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
 	_nm.player_connected.connect(_on_player_connected)
@@ -1027,232 +1029,9 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 		"damageMonster":
 			_damage_monster_at_active(n)
 		"resolveReckoning":
-			host_resolve_reckoning()
+			_cond.host_resolve_reckoning()
 		_:
 			GameConsole.log("[Эффект] %s — пока не поддержано движком" % verb)
-
-
-# ── Расплата (Reckoning): onReckoning состояний + двусторонний flip ────────────
-
-
-## Хост: шаг Расплаты. Зовётся board-verb'ом resolveReckoning (мифос-карта
-## reckoning). Проходит onReckoning всех держателей состояний и исполняет через
-## интерпретатор; flipCard/discardCard обрабатываются над носителем-состоянием.
-## Синк/emit — на зовущей стороне (как у прочих board-verb'ов).
-func host_resolve_reckoning() -> void:
-	if not _is_host():
-		return
-	GameConsole.log("[Расплата] начало")
-	for pid_v: Variant in players.keys():
-		_reckon_player(String(pid_v))
-
-
-func _reckon_player(pid: String) -> void:
-	var p: Dictionary = players.get(pid, {})
-	# Снимок списка: outcome-эффекты могут менять состав состояний в процессе.
-	var conds: Array = (p.get("conditions", []) as Array).duplicate()
-	if conds.is_empty():
-		return
-	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-	var ctx: Dictionary = {"skills": inv.get("skills", {})}
-	for i in range(conds.size()):
-		var cid: String = String(conds[i])
-		if (p.get("conditions_flipped", {}) as Dictionary).has(cid):
-			continue  # уже перевёрнуто — фронтовой onReckoning не действует
-		if not (p.get("conditions", []) as Array).has(cid):
-			continue  # снято в ходе этой же расплаты
-		var def: Dictionary = Conditions.get_def(cid)
-		var program: Array = def.get("onReckoning", [])
-		if (program as Array).is_empty():
-			continue
-		var res: Dictionary = _EffectRunner.run(program, p, ctx)
-		for l_v: Variant in res.get("logs", []):
-			GameConsole.log("[Расплата] %s · %s: %s" % [_name_of(pid), cid, String(l_v)])
-		for node_v: Variant in res.get("board", []):
-			_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx)
-
-
-# board-узел из onReckoning состояния: flipCard/discardCard — над носителем cid,
-# прочее (advanceDoom и т.п.) — обычным board-эффектом.
-func _apply_reckon_board(
-	pid: String, cid: String, def: Dictionary, node: Dictionary, ctx: Dictionary
-) -> void:
-	match String(node.get("do", "")):
-		"flipCard":
-			_flip_condition(pid, cid, def, ctx)
-		"discardCard":
-			_discard_condition(pid, cid)
-		_:
-			_apply_board_effect(node)
-
-
-# Перевернуть состояние: вытянуть случайный reckoningOutcome его вида, применить
-# effects, затем then: flip (пометить перевёрнутым) | discard (снять).
-func _flip_condition(pid: String, cid: String, def: Dictionary, ctx: Dictionary) -> void:
-	var p: Dictionary = players.get(pid, {})
-	var outcomes: Array = Conditions.outcomes_of_kind(String(def.get("kind", "")))
-	if outcomes.is_empty():
-		_set_flipped(p, cid, "")
-		GameConsole.log("[Расплата] %s · %s перевёрнуто" % [_name_of(pid), cid])
-		return
-	var outcome: Dictionary = outcomes[randi() % outcomes.size()]
-	var res: Dictionary = _EffectRunner.run(outcome.get("effects", []), p, ctx)
-	for l_v: Variant in res.get("logs", []):
-		GameConsole.log(
-			(
-				"[Расплата] %s · исход «%s»: %s"
-				% [_name_of(pid), String(outcome.get("id", "")), String(l_v)]
-			)
-		)
-	for node_v: Variant in res.get("board", []):
-		_apply_board_effect(node_v as Dictionary)
-	if String(outcome.get("then", "flip")) == "discard":
-		_discard_condition(pid, cid)
-	else:
-		_set_flipped(p, cid, String(outcome.get("id", "")))
-		GameConsole.log(
-			"[Расплата] %s · %s → «%s»" % [_name_of(pid), cid, String(outcome.get("id", ""))]
-		)
-
-
-func _set_flipped(p: Dictionary, cid: String, outcome_id: String) -> void:
-	var fl: Dictionary = p.get("conditions_flipped", {})
-	fl[cid] = outcome_id
-	p["conditions_flipped"] = fl
-
-
-func _discard_condition(pid: String, cid: String) -> void:
-	var p: Dictionary = players.get(pid, {})
-	var conds: Array = p.get("conditions", [])
-	conds.erase(cid)
-	p["conditions"] = conds
-	(p.get("conditions_flipped", {}) as Dictionary).erase(cid)
-	GameConsole.log("[Расплата] %s · %s сброшено" % [_name_of(pid), cid])
-
-
-# ── whileHeld-ограничения состояний ───────────────────────────────────────────
-
-
-## Активные whileHeld-ограничения сыщика из held-состояний. Словарь:
-## {cannotMove:true, cannotAct:true, removeFromBoard:true, immuneToEffects:true,
-##  cannotRecover:[stat,…]}. См. data/conditions.json (Detained, Lost in Time).
-func player_constraints(pid: String) -> Dictionary:
-	var out: Dictionary = {}
-	var conds: Array = (players.get(pid, {}) as Dictionary).get("conditions", [])
-	for i in range(conds.size()):
-		var while_held: Array = Conditions.get_def(String(conds[i])).get("whileHeld", [])
-		for j in range(while_held.size()):
-			var node: Dictionary = while_held[j]
-			var verb: String = String(node.get("do", ""))
-			if verb == "cannotRecover":
-				var stats: Array = out.get("cannotRecover", [])
-				stats.append(String(node.get("stat", "health")))
-				out["cannotRecover"] = stats
-			elif not verb.is_empty():
-				out[verb] = true
-	return out
-
-
-## Есть ли у сыщика whileHeld-ограничение verb (для cannotRecover см. сам словарь).
-func player_has_constraint(pid: String, verb: String) -> bool:
-	return player_constraints(pid).has(verb)
-
-
-# ── Триггеры (triggered) и локальные действия (action) состояний ───────────────
-
-
-## Хост: сработавшие triggered held-состояний по событию (напр. "rest"). Возвращает
-## список stat'ов cannotRecover (подавление лечения — на зовущей стороне); прочее
-## (dieRoll/test → flipCard/discardCard и т.п.) исполняет через интерпретатор.
-func fire_triggered(pid: String, event: String) -> Array:
-	var no_recover: Array = []
-	if not _is_host():
-		return no_recover
-	var p: Dictionary = players.get(pid, {})
-	var conds: Array = (p.get("conditions", []) as Array).duplicate()
-	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-	var ctx: Dictionary = {"skills": inv.get("skills", {})}
-	for i in range(conds.size()):
-		var cid: String = String(conds[i])
-		if not (p.get("conditions", []) as Array).has(cid):
-			continue
-		var def: Dictionary = Conditions.get_def(cid)
-		for t_v: Variant in def.get("triggered", []):
-			var t: Dictionary = t_v
-			if String(t.get("on", "")) != event:
-				continue
-			var rest_nodes: Array = []
-			for n_v: Variant in t.get("do", []):
-				var n: Dictionary = n_v
-				if String(n.get("do", "")) == "cannotRecover":
-					no_recover.append(String(n.get("stat", "health")))
-				else:
-					rest_nodes.append(n)
-			_run_carrier_program(pid, cid, def, rest_nodes, ctx, "Триггер:" + event)
-	return no_recover
-
-
-## Хост: локальное действие состояния (action-слот, напр. Detained: проверка Влияния
-## → сброс). true — состояние держится и имеет action. Разрешено даже при cannotAct.
-func host_run_condition_action(pid: String, cond_id: String) -> bool:
-	if not _is_host():
-		return false
-	if not (players.get(pid, {}).get("conditions", []) as Array).has(cond_id):
-		return false
-	var def: Dictionary = Conditions.get_def(cond_id)
-	var program: Array = def.get("action", [])
-	if (program as Array).is_empty():
-		return false
-	var inv: Dictionary = Investigators.get_data(String(players[pid].get("investigator", "")))
-	_run_carrier_program(pid, cond_id, def, program, {"skills": inv.get("skills", {})}, "Действие")
-	return true
-
-
-# Прогон Effect-программы носителя-состояния (триггер/действие): мутирует игрока,
-# flipCard/discardCard — над cid, прочий board — обычным эффектом.
-func _run_carrier_program(
-	pid: String, cid: String, def: Dictionary, program: Array, ctx: Dictionary, tag: String
-) -> void:
-	var p: Dictionary = players.get(pid, {})
-	var res: Dictionary = _EffectRunner.run(program, p, ctx)
-	for l_v: Variant in res.get("logs", []):
-		GameConsole.log("[%s] %s · %s: %s" % [tag, _name_of(pid), cid, String(l_v)])
-	for node_v: Variant in res.get("board", []):
-		_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx)
-
-
-# ── Выдача активов с исполнением onGain ───────────────────────────────────────
-
-
-## Хост: выдать актив сыщику, исполнив его onGain. Сервис-актив (onGain содержит
-## discardCard) срабатывает и НЕ попадает в инвентарь; прочие — добавляются как
-## {id, exhausted:false}. Единая точка получения актива (магазин и пр.).
-func host_grant_asset(pid: String, asset_id: String) -> void:
-	if not _is_host() or not players.has(pid):
-		return
-	var asset: Dictionary = AssetCatalog.by_id(asset_id)
-	if asset.is_empty():
-		return
-	var p: Dictionary = players[pid]
-	var on_gain: Array = (asset.get("effect", {}) as Dictionary).get("onGain", [])
-	var consumed: bool = false
-	if not (on_gain as Array).is_empty():
-		var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-		var res: Dictionary = _EffectRunner.run(on_gain, p, {"skills": inv.get("skills", {})})
-		for l_v: Variant in res.get("logs", []):
-			GameConsole.log("[onGain %s] %s · %s" % [asset_id, _name_of(pid), String(l_v)])
-		for node_v: Variant in res.get("board", []):
-			if String((node_v as Dictionary).get("do", "")) == "discardCard":
-				consumed = true  # сервис: сработал и сбрасывается — в инвентарь не идёт
-			else:
-				_apply_board_effect(node_v as Dictionary)
-	if consumed:
-		GameConsole.log("[Актив] %s — сервис «%s» применён и сброшен" % [_name_of(pid), asset_id])
-		return
-	var items: Array = p.get("items", [])
-	items.append({"id": asset_id, "exhausted": false})
-	p["items"] = items
-	GameConsole.log("[Актив] %s получил «%s»" % [_name_of(pid), asset_id])
 
 
 # ── Адресные эффекты (target) и передачи между сыщиками ────────────────────────

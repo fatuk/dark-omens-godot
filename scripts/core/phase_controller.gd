@@ -48,7 +48,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	if (
 		action_type != "pass"
 		and action_type != "condition_action"
-		and _gs.player_has_constraint(pid, "cannotAct")
+		and _gs._cond.player_has_constraint(pid, "cannotAct")
 	):
 		GameConsole.warn("[Game] %s не может действовать (состояние)" % _gs._name_of(pid))
 		return false
@@ -72,8 +72,8 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			# whileHeld cannotRecover + triggered on:rest (Hypothermia: не лечит здоровье
 			# + бросок 4-6 сбросить). fire_triggered исполняет dieRoll/сброс и возвращает
 			# дополнительные cannotRecover-статы для подавления лечения этого отдыха.
-			var rec: Array = _gs.player_constraints(pid).get("cannotRecover", [])
-			rec.append_array(_gs.fire_triggered(pid, "rest"))
+			var rec: Array = _gs._cond.player_constraints(pid).get("cannotRecover", [])
+			rec.append_array(_gs._cond.fire_triggered(pid, "rest"))
 			if not rec.has("health"):
 				p["hp"] = mini(int(p["hp_max"]), int(p["hp"]) + REST_HEAL_HP)
 			if not rec.has("sanity"):
@@ -105,7 +105,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			_gs._check.roll(pid)
 		"condition_action":
 			# Локальное действие состояния (escape, напр. Detained: Влияние → сброс).
-			if not _gs.host_run_condition_action(pid, String(payload.get("condition", ""))):
+			if not _gs._cond.host_run_condition_action(pid, String(payload.get("condition", ""))):
 				GameConsole.warn(
 					"[Game] %s — нет локального действия состояния" % _gs._name_of(pid)
 				)
@@ -151,7 +151,7 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 	for aid_v: Variant in assets:
 		var aid: String = String(aid_v)
 		if not AssetCatalog.by_id(aid).is_empty():
-			_gs.host_grant_asset(pid, aid)  # исполнит onGain (сервисы срабатывают и сбрасываются)
+			_gs._cond.host_grant_asset(pid, aid)  # исполнит onGain (сервисы срабатывают и сбрасываются)
 	_gs._refill_shop_reserve(assets)  # купленные → заменить новыми
 	GameConsole.log("[Магазин] %s купил %d товар(ов)" % [_gs._name_of(pid), assets.size()])
 	_gs._broadcast_sync()
@@ -339,7 +339,7 @@ func skip_disconnected() -> bool:
 func can_travel(pid: String, dest: String) -> bool:
 	if dest.is_empty() or not _gs.players.has(pid):
 		return false
-	if _gs.player_has_constraint(pid, "cannotMove"):
+	if _gs._cond.player_has_constraint(pid, "cannotMove"):
 		return false  # whileHeld cannotMove (Detained / Lost in Time)
 	var here: String = String(_gs.players[pid].get("location", ""))
 	if dest == here:
