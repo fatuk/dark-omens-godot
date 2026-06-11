@@ -81,9 +81,15 @@ const DRAG_PLAY_Y_FRAC := 0.65
 # Сдвиг меньше этого (px) считаем КЛИКОМ (а не перетаскиванием) — клик тоже разыгрывает.
 const CLICK_DIST := 8.0
 
-# Размер кликабельной стрелки переключения секций.
-const ARROW_W := 80.0
-const ARROW_H := 120.0
+# Текстуры стрелок переключения секций (@2× → рендерим в половину).
+const ARROW_TEX_L := "res://assets/L_arrow.png"
+const ARROW_TEX_R := "res://assets/R_arrow.png"
+# Минимальная высота области клика (запас для попадания).
+const ARROW_MIN_H := 64.0
+# Дёрг стрелки при нажатии (как в пикере сыщиков): наружу и обратно.
+const ARROW_NUDGE_PX := 12.0
+const ARROW_NUDGE_OUT := 0.10
+const ARROW_NUDGE_BACK := 0.18
 
 # Фейковая рука (10 карт из прототипа).
 const CARDS: Array[Dictionary] = [
@@ -298,9 +304,9 @@ func _build_chrome() -> void:
 	_section_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_section_title)
 
-	# Стрелки переключения секций ◄ ► по бокам (видны только при >1 секции).
-	_arrow_l = _make_arrow("◄", -1)
-	_arrow_r = _make_arrow("►", 1)
+	# Стрелки переключения секций (шевроны) по бокам (видны только при >1 секции).
+	_arrow_l = _make_arrow(ARROW_TEX_L, -1)
+	_arrow_r = _make_arrow(ARROW_TEX_R, 1)
 	add_child(_arrow_l)
 	add_child(_arrow_r)
 
@@ -313,19 +319,24 @@ func _build_chrome() -> void:
 
 
 # Кликабельная стрелка переключения секции (dir = -1 влево / +1 вправо).
-func _make_arrow(glyph: String, dir: int) -> Control:
-	var a := Label.new()
+# Шеврон-текстура @2× рендерится в половину; высота клик-области не меньше ARROW_MIN_H.
+func _make_arrow(tex_path: String, dir: int) -> Control:
+	var tex: Texture2D = load(tex_path)
+	var a := TextureRect.new()
 	a.name = "Arrow%d" % dir
-	a.text = glyph
-	a.add_theme_font_size_override("font_size", 52)
-	a.add_theme_color_override("font_color", UIColors.ACCENT)
-	a.size = Vector2(ARROW_W, ARROW_H)
-	a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	a.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	a.texture = tex
+	a.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	a.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var box: Vector2 = tex.get_size() * 0.5
+	box.y = maxf(box.y, ARROW_MIN_H)
+	a.custom_minimum_size = box
+	a.size = box
 	a.mouse_filter = Control.MOUSE_FILTER_STOP
 	a.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	a.z_index = 3000  # поверх карт; позиция — сбоку от веера (_position_arrows)
+	a.z_index = 3000  # поверх карт; позиция — сбоку от веера (_position_chrome)
 	a.gui_input.connect(func(ev: InputEvent) -> void: _on_arrow_input(ev, dir))
+	a.mouse_entered.connect(func() -> void: a.modulate = Color(1.3, 1.3, 1.3))
+	a.mouse_exited.connect(func() -> void: a.modulate = Color.WHITE)
 	return a
 
 
@@ -338,8 +349,12 @@ func _position_chrome() -> void:
 	var cx: float = vp.x * 0.5
 	var half: float = _mid * GAP_X + CARD_W * 0.6 + 40.0  # полуширина веера + отступ
 	var cy: float = _p0().y + CARD_H * 0.5  # вертикальный центр веера
-	_arrow_l.position = Vector2(cx - half - ARROW_W, cy - ARROW_H * 0.5)
-	_arrow_r.position = Vector2(cx + half, cy - ARROW_H * 0.5)
+	var aw: float = _arrow_r.size.x
+	var ah: float = _arrow_r.size.y
+	_arrow_l.position = Vector2(cx - half - aw, cy - ah * 0.5)
+	_arrow_r.position = Vector2(cx + half, cy - ah * 0.5)
+	_arrow_l.set_meta("rest_x", _arrow_l.position.x)  # true-rest по X для нуджа
+	_arrow_r.set_meta("rest_x", _arrow_r.position.x)
 	# Подпись секции — под колодой (нижний край карт + отступ).
 	if is_instance_valid(_section_title):
 		var ty: float = _p0().y + CARD_H + 6.0
@@ -352,6 +367,28 @@ func _on_arrow_input(ev: InputEvent, dir: int) -> void:
 		_switch_section(dir)
 
 
+# Дёрг стрелки наружу + возврат при нажатии (как в пикере сыщиков). Прерывает
+# предыдущий нудж при спам-кликах; rest по X берёт из meta (его задаёт
+# _position_chrome) — после переключения секции стрелка уже в rest.
+func _nudge_arrow(dir: int) -> void:
+	var arrow: Control = _arrow_r if dir > 0 else _arrow_l
+	if not is_instance_valid(arrow) or not arrow.visible:
+		return
+	if arrow.has_meta("__nudge_tw"):
+		var prev: Variant = arrow.get_meta("__nudge_tw")
+		if prev is Tween and (prev as Tween).is_valid():
+			(prev as Tween).kill()
+	var rest_x: float = float(arrow.get_meta("rest_x", arrow.position.x))
+	var tw := arrow.create_tween().set_trans(Tween.TRANS_QUAD)
+	(
+		tw
+		. tween_property(arrow, "position:x", rest_x + float(dir) * ARROW_NUDGE_PX, ARROW_NUDGE_OUT)
+		. set_ease(Tween.EASE_OUT)
+	)
+	tw.chain().tween_property(arrow, "position:x", rest_x, ARROW_NUDGE_BACK).set_ease(Tween.EASE_IN)
+	arrow.set_meta("__nudge_tw", tw)
+
+
 # Переключить активную секцию (по кругу среди непустых). Стрелки/клавиши ← →.
 func _switch_section(d: int) -> void:
 	var n: int = _sections.size()
@@ -361,6 +398,7 @@ func _switch_section(d: int) -> void:
 	_active = -1
 	_apply_section(true, d)  # d>0 — влетает справа, d<0 — слева
 	_play_scroll()
+	_nudge_arrow(d)  # дёрг соответствующей стрелки (клик и клавиши ← →)
 
 
 # Обновить заголовок секции и видимость стрелок (стрелки — только при >1 секции).
@@ -533,6 +571,11 @@ func open() -> void:
 		card.rotation = 0.0
 		card.scale = Vector2.ONE
 		card.modulate = MOD_HIDDEN
+	# После анимации закрытия стрелки остаются прозрачными — возвращаем видимость
+	# (позицию им вернёт _position_chrome в _layout).
+	for arrow: Control in [_arrow_l, _arrow_r]:
+		if is_instance_valid(arrow):
+			arrow.modulate = Color.WHITE
 	_layout(true)
 
 
@@ -548,6 +591,11 @@ func close() -> void:
 	for card in _els:
 		_tween.tween_property(card, "position:y", card.position.y + 160.0, ANIM)
 		_tween.tween_property(card, "modulate", MOD_HIDDEN, ANIM)
+	# Стрелки переключения повторяют анимацию закрытия — съезжают вниз и гаснут.
+	for arrow: Control in [_arrow_l, _arrow_r]:
+		if is_instance_valid(arrow) and arrow.visible:
+			_tween.tween_property(arrow, "position:y", arrow.position.y + 160.0, ANIM)
+			_tween.tween_property(arrow, "modulate:a", 0.0, ANIM)
 	_tween.chain().tween_callback(func() -> void: visible = false)
 
 
