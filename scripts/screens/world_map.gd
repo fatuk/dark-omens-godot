@@ -103,7 +103,6 @@ func _ready() -> void:
 	GameState.state_changed.connect(_refresh_investigators)
 	GameState.state_changed.connect(_refresh_gates)
 	GameState.state_changed.connect(_refresh_entities)
-	GameState.state_changed.connect(_refresh_mystery_marks)
 	GameState.state_changed.connect(_refresh_campaign_gate)
 	_build_campaign_gate()
 	_build_outcome_modal()
@@ -112,7 +111,6 @@ func _ready() -> void:
 	_refresh_investigators()
 	_refresh_gates()
 	_refresh_entities()
-	_refresh_mystery_marks()
 	_refresh_campaign_gate()
 
 	# Сайдбар закрылся — снимаем подсветку с карты
@@ -176,23 +174,6 @@ func _animate_moves(moves: Array, list: Array) -> void:
 	_travelling = false
 	_map_layer.set_investigators(list)
 	_apply_bounds()
-
-
-## Обновляет визуализацию открытых врат по GameState.gates. Новые врата (которых
-## не было на прошлом синке) — со звуком и последовательным панорамированием
-## камеры на каждую локацию.
-## Маркеры локаций активной Тайны — незачищенные точки текущей Тайны (иконка).
-func _refresh_mystery_marks() -> void:
-	if not is_instance_valid(_map_layer):
-		return
-	var m: Dictionary = GameState.current_mystery()
-	var locs: Array = m.get("locations", [])
-	var unclaimed: Array = []
-	for i in range(locs.size()):
-		var lid: String = String(locs[i])
-		if not (GameState.mystery_claimed as Array).has(lid):
-			unclaimed.append(lid)
-	_map_layer.set_mystery_marks(unclaimed)
 
 
 func _build_outcome_modal() -> void:
@@ -378,6 +359,18 @@ func _refresh_entities() -> void:
 		for _i: int in range((GameState.monsters[lid] as Array).size()):
 			cell.append("monster")
 		view[lid] = cell
+	# Незачищенные локации активной Тайны — тем же жетоном Древних (map item в стопке),
+	# что и раскиданные eldritch_token; отдельного «маячного» слоя над медальоном нет.
+	var myst: Dictionary = GameState.current_mystery()
+	var mlocs: Array = myst.get("locations", [])
+	for i: int in range(mlocs.size()):
+		var mlid: String = String(mlocs[i])
+		if (GameState.mystery_claimed as Array).has(mlid):
+			continue
+		var mcell: Array = view.get(mlid, [])
+		if not mcell.has("eldritch_token"):
+			mcell.append("eldritch_token")
+		view[mlid] = mcell
 	_map_layer.set_entities(view)
 
 	# Локации, где улика появилась впервые.

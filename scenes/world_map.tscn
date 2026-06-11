@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://0kgoahny8047"]
 
 [ext_resource type="Script" uid="uid://diiss2g0befi6" path="res://scripts/screens/world_map.gd" id="1_oru6e"]
-[ext_resource type="Texture2D" uid="uid://cb6u8vwfb1jla" path="res://assets/map.png" id="2_maptex"]
+[ext_resource type="Texture2D" uid="uid://cb6u8vwfb1jla" path="res://assets/map/map.png" id="2_maptex"]
 [ext_resource type="PackedScene" uid="uid://c3btdfjhuxxxg" path="res://scenes/ui/investigator_panel.tscn" id="3_invpanel"]
 [ext_resource type="PackedScene" uid="uid://bpen78tdd33ii" path="res://scenes/ui/game_panel.tscn" id="4_6a477"]
 [ext_resource type="PackedScene" uid="uid://3bhtlt42mo4g" path="res://scenes/ui/action_panel.tscn" id="5_action"]

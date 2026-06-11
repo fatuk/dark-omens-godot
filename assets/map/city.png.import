@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://qa3pp60okn3k"
-path="res://.godot/imported/wilderness.png-95d637ef5b0eda71ceca6694d2707d29.ctex"
+uid="uid://c4vbyhe144yr7"
+path="res://.godot/imported/city.png-4bf5e22ec4c5e27bb4b7f3de6f3d0210.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/wilderness.png"
-dest_files=["res://.godot/imported/wilderness.png-95d637ef5b0eda71ceca6694d2707d29.ctex"]
+source_file="res://assets/map/city.png"
+dest_files=["res://.godot/imported/city.png-4bf5e22ec4c5e27bb4b7f3de6f3d0210.ctex"]
 
 [params]
 
