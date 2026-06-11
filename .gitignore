@@ -6,5 +6,8 @@
 .mcp.json
 addons/godot_mcp/
 
+# GUT (фреймворк юнит-тестов — ставится локально, см. test/README.md)
+addons/gut/
+
 # Claude Code (локальные настройки редактора)
 .claude/
