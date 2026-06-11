@@ -19,7 +19,7 @@ signal phase_changed(new_phase: String)  # переход фазы
 const ACTIONS_PER_ROUND := 2
 # Интерпретатор Effect-DSL — нужен для применения адресных эффектов (target
 # lead/each/chosenInvestigator) к другим сыщикам из _apply_board_effect.
-const _EffectRunner = preload("res://scripts/core/effect_runner.gd")
+const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
 # ── Глобальный стейт ──────────────────────────────────────────────────────────
 var round_num: int = 0

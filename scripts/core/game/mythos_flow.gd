@@ -13,7 +13,7 @@ extends RefCounted
 ## близкая связь: модуль владеет своими данными (deck/index), но не своим
 ## жизненным циклом.
 
-const _EffectRunner = preload("res://scripts/core/effect_runner.gd")
+const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
 # Колода и позиция — host-only. Колода восстанавливается по campaign.id из
 # снапшота при реджойне хоста (см. restore_deck), индекс синкается через

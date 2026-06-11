@@ -5,7 +5,7 @@ extends GutTest
 ## String(i), записанный бросок переигрывается без обращения к ГСЧ. Единственная
 ## внешняя зависимость интерпретатора — Dice (глобальный class_name).
 
-const EffectRunner = preload("res://scripts/core/effect_runner.gd")
+const EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
 
 # Базовый словарь игрока (форма GameState.players[*]).

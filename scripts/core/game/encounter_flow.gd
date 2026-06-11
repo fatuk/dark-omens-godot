@@ -8,7 +8,7 @@ extends RefCounted
 ## turn-flow; EncounterFlow — логикой взаимодействия с ContentApi. Запись в
 ## _gs.current_encounter — напрямую из модуля: результат обязан попасть в синк.
 
-const _EffectRunner = preload("res://scripts/core/effect_runner.gd")
+const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
 # Шанс, что бонус локации (rewardAffinity) сработает на успехе встречи (Вариант A).
 const _LOC_BONUS_CHANCE := 0.5

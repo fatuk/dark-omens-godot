@@ -10,7 +10,7 @@ extends RefCounted
 ## Доступ к игровому стейту — через _gs (GameState): _gs.players, _gs._is_host(),
 ## _gs._name_of(), _gs._apply_board_effect(). Создаётся в GameState (поле _cond).
 
-const _EffectRunner = preload("res://scripts/core/effect_runner.gd")
+const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
 var _gs: Node
 
