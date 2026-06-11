@@ -275,7 +275,15 @@ func _on_delete_room_btn(room_id: String) -> void:
 
 
 func _on_joined_room(_rid: String, _rname: String, _is_host: bool, _players: Array) -> void:
-	SceneManager.go("lobby")
+	# Возврат в уже идущую игру с выбранным сыщиком — сразу на карту, лобби НЕ грузим.
+	# (При потоковой загрузке лобби успело бы отрисоваться и пикер мелькнул бы перед
+	# прыжком на карту; решаем маршрут ДО загрузки сцены.)
+	var my_pdata: Dictionary = _nm.players.get(_nm.my_id, {})
+	var my_inv: String = String(my_pdata.get("investigator", ""))
+	if _nm.game_started and not my_inv.is_empty():
+		SceneManager.go("world_map")
+	else:
+		SceneManager.go("lobby")
 
 
 func _on_rejoin_failed_in_menu() -> void:
