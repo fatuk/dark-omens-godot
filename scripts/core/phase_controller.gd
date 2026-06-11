@@ -43,8 +43,13 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	if int(p.get("actions_left", 0)) <= 0:
 		return false
 
-	# whileHeld cannotAct (Detained / Lost in Time): любые действия, кроме pass, запрещены.
-	if action_type != "pass" and _gs.player_has_constraint(pid, "cannotAct"):
+	# whileHeld cannotAct (Detained / Lost in Time): любые действия запрещены, кроме
+	# pass и локального действия состояния (condition_action — это escape).
+	if (
+		action_type != "pass"
+		and action_type != "condition_action"
+		and _gs.player_has_constraint(pid, "cannotAct")
+	):
 		GameConsole.warn("[Game] %s не может действовать (состояние)" % _gs._name_of(pid))
 		return false
 
@@ -64,7 +69,11 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			p["concentration"] = int(p.get("concentration", 0)) + 1
 			p["actions_left"] = int(p["actions_left"]) - 1
 		"rest":
+			# whileHeld cannotRecover + triggered on:rest (Hypothermia: не лечит здоровье
+			# + бросок 4-6 сбросить). fire_triggered исполняет dieRoll/сброс и возвращает
+			# дополнительные cannotRecover-статы для подавления лечения этого отдыха.
 			var rec: Array = _gs.player_constraints(pid).get("cannotRecover", [])
+			rec.append_array(_gs.fire_triggered(pid, "rest"))
 			if not rec.has("health"):
 				p["hp"] = mini(int(p["hp_max"]), int(p["hp"]) + REST_HEAL_HP)
 			if not rec.has("sanity"):
@@ -94,6 +103,14 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			if String(_gs.active_check.get("owner", "")) != "shop":
 				_gs._check.start("shop", pid, "influence", 0, "acquireAssets")
 			_gs._check.roll(pid)
+		"condition_action":
+			# Локальное действие состояния (escape, напр. Detained: Влияние → сброс).
+			if not _gs.host_run_condition_action(pid, String(payload.get("condition", ""))):
+				GameConsole.warn(
+					"[Game] %s — нет локального действия состояния" % _gs._name_of(pid)
+				)
+				return false
+			p["actions_left"] = int(p["actions_left"]) - 1
 		"pass":
 			p["actions_left"] = 0
 		_:

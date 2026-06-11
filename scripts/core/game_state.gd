@@ -1158,6 +1158,69 @@ func player_has_constraint(pid: String, verb: String) -> bool:
 	return player_constraints(pid).has(verb)
 
 
+# ── Триггеры (triggered) и локальные действия (action) состояний ───────────────
+
+
+## Хост: сработавшие triggered held-состояний по событию (напр. "rest"). Возвращает
+## список stat'ов cannotRecover (подавление лечения — на зовущей стороне); прочее
+## (dieRoll/test → flipCard/discardCard и т.п.) исполняет через интерпретатор.
+func fire_triggered(pid: String, event: String) -> Array:
+	var no_recover: Array = []
+	if not _is_host():
+		return no_recover
+	var p: Dictionary = players.get(pid, {})
+	var conds: Array = (p.get("conditions", []) as Array).duplicate()
+	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
+	var ctx: Dictionary = {"skills": inv.get("skills", {})}
+	for i in range(conds.size()):
+		var cid: String = String(conds[i])
+		if not (p.get("conditions", []) as Array).has(cid):
+			continue
+		var def: Dictionary = Conditions.get_def(cid)
+		for t_v: Variant in def.get("triggered", []):
+			var t: Dictionary = t_v
+			if String(t.get("on", "")) != event:
+				continue
+			var rest_nodes: Array = []
+			for n_v: Variant in t.get("do", []):
+				var n: Dictionary = n_v
+				if String(n.get("do", "")) == "cannotRecover":
+					no_recover.append(String(n.get("stat", "health")))
+				else:
+					rest_nodes.append(n)
+			_run_carrier_program(pid, cid, def, rest_nodes, ctx, "Триггер:" + event)
+	return no_recover
+
+
+## Хост: локальное действие состояния (action-слот, напр. Detained: проверка Влияния
+## → сброс). true — состояние держится и имеет action. Разрешено даже при cannotAct.
+func host_run_condition_action(pid: String, cond_id: String) -> bool:
+	if not _is_host():
+		return false
+	if not (players.get(pid, {}).get("conditions", []) as Array).has(cond_id):
+		return false
+	var def: Dictionary = Conditions.get_def(cond_id)
+	var program: Array = def.get("action", [])
+	if (program as Array).is_empty():
+		return false
+	var inv: Dictionary = Investigators.get_data(String(players[pid].get("investigator", "")))
+	_run_carrier_program(pid, cond_id, def, program, {"skills": inv.get("skills", {})}, "Действие")
+	return true
+
+
+# Прогон Effect-программы носителя-состояния (триггер/действие): мутирует игрока,
+# flipCard/discardCard — над cid, прочий board — обычным эффектом.
+func _run_carrier_program(
+	pid: String, cid: String, def: Dictionary, program: Array, ctx: Dictionary, tag: String
+) -> void:
+	var p: Dictionary = players.get(pid, {})
+	var res: Dictionary = _EffectRunner.run(program, p, ctx)
+	for l_v: Variant in res.get("logs", []):
+		GameConsole.log("[%s] %s · %s: %s" % [tag, _name_of(pid), cid, String(l_v)])
+	for node_v: Variant in res.get("board", []):
+		_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx)
+
+
 # ── Адресные эффекты (target) и передачи между сыщиками ────────────────────────
 
 
