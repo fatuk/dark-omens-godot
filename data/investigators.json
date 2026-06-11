@@ -870,7 +870,7 @@
   },
   {
 	"name": "Calvin Wright",
-	"startingItems": [{"resource": 1}, {"clue": 1}, {"resource": 1}, {"asset": "spirit_dagger"}],
+	"startingItems": [{"resource": 1}, {"clue": 1}, {"asset": "spirit_dagger"}],
 	"displayName": "INV_CALVIN_WRIGHT_NAME",
 	"occupation": "INV_CALVIN_WRIGHT_OCC",
 	"startingLocation": "Buenos Aires",

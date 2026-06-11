@@ -6,16 +6,12 @@
 [ext_resource type="Shader" uid="uid://ccf0otuh00sff" path="res://assets/shaders/fog.gdshader" id="4_fog"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_fog"]
-noise_type = 1
 fractal_octaves = 4
 fractal_gain = 0.45
-frequency = 0.01
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_fog"]
-width = 512
-height = 512
-seamless = true
 noise = SubResource("FastNoiseLite_fog")
+seamless = true
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fog"]
 shader = ExtResource("4_fog")
@@ -49,7 +45,7 @@ texture = ExtResource("2_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Fog" type="ColorRect" parent="." groups=["fog"] unique_id=960654142]
+[node name="Fog" type="ColorRect" parent="." unique_id=960654142 groups=["fog"]]
 material = SubResource("ShaderMaterial_fog")
 layout_mode = 1
 anchors_preset = 15
