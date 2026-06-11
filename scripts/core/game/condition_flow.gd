@@ -25,15 +25,18 @@ func _init(gs: Node) -> void:
 ## Хост: шаг Расплаты. Зовётся board-verb'ом resolveReckoning (мифос-карта
 ## reckoning). Проходит onReckoning всех держателей состояний и исполняет через
 ## интерпретатор; flipCard/discardCard обрабатываются над носителем-состоянием.
-func host_resolve_reckoning() -> void:
+## flow (опц.) — детерминизм replay (как в EffectRunner): flow.rolls[path] фиксирует
+## броски ворот (dieRoll/test в onReckoning), flow.outcomes[cid] форсирует исход
+## flip'а. Пусто → прежнее случайное поведение. Используется тестами.
+func host_resolve_reckoning(flow: Dictionary = {}) -> void:
 	if not _gs._is_host():
 		return
 	GameConsole.log("[Расплата] начало")
 	for pid_v: Variant in _gs.players.keys():
-		_reckon_player(String(pid_v))
+		_reckon_player(String(pid_v), flow)
 
 
-func _reckon_player(pid: String) -> void:
+func _reckon_player(pid: String, flow: Dictionary = {}) -> void:
 	var p: Dictionary = _gs.players.get(pid, {})
 	# Снимок списка: outcome-эффекты могут менять состав состояний в процессе.
 	var conds: Array = (p.get("conditions", []) as Array).duplicate()
@@ -51,21 +54,26 @@ func _reckon_player(pid: String) -> void:
 		var program: Array = def.get("onReckoning", [])
 		if (program as Array).is_empty():
 			continue
-		var res: Dictionary = _EffectRunner.run(program, p, ctx)
+		var res: Dictionary = _EffectRunner.run(program, p, ctx, flow)
 		for l_v: Variant in res.get("logs", []):
 			GameConsole.log("[Расплата] %s · %s: %s" % [_gs._name_of(pid), cid, String(l_v)])
 		for node_v: Variant in res.get("board", []):
-			_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx)
+			_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx, flow)
 
 
 # board-узел из onReckoning состояния: flipCard/discardCard — над носителем cid,
 # прочее (advanceDoom и т.п.) — обычным board-эффектом.
 func _apply_reckon_board(
-	pid: String, cid: String, def: Dictionary, node: Dictionary, ctx: Dictionary
+	pid: String,
+	cid: String,
+	def: Dictionary,
+	node: Dictionary,
+	ctx: Dictionary,
+	flow: Dictionary = {}
 ) -> void:
 	match String(node.get("do", "")):
 		"flipCard":
-			_flip_condition(pid, cid, def, ctx)
+			_flip_condition(pid, cid, def, ctx, flow)
 		"discardCard":
 			_discard_condition(pid, cid)
 		_:
@@ -74,15 +82,17 @@ func _apply_reckon_board(
 
 # Перевернуть состояние: вытянуть случайный reckoningOutcome его вида, применить
 # effects, затем then: flip (пометить перевёрнутым) | discard (снять).
-func _flip_condition(pid: String, cid: String, def: Dictionary, ctx: Dictionary) -> void:
+func _flip_condition(
+	pid: String, cid: String, def: Dictionary, ctx: Dictionary, flow: Dictionary = {}
+) -> void:
 	var p: Dictionary = _gs.players.get(pid, {})
 	var outcomes: Array = Conditions.outcomes_of_kind(String(def.get("kind", "")))
 	if outcomes.is_empty():
 		_set_flipped(p, cid, "")
 		GameConsole.log("[Расплата] %s · %s перевёрнуто" % [_gs._name_of(pid), cid])
 		return
-	var outcome: Dictionary = outcomes[randi() % outcomes.size()]
-	var res: Dictionary = _EffectRunner.run(outcome.get("effects", []), p, ctx)
+	var outcome: Dictionary = _pick_outcome(outcomes, cid, flow)
+	var res: Dictionary = _EffectRunner.run(outcome.get("effects", []), p, ctx, flow)
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log(
 			(
@@ -99,6 +109,17 @@ func _flip_condition(pid: String, cid: String, def: Dictionary, ctx: Dictionary)
 		GameConsole.log(
 			"[Расплата] %s · %s → «%s»" % [_gs._name_of(pid), cid, String(outcome.get("id", ""))]
 		)
+
+
+# Выбор reckoningOutcome: форс через flow.outcomes[cid] (детерминизм в тестах),
+# иначе случайный из исходов нужного вида.
+func _pick_outcome(outcomes: Array, cid: String, flow: Dictionary) -> Dictionary:
+	var forced: String = String((flow.get("outcomes", {}) as Dictionary).get(cid, ""))
+	if not forced.is_empty():
+		var def: Dictionary = Conditions.outcome_def(forced)
+		if not def.is_empty():
+			return def
+	return outcomes[randi() % outcomes.size()]
 
 
 func _set_flipped(p: Dictionary, cid: String, outcome_id: String) -> void:
@@ -150,7 +171,7 @@ func player_has_constraint(pid: String, verb: String) -> bool:
 ## Хост: сработавшие triggered held-состояний по событию (напр. "rest"). Возвращает
 ## список stat'ов cannotRecover (подавление лечения — на зовущей стороне); прочее
 ## (dieRoll/test → flipCard/discardCard и т.п.) исполняет через интерпретатор.
-func fire_triggered(pid: String, event: String) -> Array:
+func fire_triggered(pid: String, event: String, flow: Dictionary = {}) -> Array:
 	var no_recover: Array = []
 	if not _gs._is_host():
 		return no_recover
@@ -174,13 +195,13 @@ func fire_triggered(pid: String, event: String) -> Array:
 					no_recover.append(String(n.get("stat", "health")))
 				else:
 					rest_nodes.append(n)
-			_run_carrier_program(pid, cid, def, rest_nodes, ctx, "Триггер:" + event)
+			_run_carrier_program(pid, cid, def, rest_nodes, ctx, "Триггер:" + event, flow)
 	return no_recover
 
 
 ## Хост: локальное действие состояния (action-слот, напр. Detained: проверка Влияния
 ## → сброс). true — состояние держится и имеет action. Разрешено даже при cannotAct.
-func host_run_condition_action(pid: String, cond_id: String) -> bool:
+func host_run_condition_action(pid: String, cond_id: String, flow: Dictionary = {}) -> bool:
 	if not _gs._is_host():
 		return false
 	if not (_gs.players.get(pid, {}).get("conditions", []) as Array).has(cond_id):
@@ -190,21 +211,29 @@ func host_run_condition_action(pid: String, cond_id: String) -> bool:
 	if (program as Array).is_empty():
 		return false
 	var inv: Dictionary = Investigators.get_data(String(_gs.players[pid].get("investigator", "")))
-	_run_carrier_program(pid, cond_id, def, program, {"skills": inv.get("skills", {})}, "Действие")
+	_run_carrier_program(
+		pid, cond_id, def, program, {"skills": inv.get("skills", {})}, "Действие", flow
+	)
 	return true
 
 
 # Прогон Effect-программы носителя-состояния (триггер/действие): мутирует игрока,
 # flipCard/discardCard — над cid, прочий board — обычным эффектом.
 func _run_carrier_program(
-	pid: String, cid: String, def: Dictionary, program: Array, ctx: Dictionary, tag: String
+	pid: String,
+	cid: String,
+	def: Dictionary,
+	program: Array,
+	ctx: Dictionary,
+	tag: String,
+	flow: Dictionary = {}
 ) -> void:
 	var p: Dictionary = _gs.players.get(pid, {})
-	var res: Dictionary = _EffectRunner.run(program, p, ctx)
+	var res: Dictionary = _EffectRunner.run(program, p, ctx, flow)
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[%s] %s · %s: %s" % [tag, _gs._name_of(pid), cid, String(l_v)])
 	for node_v: Variant in res.get("board", []):
-		_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx)
+		_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx, flow)
 
 
 # ── Выдача активов с исполнением onGain ───────────────────────────────────────
