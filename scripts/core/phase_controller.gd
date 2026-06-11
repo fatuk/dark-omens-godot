@@ -148,12 +148,10 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 		return false
 	if _gs.location_type(String(p.get("location", ""))) != "city":
 		return false
-	var items: Array = p.get("items", [])
 	for aid_v: Variant in assets:
 		var aid: String = String(aid_v)
 		if not AssetCatalog.by_id(aid).is_empty():
-			items.append({"id": aid, "exhausted": false})
-	p["items"] = items
+			_gs.host_grant_asset(pid, aid)  # исполнит onGain (сервисы срабатывают и сбрасываются)
 	_gs._refill_shop_reserve(assets)  # купленные → заменить новыми
 	GameConsole.log("[Магазин] %s купил %d товар(ов)" % [_gs._name_of(pid), assets.size()])
 	_gs._broadcast_sync()

@@ -1221,6 +1221,40 @@ func _run_carrier_program(
 		_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx)
 
 
+# ── Выдача активов с исполнением onGain ───────────────────────────────────────
+
+
+## Хост: выдать актив сыщику, исполнив его onGain. Сервис-актив (onGain содержит
+## discardCard) срабатывает и НЕ попадает в инвентарь; прочие — добавляются как
+## {id, exhausted:false}. Единая точка получения актива (магазин и пр.).
+func host_grant_asset(pid: String, asset_id: String) -> void:
+	if not _is_host() or not players.has(pid):
+		return
+	var asset: Dictionary = AssetCatalog.by_id(asset_id)
+	if asset.is_empty():
+		return
+	var p: Dictionary = players[pid]
+	var on_gain: Array = (asset.get("effect", {}) as Dictionary).get("onGain", [])
+	var consumed: bool = false
+	if not (on_gain as Array).is_empty():
+		var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
+		var res: Dictionary = _EffectRunner.run(on_gain, p, {"skills": inv.get("skills", {})})
+		for l_v: Variant in res.get("logs", []):
+			GameConsole.log("[onGain %s] %s · %s" % [asset_id, _name_of(pid), String(l_v)])
+		for node_v: Variant in res.get("board", []):
+			if String((node_v as Dictionary).get("do", "")) == "discardCard":
+				consumed = true  # сервис: сработал и сбрасывается — в инвентарь не идёт
+			else:
+				_apply_board_effect(node_v as Dictionary)
+	if consumed:
+		GameConsole.log("[Актив] %s — сервис «%s» применён и сброшен" % [_name_of(pid), asset_id])
+		return
+	var items: Array = p.get("items", [])
+	items.append({"id": asset_id, "exhausted": false})
+	p["items"] = items
+	GameConsole.log("[Актив] %s получил «%s»" % [_name_of(pid), asset_id])
+
+
 # ── Адресные эффекты (target) и передачи между сыщиками ────────────────────────
 
 
