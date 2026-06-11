@@ -142,6 +142,8 @@ func _apply_effects(effects: Array) -> void:
 			for uid: String in _gs.players:
 				if not bool(_gs.players[uid].get("connected", true)):
 					continue
+				if _gs.player_has_constraint(uid, "immuneToEffects"):
+					continue  # whileHeld immuneToEffects (Lost in Time)
 				var res: Dictionary = _EffectRunner.run([eff], _gs.players[uid])
 				for log_msg in res.get("logs", []):
 					GameConsole.log("[Mythos→%s] %s" % [_gs._name_of(uid), String(log_msg)])

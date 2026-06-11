@@ -1130,6 +1130,34 @@ func _discard_condition(pid: String, cid: String) -> void:
 	GameConsole.log("[Расплата] %s · %s сброшено" % [_name_of(pid), cid])
 
 
+# ── whileHeld-ограничения состояний ───────────────────────────────────────────
+
+
+## Активные whileHeld-ограничения сыщика из held-состояний. Словарь:
+## {cannotMove:true, cannotAct:true, removeFromBoard:true, immuneToEffects:true,
+##  cannotRecover:[stat,…]}. См. data/conditions.json (Detained, Lost in Time).
+func player_constraints(pid: String) -> Dictionary:
+	var out: Dictionary = {}
+	var conds: Array = (players.get(pid, {}) as Dictionary).get("conditions", [])
+	for i in range(conds.size()):
+		var while_held: Array = Conditions.get_def(String(conds[i])).get("whileHeld", [])
+		for j in range(while_held.size()):
+			var node: Dictionary = while_held[j]
+			var verb: String = String(node.get("do", ""))
+			if verb == "cannotRecover":
+				var stats: Array = out.get("cannotRecover", [])
+				stats.append(String(node.get("stat", "health")))
+				out["cannotRecover"] = stats
+			elif not verb.is_empty():
+				out[verb] = true
+	return out
+
+
+## Есть ли у сыщика whileHeld-ограничение verb (для cannotRecover см. сам словарь).
+func player_has_constraint(pid: String, verb: String) -> bool:
+	return player_constraints(pid).has(verb)
+
+
 # ── Адресные эффекты (target) и передачи между сыщиками ────────────────────────
 
 

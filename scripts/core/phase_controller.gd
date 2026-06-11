@@ -43,6 +43,11 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	if int(p.get("actions_left", 0)) <= 0:
 		return false
 
+	# whileHeld cannotAct (Detained / Lost in Time): любые действия, кроме pass, запрещены.
+	if action_type != "pass" and _gs.player_has_constraint(pid, "cannotAct"):
+		GameConsole.warn("[Game] %s не может действовать (состояние)" % _gs._name_of(pid))
+		return false
+
 	# Одно и то же действие нельзя повторять в раунде (pass не в счёт).
 	var used: Array = p.get("actions_used", [])
 	if action_type != "pass" and used.has(action_type):
@@ -59,8 +64,11 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			p["concentration"] = int(p.get("concentration", 0)) + 1
 			p["actions_left"] = int(p["actions_left"]) - 1
 		"rest":
-			p["hp"] = mini(int(p["hp_max"]), int(p["hp"]) + REST_HEAL_HP)
-			p["sanity"] = mini(int(p["sanity_max"]), int(p["sanity"]) + REST_HEAL_SANITY)
+			var rec: Array = _gs.player_constraints(pid).get("cannotRecover", [])
+			if not rec.has("health"):
+				p["hp"] = mini(int(p["hp_max"]), int(p["hp"]) + REST_HEAL_HP)
+			if not rec.has("sanity"):
+				p["sanity"] = mini(int(p["sanity_max"]), int(p["sanity"]) + REST_HEAL_SANITY)
 			p["actions_left"] = int(p["actions_left"]) - 1
 		"travel":
 			var dest: String = String(payload.get("to", ""))
@@ -316,6 +324,8 @@ func skip_disconnected() -> bool:
 func can_travel(pid: String, dest: String) -> bool:
 	if dest.is_empty() or not _gs.players.has(pid):
 		return false
+	if _gs.player_has_constraint(pid, "cannotMove"):
+		return false  # whileHeld cannotMove (Detained / Lost in Time)
 	var here: String = String(_gs.players[pid].get("location", ""))
 	if dest == here:
 		return false
