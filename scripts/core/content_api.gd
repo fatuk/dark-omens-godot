@@ -1,10 +1,10 @@
 extends Node
 
 ## ContentApi — клиент HTTP-контента: встречи (выборка из корпуса CMS) и
-## сценарные библии через relay-API (/encounters/draw, /campaign/generate,
+## сценарные библии через relay-API (/encounters/draw, /campaign/assemble,
 ## /campaign/:id). Autoload-синглтон /root/ContentApi.
 ##
-## Генерацию зовёт ТОЛЬКО хост; не-хосты получают готовый контент по WS-relay
+## Контент тянет ТОЛЬКО хост; не-хосты получают готовый контент по WS-relay
 ## (см. GameState). Сам сервис политику host-only не навязывает — это решает
 ## вызывающая сторона. Запросы аутентифицируются токеном AuthManager.
 ##
@@ -17,10 +17,10 @@ extends Node
 ##   else:
 ##       push_warning(res["error"])
 
-# Таймауты: встреча — выборка из корпуса (быстро, но с запасом на сеть),
-# сценарная библия — генерация LLM, до пары минут.
+# Таймауты: и встреча, и сценарная библия — выборка/сборка из корпуса CMS
+# (детерминированно, быстро; запас — на сеть).
 const TIMEOUT_ENCOUNTER: float = 60.0
-const TIMEOUT_CAMPAIGN: float = 240.0
+const TIMEOUT_CAMPAIGN: float = 60.0
 
 # ── Публичное API ─────────────────────────────────────────────────────────────
 
@@ -37,11 +37,11 @@ func draw_encounter(req: Dictionary) -> Dictionary:
 	return {"ok": true, "error": "", "encounters": json.get("encounters", [])}
 
 
-## Сгенерировать сценарную библию. `req` — тело /campaign/generate
-## (locations, ancientOne?, playerCount, themeHint?, language). При успехе в
-## ответе ключ `campaign` — объект библии.
-func generate_campaign(req: Dictionary) -> Dictionary:
-	var res: Dictionary = await _post("/campaign/generate", req, TIMEOUT_CAMPAIGN)
+## Собрать сценарную библию (детерминированно из CMS-корпуса). `req` — тело
+## /campaign/assemble (locations, ancientOne?, playerCount, themeHint?, language).
+## При успехе в ответе ключ `campaign` — объект библии.
+func assemble_campaign(req: Dictionary) -> Dictionary:
+	var res: Dictionary = await _post("/campaign/assemble", req, TIMEOUT_CAMPAIGN)
 	if not res["ok"]:
 		return res
 	var json: Dictionary = res["json"]
@@ -79,7 +79,7 @@ func _post(path: String, body: Dictionary, timeout: float) -> Dictionary:
 
 
 ## Один HTTP-запрос. Под каждый запрос — свой HTTPRequest-узел, поэтому
-## несколько генераций могут идти параллельно (в отличие от единственного
+## несколько запросов могут идти параллельно (в отличие от единственного
 ## _http в AuthManager). Узел освобождается по завершении запроса.
 func _request(method: int, path: String, body: String, timeout: float) -> Dictionary:
 	var token: String = AuthManager.session_token
@@ -87,7 +87,7 @@ func _request(method: int, path: String, body: String, timeout: float) -> Dictio
 		return _err("Нет сессии — сначала войдите в аккаунт")
 
 	var http := HTTPRequest.new()
-	http.name = "GenRequest"
+	http.name = "ContentRequest"
 	http.timeout = timeout
 	add_child(http)
 
@@ -111,7 +111,7 @@ func _request(method: int, path: String, body: String, timeout: float) -> Dictio
 	var bytes: PackedByteArray = r[3]
 
 	if result != HTTPRequest.RESULT_SUCCESS:
-		return _err("Нет связи с сервером генерации (result %d)" % result)
+		return _err("Нет связи с сервером контента (result %d)" % result)
 
 	var parsed: Variant = JSON.parse_string(bytes.get_string_from_utf8())
 	var json: Dictionary = parsed if parsed is Dictionary else {}

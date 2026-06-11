@@ -1,7 +1,7 @@
 class_name CampaignGen
 extends RefCounted
 
-## Хост-only: генерация и анализ сценарной библии. Прогрев в лобби, сброс
+## Хост-only: сборка и анализ сценарной библии. Прогрев в лобби, сброс
 ## перед новой игрой, актуальный акт, текущая мистерия.
 ##
 ## GameState владеет публичными полями (campaign, campaign_pending) — они
@@ -116,7 +116,7 @@ func current_mystery() -> Dictionary:
 # ── Корутина генерации ───────────────────────────────────────────────────────
 
 
-# Один цикл генерации сценарной библии (~минуты). Корутина — вызывается без
+# Один цикл сборки сценарной библии (детерминированно из CMS, быстро). Корутина — вызывается без
 # await. Эпоха защищает от устаревших результатов.
 func _start_generation(player_count: int, ancient_one: String) -> void:
 	if not _gs._is_host():
@@ -134,7 +134,7 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 
 	var api: Node = _gs.get_node_or_null("/root/ContentApi")
 	if api == null:
-		GameConsole.warn("[Game] ContentApi недоступен — кампания не сгенерирована")
+		GameConsole.warn("[Game] ContentApi недоступен — кампания не собрана")
 		if epoch == _epoch:
 			_gs.campaign_pending = false
 			if _gs.active:
@@ -143,9 +143,9 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 		return
 
 	var req: Dictionary = _build_request(player_count, ancient_one)
-	GameConsole.log("[Game] Генерация сценарной библии...")
+	GameConsole.log("[Game] Сборка сценарной библии...")
 	@warning_ignore("unsafe_method_access")
-	var res: Dictionary = await api.generate_campaign(req)
+	var res: Dictionary = await api.assemble_campaign(req)
 
 	if epoch != _epoch:
 		return  # перебито новым циклом или reset — результат устарел
@@ -166,7 +166,7 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 			)
 		)
 	else:
-		GameConsole.warn("[Game] Генерация кампании не удалась: %s" % String(res.get("error", "")))
+		GameConsole.warn("[Game] Сборка кампании не удалась: %s" % String(res.get("error", "")))
 	_gs.campaign_pending = false
 	# Броадкаст только если игра уже идёт; библию, прогретую ещё в лобби,
 	# разошлёт _broadcast_sync() из start_game.
@@ -176,7 +176,7 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 	_gs._emit_changed()
 
 
-# Тело запроса /campaign/generate: локации, размер партии, язык, Древний.
+# Тело запроса /campaign/assemble: локации, размер партии, язык, Древний.
 func _build_request(player_count: int, ancient_one: String) -> Dictionary:
 	var locations: Array = _gs._load_locations()
 	var locs: Array = []
