@@ -104,6 +104,10 @@ func test_improve_and_impair_skill_accumulate() -> void:
 	EffectRunner.run([{"do": "improveSkill", "skill": "lore", "amount": 2}], p)
 	EffectRunner.run([{"do": "impairSkill", "skill": "lore", "amount": 1}], p)
 	assert_eq(int((p["skill_mods"] as Dictionary)["lore"]), 1, "+2 − 1 = +1 к навыку")
+	# skill:"all" — улучшить каждый навык (Markings of Isis «+1 to all skills»).
+	EffectRunner.run([{"do": "improveSkill", "skill": "all", "amount": 1}], p)
+	assert_eq(int((p["skill_mods"] as Dictionary)["will"]), 1, "all → +1 каждому навыку")
+	assert_eq(int((p["skill_mods"] as Dictionary)["lore"]), 2, "lore: 1 + 1(all)")
 
 
 func test_become_delayed_adds_condition() -> void:
@@ -246,6 +250,10 @@ func test_board_verb_goes_to_board_not_player() -> void:
 	assert_eq(board.size(), 1, "не-игровой verb уходит на доску")
 	assert_eq(String((board[0] as Dictionary)["do"]), "advanceDoom")
 	assert_eq(int((board[0] as Dictionary)["_times"]), 1, "проставлен _times для повтора")
+	# Результат каста (ctx.successes) прокидывается на board-ноду — для verb'ов
+	# «по стойкости» (discardMonster/defeatMonster maxToughness:"testResult").
+	var r2: Dictionary = EffectRunner.run([{"do": "discardMonster"}], p, {"successes": 3})
+	assert_eq(int((r2["board"][0] as Dictionary)["_successes"]), 3, "_successes из ctx на board")
 
 
 func test_self_player_verb_applied_legacy_mode() -> void:

@@ -1076,9 +1076,15 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 		"discardGate":
 			_board.discard_gate()
 		"discardMonster":
-			_board.remove_monster_at_active(false, n)  # снять без боя
+			if String(node.get("maxToughness", "")) == "testResult":
+				_board.remove_monsters_by_toughness(false, int(node.get("_successes", 0)))
+			else:
+				_board.remove_monster_at_active(false, n)  # снять без боя
 		"defeatMonster":
-			_board.remove_monster_at_active(true, n)  # победить (вернуть id в мешок)
+			if String(node.get("maxToughness", "")) == "testResult":
+				_board.remove_monsters_by_toughness(true, int(node.get("_successes", 0)))
+			else:
+				_board.remove_monster_at_active(true, n)  # победить (вернуть id в мешок)
 		"damageMonster":
 			_board.damage_monster_at_active(n)
 		"resolveReckoning":

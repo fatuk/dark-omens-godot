@@ -242,6 +242,40 @@ func remove_monster_at_active(defeated: bool, n: int) -> void:
 		)
 
 
+## Снять с локации активного игрока всех монстров со стойкостью ≤ max_t (id → в
+## мешок). Для эффектов «по стойкости» (Poison Mist/Banishment/Binding). defeated — лог.
+func remove_monsters_by_toughness(defeated: bool, max_t: int) -> void:
+	if not _gs._is_host() or max_t < 1:
+		return
+	var loc: String = _active_loc()
+	if loc.is_empty():
+		return
+	var balance_pc: int = _gs._campaign.balance_player_count()
+	var kept: Array = []
+	var removed: int = 0
+	for inst_v: Variant in _gs.monsters.get(loc, []):
+		var inst: Dictionary = inst_v if inst_v is Dictionary else {"id": String(inst_v)}
+		var m: Dictionary = MonsterCatalog.by_id(String(inst.get("id", "")))
+		@warning_ignore("unsafe_method_access")
+		var t: int = maxi(1, MonsterCatalog.toughness_for(m, balance_pc) if not m.is_empty() else 1)
+		if t <= max_t:
+			return_monster_to_bag(String(inst.get("id", "")))
+			removed += 1
+		else:
+			kept.append(inst)
+	if kept.is_empty():
+		_gs.monsters.erase(loc)
+	else:
+		_gs.monsters[loc] = kept
+	if removed > 0:
+		GameConsole.log(
+			(
+				"[Монстр] %s ×%d (стойкость ≤ %d) на %s"
+				% ["побеждён" if defeated else "сброшен", removed, max_t, loc]
+			)
+		)
+
+
 ## Нанести amount урона первому монстру на локации активного игрока; гибель → снять.
 func damage_monster_at_active(amount: int) -> void:
 	if not _gs._is_host() or amount <= 0:

@@ -80,6 +80,9 @@ const _PASSIVE_VERBS := [
 	"immuneToEffects",
 ]
 
+# Навыки Dark Omens — для improveSkill/impairSkill со skill:"all" (Markings of Isis).
+const _ALL_SKILLS := ["influence", "lore", "observation", "strength", "will"]
+
 
 ## ctx (опц.) — контекст исполнения: { skills, loc_type, is_lead, gates_matching_omen,
 ## gates_on_board, monsters_on_board, clues_on_board, rumors_in_play, monster_toughness }.
@@ -300,6 +303,9 @@ static func _run_action(
 	#     → на доску с разрешённым повтором; цель разрешит GameState.
 	var bnode: Dictionary = node.duplicate(true)
 	bnode["_times"] = _repeat(node, player, ctx)
+	# Результат каст-теста — для board-verb'ов «по стойкости» (discardMonster/
+	# defeatMonster с maxToughness:"testResult"; Poison Mist / Banishment / Binding).
+	bnode["_successes"] = int(ctx.get("successes", 0))
 	board.append(bnode)
 
 
@@ -368,9 +374,15 @@ static func _apply_player_verb(
 			logs.append("−%d сосредоточения" % n)
 		"improveSkill", "impairSkill":
 			var skill: String = String(node.get("skill", ""))
-			if not skill.is_empty():
+			var delta: int = n if verb == "improveSkill" else -n
+			if skill == "all":
+				var amods: Dictionary = player.get("skill_mods", {})
+				for sk_v: Variant in _ALL_SKILLS:
+					amods[String(sk_v)] = int(amods.get(String(sk_v), 0)) + delta
+				player["skill_mods"] = amods
+				logs.append("все навыки %+d" % delta)
+			elif not skill.is_empty():
 				var mods: Dictionary = player.get("skill_mods", {})
-				var delta: int = n if verb == "improveSkill" else -n
 				mods[skill] = int(mods.get(skill, 0)) + delta
 				player["skill_mods"] = mods
 				logs.append("навык %s %+d" % [skill, delta])

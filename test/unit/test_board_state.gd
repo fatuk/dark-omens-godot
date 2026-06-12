@@ -223,6 +223,26 @@ func test_damage_monster_lethal_removes() -> void:
 	assert_false(_gs.monsters.has("loc"), "смертельный урон снимает монстра")
 
 
+func test_remove_monsters_by_toughness_selective() -> void:
+	# child_of_the_goat t=1, avian_thrall t=3 (balance_pc=1). Порог ≤2: снять слабого.
+	_at("loc")
+	_gs.monsters = {
+		"loc": [{"id": "child_of_the_goat", "health": 1}, {"id": "avian_thrall", "health": 3}]
+	}
+	_board.remove_monsters_by_toughness(false, 2)
+	var remaining: Array = _gs.monsters.get("loc", [])
+	assert_eq(remaining.size(), 1, "слабый (t1) снят, сильный (t3) остался")
+	assert_eq(String((remaining[0] as Dictionary)["id"]), "avian_thrall")
+	assert_true(_gs.monster_bag.has("child_of_the_goat"), "снятый вернулся в мешок")
+
+
+func test_remove_monsters_by_toughness_zero_noop() -> void:
+	_at("loc")
+	_gs.monsters = {"loc": [{"id": "child_of_the_goat"}]}
+	_board.remove_monsters_by_toughness(false, 0)
+	assert_eq((_gs.monsters["loc"] as Array).size(), 1, "порог < 1 → no-op")
+
+
 # ── Улики / жетоны / слухи ────────────────────────────────────────────────────
 
 
