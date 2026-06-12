@@ -1,0 +1,286 @@
+extends GutTest
+
+## Юнит-тесты подсистемы доски (scripts/core/game/board_state.gd): омен/дум,
+## врата, монстры, улики/жетоны/слухи, Наплыв, стартовая раскладка.
+##
+## Случайность (выбор локации/монстра) приручаем раскладкой: явный open_gate(loc,
+## color) обходит ГСЧ; мешок ["cultist"] спаунит детерминированно (культист не
+## вынимается); одна локация-кандидат → улика/жетон ложатся именно туда. Зависимость
+## MonsterCatalog реальна — стойкость не фиксируем, проверяем health >= 1.
+
+var _gs: MockGameState
+var _board: BoardState
+
+
+class StubCampaign:
+	extends RefCounted
+	var balance_pc: int = 1
+
+	func balance_player_count() -> int:
+		return balance_pc
+
+
+# Мок GameState: BoardState мутирует синкаемый стейт через эти поля/методы.
+class MockGameState:
+	extends Node
+	var host: bool = true
+	var gates: Dictionary = {}
+	var entities: Dictionary = {}
+	var monsters: Dictionary = {}
+	var monster_bag: Array = []
+	var monster_surge: int = 1
+	var doom: int = 0
+	var omens_step: int = 0
+	var players: Dictionary = {}
+	var turn_order: Array = []
+	var current_idx: int = 0
+	var locations: Array = []
+	var mystery_hooks: Array = []
+	var shop_filled: int = 0
+	var _campaign: StubCampaign
+
+	func _init() -> void:
+		_campaign = StubCampaign.new()
+
+	func _is_host() -> bool:
+		return host
+
+	func _load_locations() -> Array:
+		return locations
+
+	func _current_pid() -> String:
+		return String(turn_order[current_idx]) if current_idx < turn_order.size() else ""
+
+	func _fill_shop_reserve() -> void:
+		shop_filled += 1
+
+	func _try_mystery_hook(event: String, ctx: Dictionary, pid: String) -> void:
+		mystery_hooks.append({"event": event, "ctx": ctx, "pid": pid})
+
+
+func before_each() -> void:
+	_gs = autofree(MockGameState.new())
+	_board = BoardState.new(_gs)
+
+
+# Поставить активного игрока «p» на локацию loc.
+func _at(loc: String) -> void:
+	_gs.turn_order = ["p"]
+	_gs.current_idx = 0
+	_gs.players["p"] = {"location": loc}
+
+
+# Сколько ячеек entities содержат маркер.
+func _count_marker(marker: String) -> int:
+	var n: int = 0
+	for k_v: Variant in _gs.entities:
+		if (_gs.entities[k_v] as Array).has(marker):
+			n += 1
+	return n
+
+
+# ── Омен / дум ────────────────────────────────────────────────────────────────
+
+
+func test_omen_color_cycles() -> void:
+	var seq: Array = []
+	for step: int in range(5):
+		_gs.omens_step = step
+		seq.append(_board.current_omen_color())
+	assert_eq(seq, ["green", "blue", "red", "blue", "green"], "цикл green→blue→red→blue")
+
+
+func test_count_gates_of_color() -> void:
+	_gs.gates = {"a": "green", "b": "blue", "c": "green"}
+	assert_eq(_board.count_gates_of_color("green"), 2)
+	assert_eq(_board.count_gates_of_color("blue"), 1)
+	assert_eq(_board.count_gates_of_color("red"), 0)
+
+
+func test_resolve_omen_doom_adds_for_matching_gates() -> void:
+	_gs.omens_step = 0  # green
+	_gs.gates = {"a": "green", "b": "green", "c": "red"}
+	var added: int = _board.resolve_omen_doom()
+	assert_eq(added, 2, "две зелёных врат")
+	assert_eq(_gs.doom, 2, "doom += 2")
+
+
+func test_resolve_omen_doom_zero_when_no_match() -> void:
+	_gs.omens_step = 2  # red
+	_gs.gates = {"a": "green"}
+	assert_eq(_board.resolve_omen_doom(), 0)
+	assert_eq(_gs.doom, 0, "doom не меняется")
+
+
+# ── Врата ─────────────────────────────────────────────────────────────────────
+
+
+func test_open_gate_explicit_places_gate_and_spawns_monster() -> void:
+	_gs.monster_bag = ["cultist"]
+	_board.open_gate("gA", "red")
+	assert_eq(String(_gs.gates["gA"]), "red", "врата с заданным цветом")
+	assert_eq((_gs.monsters["gA"] as Array).size(), 1, "новые врата → 1 монстр")
+
+
+func test_open_gate_non_host_is_noop() -> void:
+	_gs.host = false
+	_board.open_gate("gA", "red")
+	assert_false(_gs.gates.has("gA"))
+
+
+func test_open_gate_random_uses_location_gate_color() -> void:
+	_gs.monster_bag = ["cultist"]
+	_gs.locations = [{"id": "gA", "gateColor": "red"}, {"id": "plain"}]
+	_board.open_gate()  # без loc → единственный гейт-спейс gA
+	assert_eq(String(_gs.gates.get("gA", "")), "red", "цвет взят из gateColor локации")
+	assert_false(_gs.gates.has("plain"), "не-гейт-спейс пропущен")
+
+
+func test_close_gate_at_active_player_fires_mystery_hook() -> void:
+	_at("gA")
+	_gs.gates = {"gA": "green"}
+	_board.close_gate_at_active_player()
+	assert_false(_gs.gates.has("gA"), "врата закрыты")
+	assert_eq(_gs.mystery_hooks.size(), 1, "триггер gateClosed")
+	assert_eq(String((_gs.mystery_hooks[0] as Dictionary)["event"]), "gateClosed")
+
+
+func test_close_gate_noop_when_no_gate_here() -> void:
+	_at("plain")
+	_gs.gates = {"gA": "green"}
+	_board.close_gate_at_active_player()
+	assert_true(_gs.gates.has("gA"), "чужие врата не трогаем")
+	assert_eq(_gs.mystery_hooks.size(), 0)
+
+
+func test_discard_gate_at_active_location() -> void:
+	_at("gA")
+	_gs.gates = {"gA": "green"}
+	_board.discard_gate()
+	assert_false(_gs.gates.has("gA"))
+
+
+# ── Монстры ───────────────────────────────────────────────────────────────────
+
+
+func test_spawn_keeps_cultist_in_bag() -> void:
+	_gs.monster_bag = ["cultist"]
+	_board.open_gate("gA", "green")
+	assert_true(_gs.monster_bag.has("cultist"), "культист не вынимается из мешка")
+	var inst: Dictionary = _gs.monsters["gA"][0]
+	assert_eq(String(inst["id"]), "cultist")
+	assert_gt(int(inst["health"]), 0, "стойкость >= 1")
+
+
+func test_spawn_removes_non_cultist_from_bag() -> void:
+	_gs.monster_bag = ["ghoul"]
+	_board.open_gate("gA", "green")
+	assert_false(_gs.monster_bag.has("ghoul"), "уникальный монстр вынут из мешка")
+
+
+func test_return_monster_to_bag() -> void:
+	_board.return_monster_to_bag("ghoul")
+	assert_true(_gs.monster_bag.has("ghoul"))
+	_board.return_monster_to_bag("cultist")
+	assert_false(_gs.monster_bag.has("cultist"), "культист не дублируется")
+
+
+func test_remove_monster_at_active_returns_to_bag() -> void:
+	_at("loc")
+	_gs.monsters = {"loc": [{"id": "ghoul", "health": 2}]}
+	_board.remove_monster_at_active(true, 1)
+	assert_false(_gs.monsters.has("loc"), "клетка очищена")
+	assert_true(_gs.monster_bag.has("ghoul"), "id вернулся в мешок")
+
+
+func test_remove_monster_at_active_multiple() -> void:
+	_at("loc")
+	_gs.monsters = {
+		"loc": [{"id": "a", "health": 1}, {"id": "b", "health": 1}, {"id": "c", "health": 1}]
+	}
+	_board.remove_monster_at_active(false, 2)
+	assert_eq((_gs.monsters["loc"] as Array).size(), 1, "снято 2 из 3")
+
+
+func test_damage_monster_reduces_health() -> void:
+	_at("loc")
+	_gs.monsters = {"loc": [{"id": "ghoul", "health": 3}]}
+	_board.damage_monster_at_active(1)
+	assert_eq(int(_gs.monsters["loc"][0]["health"]), 2)
+
+
+func test_damage_monster_lethal_removes() -> void:
+	_at("loc")
+	_gs.monsters = {"loc": [{"id": "ghoul", "health": 2}]}
+	_board.damage_monster_at_active(5)
+	assert_false(_gs.monsters.has("loc"), "смертельный урон снимает монстра")
+
+
+# ── Улики / жетоны / слухи ────────────────────────────────────────────────────
+
+
+func test_place_clue_single_candidate() -> void:
+	_gs.locations = [{"id": "only"}]
+	_board.place_clue()
+	assert_true((_gs.entities["only"] as Array).has("clue"))
+
+
+func test_place_clue_skips_location_with_clue() -> void:
+	_gs.locations = [{"id": "taken"}, {"id": "free"}]
+	_gs.entities = {"taken": ["clue"]}
+	_board.place_clue()
+	assert_true((_gs.entities["free"] as Array).has("clue"), "улика на свободной локации")
+	assert_eq((_gs.entities["taken"] as Array).size(), 1, "вторая улика не кладётся (≤1)")
+
+
+func test_place_eldritch_token_single_candidate() -> void:
+	_gs.locations = [{"id": "only"}]
+	_board.place_eldritch_token()
+	assert_true((_gs.entities["only"] as Array).has("eldritch_token"))
+
+
+func test_place_rumor_single_candidate() -> void:
+	_gs.locations = [{"id": "only"}]
+	_board.place_rumor()
+	assert_true((_gs.entities["only"] as Array).has("rumor"))
+
+
+# ── Наплыв ────────────────────────────────────────────────────────────────────
+
+
+func test_monster_surge_spawns_per_matching_gate() -> void:
+	_gs.omens_step = 0  # green
+	_gs.gates = {"gA": "green"}
+	_gs.monster_surge = 2
+	_gs.monster_bag = ["cultist"]
+	_board.monster_surge()
+	assert_eq((_gs.monsters["gA"] as Array).size(), 2, "из врат цвета омена — surge монстров")
+
+
+func test_monster_surge_opens_new_gate_when_none_match() -> void:
+	_gs.omens_step = 0  # green
+	_gs.gates = {"gA": "red"}  # нет зелёных
+	_gs.monster_bag = ["cultist"]
+	_gs.locations = [{"id": "gB", "gateColor": "blue"}]
+	_board.monster_surge()
+	assert_true(_gs.gates.has("gB"), "при отсутствии врат цвета омена — открываются новые")
+
+
+# ── Стартовая раскладка ───────────────────────────────────────────────────────
+
+
+func test_setup_board_lays_out_gates_clues_and_surge() -> void:
+	_gs.locations = [{"id": "g1", "gateColor": "green"}, {"id": "l1"}, {"id": "l2"}, {"id": "l3"}]
+	_board.setup_board(2)  # ref(2): gates 1, clues 2, surge 1
+	assert_eq(_gs.gates.size(), 1, "открыты врата по таблице")
+	assert_eq(_gs.monster_surge, 1, "Наплыв из таблицы")
+	assert_eq(_count_marker("clue"), 2, "разложены улики по таблице")
+	assert_false(_gs.monster_bag.is_empty(), "мешок наполнен не-эпическими монстрами")
+	assert_eq(_gs.shop_filled, 1, "витрина магазина наполнена")
+
+
+func test_setup_board_non_host_is_noop() -> void:
+	_gs.host = false
+	_gs.locations = [{"id": "g1", "gateColor": "green"}]
+	_board.setup_board(2)
+	assert_eq(_gs.gates.size(), 0, "не-хост раскладку не делает")
