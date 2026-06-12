@@ -240,6 +240,59 @@ func test_repeat_by_conditions_source() -> void:
 	assert_eq(int(p["clues"]), 3, "1 + 2 состояния = 3")
 
 
+func test_repeat_by_condition_kind() -> void:
+	# repeat «по трейту»: amnesia/paranoia — madness, poisoned — illness → 2 madness.
+	var p: Dictionary = _player()
+	p["conditions"] = ["amnesia", "poisoned", "paranoia"]
+	EffectRunner.run(
+		[{"do": "gainClue", "repeat": {"source": "conditionsOfKind", "kind": "madness"}}], p
+	)
+	assert_eq(int(p["clues"]), 3, "1 + 2 madness (amnesia, paranoia) = 3")
+
+
+func test_repeat_by_condition_kind_empty_counts_all() -> void:
+	var p: Dictionary = _player()
+	p["conditions"] = ["amnesia", "poisoned"]
+	EffectRunner.run([{"do": "gainClue", "repeat": {"source": "conditionsOfKind"}}], p)
+	assert_eq(int(p["clues"]), 3, "пустой kind → все состояния (2)")
+
+
+func test_add_successes_boosts_result_tiers() -> void:
+	# successes 0 → addSuccesses 2 → 2 → тир «2+» срабатывает.
+	var p: Dictionary = _player()
+	var prog: Array = [
+		{"do": "addSuccesses", "amount": 2},
+		{
+			"resultTiers":
+			[
+				{"on": "2+", "effect": [{"do": "gainClue"}]},
+				{"on": "0-1", "effect": []},
+			]
+		},
+	]
+	EffectRunner.run(prog, p, {"successes": 0})
+	assert_eq(int(p["clues"]), 2, "буст 0→2 успехов → тир 2+ дал улику (1+1)")
+
+
+func test_add_successes_affects_board_toughness() -> void:
+	# addSuccesses до board-verb'а «по стойкости» → узел получает буст-успехи.
+	var p: Dictionary = _player()
+	var res: Dictionary = (
+		EffectRunner
+		. run(
+			[
+				{"do": "addSuccesses", "amount": 1},
+				{"do": "discardMonster", "maxToughness": "testResult"}
+			],
+			p,
+			{"successes": 0},
+		)
+	)
+	var board: Array = res["board"]
+	assert_eq(board.size(), 1, "discardMonster ушёл на доску")
+	assert_eq(int((board[0] as Dictionary)["_successes"]), 1, "board-узел получил буст (0+1)")
+
+
 # ── Маршрутизация целей (board) ───────────────────────────────────────────────
 
 

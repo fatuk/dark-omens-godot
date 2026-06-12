@@ -274,6 +274,13 @@ static func _run_action(
 	if node.has("when") and not _predicate(node["when"], player, ctx):
 		return
 	var verb: String = String(node["do"])
+	# Мета-verb: добавить успехи к результату каста (ctx.successes). Влияет на узлы
+	# ПОСЛЕ него — resultTiers (ветвление по успехам) и board-verb'ы «по стойкости»
+	# (_successes). Не player/board verb: мутирует общий ctx и выходит. (Banishment:
+	# «discard monster с стойкостью ≤ успехи+1».)
+	if verb == "addSuccesses":
+		ctx["successes"] = maxi(0, int(ctx.get("successes", 0)) + _amount(node))
+		return
 	var target: String = String(node.get("target", ""))
 	var interactive: bool = bool(flow.get("interactive", false))
 	# (1) Игровой verb к ПЕРЕДАННОМУ игроку: самонаправленный, либо легаси-режим
@@ -458,6 +465,18 @@ static func _count_source(
 				if String(x) == cond:
 					c += 1
 			return c
+		"conditionsOfKind":
+			# repeat «по трейту» состояний: считаем conditions заданного вида (kind:
+			# madness/injury/illness/bane/boon/…). Пустой kind → все состояния.
+			var conds2: Array = player.get("conditions", [])
+			var kind2: String = String(spec.get("kind", ""))
+			if kind2.is_empty():
+				return conds2.size()
+			var cnt: int = 0
+			for x2 in conds2:
+				if Conditions.kind_of(String(x2)) == kind2:
+					cnt += 1
+			return cnt
 		_:
 			return 1
 
