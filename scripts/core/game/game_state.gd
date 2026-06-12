@@ -141,6 +141,7 @@ var _encounter: EncounterFlow
 var _phase: PhaseController
 var _check: CheckFlow
 var _cond: ConditionFlow
+var _board: BoardState
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -155,6 +156,7 @@ func _ready() -> void:
 	_phase = PhaseController.new(self)
 	_check = CheckFlow.new(self)
 	_cond = ConditionFlow.new(self)
+	_board = BoardState.new(self)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
 	_nm.player_connected.connect(_on_player_connected)
@@ -322,7 +324,7 @@ func start_game(players_init: Array) -> void:
 	# библия ещё не готова) — тот же авторитет из CampaignGen. Соло-тест партии на
 	# N раскладывает поле и задаёт Наплыв как на N.
 	var setup_pc: int = int(campaign.get("playerCount", _campaign.balance_player_count()))
-	_setup_board(maxi(1, setup_pc))  # стартовая раскладка: врата+монстры, улики, Наплыв
+	_board.setup_board(maxi(1, setup_pc))  # стартовая раскладка: врата+монстры, улики, Наплыв
 	_apply_mystery_on_enter()  # onEnter первой Тайны (если библия уже готова; иначе при её приходе)
 	_broadcast_sync()
 	_emit_changed()
@@ -982,22 +984,22 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			# только что открытые врата не влияли на дум этого сдвига.
 			for _i: int in maxi(1, n):
 				omens_step += 1
-				resolve_omen_doom()
+				_board.resolve_omen_doom()
 			GameConsole.log("[Эффект] омен +%d" % maxi(1, n))
 		"openGate":
 			for _i: int in n:
-				_open_gate()
+				_board.open_gate()
 		"closeGate":
-			_close_gate_at_active_player()
+			_board.close_gate_at_active_player()
 		"spawnMonster":
 			for _i: int in n:
-				_spawn_monster_from_gate()
+				_board.spawn_monster_from_gate()
 		"placeClue":
 			for _i: int in n:
-				_place_clue()
+				_board.place_clue()
 		"placeRumor":
 			for _i: int in n:
-				_place_rumor()
+				_board.place_rumor()
 		"placeEldritchToken":
 			# where=="self" → жетон(ы) на карту активной Тайны (счётчик).
 			# Иначе → разложить N жетонов Знамения на случайные поля.
@@ -1006,9 +1008,9 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 				GameConsole.log("[Тайна] жетонов на карте Тайны: %d" % mystery_tokens_on_card)
 			else:
 				for _i: int in n:
-					_place_eldritch_token()
+					_board.place_eldritch_token()
 		"monsterSurge":
-			_monster_surge()
+			_board.monster_surge()
 		"mysteryProgress":
 			# Зачёт текущей локации активного игрока в активную Тайну. Выдаётся
 			# только из mystery-встреч (см. relay encounter-tables). За пределами
@@ -1021,13 +1023,13 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			doom = maxi(0, doom - n)
 			GameConsole.log("[Эффект] doom −%d (откат) → %d" % [n, doom])
 		"discardGate":
-			_discard_gate()
+			_board.discard_gate()
 		"discardMonster":
-			_remove_monster_at_active(false, n)  # снять без боя
+			_board.remove_monster_at_active(false, n)  # снять без боя
 		"defeatMonster":
-			_remove_monster_at_active(true, n)  # победить (вернуть id в мешок)
+			_board.remove_monster_at_active(true, n)  # победить (вернуть id в мешок)
 		"damageMonster":
-			_damage_monster_at_active(n)
+			_board.damage_monster_at_active(n)
 		"resolveReckoning":
 			_cond.host_resolve_reckoning()
 		_:
@@ -1232,7 +1234,10 @@ func _eval_hook_when(when_v: Variant, ctx: Dictionary) -> bool:
 	if not (when_v is Dictionary) or (when_v as Dictionary).is_empty():
 		return true
 	var w: Dictionary = when_v
-	if bool(w.get("omenMatch", false)) and String(ctx.get("color", "")) != current_omen_color():
+	if (
+		bool(w.get("omenMatch", false))
+		and String(ctx.get("color", "")) != _board.current_omen_color()
+	):
 		return false  # врата должны быть цвета текущего омена
 	if bool(w.get("locationMarked", false)):
 		var locs: Array = _campaign.current_mystery().get("locations", [])
@@ -1381,352 +1386,6 @@ func _check_defeat() -> void:
 	if clock > 0 and doom >= clock:
 		outcome = "defeat"
 		GameConsole.log("[Финал] doom достиг %d — Древний пробуждается" % clock)
-
-
-# ── Цвета омена / врат ────────────────────────────────────────────────────────
-
-## Порядок цветов омена — ОБЩИЙ трек для всех Древних: green → blue → red → blue,
-## далее по кругу. Цвет врат = знак омена; Наплыв бьёт по вратам цвета текущего омена.
-const OMEN_COLORS: Array = ["green", "blue", "red", "blue"]
-
-
-## Цвет текущего омена (по omens_step).
-func current_omen_color() -> String:
-	return String(OMEN_COLORS[omens_step % OMEN_COLORS.size()])
-
-
-## Сколько открытых врат заданного цвета. Для правила «омен сдвинулся → дум +
-## врата нового цвета» и для Наплыва.
-func _count_gates_of_color(color: String) -> int:
-	var n: int = 0
-	for lid_v: Variant in gates:
-		if String(gates[lid_v]) == color:
-			n += 1
-	return n
-
-
-## Дум от омена. Зовётся СРАЗУ при сдвиге омена (до открытия новых врат этой же
-## картой): дум += число открытых врат текущего цвета омена. Возвращает прибавку.
-func resolve_omen_doom() -> int:
-	var color: String = current_omen_color()
-	var matched: int = _count_gates_of_color(color)
-	if matched > 0:
-		doom += matched
-		GameConsole.log("[Омен] цвет %s · врат: %d · doom +%d" % [color, matched, matched])
-	return matched
-
-
-# ── Стартовая раскладка кампании (Icon Reference) ─────────────────────────────
-
-## Базовая таблица Памятки (простые карточки): по числу сыщиков — сколько врат
-## открыть и улик разложить на старте, и значение Наплыва (monster_surge) на всю
-## партию. Наплыв растёт 1→3, поэтому surge-эффекты Мифа масштабируются числом
-## игроков сами (см. _monster_surge). NB: оверрайды Древних (карточки с символами
-## в Памятке) пока НЕ применяются — это отдельная таблица per-Ancient (TODO).
-const REFERENCE: Dictionary = {
-	1: {"gates": 1, "clues": 1, "surge": 1},
-	2: {"gates": 1, "clues": 2, "surge": 1},
-	3: {"gates": 1, "clues": 2, "surge": 2},
-	4: {"gates": 1, "clues": 3, "surge": 2},
-	5: {"gates": 2, "clues": 3, "surge": 2},
-	6: {"gates": 2, "clues": 3, "surge": 2},
-	7: {"gates": 2, "clues": 4, "surge": 3},
-	8: {"gates": 2, "clues": 4, "surge": 3},
-}
-
-
-func _reference_for(player_count: int) -> Dictionary:
-	return REFERENCE.get(clampi(player_count, 1, 8), REFERENCE[1])
-
-
-## Хост: начальная раскладка поля. Открыть врата (каждые → 1 монстр), разложить
-## улики (≤1 на локацию), записать Наплыв. Зовётся из start_game до _broadcast_sync.
-func _setup_board(player_count: int) -> void:
-	if not _is_host():
-		return
-	gates = {}
-	entities = {}
-	monsters = {}
-	_fill_shop_reserve()  # стартовая витрина магазина
-	# Наполняем «мешок» всеми не-эпическими монстрами (по одному id).
-	monster_bag = []
-	var pool: Array = MonsterCatalog.non_epic()
-	for i: int in range(pool.size()):
-		monster_bag.append(String(pool[i].get("id", "")))
-	var ref: Dictionary = _reference_for(player_count)
-	monster_surge = int(ref.get("surge", 1))
-	for _i: int in int(ref.get("gates", 1)):
-		_open_gate()
-	for _i: int in int(ref.get("clues", 1)):
-		_place_clue()
-	GameConsole.log(
-		(
-			"[Старт] Раскладка: врат %d, улик %d, Наплыв %d (игроков %d)"
-			% [int(ref.get("gates", 1)), int(ref.get("clues", 1)), monster_surge, player_count]
-		)
-	)
-
-
-# ── Врата / монстры / улики (host-only мутации синкаемого state) ──────────────
-
-
-## Открыть врата. loc_id пустой → случайная свободная локация; color пустой →
-## по циклу цветов омена. Каждые новые врата выпускают 1 монстра.
-func _open_gate(loc_id: String = "", color: String = "") -> void:
-	if not _is_host():
-		return
-	var lid: String = loc_id
-	if lid.is_empty():
-		# Врата открываются ТОЛЬКО на гейт-спейсах (локации с gateColor), как на
-		# доске EH — номерные «реальные» точки гейтов не имеют.
-		var candidates: Array = []
-		var locations: Array = _load_locations()
-		for i: int in range(locations.size()):
-			var l: Dictionary = locations[i]
-			var did: String = String(l.get("id", ""))
-			if did.is_empty() or gates.has(did):
-				continue
-			if String(l.get("gateColor", "")).is_empty():
-				continue  # не гейт-спейс
-			candidates.append(did)
-		if candidates.is_empty():
-			GameConsole.warn("[Врата] нет свободных гейт-локаций")
-			return
-		lid = String(candidates[randi() % candidates.size()])
-	# Цвет привязан к локации (каноничный цвет спейса EH); явный аргумент имеет
-	# приоритет. Фолбэк (локация без gateColor) — зелёный.
-	var col: String = color
-	if col.is_empty():
-		col = _gate_color_for(lid)
-	gates[lid] = col
-	GameConsole.log("[Врата] открылись (%s) на %s" % [col, lid])
-	_spawn_monster(lid)  # каждые новые врата → 1 монстр
-
-
-## Каноничный цвет врат локации (из data/locations.json → gateColor). Локация
-## без поля (не гейт-спейс) → "green" как безопасный фолбэк.
-func _gate_color_for(loc_id: String) -> String:
-	var locations: Array = _load_locations()
-	for i: int in range(locations.size()):
-		var l: Dictionary = locations[i]
-		if String(l.get("id", "")) == loc_id:
-			var c: String = String(l.get("gateColor", ""))
-			return c if not c.is_empty() else "green"
-	return "green"
-
-
-## Закрыть врата на локации активного игрока (эффект closeGate финальной стадии
-## gate-встречи). Врата привязаны к месту, где сыщик прошёл Иной мир.
-func _close_gate_at_active_player() -> void:
-	if not _is_host():
-		return
-	var pid: String = _current_pid()
-	if pid.is_empty():
-		return
-	var loc: String = String(players.get(pid, {}).get("location", ""))
-	if gates.has(loc):
-		var color: String = String(gates[loc])
-		gates.erase(loc)
-		GameConsole.log("[Врата] закрыты на %s" % loc)
-		# Триггер Тайны: закрытие врат (напр. «врата цвета омена → −1 улика → жетон»)
-		_try_mystery_hook("gateClosed", {"loc": loc, "color": color}, pid)
-
-
-## Заспаунить монстра на локации, ВЫТЯНУВ случайный id из «мешка» (без повторов).
-## Экземпляр хранит здоровье ({id, health}); смерть вернёт id в мешок. Мешок
-## пуст → спауна нет (как пустой котёл монстров в EH).
-func _spawn_monster(loc_id: String) -> void:
-	if not _is_host() or loc_id.is_empty():
-		return
-	if monster_bag.is_empty():
-		GameConsole.warn("[Спаун] мешок монстров пуст — спаун пропущен")
-		return
-	var idx: int = randi() % monster_bag.size()
-	var mid: String = String(monster_bag[idx])
-	# Культистов много (повторяются) — не вынимаем из мешка; остальные уникальны.
-	if mid != "cultist":
-		monster_bag.remove_at(idx)
-	var m: Dictionary = MonsterCatalog.by_id(mid)
-	# Стойкость монстра — от РАЗМЕРА КОМНАТЫ (как весь баланс), а не от числа
-	# подключённых: соло-тест партии на N даёт монстров как на N.
-	var balance_pc: int = _campaign.balance_player_count()
-	@warning_ignore("unsafe_method_access")
-	var hp: int = maxi(1, MonsterCatalog.toughness_for(m, balance_pc) if not m.is_empty() else 1)
-	var arr: Array = monsters.get(loc_id, [])
-	arr.append({"id": mid, "health": hp})
-	monsters[loc_id] = arr
-	GameConsole.log(
-		(
-			"[Спаун] монстр %s (стойкость %d) на %s · в мешке %d"
-			% [mid, hp, loc_id, monster_bag.size()]
-		)
-	)
-
-
-## Вернуть монстра в «мешок» (после гибели/снятия с поля). Культист всегда в
-## мешке (его не вынимали) — не дублируем.
-func return_monster_to_bag(mid: String) -> void:
-	if not _is_host() or mid.is_empty() or mid == "cultist":
-		return
-	monster_bag.append(mid)
-
-
-## Локация активного игрока ("" — нет активного). Для board-verb'ов, бьющих «здесь».
-func _active_loc() -> String:
-	var pid: String = _current_pid()
-	if pid.is_empty() or not players.has(pid):
-		return ""
-	return String(players[pid].get("location", ""))
-
-
-## Снять до n монстров с локации активного игрока (id → в мешок). defeated — для лога.
-func _remove_monster_at_active(defeated: bool, n: int) -> void:
-	if not _is_host():
-		return
-	var loc: String = _active_loc()
-	if loc.is_empty():
-		return
-	var arr: Array = monsters.get(loc, [])
-	var removed: int = 0
-	while removed < maxi(1, n) and not (arr as Array).is_empty():
-		var inst: Variant = arr[0]
-		var mid: String = String(inst.get("id", "")) if inst is Dictionary else String(inst)
-		arr.remove_at(0)
-		return_monster_to_bag(mid)
-		removed += 1
-	if (arr as Array).is_empty():
-		monsters.erase(loc)
-	else:
-		monsters[loc] = arr
-	if removed > 0:
-		GameConsole.log(
-			"[Монстр] %s ×%d на %s" % ["побеждён" if defeated else "сброшен", removed, loc]
-		)
-
-
-## Нанести amount урона первому монстру на локации активного игрока; гибель → снять.
-func _damage_monster_at_active(amount: int) -> void:
-	if not _is_host() or amount <= 0:
-		return
-	var loc: String = _active_loc()
-	var arr: Array = monsters.get(loc, [])
-	if (arr as Array).is_empty():
-		return
-	var inst_v: Variant = arr[0]
-	var inst: Dictionary = inst_v if inst_v is Dictionary else {"id": String(inst_v), "health": 1}
-	var hp: int = int(inst.get("health", 1)) - amount
-	if hp <= 0:
-		_remove_monster_at_active(true, 1)
-	else:
-		inst["health"] = hp
-		arr[0] = inst
-		monsters[loc] = arr
-		GameConsole.log("[Монстр] −%d урона (осталось %d) на %s" % [amount, hp, loc])
-
-
-## Снять врата: на локации активного игрока, иначе случайные открытые.
-func _discard_gate() -> void:
-	if not _is_host() or gates.is_empty():
-		return
-	var loc: String = _active_loc()
-	if not gates.has(loc):
-		loc = String((gates.keys() as Array)[randi() % gates.size()])
-	gates.erase(loc)
-	GameConsole.log("[Врата] сброшены на %s" % loc)
-
-
-## Монстр из мифа: спаун на случайных открытых вратах; если врат нет — открыть.
-func _spawn_monster_from_gate() -> void:
-	if not _is_host():
-		return
-	if gates.is_empty():
-		_open_gate()
-		return
-	var keys: Array = gates.keys()
-	_spawn_monster(String(keys[randi() % keys.size()]))
-
-
-## Положить улику на случайную локацию без улики (≤1 улика на локацию).
-func _place_clue() -> void:
-	if not _is_host():
-		return
-	var candidates: Array = []
-	var locations: Array = _load_locations()
-	for i: int in range(locations.size()):
-		var lid: String = String(locations[i].get("id", ""))
-		if lid.is_empty():
-			continue
-		var arr: Array = entities.get(lid, [])
-		if not (arr as Array).has("clue"):
-			candidates.append(lid)
-	if candidates.is_empty():
-		return
-	var pick: String = String(candidates[randi() % candidates.size()])
-	var cell: Array = entities.get(pick, [])
-	cell.append("clue")
-	entities[pick] = cell
-	GameConsole.log("[Улика] на %s" % pick)
-
-
-## Положить жетон Знамения (Eldritch) на случайную локацию без такого жетона
-## (≤1 на локацию — иначе их не отличить визуально и нечего «снимать» встречей).
-func _place_eldritch_token() -> void:
-	if not _is_host():
-		return
-	var candidates: Array = []
-	var locations: Array = _load_locations()
-	for i: int in range(locations.size()):
-		var lid: String = String(locations[i].get("id", ""))
-		if lid.is_empty():
-			continue
-		var arr: Array = entities.get(lid, [])
-		if not (arr as Array).has("eldritch_token"):
-			candidates.append(lid)
-	if candidates.is_empty():
-		return
-	var pick: String = String(candidates[randi() % candidates.size()])
-	var cell: Array = entities.get(pick, [])
-	cell.append("eldritch_token")
-	entities[pick] = cell
-	GameConsole.log("[Знамение] жетон на %s" % pick)
-
-
-## Положить слух на случайную локацию.
-func _place_rumor() -> void:
-	if not _is_host():
-		return
-	var locations: Array = _load_locations()
-	if locations.is_empty():
-		return
-	var lid: String = String(locations[randi() % locations.size()].get("id", ""))
-	if lid.is_empty():
-		return
-	var cell: Array = entities.get(lid, [])
-	cell.append("rumor")
-	entities[lid] = cell
-	GameConsole.log("[Слух] на %s" % lid)
-
-
-## Наплыв монстров: из каждых врат цвета текущего омена лезет monster_surge
-## монстров; если таких врат нет — открываются одни новые врата (= 1 монстр).
-func _monster_surge() -> void:
-	if not _is_host():
-		return
-	var color: String = current_omen_color()
-	var matched: Array = []
-	for lid_v: Variant in gates:
-		if String(gates[lid_v]) == color:
-			matched.append(String(lid_v))
-	if matched.is_empty():
-		GameConsole.log("[Наплыв] нет врат цвета %s — открываются новые" % color)
-		_open_gate()
-		return
-	for i: int in range(matched.size()):
-		for _j: int in monster_surge:
-			_spawn_monster(matched[i])
-	GameConsole.log(
-		"[Наплыв] из %d врат (%s) по %d монстров" % [matched.size(), color, monster_surge]
-	)
 
 
 # ── Сценарная библия (фасады в CampaignGen) ───────────────────────────────────

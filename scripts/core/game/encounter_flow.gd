@@ -573,7 +573,7 @@ func _commit_combat(pid: String) -> void:
 	var loc: String = String(p.get("location", ""))
 	if bool(r.get("won", false)):
 		_remove_monster_instance(loc, 0)
-		_gs.return_monster_to_bag(String(enc.get("monsterId", "")))  # монстр умер → в мешок
+		_gs._board.return_monster_to_bag(String(enc.get("monsterId", "")))  # монстр умер → в мешок
 	else:
 		_set_monster_health(loc, 0, int(r.get("health_after", 0)))
 	_gs._check.clear()  # проверка боя завершена — снять active_check
@@ -817,7 +817,7 @@ func _effect_ctx(pid: String) -> Dictionary:
 		"skills": inv.get("skills", {}),
 		"loc_type": _location_info(loc).get("type", "city"),
 		"is_lead": (not (_gs.turn_order as Array).is_empty()) and String(_gs.turn_order[0]) == pid,
-		"gates_matching_omen": _gs._count_gates_of_color(_gs.current_omen_color()),
+		"gates_matching_omen": _gs._board.count_gates_of_color(_gs._board.current_omen_color()),
 		"gates_on_board": (_gs.gates as Dictionary).size(),
 		"monsters_on_board": _count_all_monsters(),
 		"clues_on_board": _count_all_entities("clue"),
