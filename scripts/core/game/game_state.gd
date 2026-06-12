@@ -37,6 +37,11 @@ var current_encounter: Dictionary = {}
 # {} — активной проверки нет. См. check_flow.gd.
 var active_check: Dictionary = {}
 
+# Промпт «какие триггер-заклинания скастить» (напр. при отдыхе): { pid, event,
+# options:[{index, id}] }. {} — промпта нет. Хост-авторитетно, синкается; решает
+# только владелец pid (cast_trigger_spells). См. SpellFlow.prompt_trigger.
+var pending_spell_cast: Dictionary = {}
+
 # UI-локально: «заряженная» жетоном валюта переброса ("concentration"/"clue"/"") —
 # игрок закинул жетон на проверку, следующий тап по кубу тратит ИМЕННО её. Не
 # синкается (намерение локального игрока), потребляется в reroll_die.
@@ -194,6 +199,7 @@ func _broadcast_sync() -> void:
 				"players": players,
 				"current_encounter": current_encounter,
 				"active_check": active_check,
+				"pending_spell_cast": pending_spell_cast,
 				"current_mythos": current_mythos,
 				"mythos_index": _mythos.index,
 				"gates": gates,
@@ -287,6 +293,7 @@ func start_game(players_init: Array) -> void:
 	players.clear()
 	turn_order.clear()
 	current_encounter = {}
+	pending_spell_cast = {}
 	# campaign / campaign_pending НЕ сбрасываем — библия могла быть прогрета
 	# заранее в лобби (prewarm_campaign). Сброс прошлой игры — reset_pregame().
 	for p: Dictionary in players_init:
@@ -513,6 +520,19 @@ func cast_spell(item_index: int) -> void:
 			_emit_changed()
 	else:
 		_nm.relay_all({"action": "game_cast_incantation", "pid": my_pid, "index": item_index})
+
+
+## Активный игрок подтвердил выбор триггер-заклинаний (item-индексы) в промпте
+## pending_spell_cast (напр. при отдыхе): хост кастует только выбранные и чистит
+## промпт. Пустой список — «ничего не кастить» (промпт всё равно закрывается).
+func cast_trigger_spells(indices: Array) -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		if _spell.host_apply_trigger_spells(my_pid, indices):
+			_broadcast_sync()
+			_emit_changed()
+	else:
+		_nm.relay_all({"action": "game_cast_trigger_spells", "pid": my_pid, "spells": indices})
 
 
 ## Активный игрок перебрасывает ВСЕ провальные кубы разом — эффект карты
@@ -815,6 +835,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	players = data.get("players", {})
 	current_encounter = data.get("current_encounter", {})
 	active_check = data.get("active_check", {})
+	pending_spell_cast = data.get("pending_spell_cast", {})
 	current_mythos = data.get("current_mythos", {})
 	_mythos.index = int(data.get("mythos_index", 0))
 	gates = data.get("gates", {})
@@ -909,6 +930,14 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"game_cast_glamour":
 			if _is_host():
 				if _spell.cast_glamour(String(data.get("pid", "")), int(data.get("index", -1))):
+					_broadcast_sync()
+					_emit_changed()
+
+		"game_cast_trigger_spells":
+			if _is_host():
+				if _spell.host_apply_trigger_spells(
+					String(data.get("pid", "")), data.get("spells", [])
+				):
 					_broadcast_sync()
 					_emit_changed()
 
@@ -1128,6 +1157,7 @@ func reset_pregame() -> void:
 		return
 	_campaign.reset()
 	current_encounter = {}
+	pending_spell_cast = {}
 	current_mythos = {}
 	_mythos.deck = []
 	_mythos.index = 0

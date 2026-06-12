@@ -187,6 +187,65 @@ func fire_trigger(pid: String, event: String, flow: Dictionary = {}) -> bool:
 	return true
 
 
+## Хост: выставить ПРОМПТ выбора триггер-заклинаний (НЕ кастуя). Собирает все
+## заклинания сыщика с front.trigger == event в _gs.pending_spell_cast =
+## {pid, event, options:[{index, id}]} и синкается. Игрок выберет подмножество →
+## host_apply_trigger_spells. true — есть что предлагать (промпт выставлен); иначе
+## false (зовущая сторона ничего не делает). Опциональная замена fire_trigger для
+## событий, где каст должен быть на усмотрение игрока (напр. onRest).
+func prompt_trigger(pid: String, event: String) -> bool:
+	if not _gs._is_host() or not _gs.players.has(pid):
+		return false
+	var items: Array = (_gs.players[pid] as Dictionary).get("items", [])
+	var options: Array = []
+	for i in range(items.size()):
+		var it: Variant = items[i]
+		if not (it is Dictionary):
+			continue
+		var spell: Dictionary = SpellCatalog.by_id(_spell_id(it))
+		if spell.is_empty():
+			continue
+		if String((spell.get("front", {}) as Dictionary).get("trigger", "")) == event:
+			options.append({"index": i, "id": _spell_id(it)})
+	if options.is_empty():
+		return false
+	_gs.pending_spell_cast = {"pid": pid, "event": event, "options": options}
+	return true
+
+
+## Хост: игрок подтвердил, КАКИЕ из предложенных триггер-заклинаний скастить
+## (indices — item-индексы из pending_spell_cast.options). Кастует только ВАЛИДНЫЕ
+## выбранные (входящие в options — защита от произвольного ввода клиента) по
+## убыванию индекса (сброс рубашкой не сдвинет необработанные нижние) и чистит
+## промпт. flow — детерминизм/тесты. true — промпт был для pid и закрыт.
+func host_apply_trigger_spells(pid: String, indices: Array, flow: Dictionary = {}) -> bool:
+	if not _gs._is_host():
+		return false
+	var prompt: Dictionary = _gs.pending_spell_cast
+	if prompt.is_empty() or String(prompt.get("pid", "")) != pid:
+		return false
+	var allowed: Dictionary = {}
+	for o_v: Variant in prompt.get("options", []):
+		allowed[int((o_v as Dictionary).get("index", -1))] = true
+	var chosen: Array[int] = []
+	for v: Variant in indices:
+		var idx: int = int(v)
+		if allowed.has(idx) and not chosen.has(idx):
+			chosen.append(idx)
+	chosen.sort()
+	chosen.reverse()  # по убыванию
+	var p: Dictionary = _gs.players[pid]
+	for idx: int in chosen:
+		var items: Array = p.get("items", [])
+		if idx < 0 or idx >= items.size():
+			continue
+		var front: Dictionary = SpellCatalog.by_id(_spell_id(items[idx])).get("front", {})
+		var r: Dictionary = _lore_roll(p, int(front.get("modifier", 0)), flow)
+		resolve_cast(pid, idx, int(r["successes"]), r["dice"], flow)
+	_gs.pending_spell_cast = {}
+	return true
+
+
 ## Хост: выдать заклинание сыщику (board-verb gainSpell). spell_id пустой →
 ## случайное из каталога. Кладёт карту {id, kind:"spell"} в инвентарь (рубашка не
 ## фиксируется — тянется заново при каждом касте).

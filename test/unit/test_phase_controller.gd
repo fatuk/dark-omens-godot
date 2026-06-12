@@ -88,6 +88,7 @@ class MockGameState:
 	var round_num: int = 1
 	var active_check: Dictionary = {}
 	var current_encounter: Dictionary = {}
+	var pending_spell_cast: Dictionary = {}
 	var locations: Array = []
 	var loc_types: Dictionary = {}
 	var sync_count: int = 0

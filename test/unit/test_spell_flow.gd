@@ -34,6 +34,7 @@ class MockGameState:
 	var players: Dictionary = {}
 	var board_effects: Array = []
 	var active_check: Dictionary = {}
+	var pending_spell_cast: Dictionary = {}
 	var roll_successes: int = 0
 	var roll_dice: Array = []
 	var _check: StubCheck
@@ -340,6 +341,60 @@ func test_fire_trigger_no_matching_spell() -> void:
 func test_fire_trigger_empty_hand() -> void:
 	_player([])
 	assert_false(_sf.fire_trigger("p", "onRest"))
+
+
+# ── prompt_trigger / host_apply_trigger_spells (опциональный onRest) ──────────
+
+
+func test_prompt_trigger_sets_pending() -> void:
+	# Два onRest-заклинания + ритуал → промпт собирает ТОЛЬКО onRest.
+	_player([{"id": "healing_words"}, {"id": "shriveling"}, {"id": "mending_trance"}])
+	assert_true(_sf.prompt_trigger("p", "onRest"), "есть onRest → промпт выставлен")
+	var prompt: Dictionary = _gs.pending_spell_cast
+	assert_eq(String(prompt["pid"]), "p")
+	assert_eq(String(prompt["event"]), "onRest")
+	var opts: Array = prompt["options"]
+	assert_eq(opts.size(), 2, "shriveling (ритуал) не попал в onRest-промпт")
+	assert_eq(int((opts[0] as Dictionary)["index"]), 0, "healing_words idx 0")
+	assert_eq(int((opts[1] as Dictionary)["index"]), 2, "mending_trance idx 2")
+
+
+func test_prompt_trigger_no_matches_returns_false() -> void:
+	_player([{"id": "shriveling"}])  # ритуал, не onRest
+	assert_false(_sf.prompt_trigger("p", "onRest"))
+	assert_true((_gs.pending_spell_cast as Dictionary).is_empty(), "промпт не выставлен")
+
+
+func test_apply_trigger_casts_only_selected() -> void:
+	# Промпт на две onRest-карты; игрок выбрал ТОЛЬКО mending_trance (idx 1).
+	_player([{"id": "healing_words"}, {"id": "mending_trance"}])
+	_gs.players["p"]["hp"] = 3
+	_gs.players["p"]["sanity"] = 3
+	_sf.prompt_trigger("p", "onRest")
+	var flow: Dictionary = {
+		"cast": {"successes": 2, "dice": [5, 5]}, "backs": {"1": "mending_trance_b1"}
+	}
+	assert_true(_sf.host_apply_trigger_spells("p", [1], flow), "промпт закрыт")
+	assert_eq(int(_gs.players["p"]["hp"]), 5, "mending_trance +2 hp")
+	assert_eq(int(_gs.players["p"]["sanity"]), 3, "healing_words НЕ кастовали")
+	assert_true((_gs.pending_spell_cast as Dictionary).is_empty(), "промпт очищен")
+
+
+func test_apply_trigger_rejects_unoffered_index() -> void:
+	# Клиент прислал индекс вне предложенных → каста нет, но промпт закрываем.
+	_player([{"id": "healing_words"}])  # onRest idx 0
+	_gs.players["p"]["hp"] = 3
+	_sf.prompt_trigger("p", "onRest")
+	assert_true(_sf.host_apply_trigger_spells("p", [5], {"cast": {"successes": 2, "dice": [5, 5]}}))
+	assert_eq(int(_gs.players["p"]["hp"]), 3, "несуществующий индекс — каста нет")
+	assert_true((_gs.pending_spell_cast as Dictionary).is_empty())
+
+
+func test_apply_trigger_wrong_pid_rejected() -> void:
+	_player([{"id": "healing_words"}])
+	_sf.prompt_trigger("p", "onRest")
+	assert_false(_sf.host_apply_trigger_spells("q", [0]), "чужой pid не резолвит промпт")
+	assert_false((_gs.pending_spell_cast as Dictionary).is_empty(), "промпт остался для p")
 
 
 # ── Poison Mist: фронт discardMonster по стойкости (через resolve_cast) ────────

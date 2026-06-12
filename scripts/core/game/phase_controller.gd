@@ -319,6 +319,7 @@ func start_new_round() -> void:
 	_gs.round_num += 1
 	_gs.phase = "action"
 	_gs.current_idx = 0
+	_gs.pending_spell_cast = {}
 	for pid: String in _gs.players:
 		_gs.players[pid]["actions_left"] = _gs.ACTIONS_PER_ROUND
 		_gs.players[pid]["actions_used"] = []
