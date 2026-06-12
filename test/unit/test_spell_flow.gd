@@ -136,3 +136,36 @@ func test_bad_index_rejected() -> void:
 func test_unknown_spell_rejected() -> void:
 	_player([{"id": "not_a_spell"}])
 	assert_false(_sf.resolve_cast("p", 0, 2, [5, 5]), "id нет в каталоге заклинаний")
+
+
+# ── grant_spell (board-verb gainSpell: розыгрыш реальной карты) ───────────────
+
+
+func test_grant_spell_explicit_id() -> void:
+	_player()
+	_sf.grant_spell("p", "shriveling")
+	var items: Array = _gs.players["p"]["items"]
+	assert_eq(items.size(), 1, "карта добавлена")
+	assert_eq(String((items[0] as Dictionary)["id"]), "shriveling")
+	assert_eq(String((items[0] as Dictionary)["kind"]), "spell", "помечена как заклинание")
+
+
+func test_grant_spell_random_from_catalog() -> void:
+	_player()
+	_sf.grant_spell("p")
+	var items: Array = _gs.players["p"]["items"]
+	assert_eq(items.size(), 1, "случайное заклинание выдано")
+	assert_true(SpellCatalog.is_spell(String((items[0] as Dictionary)["id"])), "id из каталога")
+
+
+func test_grant_spell_non_host_noop() -> void:
+	_gs.host = false
+	_player()
+	_sf.grant_spell("p", "shriveling")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "не-хост не выдаёт")
+
+
+func test_grant_spell_unknown_id_noop() -> void:
+	_player()
+	_sf.grant_spell("p", "no_such_spell")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "неизвестный id игнорируется")

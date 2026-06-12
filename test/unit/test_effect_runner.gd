@@ -262,6 +262,9 @@ func test_self_player_verb_applied_legacy_mode() -> void:
 func test_is_player_verb() -> void:
 	assert_true(EffectRunner.is_player_verb("loseHealth"), "loseHealth — игровой")
 	assert_false(EffectRunner.is_player_verb("advanceDoom"), "advanceDoom — нет")
+	assert_false(
+		EffectRunner.is_player_verb("gainSpell"), "gainSpell — board-verb (host тянет карту)"
+	)
 
 
 func test_apply_player_verb_direct() -> void:

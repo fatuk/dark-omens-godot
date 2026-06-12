@@ -60,6 +60,26 @@ func resolve_cast(
 	return true
 
 
+## Хост: выдать заклинание сыщику (board-verb gainSpell). spell_id пустой →
+## случайное из каталога. Кладёт карту {id, kind:"spell"} в инвентарь.
+func grant_spell(pid: String, spell_id: String = "") -> void:
+	if not _gs._is_host() or not _gs.players.has(pid):
+		return
+	var sid: String = spell_id
+	if sid.is_empty():
+		var pool: Array = SpellCatalog.all()
+		if pool.is_empty():
+			return
+		sid = String((pool[randi() % pool.size()] as Dictionary).get("id", ""))
+	if sid.is_empty() or SpellCatalog.by_id(sid).is_empty():
+		return
+	var p: Dictionary = _gs.players[pid]
+	var items: Array = p.get("items", [])
+	items.append({"id": sid, "kind": "spell"})
+	p["items"] = items
+	GameConsole.log("[Заклинание] %s получил «%s»" % [_gs._name_of(pid), sid])
+
+
 # Прогон Effect-программы каста: мутирует игрока; discardCard → consumed (сброс
 # карты); прочий board — обычным эффектом. Возвращает, был ли discardCard.
 func _apply_effects(pid: String, program: Array, ctx: Dictionary) -> bool:

@@ -1038,6 +1038,9 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			_board.damage_monster_at_active(n)
 		"resolveReckoning":
 			_cond.host_resolve_reckoning()
+		"gainSpell":
+			# Активный сыщик тянет заклинание (реальная карта, не маркер).
+			_spell.grant_spell(_current_pid(), String(node.get("spell", "")))
 		_:
 			GameConsole.log("[Эффект] %s — пока не поддержано движком" % verb)
 

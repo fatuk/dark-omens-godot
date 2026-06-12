@@ -21,7 +21,6 @@ const _PLAYER_VERBS := [
 	"gainCondition",
 	"loseCondition",
 	"gainAsset",
-	"gainSpell",
 	"gainArtifact",
 	"gainImprovement",
 	"loseAsset",
@@ -347,8 +346,10 @@ static func _apply_player_verb(
 			player["conditions"] = rconds
 			(player.get("conditions_flipped", {}) as Dictionary).erase(rid)
 			logs.append("снято состояние «%s»" % rid)
-		"gainAsset", "gainSpell", "gainArtifact", "gainImprovement":
+		"gainAsset", "gainArtifact", "gainImprovement":
 			# MVP: маркер предмета; полноценный карточный контент — отдельный слой.
+			# (gainSpell — НЕ здесь: это board-verb, host тянет реальную карту через
+			# SpellFlow.grant_spell; см. GameState._apply_board_verb.)
 			var items: Array = player.get("items", [])
 			items.append(verb)
 			player["items"] = items
