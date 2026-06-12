@@ -32,6 +32,20 @@
 					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "poisoned" }] },
 					{ "on": "1+", "effect": [] }
 				]
+			},
+			{
+				"id": "shriveling_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "hallucinations" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "shriveling_b4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseHealth", "amount": 1 }, { "do": "loseSanity", "amount": 1 }] },
+					{ "on": "1+", "effect": [] }
+				]
 			}
 		]
 	},
@@ -68,6 +82,20 @@
 					},
 					{ "on": "1+", "effect": [] }
 				]
+			},
+			{
+				"id": "wither_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "backInjury" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "wither_b4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseHealth", "amount": 2 }] },
+					{ "on": "1+", "effect": [] }
+				]
 			}
 		]
 	},
@@ -98,6 +126,20 @@
 				"tiers": [
 					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "amnesia" }] },
 					{ "on": "1+", "effect": [{ "do": "healSanity", "amount": 1 }] }
+				]
+			},
+			{
+				"id": "mind_s_eye_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "paranoia" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "mind_s_eye_b4",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
 				]
 			}
 		]
@@ -135,6 +177,20 @@
 					},
 					{ "on": "1+", "effect": [] }
 				]
+			},
+			{
+				"id": "healing_words_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "diseased" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "healing_words_b4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "infection" }] },
+					{ "on": "1+", "effect": [] }
+				]
 			}
 		]
 	},
@@ -168,6 +224,20 @@
 					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "internalInjury" }] },
 					{ "on": "1+", "effect": [] }
 				]
+			},
+			{
+				"id": "azure_flame_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseHealth", "amount": 1 }, { "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "azure_flame_b4",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
 			}
 		]
 	},
@@ -200,6 +270,20 @@
 				"tiers": [
 					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
 					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "enchant_weapon_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "backInjury" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "enchant_weapon_b4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseHealth", "amount": 1 }, { "do": "loseSanity", "amount": 1 }] },
+					{ "on": "1+", "effect": [] }
 				]
 			}
 		]
@@ -237,6 +321,20 @@
 					},
 					{ "on": "1+", "effect": [] }
 				]
+			},
+			{
+				"id": "wrack_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "internalInjury" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "wrack_b4",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
 			}
 		]
 	},
@@ -267,6 +365,20 @@
 					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "poisoned" }] },
 					{ "on": "1+", "effect": [] }
 				]
+			},
+			{
+				"id": "poison_mist_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "diseased" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "poison_mist_b4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseHealth", "amount": 1 }, { "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }] },
+					{ "on": "1+", "effect": [] }
+				]
 			}
 		]
 	},
@@ -295,6 +407,20 @@
 				"id": "clairvoyance_b2",
 				"tiers": [
 					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "paranoia" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "clairvoyance_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "hallucinations" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "clairvoyance_b4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }, { "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }] },
 					{ "on": "1+", "effect": [] }
 				]
 			}
@@ -333,6 +459,20 @@
 					},
 					{ "on": "1+", "effect": [] }
 				]
+			},
+			{
+				"id": "bind_monster_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "bind_monster_b4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "haunted" }] },
+					{ "on": "1+", "effect": [] }
+				]
 			}
 		]
 	},
@@ -369,6 +509,20 @@
 					},
 					{ "on": "1+", "effect": [] }
 				]
+			},
+			{
+				"id": "storm_of_spirits_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "despair" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "storm_of_spirits_b4",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
 			}
 		]
 	},
@@ -399,6 +553,20 @@
 					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "amnesia" }] },
 					{ "on": "1+", "effect": [{ "do": "gainClue", "amount": 1 }] }
 				]
+			},
+			{
+				"id": "read_the_signs_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "paranoia" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "read_the_signs_b4",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
 			}
 		]
 	},
@@ -428,6 +596,20 @@
 				"tiers": [
 					{ "on": "0-1", "effect": [{ "do": "gainCondition", "condition": "despair" }] },
 					{ "on": "2+", "effect": [{ "do": "healSanity", "amount": 1 }] }
+				]
+			},
+			{
+				"id": "blessing_b3",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [{ "do": "healSanity", "amount": 1 }] }
+				]
+			},
+			{
+				"id": "blessing_b4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "cursed" }] },
+					{ "on": "1+", "effect": [] }
 				]
 			}
 		]
@@ -464,6 +646,20 @@
 						]
 					},
 					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "spectral_razor_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "headInjury" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "spectral_razor_b4",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
 				]
 			}
 		]
@@ -504,6 +700,20 @@
 					},
 					{ "on": "1+", "effect": [] }
 				]
+			},
+			{
+				"id": "elemental_fury_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "backInjury" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "elemental_fury_b4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseHealth", "amount": 1 }, { "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }] },
+					{ "on": "1+", "effect": [] }
+				]
 			}
 		]
 	},
@@ -534,6 +744,20 @@
 					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "diseased" }] },
 					{ "on": "1+", "effect": [] }
 				]
+			},
+			{
+				"id": "soul_mending_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "despair" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "soul_mending_b4",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
 			}
 		]
 	},
@@ -563,6 +787,20 @@
 				"tiers": [
 					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "legInjury" }] },
 					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "mending_trance_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "infection" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "mending_trance_b4",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
 				]
 			}
 		]
@@ -596,6 +834,20 @@
 				"tiers": [
 					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
 					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "sign_of_warding_b3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "hallucinations" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "sign_of_warding_b4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }, { "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }] },
+					{ "on": "1+", "effect": [] }
 				]
 			}
 		]
