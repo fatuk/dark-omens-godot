@@ -174,20 +174,19 @@ func test_grant_spell_explicit_id() -> void:
 	assert_eq(items.size(), 1, "карта добавлена")
 	assert_eq(String((items[0] as Dictionary)["id"]), "shriveling")
 	assert_eq(String((items[0] as Dictionary)["kind"]), "spell", "помечена как заклинание")
-	assert_true(
-		String((items[0] as Dictionary).get("back", "")).begins_with("shriveling_"),
-		"при розыгрыше фиксируется конкретная рубашка (как физ.копия)"
+	assert_false(
+		(items[0] as Dictionary).has("back"), "рубашка НЕ фиксируется — тянется заново каждый каст"
 	)
 
 
-func test_cast_uses_instance_back() -> void:
-	# Экземпляр с ФИКСИРОВАННОЙ рубашкой b2 → каст использует именно её (poisoned),
-	# без рандома и без flow-override (две копии одного заклинания → разные обороты).
-	_player([{"id": "shriveling", "kind": "spell", "back": "shriveling_b2"}])
-	_sf.resolve_cast("p", 0, 0, [3, 4])  # flow.backs НЕ задан
+func test_flow_back_overrides_instance_back() -> void:
+	# Рубашка тянется заново при касте → даже если на экземпляре завалялся back,
+	# он игнорируется, а flow.backs форсит конкретную рубашку (детерминизм/тесты).
+	_player([{"id": "shriveling", "kind": "spell", "back": "shriveling_b1"}])
+	_sf.resolve_cast("p", 0, 0, [3, 4], _force("shriveling_b2"))
 	assert_true(
 		(_gs.players["p"]["conditions"] as Array).has("poisoned"),
-		"рубашка экземпляра (b2 → poisoned)"
+		"flow.backs (b2 → poisoned) бьёт залежавшийся instance.back (b1)"
 	)
 
 
