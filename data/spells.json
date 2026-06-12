@@ -269,5 +269,335 @@
 				]
 			}
 		]
+	},
+	{
+		"id": "clairvoyance",
+		"name": "SPELL_CLAIRVOYANCE_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_CLAIRVOYANCE_ABILITY",
+			"onPass": [{ "do": "gainClue", "amount": 2 }]
+		},
+		"backs": [
+			{
+				"id": "clairvoyance_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "clairvoyance_b2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "paranoia" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "bind_monster",
+		"name": "SPELL_BIND_MONSTER_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_BIND_MONSTER_ABILITY",
+			"onPass": [{ "do": "defeatMonster", "maxToughness": "testResult" }]
+		},
+		"backs": [
+			{
+				"id": "bind_monster_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "bind_monster_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{ "do": "gainCondition", "condition": "cursed" },
+							{ "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }
+						]
+					},
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "storm_of_spirits",
+		"name": "SPELL_STORM_OF_SPIRITS_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_STORM_OF_SPIRITS_ABILITY",
+			"onPass": [{ "do": "damageMonster", "amount": 3 }]
+		},
+		"backs": [
+			{
+				"id": "storm_of_spirits_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "storm_of_spirits_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{ "do": "loseSanity", "amount": 1 },
+							{ "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }
+						]
+					},
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "read_the_signs",
+		"name": "SPELL_READ_THE_SIGNS_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_READ_THE_SIGNS_ABILITY",
+			"onPass": [{ "do": "gainClue", "amount": 1 }, { "do": "healSanity", "amount": 1 }]
+		},
+		"backs": [
+			{
+				"id": "read_the_signs_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "read_the_signs_b2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "amnesia" }] },
+					{ "on": "1+", "effect": [{ "do": "gainClue", "amount": 1 }] }
+				]
+			}
+		]
+	},
+	{
+		"id": "blessing",
+		"name": "SPELL_BLESSING_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_BLESSING_ABILITY",
+			"onPass": [{ "do": "gainCondition", "condition": "blessed" }]
+		},
+		"backs": [
+			{
+				"id": "blessing_b1",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "blessing_b2",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "gainCondition", "condition": "despair" }] },
+					{ "on": "2+", "effect": [{ "do": "healSanity", "amount": 1 }] }
+				]
+			}
+		]
+	},
+	{
+		"id": "spectral_razor",
+		"name": "SPELL_SPECTRAL_RAZOR_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "combatEncounter",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_SPECTRAL_RAZOR_ABILITY",
+			"onPass": [{ "do": "improveSkill", "skill": "will", "amount": 3 }]
+		},
+		"backs": [
+			{
+				"id": "spectral_razor_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "spectral_razor_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{ "do": "gainCondition", "condition": "internalInjury" },
+							{ "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }
+						]
+					},
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "elemental_fury",
+		"name": "SPELL_ELEMENTAL_FURY_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "combatEncounter",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_ELEMENTAL_FURY_ABILITY",
+			"onPass": [
+				{ "do": "improveSkill", "skill": "strength", "amount": 2 },
+				{ "do": "improveSkill", "skill": "will", "amount": 2 }
+			]
+		},
+		"backs": [
+			{
+				"id": "elemental_fury_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "elemental_fury_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{ "do": "loseHealth", "amount": 1 },
+							{ "do": "loseSanity", "amount": 1 }
+						]
+					},
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "soul_mending",
+		"name": "SPELL_SOUL_MENDING_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "onRest",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_SOUL_MENDING_ABILITY",
+			"onPass": [{ "do": "healSanity", "amount": 2 }]
+		},
+		"backs": [
+			{
+				"id": "soul_mending_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "soul_mending_b2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "diseased" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "mending_trance",
+		"name": "SPELL_MENDING_TRANCE_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "onRest",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_MENDING_TRANCE_ABILITY",
+			"onPass": [{ "do": "healHealth", "amount": 2 }]
+		},
+		"backs": [
+			{
+				"id": "mending_trance_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "mending_trance_b2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "legInjury" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "sign_of_warding",
+		"name": "SPELL_SIGN_OF_WARDING_NAME",
+		"subtype": "glamour",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "exhaust",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_SIGN_OF_WARDING_ABILITY",
+			"aura": [
+				{ "do": "convertDie", "on": "6", "successes": 2, "skill": "will", "context": "combatEncounter" }
+			],
+			"onPass": []
+		},
+		"backs": [
+			{
+				"id": "sign_of_warding_b1",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "sign_of_warding_b2",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			}
+		]
 	}
 ]

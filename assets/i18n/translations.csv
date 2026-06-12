@@ -1393,3 +1393,42 @@ OUTCOME_VICTORY_BODY,"Партия решила все Тайны. Древни�
 OUTCOME_DEFEAT_TITLE,Древний пробуждается,The Old One Awakens
 OUTCOME_DEFEAT_BODY,"Часы рока пробили полночь. Печати треснули, и древний бог поднимается во всю свою чудовищную высоту.","The doom clock has struck midnight. The seals have cracked, and the ancient god rises to his monstrous full height."
 OUTCOME_TO_MENU,В главное меню,To main menu
+
+TRAIT_SPELL,Заклинание,Spell
+
+SPELL_SHRIVELING_NAME,Иссушение,Shrivelling
+SPELL_SHRIVELING_ABILITY,"Действие: проверьте Знание. При успехе нанесите 2 урона монстру на вашей локации.","Action: test Lore. If you pass, deal 2 damage to a monster on your space."
+SPELL_WITHER_NAME,Увядание,Wither
+SPELL_WITHER_ABILITY,"В бою: проверьте Знание. При успехе +3 к Силе на этот бой.","During combat: test Lore. If you pass, gain +3 Strength for this combat."
+SPELL_MINDS_EYE_NAME,Внутреннее око,Mind's Eye
+SPELL_MINDS_EYE_ABILITY,"Аура: переброс 1 кубика в любой вашей проверке.","Aura: reroll 1 die on any of your tests."
+SPELL_HEALING_WORDS_NAME,Слова исцеления,Healing Words
+SPELL_HEALING_WORDS_ABILITY,"При отдыхе: проверьте Знание. При успехе +1 здоровье и +1 рассудок.","When you rest: test Lore. If you pass, recover 1 Health and 1 Sanity."
+SPELL_AZURE_FLAME_NAME,Лазурное пламя,Azure Flame
+SPELL_AZURE_FLAME_ABILITY,"Аура: в бою каждая «6» в проверке Силы даёт 2 успеха.","Aura: in combat, each 6 on a Strength test counts as 2 successes."
+SPELL_ENCHANT_WEAPON_NAME,Зачарование оружия,Enchant Weapon
+SPELL_ENCHANT_WEAPON_ABILITY,"Аура: в бою переброс до 2 кубиков в проверке Силы.","Aura: in combat, reroll up to 2 dice on a Strength test."
+SPELL_WRACK_NAME,Терзание,Wrack
+SPELL_WRACK_ABILITY,"В бою: проверьте Знание (−1). При успехе +5 к Силе на этот бой.","During combat: test Lore (−1). If you pass, gain +5 Strength for this combat."
+SPELL_POISON_MIST_NAME,Ядовитый туман,Poison Mist
+SPELL_POISON_MIST_ABILITY,"Действие: проверьте Знание (+1). При успехе изгоните монстра со стойкостью не выше числа успехов.","Action: test Lore (+1). If you pass, banish a monster with toughness up to your successes."
+SPELL_CLAIRVOYANCE_NAME,Ясновидение,Clairvoyance
+SPELL_CLAIRVOYANCE_ABILITY,"Действие: проверьте Знание. При успехе получите 2 улики.","Action: test Lore. If you pass, gain 2 Clues."
+SPELL_BIND_MONSTER_NAME,Сковывание монстра,Bind Monster
+SPELL_BIND_MONSTER_ABILITY,"Действие: проверьте Знание (−1). При успехе одолейте монстра со стойкостью не выше числа успехов.","Action: test Lore (−1). If you pass, defeat a monster with toughness up to your successes."
+SPELL_STORM_OF_SPIRITS_NAME,Шторм духов,Storm of Spirits
+SPELL_STORM_OF_SPIRITS_ABILITY,"Действие: проверьте Знание (−1). При успехе нанесите 3 урона монстру на вашей локации.","Action: test Lore (−1). If you pass, deal 3 damage to a monster on your space."
+SPELL_READ_THE_SIGNS_NAME,Чтение знаков,Read the Signs
+SPELL_READ_THE_SIGNS_ABILITY,"Действие: проверьте Знание. При успехе получите 1 улику и восстановите 1 рассудок.","Action: test Lore. If you pass, gain 1 Clue and recover 1 Sanity."
+SPELL_BLESSING_NAME,Благословение,Blessing
+SPELL_BLESSING_ABILITY,"Действие: проверьте Знание. При успехе получите состояние «Благословение».","Action: test Lore. If you pass, gain a Blessed condition."
+SPELL_SPECTRAL_RAZOR_NAME,Призрачная бритва,Spectral Razor
+SPELL_SPECTRAL_RAZOR_ABILITY,"В бою: проверьте Знание. При успехе +3 к Воле на этот бой.","During combat: test Lore. If you pass, gain +3 Will for this combat."
+SPELL_ELEMENTAL_FURY_NAME,Ярость стихий,Elemental Fury
+SPELL_ELEMENTAL_FURY_ABILITY,"В бою: проверьте Знание (−1). При успехе +2 к Силе и +2 к Воле на этот бой.","During combat: test Lore (−1). If you pass, gain +2 Strength and +2 Will for this combat."
+SPELL_SOUL_MENDING_NAME,Врачевание души,Soul Mending
+SPELL_SOUL_MENDING_ABILITY,"При отдыхе: проверьте Знание. При успехе восстановите 2 рассудка.","When you rest: test Lore. If you pass, recover 2 Sanity."
+SPELL_MENDING_TRANCE_NAME,Целительный транс,Mending Trance
+SPELL_MENDING_TRANCE_ABILITY,"При отдыхе: проверьте Знание. При успехе восстановите 2 здоровья.","When you rest: test Lore. If you pass, recover 2 Health."
+SPELL_SIGN_OF_WARDING_NAME,Знак оберега,Sign of Warding
+SPELL_SIGN_OF_WARDING_ABILITY,"Аура: в бою каждая «6» в проверке Воли даёт 2 успеха.","Aura: in combat, each 6 on a Will test counts as 2 successes."
