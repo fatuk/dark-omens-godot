@@ -147,6 +147,21 @@ static func _run_node(
 					_run_node(then[j], player, logs, board, ctx, flow, path + "/d%d_%d" % [i, j])
 				break
 		return
+	if node.has("resultTiers"):
+		# Ветвление по ЧИСЛУ УСПЕХОВ каст-теста (ctx.successes), не по грани d6.
+		# Рубашка заклинания: «Resolve based on test result: 0 / 1-2 / 3+».
+		var successes: int = int(ctx.get("successes", 0))
+		var tiers: Array = node["resultTiers"]
+		for i in range(tiers.size()):
+			var tier: Dictionary = tiers[i]
+			if _tier_match(successes, String(tier.get("on", ""))):
+				var eff: Array = tier.get("effect", tier.get("then", []))
+				for j in range(eff.size()):
+					if _stopped(flow):
+						return
+					_run_node(eff[j], player, logs, board, ctx, flow, path + "/t%d_%d" % [i, j])
+				break
+		return
 	if node.has("test"):
 		var passed: bool = _roll_test(node, player, ctx, flow, path)
 		var branch: Array = node.get("onPass" if passed else "onFail", [])
@@ -446,6 +461,21 @@ static func _in_range(value: int, spec: String) -> bool:
 	return value == int(spec)
 
 
+## Совпадение тира успехов с диапазоном рубашки: "N" | "a-b" | "N+" (≥N).
+## Для resultTiers (рубашки заклинаний по числу успехов каста).
+static func _tier_match(value: int, spec: String) -> bool:
+	if spec.is_empty():
+		return false
+	if spec.ends_with("+"):
+		return value >= int(spec.substr(0, spec.length() - 1))
+	if spec.contains("-"):
+		var parts: PackedStringArray = spec.split("-")
+		if parts.size() == 2:
+			return value >= int(parts[0]) and value <= int(parts[1])
+		return false
+	return value == int(spec)
+
+
 ## Предикат when. Виды, требующие данных поля, читают ctx; при отсутствии данных
 ## (нет контекста) считаем истиной — эффект применяется (старое поведение).
 static func _predicate(pred: Dictionary, player: Dictionary, ctx: Dictionary) -> bool:
@@ -481,6 +511,15 @@ static func _predicate(pred: Dictionary, player: Dictionary, ctx: Dictionary) ->
 			result = int(ctx.get("monsters_on_board", 0)) == 0
 		"noRumorsInPlay":
 			result = int(ctx.get("rumors_in_play", 0)) == 0
+		"rolledAny":
+			# В кубах каста (ctx.dice) есть заданная грань? Для рубашек заклинаний:
+			# «if you rolled any 1's, discard». Нет ctx.dice → false.
+			result = false
+			var face: int = int(pred.get("face", 1))
+			for d_v: Variant in ctx.get("dice", []):
+				if int(d_v) == face:
+					result = true
+					break
 		_:
 			result = true
 	return result != negate

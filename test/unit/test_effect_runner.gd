@@ -414,3 +414,80 @@ func test_interactive_lead_target_routes_to_board() -> void:
 	assert_eq(String((board[0] as Dictionary)["target"]), "lead")
 	assert_eq(int((board[0] as Dictionary)["_times"]), 1)
 	assert_eq(int(p["hp"]), 5, "к себе не применяется (в отличие от не-interactive)")
+
+
+# ── resultTiers (рубашка заклинания: ветвление по ЧИСЛУ УСПЕХОВ каста) ─────────
+
+
+func test_result_tiers_low_tier() -> void:
+	var p: Dictionary = _player()
+	var node: Dictionary = {
+		"resultTiers":
+		[
+			{"on": "0-1", "effect": [{"do": "loseSanity", "amount": 2}]},
+			{"on": "2+", "effect": [{"do": "gainClue"}]},
+		]
+	}
+	EffectRunner.run([node], p, {"successes": 0})
+	assert_eq(int(p["sanity"]), 3, "0 успехов → тир 0-1")
+	assert_eq(int(p["clues"]), 1, "тир 2+ не сработал")
+
+
+func test_result_tiers_high_open_ended() -> void:
+	var p: Dictionary = _player()
+	var node: Dictionary = {
+		"resultTiers":
+		[
+			{"on": "0-1", "effect": [{"do": "loseSanity", "amount": 2}]},
+			{"on": "2+", "effect": [{"do": "gainClue"}]},
+		]
+	}
+	EffectRunner.run([node], p, {"successes": 5})
+	assert_eq(int(p["clues"]), 2, "5 успехов → тир 2+ (N+)")
+	assert_eq(int(p["sanity"]), 5, "тир 0-1 не сработал")
+
+
+func test_result_tiers_exact_match() -> void:
+	var p: Dictionary = _player()
+	var node: Dictionary = {
+		"resultTiers": [{"on": "0", "effect": [{"do": "loseHealth", "amount": 1}]}]
+	}
+	EffectRunner.run([node], p, {"successes": 0})
+	assert_eq(int(p["hp"]), 4, "точное совпадение on:0")
+
+
+func test_result_tiers_no_match_is_noop() -> void:
+	var p: Dictionary = _player()
+	var node: Dictionary = {"resultTiers": [{"on": "3+", "effect": [{"do": "gainClue"}]}]}
+	EffectRunner.run([node], p, {"successes": 1})
+	assert_eq(int(p["clues"]), 1, "ни один тир не подошёл — ничего")
+
+
+func test_result_tiers_defaults_successes_zero() -> void:
+	var p: Dictionary = _player()
+	var node: Dictionary = {"resultTiers": [{"on": "0", "effect": [{"do": "gainClue"}]}]}
+	EffectRunner.run([node], p)  # нет ctx.successes → 0
+	assert_eq(int(p["clues"]), 2, "без ctx.successes считается 0")
+
+
+# ── when rolledAny (грани кубов каста — для рубашек «выпали 1 → discard») ──────
+
+
+func test_when_rolled_any_applies_when_face_present() -> void:
+	var p: Dictionary = _player()
+	var node: Dictionary = {
+		"do": "loseSanity", "amount": 1, "when": {"kind": "rolledAny", "face": 1}
+	}
+	EffectRunner.run([node], p, {"dice": [3, 1, 5]})
+	assert_eq(int(p["sanity"]), 4, "в кубах есть 1 → эффект применён")
+
+
+func test_when_rolled_any_skips_without_face() -> void:
+	var p: Dictionary = _player()
+	var node: Dictionary = {
+		"do": "loseSanity", "amount": 1, "when": {"kind": "rolledAny", "face": 1}
+	}
+	EffectRunner.run([node], p, {"dice": [3, 4, 5]})
+	assert_eq(int(p["sanity"]), 5, "нет 1 в кубах → пропущено")
+	EffectRunner.run([node], p, {})
+	assert_eq(int(p["sanity"]), 5, "нет ctx.dice → пропущено")
