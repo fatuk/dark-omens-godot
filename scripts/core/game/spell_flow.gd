@@ -154,15 +154,18 @@ func cast_glamour(pid: String, item_index: int, flow: Dictionary = {}) -> bool:
 	return true
 
 
-## Хост: сработавший spell-триггер по игровому событию (onRest/onWouldLose/…).
-## Находит ПЕРВОЕ заклинание сыщика с front.trigger == event и кастует (тест Lore →
-## фронт onPass к себе → рубашка). true — что-то сработало. Зовётся из игровых
-## хуков (phase_controller.rest и т.п.). flow.cast/backs — детерминизм/тесты.
+## Хост: сработавший spell-триггер по игровому событию (onRest/onTravel/…). Кастует
+## ВСЕ заклинания сыщика с front.trigger == event (а не только первое — игрок может
+## держать несколько, напр. три onRest-лечилки). Для каждого: тест Lore → фронт
+## onPass к себе → рубашка. true — сработало хотя бы одно. Зовётся из игровых хуков
+## (phase_controller.rest и т.п.). flow.cast/backs — детерминизм/тесты.
 func fire_trigger(pid: String, event: String, flow: Dictionary = {}) -> bool:
 	if not _gs._is_host() or not _gs.players.has(pid):
 		return false
 	var p: Dictionary = _gs.players[pid]
 	var items: Array = p.get("items", [])
+	# Собираем индексы ВСЕХ совпавших заклинаний, потом кастуем.
+	var matches: Array[int] = []
 	for i in range(items.size()):
 		var it: Variant = items[i]
 		if not (it is Dictionary):
@@ -170,13 +173,18 @@ func fire_trigger(pid: String, event: String, flow: Dictionary = {}) -> bool:
 		var spell: Dictionary = SpellCatalog.by_id(_spell_id(it))
 		if spell.is_empty():
 			continue
-		var front: Dictionary = spell.get("front", {})
-		if String(front.get("trigger", "")) != event:
-			continue
+		if String((spell.get("front", {}) as Dictionary).get("trigger", "")) == event:
+			matches.append(i)
+	if matches.is_empty():
+		return false
+	# Кастуем по УБЫВАНИЮ индекса: если рубашка сбросит карту (resolve_cast удалит
+	# элемент), индексы НИЖЕ не сдвинутся — обработка остальных не поедет.
+	matches.reverse()
+	for idx: int in matches:
+		var front: Dictionary = SpellCatalog.by_id(_spell_id(items[idx])).get("front", {})
 		var r: Dictionary = _lore_roll(p, int(front.get("modifier", 0)), flow)
-		resolve_cast(pid, i, int(r["successes"]), r["dice"], flow)
-		return true
-	return false
+		resolve_cast(pid, idx, int(r["successes"]), r["dice"], flow)
+	return true
 
 
 ## Хост: выдать заклинание сыщику (board-verb gainSpell). spell_id пустой →

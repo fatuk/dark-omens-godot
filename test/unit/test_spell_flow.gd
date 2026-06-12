@@ -316,6 +316,22 @@ func test_fire_trigger_on_rest_heals() -> void:
 	assert_eq(int(_gs.players["p"]["sanity"]), 4, "+1 рассудка")
 
 
+func test_fire_trigger_fires_all_matching() -> void:
+	# Несколько onRest-заклинаний в руке → срабатывают ВСЕ (а не только первое):
+	# healing_words (+1 hp/+1 san) и mending_trance (+2 hp). Рубашки b1 на 2 успехах
+	# = тир «2+» пуст, без побочки.
+	_player([{"id": "healing_words"}, {"id": "mending_trance"}])
+	_gs.players["p"]["hp"] = 3
+	_gs.players["p"]["sanity"] = 3
+	var flow: Dictionary = {
+		"cast": {"successes": 2, "dice": [5, 5]},
+		"backs": {"0": "healing_words_b1", "1": "mending_trance_b1"},
+	}
+	assert_true(_sf.fire_trigger("p", "onRest", flow), "сработало хотя бы одно")
+	assert_eq(int(_gs.players["p"]["hp"]), 6, "healing_words +1 и mending_trance +2 → +3 hp")
+	assert_eq(int(_gs.players["p"]["sanity"]), 4, "healing_words +1 рассудка")
+
+
 func test_fire_trigger_no_matching_spell() -> void:
 	_player([{"id": "shriveling"}])  # trigger action, не onRest
 	assert_false(_sf.fire_trigger("p", "onRest"))
