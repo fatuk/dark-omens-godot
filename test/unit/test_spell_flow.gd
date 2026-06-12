@@ -174,6 +174,21 @@ func test_grant_spell_explicit_id() -> void:
 	assert_eq(items.size(), 1, "карта добавлена")
 	assert_eq(String((items[0] as Dictionary)["id"]), "shriveling")
 	assert_eq(String((items[0] as Dictionary)["kind"]), "spell", "помечена как заклинание")
+	assert_true(
+		String((items[0] as Dictionary).get("back", "")).begins_with("shriveling_"),
+		"при розыгрыше фиксируется конкретная рубашка (как физ.копия)"
+	)
+
+
+func test_cast_uses_instance_back() -> void:
+	# Экземпляр с ФИКСИРОВАННОЙ рубашкой b2 → каст использует именно её (poisoned),
+	# без рандома и без flow-override (две копии одного заклинания → разные обороты).
+	_player([{"id": "shriveling", "kind": "spell", "back": "shriveling_b2"}])
+	_sf.resolve_cast("p", 0, 0, [3, 4])  # flow.backs НЕ задан
+	assert_true(
+		(_gs.players["p"]["conditions"] as Array).has("poisoned"),
+		"рубашка экземпляра (b2 → poisoned)"
+	)
 
 
 func test_grant_spell_random_from_catalog() -> void:
