@@ -235,3 +235,32 @@ func test_cast_ritual_non_host_rejected() -> void:
 func test_cast_ritual_bad_index_rejected() -> void:
 	_player([{"id": "shriveling"}])
 	assert_false(_sf.cast_ritual("p", 9))
+
+
+# ── cast_incantation (контекстный, combat-гейт, транзиентный тест Lore) ───────
+
+
+func test_cast_incantation_in_combat_applies_front() -> void:
+	_player([{"id": "wither"}])
+	_gs.active_check = {"context": "combatEncounter"}
+	var flow: Dictionary = {"cast": {"successes": 2, "dice": [5, 5]}, "backs": {"0": "wither_b1"}}
+	assert_true(_sf.cast_incantation("p", 0, flow))
+	assert_eq(int((_gs.players["p"]["skill_mods"] as Dictionary).get("strength", 0)), 3, "+3 Силы")
+
+
+func test_cast_incantation_requires_combat_context() -> void:
+	_player([{"id": "wither"}])
+	_gs.active_check = {}  # нет боевой проверки
+	assert_false(_sf.cast_incantation("p", 0, {"cast": {"successes": 2, "dice": [5, 5]}}))
+
+
+func test_cast_incantation_rejects_ritual() -> void:
+	_player([{"id": "shriveling"}])  # subtype ritual
+	_gs.active_check = {"context": "combatEncounter"}
+	assert_false(_sf.cast_incantation("p", 0), "Ritual не кастуется как Incantation")
+
+
+func test_cast_incantation_non_host_rejected() -> void:
+	_gs.host = false
+	_player([{"id": "wither"}])
+	assert_false(_sf.cast_incantation("p", 0))
