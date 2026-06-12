@@ -20,6 +20,15 @@ class StubCampaign:
 		return balance_pc
 
 
+# Стаб подсистемы Тайн: close_gate триггерит _gs._mystery.try_mystery_hook.
+class StubMystery:
+	extends RefCounted
+	var hooks: Array = []
+
+	func try_mystery_hook(event: String, ctx: Dictionary, pid: String) -> void:
+		hooks.append({"event": event, "ctx": ctx, "pid": pid})
+
+
 # Мок GameState: BoardState мутирует синкаемый стейт через эти поля/методы.
 class MockGameState:
 	extends Node
@@ -35,12 +44,13 @@ class MockGameState:
 	var turn_order: Array = []
 	var current_idx: int = 0
 	var locations: Array = []
-	var mystery_hooks: Array = []
 	var shop_filled: int = 0
 	var _campaign: StubCampaign
+	var _mystery: StubMystery
 
 	func _init() -> void:
 		_campaign = StubCampaign.new()
+		_mystery = StubMystery.new()
 
 	func _is_host() -> bool:
 		return host
@@ -53,9 +63,6 @@ class MockGameState:
 
 	func _fill_shop_reserve() -> void:
 		shop_filled += 1
-
-	func _try_mystery_hook(event: String, ctx: Dictionary, pid: String) -> void:
-		mystery_hooks.append({"event": event, "ctx": ctx, "pid": pid})
 
 
 func before_each() -> void:
@@ -141,8 +148,8 @@ func test_close_gate_at_active_player_fires_mystery_hook() -> void:
 	_gs.gates = {"gA": "green"}
 	_board.close_gate_at_active_player()
 	assert_false(_gs.gates.has("gA"), "врата закрыты")
-	assert_eq(_gs.mystery_hooks.size(), 1, "триггер gateClosed")
-	assert_eq(String((_gs.mystery_hooks[0] as Dictionary)["event"]), "gateClosed")
+	assert_eq(_gs._mystery.hooks.size(), 1, "триггер gateClosed")
+	assert_eq(String((_gs._mystery.hooks[0] as Dictionary)["event"]), "gateClosed")
 
 
 func test_close_gate_noop_when_no_gate_here() -> void:
@@ -150,7 +157,7 @@ func test_close_gate_noop_when_no_gate_here() -> void:
 	_gs.gates = {"gA": "green"}
 	_board.close_gate_at_active_player()
 	assert_true(_gs.gates.has("gA"), "чужие врата не трогаем")
-	assert_eq(_gs.mystery_hooks.size(), 0)
+	assert_eq(_gs._mystery.hooks.size(), 0)
 
 
 func test_discard_gate_at_active_location() -> void:

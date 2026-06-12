@@ -175,7 +175,7 @@ func _begin_eldritch_move(pid: String) -> void:
 		return
 	var loc: String = String(_gs.players[pid].get("location", ""))
 	# Применимый encounter-хук набора (cost/test/effect — из данных карточки).
-	var hook: Dictionary = _gs.mystery_encounter_hook(loc, pid)
+	var hook: Dictionary = _gs._mystery.mystery_encounter_hook(loc, pid)
 	if hook.is_empty():
 		generate("general")  # хук уже неприменим (страховка)
 		return
@@ -382,12 +382,12 @@ func _compute_choices(pid: String) -> Array:
 	# этот путь не используется — там прогресс через bind-ход (ниже).
 	var mystery: Dictionary = _gs._campaign.current_mystery()
 	var locs: Array = mystery.get("locations", [])
-	var is_tokens: bool = _gs.mystery_kind() == "tokensOnCard"
+	var is_tokens: bool = _gs._mystery.mystery_kind() == "tokensOnCard"
 	if not is_tokens and locs.has(loc) and not (_gs.mystery_claimed as Array).has(loc):
 		out.append("mystery")
 	# Bind-ход: encounter-хук набора жетонов применим на этой клетке (жетон Знамения
 	# или метка Тайны) и игрок может оплатить cost — см. GameState.mystery_encounter_hook.
-	if not _gs.mystery_encounter_hook(loc, pid).is_empty():
+	if not _gs._mystery.mystery_encounter_hook(loc, pid).is_empty():
 		out.append("eldritch")
 	return out
 
@@ -609,7 +609,7 @@ func _commit_eldritch(pid: String) -> void:
 	if (_gs.entities.get(loc, []) as Array).has("eldritch_token"):
 		_remove_eldritch_at(loc)
 	# Списать cost + применить effect (placeEldritchToken where:self → счётчик).
-	_gs.mystery_apply_hook(hook, pid)
+	_gs._mystery.mystery_apply_hook(hook, pid)
 	GameConsole.log(
 		(
 			"[Знамение] %s связал место с Тайной (на карте: %d)"

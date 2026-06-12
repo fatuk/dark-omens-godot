@@ -171,7 +171,7 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 	# Броадкаст только если игра уже идёт; библию, прогретую ещё в лобби,
 	# разошлёт _broadcast_sync() из start_game.
 	if _gs.active:
-		_gs._apply_mystery_on_enter()  # onEnter первой Тайны, если партия уже идёт (до синка)
+		_gs._mystery.apply_mystery_on_enter()  # onEnter первой Тайны, если партия уже идёт (до синка)
 		_gs._broadcast_sync()
 	_gs._emit_changed()
 

@@ -12,7 +12,7 @@ extends RefCounted
 ## omens_step) ОСТАЁТСЯ полями GameState — модуль мутирует его через _gs. Доступ к
 ## стейту/услугам — через _gs: _gs._is_host(), _gs._load_locations(),
 ## _gs._current_pid(), _gs.players, _gs._campaign, _gs._fill_shop_reserve(),
-## _gs._try_mystery_hook(). Создаётся в GameState (поле _board).
+## _gs._mystery.try_mystery_hook(). Создаётся в GameState (поле _board).
 
 var _gs: Node
 
@@ -167,7 +167,7 @@ func close_gate_at_active_player() -> void:
 		_gs.gates.erase(loc)
 		GameConsole.log("[Врата] закрыты на %s" % loc)
 		# Триггер Тайны: закрытие врат (напр. «врата цвета омена → −1 улика → жетон»)
-		_gs._try_mystery_hook("gateClosed", {"loc": loc, "color": color}, pid)
+		_gs._mystery.try_mystery_hook("gateClosed", {"loc": loc, "color": color}, pid)
 
 
 ## Заспаунить монстра на локации, ВЫТЯНУВ случайный id из «мешка» (без повторов).
