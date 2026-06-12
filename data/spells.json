@@ -101,5 +101,41 @@
 				]
 			}
 		]
+	},
+	{
+		"id": "healing_words",
+		"name": "SPELL_HEALING_WORDS_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "onRest",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_HEALING_WORDS_ABILITY",
+			"onPass": [{ "do": "healHealth", "amount": 1 }, { "do": "healSanity", "amount": 1 }]
+		},
+		"backs": [
+			{
+				"id": "healing_words_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "healing_words_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{ "do": "loseSanity", "amount": 1 },
+							{ "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }
+						]
+					},
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
 	}
 ]

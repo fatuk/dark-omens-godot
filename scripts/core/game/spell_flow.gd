@@ -147,6 +147,31 @@ func cast_glamour(pid: String, item_index: int, flow: Dictionary = {}) -> bool:
 	return true
 
 
+## Хост: сработавший spell-триггер по игровому событию (onRest/onWouldLose/…).
+## Находит ПЕРВОЕ заклинание сыщика с front.trigger == event и кастует (тест Lore →
+## фронт onPass к себе → рубашка). true — что-то сработало. Зовётся из игровых
+## хуков (phase_controller.rest и т.п.). flow.cast/backs — детерминизм/тесты.
+func fire_trigger(pid: String, event: String, flow: Dictionary = {}) -> bool:
+	if not _gs._is_host() or not _gs.players.has(pid):
+		return false
+	var p: Dictionary = _gs.players[pid]
+	var items: Array = p.get("items", [])
+	for i in range(items.size()):
+		var it: Variant = items[i]
+		if not (it is Dictionary):
+			continue
+		var spell: Dictionary = SpellCatalog.by_id(_spell_id(it))
+		if spell.is_empty():
+			continue
+		var front: Dictionary = spell.get("front", {})
+		if String(front.get("trigger", "")) != event:
+			continue
+		var r: Dictionary = _lore_roll(p, int(front.get("modifier", 0)), flow)
+		resolve_cast(pid, i, int(r["successes"]), r["dice"], flow)
+		return true
+	return false
+
+
 ## Хост: выдать заклинание сыщику (board-verb gainSpell). spell_id пустой →
 ## случайное из каталога. Кладёт карту {id, kind:"spell"} в инвентарь.
 func grant_spell(pid: String, spell_id: String = "") -> void:

@@ -78,6 +78,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				p["hp"] = mini(int(p["hp_max"]), int(p["hp"]) + REST_HEAL_HP)
 			if not rec.has("sanity"):
 				p["sanity"] = mini(int(p["sanity_max"]), int(p["sanity"]) + REST_HEAL_SANITY)
+			_gs._spell.fire_trigger(pid, "onRest")  # Healing Words и пр. (бонус-лечение)
 			p["actions_left"] = int(p["actions_left"]) - 1
 		"travel":
 			var dest: String = String(payload.get("to", ""))
