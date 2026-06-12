@@ -17,9 +17,6 @@ signal state_changed  # любое изменение стейта
 signal phase_changed(new_phase: String)  # переход фазы
 
 const ACTIONS_PER_ROUND := 2
-# Интерпретатор Effect-DSL — нужен для применения адресных эффектов (target
-# lead/each/chosenInvestigator) к другим сыщикам из _apply_board_effect.
-const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
 # ── Глобальный стейт ──────────────────────────────────────────────────────────
 var round_num: int = 0
@@ -126,6 +123,9 @@ var mystery_claimed: Array = []
 var mystery_tokens_on_card: int = 0
 # Индекс Тайны, чей onEnter уже применён (хост-локальный гард идемпотентности —
 # onEnter может зваться из нескольких хуков: старт партии / приход библии / решение).
+# Доступ к полю — из MysteryFlow через _gs (per-file анализатор GameState этого
+# не видит и считает «неиспользуемым» — глушим).
+@warning_ignore("unused_private_class_variable")
 var _on_enter_applied_idx: int = -1
 # Финал партии: "" — ещё идёт; "victory" — все 3 Тайны решены; "defeat" — doom
 # достиг doomClock. Клиент по этому полю показывает финальные модалки.
@@ -143,6 +143,7 @@ var _check: CheckFlow
 var _cond: ConditionFlow
 var _board: BoardState
 var _mystery: MysteryFlow
+var _target: TargetResolver
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -159,6 +160,7 @@ func _ready() -> void:
 	_cond = ConditionFlow.new(self)
 	_board = BoardState.new(self)
 	_mystery = MysteryFlow.new(self)
+	_target = TargetResolver.new(self)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
 	_nm.player_connected.connect(_on_player_connected)
@@ -963,8 +965,8 @@ func _apply_board_effect(node: Dictionary) -> void:
 	var verb: String = String(node.get("do", ""))
 	# Адресные эффекты (target lead/each/eachOn*/chosenInvestigator) и передачи
 	# активов/улик — применяются к разрешённым сыщикам, а не к доске.
-	if _is_targeted_effect(node):
-		_apply_targeted_effect(node)
+	if _target.is_targeted_effect(node):
+		_target.apply_targeted_effect(node)
 		return
 	# Повтор уровня поля (repeat по источнику разрешён интерпретатором в _times).
 	var times: int = maxi(1, int(node.get("_times", 1)))
@@ -1036,127 +1038,6 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			_cond.host_resolve_reckoning()
 		_:
 			GameConsole.log("[Эффект] %s — пока не поддержано движком" % verb)
-
-
-# ── Адресные эффекты (target) и передачи между сыщиками ────────────────────────
-
-
-# Эффект адресован конкретным сыщикам (не доске): игровой verb с целью
-# lead/each/eachOn*/chosenInvestigator, либо передача актива/улики (give*).
-func _is_targeted_effect(node: Dictionary) -> bool:
-	var verb: String = String(node.get("do", ""))
-	if verb == "giveAsset" or verb == "giveClue":
-		return true
-	var target: String = String(node.get("target", ""))
-	if target.is_empty() or target == "self":
-		return false
-	return _EffectRunner.is_player_verb(verb)
-
-
-# Применить адресный эффект ко всем разрешённым сыщикам. give* — передача от
-# активного игрока выбранному; прочие игровые verb'ы — каждому из целей.
-func _apply_targeted_effect(node: Dictionary) -> void:
-	var verb: String = String(node.get("do", ""))
-	var times: int = maxi(1, int(node.get("_times", 1)))
-	var targets: Array = _resolve_targets(node)
-	if (targets as Array).is_empty():
-		return
-	for pid_v: Variant in targets:
-		var pid: String = String(pid_v)
-		if not players.has(pid):
-			continue
-		for _t in range(times):
-			if verb == "giveAsset" or verb == "giveClue":
-				_apply_give(verb, node, pid)
-			else:
-				var logs: Array = _EffectRunner.apply_player_verb(verb, node, players[pid])
-				for log_msg: Variant in logs:
-					GameConsole.log("[Эффект→%s] %s" % [_name_of(pid), String(log_msg)])
-
-
-# Список сыщиков-целей по target. lead → ведущий (turn_order[0]); each → все
-# подключённые; eachOn* → подключённые на локации указанного типа;
-# chosenInvestigator/chosen → заранее выбранный (_target_pid); иначе → активный.
-func _resolve_targets(node: Dictionary) -> Array:
-	var target: String = String(node.get("target", ""))
-	match target:
-		"lead":
-			return [String(turn_order[0])] if not (turn_order as Array).is_empty() else []
-		"each":
-			return _connected_pids()
-		"eachOnCity":
-			return _pids_on_loc_type("city")
-		"eachOnWilderness":
-			return _pids_on_loc_type("wilderness")
-		"eachOnSea":
-			return _pids_on_loc_type("sea")
-		"eachOnSpace":
-			return _pids_on_loc_type("space")
-		"chosenInvestigator", "chosen":
-			var pid: String = String(node.get("_target_pid", ""))
-			return [pid] if not pid.is_empty() and players.has(pid) else []
-		_:
-			var a: String = _current_pid()
-			return [a] if not a.is_empty() else []
-
-
-# Подключённые сыщики (id), в порядке turn_order.
-func _connected_pids() -> Array:
-	var out: Array = []
-	for pid_v: Variant in turn_order:
-		var pid: String = String(pid_v)
-		if players.has(pid) and bool(players[pid].get("connected", true)):
-			out.append(pid)
-	return out
-
-
-# Подключённые сыщики на локации заданного типа (city/wilderness/sea/space).
-func _pids_on_loc_type(loc_type: String) -> Array:
-	var out: Array = []
-	for pid_v: Variant in _connected_pids():
-		var pid: String = String(pid_v)
-		if _loc_type_of(String(players[pid].get("location", ""))) == loc_type:
-			out.append(pid)
-	return out
-
-
-# Тип локации по id (из data/locations.json). Пусто → "".
-func _loc_type_of(loc_id: String) -> String:
-	if loc_id.is_empty():
-		return ""
-	var locations: Array = _load_locations()
-	for i in range(locations.size()):
-		var loc: Dictionary = locations[i]
-		if String(loc.get("id", "")) == loc_id:
-			return String(loc.get("type", ""))
-	return ""
-
-
-# Передача от активного игрока выбранному: giveClue — улики (сколько есть, до n);
-# giveAsset — один предмет (с конца стопки). Источник — активный игрок встречи.
-func _apply_give(verb: String, node: Dictionary, target_pid: String) -> void:
-	var src: String = _current_pid()
-	if src.is_empty() or not players.has(src) or src == target_pid:
-		return
-	if verb == "giveClue":
-		var want: int = int(node.get("count", node.get("amount", 1)))
-		var avail: int = int(players[src].get("clues", 0))
-		var moved: int = mini(want, avail)
-		if moved <= 0:
-			return
-		players[src]["clues"] = avail - moved
-		players[target_pid]["clues"] = int(players[target_pid].get("clues", 0)) + moved
-		GameConsole.log("[Эффект] %s → %s: улик %d" % [_name_of(src), _name_of(target_pid), moved])
-	elif verb == "giveAsset":
-		var items: Array = players[src].get("items", [])
-		if (items as Array).is_empty():
-			return
-		var it: Variant = items.pop_back()
-		players[src]["items"] = items
-		var titems: Array = players[target_pid].get("items", [])
-		titems.append(it)
-		players[target_pid]["items"] = titems
-		GameConsole.log("[Эффект] %s → %s: предмет" % [_name_of(src), _name_of(target_pid)])
 
 
 # ── Сценарная библия (фасады в CampaignGen) ───────────────────────────────────
