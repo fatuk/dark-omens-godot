@@ -53,7 +53,15 @@ func resolve_cast(
 	# для кубиков.
 	var forced: String = String((flow.get("backs", {}) as Dictionary).get(str(item_index), ""))
 	var back: Dictionary = SpellCatalog.random_back(spell, forced)
+	# Снимок ДО рубашки (фронт уже применён) — diff даст ЧИСТУЮ расплату оборота.
+	var pre: Dictionary = {
+		"hp": int(p.get("hp", 0)),
+		"sanity": int(p.get("sanity", 0)),
+		"clues": int(p.get("clues", 0)),
+		"conds": (p.get("conditions", []) as Array).duplicate(),
+	}
 	consumed = _apply_effects(pid, [{"resultTiers": back.get("tiers", [])}], ctx) or consumed
+	_set_cast_result(pid, sid, back, successes, pre, consumed)
 	GameConsole.log(
 		(
 			"[Заклинание] %s · «%s» (рубашка %s, успехов %d)"
@@ -65,6 +73,47 @@ func resolve_cast(
 		p["items"] = items
 		GameConsole.log("[Заклинание] «%s» сброшено" % sid)
 	return true
+
+
+# Записать результат каста (для модалки расплаты): какой оборот выпал + flavor-ключ
+# + ЧИСТЫЙ итог рубашки (diff pre→now: −здоровье/−рассудок/−улики, новые состояния,
+# сброс). Пустой outcome = «обошлось» (хороший бросок). Хост-авторитетно, синкается.
+func _set_cast_result(
+	pid: String,
+	spell_id: String,
+	back: Dictionary,
+	successes: int,
+	pre: Dictionary,
+	discarded: bool
+) -> void:
+	var p: Dictionary = _gs.players[pid]
+	var out: Dictionary = {}
+	var dhp: int = int(p.get("hp", 0)) - int(pre.get("hp", 0))
+	if dhp != 0:
+		out["health"] = dhp
+	var dsan: int = int(p.get("sanity", 0)) - int(pre.get("sanity", 0))
+	if dsan != 0:
+		out["sanity"] = dsan
+	var dcl: int = int(p.get("clues", 0)) - int(pre.get("clues", 0))
+	if dcl != 0:
+		out["clues"] = dcl
+	var newc: Array = []
+	var precon: Array = pre.get("conds", [])
+	for c_v: Variant in p.get("conditions", []):
+		if not precon.has(c_v):
+			newc.append(String(c_v))
+	if not newc.is_empty():
+		out["conditions"] = newc
+	if discarded:
+		out["discarded"] = true
+	_gs.last_cast_result = {
+		"pid": pid,
+		"spell": spell_id,
+		"back": String(back.get("id", "")),
+		"text": String(back.get("text", "")),
+		"successes": successes,
+		"outcome": out,
+	}
 
 
 ## Хост: каст Ritual-заклинания как действие. Валидирует (ritual + trigger:action +

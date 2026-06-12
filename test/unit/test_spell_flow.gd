@@ -35,6 +35,7 @@ class MockGameState:
 	var board_effects: Array = []
 	var active_check: Dictionary = {}
 	var pending_spell_cast: Dictionary = {}
+	var last_cast_result: Dictionary = {}
 	var roll_successes: int = 0
 	var roll_dice: Array = []
 	var _check: StubCheck
@@ -341,6 +342,30 @@ func test_fire_trigger_no_matching_spell() -> void:
 func test_fire_trigger_empty_hand() -> void:
 	_player([])
 	assert_false(_sf.fire_trigger("p", "onRest"))
+
+
+# ── last_cast_result (модалка расплаты: какой оборот + flavor + итог) ─────────
+
+
+func test_cast_sets_result_with_flavor_and_outcome() -> void:
+	_player([{"id": "shriveling"}])
+	# b2, 0 успехов → тир 0: poisoned. Результат несёт оборот, flavor-ключ, итог.
+	_sf.resolve_cast("p", 0, 0, [3, 4], _force("shriveling_b2"))
+	var r: Dictionary = _gs.last_cast_result
+	assert_eq(String(r["spell"]), "shriveling")
+	assert_eq(String(r["back"]), "shriveling_b2", "выпавший оборот")
+	assert_eq(String(r["text"]), "RECK_SHRIVELING_B2", "flavor-ключ расплаты")
+	assert_eq(int(r["successes"]), 0)
+	assert_has(
+		(r["outcome"] as Dictionary).get("conditions", []), "poisoned", "итог: новое состояние"
+	)
+
+
+func test_cast_result_averted_on_high_successes() -> void:
+	_player([{"id": "shriveling"}])
+	# b2, 3 успеха → тир 1+ пуст → расплаты нет (outcome пуст = «обошлось»).
+	_sf.resolve_cast("p", 0, 3, [5, 5, 6], _force("shriveling_b2"))
+	assert_true((_gs.last_cast_result["outcome"] as Dictionary).is_empty(), "обошлось — итог пуст")
 
 
 # ── prompt_trigger / host_apply_trigger_spells (опциональный onRest) ──────────

@@ -42,6 +42,12 @@ var active_check: Dictionary = {}
 # только владелец pid (cast_trigger_spells). См. SpellFlow.prompt_trigger.
 var pending_spell_cast: Dictionary = {}
 
+# Результат последнего каста для модалки расплаты: { pid, spell, back, text (flavor-
+# ключ оборота), successes, outcome:{health,sanity,clues,conditions,discarded} }.
+# {} — нет. Хост-авторитетно, синкается; модалку показывает владелец pid и сам её
+# закрывает (dismiss_cast_result). Не привязан к ходу. См. SpellFlow.resolve_cast.
+var last_cast_result: Dictionary = {}
+
 # UI-локально: «заряженная» жетоном валюта переброса ("concentration"/"clue"/"") —
 # игрок закинул жетон на проверку, следующий тап по кубу тратит ИМЕННО её. Не
 # синкается (намерение локального игрока), потребляется в reroll_die.
@@ -200,6 +206,7 @@ func _broadcast_sync() -> void:
 				"current_encounter": current_encounter,
 				"active_check": active_check,
 				"pending_spell_cast": pending_spell_cast,
+				"last_cast_result": last_cast_result,
 				"current_mythos": current_mythos,
 				"mythos_index": _mythos.index,
 				"gates": gates,
@@ -294,6 +301,7 @@ func start_game(players_init: Array) -> void:
 	turn_order.clear()
 	current_encounter = {}
 	pending_spell_cast = {}
+	last_cast_result = {}
 	# campaign / campaign_pending НЕ сбрасываем — библия могла быть прогрета
 	# заранее в лобби (prewarm_campaign). Сброс прошлой игры — reset_pregame().
 	for p: Dictionary in players_init:
@@ -834,6 +842,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	current_encounter = data.get("current_encounter", {})
 	active_check = data.get("active_check", {})
 	pending_spell_cast = data.get("pending_spell_cast", {})
+	last_cast_result = data.get("last_cast_result", {})
 	current_mythos = data.get("current_mythos", {})
 	_mythos.index = int(data.get("mythos_index", 0))
 	gates = data.get("gates", {})
@@ -1154,6 +1163,7 @@ func reset_pregame() -> void:
 	_campaign.reset()
 	current_encounter = {}
 	pending_spell_cast = {}
+	last_cast_result = {}
 	current_mythos = {}
 	_mythos.deck = []
 	_mythos.index = 0
