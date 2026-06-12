@@ -60,6 +60,32 @@ func resolve_cast(
 	return true
 
 
+## Хост: каст Ritual-заклинания как действие. Валидирует (ritual + trigger:action +
+## владение), бросает тест Lore±modifier через единый CheckFlow, разрешает каст
+## (resolve_cast). true — каст выполнен (действие тратит зовущая сторона).
+func cast_ritual(pid: String, item_index: int, flow: Dictionary = {}) -> bool:
+	if not _gs._is_host() or not _gs.players.has(pid):
+		return false
+	var items: Array = (_gs.players[pid] as Dictionary).get("items", [])
+	if item_index < 0 or item_index >= items.size():
+		return false
+	var spell: Dictionary = SpellCatalog.by_id(_spell_id(items[item_index]))
+	if spell.is_empty():
+		return false
+	var front: Dictionary = spell.get("front", {})
+	if String(spell.get("subtype", "")) != "ritual" or String(front.get("trigger", "")) != "action":
+		return false
+	_gs._check.start(
+		"spell", pid, String(front.get("test", "lore")), int(front.get("modifier", 0)), "castSpell"
+	)
+	_gs._check.roll(pid)
+	var c: Dictionary = _gs.active_check
+	var dice: Array = c.get("dice", c.get("base", []))
+	resolve_cast(pid, item_index, int(c.get("successes", 0)), dice, flow)
+	_gs._check.clear()
+	return true
+
+
 ## Хост: выдать заклинание сыщику (board-verb gainSpell). spell_id пустой →
 ## случайное из каталога. Кладёт карту {id, kind:"spell"} в инвентарь.
 func grant_spell(pid: String, spell_id: String = "") -> void:

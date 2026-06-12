@@ -62,6 +62,16 @@ class StubFlow:
 		pass
 
 
+class StubSpell:
+	extends RefCounted
+	var ok: bool = true
+	var cast_calls: Array = []
+
+	func cast_ritual(_pid: String, idx: int) -> bool:
+		cast_calls.append(idx)
+		return ok
+
+
 class MockGameState:
 	extends Node
 	signal phase_changed(phase: String)
@@ -80,12 +90,14 @@ class MockGameState:
 	var _check: StubCheck
 	var _mythos: StubFlow
 	var _encounter: StubFlow
+	var _spell: StubSpell
 
 	func _init() -> void:
 		_cond = StubCond.new()
 		_check = StubCheck.new()
 		_mythos = StubFlow.new()
 		_encounter = StubFlow.new()
+		_spell = StubSpell.new()
 
 	func _current_pid() -> String:
 		return String(turn_order[current_idx]) if current_idx < turn_order.size() else ""
@@ -378,3 +390,21 @@ func test_shop_debt_duplicate_rejected() -> void:
 	_solo({"location": "arkham", "conditions": ["debt"]})
 	_gs.loc_types = {"arkham": "city"}
 	assert_false(_pc.host_apply_shop_debt("p"), "повторный Долг игнорируется")
+
+
+# ── cast_spell (Ritual = действие) ────────────────────────────────────────────
+
+
+func test_cast_spell_spends_action_on_success() -> void:
+	_solo()
+	_gs._spell.ok = true
+	assert_true(_pc.host_apply_action("p", "cast_spell", {"item": 0}))
+	assert_eq(int(_gs.players["p"]["actions_left"]), 1, "каст потратил действие")
+	assert_eq(_gs._spell.cast_calls, [0], "cast_ritual вызван с item_index")
+
+
+func test_cast_spell_rejected_when_invalid() -> void:
+	_solo()
+	_gs._spell.ok = false
+	assert_false(_pc.host_apply_action("p", "cast_spell", {"item": 0}))
+	assert_eq(int(_gs.players["p"]["actions_left"]), 2, "невалидный каст — действие не тратится")

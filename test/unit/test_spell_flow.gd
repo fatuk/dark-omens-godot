@@ -9,11 +9,37 @@ var _gs: MockGameState
 var _sf: SpellFlow
 
 
+# Стаб CheckFlow: бросок «каста» отдаёт заданные successes/dice в active_check.
+class StubCheck:
+	extends RefCounted
+	var _gs: Node
+
+	func _init(gs: Node) -> void:
+		_gs = gs
+
+	func start(_owner: String, _pid: String, _skill: String, _mod: int, _ctx: String) -> void:
+		pass
+
+	func roll(_pid: String) -> bool:
+		_gs.active_check = {"successes": _gs.roll_successes, "dice": _gs.roll_dice}
+		return true
+
+	func clear() -> void:
+		_gs.active_check = {}
+
+
 class MockGameState:
 	extends Node
 	var host: bool = true
 	var players: Dictionary = {}
 	var board_effects: Array = []
+	var active_check: Dictionary = {}
+	var roll_successes: int = 0
+	var roll_dice: Array = []
+	var _check: StubCheck
+
+	func _init() -> void:
+		_check = StubCheck.new(self)
 
 	func _is_host() -> bool:
 		return host
@@ -169,3 +195,43 @@ func test_grant_spell_unknown_id_noop() -> void:
 	_player()
 	_sf.grant_spell("p", "no_such_spell")
 	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "неизвестный id игнорируется")
+
+
+# ── cast_ritual (Ritual: каст = тест Lore через CheckFlow → resolve) ──────────
+
+
+func test_cast_ritual_pass_applies_front_and_clears() -> void:
+	_player([{"id": "shriveling"}])
+	_gs.roll_successes = 2
+	_gs.roll_dice = [5, 5]
+	assert_true(_sf.cast_ritual("p", 0, _force("shriveling_b1")), "каст выполнен")
+	var verbs: Array = []
+	for i in range(_gs.board_effects.size()):
+		verbs.append(String((_gs.board_effects[i] as Dictionary).get("do", "")))
+	assert_has(verbs, "damageMonster", "фронт onPass при успехе")
+	assert_eq(_gs.active_check.size(), 0, "проверка очищена после каста")
+
+
+func test_cast_ritual_fail_resolves_back() -> void:
+	_player([{"id": "shriveling"}])
+	_gs.roll_successes = 0
+	_gs.roll_dice = [1, 3]  # выпала 1 → рубашка b1 сбрасывает карту
+	assert_true(_sf.cast_ritual("p", 0, _force("shriveling_b1")))
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "рубашка сбросила карту")
+
+
+func test_cast_ritual_rejects_incantation() -> void:
+	_player([{"id": "wither"}])  # subtype incantation — не Ritual
+	assert_false(_sf.cast_ritual("p", 0), "Incantation не кастуется как Ritual-действие")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "карта не тронута")
+
+
+func test_cast_ritual_non_host_rejected() -> void:
+	_gs.host = false
+	_player([{"id": "shriveling"}])
+	assert_false(_sf.cast_ritual("p", 0))
+
+
+func test_cast_ritual_bad_index_rejected() -> void:
+	_player([{"id": "shriveling"}])
+	assert_false(_sf.cast_ritual("p", 9))

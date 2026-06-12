@@ -111,6 +111,13 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				)
 				return false
 			p["actions_left"] = int(p["actions_left"]) - 1
+		"cast_spell":
+			# Ritual-заклинание: каст = действие. SpellFlow валидирует, бросает тест
+			# Lore и разрешает каст; false — карта невалидна (действие не тратим).
+			if not _gs._spell.cast_ritual(pid, int(payload.get("item", -1))):
+				GameConsole.warn("[Заклинание] %s — нельзя прочитать" % _gs._name_of(pid))
+				return false
+			p["actions_left"] = int(p["actions_left"]) - 1
 		"pass":
 			p["actions_left"] = 0
 		_:
