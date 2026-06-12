@@ -264,3 +264,24 @@ func test_cast_incantation_non_host_rejected() -> void:
 	_gs.host = false
 	_player([{"id": "wither"}])
 	assert_false(_sf.cast_incantation("p", 0))
+
+
+# ── cast_glamour (⟳: exhaust + тест Lore → рубашка; аура — отдельно) ──────────
+
+
+func test_cast_glamour_exhausts_and_resolves_back() -> void:
+	_player([{"id": "mind_s_eye"}])
+	var flow: Dictionary = {"cast": {"successes": 0, "dice": [3]}, "backs": {"0": "mind_s_eye_b1"}}
+	assert_true(_sf.cast_glamour("p", 0, flow))
+	assert_true(bool(_gs.players["p"]["items"][0]["exhausted"]), "⟳ истощает карту (oncePerRound)")
+	assert_eq(int(_gs.players["p"]["sanity"]), 4, "рубашка 0-1: −1 рассудок")
+
+
+func test_cast_glamour_rejects_exhausted() -> void:
+	_player([{"id": "mind_s_eye", "exhausted": true}])
+	assert_false(_sf.cast_glamour("p", 0), "истощённая карта не кастуется")
+
+
+func test_cast_glamour_rejects_non_glamour() -> void:
+	_player([{"id": "shriveling"}])
+	assert_false(_sf.cast_glamour("p", 0), "Ritual — не glamour")

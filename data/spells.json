@@ -70,5 +70,36 @@
 				]
 			}
 		]
+	},
+	{
+		"id": "mind_s_eye",
+		"name": "SPELL_MINDS_EYE_NAME",
+		"subtype": "glamour",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "exhaust",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_MINDS_EYE_ABILITY",
+			"aura": [{ "do": "rerollDice", "count": 1, "context": "anyTest" }],
+			"onPass": []
+		},
+		"backs": [
+			{
+				"id": "mind_s_eye_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [{ "do": "gainClue" }] }
+				]
+			},
+			{
+				"id": "mind_s_eye_b2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "amnesia" }] },
+					{ "on": "1+", "effect": [{ "do": "healSanity", "amount": 1 }] }
+				]
+			}
+		]
 	}
 ]

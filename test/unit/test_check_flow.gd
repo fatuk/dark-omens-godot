@@ -354,3 +354,15 @@ func test_activate_wrong_timing_rejected() -> void:
 	_player({"items": [{"id": "kerosene", "exhausted": false}]})
 	_rolled({"context": "combatEncounter", "skill": "strength"})  # rolled=true по умолчанию
 	assert_false(_cf.activate("p", 0), "усиление пула после броска не применяется")
+
+
+func test_activate_glamour_aura() -> void:
+	# Пассив-аура glamour (Mind's Eye: rerollDice anyTest) применяется к проверке
+	# тем же путём, что пассивы актива. rerollDice — пост-бросковый (rolled=true).
+	_player({"items": [{"id": "mind_s_eye"}]})
+	_rolled()
+	assert_true(_cf.activate("p", 0), "glamour-аура применима")
+	var verbs: Array = []
+	for m_v: Variant in _gs.active_check["active_mods"]:
+		verbs.append(String((m_v as Dictionary).get("do", "")))
+	assert_has(verbs, "rerollDice", "аура glamour в active_mods")

@@ -28,6 +28,25 @@ static func is_spell(id: String) -> bool:
 	return not by_id(id).is_empty()
 
 
+## Glamour ли это заклинание (пассив-аура + exhaust-cast).
+static func is_glamour(id: String) -> bool:
+	return String(by_id(id).get("subtype", "")) == "glamour"
+
+
+## Пассивная аура glamour-заклинания (front.aura): check-mod-ноды, подходящие по
+## контексту проверки. Применяются как passive_check_mods актива (через
+## CheckFlow.activate). Пусто/anyTest/совпадение контекста — подходит.
+static func aura_check_mods(spell: Dictionary, context: String) -> Array:
+	var out: Array = []
+	for n_v: Variant in (spell.get("front", {}) as Dictionary).get("aura", []):
+		if not (n_v is Dictionary):
+			continue
+		var ec: String = String((n_v as Dictionary).get("context", ""))
+		if ec.is_empty() or ec == "anyTest" or ec == context:
+			out.append(n_v)
+	return out
+
+
 ## Случайная рубашка заклинания (или форсированная по id — для детерминизма/тестов
 ## и replay). {} — у заклинания нет рубашек.
 static func random_back(spell: Dictionary, forced_id: String = "") -> Dictionary:

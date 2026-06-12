@@ -105,19 +105,45 @@ func cast_incantation(pid: String, item_index: int, flow: Dictionary = {}) -> bo
 		if String((_gs.active_check as Dictionary).get("context", "")) != "combatEncounter":
 			return false  # вне боя не кастуется
 
+	var r: Dictionary = _lore_roll(p, int(front.get("modifier", 0)), flow)
+	resolve_cast(pid, item_index, int(r["successes"]), r["dice"], flow)
+	return true
+
+
+# Транзиентный тест Lore (для контекстных/exhaust-кастов, когда CheckFlow занят).
+# flow.cast={successes,dice} переопределяет бросок (тесты/replay).
+func _lore_roll(p: Dictionary, modifier: int, flow: Dictionary) -> Dictionary:
 	var roll: Dictionary = flow.get("cast", {})
-	var successes: int
-	var dice: Array
 	if roll.has("successes"):
-		successes = int(roll["successes"])
-		dice = roll.get("dice", [])
-	else:
-		var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-		var lore: int = int((inv.get("skills", {}) as Dictionary).get("lore", 1))
-		var mods: int = int((p.get("skill_mods", {}) as Dictionary).get("lore", 0))
-		dice = Dice.roll(maxi(1, lore + mods + int(front.get("modifier", 0))))
-		successes = int(Dice.result(dice).get("successes", 0))
-	resolve_cast(pid, item_index, successes, dice, flow)
+		return {"successes": int(roll["successes"]), "dice": roll.get("dice", [])}
+	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
+	var lore: int = int((inv.get("skills", {}) as Dictionary).get("lore", 1))
+	var mods: int = int((p.get("skill_mods", {}) as Dictionary).get("lore", 0))
+	var dice: Array = Dice.roll(maxi(1, lore + mods + modifier))
+	return {"successes": int(Dice.result(dice).get("successes", 0)), "dice": dice}
+
+
+## Хост: каст glamour («⟳: Test Lore и flip»). Истощает карту (oncePerRound),
+## бросает Lore (транзиентный; flow.cast переопределяет), разрешает каст. Пассив-
+## аура glamour применяется отдельно — через CheckFlow.activate. true — каст.
+func cast_glamour(pid: String, item_index: int, flow: Dictionary = {}) -> bool:
+	if not _gs._is_host() or not _gs.players.has(pid):
+		return false
+	var p: Dictionary = _gs.players[pid]
+	var items: Array = p.get("items", [])
+	if item_index < 0 or item_index >= items.size():
+		return false
+	var it: Dictionary = items[item_index] if items[item_index] is Dictionary else {}
+	if bool(it.get("exhausted", false)):
+		return false  # уже истощена в этом раунде
+	var spell: Dictionary = SpellCatalog.by_id(_spell_id(it))
+	if spell.is_empty() or String(spell.get("subtype", "")) != "glamour":
+		return false
+	var r: Dictionary = _lore_roll(
+		p, int((spell.get("front", {}) as Dictionary).get("modifier", 0)), flow
+	)
+	it["exhausted"] = true  # ⟳ — oncePerRound
+	resolve_cast(pid, item_index, int(r["successes"]), r["dice"], flow)
 	return true
 
 

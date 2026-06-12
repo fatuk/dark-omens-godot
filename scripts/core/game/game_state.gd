@@ -492,11 +492,22 @@ func cast_spell(item_index: int) -> void:
 	var spell: Dictionary = SpellCatalog.by_id(AssetCatalog.entry_id(items[item_index]))
 	if spell.is_empty():
 		return
-	if String(spell.get("subtype", "")) == "ritual":
+	var subtype: String = String(spell.get("subtype", ""))
+	if subtype == "ritual":
 		perform_action("cast_spell", {"item": item_index})
 		return
 	var my_pid: String = _nm.my_user_id
-	if _is_host():
+	if subtype == "glamour":
+		# Каст glamour (вне проверки): exhaust + тест Lore. Аура применяется отдельно
+		# (тап по glamour во время проверки → activate_card, см. world_map).
+		if _is_host():
+			if _spell.cast_glamour(my_pid, item_index):
+				_broadcast_sync()
+				_emit_changed()
+		else:
+			_nm.relay_all({"action": "game_cast_glamour", "pid": my_pid, "index": item_index})
+		return
+	if _is_host():  # incantation
 		if _spell.cast_incantation(my_pid, item_index):
 			_broadcast_sync()
 			_emit_changed()
@@ -892,6 +903,12 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"game_cast_incantation":
 			if _is_host():
 				if _spell.cast_incantation(String(data.get("pid", "")), int(data.get("index", -1))):
+					_broadcast_sync()
+					_emit_changed()
+
+		"game_cast_glamour":
+			if _is_host():
+				if _spell.cast_glamour(String(data.get("pid", "")), int(data.get("index", -1))):
 					_broadcast_sync()
 					_emit_changed()
 

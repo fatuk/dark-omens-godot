@@ -155,8 +155,12 @@ func activate(pid: String, item_index: int) -> bool:
 		return false  # уже истощена в этом раунде (oncePerRound)
 	if (c.get("exhausted_cards", []) as Array).has(item_index):
 		return false  # уже применена в ЭТОЙ проверке
-	var asset: Dictionary = AssetCatalog.by_id(AssetCatalog.entry_id(it))
-	if asset.is_empty():
+	var entry: String = AssetCatalog.entry_id(it)
+	var asset: Dictionary = AssetCatalog.by_id(entry)
+	# Glamour-заклинание: его пассив-аура применяется к проверке как пассив актива.
+	var glamour: Dictionary = SpellCatalog.by_id(entry) if asset.is_empty() else {}
+	var is_glam: bool = String(glamour.get("subtype", "")) == "glamour"
+	if asset.is_empty() and not is_glam:
 		return false
 	var ctx: String = String(c.get("context", ""))
 	var skill: String = String(c.get("skill", ""))
@@ -166,8 +170,15 @@ func activate(pid: String, item_index: int) -> bool:
 	# усиление пула (навык/доп.кубы) только ДО броска, результат/перебросы только ПОСЛЕ.
 	var ok := func(m_v3: Variant) -> bool:
 		return Dice.mod_skill_ok(m_v3, skill) and Dice.mod_is_pre_roll(m_v3) != rolled
-	var action_mods: Array = AssetCatalog.action_check_mods(asset, ctx).filter(ok)
-	var passive_mods: Array = AssetCatalog.passive_check_mods(asset, ctx).filter(ok)
+	# Glamour — только пассив-аура (без cost/limit); актив — action + passive.
+	var action_mods: Array = (
+		[] if is_glam else AssetCatalog.action_check_mods(asset, ctx).filter(ok)
+	)
+	var passive_mods: Array = (
+		SpellCatalog.aura_check_mods(glamour, ctx).filter(ok)
+		if is_glam
+		else AssetCatalog.passive_check_mods(asset, ctx).filter(ok)
+	)
 	var mods: Array = action_mods.duplicate()
 	mods.append_array(passive_mods)
 	if mods.is_empty():
@@ -221,7 +232,8 @@ func activate(pid: String, item_index: int) -> bool:
 		ex.append(item_index)
 		c["exhausted_cards"] = ex
 
-	GameConsole.log("[Карта] %s применил «%s»" % [_gs._name_of(pid), String(asset.get("id", ""))])
+	var card_id: String = String(glamour.get("id", "")) if is_glam else String(asset.get("id", ""))
+	GameConsole.log("[Карта] %s применил «%s»" % [_gs._name_of(pid), card_id])
 	_sync()
 	return true
 

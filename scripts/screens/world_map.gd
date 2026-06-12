@@ -198,10 +198,16 @@ func _build_hand_carousel() -> void:
 			var it: Variant = (
 				items[item_index] if item_index >= 0 and item_index < items.size() else null
 			)
-			if it is Dictionary and String((it as Dictionary).get("kind", "")) == "spell":
-				GameState.cast_spell(item_index)
-			else:
+			if not (it is Dictionary) or String((it as Dictionary).get("kind", "")) != "spell":
 				GameState.activate_card(item_index)
+				return
+			# Glamour во время активной проверки → применить пассив-ауру (как актив);
+			# иначе (Ritual/Incantation/glamour вне проверки) → каст.
+			var sid: String = String((it as Dictionary).get("id", ""))
+			if SpellCatalog.is_glamour(sid) and not GameState.active_check.is_empty():
+				GameState.activate_card(item_index)
+			else:
+				GameState.cast_spell(item_index)
 	)
 	# Жетон закинули на проверку — заряжаем валюту переброса; куб игрок выберет тапом.
 	hc.token_played.connect(func(currency: String) -> void: GameState.set_pending_reroll(currency))

@@ -45,3 +45,16 @@ func test_card_payload_shape() -> void:
 	assert_eq(String(p["id"]), "shriveling")
 	assert_eq(String(p["subtitle"]), "TRAIT_SPELL", "подзаголовок — заклинание")
 	assert_eq(String(p["title"]), "SPELL_SHRIVELING_NAME", "ключ названия")
+
+
+func test_is_glamour() -> void:
+	assert_true(SpellCatalog.is_glamour("mind_s_eye"))
+	assert_false(SpellCatalog.is_glamour("shriveling"), "ritual — не glamour")
+
+
+func test_aura_check_mods() -> void:
+	var mods: Array = SpellCatalog.aura_check_mods(
+		SpellCatalog.by_id("mind_s_eye"), "combatEncounter"
+	)
+	assert_eq(mods.size(), 1, "anyTest-аура подходит любому контексту")
+	assert_eq(String((mods[0] as Dictionary)["do"]), "rerollDice")
