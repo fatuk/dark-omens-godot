@@ -1432,3 +1432,6 @@ SPELL_MENDING_TRANCE_NAME,Целительный транс,Mending Trance
 SPELL_MENDING_TRANCE_ABILITY,"При отдыхе: проверьте Знание. При успехе восстановите 2 здоровья.","When you rest: test Lore. If you pass, recover 2 Health."
 SPELL_SIGN_OF_WARDING_NAME,Знак оберега,Sign of Warding
 SPELL_SIGN_OF_WARDING_ABILITY,"Аура: в бою каждая «6» в проверке Воли даёт 2 успеха.","Aura: in combat, each 6 on a Will test counts as 2 successes."
+
+SPELL_CAST_TITLE,Скастить заклинания?,Cast spells?
+SPELL_CAST_CONFIRM,Скастить выбранные,Cast selected

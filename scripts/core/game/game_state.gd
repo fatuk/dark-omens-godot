@@ -528,9 +528,7 @@ func cast_spell(item_index: int) -> void:
 func cast_trigger_spells(indices: Array) -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
-		if _spell.host_apply_trigger_spells(my_pid, indices):
-			_broadcast_sync()
-			_emit_changed()
+		_phase.host_apply_cast_trigger_spells(my_pid, indices)
 	else:
 		_nm.relay_all({"action": "game_cast_trigger_spells", "pid": my_pid, "spells": indices})
 
@@ -935,11 +933,9 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 
 		"game_cast_trigger_spells":
 			if _is_host():
-				if _spell.host_apply_trigger_spells(
+				_phase.host_apply_cast_trigger_spells(
 					String(data.get("pid", "")), data.get("spells", [])
-				):
-					_broadcast_sync()
-					_emit_changed()
+				)
 
 		"game_shop_grant":
 			if _is_host():

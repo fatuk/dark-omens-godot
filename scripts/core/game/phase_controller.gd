@@ -78,7 +78,11 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				p["hp"] = mini(int(p["hp_max"]), int(p["hp"]) + REST_HEAL_HP)
 			if not rec.has("sanity"):
 				p["sanity"] = mini(int(p["sanity_max"]), int(p["sanity"]) + REST_HEAL_SANITY)
-			_gs._spell.fire_trigger(pid, "onRest")  # Healing Words и пр. (бонус-лечение)
+			# onRest-заклинания НЕ кастуем автоматически — выставляем промпт выбора
+			# (Healing Words и пр. опциональны). Если промпт выставлен, держим ход до
+			# резолва (как магазин): передача — в host_apply_cast_trigger_spells.
+			if _gs._spell.prompt_trigger(pid, "onRest"):
+				p["spell_prompt"] = true
 			p["actions_left"] = int(p["actions_left"]) - 1
 		"travel":
 			var dest: String = String(payload.get("to", ""))
@@ -135,11 +139,32 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			% [_gs._name_of(pid), action_type, int(p["actions_left"])]
 		)
 	)
-	# Пока игрок в магазине (модалка открыта) — ход не передаём, даже если это
-	# было последнее действие. Передача произойдёт при закрытии (host_apply_shop_close).
-	if int(p["actions_left"]) == 0 and not bool(p.get("shopping", false)):
+	# Пока игрок в магазине (модалка открыта) или висит промпт выбора заклинаний
+	# (отдых) — ход не передаём, даже если это было последнее действие. Передача:
+	# host_apply_shop_close / host_apply_cast_trigger_spells.
+	if (
+		int(p["actions_left"]) == 0
+		and not bool(p.get("shopping", false))
+		and not bool(p.get("spell_prompt", false))
+	):
 		advance_action_turn()
 
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
+## Хост: игрок подтвердил выбор триггер-заклинаний в промпте отдыха (item-индексы;
+## пустой список — «ничего не кастить»). Резолвим выбранные касты (SpellFlow чистит
+## pending_spell_cast) и, если отдых был последним действием, передаём отложенный
+## ход (как закрытие магазина). Зовётся из GameState.cast_trigger_spells и relay.
+func host_apply_cast_trigger_spells(pid: String, indices: Array) -> bool:
+	if not _gs._spell.host_apply_trigger_spells(pid, indices):
+		return false
+	var p: Dictionary = _gs.players.get(pid, {})
+	p.erase("spell_prompt")
+	if int(p.get("actions_left", 0)) == 0 and not bool(p.get("shopping", false)):
+		advance_action_turn()
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
@@ -280,6 +305,7 @@ func _commit_and_advance(pid: String) -> bool:
 ## Передать ход в action-фазе. Если списком кончились — переход в encounter.
 ## Public — зовётся из _on_player_left когда отключился current.
 func advance_action_turn() -> void:
+	_gs.pending_spell_cast = {}  # абандон висящего spell-промпта при смене хода
 	_gs.current_idx += 1
 	if not skip_disconnected():
 		enter_encounter()

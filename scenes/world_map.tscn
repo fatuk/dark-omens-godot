@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/mythos_modal.tscn" id="9_mythosmod"]
 [ext_resource type="PackedScene" path="res://scenes/ui/encounter_choice_modal.tscn" id="10_choicemod"]
 [ext_resource type="PackedScene" path="res://scenes/ui/combat_modal.tscn" id="11_combatmod"]
+[ext_resource type="PackedScene" path="res://scenes/ui/spell_cast_modal.tscn" id="12_spellcast"]
 
 [node name="WorldMap" type="Node2D" unique_id=400240817]
 script = ExtResource("1_oru6e")
@@ -50,3 +51,5 @@ unique_name_in_owner = true
 [node name="EncounterChoiceModal" parent="." unique_id=1049635943 instance=ExtResource("10_choicemod")]
 
 [node name="CombatModal" parent="." unique_id=862865228 instance=ExtResource("11_combatmod")]
+
+[node name="SpellCastModal" parent="." unique_id=717181920 instance=ExtResource("12_spellcast")]

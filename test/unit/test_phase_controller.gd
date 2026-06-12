@@ -66,15 +66,21 @@ class StubSpell:
 	extends RefCounted
 	var ok: bool = true
 	var cast_calls: Array = []
-	var trigger_events: Array = []
+	var prompt_events: Array = []
+	var prompt_returns: bool = false
+	var resolved: Array = []
 
 	func cast_ritual(_pid: String, idx: int) -> bool:
 		cast_calls.append(idx)
 		return ok
 
-	func fire_trigger(_pid: String, event: String, _flow: Dictionary = {}) -> bool:
-		trigger_events.append(event)
-		return false
+	func prompt_trigger(_pid: String, event: String) -> bool:
+		prompt_events.append(event)
+		return prompt_returns
+
+	func host_apply_trigger_spells(_pid: String, indices: Array, _flow: Dictionary = {}) -> bool:
+		resolved.append(indices)
+		return true
 
 
 class MockGameState:
@@ -234,10 +240,25 @@ func test_rest_respects_cannot_recover_health() -> void:
 	assert_eq(int(_gs.players["p"]["sanity"]), 4, "рассудок всё равно лечится")
 
 
-func test_rest_fires_on_rest_spell_trigger() -> void:
+func test_rest_prompts_on_rest_spells() -> void:
 	_solo()
 	_pc.host_apply_action("p", "rest")
-	assert_has(_gs._spell.trigger_events, "onRest", "rest триггерит заклинания onRest")
+	assert_has(_gs._spell.prompt_events, "onRest", "отдых выставляет промпт onRest-заклинаний")
+
+
+func test_rest_prompt_holds_turn_until_resolved() -> void:
+	# Отдых последним действием + есть onRest-заклинания (prompt_returns=true) → ход
+	# НЕ уходит, пока игрок не разрешит промпт; после резолва — уходит (solo → encounter).
+	_solo()
+	_gs._spell.prompt_returns = true
+	_gs.players["p"]["actions_left"] = 1  # отдых станет последним действием
+	_pc.host_apply_action("p", "rest")
+	assert_eq(int(_gs.players["p"]["actions_left"]), 0, "действие потрачено")
+	assert_true(bool(_gs.players["p"].get("spell_prompt", false)), "ход держится промптом")
+	assert_eq(_gs.phase, "action", "ход не ушёл — фаза не сменилась")
+	_pc.host_apply_cast_trigger_spells("p", [])
+	assert_false(bool(_gs.players["p"].get("spell_prompt", false)), "промпт-флаг снят")
+	assert_eq(_gs.phase, "encounter", "после резолва ход ушёл")
 
 
 func test_travel_moves_when_connected() -> void:
