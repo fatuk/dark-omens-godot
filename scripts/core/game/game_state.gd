@@ -144,6 +144,7 @@ var _cond: ConditionFlow
 var _board: BoardState
 var _mystery: MysteryFlow
 var _target: TargetResolver
+var _spell: SpellFlow
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -161,6 +162,7 @@ func _ready() -> void:
 	_board = BoardState.new(self)
 	_mystery = MysteryFlow.new(self)
 	_target = TargetResolver.new(self)
+	_spell = SpellFlow.new(self)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
 	_nm.player_connected.connect(_on_player_connected)

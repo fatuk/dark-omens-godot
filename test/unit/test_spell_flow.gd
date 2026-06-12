@@ -1,0 +1,138 @@
+extends GutTest
+
+## Юнит-тесты каста заклинаний (scripts/core/game/spell_flow.gd). Двусторонняя
+## карта: каст → фронт onPass (при pass) → flip к рубашке → tiers по числу успехов
+## → discard/назад на фронт. Детерминизм: явные successes/dice + flow.backs (форс
+## рубашки). Данные — реальный data/spells.json (через SpellCatalog).
+
+var _gs: MockGameState
+var _sf: SpellFlow
+
+
+class MockGameState:
+	extends Node
+	var host: bool = true
+	var players: Dictionary = {}
+	var board_effects: Array = []
+
+	func _is_host() -> bool:
+		return host
+
+	func _name_of(pid: String) -> String:
+		return pid
+
+	func _apply_board_effect(node: Dictionary) -> void:
+		board_effects.append(node)
+
+
+func before_each() -> void:
+	_gs = autofree(MockGameState.new())
+	_sf = SpellFlow.new(_gs)
+
+
+func _player(items: Array = []) -> void:
+	_gs.players["p"] = {
+		"hp": 5,
+		"hp_max": 7,
+		"sanity": 5,
+		"sanity_max": 6,
+		"clues": 0,
+		"conditions": [],
+		"items": items,
+		"skill_mods": {},
+	}
+
+
+# Форс конкретной рубашки для item_index 0.
+func _force(back_id: String) -> Dictionary:
+	return {"backs": {"0": back_id}}
+
+
+# ── Фронт (onPass при успехе) ─────────────────────────────────────────────────
+
+
+func test_pass_applies_front_effect() -> void:
+	_player([{"id": "shriveling"}])
+	# successes 2 → pass → front damageMonster (board); рубашка b1 тир 2+ → ничего.
+	_sf.resolve_cast("p", 0, 2, [5, 5], _force("shriveling_b1"))
+	var verbs: Array = []
+	for i in range(_gs.board_effects.size()):
+		verbs.append(String((_gs.board_effects[i] as Dictionary).get("do", "")))
+	assert_has(verbs, "damageMonster", "фронт onPass применён при успехе")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "карта остаётся (многоразовая)")
+
+
+func test_fail_skips_front_effect() -> void:
+	_player([{"id": "shriveling"}])
+	# successes 0 → НЕ pass → фронт не применяется; рубашка b1 тир 0-1 → loseSanity 1.
+	_sf.resolve_cast("p", 0, 0, [3, 4], _force("shriveling_b1"))
+	assert_eq(_gs.board_effects.size(), 0, "фронт (damageMonster) не сработал")
+	assert_eq(int(_gs.players["p"]["sanity"]), 4, "рубашка 0-1: −1 рассудок")
+
+
+# ── Рубашка: тиры по числу успехов ────────────────────────────────────────────
+
+
+func test_back_tier_by_success_count() -> void:
+	_player([{"id": "shriveling"}])
+	# Форс b2: тир 0 → gainCondition poisoned; тир 1+ → ничего.
+	_sf.resolve_cast("p", 0, 0, [3, 4], _force("shriveling_b2"))
+	assert_true((_gs.players["p"]["conditions"] as Array).has("poisoned"), "тир 0 рубашки b2")
+
+
+func test_back_high_tier_no_effect() -> void:
+	_player([{"id": "shriveling"}])
+	_sf.resolve_cast("p", 0, 3, [5, 5, 6], _force("shriveling_b2"))
+	assert_false(
+		(_gs.players["p"]["conditions"] as Array).has("poisoned"), "3 успеха → тир 1+ (пусто)"
+	)
+
+
+# ── Сброс карты: discardCard в рубашке ────────────────────────────────────────
+
+
+func test_conditional_discard_on_rolled_one() -> void:
+	_player([{"id": "shriveling"}])
+	# b1 тир 0-1: discardCard ТОЛЬКО если выпала 1. dice [1,3] → есть 1 → сброс.
+	_sf.resolve_cast("p", 0, 0, [1, 3], _force("shriveling_b1"))
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "выпала 1 → карта сброшена")
+
+
+func test_no_discard_without_rolled_one() -> void:
+	_player([{"id": "shriveling"}])
+	_sf.resolve_cast("p", 0, 0, [3, 4], _force("shriveling_b1"))
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "без 1 — карта остаётся")
+
+
+func test_unconditional_discard() -> void:
+	_player([{"id": "wither"}])
+	# wither b2 тир 0: gainCondition internalInjury + безусловный discardCard.
+	_sf.resolve_cast("p", 0, 0, [3, 4], _force("wither_b2"))
+	assert_true((_gs.players["p"]["conditions"] as Array).has("internalInjury"))
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "рубашка сбрасывает карту")
+
+
+func test_wither_front_buffs_strength() -> void:
+	_player([{"id": "wither"}])
+	# pass → front improveSkill strength +3; b1 тир 2+ → ничего.
+	_sf.resolve_cast("p", 0, 2, [5, 5], _force("wither_b1"))
+	assert_eq(int((_gs.players["p"]["skill_mods"] as Dictionary).get("strength", 0)), 3)
+
+
+# ── Гварды ────────────────────────────────────────────────────────────────────
+
+
+func test_non_host_rejected() -> void:
+	_gs.host = false
+	_player([{"id": "shriveling"}])
+	assert_false(_sf.resolve_cast("p", 0, 2, [5, 5]))
+
+
+func test_bad_index_rejected() -> void:
+	_player([{"id": "shriveling"}])
+	assert_false(_sf.resolve_cast("p", 5, 2, [5, 5]), "индекс вне инвентаря")
+
+
+func test_unknown_spell_rejected() -> void:
+	_player([{"id": "not_a_spell"}])
+	assert_false(_sf.resolve_cast("p", 0, 2, [5, 5]), "id нет в каталоге заклинаний")

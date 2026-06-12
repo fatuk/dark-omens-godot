@@ -1,0 +1,74 @@
+[
+	{
+		"id": "shriveling",
+		"name": "SPELL_SHRIVELING_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_SHRIVELING_ABILITY",
+			"onPass": [{ "do": "damageMonster", "amount": 2 }]
+		},
+		"backs": [
+			{
+				"id": "shriveling_b1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{ "do": "loseSanity", "amount": 1 },
+							{ "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }
+						]
+					},
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "shriveling_b2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "poisoned" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "wither",
+		"name": "SPELL_WITHER_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "combatEncounter",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_WITHER_ABILITY",
+			"onPass": [{ "do": "improveSkill", "skill": "strength", "amount": 3 }]
+		},
+		"backs": [
+			{
+				"id": "wither_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "wither_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{ "do": "gainCondition", "condition": "internalInjury" },
+							{ "do": "discardCard" }
+						]
+					},
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	}
+]
