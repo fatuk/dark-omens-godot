@@ -191,8 +191,18 @@ func _build_hand_carousel() -> void:
 	hc.name = "HandCarousel"
 	add_child(hc)
 	_hand_carousel = hc
-	# Карту вытащили на проверку — запрос применения (хост валидирует фазу/ход/контекст).
-	hc.card_played.connect(func(item_index: int) -> void: GameState.activate_card(item_index))
+	# Карту вытащили на проверку. Заклинание (kind:"spell") → каст; актив → активация.
+	hc.card_played.connect(
+		func(item_index: int) -> void:
+			var items: Array = GameState.my_player().get("items", [])
+			var it: Variant = (
+				items[item_index] if item_index >= 0 and item_index < items.size() else null
+			)
+			if it is Dictionary and String((it as Dictionary).get("kind", "")) == "spell":
+				GameState.cast_spell(item_index)
+			else:
+				GameState.activate_card(item_index)
+	)
 	# Жетон закинули на проверку — заряжаем валюту переброса; куб игрок выберет тапом.
 	hc.token_played.connect(func(currency: String) -> void: GameState.set_pending_reroll(currency))
 	GameState.state_changed.connect(_refresh_hand)
@@ -234,7 +244,24 @@ func _hand_assets_section() -> Array:
 		if not _card_applicable_now(pcard):
 			pcard["exhausted"] = true
 		out.append(pcard)
+	_append_spell_cards(out)
 	return out
+
+
+# Карты-заклинания ({id, kind:"spell"}) в веер: фронт активируем (тап = каст).
+func _append_spell_cards(out: Array) -> void:
+	var items: Array = GameState.my_player().get("items", [])
+	for i in range(items.size()):
+		var it: Variant = items[i]
+		if not (it is Dictionary) or String((it as Dictionary).get("kind", "")) != "spell":
+			continue
+		var spell: Dictionary = SpellCatalog.by_id(String((it as Dictionary).get("id", "")))
+		if spell.is_empty():
+			continue
+		var sc: Dictionary = SpellCatalog.card_payload(spell)
+		sc["item_index"] = i
+		sc["kind"] = "spell"
+		out.append(sc)
 
 
 # Применима ли карта к ТЕКУЩЕЙ активной проверке: есть ли у неё мод (action/whileOwned),

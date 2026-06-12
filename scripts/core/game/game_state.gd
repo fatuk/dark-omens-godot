@@ -482,6 +482,28 @@ func activate_card(item_index: int) -> void:
 		_nm.relay_all({"action": "game_activate_card", "pid": my_pid, "index": item_index})
 
 
+## UI: каст заклинания из веера. Ritual → действие cast_spell (тратит действие,
+## обычный action-роутинг); Incantation → контекстный (combat), хост-локально или
+## через relay (game_cast_incantation).
+func cast_spell(item_index: int) -> void:
+	var items: Array = my_player().get("items", [])
+	if item_index < 0 or item_index >= items.size():
+		return
+	var spell: Dictionary = SpellCatalog.by_id(AssetCatalog.entry_id(items[item_index]))
+	if spell.is_empty():
+		return
+	if String(spell.get("subtype", "")) == "ritual":
+		perform_action("cast_spell", {"item": item_index})
+		return
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		if _spell.cast_incantation(my_pid, item_index):
+			_broadcast_sync()
+			_emit_changed()
+	else:
+		_nm.relay_all({"action": "game_cast_incantation", "pid": my_pid, "index": item_index})
+
+
 ## Активный игрок перебрасывает ВСЕ провальные кубы разом — эффект карты
 ## «перебросить сколько угодно кубов» (Счастливый талисман). Бесплатно (одно
 ## использование на активацию такой карты). Работает в любой проверке.
@@ -866,6 +888,12 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"game_activate_card":
 			if _is_host():
 				_check.activate(data.get("pid", ""), int(data.get("index", -1)))
+
+		"game_cast_incantation":
+			if _is_host():
+				if _spell.cast_incantation(String(data.get("pid", "")), int(data.get("index", -1))):
+					_broadcast_sync()
+					_emit_changed()
 
 		"game_shop_grant":
 			if _is_host():
