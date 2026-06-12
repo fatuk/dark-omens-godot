@@ -1508,3 +1508,10 @@ RECK_SIGN_OF_WARDING_B1,"Чертя оберег, ты впускаешь в р�
 RECK_SIGN_OF_WARDING_B2,"Охранный знак отдаёт по руке жгучей болью","The warding sign lashes back in burning pain"
 RECK_SIGN_OF_WARDING_B3,"За начертанным кругом мерещатся ползущие тени","Beyond the drawn circle, crawling shapes seem to stir"
 RECK_SIGN_OF_WARDING_B4,"Оберег треснул, рассудок дрогнул, защита пала","The ward splits, your mind reels, the guard is lost"
+
+RECK_OUT_NONE,Обошлось,No price paid
+RECK_OUT_HEALTH,%+d здоровья,%+d Health
+RECK_OUT_SANITY,%+d рассудка,%+d Sanity
+RECK_OUT_CLUES,%+d улик,%+d Clues
+RECK_OUT_CONDITION,Состояние: %s,Condition: %s
+RECK_OUT_DISCARDED,Заклинание сброшено,Spell discarded

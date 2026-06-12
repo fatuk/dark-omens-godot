@@ -541,6 +541,24 @@ func cast_trigger_spells(indices: Array) -> void:
 		_nm.relay_all({"action": "game_cast_trigger_spells", "pid": my_pid, "spells": indices})
 
 
+## Владелец результата каста закрыл модалку расплаты — хост чистит last_cast_result.
+func dismiss_cast_result() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_host_dismiss_cast_result(my_pid)
+	else:
+		_nm.relay_all({"action": "game_dismiss_cast_result", "pid": my_pid})
+
+
+# Хост: очистить результат каста, если его закрыл владелец (pid совпал).
+func _host_dismiss_cast_result(pid: String) -> void:
+	if String(last_cast_result.get("pid", "")) != pid:
+		return
+	last_cast_result = {}
+	_broadcast_sync()
+	_emit_changed()
+
+
 ## Активный игрок перебрасывает ВСЕ провальные кубы разом — эффект карты
 ## «перебросить сколько угодно кубов» (Счастливый талисман). Бесплатно (одно
 ## использование на активацию такой карты). Работает в любой проверке.
@@ -945,6 +963,10 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 				_phase.host_apply_cast_trigger_spells(
 					String(data.get("pid", "")), data.get("spells", [])
 				)
+
+		"game_dismiss_cast_result":
+			if _is_host():
+				_host_dismiss_cast_result(String(data.get("pid", "")))
 
 		"game_shop_grant":
 			if _is_host():
