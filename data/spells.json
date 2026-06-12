@@ -137,5 +137,137 @@
 				]
 			}
 		]
+	},
+	{
+		"id": "azure_flame",
+		"name": "SPELL_AZURE_FLAME_NAME",
+		"subtype": "glamour",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "exhaust",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_AZURE_FLAME_ABILITY",
+			"aura": [
+				{ "do": "convertDie", "on": "6", "successes": 2, "skill": "strength", "context": "combatEncounter" }
+			],
+			"onPass": []
+		},
+		"backs": [
+			{
+				"id": "azure_flame_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "azure_flame_b2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "internalInjury" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "enchant_weapon",
+		"name": "SPELL_ENCHANT_WEAPON_NAME",
+		"subtype": "glamour",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "exhaust",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_ENCHANT_WEAPON_ABILITY",
+			"aura": [
+				{ "do": "rerollDice", "count": 2, "skill": "strength", "context": "combatEncounter" }
+			],
+			"onPass": []
+		},
+		"backs": [
+			{
+				"id": "enchant_weapon_b1",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "enchant_weapon_b2",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "wrack",
+		"name": "SPELL_WRACK_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "combatEncounter",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_WRACK_ABILITY",
+			"onPass": [{ "do": "improveSkill", "skill": "strength", "amount": 5 }]
+		},
+		"backs": [
+			{
+				"id": "wrack_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "wrack_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{ "do": "gainCondition", "condition": "poisoned" },
+							{ "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }
+						]
+					},
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "poison_mist",
+		"name": "SPELL_POISON_MIST_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 1,
+			"abilityKey": "SPELL_POISON_MIST_ABILITY",
+			"onPass": [{ "do": "discardMonster", "maxToughness": "testResult" }]
+		},
+		"backs": [
+			{
+				"id": "poison_mist_b1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "poison_mist_b2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "poisoned" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
 	}
 ]

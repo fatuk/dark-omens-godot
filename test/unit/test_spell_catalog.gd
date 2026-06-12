@@ -58,3 +58,15 @@ func test_aura_check_mods() -> void:
 	)
 	assert_eq(mods.size(), 1, "anyTest-аура подходит любому контексту")
 	assert_eq(String((mods[0] as Dictionary)["do"]), "rerollDice")
+
+
+func test_all_spells_have_valid_structure() -> void:
+	for s_v: Variant in SpellCatalog.all():
+		var s: Dictionary = s_v
+		var id: String = String(s.get("id", ""))
+		assert_false(id.is_empty(), "у заклинания есть id")
+		assert_has(
+			["ritual", "incantation", "glamour"], String(s.get("subtype", "")), "подтип: " + id
+		)
+		assert_false((s.get("backs", []) as Array).is_empty(), "есть рубашки: " + id)
+		assert_true((s.get("front", {}) as Dictionary).has("test"), "фронт с test: " + id)

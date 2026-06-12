@@ -310,3 +310,22 @@ func test_fire_trigger_no_matching_spell() -> void:
 func test_fire_trigger_empty_hand() -> void:
 	_player([])
 	assert_false(_sf.fire_trigger("p", "onRest"))
+
+
+# ── Poison Mist: фронт discardMonster по стойкости (через resolve_cast) ────────
+
+
+func test_poison_mist_emits_monster_discard_by_toughness() -> void:
+	_player([{"id": "poison_mist"}])
+	# successes 3 → pass → фронт discardMonster maxToughness:"testResult" на доску.
+	_sf.resolve_cast("p", 0, 3, [5, 5, 6], _force("poison_mist_b1"))
+	var hit: bool = false
+	for i in range(_gs.board_effects.size()):
+		var n: Dictionary = _gs.board_effects[i]
+		if (
+			String(n.get("do", "")) == "discardMonster"
+			and String(n.get("maxToughness", "")) == "testResult"
+		):
+			hit = true
+			assert_eq(int(n.get("_successes", 0)), 3, "_successes = результат каста")
+	assert_true(hit, "Poison Mist эмитит discardMonster по стойкости")
