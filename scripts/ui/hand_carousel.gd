@@ -167,9 +167,7 @@ const CARDS: Array[Dictionary] = [
 
 var tab_enabled: bool = true  # Tab открывает/закрывает (рука в игре); в пикере — false
 var _deck: Array = []  # payload'ы карт (GameCard.set_card); пусто → дефолтная фейк-рука
-var _hint_text: String = ""  # пусто = подсказки нет (в игре скрыта; пикер задаёт через set_hint)
 var _backdrop: ColorRect
-var _hint: Label
 var _els: Array[Control] = []
 var _exhausted: Array = []  # параллельно _els: истощена ли карта (нельзя активировать)
 var _active: int = -1
@@ -242,14 +240,6 @@ func _apply_section(animate: bool, slide_dir: int = 0) -> void:
 		_layout(animate)
 
 
-## Текст подсказки (пикер задаёт свою). Пусто → подсказка скрыта.
-func set_hint(text: String) -> void:
-	_hint_text = text
-	if is_instance_valid(_hint):
-		_hint.text = text
-		_hint.visible = not text.is_empty()
-
-
 # Дефолтная фейк-рука из CARDS (тестовый арт на всех картах).
 func _default_deck() -> Array:
 	var out: Array = []
@@ -281,18 +271,6 @@ func _build_chrome() -> void:
 	_backdrop.z_index = -1
 	_backdrop.gui_input.connect(_on_backdrop_input)
 	add_child(_backdrop)
-
-	_hint = Label.new()
-	_hint.name = "Hint"
-	_hint.text = _hint_text
-	_hint.visible = not _hint_text.is_empty()  # в игре пусто → скрыта; пикер задаёт через set_hint
-	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hint.add_theme_font_size_override("font_size", 18)
-	_hint.add_theme_color_override("font_color", UIColors.MUTED)
-	_hint.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	_hint.offset_top = 26.0
-	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_hint)
 
 	# Заголовок активной секции — ПОД колодой по центру (позиция в _position_chrome).
 	_section_title = Label.new()
