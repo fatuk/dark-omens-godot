@@ -469,6 +469,7 @@ STATS_SANITY,РАССУДОК,SANITY
 STATS_TICKETS,Билеты  ·  —,Tickets  ·  —
 SECTION_ATTRIBUTES,АТРИБУТЫ,ATTRIBUTES
 SECTION_STARTING_ITEMS,СТАРТОВЫЕ ПРЕДМЕТЫ,STARTING ITEMS
+SECTION_NO_ITEMS,Нет предметов,No items
 LOBBY_BTN_DETAILS,Подробнее,Details
 LOBBY_PLAYERS_DETAILS_TITLE,Состояние игроков,Players state
 LOBBY_DETAILS_ROOM_FMT,Комната: %s,Room: %s

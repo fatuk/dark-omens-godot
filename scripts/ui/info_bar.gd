@@ -697,11 +697,11 @@ func _build_items_panel() -> PanelContainer:
 		float(_ITEM_SLOTS) * card_w + float(_ITEM_SLOTS - 1) * float(_ITEM_SEP)
 	)
 	vb.add_child(_items_row)
-	_render_items([])  # до первого update — пустые рамки
+	_render_items([])  # до первого update — надпись «нет предметов»
 	return p
 
 
-# Перестроить ряд карточек по списку id ассетов. Пусто → _ITEM_SLOTS пустых рамок.
+# Перестроить ряд карточек по списку предметов. Нет карт → надпись «нет предметов».
 # Заодно собираем _item_deck (payload'ы) — по клику открываем веер с этими картами.
 func _render_items(items: Array) -> void:
 	if not is_instance_valid(_items_row):
@@ -732,9 +732,15 @@ func _render_items(items: Array) -> void:
 		var payload: Dictionary = AssetCatalog.card_payload(a)
 		_item_deck.append(payload)
 		_items_row.add_child(_make_card_node(payload, true))  # кликабельна → веер
-	if _item_deck.is_empty():  # нет карт-ассетов → пустые рамки-плейсхолдеры
-		for i: int in range(_ITEM_SLOTS):
-			_items_row.add_child(_make_card_node())
+	if _item_deck.is_empty():  # нет карт-предметов → надпись по центру (высоту держим)
+		var empty := UIStyle.label(
+			"SECTION_NO_ITEMS", 12, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+		)
+		empty.name = "EmptyLabel"
+		empty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		empty.custom_minimum_size.y = _ITEM_CARD_H
+		empty.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_items_row.add_child(empty)
 
 
 # Миниатюра карты имущества: GameCard В ПОЛНЫЙ РАЗМЕР (_ITEM_FULL_H), уменьшенный
