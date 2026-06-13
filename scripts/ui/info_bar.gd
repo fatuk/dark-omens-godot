@@ -1,10 +1,17 @@
 class_name InfoBar
 extends HBoxContainer
 
-## Информационная панель внизу picker'а: HP/санити, атрибуты, стартовые предметы.
+## Информационная панель: HP/санити, атрибуты, стартовые предметы. Используется
+## в picker'е (полная) и в player-panel на карте (compact — без панели предметов).
 ##
 ## Публичное API:
 ##   update(inv: Dictionary) — обновить значения из словаря сыщика.
+
+## compact=true — вариант для player-panel на карте: без панели стартовых
+## предметов (карты нужны только в пикере) + по высоте не растягиваемся, чтобы
+## вписаться в полосу ~240px. Задавать ДО входа в дерево (в сцене или сразу
+## после InfoBar.new()).
+@export var compact: bool = false
 
 # Атрибуты (translation_key, ключ в skills{}). Поле field совпадает с именем
 # PNG-иконки в assets/virtues-panel/.
@@ -88,6 +95,12 @@ const _COLS_MARGIN_RIGHT: int = 3
 const _COLS_MARGIN_TOP: int = 40
 const _COLS_MARGIN_BOTTOM: int = 12
 
+# Compact (player-panel на карте): высота панелей ~25% меньше натуральной
+# (~238 → 178px). Режем вертикальные отступы; иконки/цифры/бары не трогаем.
+const _COMPACT_PANEL_H: float = 178.0
+const _COMPACT_COLS_MARGIN_TOP: int = 34
+const _COMPACT_COLS_MARGIN_BOTTOM: int = 8
+
 # Цвет крупных цифр атрибутов — тёплое золото под бронзовые иконки.
 const _ATTR_VALUE_COLOR := Color("c39b6a")
 
@@ -128,9 +141,14 @@ func _ready() -> void:
 	# (по бокам остаётся пусто).
 	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	alignment = BoxContainer.ALIGNMENT_CENTER
+	if compact:
+		# На карте: по высоте не растягиваемся (сидим компактно в полосе ~240px).
+		size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	add_child(_build_stats_panel())
 	add_child(_build_attributes_panel())
-	add_child(_build_items_panel())
+	# Панель стартовых предметов — только в пикере (на карте карты не нужны).
+	if not compact:
+		add_child(_build_items_panel())
 
 
 func _build_ticket_shadow_material() -> ShaderMaterial:
@@ -208,6 +226,8 @@ func _build_stats_panel() -> Control:
 	var panel := Control.new()
 	panel.name = "StatsPanel"
 	panel.custom_minimum_size = _HUD_PANEL_BG.get_size() * _HUD_SCALE
+	if compact:
+		panel.custom_minimum_size.y = _COMPACT_PANEL_H
 
 	var bg := TextureRect.new()
 	bg.name = "Background"
@@ -226,7 +246,9 @@ func _build_stats_panel() -> Control:
 	panel.add_child(vb)
 	vb.add_child(_make_hud_stat_row("HealthRow", "STATS_HEALTH", _HEALTH_ICON, _HEALTH_BAR, true))
 	vb.add_child(_make_hud_stat_row("SanityRow", "STATS_SANITY", _SANITY_ICON, _SANITY_BAR, false))
-	vb.add_child(_make_tickets_row())
+	# Ряд билетов/ресурсов — только в пикере; на карте (compact) опускаем.
+	if not compact:
+		vb.add_child(_make_tickets_row())
 	return panel
 
 
@@ -493,6 +515,8 @@ func _make_ticket(
 # их растягивание исказило бы рамку.
 func _build_attributes_panel() -> Control:
 	var disp: Vector2 = _ATTR_PANEL_TEX.get_size() * _ASSET_SCALE
+	if compact:
+		disp.y = _COMPACT_PANEL_H
 
 	var panel := Control.new()
 	panel.name = "AttrsPanel"
@@ -523,8 +547,8 @@ func _build_attributes_panel() -> Control:
 	cols.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	cols.offset_left = _COLS_MARGIN_LEFT
 	cols.offset_right = -_COLS_MARGIN_RIGHT
-	cols.offset_top = _COLS_MARGIN_TOP
-	cols.offset_bottom = -_COLS_MARGIN_BOTTOM
+	cols.offset_top = _COMPACT_COLS_MARGIN_TOP if compact else _COLS_MARGIN_TOP
+	cols.offset_bottom = -(_COMPACT_COLS_MARGIN_BOTTOM if compact else _COLS_MARGIN_BOTTOM)
 	cols.add_theme_constant_override("separation", 0)
 	panel.add_child(cols)
 
