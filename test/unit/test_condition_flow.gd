@@ -265,6 +265,44 @@ func test_fire_triggered_non_host_returns_empty() -> void:
 	assert_eq(_cond.fire_triggered("p", "rest").size(), 0, "не-хост триггеры не исполняет")
 
 
+# ── Восстановление при отдыхе (rest-triggered) для травм/безумия/болезни ───────
+
+
+func test_rest_injury_discards_on_high_roll() -> void:
+	# legInjury: при отдыхе roll 1, на 5-6 — сброс. Нет cannotRecover (rec пуст).
+	_add_player("p", {"conditions": ["legInjury"]})
+	var rec: Array = _cond.fire_triggered("p", "rest", {"rolls": {"0": [5]}})
+	assert_eq(rec.size(), 0, "травма не блокирует лечение")
+	assert_false((_gs.players["p"]["conditions"] as Array).has("legInjury"), "5 → сброс")
+
+
+func test_rest_injury_retains_on_low_roll() -> void:
+	_add_player("p", {"conditions": ["legInjury"]})
+	_cond.fire_triggered("p", "rest", {"rolls": {"0": [2]}})
+	assert_true((_gs.players["p"]["conditions"] as Array).has("legInjury"), "2 → держится")
+
+
+func test_rest_head_injury_blocks_sanity_and_rolls_46() -> void:
+	# headInjury: не лечит рассудок + roll 1, на 4-6 — сброс.
+	_add_player("p", {"conditions": ["headInjury"]})
+	var rec: Array = _cond.fire_triggered("p", "rest", {"rolls": {"0": [4]}})
+	assert_has(rec, "sanity", "headInjury блокирует лечение рассудка")
+	assert_false((_gs.players["p"]["conditions"] as Array).has("headInjury"), "4 → сброс")
+
+
+func test_rest_poisoned_blocks_both_and_flips() -> void:
+	# poisoned: не лечит здоровье и рассудок + flip (вскрытие исхода-болезни).
+	_add_player("p", {"conditions": ["poisoned"]})
+	var rec: Array = _cond.fire_triggered("p", "rest", {"outcomes": {"poisoned": "burningFever"}})
+	assert_has(rec, "health", "poisoned блокирует здоровье")
+	assert_has(rec, "sanity", "и рассудок")
+	assert_eq(
+		String((_gs.players["p"]["conditions_flipped"] as Dictionary).get("poisoned", "")),
+		"burningFever",
+		"при отдыхе poisoned перевернулось на исход"
+	)
+
+
 # ── host_run_condition_action (Detained escape) ───────────────────────────────
 # action = [ test influence → onPass [ discardCard ] ]. Без навыков в ctx проверка
 # авто-проходит (см. EffectRunner) → escape срабатывает детерминированно.

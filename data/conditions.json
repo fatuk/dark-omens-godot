@@ -12,30 +12,37 @@
 
 	{ "id": "amnesia", "name": "COND_AMNESIA_NAME", "kind": "madness",
 	  "front": "COND_AMNESIA_FRONT", "reckoning": "COND_AMNESIA_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "dieRoll": [ { "on": "5-6", "then": [ { "do": "discardCard" } ] } ] } ] } ],
 	  "onReckoning": [ { "test": "will", "onPass": [], "onFail": [ { "do": "flipCard" } ] } ] },
 
 	{ "id": "paranoia", "name": "COND_PARANOIA_NAME", "kind": "madness",
 	  "front": "COND_PARANOIA_FRONT", "reckoning": "COND_PARANOIA_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "dieRoll": [ { "on": "5-6", "then": [ { "do": "discardCard" } ] } ] } ] } ],
 	  "onReckoning": [ { "test": "will", "onPass": [], "onFail": [ { "do": "flipCard" } ] } ] },
 
 	{ "id": "hallucinations", "name": "COND_HALLUCINATIONS_NAME", "kind": "madness",
 	  "front": "COND_HALLUCINATIONS_FRONT", "reckoning": "COND_HALLUCINATIONS_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "dieRoll": [ { "on": "5-6", "then": [ { "do": "discardCard" } ] } ] } ] } ],
 	  "onReckoning": [ { "test": "will", "onPass": [], "onFail": [ { "do": "flipCard" } ] } ] },
 
 	{ "id": "legInjury", "name": "COND_LEG_INJURY_NAME", "kind": "injury",
 	  "front": "COND_LEG_INJURY_FRONT", "reckoning": "COND_LEG_INJURY_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "dieRoll": [ { "on": "5-6", "then": [ { "do": "discardCard" } ] } ] } ] } ],
 	  "onReckoning": [ { "test": "strength", "onPass": [], "onFail": [ { "do": "flipCard" } ] } ] },
 
 	{ "id": "internalInjury", "name": "COND_INTERNAL_INJURY_NAME", "kind": "injury",
 	  "front": "COND_INTERNAL_INJURY_FRONT", "reckoning": "COND_INTERNAL_INJURY_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "dieRoll": [ { "on": "5-6", "then": [ { "do": "discardCard" } ] } ] } ] } ],
 	  "onReckoning": [ { "test": "strength", "onPass": [], "onFail": [ { "do": "flipCard" } ] } ] },
 
 	{ "id": "backInjury", "name": "COND_BACK_INJURY_NAME", "kind": "injury",
 	  "front": "COND_BACK_INJURY_FRONT", "reckoning": "COND_BACK_INJURY_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "dieRoll": [ { "on": "5-6", "then": [ { "do": "discardCard" } ] } ] } ] } ],
 	  "onReckoning": [ { "test": "strength", "onPass": [], "onFail": [ { "do": "flipCard" } ] } ] },
 
 	{ "id": "poisoned", "name": "COND_POISONED_NAME", "kind": "illness",
 	  "front": "COND_POISONED_FRONT", "reckoning": "COND_POISONED_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "do": "cannotRecover", "stat": "health" }, { "do": "cannotRecover", "stat": "sanity" }, { "do": "flipCard" } ] } ],
 	  "onReckoning": [ { "do": "loseHealth", "amount": 1 } ] },
 
 	{ "id": "cursed", "name": "COND_CURSED_NAME", "kind": "bane",
@@ -60,6 +67,7 @@
 
 	{ "id": "headInjury", "name": "COND_HEAD_INJURY_NAME", "kind": "injury",
 	  "front": "COND_HEAD_INJURY_FRONT", "reckoning": "COND_HEAD_INJURY_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "do": "cannotRecover", "stat": "sanity" }, { "dieRoll": [ { "on": "4-6", "then": [ { "do": "discardCard" } ] } ] } ] } ],
 	  "onReckoning": [ { "test": "strength", "onPass": [], "onFail": [ { "do": "flipCard" } ] } ] },
 
 	{ "id": "righteous", "name": "COND_RIGHTEOUS_NAME", "kind": "boon",
@@ -72,10 +80,12 @@
 
 	{ "id": "despair", "name": "COND_DESPAIR_NAME", "kind": "madness",
 	  "front": "COND_DESPAIR_FRONT", "reckoning": "COND_DESPAIR_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "do": "cannotRecover", "stat": "sanity" }, { "do": "flipCard" } ] } ],
 	  "onReckoning": [ { "do": "loseSanity", "amount": 1 } ] },
 
 	{ "id": "diseased", "name": "COND_DISEASED_NAME", "kind": "illness",
 	  "front": "COND_DISEASED_FRONT", "reckoning": "COND_DISEASED_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "dieRoll": [ { "on": "5-6", "then": [ { "do": "discardCard" } ] } ] } ] } ],
 	  "onReckoning": [ { "test": "will", "modifier": -1, "onPass": [], "onFail": [ { "do": "flipCard" } ] } ] },
 
 	{ "id": "hypothermia", "name": "COND_HYPOTHERMIA_NAME", "kind": "exposure",
@@ -90,10 +100,12 @@
 
 	{ "id": "infection", "name": "COND_INFECTION_NAME", "kind": "illness",
 	  "front": "COND_INFECTION_FRONT", "reckoning": "COND_INFECTION_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "do": "cannotRecover", "stat": "health" }, { "dieRoll": [ { "on": "4-6", "then": [ { "do": "discardCard" } ] } ] } ] } ],
 	  "onReckoning": [ { "test": "will", "onPass": [], "onFail": [ { "do": "flipCard" } ] } ] },
 
 	{ "id": "hunger", "name": "COND_HUNGER_NAME", "kind": "madness",
 	  "front": "COND_HUNGER_FRONT", "reckoning": "COND_HUNGER_RECKONING",
+	  "triggered": [ { "on": "rest", "do": [ { "do": "cannotRecover", "stat": "sanity" }, { "dieRoll": [ { "on": "4-6", "then": [ { "do": "discardCard" } ] } ] } ] } ],
 	  "onReckoning": [ { "test": "will", "onPass": [], "onFail": [ { "do": "flipCard" } ] } ] },
 
 	{ "id": "hunted", "name": "COND_HUNTED_NAME", "kind": "pursuit",
