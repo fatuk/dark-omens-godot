@@ -128,7 +128,7 @@
   },
   {
 	"name": "Dexter Drake",
-	"startingItems": [{"asset": "arcane_assistant"}],
+	"startingItems": [{"asset": "arcane_assistant"}, {"spell": "binding"}],
 	"displayName": "INV_DEXTER_DRAKE_NAME",
 	"occupation": "INV_DEXTER_DRAKE_OCC",
 	"startingLocation": "Tokyo",
@@ -320,7 +320,7 @@
   },
   {
 	"name": "Agatha Crane",
-	"startingItems": [],
+	"startingItems": [{"spell": "call_the_storm"}],
 	"displayName": "INV_AGATHA_CRANE_NAME",
 	"occupation": "INV_AGATHA_CRANE_OCC",
 	"startingLocation": "Tokyo",
@@ -764,7 +764,7 @@
   },
   {
 	"name": "Norman Withers",
-	"startingItems": [],
+	"startingItems": [{"spell": "feed_the_mind"}],
 	"displayName": "INV_NORMAN_WITHERS_NAME",
 	"occupation": "INV_NORMAN_WITHERS_OCC",
 	"startingLocation": "Arkham",
@@ -912,7 +912,7 @@
   },
   {
 	"name": "Daisy Walker",
-	"startingItems": [],
+	"startingItems": [{"spell": "arcane_insight"}],
 	"displayName": "INV_DAISY_WALKER_NAME",
 	"occupation": "INV_DAISY_WALKER_OCC",
 	"startingLocation": "Istanbul",
