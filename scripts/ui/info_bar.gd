@@ -792,6 +792,5 @@ func _open_items_fan() -> void:
 		_fan.name = "ItemsFan"
 		_fan.tab_enabled = false  # в пикере Tab не трогаем; открыли кликом
 		add_child(_fan)
-		_fan.set_hint("Esc / клик по фону — закрыть   ·   ← →  /  колесо — листать")
 	_fan.set_cards(_item_deck)
 	_fan.open()
