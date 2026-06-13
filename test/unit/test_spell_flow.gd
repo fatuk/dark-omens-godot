@@ -320,18 +320,18 @@ func test_fire_trigger_on_rest_heals() -> void:
 
 func test_fire_trigger_fires_all_matching() -> void:
 	# Несколько onRest-заклинаний в руке → срабатывают ВСЕ (а не только первое):
-	# healing_words (+1 hp/+1 san) и mending_trance (+2 hp). Рубашки b1 на 2 успехах
+	# два экземпляра healing_words (+1 hp/+1 san каждый). Рубашки b1 на 2 успехах
 	# = тир «2+» пуст, без побочки.
-	_player([{"id": "healing_words"}, {"id": "mending_trance"}])
+	_player([{"id": "healing_words"}, {"id": "healing_words"}])
 	_gs.players["p"]["hp"] = 3
 	_gs.players["p"]["sanity"] = 3
 	var flow: Dictionary = {
 		"cast": {"successes": 2, "dice": [5, 5]},
-		"backs": {"0": "healing_words_b1", "1": "mending_trance_b1"},
+		"backs": {"0": "healing_words_b1", "1": "healing_words_b1"},
 	}
 	assert_true(_sf.fire_trigger("p", "onRest", flow), "сработало хотя бы одно")
-	assert_eq(int(_gs.players["p"]["hp"]), 6, "healing_words +1 и mending_trance +2 → +3 hp")
-	assert_eq(int(_gs.players["p"]["sanity"]), 4, "healing_words +1 рассудка")
+	assert_eq(int(_gs.players["p"]["hp"]), 5, "оба healing_words → +2 hp")
+	assert_eq(int(_gs.players["p"]["sanity"]), 5, "оба healing_words → +2 рассудка")
 
 
 func test_fire_trigger_no_matching_spell() -> void:
@@ -373,7 +373,7 @@ func test_cast_result_averted_on_high_successes() -> void:
 
 func test_prompt_trigger_sets_pending() -> void:
 	# Два onRest-заклинания + ритуал → промпт собирает ТОЛЬКО onRest.
-	_player([{"id": "healing_words"}, {"id": "shriveling"}, {"id": "mending_trance"}])
+	_player([{"id": "healing_words"}, {"id": "shriveling"}, {"id": "healing_words"}])
 	assert_true(_sf.prompt_trigger("p", "onRest"), "есть onRest → промпт выставлен")
 	var prompt: Dictionary = _gs.pending_spell_cast
 	assert_eq(String(prompt["pid"]), "p")
@@ -381,7 +381,7 @@ func test_prompt_trigger_sets_pending() -> void:
 	var opts: Array = prompt["options"]
 	assert_eq(opts.size(), 2, "shriveling (ритуал) не попал в onRest-промпт")
 	assert_eq(int((opts[0] as Dictionary)["index"]), 0, "healing_words idx 0")
-	assert_eq(int((opts[1] as Dictionary)["index"]), 2, "mending_trance idx 2")
+	assert_eq(int((opts[1] as Dictionary)["index"]), 2, "второй healing_words idx 2")
 
 
 func test_prompt_trigger_no_matches_returns_false() -> void:
@@ -391,17 +391,17 @@ func test_prompt_trigger_no_matches_returns_false() -> void:
 
 
 func test_apply_trigger_casts_only_selected() -> void:
-	# Промпт на две onRest-карты; игрок выбрал ТОЛЬКО mending_trance (idx 1).
-	_player([{"id": "healing_words"}, {"id": "mending_trance"}])
+	# Промпт на две onRest-карты; игрок выбрал ТОЛЬКО вторую (idx 1).
+	_player([{"id": "healing_words"}, {"id": "healing_words"}])
 	_gs.players["p"]["hp"] = 3
 	_gs.players["p"]["sanity"] = 3
 	_sf.prompt_trigger("p", "onRest")
 	var flow: Dictionary = {
-		"cast": {"successes": 2, "dice": [5, 5]}, "backs": {"1": "mending_trance_b1"}
+		"cast": {"successes": 2, "dice": [5, 5]}, "backs": {"1": "healing_words_b1"}
 	}
 	assert_true(_sf.host_apply_trigger_spells("p", [1], flow), "промпт закрыт")
-	assert_eq(int(_gs.players["p"]["hp"]), 5, "mending_trance +2 hp")
-	assert_eq(int(_gs.players["p"]["sanity"]), 3, "healing_words НЕ кастовали")
+	assert_eq(int(_gs.players["p"]["hp"]), 4, "только выбранный healing_words → +1 hp")
+	assert_eq(int(_gs.players["p"]["sanity"]), 4, "кастован один из двух, не оба")
 	assert_true((_gs.pending_spell_cast as Dictionary).is_empty(), "промпт очищен")
 
 

@@ -1424,36 +1424,16 @@ SPELL_POISON_MIST_NAME,Ядовитый туман,Poison Mist
 SPELL_POISON_MIST_ABILITY,"Действие: проверьте Знание (+1). При успехе изгоните монстра со стойкостью не выше числа успехов.","Action: test Lore (+1). If you pass, banish a monster with toughness up to your successes."
 SPELL_CLAIRVOYANCE_NAME,Ясновидение,Clairvoyance
 SPELL_CLAIRVOYANCE_ABILITY,"Действие: проверьте Знание. При успехе получите 2 улики.","Action: test Lore. If you pass, gain 2 Clues."
-SPELL_BIND_MONSTER_NAME,Сковывание монстра,Bind Monster
-SPELL_BIND_MONSTER_ABILITY,"Действие: проверьте Знание (−1). При успехе одолейте монстра со стойкостью не выше числа успехов.","Action: test Lore (−1). If you pass, defeat a monster with toughness up to your successes."
 SPELL_STORM_OF_SPIRITS_NAME,Шторм духов,Storm of Spirits
 SPELL_STORM_OF_SPIRITS_ABILITY,"Действие: проверьте Знание (−1). При успехе нанесите 3 урона монстру на вашей локации.","Action: test Lore (−1). If you pass, deal 3 damage to a monster on your space."
-SPELL_READ_THE_SIGNS_NAME,Чтение знаков,Read the Signs
-SPELL_READ_THE_SIGNS_ABILITY,"Действие: проверьте Знание. При успехе получите 1 улику и восстановите 1 рассудок.","Action: test Lore. If you pass, gain 1 Clue and recover 1 Sanity."
-SPELL_BLESSING_NAME,Благословение,Blessing
-SPELL_BLESSING_ABILITY,"Действие: проверьте Знание. При успехе получите состояние «Благословение».","Action: test Lore. If you pass, gain a Blessed condition."
 SPELL_SPECTRAL_RAZOR_NAME,Призрачная бритва,Spectral Razor
 SPELL_SPECTRAL_RAZOR_ABILITY,"В бою: проверьте Знание. При успехе +3 к Воле на этот бой.","During combat: test Lore. If you pass, gain +3 Will for this combat."
-SPELL_ELEMENTAL_FURY_NAME,Ярость стихий,Elemental Fury
-SPELL_ELEMENTAL_FURY_ABILITY,"В бою: проверьте Знание (−1). При успехе +2 к Силе и +2 к Воле на этот бой.","During combat: test Lore (−1). If you pass, gain +2 Strength and +2 Will for this combat."
-SPELL_SOUL_MENDING_NAME,Врачевание души,Soul Mending
-SPELL_SOUL_MENDING_ABILITY,"При отдыхе: проверьте Знание. При успехе восстановите 2 рассудка.","When you rest: test Lore. If you pass, recover 2 Sanity."
-SPELL_MENDING_TRANCE_NAME,Целительный транс,Mending Trance
-SPELL_MENDING_TRANCE_ABILITY,"При отдыхе: проверьте Знание. При успехе восстановите 2 здоровья.","When you rest: test Lore. If you pass, recover 2 Health."
-SPELL_SIGN_OF_WARDING_NAME,Знак оберега,Sign of Warding
-SPELL_SIGN_OF_WARDING_ABILITY,"Аура: в бою каждая «6» в проверке Воли даёт 2 успеха.","Aura: in combat, each 6 on a Will test counts as 2 successes."
 SPELL_BANISHMENT_NAME,Изгнание,Banishment
 SPELL_BANISHMENT_ABILITY,"Действие: проверьте Знание (−1). При успехе одолейте монстра со стойкостью не выше числа успехов + 1.","Action: test Lore (−1). If you pass, defeat a monster with toughness up to your successes + 1."
 SPELL_BLESSING_OF_ISIS_NAME,Благословение Исиды,Blessing of Isis
 SPELL_BLESSING_OF_ISIS_ABILITY,"Действие: проверьте Знание. При успехе +1 ко всем навыкам.","Action: test Lore. If you pass, gain +1 to all skills."
 SPELL_VOICE_OF_RA_NAME,Глас Ра,Voice of Ra
 SPELL_VOICE_OF_RA_ABILITY,"Действие: проверьте Знание. При успехе +2 к Влиянию.","Action: test Lore. If you pass, gain +2 Influence."
-SPELL_SCRYING_NAME,Гадание,Scrying
-SPELL_SCRYING_ABILITY,"Аура: в исследованиях каждая «6» в проверке Наблюдения даёт 2 успеха.","Aura: during research, each 6 on an Observation test counts as 2 successes."
-SPELL_RAY_OF_LIGHT_NAME,Луч света,Ray of Light
-SPELL_RAY_OF_LIGHT_ABILITY,"В бою: проверьте Знание (−1). При успехе +4 к Воле на этот бой.","During combat: test Lore (−1). If you pass, gain +4 Will for this combat."
-SPELL_VISION_OF_THE_OTHER_SIDE_NAME,Видение Изнанки,Vision of the Other Side
-SPELL_VISION_OF_THE_OTHER_SIDE_ABILITY,"При отдыхе: проверьте Знание. При успехе +1 сосредоточение и +1 рассудок.","When you rest: test Lore. If you pass, gain 1 Focus and recover 1 Sanity."
 
 SPELL_CAST_TITLE,Скастить заклинания?,Cast spells?
 SPELL_CAST_CONFIRM,Скастить выбранные,Cast selected
@@ -1494,42 +1474,14 @@ RECK_CLAIRVOYANCE_B1,"Дальние взоры заглянули в тебя, 
 RECK_CLAIRVOYANCE_B2,"Чужие глаза мерещатся за каждым твоим плечом","Unseen watchers seem to crowd at your every shoulder"
 RECK_CLAIRVOYANCE_B3,"Видения дальних мест переплелись с бредом наяву","Visions of far places tangle with waking delirium"
 RECK_CLAIRVOYANCE_B4,"Образ раскололся, рассудок треснул, и прозрение угасло","The vision shatters with your mind and sight is lost"
-RECK_BIND_MONSTER_B1,"Тварь рвётся из пут и полосует тебя когтем","The beast strains at its bonds and rakes you raw"
-RECK_BIND_MONSTER_B2,"Оковы лопнули, и тварь оставила тебе своё проклятие","The shackles snap and the beast leaves you cursed"
-RECK_BIND_MONSTER_B3,"Удерживая чудовище, ты чувствуешь, как трещит рассудок","Holding the monster fast, you feel your sanity crack"
-RECK_BIND_MONSTER_B4,"Связанная тварь теперь идёт за тобой неотступной тенью","The bound thing now haunts you like a trailing shadow"
 RECK_STORM_OF_SPIRITS_B1,"Вихрь духов налетает и сечёт твою плоть","The whirl of spirits descends and flays your flesh"
 RECK_STORM_OF_SPIRITS_B2,"Духи разметали заклятие, и рассудок дрогнул с ним","The spirits scatter the spell and your reason with it"
 RECK_STORM_OF_SPIRITS_B3,"В вое мёртвых душ тонет всякая надежда","In the howl of dead souls all hope drowns"
 RECK_STORM_OF_SPIRITS_B4,"Буря призраков швыряет тебя оземь, ломая кости","The ghostly storm hurls you down and breaks your bones"
-RECK_READ_THE_SIGNS_B1,"Знамения слишком ясны, и рассудок не выдержал","The omens read too clear and your sanity gives out"
-RECK_READ_THE_SIGNS_B2,"Разгадка приходит, но имя твоё стёрто из памяти","An answer surfaces but your own name fades away"
-RECK_READ_THE_SIGNS_B3,"В каждом знаке тебе видится тайный сговор против тебя","In every sign you read a hidden plot against you"
-RECK_READ_THE_SIGNS_B4,"Письмена звёзд жгут глаза, и разум осыпается","The script of the stars sears your eyes and mind"
-RECK_BLESSING_B1,"Свет благодати слишком ярок, и рассудок слепнет","The grace shines too bright and your sanity goes blind"
-RECK_BLESSING_B2,"Молитва услышана, но отчаяние приходит первым","The prayer is heard, yet despair arrives ahead of grace"
-RECK_BLESSING_B3,"Благодать снисходит, надламывая рассудок на входе","Grace descends and cracks the mind it enters"
-RECK_BLESSING_B4,"Благословение свернулось в проклятие на твоих устах","The blessing curdles into a curse upon your lips"
 RECK_SPECTRAL_RAZOR_B1,"Призрачное лезвие соскользнуло и рассекло тебя","The ghostly edge slips its course and opens your flesh"
 RECK_SPECTRAL_RAZOR_B2,"Бритва вошла глубоко и растаяла в твоём нутре","The razor cuts deep then dissolves inside you"
 RECK_SPECTRAL_RAZOR_B3,"Незримое лезвие чертит алую черту по лбу","The unseen blade draws a red line across your brow"
 RECK_SPECTRAL_RAZOR_B4,"Невидимый рез прошёл по самому твоему рассудку","An invisible cut passes through your very mind"
-RECK_ELEMENTAL_FURY_B1,"Высвобожденная стихия оборачивается и бьёт тебя","The unleashed element turns and strikes you down"
-RECK_ELEMENTAL_FURY_B2,"Ярость стихий молотит тело и разум разом","The fury of the elements pounds body and mind together"
-RECK_ELEMENTAL_FURY_B3,"Буйство стихии скручивает тебе спину в дугу","The raging element wrenches your back into a bow"
-RECK_ELEMENTAL_FURY_B4,"Неистовство ранит тебя и пожирает само заклятие","The frenzy wounds you and devours the spell itself"
-RECK_SOUL_MENDING_B1,"Латая душу, ты раздираешь живую плоть","Mending the soul, you tear the living flesh"
-RECK_SOUL_MENDING_B2,"Сквозь шов в душе в тело вползает хворь","Through the seam in your soul a sickness creeps in"
-RECK_SOUL_MENDING_B3,"Заглянув в свою душу, ты тонешь в отчаянии","You look into your own soul and drown in despair"
-RECK_SOUL_MENDING_B4,"Душа срастается криво, и рассудок ползёт по швам","The soul knits crooked and your sanity comes apart"
-RECK_MENDING_TRANCE_B1,"В целебном трансе разум уплывает и не возвращается","In the healing trance your mind drifts and strays"
-RECK_MENDING_TRANCE_B2,"Очнувшись от транса, ты не чувствуешь своей ноги","You wake from the trance to a leg gone numb and lame"
-RECK_MENDING_TRANCE_B3,"Покой транса гниёт, оборачиваясь горячкой заражения","The trance's calm rots into the fever of infection"
-RECK_MENDING_TRANCE_B4,"Исцеляющий сон оборачивается резью в теле","The mending sleep turns to a stabbing through your body"
-RECK_SIGN_OF_WARDING_B1,"Чертя оберег, ты впускаешь в рассудок холод бездны","Tracing the ward, you let the abyss chill your mind"
-RECK_SIGN_OF_WARDING_B2,"Охранный знак отдаёт по руке жгучей болью","The warding sign lashes back in burning pain"
-RECK_SIGN_OF_WARDING_B3,"За начертанным кругом мерещатся ползущие тени","Beyond the drawn circle, crawling shapes seem to stir"
-RECK_SIGN_OF_WARDING_B4,"Оберег треснул, рассудок дрогнул, защита пала","The ward splits, your mind reels, the guard is lost"
 RECK_BANISHMENT_B1,"Ты швырнул тварь во тьму — и часть тебя ушла с нею","You hurled the fiend outward, and your reason fled after it"
 RECK_BANISHMENT_B2,"Изгнанник уходит, но метит тебя своей последней печатью","The banished thing departs, branding you with its parting seal"
 RECK_BANISHMENT_B3,"Слова рассыпались во тьму — рассудок и заклятье канули следом","The words scatter into the dark, taking mind and spell with them"
@@ -1542,18 +1494,6 @@ RECK_VOICE_OF_RA_B1,"Голос Ра гремит в черепе, выжига�
 RECK_VOICE_OF_RA_B2,"Слово солнца срывается с губ и обугливает плоть","The sun's word leaves your lips and chars the flesh beneath"
 RECK_VOICE_OF_RA_B3,"После приказа Ра свет всюду шепчет и движется","After Ra commands, the light itself whispers and crawls before you"
 RECK_VOICE_OF_RA_B4,"Голос ломается, плоть горит, и веление солнца гаснет","Your voice cracks, flesh burns, and the sun's command is lost"
-RECK_SCRYING_B1,"В стекле блеснула истина — за неё платишь рассудком","The glass yields its truth, and your sanity pays the toll"
-RECK_SCRYING_B2,"Сквозь стекло смотрят в ответ — и теперь следят всюду","Something peered back through the glass and watches you still"
-RECK_SCRYING_B3,"Даль в стекле выжгла из тебя былые воспоминания","The far-seen distance scours your own memories away"
-RECK_SCRYING_B4,"Стекло треснуло, видение и заклятье осыпались осколками","The glass shatters, and vision and spell fall away in shards"
-RECK_RAY_OF_LIGHT_B1,"Святой луч пронзает тьму — и оставляет на тебе ожоги","The holy ray pierces the dark and sears your skin in passing"
-RECK_RAY_OF_LIGHT_B2,"Луч гаснет внутри тебя, выжигая нутро и само заклятье","The ray dies within you, burning your insides and the spell away"
-RECK_RAY_OF_LIGHT_B3,"Слишком яркий свет ослепляет разум изнутри","A light too pure to look upon blinds the mind from within"
-RECK_RAY_OF_LIGHT_B4,"Отдача луча рассекает чело раскалённой чертой","The ray's recoil opens your brow with a line of fire"
-RECK_VISION_OF_THE_OTHER_SIDE_B1,"За завесой ты увидел то, чего ум вынести не смог","Beyond the veil you saw what no mind was meant to hold"
-RECK_VISION_OF_THE_OTHER_SIDE_B2,"Та сторона теперь знает тебя — и не сводит глаз","The other side knows your face now and will not look away"
-RECK_VISION_OF_THE_OTHER_SIDE_B3,"То, что мелькнуло за гранью, теперь бродит наяву","What flickered past the veil now walks your waking hours"
-RECK_VISION_OF_THE_OTHER_SIDE_B4,"Видение тает, унося рассудок и заклятье за грань","The vision fades, dragging mind and spell beyond the veil"
 
 RECK_OUT_NONE,Обошлось,No price paid
 RECK_OUT_HEALTH,%+d здоровья,%+d Health
