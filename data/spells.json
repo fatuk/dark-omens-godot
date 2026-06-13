@@ -923,5 +923,296 @@
 				]
 			}
 		]
+	},
+	{
+		"id": "banishment",
+		"name": "SPELL_BANISHMENT_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_BANISHMENT_ABILITY",
+			"onPass": [{ "do": "addSuccesses", "amount": 1 }, { "do": "defeatMonster", "maxToughness": "testResult" }]
+		},
+		"backs": [
+			{
+				"id": "banishment_b1",
+				"text": "RECK_BANISHMENT_B1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "banishment_b2",
+				"text": "RECK_BANISHMENT_B2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "cursed" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "banishment_b3",
+				"text": "RECK_BANISHMENT_B3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }, { "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "banishment_b4",
+				"text": "RECK_BANISHMENT_B4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "hallucinations" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "blessing_of_isis",
+		"name": "SPELL_BLESSING_OF_ISIS_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_BLESSING_OF_ISIS_ABILITY",
+			"onPass": [{ "do": "improveSkill", "skill": "all", "amount": 1 }]
+		},
+		"backs": [
+			{
+				"id": "blessing_of_isis_b1",
+				"text": "RECK_BLESSING_OF_ISIS_B1",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "blessing_of_isis_b2",
+				"text": "RECK_BLESSING_OF_ISIS_B2",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "gainCondition", "condition": "despair" }] },
+					{ "on": "2+", "effect": [{ "do": "healSanity", "amount": 1 }] }
+				]
+			},
+			{
+				"id": "blessing_of_isis_b3",
+				"text": "RECK_BLESSING_OF_ISIS_B3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "cursed" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "blessing_of_isis_b4",
+				"text": "RECK_BLESSING_OF_ISIS_B4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }, { "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "voice_of_ra",
+		"name": "SPELL_VOICE_OF_RA_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_VOICE_OF_RA_ABILITY",
+			"onPass": [{ "do": "improveSkill", "skill": "influence", "amount": 2 }]
+		},
+		"backs": [
+			{
+				"id": "voice_of_ra_b1",
+				"text": "RECK_VOICE_OF_RA_B1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "voice_of_ra_b2",
+				"text": "RECK_VOICE_OF_RA_B2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "voice_of_ra_b3",
+				"text": "RECK_VOICE_OF_RA_B3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "hallucinations" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "voice_of_ra_b4",
+				"text": "RECK_VOICE_OF_RA_B4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseHealth", "amount": 1 }, { "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "scrying",
+		"name": "SPELL_SCRYING_NAME",
+		"subtype": "glamour",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "exhaust",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_SCRYING_ABILITY",
+			"aura": [
+				{ "do": "convertDie", "on": "6", "successes": 2, "skill": "observation", "context": "researchEncounter" }
+			],
+			"onPass": []
+		},
+		"backs": [
+			{
+				"id": "scrying_b1",
+				"text": "RECK_SCRYING_B1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [{ "do": "gainClue", "amount": 1 }] }
+				]
+			},
+			{
+				"id": "scrying_b2",
+				"text": "RECK_SCRYING_B2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "paranoia" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "scrying_b3",
+				"text": "RECK_SCRYING_B3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "amnesia" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "scrying_b4",
+				"text": "RECK_SCRYING_B4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }, { "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "ray_of_light",
+		"name": "SPELL_RAY_OF_LIGHT_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "combatEncounter",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_RAY_OF_LIGHT_ABILITY",
+			"onPass": [{ "do": "improveSkill", "skill": "will", "amount": 4 }]
+		},
+		"backs": [
+			{
+				"id": "ray_of_light_b1",
+				"text": "RECK_RAY_OF_LIGHT_B1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseHealth", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "ray_of_light_b2",
+				"text": "RECK_RAY_OF_LIGHT_B2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "internalInjury" }, { "do": "discardCard" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "ray_of_light_b3",
+				"text": "RECK_RAY_OF_LIGHT_B3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "ray_of_light_b4",
+				"text": "RECK_RAY_OF_LIGHT_B4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "headInjury" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
+	},
+	{
+		"id": "vision_of_the_other_side",
+		"name": "SPELL_VISION_OF_THE_OTHER_SIDE_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"traits": ["magical", "spell"],
+		"front": {
+			"trigger": "onRest",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_VISION_OF_THE_OTHER_SIDE_ABILITY",
+			"onPass": [{ "do": "gainFocus", "amount": 1 }, { "do": "healSanity", "amount": 1 }]
+		},
+		"backs": [
+			{
+				"id": "vision_of_the_other_side_b1",
+				"text": "RECK_VISION_OF_THE_OTHER_SIDE_B1",
+				"tiers": [
+					{ "on": "0-1", "effect": [{ "do": "loseSanity", "amount": 1 }] },
+					{ "on": "2+", "effect": [] }
+				]
+			},
+			{
+				"id": "vision_of_the_other_side_b2",
+				"text": "RECK_VISION_OF_THE_OTHER_SIDE_B2",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "paranoia" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "vision_of_the_other_side_b3",
+				"text": "RECK_VISION_OF_THE_OTHER_SIDE_B3",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "hallucinations" }] },
+					{ "on": "1+", "effect": [] }
+				]
+			},
+			{
+				"id": "vision_of_the_other_side_b4",
+				"text": "RECK_VISION_OF_THE_OTHER_SIDE_B4",
+				"tiers": [
+					{ "on": "0", "effect": [{ "do": "loseSanity", "amount": 1 }, { "do": "discardCard", "when": { "kind": "rolledAny", "face": 1 } }] },
+					{ "on": "1+", "effect": [] }
+				]
+			}
+		]
 	}
 ]

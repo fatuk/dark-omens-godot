@@ -1432,6 +1432,18 @@ SPELL_MENDING_TRANCE_NAME,Целительный транс,Mending Trance
 SPELL_MENDING_TRANCE_ABILITY,"При отдыхе: проверьте Знание. При успехе восстановите 2 здоровья.","When you rest: test Lore. If you pass, recover 2 Health."
 SPELL_SIGN_OF_WARDING_NAME,Знак оберега,Sign of Warding
 SPELL_SIGN_OF_WARDING_ABILITY,"Аура: в бою каждая «6» в проверке Воли даёт 2 успеха.","Aura: in combat, each 6 on a Will test counts as 2 successes."
+SPELL_BANISHMENT_NAME,Изгнание,Banishment
+SPELL_BANISHMENT_ABILITY,"Действие: проверьте Знание (−1). При успехе одолейте монстра со стойкостью не выше числа успехов + 1.","Action: test Lore (−1). If you pass, defeat a monster with toughness up to your successes + 1."
+SPELL_BLESSING_OF_ISIS_NAME,Благословение Исиды,Blessing of Isis
+SPELL_BLESSING_OF_ISIS_ABILITY,"Действие: проверьте Знание. При успехе +1 ко всем навыкам.","Action: test Lore. If you pass, gain +1 to all skills."
+SPELL_VOICE_OF_RA_NAME,Глас Ра,Voice of Ra
+SPELL_VOICE_OF_RA_ABILITY,"Действие: проверьте Знание. При успехе +2 к Влиянию.","Action: test Lore. If you pass, gain +2 Influence."
+SPELL_SCRYING_NAME,Гадание,Scrying
+SPELL_SCRYING_ABILITY,"Аура: в исследованиях каждая «6» в проверке Наблюдения даёт 2 успеха.","Aura: during research, each 6 on an Observation test counts as 2 successes."
+SPELL_RAY_OF_LIGHT_NAME,Луч света,Ray of Light
+SPELL_RAY_OF_LIGHT_ABILITY,"В бою: проверьте Знание (−1). При успехе +4 к Воле на этот бой.","During combat: test Lore (−1). If you pass, gain +4 Will for this combat."
+SPELL_VISION_OF_THE_OTHER_SIDE_NAME,Видение Изнанки,Vision of the Other Side
+SPELL_VISION_OF_THE_OTHER_SIDE_ABILITY,"При отдыхе: проверьте Знание. При успехе +1 сосредоточение и +1 рассудок.","When you rest: test Lore. If you pass, gain 1 Focus and recover 1 Sanity."
 
 SPELL_CAST_TITLE,Скастить заклинания?,Cast spells?
 SPELL_CAST_CONFIRM,Скастить выбранные,Cast selected
@@ -1508,6 +1520,30 @@ RECK_SIGN_OF_WARDING_B1,"Чертя оберег, ты впускаешь в р�
 RECK_SIGN_OF_WARDING_B2,"Охранный знак отдаёт по руке жгучей болью","The warding sign lashes back in burning pain"
 RECK_SIGN_OF_WARDING_B3,"За начертанным кругом мерещатся ползущие тени","Beyond the drawn circle, crawling shapes seem to stir"
 RECK_SIGN_OF_WARDING_B4,"Оберег треснул, рассудок дрогнул, защита пала","The ward splits, your mind reels, the guard is lost"
+RECK_BANISHMENT_B1,"Ты швырнул тварь во тьму — и часть тебя ушла с нею","You hurled the fiend outward, and your reason fled after it"
+RECK_BANISHMENT_B2,"Изгнанник уходит, но метит тебя своей последней печатью","The banished thing departs, branding you with its parting seal"
+RECK_BANISHMENT_B3,"Слова рассыпались во тьму — рассудок и заклятье канули следом","The words scatter into the dark, taking mind and spell with them"
+RECK_BANISHMENT_B4,"Изгнанная тварь всё ещё скалится в каждом углу","The exiled fiend still grins at you from every empty corner"
+RECK_BLESSING_OF_ISIS_B1,"Свет богини слишком ярок для смертного ума","The goddess's radiance burns brighter than a mortal mind can bear"
+RECK_BLESSING_OF_ISIS_B2,"Милость Исиды нисходит сквозь холод отчаяния","Isis grants her grace, but only past a veil of despair"
+RECK_BLESSING_OF_ISIS_B3,"Благословение скисает на губах и оборачивается проклятием","The blessing curdles on your tongue and turns to curse"
+RECK_BLESSING_OF_ISIS_B4,"Сияние гаснет, унося с собой и разум, и молитву","Her light gutters out, stealing both your wits and the spell"
+RECK_VOICE_OF_RA_B1,"Голос Ра гремит в черепе, выжигая мысли","Ra's voice thunders in your skull and scorches thought to ash"
+RECK_VOICE_OF_RA_B2,"Слово солнца срывается с губ и обугливает плоть","The sun's word leaves your lips and chars the flesh beneath"
+RECK_VOICE_OF_RA_B3,"После приказа Ра свет всюду шепчет и движется","After Ra commands, the light itself whispers and crawls before you"
+RECK_VOICE_OF_RA_B4,"Голос ломается, плоть горит, и веление солнца гаснет","Your voice cracks, flesh burns, and the sun's command is lost"
+RECK_SCRYING_B1,"В стекле блеснула истина — за неё платишь рассудком","The glass yields its truth, and your sanity pays the toll"
+RECK_SCRYING_B2,"Сквозь стекло смотрят в ответ — и теперь следят всюду","Something peered back through the glass and watches you still"
+RECK_SCRYING_B3,"Даль в стекле выжгла из тебя былые воспоминания","The far-seen distance scours your own memories away"
+RECK_SCRYING_B4,"Стекло треснуло, видение и заклятье осыпались осколками","The glass shatters, and vision and spell fall away in shards"
+RECK_RAY_OF_LIGHT_B1,"Святой луч пронзает тьму — и оставляет на тебе ожоги","The holy ray pierces the dark and sears your skin in passing"
+RECK_RAY_OF_LIGHT_B2,"Луч гаснет внутри тебя, выжигая нутро и само заклятье","The ray dies within you, burning your insides and the spell away"
+RECK_RAY_OF_LIGHT_B3,"Слишком яркий свет ослепляет разум изнутри","A light too pure to look upon blinds the mind from within"
+RECK_RAY_OF_LIGHT_B4,"Отдача луча рассекает чело раскалённой чертой","The ray's recoil opens your brow with a line of fire"
+RECK_VISION_OF_THE_OTHER_SIDE_B1,"За завесой ты увидел то, чего ум вынести не смог","Beyond the veil you saw what no mind was meant to hold"
+RECK_VISION_OF_THE_OTHER_SIDE_B2,"Та сторона теперь знает тебя — и не сводит глаз","The other side knows your face now and will not look away"
+RECK_VISION_OF_THE_OTHER_SIDE_B3,"То, что мелькнуло за гранью, теперь бродит наяву","What flickered past the veil now walks your waking hours"
+RECK_VISION_OF_THE_OTHER_SIDE_B4,"Видение тает, унося рассудок и заклятье за грань","The vision fades, dragging mind and spell beyond the veil"
 
 RECK_OUT_NONE,Обошлось,No price paid
 RECK_OUT_HEALTH,%+d здоровья,%+d Health
