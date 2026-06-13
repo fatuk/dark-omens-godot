@@ -26,6 +26,7 @@ class MockGameState:
 	extends Node
 	var players: Dictionary = {}
 	var board_effects: Array = []
+	var reckoning_results: Dictionary = {}
 	var host: bool = true
 
 	func _is_host() -> bool:
@@ -190,6 +191,18 @@ func test_flip_then_flip_marks_flipped_and_applies_effect() -> void:
 		String((p["conditions_flipped"] as Dictionary).get("legInjury", "")), "splittingHeadache"
 	)
 	assert_true((p["conditions"] as Array).has("legInjury"), "при then:flip состояние остаётся")
+
+
+func test_flip_records_reckoning_result() -> void:
+	# Флип пишет результат для модалки игрока: выпавший оборот + flavor-ключ.
+	_add_player("p", {"conditions": ["legInjury"]})
+	var def: Dictionary = Conditions.get_def("legInjury")
+	_cond._flip_condition(
+		"p", "legInjury", def, {}, {"outcomes": {"legInjury": "splittingHeadache"}}
+	)
+	var r: Dictionary = _gs.reckoning_results.get("p", {})
+	assert_eq(String(r.get("back", "")), "splittingHeadache", "результат флипа записан")
+	assert_eq(String(r.get("text", "")), "OUTCOME_SPLITTING_HEADACHE_TEXT", "несёт flavor-ключ")
 
 
 func test_flip_then_discard_removes_condition() -> void:

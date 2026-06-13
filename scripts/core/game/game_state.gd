@@ -48,6 +48,11 @@ var pending_spell_cast: Dictionary = {}
 # закрывает (dismiss_cast_result). Не привязан к ходу. См. SpellFlow.resolve_cast.
 var last_cast_result: Dictionary = {}
 
+# Результаты флипа состояний на Расплате, per-player, для модалки: {pid: {cid, back,
+# name, text}}. Заполняет ConditionFlow._flip_condition; показывает владельцу pid,
+# он же закрывает (dismiss_reckoning_result). Хост-авторитетно, синкается.
+var reckoning_results: Dictionary = {}
+
 # UI-локально: «заряженная» жетоном валюта переброса ("concentration"/"clue"/"") —
 # игрок закинул жетон на проверку, следующий тап по кубу тратит ИМЕННО её. Не
 # синкается (намерение локального игрока), потребляется в reroll_die.
@@ -207,6 +212,7 @@ func _broadcast_sync() -> void:
 				"active_check": active_check,
 				"pending_spell_cast": pending_spell_cast,
 				"last_cast_result": last_cast_result,
+				"reckoning_results": reckoning_results,
 				"current_mythos": current_mythos,
 				"mythos_index": _mythos.index,
 				"gates": gates,
@@ -302,6 +308,7 @@ func start_game(players_init: Array) -> void:
 	current_encounter = {}
 	pending_spell_cast = {}
 	last_cast_result = {}
+	reckoning_results = {}
 	# campaign / campaign_pending НЕ сбрасываем — библия могла быть прогрета
 	# заранее в лобби (prewarm_campaign). Сброс прошлой игры — reset_pregame().
 	for p: Dictionary in players_init:
@@ -555,6 +562,24 @@ func _host_dismiss_cast_result(pid: String) -> void:
 	if String(last_cast_result.get("pid", "")) != pid:
 		return
 	last_cast_result = {}
+	_broadcast_sync()
+	_emit_changed()
+
+
+## Игрок закрыл модалку результата флипа состояния — хост убирает его запись.
+func dismiss_reckoning_result() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_host_dismiss_reckoning(my_pid)
+	else:
+		_nm.relay_all({"action": "game_dismiss_reckoning", "pid": my_pid})
+
+
+# Хост: убрать запись результата флипа игрока (по закрытию модалки).
+func _host_dismiss_reckoning(pid: String) -> void:
+	if not reckoning_results.has(pid):
+		return
+	reckoning_results.erase(pid)
 	_broadcast_sync()
 	_emit_changed()
 
@@ -861,6 +886,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	active_check = data.get("active_check", {})
 	pending_spell_cast = data.get("pending_spell_cast", {})
 	last_cast_result = data.get("last_cast_result", {})
+	reckoning_results = data.get("reckoning_results", {})
 	current_mythos = data.get("current_mythos", {})
 	_mythos.index = int(data.get("mythos_index", 0))
 	gates = data.get("gates", {})
@@ -967,6 +993,10 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"game_dismiss_cast_result":
 			if _is_host():
 				_host_dismiss_cast_result(String(data.get("pid", "")))
+
+		"game_dismiss_reckoning":
+			if _is_host():
+				_host_dismiss_reckoning(String(data.get("pid", "")))
 
 		"game_shop_grant":
 			if _is_host():
@@ -1186,6 +1216,7 @@ func reset_pregame() -> void:
 	current_encounter = {}
 	pending_spell_cast = {}
 	last_cast_result = {}
+	reckoning_results = {}
 	current_mythos = {}
 	_mythos.deck = []
 	_mythos.index = 0

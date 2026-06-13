@@ -93,6 +93,7 @@ func _flip_condition(
 		return
 	var back: Dictionary = _pick_back(backs, cid, flow)
 	var bid: String = String(back.get("id", ""))
+	_set_reckoning_result(pid, cid, back)  # для модалки результата флипа игрока
 	var res: Dictionary = _EffectRunner.run(back.get("effect", []), p, ctx, flow)
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[Расплата] %s · исход «%s»: %s" % [_gs._name_of(pid), bid, String(l_v)])
@@ -114,6 +115,17 @@ func _pick_back(backs: Array, cid: String, flow: Dictionary) -> Dictionary:
 			if String((b_v as Dictionary).get("id", "")) == forced:
 				return b_v
 	return backs[randi() % backs.size()]
+
+
+# Записать результат флипа для модалки игрока (per-player): выпавший оборот —
+# имя + художественный текст (самоописательный). Хост-авторитетно, синкается.
+func _set_reckoning_result(pid: String, cid: String, back: Dictionary) -> void:
+	_gs.reckoning_results[pid] = {
+		"cid": cid,
+		"back": String(back.get("id", "")),
+		"name": String(back.get("name", "")),
+		"text": String(back.get("text", "")),
+	}
 
 
 func _set_flipped(p: Dictionary, cid: String, outcome_id: String) -> void:

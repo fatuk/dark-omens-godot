@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/spell_cast_modal.tscn" id="12_spellcast"]
 [ext_resource type="PackedScene" path="res://scenes/ui/cast_result_modal.tscn" id="13_castresult"]
 [ext_resource type="PackedScene" path="res://scenes/ui/trade_modal.tscn" id="14_trademod"]
+[ext_resource type="PackedScene" path="res://scenes/ui/reckoning_result_modal.tscn" id="15_reckmod"]
 
 [node name="WorldMap" type="Node2D" unique_id=400240817]
 script = ExtResource("1_oru6e")
@@ -59,3 +60,5 @@ unique_name_in_owner = true
 [node name="CastResultModal" parent="." unique_id=717181921 instance=ExtResource("13_castresult")]
 
 [node name="TradeModal" parent="." unique_id=717181922 instance=ExtResource("14_trademod")]
+
+[node name="ReckoningResultModal" parent="." unique_id=717181923 instance=ExtResource("15_reckmod")]
