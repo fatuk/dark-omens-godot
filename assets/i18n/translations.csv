@@ -1561,3 +1561,51 @@ RECK_OUT_SANITY,%+d рассудка,%+d Sanity
 RECK_OUT_CLUES,%+d улик,%+d Clues
 RECK_OUT_CONDITION,Состояние: %s,Condition: %s
 RECK_OUT_DISCARDED,Заклинание сброшено,Spell discarded
+SPELL_CALL_THE_STORM_NAME,Зов бури,Call the Storm
+SPELL_CALL_THE_STORM_ABILITY,"Действие: проверьте Знание-1. При успехе монстр на вашей локации теряет 3 здоровья.","Action: test Lore-1. If you pass, a monster on your space loses 3 Health."
+RECK_CALL_THE_STORM_B1,"Гроза откликается, но эхо грома сотрясает и ваш собственный череп","The storm answers, yet the thunder rattles your own skull"
+RECK_CALL_THE_STORM_B2,"Молния бьёт слишком близко — буря не различает друга и врага","Lightning strikes too close — the tempest spares neither friend nor foe"
+RECK_CALL_THE_STORM_B3,"Вихрь хлещет ледяным дождём, выстужая тело и волю","The gale lashes icy rain, chilling both body and resolve"
+RECK_CALL_THE_STORM_B4,"Стихия рвётся из рук, и удержать её стоит крови","The elements tear free, and holding them costs you blood"
+SPELL_CONJURATION_NAME,Сотворение,Conjuration
+SPELL_CONJURATION_ABILITY,"Действие: проверьте Знание+1. При успехе получите предмет.","Action: test Lore+1. If you pass, gain 1 Item Asset."
+RECK_CONJURATION_B1,"Из пустоты приходит дар, но взгляд в неё мутит рассудок","A gift comes from the void, but gazing into it clouds the mind"
+RECK_CONJURATION_B2,"Эфир требует платы — одна из ваших вещей растворяется в дымке","The aether demands payment — one of your possessions dissolves into mist"
+RECK_CONJURATION_B3,"Сотканное из ничего норовит рассыпаться, и разум вместе с ним","What is woven from nothing strains to unravel, and the mind with it"
+RECK_CONJURATION_B4,"Материя обретает форму, выжигая жизненные силы творца","Matter takes shape, searing the conjurer's vitality"
+SPELL_ARCANE_INSIGHT_NAME,Тайное прозрение,Arcane Insight
+SPELL_ARCANE_INSIGHT_ABILITY,"Действие: проверьте Знание-2. При успехе получите улику.","Action: test Lore-2. If you pass, gain 1 Clue."
+RECK_ARCANE_INSIGHT_B1,"Знание приходит ценой бессонных, изматывающих видений","Knowledge comes at the price of sleepless, draining visions"
+RECK_ARCANE_INSIGHT_B2,"Строки расплываются — вы забываете, зачем открыли книгу","The lines blur — you forget why you opened the book"
+RECK_ARCANE_INSIGHT_B3,"Озарение гаснет, унося с собой уже добытые догадки","The insight gutters out, taking your hard-won leads with it"
+RECK_ARCANE_INSIGHT_B4,"Бездна мудрости смотрит в ответ, и разум тонет в ней","The abyss of wisdom stares back, and the mind drowns in it"
+SPELL_FEED_THE_MIND_NAME,Пища для разума,Feed the Mind
+SPELL_FEED_THE_MIND_ABILITY,"Действие: проверьте Знание-1. При успехе улучшите навык Знание.","Action: test Lore-1. If you pass, improve your Lore."
+RECK_FEED_THE_MIND_B1,"Разум переполнен — мысли давят и рвутся наружу","The mind overflows — thoughts press and claw to escape"
+RECK_FEED_THE_MIND_B2,"Поток образов захлёбывается, оставляя лишь звон в ушах","The flood of images chokes, leaving only a ringing in the ears"
+RECK_FEED_THE_MIND_B3,"Слишком много знания — и вы теряете нить собственной памяти","Too much knowing — and you lose the thread of your own memory"
+RECK_FEED_THE_MIND_B4,"Перекормленный разум на миг проясняется новой догадкой","The overfed mind clears for an instant with a new lead"
+SPELL_OCCULT_EXALTATION_NAME,Оккультное возвышение,Occult Exaltation
+SPELL_OCCULT_EXALTATION_ABILITY,"Действие: проверьте Знание. При успехе улучшите навык Воля.","Action: test Lore. If you pass, improve your Will."
+RECK_OCCULT_EXALTATION_B1,"Возвышение спадает, и дух оседает ниже прежнего","The exaltation fades, and the spirit settles lower than before"
+RECK_OCCULT_EXALTATION_B2,"Прикосновение к запретному отнимает частицу рассудка","Touching the forbidden takes a sliver of sanity"
+RECK_OCCULT_EXALTATION_B3,"В трансе перед вами вспыхивает скрытая истина","In the trance a hidden truth flares before you"
+RECK_OCCULT_EXALTATION_B4,"Ритуал срывается, и откат хлещет по разуму","The ritual falters, and the backlash whips the mind"
+SPELL_BINDING_NAME,Оковы,Binding
+SPELL_BINDING_ABILITY,"В бою: проверьте Знание. При успехе уменьшите урон монстра в этой встрече.","Combat: test Lore. If you pass, reduce the monster's damage this encounter."
+RECK_BINDING_B1,"Оковы держат тварь, но усилие иссушает разум","The bonds hold the beast, but the effort withers the mind"
+RECK_BINDING_B2,"Цепи слабеют — монстр успевает достать вас когтем","The chains slacken — the monster's claw still finds you"
+RECK_BINDING_B3,"Удержать чудовище — всё равно что бороться с приливом","Holding the horror is like wrestling the tide"
+RECK_BINDING_B4,"Связывание медлит, и вы застываете на месте","The binding lingers, and you are held fast in place"
+SPELL_DREAD_CURSE_NAME,Проклятие ужаса,Dread Curse
+SPELL_DREAD_CURSE_ABILITY,"В бою: проверьте Знание-2. При успехе +8 к Силе в этой встрече.","Combat: test Lore-2. If you pass, gain +8 Strength this encounter."
+RECK_DREAD_CURSE_B1,"Сила хлынула в жилы, но цена ей — содранный рассудок","Power floods your veins, paid for with flayed sanity"
+RECK_DREAD_CURSE_B2,"Проклятие отзывается тихим воем под кожей","The curse answers with a low howl beneath the skin"
+RECK_DREAD_CURSE_B3,"Тёмный заговор оборачивается против заклинателя","The dark hex turns against the one who spoke it"
+RECK_DREAD_CURSE_B4,"Ужас, что вы призвали, заглядывает и в вашу душу","The dread you summoned peers into your soul as well"
+SPELL_BEAST_WITHIN_NAME,Зверь внутри,Beast Within
+SPELL_BEAST_WITHIN_ABILITY,"Пассив: перебрасывайте 1 кубик в проверках Силы и Наблюдательности. Истощите для расплаты.","Passive: reroll 1 die on Strength and Observation tests. Exhaust for reckoning."
+RECK_BEAST_WITHIN_B1,"Зверь рвётся наружу — плоть платит за его ярость","The beast strains free — flesh pays for its fury"
+RECK_BEAST_WITHIN_B2,"Звериное чутьё обостряет взгляд, но мутит разум","Bestial instinct sharpens the eye but fogs the mind"
+RECK_BEAST_WITHIN_B3,"Хищная сила наполняет мышцы, оставляя раны на коже","Predatory strength fills the muscles, leaving wounds on the skin"
+RECK_BEAST_WITHIN_B4,"Перерождение неполно, и тело идёт трещинами","The change is incomplete, and the body fractures"
