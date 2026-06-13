@@ -33,6 +33,9 @@ SIDEBAR_CAT_RUMORS,Слухи,Rumors
 SIDEBAR_TOUGHNESS,Стойкость,Toughness
 SIDEBAR_HORROR,Ужас,Horror
 SIDEBAR_COMBAT,Бой,Combat
+SIDEBAR_RESIST,Сопротивление,Resistance
+RESIST_PHYSICAL,физическое,physical
+RESIST_MAGICAL,магическое,magical
 SIDEBAR_DAMAGE,урон,dmg
 SIDEBAR_USE_ANCIENT_ONE,Статы — с листа Древнего,Stats on the Ancient One sheet
 SKILL_WILL,Воля,Will

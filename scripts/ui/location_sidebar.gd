@@ -249,6 +249,13 @@ func _make_monster_card(m: Dictionary, cur_health: int = -1) -> PanelContainer:
 		vb.add_child(st)
 		vb.add_child(_stat_line("SIDEBAR_HORROR", m.get("horror", {})))
 		vb.add_child(_stat_line("SIDEBAR_COMBAT", m.get("combat", {})))
+		if m.has("resist"):
+			var rl := Label.new()
+			rl.name = "Resist"
+			rl.text = "%s: %s" % [tr("SIDEBAR_RESIST"), _resist_text(m.get("resist"))]
+			rl.add_theme_font_size_override("font_size", 12)
+			rl.add_theme_color_override("font_color", UIColors.ACCENT)
+			vb.add_child(rl)
 	elif bool(m.get("useAncientOne", false)):
 		var ao := Label.new()
 		ao.name = "Ability"
@@ -282,6 +289,15 @@ func _stat_line(label_key: String, stat: Dictionary) -> Label:
 	l.add_theme_font_size_override("font_size", 12)
 	l.add_theme_color_override("font_color", UIColors.TEXT)
 	return l
+
+
+# Текст сопротивления монстра: «физическое»/«магическое» (resist — строка/массив).
+func _resist_text(r: Variant) -> String:
+	var types: Array = r if r is Array else [r]
+	var parts: PackedStringArray = []
+	for t: Variant in types:
+		parts.append(tr("RESIST_PHYSICAL" if String(t) == "physical" else "RESIST_MAGICAL"))
+	return ", ".join(parts)
 
 
 # ── Соседи ───────────────────────────────────────────────────────────────────
