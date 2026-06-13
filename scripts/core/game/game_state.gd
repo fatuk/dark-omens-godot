@@ -280,6 +280,13 @@ func _starting_items(investigator: String) -> Array:
 	var out: Array = []
 	var si: Array = Investigators.get_data(investigator).get("startingItems", [])
 	for entry: Variant in si:
+		# Стартовое заклинание: {"spell": id} → карта-заклинание {id, kind:"spell"}
+		# (как gainSpell). Сыщики-маги EH начинают игру с заклинания.
+		if entry is Dictionary and (entry as Dictionary).has("spell"):
+			var sid: String = String((entry as Dictionary)["spell"])
+			if SpellCatalog.is_spell(sid):
+				out.append({"id": sid, "kind": "spell"})
+			continue
 		var aid: String = AssetCatalog.entry_id(entry)
 		if not aid.is_empty() and not AssetCatalog.by_id(aid).is_empty():
 			out.append({"id": aid, "exhausted": false})

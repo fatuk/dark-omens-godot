@@ -615,7 +615,7 @@
   },
   {
 	"name": "Jim Culver",
-	"startingItems": [{"clue": 1}],
+	"startingItems": [{"spell": "shriveling"}],
 	"displayName": "INV_JIM_CULVER_NAME",
 	"occupation": "INV_JIM_CULVER_OCC",
 	"startingLocation": "6",
