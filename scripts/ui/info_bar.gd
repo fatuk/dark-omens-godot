@@ -538,18 +538,17 @@ func _make_attr_box(label_key: String, field: String) -> Control:
 	col.name = "Attr_%s" % field
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	col.alignment = BoxContainer.ALIGNMENT_BEGIN
-	col.add_theme_constant_override("separation", 2)
+	col.add_theme_constant_override("separation", 0)
 
-	# Название сверху, иконка по центру, число у нижнего края — два равных
-	# expand-спейсера держат иконку посередине и прижимают число вниз.
+	# Равномерный вертикальный ритм: 4 одинаковых expand-спейсера (сверху, между
+	# элементами и снизу) распределяют название/иконку/число с равными отступами.
+	col.add_child(_attr_spacer("SpacerTop"))
+
 	var name_lbl := UIStyle.label(label_key, 13, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	name_lbl.name = "Label"
 	col.add_child(name_lbl)
 
-	var sp_top := Control.new()
-	sp_top.name = "SpacerTop"
-	sp_top.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	col.add_child(sp_top)
+	col.add_child(_attr_spacer("SpacerAboveIcon"))
 
 	var icon := TextureRect.new()
 	icon.name = "Icon"
@@ -560,10 +559,7 @@ func _make_attr_box(label_key: String, field: String) -> Control:
 	icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	col.add_child(icon)
 
-	var sp_bot := Control.new()
-	sp_bot.name = "SpacerBottom"
-	sp_bot.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	col.add_child(sp_bot)
+	col.add_child(_attr_spacer("SpacerBelowIcon"))
 
 	var val := UIStyle.label("—", 26, _ATTR_VALUE_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	val.name = "Value"
@@ -574,12 +570,16 @@ func _make_attr_box(label_key: String, field: String) -> Control:
 	col.add_child(val)
 	_attr_value_lbls[field] = val
 
-	# 4px отступ под числом от нижнего края колонки.
-	var bottom_pad := Control.new()
-	bottom_pad.name = "BottomMargin"
-	bottom_pad.custom_minimum_size.y = 4
-	col.add_child(bottom_pad)
+	col.add_child(_attr_spacer("SpacerBottom"))
 	return col
+
+
+# Распорка-spacer колонки атрибута (равные expand'ы задают вертикальный ритм).
+func _attr_spacer(spacer_name: String) -> Control:
+	var sp := Control.new()
+	sp.name = spacer_name
+	sp.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	return sp
 
 
 # ── Items ─────────────────────────────────────────────────────────────────────
