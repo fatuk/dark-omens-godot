@@ -31,6 +31,7 @@ const _PLAYER_VERBS := [
 	"improveSkill",
 	"impairSkill",
 	"becomeDelayed",
+	"extraAction",
 	"move",
 	"text",
 	# v2/v3: пассивные модификаторы проверок/боя/правил — собираются в
@@ -379,6 +380,11 @@ static func _apply_player_verb(
 		"loseFocus":
 			player["concentration"] = maxi(0, int(player.get("concentration", 0)) - n)
 			logs.append("−%d сосредоточения" % n)
+		"extraAction":
+			# Доп. действие(я) в этот ход (актив/событие/заклинание «выполни ещё
+			# действие»). Слой хода читает actions_left; пока > 0 — игрок действует.
+			player["actions_left"] = int(player.get("actions_left", 0)) + n
+			logs.append("+%d действие" % n)
 		"improveSkill", "impairSkill":
 			var skill: String = String(node.get("skill", ""))
 			var delta: int = n if verb == "improveSkill" else -n

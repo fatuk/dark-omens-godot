@@ -116,6 +116,15 @@ func test_become_delayed_adds_condition() -> void:
 	assert_true((p["conditions"] as Array).has("delayed"))
 
 
+func test_extra_action_adds_to_actions_left() -> void:
+	var p: Dictionary = _player()
+	p["actions_left"] = 1
+	EffectRunner.run([{"do": "extraAction"}], p)
+	assert_eq(int(p["actions_left"]), 2, "+1 действие в ход")
+	EffectRunner.run([{"do": "extraAction", "amount": 2}], p)
+	assert_eq(int(p["actions_left"]), 4, "amount уважается")
+
+
 func test_passive_verb_collected_in_passive_mods() -> void:
 	var p: Dictionary = _player()
 	EffectRunner.run([{"do": "rerollDice"}], p)
