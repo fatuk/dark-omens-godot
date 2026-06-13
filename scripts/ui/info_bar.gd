@@ -63,8 +63,6 @@ const _TOKEN_ICON_H: float = 52.0  # высота медальона токен�
 
 # Ассеты панели атрибутов. Все @2× — выводим в half-size.
 const _ATTR_PANEL_TEX: Texture2D = preload("res://assets/virtues-panel/virues-panel.png")
-const _DICE_TEX: Texture2D = preload("res://assets/virtues-panel/cube.png")
-const _DIVIDER_TEX: Texture2D = preload("res://assets/virtues-panel/divider.png")
 const _ATTR_ICONS: Dictionary = {
 	"strength": preload("res://assets/virtues-panel/strength.png"),
 	"lore": preload("res://assets/virtues-panel/lore.png"),
@@ -101,11 +99,6 @@ const _SCRAMBLE_STEP_TIME: float = 0.08  # длительность одного
 # Сколько рун мелькает в одном кадре. У атрибута значение — одна цифра, хватает
 # одной руны; у баров HP/санити значение длиннее («NN / NN») — используем 3.
 const _BAR_SCRAMBLE_RUNES: int = 2
-
-# ВРЕМЕННО / тест: модификаторы атрибутов до появления upgrade-системы.
-# Атрибут с бонусом > 0 показывает строку «+N 🎲». Удалить, когда бонусы
-# начнут приходить из реальных данных.
-const _TEST_BONUSES := {"will": 2}
 
 var _hp_label: Label
 var _sanity_label: Label
@@ -544,14 +537,19 @@ func _make_attr_box(label_key: String, field: String) -> Control:
 	var col := VBoxContainer.new()
 	col.name = "Attr_%s" % field
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	# Выравнивание по верхнему краю — иначе колонка с dice-строкой (выше
-	# остальных) центрируется иначе и элементы съезжают по высоте.
 	col.alignment = BoxContainer.ALIGNMENT_BEGIN
 	col.add_theme_constant_override("separation", 2)
 
+	# Название сверху, иконка по центру, число у нижнего края — два равных
+	# expand-спейсера держат иконку посередине и прижимают число вниз.
 	var name_lbl := UIStyle.label(label_key, 13, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	name_lbl.name = "Label"
 	col.add_child(name_lbl)
+
+	var sp_top := Control.new()
+	sp_top.name = "SpacerTop"
+	sp_top.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	col.add_child(sp_top)
 
 	var icon := TextureRect.new()
 	icon.name = "Icon"
@@ -562,6 +560,11 @@ func _make_attr_box(label_key: String, field: String) -> Control:
 	icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	col.add_child(icon)
 
+	var sp_bot := Control.new()
+	sp_bot.name = "SpacerBottom"
+	sp_bot.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	col.add_child(sp_bot)
+
 	var val := UIStyle.label("—", 26, _ATTR_VALUE_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	val.name = "Value"
 	# Фиксированная высота + вертикальный центр — руны при scramble'е другой
@@ -571,74 +574,12 @@ func _make_attr_box(label_key: String, field: String) -> Control:
 	col.add_child(val)
 	_attr_value_lbls[field] = val
 
-	# DiceSection сама EXPAND'ится (забирает свободное место колонки) — отдельная
-	# распорка не нужна. Внутри неё дивайдер центрирован спейсерами.
-	col.add_child(_make_dice_section(field))
-
-	# 4px отступ под dice-секцией от нижнего края колонки.
+	# 4px отступ под числом от нижнего края колонки.
 	var bottom_pad := Control.new()
 	bottom_pad.name = "BottomMargin"
 	bottom_pad.custom_minimum_size.y = 4
 	col.add_child(bottom_pad)
 	return col
-
-
-# Секция модификатора: разделитель divider.png + строка «+N 🎲». N — будущая
-# прокачка статов. Вся секция видна только для атрибутов с бонусом > 0
-# (источник — _TEST_BONUSES, временно; позже — данные upgrade-системы,
-# обновлять в update()).
-#
-# Секция EXPAND'ится на свободную высоту колонки; внутри — два равных
-# expanding-спейсера вокруг дивайдера, поэтому он оказывается ровно посередине
-# между числом (сверху) и строкой кубика (снизу). diceRow прижата к низу.
-func _make_dice_section(field: String) -> Control:
-	var bonus: int = int(_TEST_BONUSES.get(field, 0))
-
-	var section := VBoxContainer.new()
-	section.name = "DiceSection"
-	section.add_theme_constant_override("separation", 0)
-	section.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	section.visible = bonus > 0
-
-	var sp_top := Control.new()
-	sp_top.name = "SpacerTop"
-	sp_top.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	section.add_child(sp_top)
-
-	var divider := TextureRect.new()
-	divider.name = "Divider"
-	divider.texture = _DIVIDER_TEX
-	divider.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	divider.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	divider.custom_minimum_size = _DIVIDER_TEX.get_size() * _ASSET_SCALE
-	divider.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	section.add_child(divider)
-
-	var sp_bot := Control.new()
-	sp_bot.name = "SpacerBottom"
-	sp_bot.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	section.add_child(sp_bot)
-
-	var row := HBoxContainer.new()
-	row.name = "DiceRow"
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", 8)
-	section.add_child(row)
-
-	var mod_lbl := UIStyle.label("+%d" % bonus, 15, UIColors.ACCENT)
-	mod_lbl.name = "Modifier"
-	mod_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	row.add_child(mod_lbl)
-
-	var dice := TextureRect.new()
-	dice.name = "Dice"
-	dice.texture = _DICE_TEX
-	dice.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	dice.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	# Кубик мельче остальных ассетов панели — _ASSET_SCALE * 0.5.
-	dice.custom_minimum_size = _DICE_TEX.get_size() * _ASSET_SCALE * 0.5
-	row.add_child(dice)
-	return section
 
 
 # ── Items ─────────────────────────────────────────────────────────────────────
