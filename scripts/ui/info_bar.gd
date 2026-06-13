@@ -709,9 +709,20 @@ func _render_items(items: Array) -> void:
 	for c in _items_row.get_children():
 		c.queue_free()
 	_item_deck.clear()
-	# Каждый элемент — объект: {"asset": id} (карта) или токен {"clue": N} и т.п.
-	# Карточки рисуем только для ассетов; токены (clue/resource/focus) — не карты.
+	# Каждый элемент — объект: {"asset": id} (карта-ассет), {"spell": id}
+	# (карта-заклинание) или токен {"clue": N} и т.п. Токены — не карты.
 	for i: int in range(items.size()):
+		# Заклинание: payload из SpellCatalog (как в веере руки), не из AssetCatalog.
+		var entry: Variant = items[i]
+		if entry is Dictionary and (entry as Dictionary).has("spell"):
+			var sid: String = String((entry as Dictionary)["spell"])
+			var sp: Dictionary = SpellCatalog.by_id(sid)
+			if sp.is_empty():
+				continue
+			var spayload: Dictionary = SpellCatalog.card_payload(sp)
+			_item_deck.append(spayload)
+			_items_row.add_child(_make_card_node(spayload, true))
+			continue
 		var aid: String = AssetCatalog.entry_id(items[i])
 		if aid.is_empty():
 			continue
