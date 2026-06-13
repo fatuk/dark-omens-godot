@@ -149,7 +149,7 @@
   },
   {
 	"name": "Diana Stanley",
-	"startingItems": [{"asset": "arcane_manuscripts"}],
+	"startingItems": [{"asset": "arcane_manuscripts"}, {"spell": "wither"}],
 	"displayName": "INV_DIANA_STANLEY_NAME",
 	"occupation": "INV_DIANA_STANLEY_OCC",
 	"startingLocation": "7",
@@ -468,7 +468,7 @@
   },
   {
 	"name": "Marie Lambeau",
-	"startingItems": [{"asset": "ritual_dagger"}],
+	"startingItems": [{"asset": "ritual_dagger"}, {"spell": "voice_of_ra"}],
 	"displayName": "INV_MARIE_LAMBEAU_NAME",
 	"occupation": "INV_MARIE_LAMBEAU_OCC",
 	"startingLocation": "20",
@@ -615,7 +615,7 @@
   },
   {
 	"name": "Jim Culver",
-	"startingItems": [{"spell": "shriveling"}],
+	"startingItems": [{"clue": 1}, {"spell": "shriveling"}],
 	"displayName": "INV_JIM_CULVER_NAME",
 	"occupation": "INV_JIM_CULVER_OCC",
 	"startingLocation": "6",
@@ -1039,7 +1039,7 @@
   },
   {
 	"name": "Agnes Baker",
-	"startingItems": [{"asset": "profane_tome"}],
+	"startingItems": [{"asset": "profane_tome"}, {"spell": "storm_of_spirits"}],
 	"displayName": "INV_AGNES_BAKER_NAME",
 	"occupation": "INV_AGNES_BAKER_OCC",
 	"startingLocation": "London",
@@ -1081,7 +1081,7 @@
   },
   {
 	"name": "Patrice Hathaway",
-	"startingItems": [{"clue": 1}],
+	"startingItems": [{"clue": 1}, {"spell": "banishment"}],
 	"displayName": "INV_PATRICE_HATHAWAY_NAME",
 	"occupation": "INV_PATRICE_HATHAWAY_OCC",
 	"startingLocation": "Sydney",
