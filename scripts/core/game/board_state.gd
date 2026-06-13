@@ -286,14 +286,20 @@ func damage_monster_at_active(amount: int) -> void:
 		return
 	var inst_v: Variant = arr[0]
 	var inst: Dictionary = inst_v if inst_v is Dictionary else {"id": String(inst_v), "health": 1}
-	var hp: int = int(inst.get("health", 1)) - amount
+	# Урон заклинаний — МАГИЧЕСКИЙ: монстр с magical-резистом получает вдвое меньше.
+	var m: Dictionary = MonsterCatalog.by_id(String(inst.get("id", "")))
+	var dealt: int = MonsterCatalog.apply_resistance(m, amount, "magical")
+	if dealt <= 0:
+		GameConsole.log("[Монстр] сопротивление магии — урон поглощён на %s" % loc)
+		return
+	var hp: int = int(inst.get("health", 1)) - dealt
 	if hp <= 0:
 		remove_monster_at_active(true, 1)
 	else:
 		inst["health"] = hp
 		arr[0] = inst
 		_gs.monsters[loc] = arr
-		GameConsole.log("[Монстр] −%d урона (осталось %d) на %s" % [amount, hp, loc])
+		GameConsole.log("[Монстр] −%d урона (осталось %d) на %s" % [dealt, hp, loc])
 
 
 ## Снять врата: на локации активного игрока, иначе случайные открытые.

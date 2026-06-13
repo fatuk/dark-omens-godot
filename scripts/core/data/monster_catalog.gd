@@ -8,6 +8,7 @@ extends RefCounted
 ##     toughness:int,
 ##     toughnessPerInvestigator:int,  # опц.: стойкость += это×(число сыщиков)
 ##     epic:bool,                      # опц.: эпик-монстр (спавнится по имени)
+##     resist: "physical"|"magical",   # опц.: сопротивление урону типа (получает вдвое)
 ##     horror:{ skill, modificator:int, damage:int },   # проверка рассудка
 ##     combat:{ skill, modificator:int, damage:int },    # проверка боя
 ##     ability:{ trigger, textKey }
@@ -71,6 +72,24 @@ static func toughness_for(m: Dictionary, investigator_count: int) -> int:
 	return (
 		int(m.get("toughness", 0)) + int(m.get("toughnessPerInvestigator", 0)) * investigator_count
 	)
+
+
+## Сопротивляется ли монстр урону типа dmg_type ("physical"|"magical"). resist в
+## данных — строка ("physical") или массив (["physical","magical"]).
+static func resists(m: Dictionary, dmg_type: String) -> bool:
+	var r: Variant = m.get("resist", "")
+	if r is Array:
+		return (r as Array).has(dmg_type)
+	return String(r) == dmg_type
+
+
+## Урон ПОСЛЕ сопротивления: совпал тип resist → вдвое (округление вниз), иначе без
+## изменений. Единая точка правила: физ-урон (бой/Сила) и маг-урон (заклинания,
+## damageMonster) зовут её. Делает урон ДРУГОГО типа ценным против резистентных.
+static func apply_resistance(m: Dictionary, amount: int, dmg_type: String) -> int:
+	if amount <= 0:
+		return amount
+	return amount / 2 if resists(m, dmg_type) else amount
 
 
 static func _load() -> void:

@@ -327,12 +327,16 @@ func _resolve_combat(pid: String) -> bool:
 func _combat_resolution(enc: Dictionary, c: Dictionary) -> Dictionary:
 	var cb: Dictionary = enc.get("combat", {})
 	var hits: int = int(c.get("successes", 0))
-	var health_after: int = maxi(0, int(enc.get("health", 0)) - hits)
+	# Боевой урон — ФИЗИЧЕСКИЙ: монстр с physical-резистом получает вдвое меньше.
+	# (hp_loss игрока — от СЫРОГО броска: защита не зависит от резиста монстра.)
+	var m: Dictionary = MonsterCatalog.by_id(String(enc.get("monsterId", "")))
+	var dealt: int = MonsterCatalog.apply_resistance(m, hits, "physical")
+	var health_after: int = maxi(0, int(enc.get("health", 0)) - dealt)
 	return {
 		"won": health_after <= 0,
 		"strength": {"dice": (c.get("dice", []) as Array).duplicate(), "successes": hits},
 		"hp_loss": maxi(0, int(cb.get("damage", 0)) - hits),
-		"dealt": hits,
+		"dealt": dealt,
 		"health_after": health_after,
 	}
 

@@ -77,6 +77,7 @@
 	},
 	{
 		"id": "colour_out_of_space",
+		"resist": "magical",
 		"nameKey": "MON_COLOUR_OUT_OF_SPACE_NAME",
 		"toughness": 2,
 		"horror": {
@@ -334,6 +335,7 @@
 	},
 	{
 		"id": "formless_spawn",
+		"resist": "magical",
 		"nameKey": "MON_FORMLESS_SPAWN_NAME",
 		"toughness": 2,
 		"horror": {
@@ -372,6 +374,7 @@
 	},
 	{
 		"id": "ghost",
+		"resist": "physical",
 		"nameKey": "MON_GHOST_NAME",
 		"toughness": 2,
 		"horror": {
@@ -752,6 +755,7 @@
 	},
 	{
 		"id": "poltergeist",
+		"resist": "physical",
 		"nameKey": "MON_POLTERGEIST_NAME",
 		"toughness": 3,
 		"horror": {
@@ -1151,6 +1155,7 @@
 	},
 	{
 		"id": "wraith",
+		"resist": "physical",
 		"nameKey": "MON_WRAITH_NAME",
 		"toughness": 3,
 		"horror": {

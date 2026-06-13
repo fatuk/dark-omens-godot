@@ -216,6 +216,22 @@ func test_damage_monster_reduces_health() -> void:
 	assert_eq(int(_gs.monsters["loc"][0]["health"]), 2)
 
 
+func test_damage_monster_magical_resist_halves() -> void:
+	# Урон damageMonster — магический. colour_out_of_space = magical-резист → вдвое.
+	_at("loc")
+	_gs.monsters = {"loc": [{"id": "colour_out_of_space", "health": 5}]}
+	_board.damage_monster_at_active(4)
+	assert_eq(int(_gs.monsters["loc"][0]["health"]), 3, "magical-резист: 4 → 2, 5 − 2 = 3")
+
+
+func test_damage_monster_physical_resist_ignored_by_magic() -> void:
+	# ghost = physical-резист, но урон заклинаний МАГИЧЕСКИЙ → проходит полностью.
+	_at("loc")
+	_gs.monsters = {"loc": [{"id": "ghost", "health": 5}]}
+	_board.damage_monster_at_active(4)
+	assert_eq(int(_gs.monsters["loc"][0]["health"]), 1, "магия обходит phys-резист: 5 − 4 = 1")
+
+
 func test_damage_monster_lethal_removes() -> void:
 	_at("loc")
 	_gs.monsters = {"loc": [{"id": "ghoul", "health": 2}]}
