@@ -274,6 +274,71 @@ func test_travel_rejected_when_not_connected() -> void:
 	assert_false(_pc.host_apply_action("p", "travel", {"to": "Z"}), "Z недостижима")
 
 
+# ── Обмен (trade) ─────────────────────────────────────────────────────────────
+
+
+# Два игрока p (активный) и q на одной локации X с предметами/уликами.
+func _two_traders() -> void:
+	_gs.turn_order = ["p", "q"]
+	_gs.current_idx = 0
+	_gs.players["p"] = {
+		"location": "X", "actions_left": 2, "actions_used": [], "items": [{"id": "a"}], "clues": 2
+	}
+	_gs.players["q"] = {
+		"location": "X",
+		"actions_left": 2,
+		"actions_used": [],
+		"items": [{"id": "b"}, {"id": "c"}],
+		"clues": 1,
+	}
+
+
+func test_trade_moves_items_and_clues() -> void:
+	_two_traders()
+	# p отдаёт предмет 0 (a) и 1 улику, берёт предмет 1 у q (c) и 1 улику.
+	var ok: bool = _pc.host_apply_action(
+		"p", "trade", {"partner": "q", "give": [0], "take": [1], "giveClues": 1, "takeClues": 1}
+	)
+	assert_true(ok, "обмен выполнен")
+	var p_items: Array = _gs.players["p"]["items"]
+	assert_eq(p_items.size(), 1)
+	assert_eq(String((p_items[0] as Dictionary)["id"]), "c", "p получил c")
+	assert_eq(int(_gs.players["p"]["clues"]), 2, "p: 2 − 1 + 1")
+	var q_items: Array = _gs.players["q"]["items"]
+	assert_eq(q_items.size(), 2, "q: оставил b, получил a")
+	assert_eq(String((q_items[0] as Dictionary)["id"]), "b")
+	assert_eq(String((q_items[1] as Dictionary)["id"]), "a")
+	assert_eq(int(_gs.players["q"]["clues"]), 1, "q: 1 − 1 + 1")
+	assert_eq(int(_gs.players["p"]["actions_left"]), 1, "обмен потратил действие")
+
+
+func test_trade_rejected_different_location() -> void:
+	_two_traders()
+	_gs.players["q"]["location"] = "Y"
+	assert_false(_pc.host_apply_action("p", "trade", {"partner": "q", "give": [0]}))
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "ничего не перенесено")
+	assert_eq(int(_gs.players["p"]["actions_left"]), 2, "действие не потрачено")
+
+
+func test_trade_rejected_unknown_partner() -> void:
+	_two_traders()
+	assert_false(_pc.host_apply_action("p", "trade", {"partner": "zzz", "give": [0]}))
+
+
+func test_trade_rejected_insufficient_clues() -> void:
+	_two_traders()
+	assert_false(_pc.host_apply_action("p", "trade", {"partner": "q", "giveClues": 9}))
+	assert_eq(int(_gs.players["p"]["clues"]), 2, "улики не списаны")
+
+
+func test_trade_rejected_bad_item_index() -> void:
+	_two_traders()
+	assert_false(
+		_pc.host_apply_action("p", "trade", {"partner": "q", "give": [5]}), "индекс вне инвентаря"
+	)
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "инвентарь цел")
+
+
 func test_condition_action_succeeds() -> void:
 	_solo()
 	_gs._cond.action_ok = true

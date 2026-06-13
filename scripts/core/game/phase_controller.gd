@@ -91,6 +91,11 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				return false
 			p["location"] = dest
 			p["actions_left"] = int(p["actions_left"]) - 1
+		"trade":
+			# Обмен предметами/уликами с со-локационным напарником (атомарно).
+			if not _apply_trade(pid, payload):
+				return false
+			p["actions_left"] = int(p["actions_left"]) - 1
 		"acquire_assets":
 			# Поход в магазин — уникальное действие (раз за раунд). Фиксируется уже
 			# при БРОСКЕ кубов: тратит действие сразу, поэтому отмена покупки не
@@ -167,6 +172,80 @@ func host_apply_cast_trigger_spells(pid: String, indices: Array) -> bool:
 		advance_action_turn()
 	_gs._broadcast_sync()
 	_gs._emit_changed()
+	return true
+
+
+# Хост: применить «Обмен» — перенос предметов/улик между активным игроком и
+# со-локационным напарником. payload: {partner, give:[idx в me.items],
+# take:[idx в ally.items], giveClues, takeClues}. Атомарно: всё валидируется ДО
+# переноса; невалид → false (действие не тратится). Невыбранные предметы не двигаются.
+func _apply_trade(pid: String, payload: Dictionary) -> bool:
+	var partner: String = String(payload.get("partner", ""))
+	if partner.is_empty() or partner == pid or not _gs.players.has(partner):
+		return false
+	var me: Dictionary = _gs.players[pid]
+	var ally: Dictionary = _gs.players[partner]
+	if String(me.get("location", "")) != String(ally.get("location", "")):
+		GameConsole.warn(
+			"[Обмен] %s и %s не на одной локации" % [_gs._name_of(pid), _gs._name_of(partner)]
+		)
+		return false
+	var give: Array = payload.get("give", [])
+	var take: Array = payload.get("take", [])
+	var my_items: Array = me.get("items", [])
+	var ally_items: Array = ally.get("items", [])
+	if not _valid_indices(give, my_items.size()) or not _valid_indices(take, ally_items.size()):
+		return false
+	var give_clues: int = maxi(0, int(payload.get("giveClues", 0)))
+	var take_clues: int = maxi(0, int(payload.get("takeClues", 0)))
+	if give_clues > int(me.get("clues", 0)) or take_clues > int(ally.get("clues", 0)):
+		return false
+	# Разнести: выбранные уходят, невыбранные остаются на местах.
+	var give_set: Dictionary = {}
+	for i_v: Variant in give:
+		give_set[int(i_v)] = true
+	var take_set: Dictionary = {}
+	for i_v: Variant in take:
+		take_set[int(i_v)] = true
+	var out_items: Array = []
+	var keep_mine: Array = []
+	for i in range(my_items.size()):
+		(out_items if give_set.has(i) else keep_mine).append(my_items[i])
+	var in_items: Array = []
+	var keep_ally: Array = []
+	for i in range(ally_items.size()):
+		(in_items if take_set.has(i) else keep_ally).append(ally_items[i])
+	keep_mine.append_array(in_items)
+	keep_ally.append_array(out_items)
+	me["items"] = keep_mine
+	ally["items"] = keep_ally
+	me["clues"] = int(me.get("clues", 0)) - give_clues + take_clues
+	ally["clues"] = int(ally.get("clues", 0)) - take_clues + give_clues
+	(
+		GameConsole
+		. log(
+			(
+				"[Обмен] %s ↔ %s: отдал %d предм./%d улик, взял %d предм./%d улик"
+				% [
+					_gs._name_of(pid),
+					_gs._name_of(partner),
+					out_items.size(),
+					give_clues,
+					in_items.size(),
+					take_clues,
+				]
+			)
+		)
+	)
+	return true
+
+
+# Все элементы idx — валидные позиции массива размера size (0..size−1).
+func _valid_indices(idx: Array, size: int) -> bool:
+	for i_v: Variant in idx:
+		var i: int = int(i_v)
+		if i < 0 or i >= size:
+			return false
 	return true
 
 
