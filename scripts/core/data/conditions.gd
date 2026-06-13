@@ -1,8 +1,9 @@
 class_name Conditions
 
 ## Реестр состояний из data/conditions.json — аналог Investigators.
-## Корень файла — объект {conditions, reckoningOutcomes}, поэтому грузим
-## через FileAccess + JSON напрямую (DataLoader.load_array — для файлов-массивов).
+## Корень файла — объект {conditions}; грузим через FileAccess + JSON напрямую.
+## Обороты-исходы лежат ИНЛАЙН в каждом состоянии (condition.backs, как рубашки
+## заклинаний); outcome_def агрегирует их по id для UI/форс-выбора.
 ##
 ##   Conditions.name_key("diseased")  → "COND_DISEASED_NAME" (ключ перевода)
 ##   # при присвоении в Label.text Godot сам вызовет tr()
@@ -10,8 +11,7 @@ class_name Conditions
 const DATA_PATH := "res://data/conditions.json"
 
 static var _by_id: Dictionary = {}
-static var _outcomes_by_kind: Dictionary = {}  # kind → Array[reckoningOutcome]
-static var _outcome_by_id: Dictionary = {}
+static var _outcome_by_id: Dictionary = {}  # агрегат backs всех состояний (id → оборот)
 
 
 ## Ключ перевода имени состояния по его id (либо сам id, если не найдено).
@@ -34,13 +34,7 @@ static func kind_of(id: String) -> String:
 	return String(get_def(id).get("kind", ""))
 
 
-## Исходы расплаты (reckoningOutcomes) данного вида ([] если нет).
-static func outcomes_of_kind(kind: String) -> Array:
-	_ensure_loaded()
-	return _outcomes_by_kind.get(kind, [])
-
-
-## Определение исхода расплаты по id ({} если нет).
+## Определение оборота-исхода по id (агрегат backs всех состояний; {} если нет).
 static func outcome_def(id: String) -> Dictionary:
 	_ensure_loaded()
 	return _outcome_by_id.get(id, {})
@@ -64,16 +58,12 @@ static func _ensure_loaded() -> void:
 	for i in range(conds.size()):
 		var c: Dictionary = conds[i]
 		var cid: String = String(c.get("id", ""))
-		if not cid.is_empty():
-			_by_id[cid] = c
-	var outs: Array = (parsed as Dictionary).get("reckoningOutcomes", [])
-	for j in range(outs.size()):
-		var o: Dictionary = outs[j]
-		var oid: String = String(o.get("id", ""))
-		if oid.is_empty():
+		if cid.is_empty():
 			continue
-		_outcome_by_id[oid] = o
-		var okind: String = String(o.get("kind", ""))
-		var lst: Array = _outcomes_by_kind.get(okind, [])
-		lst.append(o)
-		_outcomes_by_kind[okind] = lst
+		_by_id[cid] = c
+		# Обороты — инлайн в состоянии (c.backs); агрегируем по id для outcome_def
+		# (панель/форс-выбор). Дубль id между состояниями безвреден (defs равны).
+		for b_v: Variant in c.get("backs", []):
+			var bid: String = String((b_v as Dictionary).get("id", ""))
+			if not bid.is_empty():
+				_outcome_by_id[bid] = b_v

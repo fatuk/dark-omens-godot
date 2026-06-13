@@ -80,46 +80,40 @@ func _apply_reckon_board(
 			_gs._apply_board_effect(node)
 
 
-# Перевернуть состояние: вытянуть случайный reckoningOutcome его вида, применить
-# effects, затем then: flip (пометить перевёрнутым) | discard (снять).
+# Перевернуть состояние: вытянуть случайный оборот из СОБСТВЕННЫХ backs состояния
+# (инлайн, как рубашки заклинаний), применить effect, затем then: flip|discard.
 func _flip_condition(
 	pid: String, cid: String, def: Dictionary, ctx: Dictionary, flow: Dictionary = {}
 ) -> void:
 	var p: Dictionary = _gs.players.get(pid, {})
-	var outcomes: Array = Conditions.outcomes_of_kind(String(def.get("kind", "")))
-	if outcomes.is_empty():
+	var backs: Array = def.get("backs", [])
+	if (backs as Array).is_empty():
 		_set_flipped(p, cid, "")
 		GameConsole.log("[Расплата] %s · %s перевёрнуто" % [_gs._name_of(pid), cid])
 		return
-	var outcome: Dictionary = _pick_outcome(outcomes, cid, flow)
-	var res: Dictionary = _EffectRunner.run(outcome.get("effects", []), p, ctx, flow)
+	var back: Dictionary = _pick_back(backs, cid, flow)
+	var bid: String = String(back.get("id", ""))
+	var res: Dictionary = _EffectRunner.run(back.get("effect", []), p, ctx, flow)
 	for l_v: Variant in res.get("logs", []):
-		GameConsole.log(
-			(
-				"[Расплата] %s · исход «%s»: %s"
-				% [_gs._name_of(pid), String(outcome.get("id", "")), String(l_v)]
-			)
-		)
+		GameConsole.log("[Расплата] %s · исход «%s»: %s" % [_gs._name_of(pid), bid, String(l_v)])
 	for node_v: Variant in res.get("board", []):
 		_gs._apply_board_effect(node_v as Dictionary)
-	if String(outcome.get("then", "flip")) == "discard":
+	if String(back.get("then", "flip")) == "discard":
 		_discard_condition(pid, cid)
 	else:
-		_set_flipped(p, cid, String(outcome.get("id", "")))
-		GameConsole.log(
-			"[Расплата] %s · %s → «%s»" % [_gs._name_of(pid), cid, String(outcome.get("id", ""))]
-		)
+		_set_flipped(p, cid, bid)
+		GameConsole.log("[Расплата] %s · %s → «%s»" % [_gs._name_of(pid), cid, bid])
 
 
-# Выбор reckoningOutcome: форс через flow.outcomes[cid] (детерминизм в тестах),
-# иначе случайный из исходов нужного вида.
-func _pick_outcome(outcomes: Array, cid: String, flow: Dictionary) -> Dictionary:
+# Выбор оборота: форс через flow.outcomes[cid] по id (детерминизм/тесты/replay),
+# иначе случайный из собственных backs состояния (как random_back у заклинаний).
+func _pick_back(backs: Array, cid: String, flow: Dictionary) -> Dictionary:
 	var forced: String = String((flow.get("outcomes", {}) as Dictionary).get(cid, ""))
 	if not forced.is_empty():
-		var def: Dictionary = Conditions.outcome_def(forced)
-		if not def.is_empty():
-			return def
-	return outcomes[randi() % outcomes.size()]
+		for b_v: Variant in backs:
+			if String((b_v as Dictionary).get("id", "")) == forced:
+				return b_v
+	return backs[randi() % backs.size()]
 
 
 func _set_flipped(p: Dictionary, cid: String, outcome_id: String) -> void:

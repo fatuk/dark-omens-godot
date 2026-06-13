@@ -211,10 +211,29 @@ func test_flip_outcome_can_grant_new_condition() -> void:
 
 
 func test_flip_empty_outcomes_marks_flipped_blank() -> void:
-	# Вид без reckoningOutcomes → пометить перевёрнутым с пустым id (ветка fallback).
+	# Состояние без backs → пометить перевёрнутым с пустым id (ветка fallback).
 	_add_player("p", {"conditions": ["x"]})
 	_cond._flip_condition("p", "x", {"kind": "zzz_no_such_kind"}, {}, {})
 	assert_eq(String((_gs.players["p"]["conditions_flipped"] as Dictionary).get("x", "?")), "")
+
+
+func test_flip_uses_own_backs() -> void:
+	# Без форса оборот тянется из СОБСТВЕННЫХ backs состояния (инлайн, как у
+	# заклинаний), а не из общего пула вида.
+	_add_player("p", {"conditions": ["amnesia"]})
+	var def: Dictionary = Conditions.get_def("amnesia")
+	var own_ids: Array = []
+	for b_v: Variant in def.get("backs", []):
+		own_ids.append(String((b_v as Dictionary)["id"]))
+	_cond._flip_condition("p", "amnesia", def, {}, {})
+	var fl: Dictionary = _gs.players["p"]["conditions_flipped"]
+	if fl.has("amnesia"):
+		assert_has(own_ids, String(fl["amnesia"]), "перевёрнуто на собственный оборот amnesia")
+	else:
+		assert_false(
+			(_gs.players["p"]["conditions"] as Array).has("amnesia"),
+			"оборот then:discard снял amnesia"
+		)
 
 
 # ── _apply_reckon_board: маршрутизация board-узлов расплаты ────────────────────
