@@ -101,7 +101,11 @@ func reroll(pid: String, die_index: int, currency: String = "") -> bool:
 	var p: Dictionary = _gs.players.get(pid, {})
 	var base: Array = c.get("base", [])
 	var shown: Array = c.get("dice", base)
-	if die_index < 0 or die_index >= base.size() or Dice.is_success(int(shown[die_index])):
+	if (
+		die_index < 0
+		or die_index >= base.size()
+		or Dice.is_success(int(shown[die_index]), _threshold(c))
+	):
 		return false
 	var used: int = int(c.get("rerolls_used", 0))
 	var free: bool = used < int(c.get("reroll_allowance", 0))
@@ -244,11 +248,22 @@ func activate(pid: String, item_index: int) -> bool:
 # Выставить результат из сырых кубов base + active_mods (идемпотентно: dice/успехи
 # всегда выводятся из base, addToDie не накапливается).
 func _set_roll(c: Dictionary, base: Array) -> void:
-	var r: Dictionary = Dice.result_with(base, c.get("active_mods", []), String(c.get("skill", "")))
+	var r: Dictionary = Dice.result_with(
+		base, c.get("active_mods", []), String(c.get("skill", "")), _threshold(c)
+	)
 	c["base"] = base
 	c["dice"] = r.get("dice", base)
 	c["successes"] = int(r.get("successes", 0))
 	c["passed"] = bool(r.get("passed", false))
+
+
+# Порог успеха активного игрока проверки (Cursed → 6, Blessed → 4; дефолт 5).
+# Защищённо: если у _gs нет _cond (тест-моки) — дефолт Dice.SUCCESS_MIN.
+func _threshold(c: Dictionary) -> int:
+	var cond: Variant = _gs.get("_cond")
+	if cond != null and (cond as Object).has_method("player_success_threshold"):
+		return int(cond.player_success_threshold(String(c.get("pid", ""))))
+	return Dice.SUCCESS_MIN
 
 
 # Запас ПОШТУЧНЫХ перебросов от карт = Σ rerollDice.count среди active_mods,

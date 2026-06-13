@@ -165,6 +165,30 @@ func player_has_constraint(pid: String, verb: String) -> bool:
 	return player_constraints(pid).has(verb)
 
 
+## Порог успеха проверок сыщика от held-состояний (whileHeld successThreshold):
+## Cursed → 6 («только 6»), Blessed → 4 («4-6»). Перевёрнутые не действуют. Конфликт
+## (Cursed+Blessed разом) → нейтральные 5. Нет таких состояний → дефолт Dice ≥5.
+func player_success_threshold(pid: String) -> int:
+	var p: Dictionary = _gs.players.get(pid, {})
+	var conds: Array = p.get("conditions", [])
+	var flipped: Dictionary = p.get("conditions_flipped", {})
+	var vals: Array = []
+	for i in range(conds.size()):
+		var cid: String = String(conds[i])
+		if flipped.has(cid):
+			continue  # перевёрнутое состояние фронтом не действует
+		for n_v: Variant in Conditions.get_def(cid).get("whileHeld", []):
+			if String((n_v as Dictionary).get("do", "")) == "successThreshold":
+				vals.append(int((n_v as Dictionary).get("value", Dice.SUCCESS_MIN)))
+	if vals.is_empty():
+		return Dice.SUCCESS_MIN
+	var first: int = int(vals[0])
+	for v_v: Variant in vals:
+		if int(v_v) != first:
+			return Dice.SUCCESS_MIN  # конфликт (напр. Cursed+Blessed) → нейтрально
+	return first
+
+
 # ── Триггеры (triggered) и локальные действия (action) состояний ───────────────
 
 

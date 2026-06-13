@@ -47,10 +47,12 @@
 
 	{ "id": "cursed", "name": "COND_CURSED_NAME", "kind": "bane",
 	  "front": "COND_CURSED_FRONT", "reckoning": "COND_CURSED_RECKONING",
+	  "whileHeld": [ { "do": "successThreshold", "value": 6 } ],
 	  "onReckoning": [ { "dieRoll": [ { "on": "4-6", "then": [ { "do": "discardCard" } ] } ] } ] },
 
 	{ "id": "blessed", "name": "COND_BLESSED_NAME", "kind": "boon",
 	  "front": "COND_BLESSED_FRONT", "reckoning": "COND_BLESSED_RECKONING",
+	  "whileHeld": [ { "do": "successThreshold", "value": 4 } ],
 	  "onReckoning": [ { "dieRoll": [ { "on": "1-2", "then": [ { "do": "discardCard" } ] } ] } ] },
 
 	{ "id": "detained", "name": "COND_DETAINED_NAME", "kind": "restriction",

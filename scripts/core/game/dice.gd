@@ -26,9 +26,9 @@ static func roll(n: int) -> Array:
 	return out
 
 
-## Успешен ли куб.
-static func is_success(value: int) -> bool:
-	return value >= SUCCESS_MIN
+## Успешен ли куб. threshold — порог успеха (Cursed → 6, Blessed → 4; дефолт 5).
+static func is_success(value: int, threshold: int = SUCCESS_MIN) -> bool:
+	return value >= threshold
 
 
 ## Сколько успехов в наборе.
@@ -103,7 +103,9 @@ static func pre_roll_bonus(mods: Array, skill: String) -> int:
 
 ## Применить пост-бросковые addToDie к набору: +amount к count кубам, жадно — тем,
 ## кого бонус доводит до успеха (наибольший провальный). Возвращает НОВЫЙ массив.
-static func apply_add_to_die(dice: Array, mods: Array, skill: String = "") -> Array:
+static func apply_add_to_die(
+	dice: Array, mods: Array, skill: String = "", threshold: int = SUCCESS_MIN
+) -> Array:
 	var out: Array = dice.duplicate()
 	for m_v: Variant in mods:
 		var m: Dictionary = m_v
@@ -112,21 +114,21 @@ static func apply_add_to_die(dice: Array, mods: Array, skill: String = "") -> Ar
 		var amount: int = int(m.get("amount", 1))
 		var count: int = maxi(1, int(m.get("count", 1)))
 		for _c in range(count):
-			var idx: int = _best_die_for_bonus(out)
+			var idx: int = _best_die_for_bonus(out, threshold)
 			if idx < 0:
 				break  # все кубы уже успешны — бонус некуда деть
 			out[idx] = mini(SIDES, int(out[idx]) + amount)
 	return out
 
 
-# Индекс наибольшего провального куба (<SUCCESS_MIN) — лучший кандидат под +бонус.
+# Индекс наибольшего провального куба (<threshold) — лучший кандидат под +бонус.
 # Все кубы успешны → -1.
-static func _best_die_for_bonus(dice: Array) -> int:
+static func _best_die_for_bonus(dice: Array, threshold: int = SUCCESS_MIN) -> int:
 	var best: int = -1
 	var best_val: int = 0
 	for i in range(dice.size()):
 		var v: int = int(dice[i])
-		if v < SUCCESS_MIN and v > best_val:
+		if v < threshold and v > best_val:
 			best_val = v
 			best = i
 	return best
@@ -134,15 +136,19 @@ static func _best_die_for_bonus(dice: Array) -> int:
 
 ## Подсчёт успехов с учётом convertDie ({on:"6", successes:N} — грань on даёт N
 ## успехов; negate — грань успех снимает). Без convert-нод — как count_successes.
-static func count_successes_with(dice: Array, mods: Array, skill: String = "") -> int:
+static func count_successes_with(
+	dice: Array, mods: Array, skill: String = "", threshold: int = SUCCESS_MIN
+) -> int:
 	var total: int = 0
 	for i in range(dice.size()):
-		total += _die_successes(int(dice[i]), mods, skill)
+		total += _die_successes(int(dice[i]), mods, skill, threshold)
 	return total
 
 
-static func _die_successes(value: int, mods: Array, skill: String = "") -> int:
-	var base: int = 1 if value >= SUCCESS_MIN else 0
+static func _die_successes(
+	value: int, mods: Array, skill: String = "", threshold: int = SUCCESS_MIN
+) -> int:
+	var base: int = 1 if value >= threshold else 0
 	for m_v: Variant in mods:
 		var m: Dictionary = m_v
 		if String(m.get("do", "")) != "convertDie" or not mod_skill_ok(m, skill):
@@ -157,7 +163,9 @@ static func _die_successes(value: int, mods: Array, skill: String = "") -> int:
 ## Результат проверки с пост-бросковыми модификаторами: применяет addToDie к копии
 ## кубов, считает успехи с convertDie. skill (если задан) отсекает моды «не своего»
 ## навыка (карты боя на чужой шаг). { dice (модиф.), successes, passed }.
-static func result_with(dice: Array, mods: Array, skill: String = "") -> Dictionary:
-	var modded: Array = apply_add_to_die(dice, mods, skill)
-	var s: int = count_successes_with(modded, mods, skill)
+static func result_with(
+	dice: Array, mods: Array, skill: String = "", threshold: int = SUCCESS_MIN
+) -> Dictionary:
+	var modded: Array = apply_add_to_die(dice, mods, skill, threshold)
+	var s: int = count_successes_with(modded, mods, skill, threshold)
 	return {"dice": modded, "successes": s, "passed": s >= PASS_MIN}

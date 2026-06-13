@@ -24,6 +24,25 @@ func test_is_success_threshold() -> void:
 	assert_false(Dice.is_success(4), "4 — провал")
 
 
+func test_is_success_custom_threshold() -> void:
+	assert_false(Dice.is_success(5, 6), "Cursed (порог 6): 5 — провал")
+	assert_true(Dice.is_success(6, 6), "Cursed: 6 — успех")
+	assert_true(Dice.is_success(4, 4), "Blessed (порог 4): 4 — успех")
+
+
+func test_result_with_threshold_cursed() -> void:
+	# Cursed: только 6 — успех (порог 6).
+	var r: Dictionary = Dice.result_with([6, 5, 4, 6], [], "", 6)
+	assert_eq(int(r["successes"]), 2, "две 6 при пороге 6")
+	assert_true(bool(r["passed"]))
+
+
+func test_result_with_threshold_blessed() -> void:
+	# Blessed: 4, 5, 6 — успех (порог 4).
+	var r: Dictionary = Dice.result_with([4, 5, 6, 3], [], "", 4)
+	assert_eq(int(r["successes"]), 3, "4/5/6 при пороге 4")
+
+
 func test_count_successes() -> void:
 	assert_eq(Dice.count_successes([6, 4, 5, 1]), 2, "успехи: 6 и 5")
 

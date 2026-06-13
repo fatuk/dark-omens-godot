@@ -84,6 +84,34 @@ func test_constraints_empty_when_no_conditions() -> void:
 	assert_eq(_cond.player_constraints("p"), {}, "без состояний — нет ограничений")
 
 
+# ── Порог успеха (Cursed/Blessed whileHeld successThreshold) ──────────────────
+
+
+func test_threshold_default() -> void:
+	_add_player("p")
+	assert_eq(_cond.player_success_threshold("p"), 5, "без состояний — дефолт 5")
+
+
+func test_threshold_cursed_is_6() -> void:
+	_add_player("p", {"conditions": ["cursed"]})
+	assert_eq(_cond.player_success_threshold("p"), 6, "Cursed — только 6")
+
+
+func test_threshold_blessed_is_4() -> void:
+	_add_player("p", {"conditions": ["blessed"]})
+	assert_eq(_cond.player_success_threshold("p"), 4, "Blessed — 4-6")
+
+
+func test_threshold_cursed_and_blessed_cancel() -> void:
+	_add_player("p", {"conditions": ["cursed", "blessed"]})
+	assert_eq(_cond.player_success_threshold("p"), 5, "конфликт 6 и 4 → нейтральные 5")
+
+
+func test_threshold_flipped_ignored() -> void:
+	_add_player("p", {"conditions": ["cursed"], "conditions_flipped": {"cursed": "x"}})
+	assert_eq(_cond.player_success_threshold("p"), 5, "перевёрнутое Cursed не действует")
+
+
 # ── Расплата (детерминированный onReckoning) ──────────────────────────────────
 
 
