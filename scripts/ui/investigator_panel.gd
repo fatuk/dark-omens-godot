@@ -10,13 +10,12 @@ const _PREFS_SECTION := "player"
 const _DATA_PATH := "res://data/investigators.json"
 
 # ── Геометрия (display-px). Тюнить под ассеты. ────────────────────────────────
-const BAR_H := 232.0  # высота полосы (≈ compact InfoBar + поля рамки)
-const _FRAME_W := 1180.0  # ширина ornate-рамки (аватар + InfoBar)
-const _FRAME_PATCH := 180  # 9-slice поля рамки (углы не растягиваются)
-const _CONTENT_PAD_X := 40.0  # инсет контента от левого края рамки
-const _CONTENT_PAD_Y := 22.0  # инсет контента сверху/снизу внутри рамки
-const _AVATAR_D := 158.0  # диаметр круглого аватара (фрейм avatar-round-frame)
-const _PORTRAIT_INSET := 0.78  # доля диаметра под сам портрет (внутри кольца)
+const BAR_H := 248.0  # высота полосы
+const _FRAME_PATCH_H := 300  # 9-slice торцы рамки (лево/право — не растягиваются)
+const _FRAME_PATCH_V := 110  # 9-slice верх/низ рамки
+const _CONTENT_PAD_X := 48.0  # инсет контента от левого края
+const _CONTENT_PAD_Y := 26.0  # инсет контента сверху
+const _AVATAR_D := 168.0  # диаметр аватара (кольцо avatar-round-frame)
 const _GAP := 18.0  # отступ между аватаром и InfoBar
 
 const _BG_PATTERN: Texture2D = preload("res://assets/main-bg.png")
@@ -70,32 +69,34 @@ func _build_ui() -> void:
 	bg.name = "BgPattern"
 	bg.texture = _BG_PATTERN
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.stretch_mode = TextureRect.STRETCH_TILE
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bar.add_child(bg)
 
-	# Ornate-рамка слева (9-slice: углы крепкие, середина тянется).
+	# Ornate-рамка на ВСЮ ширину (9-slice: торцы крепкие, середина тянется).
+	# Ассет @2× — NinePatch растягивает его на полосу (визуально масштаб «вниз»).
 	var frame := NinePatchRect.new()
 	frame.name = "Frame"
 	frame.texture = _FRAME_TEX
-	frame.patch_margin_left = _FRAME_PATCH
-	frame.patch_margin_right = _FRAME_PATCH
-	frame.patch_margin_top = _FRAME_PATCH
-	frame.patch_margin_bottom = _FRAME_PATCH
-	frame.position = Vector2.ZERO
-	frame.size = Vector2(_FRAME_W, BAR_H)
+	frame.patch_margin_left = _FRAME_PATCH_H
+	frame.patch_margin_right = _FRAME_PATCH_H
+	frame.patch_margin_top = _FRAME_PATCH_V
+	frame.patch_margin_bottom = _FRAME_PATCH_V
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bar.add_child(frame)
 
-	# Контент рамки: [аватар] [compact InfoBar], по вертикали по центру.
+	# Контент слева: [аватар] [compact InfoBar]. Справа в полосе — место под
+	# кнопки действий (ActionPanel — отдельный компонент). HBox по содержимому,
+	# кладём поверх рамки на левый край.
 	var content := HBoxContainer.new()
 	content.name = "Content"
 	content.add_theme_constant_override("separation", int(_GAP))
 	content.alignment = BoxContainer.ALIGNMENT_BEGIN
 	content.position = Vector2(_CONTENT_PAD_X, _CONTENT_PAD_Y)
-	content.size = Vector2(_FRAME_W - _CONTENT_PAD_X * 2.0, BAR_H - _CONTENT_PAD_Y * 2.0)
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	frame.add_child(content)
+	bar.add_child(content)
 
 	content.add_child(_build_avatar())
 
@@ -121,14 +122,13 @@ func _build_avatar() -> Control:
 	holder.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# Портрет — квадрат, вписанный в кольцо, с круговой маской.
-	var pd: float = _AVATAR_D * _PORTRAIT_INSET
+	# Портрет заполняет весь холдер с круговой маской; кольцо-фрейм сверху прячет
+	# края портрета — т.е. портрет лежит ПОД фреймом аватарки.
 	_portrait = TextureRect.new()
 	_portrait.name = "Portrait"
 	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	_portrait.size = Vector2(pd, pd)
-	_portrait.position = Vector2((_AVATAR_D - pd) * 0.5, (_AVATAR_D - pd) * 0.5)
+	_portrait.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var mat := ShaderMaterial.new()
 	var sh := Shader.new()
@@ -142,7 +142,7 @@ func _build_avatar() -> Control:
 	ring.name = "Ring"
 	ring.texture = _AVATAR_FRAME
 	ring.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	ring.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	ring.stretch_mode = TextureRect.STRETCH_SCALE
 	ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.add_child(ring)
