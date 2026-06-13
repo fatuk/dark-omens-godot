@@ -12,6 +12,7 @@ extends CanvasLayer
 @onready var _hint_label: Label = %HintLabel
 
 var _cond_btns: Dictionary = {}  # cond_id → Button локального действия состояния
+var _trade_btn: Button = null  # кнопка «Обмен» (видна при со-локационном напарнике)
 
 
 func _ready() -> void:
@@ -26,6 +27,16 @@ func _ready() -> void:
 	_concent_btn.pressed.connect(func() -> void: GameState.perform_action("take_concentration"))
 	_rest_btn.pressed.connect(func() -> void: GameState.perform_action("rest"))
 	_pass_btn.pressed.connect(func() -> void: GameState.perform_action("pass"))
+
+	# «Обмен» — программная кнопка (как cond-кнопки). Открывает модалку обмена
+	# через группу trade_modal. Видимость/блок — в _refresh.
+	_trade_btn = Button.new()
+	_trade_btn.name = "TradeBtn"
+	_trade_btn.text = "ACTION_TRADE"
+	UIStyle.style_button(_trade_btn, UIColors.ACCENT)
+	_trade_btn.pressed.connect(_open_trade)
+	_rest_btn.get_parent().add_child(_trade_btn)
+	_rest_btn.get_parent().move_child(_trade_btn, _pass_btn.get_index())
 
 	GameState.state_changed.connect(_refresh)
 	_refresh()
@@ -42,6 +53,8 @@ func _refresh() -> void:
 	_ticket_btn.disabled = used.has("buy_ticket")
 	_concent_btn.disabled = used.has("take_concentration")
 	_rest_btn.disabled = used.has("rest")
+	_trade_btn.visible = _has_colocated_ally()
+	_trade_btn.disabled = used.has("trade")
 	_refresh_condition_actions(me, used)
 	# Биндим через LocaleBinder — строка форматированная (%d), при смене локали
 	# нужно перевычислить tr() с актуальным шаблоном.
@@ -89,3 +102,28 @@ func _refresh_condition_actions(me: Dictionary, used: Array) -> void:
 			_cond_btns[aid] = btn
 		btn.text = "▸ " + tr(Conditions.name_key(aid))
 		btn.disabled = used.has("condition_action")
+
+
+# Есть ли подключённый напарник на моей локации (для кнопки «Обмен»).
+func _has_colocated_ally() -> bool:
+	var me: Dictionary = GameState.my_player()
+	var my_loc: String = String(me.get("location", ""))
+	var my_id: String = String(me.get("user_id", ""))
+	for pid_v: Variant in GameState.players:
+		var p: Dictionary = GameState.players[pid_v]
+		var ok: bool = (
+			String(pid_v) != my_id
+			and bool(p.get("connected", true))
+			and String(p.get("location", "")) == my_loc
+		)
+		if ok:
+			return true
+	return false
+
+
+func _open_trade() -> void:
+	# Модалка обмена — сиблинг по имени "TradeModal" в world_map (есть в дереве с
+	# загрузки сцены, не зависит от тайминга _ready/групп).
+	var tm: Node = get_parent().get_node_or_null("TradeModal")
+	if tm != null and tm.has_method("open"):
+		tm.open()

@@ -21,6 +21,13 @@ BTN_YES,Да,Yes
 BTN_NO,Нет,No
 
 PHASE_ACTION,Действия,Actions
+ACTION_TRADE,Обмен,Trade
+TRADE_TITLE,Обмен,Trade
+TRADE_PARTNER,С кем,With
+TRADE_GIVE,Отдать,Give
+TRADE_TAKE,Взять,Take
+TRADE_CLUES,Улики,Clues
+TRADE_CONFIRM,Обменять,Trade
 PHASE_ENCOUNTER,Встречи,Encounters
 PHASE_MYTHOS,Мифы,Mythos
 
