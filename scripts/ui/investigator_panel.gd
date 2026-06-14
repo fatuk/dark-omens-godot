@@ -19,7 +19,6 @@ const _CONTENT_PAD_Y := 26.0  # инсет контента сверху
 const _AVATAR_D := 168.0  # диаметр аватара (кольцо avatar-round-frame)
 const _GAP := 18.0  # отступ между аватаром и InfoBar
 
-const _BG_PATTERN: Texture2D = preload("res://assets/bg-pattern.png")
 const _FRAME_TEX: Texture2D = preload(
 	"res://assets/investigator-panel/investigator-panel-frame.png"
 )
@@ -65,15 +64,10 @@ func _build_ui() -> void:
 	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bar)
 
-	# Фон-паттерн на всю полосу (под рамкой и кнопками действий).
-	var bg := TextureRect.new()
+	# Фон-паттерн — тем же тайлингом/масштабом, что в карусели выбора сыщиков
+	# (UIStyle: BG_TEX @ BG_SCALE=0.5 через шейдер-тайлинг). На всю ширину полосы.
+	var bg := UIStyle.make_tiled_texture_rect()
 	bg.name = "BgPattern"
-	bg.texture = _BG_PATTERN
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	bg.stretch_mode = TextureRect.STRETCH_TILE  # bg-pattern.png — тайлящийся паттерн
-	bg.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED  # иначе TILE клампит края
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bar.add_child(bg)
 
 	# Ornate-рамка на ВСЮ ширину (9-slice: торцы крепкие, середина тянется).
