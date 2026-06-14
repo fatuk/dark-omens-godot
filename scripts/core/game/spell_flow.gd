@@ -116,57 +116,119 @@ func _set_cast_result(
 	}
 
 
-## Хост: каст Ritual-заклинания как действие. Валидирует (ritual + trigger:action +
-## владение), бросает тест Lore±modifier через единый CheckFlow, разрешает каст
-## (resolve_cast). true — каст выполнен (действие тратит зовущая сторона).
-func cast_ritual(pid: String, item_index: int, flow: Dictionary = {}) -> bool:
-	if not _gs._is_host() or not _gs.players.has(pid):
-		return false
-	var items: Array = (_gs.players[pid] as Dictionary).get("items", [])
-	if item_index < 0 or item_index >= items.size():
-		return false
-	var spell: Dictionary = SpellCatalog.by_id(_spell_id(items[item_index]))
+## Хост: НАЧАТЬ каст Ritual-заклинания (действие). Валидирует (ritual + trigger:action
+## + владение) и стартует spell-проверку Lore±modifier (БЕЗ броска — игрок бросит сам
+## из модалки). Резолв — позже, в apply_cast. true — каст начат (действие/удержание
+## хода ставит зовущая сторона: PhaseController.cast_spell).
+func begin_ritual(pid: String, item_index: int) -> bool:
+	var spell: Dictionary = _validate_cast(pid, item_index, "ritual")
 	if spell.is_empty():
 		return false
-	var front: Dictionary = spell.get("front", {})
-	if String(spell.get("subtype", "")) != "ritual" or String(front.get("trigger", "")) != "action":
+	if String((spell.get("front", {}) as Dictionary).get("trigger", "")) != "action":
 		return false
-	_gs._check.start(
-		"spell", pid, String(front.get("test", "lore")), int(front.get("modifier", 0)), "castSpell"
-	)
-	_gs._check.roll(pid)
-	var c: Dictionary = _gs.active_check
-	var dice: Array = c.get("dice", c.get("base", []))
-	resolve_cast(pid, item_index, int(c.get("successes", 0)), dice, flow)
-	_gs._check.clear()
+	_begin_check(pid, item_index, spell, "ritual", false)
 	return true
 
 
-## Хост: каст Incantation. В отличие от Ritual — НЕ действие, а контекстный
-## триггер; для combatEncounter кастуется только при активной боевой проверке.
-## Тест Lore транзиентный (бой держит active_check, поэтому бросаем здесь);
-## flow.cast={successes,dice} переопределяет бросок (тесты/replay). true — каст.
-func cast_incantation(pid: String, item_index: int, flow: Dictionary = {}) -> bool:
-	if not _gs._is_host() or not _gs.players.has(pid):
+## Хост: НАЧАТЬ каст glamour (exhaust-каст, не действие). Истощает карту на старте
+## (⟳ oncePerRound) и стартует spell-проверку. Резолв — в apply_cast.
+func begin_glamour(pid: String, item_index: int) -> bool:
+	var spell: Dictionary = _validate_cast(pid, item_index, "glamour")
+	if spell.is_empty():
 		return false
-	var p: Dictionary = _gs.players[pid]
-	var items: Array = p.get("items", [])
-	if item_index < 0 or item_index >= items.size():
+	var it_v: Variant = (_gs.players[pid] as Dictionary).get("items", [])[item_index]
+	if not (it_v is Dictionary):
 		return false
-	var spell: Dictionary = SpellCatalog.by_id(_spell_id(items[item_index]))
-	if spell.is_empty() or String(spell.get("subtype", "")) != "incantation":
+	var it: Dictionary = it_v
+	if bool(it.get("exhausted", false)):
+		return false  # уже истощена в этом раунде
+	it["exhausted"] = true  # ⟳ — oncePerRound
+	_begin_check(pid, item_index, spell, "glamour", false)
+	return true
+
+
+## Хост: НАЧАТЬ каст Incantation (контекстный триггер в бою, не действие). Только при
+## активной боевой проверке; СОХРАНЯЕТ её (push) и стартует spell-проверку поверх —
+## на apply_cast боевая вернётся (pop). Резолв — в apply_cast.
+func begin_incantation(pid: String, item_index: int) -> bool:
+	var spell: Dictionary = _validate_cast(pid, item_index, "incantation")
+	if spell.is_empty():
 		return false
 	var front: Dictionary = spell.get("front", {})
 	if String(front.get("trigger", "")) == "combatEncounter":
 		if String((_gs.active_check as Dictionary).get("context", "")) != "combatEncounter":
 			return false  # вне боя не кастуется
-
-	var r: Dictionary = _lore_roll(p, int(front.get("modifier", 0)), flow)
-	resolve_cast(pid, item_index, int(r["successes"]), r["dice"], flow)
+	_gs._check.push()  # сохранить боевую проверку под spell-проверкой
+	_begin_check(pid, item_index, spell, "incantation", true)
 	return true
 
 
-# Транзиентный тест Lore (для контекстных/exhaust-кастов, когда CheckFlow занят).
+# Старт spell-проверки + метаданные каста (casting_spell). Без броска и без резолва.
+func _begin_check(
+	pid: String, item_index: int, spell: Dictionary, subtype: String, nested: bool
+) -> void:
+	var front: Dictionary = spell.get("front", {})
+	_gs._check.start(
+		"spell", pid, String(front.get("test", "lore")), int(front.get("modifier", 0)), "castSpell"
+	)
+	_gs.casting_spell = {
+		"pid": pid,
+		"item_index": item_index,
+		"spell_id": _spell_id((_gs.players[pid] as Dictionary).get("items", [])[item_index]),
+		"subtype": subtype,
+		"context": "castSpell",
+		"nested": nested,
+	}
+
+
+# Общая валидация каста: владение + подтип. Возвращает spell ({} — невалидно).
+func _validate_cast(pid: String, item_index: int, subtype: String) -> Dictionary:
+	if not _gs._is_host() or not _gs.players.has(pid):
+		return {}
+	var items: Array = (_gs.players[pid] as Dictionary).get("items", [])
+	if item_index < 0 or item_index >= items.size():
+		return {}
+	var spell: Dictionary = SpellCatalog.by_id(_spell_id(items[item_index]))
+	if spell.is_empty() or String(spell.get("subtype", "")) != subtype:
+		return {}
+	return spell
+
+
+## Хост: бросок spell-проверки текущего каста (кнопка «Бросить кубы»).
+func roll_cast(pid: String) -> bool:
+	if String((_gs.casting_spell as Dictionary).get("pid", "")) != pid:
+		return false
+	return _gs._check.roll(pid)
+
+
+## Хост: ПРИМЕНИТЬ каст («Применить») — резолвит фронт+оборот по результату spell-
+## проверки (бросает, если ещё не брошено), снимает проверку (pop боевой для
+## incantation, иначе clear), чистит casting_spell и освобождает ход (ritual).
+## flow — детерминизм/тесты (forced backs). true — применено.
+func apply_cast(pid: String, flow: Dictionary = {}) -> bool:
+	var cs: Dictionary = _gs.casting_spell
+	if cs.is_empty() or String(cs.get("pid", "")) != pid:
+		return false
+	var c: Dictionary = _gs.active_check
+	if String(c.get("owner", "")) != "spell":
+		return false
+	if not bool(c.get("rolled", false)):
+		_gs._check.roll(pid)  # страховка: применили без явного броска
+		c = _gs.active_check
+	var item_index: int = int(cs.get("item_index", -1))
+	var dice: Array = c.get("dice", c.get("base", []))
+	resolve_cast(pid, item_index, int(c.get("successes", 0)), dice, flow)
+	if bool(cs.get("nested", false)):
+		_gs._check.pop()  # вернуть боевую проверку
+	else:
+		_gs._check.clear()
+	_gs.casting_spell = {}
+	if String(cs.get("subtype", "")) == "ritual":
+		_gs._phase.release_cast_turn(pid)
+	return true
+
+
+# Транзиентный тест Lore (для триггер-кастов onRest/onTravel/…, когда CheckFlow занят).
 # flow.cast={successes,dice} переопределяет бросок (тесты/replay).
 func _lore_roll(p: Dictionary, modifier: int, flow: Dictionary) -> Dictionary:
 	var roll: Dictionary = flow.get("cast", {})
@@ -177,30 +239,6 @@ func _lore_roll(p: Dictionary, modifier: int, flow: Dictionary) -> Dictionary:
 	var mods: int = int((p.get("skill_mods", {}) as Dictionary).get("lore", 0))
 	var dice: Array = Dice.roll(maxi(1, lore + mods + modifier))
 	return {"successes": int(Dice.result(dice).get("successes", 0)), "dice": dice}
-
-
-## Хост: каст glamour («⟳: Test Lore и flip»). Истощает карту (oncePerRound),
-## бросает Lore (транзиентный; flow.cast переопределяет), разрешает каст. Пассив-
-## аура glamour применяется отдельно — через CheckFlow.activate. true — каст.
-func cast_glamour(pid: String, item_index: int, flow: Dictionary = {}) -> bool:
-	if not _gs._is_host() or not _gs.players.has(pid):
-		return false
-	var p: Dictionary = _gs.players[pid]
-	var items: Array = p.get("items", [])
-	if item_index < 0 or item_index >= items.size():
-		return false
-	var it: Dictionary = items[item_index] if items[item_index] is Dictionary else {}
-	if bool(it.get("exhausted", false)):
-		return false  # уже истощена в этом раунде
-	var spell: Dictionary = SpellCatalog.by_id(_spell_id(it))
-	if spell.is_empty() or String(spell.get("subtype", "")) != "glamour":
-		return false
-	var r: Dictionary = _lore_roll(
-		p, int((spell.get("front", {}) as Dictionary).get("modifier", 0)), flow
-	)
-	it["exhausted"] = true  # ⟳ — oncePerRound
-	resolve_cast(pid, item_index, int(r["successes"]), r["dice"], flow)
-	return true
 
 
 ## Хост: сработавший spell-триггер по игровому событию (onRest/onTravel/…). Кастует

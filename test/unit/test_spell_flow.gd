@@ -9,7 +9,8 @@ var _gs: MockGameState
 var _sf: SpellFlow
 
 
-# Стаб CheckFlow: бросок «каста» отдаёт заданные successes/dice в active_check.
+# Стаб CheckFlow: start/roll/clear + push/pop стек. roll помечает rolled и кладёт
+# заданные successes/dice, СОХРАНЯЯ owner/context (как настоящий CheckFlow).
 class StubCheck:
 	extends RefCounted
 	var _gs: Node
@@ -17,15 +18,35 @@ class StubCheck:
 	func _init(gs: Node) -> void:
 		_gs = gs
 
-	func start(_owner: String, _pid: String, _skill: String, _mod: int, _ctx: String) -> void:
-		pass
+	func start(owner: String, pid: String, _skill: String, _mod: int, ctx: String) -> void:
+		_gs.active_check = {"owner": owner, "pid": pid, "context": ctx, "rolled": false}
 
 	func roll(_pid: String) -> bool:
-		_gs.active_check = {"successes": _gs.roll_successes, "dice": _gs.roll_dice}
+		var c: Dictionary = _gs.active_check
+		c["rolled"] = true
+		c["successes"] = _gs.roll_successes
+		c["dice"] = _gs.roll_dice
+		_gs.active_check = c
 		return true
 
 	func clear() -> void:
 		_gs.active_check = {}
+
+	func push() -> void:
+		(_gs._check_stack as Array).append((_gs.active_check as Dictionary).duplicate(true))
+
+	func pop() -> void:
+		var st: Array = _gs._check_stack
+		_gs.active_check = st.pop_back() if not st.is_empty() else {}
+
+
+# Стаб PhaseController: фиксирует освобождение хода после применения каста (ritual).
+class StubPhase:
+	extends RefCounted
+	var released: Array = []
+
+	func release_cast_turn(pid: String) -> void:
+		released.append(pid)
 
 
 class MockGameState:
@@ -34,14 +55,18 @@ class MockGameState:
 	var players: Dictionary = {}
 	var board_effects: Array = []
 	var active_check: Dictionary = {}
+	var _check_stack: Array = []
 	var pending_spell_cast: Dictionary = {}
+	var casting_spell: Dictionary = {}
 	var last_cast_result: Dictionary = {}
 	var roll_successes: int = 0
 	var roll_dice: Array = []
 	var _check: StubCheck
+	var _phase: StubPhase
 
 	func _init() -> void:
 		_check = StubCheck.new(self)
+		_phase = StubPhase.new()
 
 	func _is_host() -> bool:
 		return host
@@ -213,94 +238,131 @@ func test_grant_spell_unknown_id_noop() -> void:
 	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "неизвестный id игнорируется")
 
 
-# ── cast_ritual (Ritual: каст = тест Lore через CheckFlow → resolve) ──────────
+# ── Ritual: begin (старт проверки) → apply (резолв + освобождение хода) ───────
 
 
-func test_cast_ritual_pass_applies_front_and_clears() -> void:
+func test_begin_ritual_starts_check_without_resolving() -> void:
+	_player([{"id": "shriveling"}])
+	assert_true(_sf.begin_ritual("p", 0), "каст начат")
+	assert_eq(String(_gs.casting_spell.get("subtype", "")), "ritual")
+	assert_eq(String(_gs.active_check.get("owner", "")), "spell", "spell-проверка")
+	assert_false(bool(_gs.active_check.get("rolled", false)), "ещё не брошено")
+	assert_eq(_gs.board_effects.size(), 0, "резолва пока нет")
+
+
+func test_apply_ritual_pass_applies_front_clears_and_releases() -> void:
 	_player([{"id": "shriveling"}])
 	_gs.roll_successes = 2
 	_gs.roll_dice = [5, 5]
-	assert_true(_sf.cast_ritual("p", 0, _force("shriveling_b1")), "каст выполнен")
+	_sf.begin_ritual("p", 0)
+	_sf.roll_cast("p")
+	assert_true(_sf.apply_cast("p", _force("shriveling_b1")), "применено")
 	var verbs: Array = []
 	for i in range(_gs.board_effects.size()):
 		verbs.append(String((_gs.board_effects[i] as Dictionary).get("do", "")))
 	assert_has(verbs, "damageMonster", "фронт onPass при успехе")
-	assert_eq(_gs.active_check.size(), 0, "проверка очищена после каста")
+	assert_eq(_gs.active_check.size(), 0, "проверка снята")
+	assert_eq(_gs.casting_spell.size(), 0, "casting_spell очищен")
+	assert_eq(_gs._phase.released, ["p"], "ход освобождён (ritual)")
 
 
-func test_cast_ritual_fail_resolves_back() -> void:
+func test_apply_ritual_fail_resolves_back_discard() -> void:
 	_player([{"id": "shriveling"}])
 	_gs.roll_successes = 0
 	_gs.roll_dice = [1, 3]  # выпала 1 → рубашка b1 сбрасывает карту
-	assert_true(_sf.cast_ritual("p", 0, _force("shriveling_b1")))
+	_sf.begin_ritual("p", 0)
+	_sf.apply_cast("p", _force("shriveling_b1"))  # без явного roll — apply докинет бросок
 	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "рубашка сбросила карту")
 
 
-func test_cast_ritual_rejects_incantation() -> void:
+func test_begin_ritual_rejects_incantation() -> void:
 	_player([{"id": "wither"}])  # subtype incantation — не Ritual
-	assert_false(_sf.cast_ritual("p", 0), "Incantation не кастуется как Ritual-действие")
-	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "карта не тронута")
+	assert_false(_sf.begin_ritual("p", 0), "Incantation не кастуется как Ritual-действие")
+	assert_true(_gs.casting_spell.is_empty(), "каст не начат")
 
 
-func test_cast_ritual_non_host_rejected() -> void:
+func test_begin_ritual_non_host_rejected() -> void:
 	_gs.host = false
 	_player([{"id": "shriveling"}])
-	assert_false(_sf.cast_ritual("p", 0))
+	assert_false(_sf.begin_ritual("p", 0))
 
 
-func test_cast_ritual_bad_index_rejected() -> void:
+func test_begin_ritual_bad_index_rejected() -> void:
 	_player([{"id": "shriveling"}])
-	assert_false(_sf.cast_ritual("p", 9))
+	assert_false(_sf.begin_ritual("p", 9))
 
 
-# ── cast_incantation (контекстный, combat-гейт, транзиентный тест Lore) ───────
+# ── Incantation: begin push боя → apply pop (вложенная проверка) ──────────────
 
 
-func test_cast_incantation_in_combat_applies_front() -> void:
+func test_begin_incantation_pushes_combat_and_starts_spell() -> void:
 	_player([{"id": "wither"}])
-	_gs.active_check = {"context": "combatEncounter"}
-	var flow: Dictionary = {"cast": {"successes": 2, "dice": [5, 5]}, "backs": {"0": "wither_b1"}}
-	assert_true(_sf.cast_incantation("p", 0, flow))
+	_gs.active_check = {
+		"owner": "combat", "context": "combatEncounter", "rolled": true, "dice": [4]
+	}
+	assert_true(_sf.begin_incantation("p", 0))
+	assert_eq((_gs._check_stack as Array).size(), 1, "боевая проверка сохранена в стек")
+	assert_eq(String(_gs.active_check.get("owner", "")), "spell", "поверх — spell-проверка")
+
+
+func test_apply_incantation_applies_front_and_restores_combat() -> void:
+	_player([{"id": "wither"}])
+	var combat: Dictionary = {"owner": "combat", "context": "combatEncounter", "rolled": true}
+	_gs.active_check = combat.duplicate(true)
+	_gs.roll_successes = 2
+	_gs.roll_dice = [5, 5]
+	_sf.begin_incantation("p", 0)
+	_sf.roll_cast("p")
+	assert_true(_sf.apply_cast("p", {"backs": {"0": "wither_b1"}}))
 	assert_eq(int((_gs.players["p"]["skill_mods"] as Dictionary).get("strength", 0)), 3, "+3 Силы")
+	assert_eq(String(_gs.active_check.get("owner", "")), "combat", "боевая проверка вернулась")
+	assert_eq((_gs._check_stack as Array).size(), 0, "стек пуст")
+	assert_eq(_gs._phase.released, [], "incantation не освобождает ход")
 
 
-func test_cast_incantation_requires_combat_context() -> void:
+func test_begin_incantation_requires_combat_context() -> void:
 	_player([{"id": "wither"}])
 	_gs.active_check = {}  # нет боевой проверки
-	assert_false(_sf.cast_incantation("p", 0, {"cast": {"successes": 2, "dice": [5, 5]}}))
+	assert_false(_sf.begin_incantation("p", 0))
+	assert_eq((_gs._check_stack as Array).size(), 0, "без боя — ничего не сохранили")
 
 
-func test_cast_incantation_rejects_ritual() -> void:
+func test_begin_incantation_rejects_ritual() -> void:
 	_player([{"id": "shriveling"}])  # subtype ritual
 	_gs.active_check = {"context": "combatEncounter"}
-	assert_false(_sf.cast_incantation("p", 0), "Ritual не кастуется как Incantation")
+	assert_false(_sf.begin_incantation("p", 0), "Ritual не кастуется как Incantation")
 
 
-func test_cast_incantation_non_host_rejected() -> void:
-	_gs.host = false
-	_player([{"id": "wither"}])
-	assert_false(_sf.cast_incantation("p", 0))
+# ── Glamour: begin (exhaust + старт) → apply (рубашка; ход не тратится) ───────
 
 
-# ── cast_glamour (⟳: exhaust + тест Lore → рубашка; аура — отдельно) ──────────
-
-
-func test_cast_glamour_exhausts_and_resolves_back() -> void:
+func test_begin_glamour_exhausts_and_starts_check() -> void:
 	_player([{"id": "mind_s_eye"}])
-	var flow: Dictionary = {"cast": {"successes": 0, "dice": [3]}, "backs": {"0": "mind_s_eye_b1"}}
-	assert_true(_sf.cast_glamour("p", 0, flow))
-	assert_true(bool(_gs.players["p"]["items"][0]["exhausted"]), "⟳ истощает карту (oncePerRound)")
+	assert_true(_sf.begin_glamour("p", 0))
+	assert_true(
+		bool(_gs.players["p"]["items"][0]["exhausted"]), "⟳ истощает на старте (oncePerRound)"
+	)
+	assert_eq(String(_gs.active_check.get("owner", "")), "spell")
+
+
+func test_apply_glamour_resolves_back_no_turn_release() -> void:
+	_player([{"id": "mind_s_eye"}])
+	_gs.roll_successes = 0
+	_gs.roll_dice = [3]
+	_sf.begin_glamour("p", 0)
+	_sf.apply_cast("p", {"backs": {"0": "mind_s_eye_b1"}})
 	assert_eq(int(_gs.players["p"]["sanity"]), 4, "рубашка 0-1: −1 рассудок")
+	assert_eq(_gs._phase.released, [], "glamour не освобождает ход")
 
 
-func test_cast_glamour_rejects_exhausted() -> void:
+func test_begin_glamour_rejects_exhausted() -> void:
 	_player([{"id": "mind_s_eye", "exhausted": true}])
-	assert_false(_sf.cast_glamour("p", 0), "истощённая карта не кастуется")
+	assert_false(_sf.begin_glamour("p", 0), "истощённая карта не кастуется")
 
 
-func test_cast_glamour_rejects_non_glamour() -> void:
+func test_begin_glamour_rejects_non_glamour() -> void:
 	_player([{"id": "shriveling"}])
-	assert_false(_sf.cast_glamour("p", 0), "Ritual — не glamour")
+	assert_false(_sf.begin_glamour("p", 0), "Ritual — не glamour")
 
 
 # ── fire_trigger (игровое событие → каст заклинания с front.trigger == event) ─

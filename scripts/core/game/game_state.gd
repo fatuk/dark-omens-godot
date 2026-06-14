@@ -48,6 +48,11 @@ var _check_stack: Array = []
 # только владелец pid (cast_trigger_spells). См. SpellFlow.prompt_trigger.
 var pending_spell_cast: Dictionary = {}
 
+# Каст «в процессе» (интерактивный бросок): {pid, item_index, spell_id, subtype,
+# context, nested}. {} — каста нет. Кубы — в active_check (owner="spell"); здесь
+# только метаданные. Хост-авторитетно, синкается. См. SpellFlow.begin_*/apply_cast.
+var casting_spell: Dictionary = {}
+
 # Результат последнего каста для модалки расплаты: { pid, spell, back, text (flavor-
 # ключ оборота), successes, outcome:{health,sanity,clues,conditions,discarded} }.
 # {} — нет. Хост-авторитетно, синкается; модалку показывает владелец pid и сам её
@@ -217,6 +222,7 @@ func _broadcast_sync() -> void:
 				"current_encounter": current_encounter,
 				"active_check": active_check,
 				"pending_spell_cast": pending_spell_cast,
+				"casting_spell": casting_spell,
 				"last_cast_result": last_cast_result,
 				"reckoning_results": reckoning_results,
 				"current_mythos": current_mythos,
@@ -445,8 +451,11 @@ func reroll_die(die_index: int) -> void:
 	pending_reroll_currency = ""  # потребили намерение (один жетон = один переброс)
 	if cur.is_empty():
 		cur = "free"  # без жетона — только бесплатный переброс от карт
-	if String(active_check.get("owner", "")) == "shop":
+	var owner: String = String(active_check.get("owner", ""))
+	if owner == "shop":
 		shop_reroll(die_index, cur)
+	elif owner == "spell":
+		spell_cast_reroll(die_index, cur)
 	else:
 		reroll_encounter(die_index, cur)
 
@@ -534,21 +543,62 @@ func cast_spell(item_index: int) -> void:
 		return
 	var my_pid: String = _nm.my_user_id
 	if subtype == "glamour":
-		# Каст glamour (вне проверки): exhaust + тест Lore. Аура применяется отдельно
-		# (тап по glamour во время проверки → activate_card, см. world_map).
+		# Каст glamour (exhaust): начинаем spell-проверку (модалка), игрок бросает и
+		# применяет. Аура применяется отдельно (тап по glamour во время чужой проверки
+		# → activate_card, см. world_map).
 		if _is_host():
-			if _spell.cast_glamour(my_pid, item_index):
+			if _spell.begin_glamour(my_pid, item_index):
 				_broadcast_sync()
 				_emit_changed()
 		else:
 			_nm.relay_all({"action": "game_cast_glamour", "pid": my_pid, "index": item_index})
 		return
-	if _is_host():  # incantation
-		if _spell.cast_incantation(my_pid, item_index):
+	if _is_host():  # incantation — вложенная проверка поверх боя
+		if _spell.begin_incantation(my_pid, item_index):
 			_broadcast_sync()
 			_emit_changed()
 	else:
 		_nm.relay_all({"action": "game_cast_incantation", "pid": my_pid, "index": item_index})
+
+
+## Бросок spell-проверки текущего каста (кнопка «Бросить кубы»). _check.roll синкает сам.
+func spell_cast_roll() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_spell.roll_cast(my_pid)
+	else:
+		_nm.relay_all({"action": "game_spell_cast_roll", "pid": my_pid})
+
+
+## Переброс куба spell-проверки при касте. currency — явная валюта (жетон) или "".
+func spell_cast_reroll(die_index: int, currency: String = "") -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_check.reroll(my_pid, die_index, currency)  # синкает сам
+	else:
+		(
+			_nm
+			. relay_all(
+				{
+					"action": "game_spell_cast_reroll",
+					"pid": my_pid,
+					"die": die_index,
+					"currency": currency,
+				}
+			)
+		)
+
+
+## Применить каст («Применить»): резолв фронта+оборота по броску, снятие проверки,
+## освобождение хода (ritual). Дальше расплату показывает cast_result_modal.
+func spell_cast_apply() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		if _spell.apply_cast(my_pid):
+			_broadcast_sync()
+			_emit_changed()
+	else:
+		_nm.relay_all({"action": "game_spell_cast_apply", "pid": my_pid})
 
 
 ## Активный игрок подтвердил выбор триггер-заклинаний (item-индексы) в промпте
@@ -942,6 +992,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	current_encounter = data.get("current_encounter", {})
 	active_check = data.get("active_check", {})
 	pending_spell_cast = data.get("pending_spell_cast", {})
+	casting_spell = data.get("casting_spell", {})
 	last_cast_result = data.get("last_cast_result", {})
 	reckoning_results = data.get("reckoning_results", {})
 	current_mythos = data.get("current_mythos", {})
@@ -1031,13 +1082,33 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 
 		"game_cast_incantation":
 			if _is_host():
-				if _spell.cast_incantation(String(data.get("pid", "")), int(data.get("index", -1))):
+				if _spell.begin_incantation(
+					String(data.get("pid", "")), int(data.get("index", -1))
+				):
 					_broadcast_sync()
 					_emit_changed()
 
 		"game_cast_glamour":
 			if _is_host():
-				if _spell.cast_glamour(String(data.get("pid", "")), int(data.get("index", -1))):
+				if _spell.begin_glamour(String(data.get("pid", "")), int(data.get("index", -1))):
+					_broadcast_sync()
+					_emit_changed()
+
+		"game_spell_cast_roll":
+			if _is_host():
+				_spell.roll_cast(String(data.get("pid", "")))
+
+		"game_spell_cast_reroll":
+			if _is_host():
+				_check.reroll(
+					String(data.get("pid", "")),
+					int(data.get("die", -1)),
+					String(data.get("currency", ""))
+				)
+
+		"game_spell_cast_apply":
+			if _is_host():
+				if _spell.apply_cast(String(data.get("pid", ""))):
 					_broadcast_sync()
 					_emit_changed()
 
@@ -1271,7 +1342,10 @@ func reset_pregame() -> void:
 		return
 	_campaign.reset()
 	current_encounter = {}
+	active_check = {}
+	_check_stack = []
 	pending_spell_cast = {}
+	casting_spell = {}
 	last_cast_result = {}
 	reckoning_results = {}
 	current_mythos = {}

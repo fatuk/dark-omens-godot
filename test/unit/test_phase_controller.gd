@@ -70,7 +70,7 @@ class StubSpell:
 	var prompt_returns: bool = false
 	var resolved: Array = []
 
-	func cast_ritual(_pid: String, idx: int) -> bool:
+	func begin_ritual(_pid: String, idx: int) -> bool:
 		cast_calls.append(idx)
 		return ok
 
@@ -540,12 +540,13 @@ func test_shop_debt_duplicate_rejected() -> void:
 # ── cast_spell (Ritual = действие) ────────────────────────────────────────────
 
 
-func test_cast_spell_spends_action_on_success() -> void:
+func test_cast_spell_begins_spends_action_and_holds_turn() -> void:
 	_solo()
 	_gs._spell.ok = true
 	assert_true(_pc.host_apply_action("p", "cast_spell", {"item": 0}))
 	assert_eq(int(_gs.players["p"]["actions_left"]), 1, "каст потратил действие")
-	assert_eq(_gs._spell.cast_calls, [0], "cast_ritual вызван с item_index")
+	assert_eq(_gs._spell.cast_calls, [0], "begin_ritual вызван с item_index")
+	assert_true(bool(_gs.players["p"].get("casting", false)), "ход держится до «Применить»")
 
 
 func test_cast_spell_rejected_when_invalid() -> void:
@@ -553,3 +554,19 @@ func test_cast_spell_rejected_when_invalid() -> void:
 	_gs._spell.ok = false
 	assert_false(_pc.host_apply_action("p", "cast_spell", {"item": 0}))
 	assert_eq(int(_gs.players["p"]["actions_left"]), 2, "невалидный каст — действие не тратится")
+	assert_false(bool(_gs.players["p"].get("casting", false)), "невалидный каст — не держим ход")
+
+
+func test_cast_as_last_action_holds_turn_until_release() -> void:
+	# Каст последним действием НЕ передаёт ход, пока игрок не нажал «Применить».
+	_gs.turn_order = ["p", "p2"]
+	_gs.current_idx = 0
+	_add_player("p", {"actions_left": 1})
+	_add_player("p2")
+	_gs._spell.ok = true
+	_pc.host_apply_action("p", "cast_spell", {"item": 0})
+	assert_eq(int(_gs.players["p"]["actions_left"]), 0, "действие потрачено")
+	assert_eq(_gs.current_idx, 0, "ход держится (casting), хотя действий 0")
+	_pc.release_cast_turn("p")
+	assert_false(bool(_gs.players["p"].get("casting", false)), "casting снят")
+	assert_eq(_gs.current_idx, 1, "после применения отложенный ход передан")

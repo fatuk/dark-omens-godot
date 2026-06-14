@@ -140,11 +140,14 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				return false
 			p["actions_left"] = int(p["actions_left"]) - 1
 		"cast_spell":
-			# Ritual-заклинание: каст = действие. SpellFlow валидирует, бросает тест
-			# Lore и разрешает каст; false — карта невалидна (действие не тратим).
-			if not _gs._spell.cast_ritual(pid, int(payload.get("item", -1))):
+			# Ritual-заклинание: каст = действие. begin_ritual стартует spell-проверку
+			# (БЕЗ броска); игрок бросает/перебрасывает в модалке и жмёт «Применить»
+			# (apply_cast → release_cast_turn). casting держит ход до применения, как
+			# shopping для магазина. false — карта невалидна (действие не тратим).
+			if not _gs._spell.begin_ritual(pid, int(payload.get("item", -1))):
 				GameConsole.warn("[Заклинание] %s — нельзя прочитать" % _gs._name_of(pid))
 				return false
+			p["casting"] = true
 			p["actions_left"] = int(p["actions_left"]) - 1
 		"pass":
 			p["actions_left"] = 0
@@ -169,6 +172,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 		int(p["actions_left"]) == 0
 		and not bool(p.get("shopping", false))
 		and not bool(p.get("spell_prompt", false))
+		and not bool(p.get("casting", false))
 	):
 		advance_action_turn()
 
@@ -287,6 +291,19 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
+
+
+## Хост: каст применён («Применить») — снимаем удержание хода casting и, если
+## действий не осталось, передаём отложенный ход (как закрытие магазина). Зовётся из
+## SpellFlow.apply_cast (только ritual — glamour/incantation не тратят действие).
+func release_cast_turn(pid: String) -> void:
+	if not _gs.players.has(pid):
+		return
+	var p: Dictionary = _gs.players[pid]
+	var was_casting: bool = bool(p.get("casting", false))
+	p["casting"] = false
+	if was_casting and int(p.get("actions_left", 0)) == 0:
+		advance_action_turn()
 
 
 ## Хост: магазин закрыт. Снимаем флаг shopping и, если действий не осталось,
