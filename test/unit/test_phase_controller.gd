@@ -570,3 +570,16 @@ func test_cast_as_last_action_holds_turn_until_release() -> void:
 	_pc.release_cast_turn("p")
 	assert_false(bool(_gs.players["p"].get("casting", false)), "casting снят")
 	assert_eq(_gs.current_idx, 1, "после применения отложенный ход передан")
+
+
+func test_cast_spell_not_blocked_by_repeat_guard() -> void:
+	# Каст — исключение из «один раз за раунд»: можно скастить ещё, пока есть действия.
+	_solo({"actions_used": ["cast_spell"]})
+	_gs._spell.ok = true
+	assert_true(_pc.host_apply_action("p", "cast_spell", {"item": 0}), "повторный каст разрешён")
+	assert_true(bool(_gs.players["p"].get("casting", false)), "каст начат")
+	assert_eq(
+		(_gs.players["p"]["actions_used"] as Array).count("cast_spell"),
+		1,
+		"cast_spell не дублируется в actions_used"
+	)

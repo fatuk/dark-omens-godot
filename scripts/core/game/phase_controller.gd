@@ -53,9 +53,11 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 		GameConsole.warn("[Game] %s не может действовать (состояние)" % _gs._name_of(pid))
 		return false
 
-	# Одно и то же действие нельзя повторять в раунде (pass не в счёт).
+	# Одно и то же действие нельзя повторять в раунде (pass не в счёт). Каст заклинания
+	# — исключение: за ход можно скастить несколько (каждый тратит действие), как
+	# Component Action в EH; лимит — только число действий.
 	var used: Array = p.get("actions_used", [])
-	if action_type != "pass" and used.has(action_type):
+	if action_type != "pass" and action_type != "cast_spell" and used.has(action_type):
 		GameConsole.warn(
 			"[Game] %s — «%s» уже использовано в этом раунде" % [_gs._name_of(pid), action_type]
 		)
@@ -155,7 +157,8 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			GameConsole.warn("[Game] Неизвестное действие: %s" % action_type)
 			return false
 
-	if action_type != "pass":
+	# cast_spell не отмечаем (можно кастовать несколько за ход — лимит лишь по действиям).
+	if action_type != "pass" and action_type != "cast_spell":
 		used.append(action_type)
 		p["actions_used"] = used
 
