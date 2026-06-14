@@ -38,6 +38,11 @@ var current_encounter: Dictionary = {}
 # {} — активной проверки нет. См. check_flow.gd.
 var active_check: Dictionary = {}
 
+# Стек сохранённых проверок (хост-локальный, НЕ синкается): CheckFlow.push/pop для
+# вложенного каста — incantation запускает свою spell-проверку поверх боевой, на
+# «Применить» боевая возвращается. В каждый момент синкнутый active_check — видимая.
+var _check_stack: Array = []
+
 # Промпт «какие триггер-заклинания скастить» (напр. при отдыхе): { pid, event,
 # options:[{index, id}] }. {} — промпта нет. Хост-авторитетно, синкается; решает
 # только владелец pid (cast_trigger_spells). См. SpellFlow.prompt_trigger.

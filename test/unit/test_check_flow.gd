@@ -18,6 +18,7 @@ class MockGameState:
 	extends Node
 	var players: Dictionary = {}
 	var active_check: Dictionary = {}
+	var _check_stack: Array = []
 	var sync_count: int = 0
 
 	func _name_of(pid: String) -> String:
@@ -87,6 +88,29 @@ func test_clear_empties_active_check() -> void:
 	_cf.start("shop", "p", "will", 0, "")
 	_cf.clear()
 	assert_eq(_gs.active_check.size(), 0, "active_check очищен")
+
+
+# ── push/pop: вложенные проверки (incantation поверх боя) ─────────────────────
+
+
+func test_push_then_start_then_pop_restores_outer_check() -> void:
+	# Внешняя (боевая) проверка → push → новая spell-проверка перетирает active_check.
+	_cf.start("combat", "p", "will", 0, "combatEncounter")
+	var combat_snapshot: Dictionary = _gs.active_check.duplicate(true)
+	_cf.push()
+	_cf.start("spell", "p", "lore", 0, "castSpell")
+	assert_eq(String(_gs.active_check["owner"]), "spell", "поверх — spell-проверка")
+	# pop → боевая проверка возвращается БЕЗ изменений (round-trip).
+	_cf.pop()
+	assert_eq(String(_gs.active_check["owner"]), "combat", "после pop — снова бой")
+	assert_eq(_gs.active_check, combat_snapshot, "боевая проверка восстановлена как была")
+	assert_eq((_gs._check_stack as Array).size(), 0, "стек пуст")
+
+
+func test_pop_on_empty_stack_clears_active_check() -> void:
+	_cf.start("spell", "p", "lore", 0, "castSpell")
+	_cf.pop()  # стек пуст → active_check очищается
+	assert_eq(_gs.active_check.size(), 0, "pop без сохранённой → active_check пуст")
 
 
 # ── pool: навык + skill_mods + modifier + доп.кубы карт ───────────────────────

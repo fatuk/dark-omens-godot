@@ -61,6 +61,18 @@ func clear() -> void:
 	_gs.active_check = {}
 
 
+## Сохранить текущую активную проверку в стек (вложенный каст: incantation над
+## боевой проверкой). Затем start() поверх перетрёт active_check; pop() — вернёт.
+func push() -> void:
+	(_gs._check_stack as Array).append((_gs.active_check as Dictionary).duplicate(true))
+
+
+## Вернуть последнюю сохранённую проверку в active_check (либо {} если стек пуст).
+func pop() -> void:
+	var stack: Array = _gs._check_stack
+	_gs.active_check = stack.pop_back() if not stack.is_empty() else {}
+
+
 ## Пул d6 = навык сыщика + модификаторы навыка + модификатор проверки + доп.кубы
 ## активированных карт (pre_roll_bonus). Для показа рубашек до броска и самого броска.
 func pool(c: Dictionary) -> int:
