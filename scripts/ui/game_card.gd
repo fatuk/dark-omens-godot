@@ -42,18 +42,18 @@ const C_DESC_TXT := Color(0, 0, 0)  # чёрный — на пергаменте
 const C_ART_FILL := Color(0.10, 0.08, 0.14)  # заглушка арт-слота (закрывает белый бокс)
 const C_GLYPH := Color(0.55, 0.48, 0.35)
 
-# Авто-скролл описания при наведении (когда текст не влезает в зону пергамента).
-const _DESC_SCROLL_SPEED := 32.0  # px/сек прохода
-const _DESC_SCROLL_HOLD := 0.6  # пауза вверху/внизу, сек
-const _DESC_SCROLL_MIN := 0.7  # мин. длительность прохода, сек
-const _DESC_SCROLL_MAX := 4.0  # макс. длительность прохода, сек
+# Скролл описания курсором (когда текст не влезает в зону пергамента): позиция
+# курсора по вертикали внутри клипа задаёт направление и скорость — у верхнего
+# края скроллит вверх, у нижнего вниз, по центру стоит; чем ближе к краю, тем
+# быстрее.
+const _DESC_SCROLL_MAX_SPEED := 150.0  # px/сек у самого края клипа
+const _DESC_SCROLL_DEADZONE := 0.06  # доля высоты от центра, где скролл стоит
 
 var _cost: Label
 var _title: Label
 var _sub: Label
 var _desc: Label
 var _desc_scroll: ScrollContainer
-var _desc_tween: Tween
 var _art: TextureRect
 var _art_fill: ColorRect
 var _glyph: Label
@@ -156,6 +156,7 @@ func _build() -> void:
 
 	mouse_entered.connect(_on_desc_hover_start)
 	mouse_exited.connect(_on_desc_hover_end)
+	set_process(false)  # покадровый скролл включается только под курсором
 
 
 ## Заполнить карту. Поля: cost, title, subtitle?, desc, art? (Texture2D),
@@ -183,44 +184,36 @@ func set_card(d: Dictionary) -> void:
 		_glyph.visible = not _glyph.text.is_empty()
 
 
-# ── авто-скролл описания ───────────────────────────────────────────────────────
+# ── скролл описания курсором ───────────────────────────────────────────────────
 
 
-# Наведение на карту: если описание не влезает в зону — циклично прокручиваем его
-# вниз и обратно (плавно, ease-in-out), чтобы прочесть скрытую часть.
+# Наведение на карту — включаем покадровый скролл (если есть переполнение, оно
+# проверяется в _process). Уход курсора / новый текст — выключаем и в начало.
 func _on_desc_hover_start() -> void:
-	if not (is_instance_valid(_desc_scroll) and is_instance_valid(_desc)):
-		return
-	var overflow: int = maxi(0, int(_desc.size.y) - int(_desc_scroll.size.y))
-	if overflow <= 0:
-		return  # текст влезает — скроллить нечего
-	if _desc_tween and _desc_tween.is_valid():
-		_desc_tween.kill()
-	var pass_dur: float = clampf(
-		float(overflow) / _DESC_SCROLL_SPEED, _DESC_SCROLL_MIN, _DESC_SCROLL_MAX
-	)
-	_desc_tween = create_tween().set_loops()
-	_desc_tween.tween_interval(_DESC_SCROLL_HOLD)
-	var down := _desc_tween.tween_method(_set_desc_scroll, 0.0, float(overflow), pass_dur)
-	down.set_trans(Tween.TRANS_SINE)
-	down.set_ease(Tween.EASE_IN_OUT)
-	_desc_tween.tween_interval(_DESC_SCROLL_HOLD)
-	var up := _desc_tween.tween_method(_set_desc_scroll, float(overflow), 0.0, pass_dur)
-	up.set_trans(Tween.TRANS_SINE)
-	up.set_ease(Tween.EASE_IN_OUT)
+	set_process(true)
 
 
-# Курсор ушёл (или новый текст): останавливаем скролл и возвращаем к началу.
 func _on_desc_hover_end() -> void:
-	if _desc_tween and _desc_tween.is_valid():
-		_desc_tween.kill()
+	set_process(false)
 	if is_instance_valid(_desc_scroll):
 		_desc_scroll.scroll_vertical = 0
 
 
-func _set_desc_scroll(v: float) -> void:
-	if is_instance_valid(_desc_scroll):
-		_desc_scroll.scroll_vertical = int(roundf(v))
+# Скорость/направление скролла = позиция курсора по вертикали внутри клипа:
+# t=0 (верх) → вверх на макс. скорости, t=0.5 (центр) → стоп, t=1 (низ) → вниз.
+func _process(delta: float) -> void:
+	if not (is_instance_valid(_desc_scroll) and is_instance_valid(_desc)):
+		return
+	var overflow: int = maxi(0, int(_desc.size.y) - int(_desc_scroll.size.y))
+	var h: float = _desc_scroll.size.y
+	if overflow <= 0 or h <= 0.0:
+		return  # текст влезает — скроллить нечего
+	var t: float = clampf(_desc_scroll.get_local_mouse_position().y / h, 0.0, 1.0)
+	var dir: float = (t - 0.5) * 2.0  # [-1..1]: <0 вверх, >0 вниз; |dir| растёт к краю
+	if absf(dir) < _DESC_SCROLL_DEADZONE:
+		return  # около центра — стоп
+	var pos: float = float(_desc_scroll.scroll_vertical) + dir * _DESC_SCROLL_MAX_SPEED * delta
+	_desc_scroll.scroll_vertical = int(roundf(clampf(pos, 0.0, float(overflow))))
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
