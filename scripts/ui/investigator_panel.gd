@@ -162,12 +162,12 @@ func _build_avatar() -> Control:
 	caption.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	_name_label = UIStyle.label("", 17, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_name_label = UIStyle.label("", 20, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	_name_label.name = "NameLabel"
 	_caption_shadow(_name_label)
 	caption.add_child(_name_label)
 
-	_occ_label = UIStyle.label("", 11, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	_occ_label = UIStyle.label("", 14, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	_occ_label.name = "OccLabel"
 	_caption_shadow(_occ_label)
 	caption.add_child(_occ_label)
@@ -207,12 +207,18 @@ func _refresh_identity() -> void:
 		_populate_data()
 
 
-## Живые статы из GameState. v1: InfoBar показывает базовые статы сыщика
-## (_inv_data); живой HP-fill (cur/max + заливка баров) из GameState.my_player()
-## — следующим шагом (нужен live-режим у самого InfoBar). Заглушка-хук на смену
-## стейта оставлена, чтобы доводку было куда вешать.
+## Живые HP/рассудок из GameState (cur/max + заливка баров). Атрибуты остаются
+## базовыми (из _inv_data). Пока не в игре — оставляем базовые значения.
 func _refresh_live() -> void:
-	pass
+	var p: Dictionary = GameState.my_player()
+	if p.is_empty() or not is_instance_valid(_info_bar):
+		return
+	_info_bar.set_live_vitals(
+		int(p.get("hp", 0)),
+		int(p.get("hp_max", 0)),
+		int(p.get("sanity", 0)),
+		int(p.get("sanity_max", 0))
+	)
 
 
 # ── Загрузка данных сыщика ────────────────────────────────────────────────────

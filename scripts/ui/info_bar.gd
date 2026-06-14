@@ -88,6 +88,9 @@ const _BAR_SCRAMBLE_RUNES: int = 2
 
 var _hp_label: Label
 var _sanity_label: Label
+var _hp_fill_clip: Control  # клип заливки бара HP (ширина = доля current/max)
+var _sanity_fill_clip: Control  # клип заливки бара рассудка
+var _fill_inner_w: float = 0.0  # внутренняя ширина заливки бара (для пропорции)
 var _attr_value_lbls: Dictionary = {}  # field name -> Label
 var _items_row: HBoxContainer  # ряд карточек стартового имущества (заполняется в update)
 var _tickets_row: HBoxContainer  # ряд билетов (заполняется в update из startingTickets)
@@ -132,13 +135,32 @@ func update(inv: Dictionary) -> void:
 	# Перед новыми числами на месте значения пробегают ктулху-руны (как у
 	# атрибутов) — эффект «дешифровки» при смене сыщика. Значение длиннее
 	# цифры атрибута — мелькаем по _BAR_SCRAMBLE_RUNES руны.
-	_scramble_to(_hp_label, "%d / %d" % [hp_max, hp_max], _BAR_SCRAMBLE_RUNES)
-	_scramble_to(_sanity_label, "%d / %d" % [san_max, san_max], _BAR_SCRAMBLE_RUNES)
+	# В compact (HUD на карте) HP/рассудок задаёт set_live_vitals живыми значениями
+	# — здесь их не трогаем, чтобы scramble не перетирал live-значение.
+	if not compact:
+		_scramble_to(_hp_label, "%d / %d" % [hp_max, hp_max], _BAR_SCRAMBLE_RUNES)
+		_scramble_to(_sanity_label, "%d / %d" % [san_max, san_max], _BAR_SCRAMBLE_RUNES)
 	var sk: Dictionary = inv.get("skills", {})
 	for field: String in _attr_value_lbls.keys():
 		_scramble_to(_attr_value_lbls[field], str(int(sk.get(field, 0))))
 	_render_items(inv.get("startingItems", []))
 	_render_resources(inv)
+
+
+## Живые значения HP/рассудка (current/max) для HUD на карте: числа «cur / max» +
+## заливка баров пропорционально current/max (без scramble). Вызывать после
+## update() и на каждое изменение стейта.
+func set_live_vitals(hp: int, hp_max: int, sanity: int, sanity_max: int) -> void:
+	if is_instance_valid(_hp_label):
+		_hp_label.remove_theme_font_override("font")  # сбросить рунный шрифт scramble
+		_hp_label.text = "%d / %d" % [hp, hp_max]
+	if is_instance_valid(_sanity_label):
+		_sanity_label.remove_theme_font_override("font")
+		_sanity_label.text = "%d / %d" % [sanity, sanity_max]
+	if is_instance_valid(_hp_fill_clip):
+		_hp_fill_clip.size.x = (float(hp) / maxf(1.0, float(hp_max))) * _fill_inner_w
+	if is_instance_valid(_sanity_fill_clip):
+		_sanity_fill_clip.size.x = (float(sanity) / maxf(1.0, float(sanity_max))) * _fill_inner_w
 
 
 # Анимация «дешифровки»: на месте числа пробегает _SCRAMBLE_STEPS кадров по
@@ -265,7 +287,7 @@ func _make_hud_stat_row(
 	bar_row.name = "BarRow"
 	bar_row.add_theme_constant_override("separation", 8)
 	info.add_child(bar_row)
-	bar_row.add_child(_make_hud_bar(fill_tex))
+	bar_row.add_child(_make_hud_bar(fill_tex, is_hp))
 
 	# Значение прижато влево — цифры держатся вплотную к концу бара, а не
 	# улетают к правому краю строки.
@@ -284,8 +306,9 @@ func _make_hud_stat_row(
 	return row
 
 
-# Бар: жёлоб bar-bg + статичная заливка fill_tex поверх (всегда полная).
-func _make_hud_bar(fill_tex: Texture2D) -> Control:
+# Бар: жёлоб bar-bg + заливка fill_tex поверх. Долю заполнения задаёт ширина
+# клипа (set_live_vitals); по умолчанию полная.
+func _make_hud_bar(fill_tex: Texture2D, is_hp: bool) -> Control:
 	var bar := Control.new()
 	bar.name = "Bar"
 	bar.custom_minimum_size = Vector2(_HUD_BAR_WIDTH, _HUD_BAR_BG.get_size().y * _HUD_SCALE)
@@ -301,21 +324,37 @@ func _make_hud_bar(fill_tex: Texture2D) -> Control:
 	groove.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bar.add_child(groove)
 
-	# Заливка инсетится внутрь рамки жёлоба — тянется по всей ширине.
+	# Заливка инсетится внутрь рамки жёлоба. Долю заполнения (current/max) задаёт
+	# ШИРИНА клипа: внутри заливка во всю внутреннюю ширину, клип её обрезает
+	# слева-направо (текстура не сжимается, а отсекается). По умолчанию полная.
 	var inset_x: float = (_HUD_BAR_BG.get_size().x - fill_tex.get_size().x) * 0.5 * _HUD_SCALE
 	var inset_y: float = (_HUD_BAR_BG.get_size().y - fill_tex.get_size().y) * 0.5 * _HUD_SCALE
+	var bar_h: float = _HUD_BAR_BG.get_size().y * _HUD_SCALE
+	var inner_w: float = _HUD_BAR_WIDTH - 2.0 * inset_x
+	_fill_inner_w = inner_w
+
+	var clip := Control.new()
+	clip.name = "FillClip"
+	clip.clip_contents = true
+	clip.position = Vector2(inset_x, inset_y)
+	clip.size = Vector2(inner_w, bar_h - 2.0 * inset_y)
+	clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar.add_child(clip)
+
 	var fill := TextureRect.new()
 	fill.name = "Fill"
 	fill.texture = fill_tex
 	fill.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	fill.stretch_mode = TextureRect.STRETCH_SCALE
-	fill.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	fill.offset_left = inset_x
-	fill.offset_right = -inset_x
-	fill.offset_top = inset_y
-	fill.offset_bottom = -inset_y
+	fill.position = Vector2.ZERO
+	fill.size = Vector2(inner_w, clip.size.y)
 	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bar.add_child(fill)
+	clip.add_child(fill)
+
+	if is_hp:
+		_hp_fill_clip = clip
+	else:
+		_sanity_fill_clip = clip
 	return bar
 
 
