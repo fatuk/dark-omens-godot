@@ -25,34 +25,9 @@ const ATTRIBUTES := [
 
 # Ассеты левой панели (player-hud). @2× — выводим с _HUD_SCALE.
 const _HUD_SCALE: float = 0.5
-const _TICKET_SCALE: float = 0.34
-# Наклон второго билета (градусы, по часовой). Он лежит поверх первого —
-# лёгкий поворот даёт ощущение небрежно брошенной стопки.
-const _TICKET_TILT_DEG: float = 7.0
 # Ширина жёлоба баров HP/санити (display-px). Бар фиксированной ширины —
 # увеличь/уменьши это число, чтобы растянуть или сжать оба бара.
 const _HUD_BAR_WIDTH: float = 180.0
-# Тень билета: размытый силуэт-копия, сдвинутая влево-вниз, под билетом.
-const _TICKET_SHADOW_OFFSET := Vector2(-6.0, 6.0)
-const _TICKET_SHADOW_ALPHA: float = 0.55
-const _TICKET_SHADOW_BLUR: float = 6.0  # радиус размытия (в TEXTURE_PIXEL_SIZE)
-
-# Шейдер тени: 5×5 box-blur alpha-маски текстуры → мягкий чёрный силуэт.
-const _SHADOW_BLUR_SHADER := """
-shader_type canvas_item;
-uniform float blur : hint_range(0.0, 32.0) = 6.0;
-uniform float shadow_alpha : hint_range(0.0, 1.0) = 0.55;
-void fragment() {
-	vec2 stp = TEXTURE_PIXEL_SIZE * blur;
-	float a = 0.0;
-	for (int x = -2; x <= 2; x++) {
-		for (int y = -2; y <= 2; y++) {
-			a += texture(TEXTURE, UV + vec2(float(x), float(y)) * stp).a;
-		}
-	}
-	COLOR = vec4(0.0, 0.0, 0.0, (a / 25.0) * shadow_alpha);
-}
-"""
 const _HUD_PANEL_BG: Texture2D = preload("res://assets/player-hud/player-hud-bg.png")
 const _HUD_ROW_BG: Texture2D = preload("res://assets/player-hud/hud-item-bg.png")
 const _HUD_BAR_BG: Texture2D = preload("res://assets/player-hud/bar-bg.png")
@@ -60,8 +35,6 @@ const _HEALTH_ICON: Texture2D = preload("res://assets/player-hud/health-icon.png
 const _HEALTH_BAR: Texture2D = preload("res://assets/player-hud/health-bar.png")
 const _SANITY_ICON: Texture2D = preload("res://assets/player-hud/sanity-icon.png")
 const _SANITY_BAR: Texture2D = preload("res://assets/player-hud/sanity-ba.png")
-const _TRAIN_TICKET: Texture2D = preload("res://assets/player-hud/train-ticket.png")
-const _OCEAN_TICKET: Texture2D = preload("res://assets/player-hud/ocean-ticket.png")
 
 # Иконки-медальоны токенов (выводятся в ряду ресурсов рядом с билетами).
 const _CLUE_ICON: Texture2D = preload("res://assets/map/clue-icon.png")
@@ -116,7 +89,6 @@ const _BAR_SCRAMBLE_RUNES: int = 2
 var _hp_label: Label
 var _sanity_label: Label
 var _attr_value_lbls: Dictionary = {}  # field name -> Label
-var _ticket_shadow_mat: ShaderMaterial  # общий blur-материал теней билетов
 var _items_row: HBoxContainer  # ряд карточек стартового имущества (заполняется в update)
 var _tickets_row: HBoxContainer  # ряд билетов (заполняется в update из startingTickets)
 var _item_deck: Array = []  # payload'ы карт имущества (для веера по клику)
@@ -135,7 +107,6 @@ const _ITEMS_BG_PAD: int = 18  # инсет контента от рамки ф�
 
 
 func _ready() -> void:
-	_ticket_shadow_mat = _build_ticket_shadow_material()
 	add_theme_constant_override("separation", 16)
 	# По центру, по ширине контента — панель НЕ растягивается на весь экран
 	# (по бокам остаётся пусто).
@@ -149,16 +120,6 @@ func _ready() -> void:
 	# Панель стартовых предметов — только в пикере (на карте карты не нужны).
 	if not compact:
 		add_child(_build_items_panel())
-
-
-func _build_ticket_shadow_material() -> ShaderMaterial:
-	var sh := Shader.new()
-	sh.code = _SHADOW_BLUR_SHADER
-	var mat := ShaderMaterial.new()
-	mat.shader = sh
-	mat.set_shader_parameter("blur", _TICKET_SHADOW_BLUR)
-	mat.set_shader_parameter("shadow_alpha", _TICKET_SHADOW_ALPHA)
-	return mat
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -368,7 +329,7 @@ func _make_tickets_row() -> Control:
 	_tickets_row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_tickets_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_tickets_row.add_theme_constant_override("separation", 16)
-	_tickets_row.custom_minimum_size.y = _TRAIN_TICKET.get_size().y * _TICKET_SCALE
+	_tickets_row.custom_minimum_size.y = TicketsRow.ticket_height_px()
 	return _tickets_row
 
 
@@ -384,7 +345,10 @@ func _render_resources(inv: Dictionary) -> void:
 	var train: int = int(tk.get("train", 0))
 	var ship: int = int(tk.get("ship", 0))
 	if train > 0 or ship > 0:
-		_tickets_row.add_child(_make_tickets_group(train, ship))
+		var tickets := TicketsRow.new()
+		tickets.name = "Tickets"
+		tickets.set_counts(train, ship)
+		_tickets_row.add_child(tickets)
 	var items: Array = inv.get("startingItems", [])
 	var clue: int = _token_count(items, "clue")
 	var resource: int = _token_count(items, "resource")
@@ -401,25 +365,6 @@ func _token_count(items: Array, key: String) -> int:
 		if e is Dictionary and (e as Dictionary).has(key):
 			n += int((e as Dictionary)[key])
 	return n
-
-
-# Под-группа билетов (поездные + морские) с нахлёстом (отриц. separation внутри).
-# PNG чуть разного размера (train 161×146, ocean 152×143) — нормализуем по высоте.
-func _make_tickets_group(train_n: int, ship_n: int) -> Control:
-	var hb := HBoxContainer.new()
-	hb.name = "Tickets"
-	hb.add_theme_constant_override("separation", -20)
-	hb.alignment = BoxContainer.ALIGNMENT_CENTER
-	hb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	var ticket_h: float = _TRAIN_TICKET.get_size().y * _TICKET_SCALE
-	var idx: int = 0
-	for i: int in range(maxi(0, train_n)):
-		hb.add_child(_make_ticket(_TRAIN_TICKET, "TrainTicket%d" % i, ticket_h, _ticket_tilt(idx)))
-		idx += 1
-	for i: int in range(maxi(0, ship_n)):
-		hb.add_child(_make_ticket(_OCEAN_TICKET, "OceanTicket%d" % i, ticket_h, _ticket_tilt(idx)))
-		idx += 1
-	return hb
 
 
 # Токен-чип: круглый медальон-иконка + число.
@@ -445,65 +390,6 @@ func _make_token(icon_tex: Texture2D, count: int) -> Control:
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hb.add_child(lbl)
 	return hb
-
-
-# Наклон для эффекта брошенной стопки: первый билет ровно, дальше — вразнобой.
-func _ticket_tilt(idx: int) -> float:
-	if idx == 0:
-		return 0.0
-	return _TICKET_TILT_DEG * (1.0 if idx % 2 == 1 else -1.0)
-
-
-func _make_ticket(
-	tex: Texture2D, node_name: String, ticket_height: float, tilt_deg: float = 0.0
-) -> Control:
-	# Размер: фиксированная высота, ширина — по аспекту текстуры.
-	var tex_size: Vector2 = tex.get_size()
-	var ticket_size := Vector2(ticket_height * tex_size.x / tex_size.y, ticket_height)
-
-	# holder — прямой ребёнок HBox. Контейнер принудительно сбрасывает
-	# rotation/scale своих детей (fit_child_in_rect), поэтому наклоняем НЕ его,
-	# а вложенный Tilt — он контейнеру не подчиняется.
-	var holder := Control.new()
-	holder.name = node_name
-	holder.custom_minimum_size = ticket_size
-	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	# Поворот вокруг центра билета — иначе он уехал бы из своей ячейки.
-	var tilt := Control.new()
-	tilt.name = "Tilt"
-	tilt.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	tilt.pivot_offset = ticket_size * 0.5
-	tilt.rotation_degrees = tilt_deg
-	tilt.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	holder.add_child(tilt)
-
-	# Тень — силуэт-копия билета: blur-шейдер размывает alpha-маску текстуры
-	# и красит в чёрный. Сдвинута влево-вниз, нарисована ПОД билетом —
-	# у перекрывающихся билетов верхний отбрасывает тень на нижний.
-	var shadow := TextureRect.new()
-	shadow.name = "Shadow"
-	shadow.texture = tex
-	shadow.material = _ticket_shadow_mat
-	shadow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	shadow.stretch_mode = TextureRect.STRETCH_SCALE
-	shadow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shadow.offset_left = _TICKET_SHADOW_OFFSET.x
-	shadow.offset_right = _TICKET_SHADOW_OFFSET.x
-	shadow.offset_top = _TICKET_SHADOW_OFFSET.y
-	shadow.offset_bottom = _TICKET_SHADOW_OFFSET.y
-	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tilt.add_child(shadow)
-
-	var ticket := TextureRect.new()
-	ticket.name = "Ticket"
-	ticket.texture = tex
-	ticket.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	ticket.stretch_mode = TextureRect.STRETCH_SCALE
-	ticket.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	ticket.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tilt.add_child(ticket)
-	return holder
 
 
 # ── Attributes ────────────────────────────────────────────────────────────────

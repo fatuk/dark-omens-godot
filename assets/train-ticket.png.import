@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bi1mvtjs8qqla"
-path="res://.godot/imported/train-ticket.png-5bc380de6c4160b5ce8a549a40e264b0.ctex"
+uid="uid://badwbgqvkfqt5"
+path="res://.godot/imported/train-ticket.png-e259142b3f0e5d24b47a67e11e6c447d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/player-hud/train-ticket.png"
-dest_files=["res://.godot/imported/train-ticket.png-5bc380de6c4160b5ce8a549a40e264b0.ctex"]
+source_file="res://assets/train-ticket.png"
+dest_files=["res://.godot/imported/train-ticket.png-e259142b3f0e5d24b47a67e11e6c447d.ctex"]
 
 [params]
 

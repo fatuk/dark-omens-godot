@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://buqn0aeqxqvpo"
-path="res://.godot/imported/ocean-ticket.png-32c24fa2e0398cab84a4fefe1ea488fc.ctex"
+uid="uid://bwsdjb5musrsu"
+path="res://.godot/imported/ocean-ticket.png-b607782c49a547fdd8fa13d858c44a28.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/player-hud/ocean-ticket.png"
-dest_files=["res://.godot/imported/ocean-ticket.png-32c24fa2e0398cab84a4fefe1ea488fc.ctex"]
+source_file="res://assets/ocean-ticket.png"
+dest_files=["res://.godot/imported/ocean-ticket.png-b607782c49a547fdd8fa13d858c44a28.ctex"]
 
 [params]
 
