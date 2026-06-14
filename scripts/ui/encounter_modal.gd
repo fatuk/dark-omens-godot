@@ -361,7 +361,6 @@ func _show_dice_result(res: Dictionary) -> void:
 		return
 	_ensure_tray()
 	var dice: Array = res.get("dice", [])
-	var free: int = _free_rerolls()  # бесплатные перебросы от карт
 	var committed: bool = bool(GameState.current_encounter.get("committed", false))
 	# Тапом перебросить можно ТОЛЬКО бесплатно (карта) или заряженным жетоном.
 	# Концентрация/улика — лишь через розыгрыш жетона. После «принятия» (_revealed) — нет.
@@ -386,18 +385,8 @@ func _show_dice_result(res: Dictionary) -> void:
 		_tray.show_roll(dice, can)
 		_last_can = can
 	_dice_holder.visible = true
-	var summary: String = "%s: %d" % [tr("ENCOUNTER_SUCCESSES"), int(res.get("successes", 0))]
-	if can:
-		# Готовы к перебросу: бесплатный — или заряжен жетон → нажать куб.
-		if free > 0:
-			summary += "  ·  " + (tr("ENCOUNTER_REROLL_FREE") % free)
-		else:
-			summary += "  ·  " + tr("ENCOUNTER_REROLL_TAP")
-	elif not _revealed and GameState.has_reroll_resource():
-		# Есть концентрация/улика, но жетон ещё не разыгран → подсказываем перетащить.
-		summary += "  ·  " + tr("ENCOUNTER_REROLL_DRAG")
-	_dice.text = summary
-	_dice.visible = true
+	# Строку-итог «успехов: N · перетащите жетон…» убрали — кубы говорят сами за себя.
+	_dice.visible = false
 
 
 func _hide_dice() -> void:
@@ -460,12 +449,6 @@ func _rerolls_available() -> bool:
 	if bool(GameState.current_encounter.get("committed", false)):
 		return false
 	return GameState.has_reroll_resource()
-
-
-# Остаток бесплатных перебросов от карт на текущей проверке (allowance − использовано).
-func _free_rerolls() -> int:
-	var c: Dictionary = _chk()
-	return maxi(0, int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0)))
 
 
 # Текущий показанный результат — провал? (из активной проверки встречи).
