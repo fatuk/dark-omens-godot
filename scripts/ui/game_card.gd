@@ -43,11 +43,11 @@ const C_ART_FILL := Color(0.10, 0.08, 0.14)  # заглушка арт-слот�
 const C_GLYPH := Color(0.55, 0.48, 0.35)
 
 # Скролл описания курсором (когда текст не влезает в зону пергамента): позиция
-# курсора по вертикали внутри клипа задаёт направление и скорость — у верхнего
-# края скроллит вверх, у нижнего вниз, по центру стоит; чем ближе к краю, тем
-# быстрее.
-const _DESC_SCROLL_MAX_SPEED := 150.0  # px/сек у самого края клипа
-const _DESC_SCROLL_DEADZONE := 0.06  # доля высоты от центра, где скролл стоит
+# курсора по вертикали в пределах ВСЕЙ карты задаёт направление и скорость —
+# верх карты скроллит вверх, низ вниз, по центру стоит. Характеристика
+# квадратичная: у центра скорость ~0 и плавно растёт к краям.
+const _DESC_SCROLL_MAX_SPEED := 150.0  # px/сек у самого края карты
+const _DESC_SCROLL_DEADZONE := 0.04  # доля высоты от центра, где скролл стоит
 
 var _cost: Label
 var _title: Label
@@ -199,20 +199,23 @@ func _on_desc_hover_end() -> void:
 		_desc_scroll.scroll_vertical = 0
 
 
-# Скорость/направление скролла = позиция курсора по вертикали внутри клипа:
-# t=0 (верх) → вверх на макс. скорости, t=0.5 (центр) → стоп, t=1 (низ) → вниз.
+# Скорость/направление скролла = позиция курсора по вертикали в пределах ВСЕЙ
+# карты: t=0 (верх) → вверх, t=0.5 (центр) → стоп, t=1 (низ) → вниз. Скорость —
+# квадратичная по отклонению от центра (плавно растёт к краям).
 func _process(delta: float) -> void:
 	if not (is_instance_valid(_desc_scroll) and is_instance_valid(_desc)):
 		return
 	var overflow: int = maxi(0, int(_desc.size.y) - int(_desc_scroll.size.y))
-	var h: float = _desc_scroll.size.y
-	if overflow <= 0 or h <= 0.0:
+	var ch: float = size.y
+	if overflow <= 0 or ch <= 0.0:
 		return  # текст влезает — скроллить нечего
-	var t: float = clampf(_desc_scroll.get_local_mouse_position().y / h, 0.0, 1.0)
-	var dir: float = (t - 0.5) * 2.0  # [-1..1]: <0 вверх, >0 вниз; |dir| растёт к краю
+	var t: float = clampf(get_local_mouse_position().y / ch, 0.0, 1.0)
+	var dir: float = (t - 0.5) * 2.0  # [-1..1]: <0 вверх, >0 вниз
 	if absf(dir) < _DESC_SCROLL_DEADZONE:
 		return  # около центра — стоп
-	var pos: float = float(_desc_scroll.scroll_vertical) + dir * _DESC_SCROLL_MAX_SPEED * delta
+	# Квадратичная характеристика (знак сохраняем): у центра ~0, к краям — быстрее.
+	var speed: float = signf(dir) * dir * dir * _DESC_SCROLL_MAX_SPEED
+	var pos: float = float(_desc_scroll.scroll_vertical) + speed * delta
 	_desc_scroll.scroll_vertical = int(roundf(clampf(pos, 0.0, float(overflow))))
 
 
