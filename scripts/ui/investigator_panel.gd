@@ -265,6 +265,7 @@ func _refresh_live() -> void:
 		int(p.get("sanity", 0)),
 		int(p.get("sanity_max", 0))
 	)
+	_info_bar.set_live_skill_mods(p.get("skill_mods", {}))
 
 
 # ── Загрузка данных сыщика ────────────────────────────────────────────────────

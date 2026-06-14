@@ -92,7 +92,8 @@ var _hp_cur: int = -1  # последнее показанное HP (для ан
 var _sanity_cur: int = -1  # последнее показанное значение рассудка
 var _hp_tween: Tween = null  # активная анимация бара HP
 var _sanity_tween: Tween = null  # активная анимация бара рассудка
-var _attr_value_lbls: Dictionary = {}  # field name -> Label
+var _attr_value_lbls: Dictionary = {}  # field name -> Label (число навыка)
+var _attr_mod_lbls: Dictionary = {}  # field name -> Label «+n» (живой skill_mod справа)
 var _items_row: HBoxContainer  # ряд карточек стартового имущества (заполняется в update)
 var _tickets_row: HBoxContainer  # ряд билетов (заполняется в update из startingTickets)
 var _item_deck: Array = []  # payload'ы карт имущества (для веера по клику)
@@ -154,6 +155,26 @@ func update(inv: Dictionary) -> void:
 func set_live_vitals(hp: int, hp_max: int, sanity: int, sanity_max: int) -> void:
 	_animate_vital(true, hp, hp_max)
 	_animate_vital(false, sanity, sanity_max)
+
+
+## Живые модификаторы навыков (player.skill_mods) для HUD: справа от числа навыка —
+## «+n» (улучшение, зелёным) или «−n» (снижение, приглушённым); 0 — скрыто. Базовое
+## число навыка задаётся отдельно в update() (из данных сыщика).
+func set_live_skill_mods(mods: Dictionary) -> void:
+	for field: String in _attr_mod_lbls.keys():
+		var lbl: Label = _attr_mod_lbls[field]
+		if not is_instance_valid(lbl):
+			continue
+		var m: int = int(mods.get(field, 0))
+		if m == 0:
+			lbl.text = ""
+			lbl.visible = false
+		else:
+			lbl.text = "%+d" % m  # +2 / −1
+			lbl.add_theme_color_override(
+				"font_color", UIColors.SUCCESS if m > 0 else UIColors.MUTED
+			)
+			lbl.visible = true
 
 
 # Анимирует один бар (HP или рассудок): ширину заливки и счёт числа от текущего
@@ -526,14 +547,30 @@ func _make_attr_box(label_key: String, field: String) -> Control:
 
 	col.add_child(_attr_spacer("SpacerBelowIcon"))
 
-	var val := UIStyle.label("—", 26, _ATTR_VALUE_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	val.name = "Value"
+	# Число навыка + опц. «+n» (живой skill_mod) справа. Ряд по центру; число —
+	# scramble-лейбл, мод — отдельный мелкий («+n» зелёным / «−n» приглушённым),
+	# скрыт при 0 и заполняется через set_live_skill_mods (HUD на карте).
+	var val_row := HBoxContainer.new()
+	val_row.name = "Value"
+	val_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	val_row.add_theme_constant_override("separation", 3)
 	# Фиксированная высота + вертикальный центр — руны при scramble'е другой
 	# метрики, чем цифры; без этого само число дёргалось бы по высоте.
-	val.custom_minimum_size.y = 36
+	val_row.custom_minimum_size.y = 36
+	col.add_child(val_row)
+
+	var val := UIStyle.label("—", 26, _ATTR_VALUE_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
+	val.name = "Num"
 	val.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	col.add_child(val)
+	val_row.add_child(val)
 	_attr_value_lbls[field] = val
+
+	var mod := UIStyle.label("", 14, UIColors.SUCCESS, HORIZONTAL_ALIGNMENT_LEFT)
+	mod.name = "Mod"
+	mod.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	mod.visible = false
+	val_row.add_child(mod)
+	_attr_mod_lbls[field] = mod
 
 	col.add_child(_attr_spacer("SpacerBottom"))
 	return col
