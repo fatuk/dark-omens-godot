@@ -13,10 +13,13 @@ extends CanvasLayer
 
 var _cond_btns: Dictionary = {}  # cond_id → Button локального действия состояния
 var _trade_btn: Button = null  # кнопка «Обмен» (видна при со-локационном напарнике)
+var _tickets: TicketsRow = null  # ряд билетов под кнопками (общий компонент)
+var _last_tickets: int = -1  # последнее показанное число билетов (без лишних ребилдов)
 
 
 func _ready() -> void:
-	UIStyle.style_panel(_panel, 16)
+	# Без рамки/фона — кнопки и билеты лежат прямо на полосе панели сыщика.
+	_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	UIStyle.style_button(_ticket_btn)
 	UIStyle.style_button(_concent_btn)
 	UIStyle.style_button(_rest_btn)
@@ -38,6 +41,12 @@ func _ready() -> void:
 	_rest_btn.get_parent().add_child(_trade_btn)
 	_rest_btn.get_parent().move_child(_trade_btn, _pass_btn.get_index())
 
+	# Ряд билетов под кнопками (тот же компонент, что в InfoBar лобби).
+	_tickets = TicketsRow.new()
+	_tickets.name = "Tickets"
+	_tickets.visible = false
+	_ticket_btn.get_parent().get_parent().add_child(_tickets)  # в VBox под ButtonsRow
+
 	GameState.state_changed.connect(_refresh)
 	_refresh()
 
@@ -56,6 +65,12 @@ func _refresh() -> void:
 	_trade_btn.visible = _has_colocated_ally()
 	_trade_btn.disabled = used.has("trade")
 	_refresh_condition_actions(me, used)
+	# Билеты под кнопками: текущее число у игрока (один счётчик → поездные билеты).
+	var n_tickets: int = int(me.get("tickets", 0))
+	if n_tickets != _last_tickets:
+		_last_tickets = n_tickets
+		_tickets.set_counts(n_tickets, 0)
+	_tickets.visible = n_tickets > 0
 	# Биндим через LocaleBinder — строка форматированная (%d), при смене локали
 	# нужно перевычислить tr() с актуальным шаблоном.
 	LocaleBinder.bind(
