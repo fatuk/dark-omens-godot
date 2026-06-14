@@ -18,6 +18,7 @@ const _CONTENT_PAD_X := 48.0  # инсет контента от левого к
 const _CONTENT_PAD_Y := 26.0  # инсет контента сверху
 const _AVATAR_D := 168.0  # диаметр аватара (кольцо avatar-round-frame)
 const _GAP := 18.0  # отступ между аватаром и InfoBar
+const _CAPTION_OVERLAP := 14  # на сколько px подпись имени налезает на низ аватарки
 
 const _FRAME_TEX: Texture2D = preload(
 	"res://assets/investigator-panel/investigator-panel-frame.png"
@@ -113,7 +114,9 @@ func _build_ui() -> void:
 func _build_avatar() -> Control:
 	var col := VBoxContainer.new()
 	col.name = "AvatarCol"
-	col.add_theme_constant_override("separation", 4)
+	# Отрицательный отступ: подпись подтягивается вверх и слегка налезает на низ
+	# аватарки (имя идёт после холдера → рисуется поверх кольца).
+	col.add_theme_constant_override("separation", -_CAPTION_OVERLAP)
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
 	col.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
