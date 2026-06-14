@@ -37,6 +37,7 @@ var _inv_data: Dictionary = {}
 var _info_bar: InfoBar
 var _portrait: TextureRect
 var _name_label: Label
+var _occ_label: Label
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -149,14 +150,36 @@ func _build_avatar() -> Control:
 	holder.add_child(ring)
 	col.add_child(holder)
 
-	_name_label = Label.new()
-	_name_label.name = "NameLabel"
-	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_name_label.add_theme_font_size_override("font_size", 16)
-	_name_label.add_theme_color_override("font_color", UIColors.TEXT)
-	col.add_child(_name_label)
+	# Подпись как на карточке сыщика: имя золотом (ACCENT) + род занятий ниже
+	# (MUTED), по центру, с лёгкой тенью; две строки вплотную.
+	var caption := VBoxContainer.new()
+	caption.name = "Caption"
+	caption.alignment = BoxContainer.ALIGNMENT_CENTER
+	caption.add_theme_constant_override("separation", 0)
+	caption.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
+	_name_label = UIStyle.label("", 17, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_name_label.name = "NameLabel"
+	_caption_shadow(_name_label)
+	caption.add_child(_name_label)
+
+	_occ_label = UIStyle.label("", 11, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	_occ_label.name = "OccLabel"
+	_caption_shadow(_occ_label)
+	caption.add_child(_occ_label)
+
+	col.add_child(caption)
 	return col
+
+
+# Лёгкая чёрная тень под текстом подписи (читаемость поверх фона/рамки) — как на
+# карточке сыщика (_apply_card_text_shadow).
+func _caption_shadow(lbl: Label) -> void:
+	lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	lbl.add_theme_constant_override("shadow_offset_x", 1)
+	lbl.add_theme_constant_override("shadow_offset_y", 1)
+	lbl.add_theme_constant_override("shadow_outline_size", 2)
 
 
 # ── Заполнение данными ────────────────────────────────────────────────────────
@@ -166,8 +189,13 @@ func _populate_data() -> void:
 	if is_instance_valid(_portrait):
 		_portrait.texture = _load_portrait()
 	if is_instance_valid(_name_label):
-		# displayName — translation key; Label переводит автоматически.
-		_name_label.text = String(_inv_data.get("displayName", _inv_data.get("name", _inv_name)))
+		# Имя + род занятий ЗАГЛАВНЫМИ (как на карточке сыщика). tr() явно —
+		# уже переведённую строку прогоняем через to_upper().
+		var name_key: String = String(
+			_inv_data.get("displayName", _inv_data.get("name", _inv_name))
+		)
+		_name_label.text = tr(name_key).to_upper()
+		_occ_label.text = tr(String(_inv_data.get("occupation", ""))).to_upper()
 	if is_instance_valid(_info_bar):
 		_info_bar.update(_inv_data)
 
