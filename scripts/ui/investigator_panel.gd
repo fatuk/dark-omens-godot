@@ -18,7 +18,7 @@ const _CONTENT_PAD_X := 48.0  # инсет контента от левого к
 const _CONTENT_PAD_Y := 26.0  # инсет контента сверху
 const _AVATAR_D := 168.0  # диаметр аватара (кольцо avatar-round-frame)
 const _GAP := 18.0  # отступ между аватаром и InfoBar
-const _CAPTION_OVERLAP := 14  # на сколько px подпись имени налезает на низ аватарки
+const _CAPTION_OVERLAP := 7  # на сколько px подпись имени налезает на низ аватарки
 
 const _FRAME_TEX: Texture2D = preload(
 	"res://assets/investigator-panel/investigator-panel-frame.png"
@@ -192,13 +192,10 @@ func _populate_data() -> void:
 	if is_instance_valid(_portrait):
 		_portrait.texture = _load_portrait()
 	if is_instance_valid(_name_label):
-		# Имя + род занятий ЗАГЛАВНЫМИ (как на карточке сыщика). tr() явно —
-		# уже переведённую строку прогоняем через to_upper().
-		var name_key: String = String(
-			_inv_data.get("displayName", _inv_data.get("name", _inv_name))
-		)
-		_name_label.text = tr(name_key).to_upper()
-		_occ_label.text = tr(String(_inv_data.get("occupation", ""))).to_upper()
+		# displayName / occupation — translation keys; Label переводит автоматически
+		# (реактивно к смене локали). Обычный регистр, без caps.
+		_name_label.text = String(_inv_data.get("displayName", _inv_data.get("name", _inv_name)))
+		_occ_label.text = String(_inv_data.get("occupation", ""))
 	if is_instance_valid(_info_bar):
 		_info_bar.update(_inv_data)
 
