@@ -123,6 +123,20 @@ class MockGameState:
 	func _load_locations() -> Array:
 		return locations
 
+	func available_ticket_types(loc_id: String) -> Array:
+		if String(loc_types.get(loc_id, "")) != "city":
+			return []
+		var types: Array = []
+		for loc in locations:
+			if String((loc as Dictionary).get("id", "")) != loc_id:
+				continue
+			for c in (loc as Dictionary).get("connections", []):
+				var t: String = String((c as Dictionary).get("type", ""))
+				if (t == "train" or t == "ship") and not types.has(t):
+					types.append(t)
+			break
+		return types
+
 	func _refill_shop_reserve(_a: Array) -> void:
 		pass
 
@@ -212,11 +226,31 @@ func test_action_repeat_rejected() -> void:
 
 
 func test_buy_ticket_grants_ticket_and_spends_action() -> void:
-	_solo()
-	assert_true(_pc.host_apply_action("p", "buy_ticket"))
-	assert_eq(int(_gs.players["p"]["tickets"]), 1)
+	# Город с морской дорогой → можно купить билет на корабль.
+	_gs.loc_types["c1"] = "city"
+	_gs.locations = [{"id": "c1", "connections": [{"to": "x", "type": "ship"}]}]
+	_solo({"location": "c1"})
+	assert_true(_pc.host_apply_action("p", "buy_ticket", {"type": "ship"}))
+	assert_eq(int(_gs.players["p"].get("ship_tickets", 0)), 1)
+	assert_eq(int(_gs.players["p"].get("train_tickets", 0)), 0, "куплен только морской")
 	assert_eq(int(_gs.players["p"]["actions_left"]), 1, "действие потрачено")
 	assert_true((_gs.players["p"]["actions_used"] as Array).has("buy_ticket"))
+
+
+func test_buy_ticket_rejected_when_type_not_available() -> void:
+	# Город только с морской дорогой → ж/д билет купить нельзя.
+	_gs.loc_types["c1"] = "city"
+	_gs.locations = [{"id": "c1", "connections": [{"to": "x", "type": "ship"}]}]
+	_solo({"location": "c1"})
+	assert_false(_pc.host_apply_action("p", "buy_ticket", {"type": "train"}))
+	assert_eq(int(_gs.players["p"]["actions_left"]), 2, "действие не потрачено")
+
+
+func test_buy_ticket_rejected_outside_city() -> void:
+	_gs.loc_types["s1"] = "sea"
+	_gs.locations = [{"id": "s1", "connections": [{"to": "x", "type": "ship"}]}]
+	_solo({"location": "s1"})
+	assert_false(_pc.host_apply_action("p", "buy_ticket", {"type": "ship"}))
 
 
 func test_take_concentration_increments() -> void:

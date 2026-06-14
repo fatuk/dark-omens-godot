@@ -73,7 +73,7 @@ var campaign_pending: bool = false
 # новый. user_id → {
 #   user_id, name, investigator, location, connected,
 #   actions_left, actions_used, encounter_done,
-#   tickets, concentration, hp, sanity, hp_max, sanity_max,
+#   train_tickets, ship_tickets, concentration, hp, sanity, hp_max, sanity_max,
 #   clues, conditions, items, skill_mods
 # }
 var players: Dictionary = {}
@@ -258,7 +258,8 @@ func _make_player_dict(
 		"actions_left": ACTIONS_PER_ROUND,
 		"actions_used": [],
 		"encounter_done": false,
-		"tickets": 0,
+		"train_tickets": 0,
+		"ship_tickets": 0,
 		"concentration": 0,
 		"hp": hp_max,
 		"sanity": sanity_max,
@@ -762,6 +763,25 @@ func location_type(loc_id: String) -> String:
 		if String((loc as Dictionary).get("id", "")) == loc_id:
 			return String((loc as Dictionary).get("type", ""))
 	return ""
+
+
+## Какие билеты можно купить в локации (по типам исходящих дорог). Билеты продаются
+## ТОЛЬКО в городах: дорога type "train" → ж/д билет ("train"), "ship" → билет на
+## корабль ("ship"). Возвращает подмножество ["train","ship"] (пусто — не город или
+## нет таких дорог). Источник для UI (кнопки в сайдбаре) и валидации buy_ticket.
+func available_ticket_types(loc_id: String) -> Array:
+	if location_type(loc_id) != "city":
+		return []
+	var types: Array = []
+	for loc in _load_locations():
+		if String((loc as Dictionary).get("id", "")) != loc_id:
+			continue
+		for c in (loc as Dictionary).get("connections", []):
+			var t: String = String((c as Dictionary).get("type", ""))
+			if (t == "train" or t == "ship") and not types.has(t):
+				types.append(t)
+		break
+	return types
 
 
 ## Аффинити бонусов локации (data/locations.json → rewardAffinity): { verb: weight }.

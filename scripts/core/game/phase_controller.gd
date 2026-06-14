@@ -63,7 +63,16 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 
 	match action_type:
 		"buy_ticket":
-			p["tickets"] = int(p.get("tickets", 0)) + 1
+			# Билет продаётся только в городе; тип — по дорогам города
+			# (payload {"type":"train"|"ship"}): train → ж/д, ship → корабль.
+			var tkt_type: String = String(payload.get("type", ""))
+			if not _gs.available_ticket_types(String(p.get("location", ""))).has(tkt_type):
+				GameConsole.warn(
+					"[Game] %s — билет «%s» здесь не продаётся" % [_gs._name_of(pid), tkt_type]
+				)
+				return false
+			var tkt_field: String = "train_tickets" if tkt_type == "train" else "ship_tickets"
+			p[tkt_field] = int(p.get(tkt_field, 0)) + 1
 			p["actions_left"] = int(p["actions_left"]) - 1
 		"take_concentration":
 			p["concentration"] = int(p.get("concentration", 0)) + 1
