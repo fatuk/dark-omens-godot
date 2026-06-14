@@ -84,8 +84,10 @@ const _PASSIVE_VERBS := [
 # Навыки Dark Omens — для improveSkill/impairSkill со skill:"all" (Markings of Isis).
 const _ALL_SKILLS := ["influence", "lore", "observation", "strength", "will"]
 
-# Потолок улучшения навыка: skill_mods[skill] не поднять выше +SKILL_MOD_CAP (улучшения
-# каста/встреч стекаются, но не бесконечно). Снижение (impairSkill) потолком не ограничено.
+# Предел модификатора навыка: skill_mods[skill] ∈ [−SKILL_MOD_CAP, +SKILL_MOD_CAP] —
+# улучшить максимум на +2, ухудшить на −2 (касты/встречи/состояния не стекаются
+# бесконечно). Эффективный навык (base + mods) дополнительно флорится в 1 при подсчёте
+# пула (CheckFlow.pool / _roll_test / _lore_roll — maxi(1, …)).
 const SKILL_MOD_CAP := 2
 
 
@@ -395,14 +397,14 @@ static func _apply_player_verb(
 			if skill == "all":
 				var amods: Dictionary = player.get("skill_mods", {})
 				for sk_v: Variant in _ALL_SKILLS:
-					amods[String(sk_v)] = mini(
-						SKILL_MOD_CAP, int(amods.get(String(sk_v), 0)) + delta
+					amods[String(sk_v)] = clampi(
+						int(amods.get(String(sk_v), 0)) + delta, -SKILL_MOD_CAP, SKILL_MOD_CAP
 					)
 				player["skill_mods"] = amods
 				logs.append("все навыки %+d" % delta)
 			elif not skill.is_empty():
 				var mods: Dictionary = player.get("skill_mods", {})
-				mods[skill] = mini(SKILL_MOD_CAP, int(mods.get(skill, 0)) + delta)
+				mods[skill] = clampi(int(mods.get(skill, 0)) + delta, -SKILL_MOD_CAP, SKILL_MOD_CAP)
 				player["skill_mods"] = mods
 				logs.append("навык %s %+d" % [skill, delta])
 		"becomeDelayed":
