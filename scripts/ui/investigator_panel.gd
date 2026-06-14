@@ -20,6 +20,13 @@ const _AVATAR_D := 168.0  # диаметр аватара (кольцо avatar-r
 const _GAP := 18.0  # отступ между аватаром и InfoBar
 const _CAPTION_OVERLAP := 7  # на сколько px подпись имени налезает на низ аватарки
 
+# Мягкая тень кольца-рамки аватара: размытый силуэт КОЛЬЦА, сдвинутый вниз. Лежит
+# НАД портретом, но ПОД самим кольцом — поэтому тень падает и на портрет (внутри),
+# и на подложку панели (снаружи). Box-blur по альфе текстуры — как у билетов.
+const _AVATAR_SHADOW_OFFSET := Vector2(0.0, 6.0)  # сдвиг тени вниз
+const _AVATAR_SHADOW_BLUR := 7.0  # радиус размытия (в TEXTURE_PIXEL_SIZE)
+const _AVATAR_SHADOW_ALPHA := 0.55  # непрозрачность тени
+
 const _FRAME_TEX: Texture2D = preload(
 	"res://assets/investigator-panel/investigator-panel-frame.png"
 )
@@ -30,6 +37,23 @@ const _CIRCLE_MASK_SHADER := """
 shader_type canvas_item;
 void fragment() {
 	if (distance(UV, vec2(0.5)) > 0.5) { COLOR.a = 0.0; }
+}
+"""
+
+# Тень кольца: 5×5 box-blur альфы текстуры → мягкий чёрный силуэт кольца.
+const _AVATAR_SHADOW_SHADER := """
+shader_type canvas_item;
+uniform float blur : hint_range(0.0, 32.0) = 7.0;
+uniform float shadow_alpha : hint_range(0.0, 1.0) = 0.55;
+void fragment() {
+	vec2 stp = TEXTURE_PIXEL_SIZE * blur;
+	float a = 0.0;
+	for (int x = -2; x <= 2; x++) {
+		for (int y = -2; y <= 2; y++) {
+			a += texture(TEXTURE, UV + vec2(float(x), float(y)) * stp).a;
+		}
+	}
+	COLOR = vec4(0.0, 0.0, 0.0, (a / 25.0) * shadow_alpha);
 }
 """
 
@@ -141,6 +165,28 @@ func _build_avatar() -> Control:
 	mat.shader = sh
 	_portrait.material = mat
 	holder.add_child(_portrait)
+
+	# Тень кольца: размытый силуэт рамки, сдвинут вниз. ПОД кольцом, но НАД портретом —
+	# падает и на портрет (внутренняя дуга), и наружу на подложку панели (внешняя).
+	var shadow := TextureRect.new()
+	shadow.name = "RingShadow"
+	shadow.texture = _AVATAR_FRAME
+	shadow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	shadow.stretch_mode = TextureRect.STRETCH_SCALE
+	shadow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shadow.offset_left = _AVATAR_SHADOW_OFFSET.x
+	shadow.offset_right = _AVATAR_SHADOW_OFFSET.x
+	shadow.offset_top = _AVATAR_SHADOW_OFFSET.y
+	shadow.offset_bottom = _AVATAR_SHADOW_OFFSET.y
+	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sh_mat := ShaderMaterial.new()
+	var sh_sh := Shader.new()
+	sh_sh.code = _AVATAR_SHADOW_SHADER
+	sh_mat.shader = sh_sh
+	sh_mat.set_shader_parameter("blur", _AVATAR_SHADOW_BLUR)
+	sh_mat.set_shader_parameter("shadow_alpha", _AVATAR_SHADOW_ALPHA)
+	shadow.material = sh_mat
+	holder.add_child(shadow)
 
 	# Кольцо-фрейм поверх портрета.
 	var ring := TextureRect.new()
