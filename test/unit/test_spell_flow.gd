@@ -167,9 +167,9 @@ func test_unconditional_discard() -> void:
 
 func test_wither_front_buffs_strength() -> void:
 	_player([{"id": "wither"}])
-	# pass → front improveSkill strength +3; b1 тир 2+ → ничего.
+	# pass → front improveSkill strength +3, но кап навыка +2 (SKILL_MOD_CAP).
 	_sf.resolve_cast("p", 0, 2, [5, 5], _force("wither_b1"))
-	assert_eq(int((_gs.players["p"]["skill_mods"] as Dictionary).get("strength", 0)), 3)
+	assert_eq(int((_gs.players["p"]["skill_mods"] as Dictionary).get("strength", 0)), 2, "кап +2")
 
 
 # ── Гварды ────────────────────────────────────────────────────────────────────
@@ -314,7 +314,11 @@ func test_apply_incantation_applies_front_and_restores_combat() -> void:
 	_sf.begin_incantation("p", 0)
 	_sf.roll_cast("p")
 	assert_true(_sf.apply_cast("p", {"backs": {"0": "wither_b1"}}))
-	assert_eq(int((_gs.players["p"]["skill_mods"] as Dictionary).get("strength", 0)), 3, "+3 Силы")
+	assert_eq(
+		int((_gs.players["p"]["skill_mods"] as Dictionary).get("strength", 0)),
+		2,
+		"+3 Силы → кап +2"
+	)
 	assert_eq(String(_gs.active_check.get("owner", "")), "combat", "боевая проверка вернулась")
 	assert_eq((_gs._check_stack as Array).size(), 0, "стек пуст")
 	assert_eq(_gs._phase.released, [], "incantation не освобождает ход")

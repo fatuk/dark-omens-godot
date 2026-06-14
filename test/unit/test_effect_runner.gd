@@ -110,6 +110,17 @@ func test_improve_and_impair_skill_accumulate() -> void:
 	assert_eq(int((p["skill_mods"] as Dictionary)["lore"]), 2, "lore: 1 + 1(all)")
 
 
+func test_improve_skill_caps_at_max() -> void:
+	var p: Dictionary = _player()
+	EffectRunner.run([{"do": "improveSkill", "skill": "lore", "amount": 5}], p)
+	assert_eq(int((p["skill_mods"] as Dictionary)["lore"]), 2, "улучшение навыка не выше +2")
+	EffectRunner.run([{"do": "improveSkill", "skill": "lore", "amount": 1}], p)
+	assert_eq(int((p["skill_mods"] as Dictionary)["lore"]), 2, "потолок держится при повторе")
+	# Снижение потолком не ограничено — уходит ниже.
+	EffectRunner.run([{"do": "impairSkill", "skill": "lore", "amount": 3}], p)
+	assert_eq(int((p["skill_mods"] as Dictionary)["lore"]), -1, "impairSkill за потолок (2 − 3)")
+
+
 func test_become_delayed_adds_condition() -> void:
 	var p: Dictionary = _player()
 	EffectRunner.run([{"do": "becomeDelayed"}], p)
