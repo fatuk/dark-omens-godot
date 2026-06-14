@@ -87,6 +87,7 @@ class MockGameState:
 	extends Node
 	signal phase_changed(phase: String)
 	const ACTIONS_PER_ROUND := 2
+	const MAX_TICKETS := 2
 	var phase: String = "action"
 	var players: Dictionary = {}
 	var turn_order: Array = []
@@ -251,6 +252,18 @@ func test_buy_ticket_rejected_outside_city() -> void:
 	_gs.locations = [{"id": "s1", "connections": [{"to": "x", "type": "ship"}]}]
 	_solo({"location": "s1"})
 	assert_false(_pc.host_apply_action("p", "buy_ticket", {"type": "ship"}))
+
+
+func test_buy_ticket_rejected_at_ticket_cap() -> void:
+	# Город с обеими дорогами; на руках уже 2 билета (1 ж/д + 1 корабль) → потолок.
+	_gs.loc_types["c1"] = "city"
+	_gs.locations = [
+		{"id": "c1", "connections": [{"to": "x", "type": "train"}, {"to": "y", "type": "ship"}]}
+	]
+	_solo({"location": "c1", "train_tickets": 1, "ship_tickets": 1})
+	assert_false(_pc.host_apply_action("p", "buy_ticket", {"type": "train"}), "потолок 2 билета")
+	assert_eq(int(_gs.players["p"]["actions_left"]), 2, "действие не потрачено")
+	assert_eq(int(_gs.players["p"].get("train_tickets", 0)), 1, "билет не добавлен")
 
 
 func test_take_concentration_increments() -> void:

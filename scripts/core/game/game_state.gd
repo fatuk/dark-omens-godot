@@ -17,6 +17,7 @@ signal state_changed  # любое изменение стейта
 signal phase_changed(new_phase: String)  # переход фазы
 
 const ACTIONS_PER_ROUND := 2
+const MAX_TICKETS := 2  # потолок билетов на руках (ж/д + корабль суммарно), как в EH
 
 # ── Глобальный стейт ──────────────────────────────────────────────────────────
 var round_num: int = 0
@@ -656,6 +657,9 @@ func can_buy_ticket(loc_id: String) -> bool:
 	if (me.get("actions_used", []) as Array).has("buy_ticket"):
 		return false
 	if String(me.get("location", "")) != loc_id:
+		return false
+	# Потолок: на руках максимум MAX_TICKETS билетов (ж/д + корабль).
+	if int(me.get("train_tickets", 0)) + int(me.get("ship_tickets", 0)) >= MAX_TICKETS:
 		return false
 	return not available_ticket_types(loc_id).is_empty()
 

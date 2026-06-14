@@ -71,6 +71,15 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 					"[Game] %s — билет «%s» здесь не продаётся" % [_gs._name_of(pid), tkt_type]
 				)
 				return false
+			# Потолок билетов на руках (ж/д + корабль), как в EH.
+			if int(p.get("train_tickets", 0)) + int(p.get("ship_tickets", 0)) >= _gs.MAX_TICKETS:
+				GameConsole.warn(
+					(
+						"[Game] %s — нельзя держать больше %d билетов"
+						% [_gs._name_of(pid), _gs.MAX_TICKETS]
+					)
+				)
+				return false
 			var tkt_field: String = "train_tickets" if tkt_type == "train" else "ship_tickets"
 			p[tkt_field] = int(p.get(tkt_field, 0)) + 1
 			p["actions_left"] = int(p["actions_left"]) - 1
