@@ -14,6 +14,12 @@ func _make_card(desc: String) -> GameCard:
 	return card
 
 
+# Высота текста как в проде: строки × (высота строки + межстрочный интервал).
+func _content_h(lbl: Label) -> float:
+	var spacing: float = float(lbl.get_theme_constant("line_spacing"))
+	return float(lbl.get_line_count()) * (float(lbl.get_line_height()) + spacing)
+
+
 func test_long_desc_overflows_zone() -> void:
 	var card: GameCard = _make_card("word ".repeat(140))
 	await get_tree().process_frame
@@ -22,8 +28,7 @@ func test_long_desc_overflows_zone() -> void:
 	assert_not_null(lbl, "лейбл описания существует")
 	var zone: Control = lbl.get_parent()
 	assert_gt(lbl.get_line_count(), 3, "длинный текст переносится на много строк")
-	var content_h: float = float(lbl.get_line_count()) * float(lbl.get_line_height())
-	assert_gt(content_h, zone.size.y, "контент выше зоны — есть что скроллить")
+	assert_gt(_content_h(lbl), zone.size.y, "контент выше зоны — есть что скроллить")
 
 
 func test_apply_offset_moves_label_up() -> void:
@@ -42,5 +47,4 @@ func test_short_desc_no_overflow() -> void:
 	await get_tree().process_frame
 	var lbl: Label = card.find_child("DescLabel", true, false)
 	var zone: Control = lbl.get_parent()
-	var content_h: float = float(lbl.get_line_count()) * float(lbl.get_line_height())
-	assert_lt(content_h, zone.size.y, "короткий текст влезает — скроллить нечего")
+	assert_lt(_content_h(lbl), zone.size.y, "короткий текст влезает — скроллить нечего")

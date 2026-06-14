@@ -48,6 +48,7 @@ const C_GLYPH := Color(0.55, 0.48, 0.35)
 const _DESC_SCROLL_MAX_SPEED := 75.0  # px/сек на краях (вдвое медленнее прежнего)
 const _DESC_SCROLL_DEADZONE := 0.04  # доля высоты от центра, где скролл стоит
 const _DESC_LABEL_H := 2000.0  # заведомо большая высота лейбла (любое описание влезет)
+const _DESC_BOTTOM_PAD := 4.0  # нижний запас, чтобы последняя строка не подрезалась
 
 var _cost: Label
 var _title: Label
@@ -219,7 +220,12 @@ func _process(delta: float) -> void:
 	var zh: float = zone.size.y
 	if zh <= 0.0:
 		return
-	var content_h: float = float(_desc.get_line_count()) * float(_desc.get_line_height())
+	# Высота текста: строки × (высота строки + межстрочный интервал) + нижний запас.
+	# get_line_height() НЕ включает line_spacing — без него низ подрезался.
+	var lines: int = _desc.get_line_count()
+	var line_h: float = float(_desc.get_line_height())
+	var spacing: float = float(_desc.get_theme_constant("line_spacing"))
+	var content_h: float = float(lines) * (line_h + spacing) + _DESC_BOTTOM_PAD
 	var overflow: float = content_h - zh
 	if overflow <= 0.0:
 		if _desc_offset != 0.0:
