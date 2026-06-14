@@ -220,18 +220,24 @@ func _build_hand_carousel() -> void:
 func _refresh_hand() -> void:
 	if not is_instance_valid(_hand_carousel):
 		return
+	# Три отдельных веера: активы, заклинания, жетоны. Пустые не показываем;
+	# переключение между ними — стрелками (карусель сама их включает при >1 секции).
 	var sections: Array = []
 	var assets: Array = _hand_assets_section()
 	if not assets.is_empty():
 		sections.append({"title": tr("HAND_ASSETS"), "items": assets})
+	var spells: Array = _hand_spells_section()
+	if not spells.is_empty():
+		sections.append({"title": tr("HAND_SPELLS"), "items": spells})
 	var tokens: Array = _hand_tokens_section()
 	if not tokens.is_empty():
 		sections.append({"title": tr("HAND_TOKENS"), "items": tokens})
 	_hand_carousel.set_sections(sections)
 
 
-# Секция «Имущество»: карты руки. Разыгранную/истощённую в текущей проверке карту
-# убираем (item.exhausted — раунд; active_check.exhausted_cards — на проверку).
+# Веер «Активы»: только карты-активы (без заклинаний — у них свой веер).
+# Разыгранную/истощённую в текущей проверке карту убираем (item.exhausted — раунд;
+# active_check.exhausted_cards — на проверку).
 func _hand_assets_section() -> Array:
 	var deck: Array = AssetCatalog.deck_for_items(GameState.my_player().get("items", []))
 	var per_check: Array = GameState.active_check.get("exhausted_cards", [])
@@ -250,12 +256,13 @@ func _hand_assets_section() -> Array:
 		if not _card_applicable_now(pcard):
 			pcard["exhausted"] = true
 		out.append(pcard)
-	_append_spell_cards(out)
 	return out
 
 
-# Карты-заклинания ({id, kind:"spell"}) в веер: фронт активируем (тап = каст).
-func _append_spell_cards(out: Array) -> void:
+# Веер «Заклинания»: карты-заклинания ({id, kind:"spell"}); фронт активируем
+# (тап/вытаскивание = каст). Отдельная секция от активов.
+func _hand_spells_section() -> Array:
+	var out: Array = []
 	var items: Array = GameState.my_player().get("items", [])
 	for i in range(items.size()):
 		var it: Variant = items[i]
@@ -268,6 +275,7 @@ func _append_spell_cards(out: Array) -> void:
 		sc["item_index"] = i
 		sc["kind"] = "spell"
 		out.append(sc)
+	return out
 
 
 # Применима ли карта к ТЕКУЩЕЙ активной проверке: есть ли у неё мод (action/whileOwned),
@@ -290,12 +298,10 @@ func _card_applicable_now(pcard: Dictionary) -> bool:
 	return false
 
 
-# Секция «Жетоны»: по одному элементу на жетон концентрации/улики. Видна только
-# когда проверка брошена (есть что перебрасывать) и не зафиксирована.
+# Веер «Жетоны»: по одному элементу на жетон концентрации/улики. Доступен, когда у
+# игрока есть жетоны (в т.ч. в фазе действий — для просмотра). На брошенной проверке
+# их перетаскивают на провальный куб как валюту переброса.
 func _hand_tokens_section() -> Array:
-	var chk: Dictionary = GameState.active_check
-	if not bool(chk.get("rolled", false)):
-		return []
 	var me: Dictionary = GameState.my_player()
 	var out: Array = []
 	for _i in range(int(me.get("concentration", 0))):

@@ -714,7 +714,8 @@ ENCOUNTER_REROLL_CLUE,нажмите кубик для переброса (ул�
 ENCOUNTER_REROLL_ALL,Перебросить кубы,Reroll dice
 ENCOUNTER_REROLL_TAP,нажмите кубик для переброса,tap a die to reroll
 ENCOUNTER_REROLL_DRAG,перетащите жетон на проверку для переброса,drag a token onto the test to reroll
-HAND_ASSETS,Имущество,Assets
+HAND_ASSETS,Активы,Assets
+HAND_SPELLS,Заклинания,Spells
 HAND_TOKENS,Жетоны,Tokens
 TOKEN_CONCENTRATION,Концентрация,Focus
 TOKEN_CLUE,Улика,Clue
