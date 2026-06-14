@@ -741,6 +741,57 @@ static func reconnect_overlay(parent: Control, text: String) -> ColorRect:
 	return overlay
 
 
+# ── Рунный «скрэмбл» (эффект дешифровки при смене значения) ────────────────────
+
+## Эффект «дешифровки»: на месте текста пробегает несколько кадров случайных
+## ктулху-рун (шрифт CTHUR), затем проявляется final_text. Используется при смене
+## сыщика в лобби (атрибуты) и при смене номера раунда в орбе на карте.
+const RUNE_FONT: Font = preload("res://assets/fonts/CTHUR___.TTF")
+const _SCRAMBLE_STEPS: int = 8  # сколько кадров мелькнёт
+const _SCRAMBLE_STEP_TIME: float = 0.08  # длительность одного кадра
+
+
+## Запускает скрэмбл на лейбле к final_text (rune_count рун в кадре). Прерываем:
+## повторный вызов убивает старый tween. Шрифт рун накладывается временным
+## override "font"; в финале ВОССТАНАВЛИВАЕМ исходный override (если был — напр.
+## жирный FontVariation), иначе просто снимаем — поэтому эффект не ломает жирность.
+static func rune_scramble(lbl: Label, final_text: String, rune_count: int = 1) -> void:
+	if not is_instance_valid(lbl):
+		return
+	if lbl.has_meta("__scramble_tw"):
+		var prev: Variant = lbl.get_meta("__scramble_tw")
+		if prev and (prev as Tween).is_valid():
+			(prev as Tween).kill()
+	# Исходный font-override (Font или null) — вернём его в финале.
+	var base_font: Variant = lbl.get("theme_override_fonts/font")
+	var tw := lbl.create_tween()
+	for i in range(_SCRAMBLE_STEPS):
+		tw.tween_callback(
+			func() -> void:
+				lbl.add_theme_font_override("font", RUNE_FONT)
+				lbl.text = _random_runes(rune_count)
+		)
+		tw.tween_interval(_SCRAMBLE_STEP_TIME)
+	tw.tween_callback(
+		func() -> void:
+			if base_font != null:
+				lbl.add_theme_font_override("font", base_font)
+			else:
+				lbl.remove_theme_font_override("font")
+			lbl.text = final_text
+	)
+	lbl.set_meta("__scramble_tw", tw)
+
+
+## Строка из count случайных строчных букв a–z → в шрифте CTHUR это глифы рун.
+## (Глифы рун там только на строчных; заглавные A–Z в шрифте отсутствуют.)
+static func _random_runes(count: int) -> String:
+	var s := ""
+	for i in range(count):
+		s += char(randi_range(97, 122))
+	return s
+
+
 # ── Внутренние ────────────────────────────────────────────────────────────────
 
 

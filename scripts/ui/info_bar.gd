@@ -77,13 +77,9 @@ const _COMPACT_COLS_MARGIN_BOTTOM: int = 8
 # Цвет крупных цифр атрибутов — тёплое золото под бронзовые иконки.
 const _ATTR_VALUE_COLOR := Color("c39b6a")
 
-# Эффект «дешифровки» при смене сыщика: цифра атрибута сначала пробегает
-# несколько случайных ктулху-рун (шрифт CTHUR), затем проявляется число.
-const _RUNE_FONT: Font = preload("res://assets/fonts/CTHUR___.TTF")
-const _SCRAMBLE_STEPS: int = 8  # сколько кадров мелькнёт
-const _SCRAMBLE_STEP_TIME: float = 0.08  # длительность одного кадра
+# Эффект «дешифровки» при смене сыщика — общий хелпер UIStyle.rune_scramble.
 # Сколько рун мелькает в одном кадре. У атрибута значение — одна цифра, хватает
-# одной руны; у баров HP/санити значение длиннее («NN / NN») — используем 3.
+# одной руны; у баров HP/санити значение длиннее («NN / NN») — используем 2.
 const _BAR_SCRAMBLE_RUNES: int = 2
 
 var _hp_label: Label
@@ -213,40 +209,10 @@ func _set_vital_cur(is_hp: bool, v: int) -> void:
 		_sanity_cur = v
 
 
-# Анимация «дешифровки»: на месте числа пробегает _SCRAMBLE_STEPS кадров по
-# rune_count случайных рун, затем выставляется final_text обычным шрифтом.
-# Прерываема — повторный вызов (быстрое перелистывание) убивает старый tween
-# и стартует новый.
+# Анимация «дешифровки» — делегируем общему хелперу (тот же эффект, что и в орбе
+# раунда на карте). Прерываема (повторный вызов убивает старый tween).
 func _scramble_to(lbl: Label, final_text: String, rune_count: int = 1) -> void:
-	if lbl.has_meta("__scramble_tw"):
-		var prev = lbl.get_meta("__scramble_tw")
-		if prev and (prev as Tween).is_valid():
-			(prev as Tween).kill()
-
-	var tw := create_tween()
-	for i in range(_SCRAMBLE_STEPS):
-		tw.tween_callback(
-			func() -> void:
-				lbl.add_theme_font_override("font", _RUNE_FONT)
-				lbl.text = _random_runes(rune_count)
-		)
-		tw.tween_interval(_SCRAMBLE_STEP_TIME)
-	# Финал: возвращаем обычный шрифт темы и настоящую цифру.
-	tw.tween_callback(
-		func() -> void:
-			lbl.remove_theme_font_override("font")
-			lbl.text = final_text
-	)
-	lbl.set_meta("__scramble_tw", tw)
-
-
-# Строка из count случайных строчных букв a–z → в шрифте CTHUR это глифы рун.
-# (Глифы рун там только на строчных; заглавные A–Z в шрифте отсутствуют.)
-func _random_runes(count: int) -> String:
-	var s := ""
-	for i in range(count):
-		s += char(randi_range(97, 122))
-	return s
+	UIStyle.rune_scramble(lbl, final_text, rune_count)
 
 
 # ── Stats ─────────────────────────────────────────────────────────────────────
