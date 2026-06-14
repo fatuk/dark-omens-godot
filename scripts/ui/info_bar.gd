@@ -91,6 +91,11 @@ var _sanity_label: Label
 var _hp_fill_clip: Control  # клип заливки бара HP (ширина = доля current/max)
 var _sanity_fill_clip: Control  # клип заливки бара рассудка
 var _fill_inner_w: float = 0.0  # внутренняя ширина заливки бара (для пропорции)
+const _VITAL_ANIM_DUR := 0.4  # длительность анимации изменения HP/рассудка (сек)
+var _hp_cur: int = -1  # последнее показанное HP (для анимации; -1 = ещё не задано)
+var _sanity_cur: int = -1  # последнее показанное значение рассудка
+var _hp_tween: Tween = null  # активная анимация бара HP
+var _sanity_tween: Tween = null  # активная анимация бара рассудка
 var _attr_value_lbls: Dictionary = {}  # field name -> Label
 var _items_row: HBoxContainer  # ряд карточек стартового имущества (заполняется в update)
 var _tickets_row: HBoxContainer  # ряд билетов (заполняется в update из startingTickets)
@@ -148,19 +153,54 @@ func update(inv: Dictionary) -> void:
 
 
 ## Живые значения HP/рассудка (current/max) для HUD на карте: числа «cur / max» +
-## заливка баров пропорционально current/max (без scramble). Вызывать после
-## update() и на каждое изменение стейта.
+## заливка баров пропорционально current/max. Изменения анимируются (ease-in-out):
+## заливка и число плавно «доезжают» до нового значения. Первый показ — мгновенно.
 func set_live_vitals(hp: int, hp_max: int, sanity: int, sanity_max: int) -> void:
-	if is_instance_valid(_hp_label):
-		_hp_label.remove_theme_font_override("font")  # сбросить рунный шрифт scramble
-		_hp_label.text = "%d / %d" % [hp, hp_max]
-	if is_instance_valid(_sanity_label):
-		_sanity_label.remove_theme_font_override("font")
-		_sanity_label.text = "%d / %d" % [sanity, sanity_max]
-	if is_instance_valid(_hp_fill_clip):
-		_hp_fill_clip.size.x = (float(hp) / maxf(1.0, float(hp_max))) * _fill_inner_w
-	if is_instance_valid(_sanity_fill_clip):
-		_sanity_fill_clip.size.x = (float(sanity) / maxf(1.0, float(sanity_max))) * _fill_inner_w
+	_animate_vital(true, hp, hp_max)
+	_animate_vital(false, sanity, sanity_max)
+
+
+# Анимирует один бар (HP или рассудок): ширину заливки и счёт числа от текущего
+# к новому значению с ease-in-out. Без изменения значения / первый показ — мгновенно.
+func _animate_vital(is_hp: bool, new_val: int, max_val: int) -> void:
+	var label: Label = _hp_label if is_hp else _sanity_label
+	var clip: Control = _hp_fill_clip if is_hp else _sanity_fill_clip
+	if not (is_instance_valid(label) and is_instance_valid(clip)):
+		return
+	var target_w: float = (float(new_val) / maxf(1.0, float(max_val))) * _fill_inner_w
+	var cur: int = _hp_cur if is_hp else _sanity_cur
+	# Первый показ или то же значение — мгновенно (max мог поменяться).
+	if cur < 0 or new_val == cur:
+		label.remove_theme_font_override("font")  # сбросить рунный шрифт scramble
+		label.text = "%d / %d" % [new_val, max_val]
+		clip.size.x = target_w
+		_set_vital_cur(is_hp, new_val)
+		return
+	# Гасим предыдущий тви́н этого бара, чтобы анимации не накладывались.
+	var prev: Tween = _hp_tween if is_hp else _sanity_tween
+	if prev and prev.is_valid():
+		prev.kill()
+	var tw := create_tween().set_parallel(true)
+	tw.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
+	tw.tween_property(clip, "size:x", target_w, _VITAL_ANIM_DUR)
+	tw.tween_method(
+		func(v: float) -> void: label.text = "%d / %d" % [roundi(v), max_val],
+		float(cur),
+		float(new_val),
+		_VITAL_ANIM_DUR
+	)
+	if is_hp:
+		_hp_tween = tw
+	else:
+		_sanity_tween = tw
+	_set_vital_cur(is_hp, new_val)
+
+
+func _set_vital_cur(is_hp: bool, v: int) -> void:
+	if is_hp:
+		_hp_cur = v
+	else:
+		_sanity_cur = v
 
 
 # Анимация «дешифровки»: на месте числа пробегает _SCRAMBLE_STEPS кадров по
