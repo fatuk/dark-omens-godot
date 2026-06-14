@@ -38,14 +38,22 @@ const Z_DESC := Rect2(0.120, 0.695, 0.760, 0.235)
 const C_COST_TXT := UIColors.ACCENT  # янтарь — как заголовок
 const C_TITLE_TXT := UIColors.ACCENT  # янтарь на синей плашке
 const C_SUB_TXT := Color(0.62, 0.72, 0.82)  # приглушённый голубой — трейт
-const C_DESC_TXT := Color(0.18, 0.14, 0.09)  # тёмный — на пергаменте
+const C_DESC_TXT := Color(0, 0, 0)  # чёрный — на пергаменте
 const C_ART_FILL := Color(0.10, 0.08, 0.14)  # заглушка арт-слота (закрывает белый бокс)
 const C_GLYPH := Color(0.55, 0.48, 0.35)
+
+# Авто-скролл описания при наведении (когда текст не влезает в зону пергамента).
+const _DESC_SCROLL_SPEED := 32.0  # px/сек прохода
+const _DESC_SCROLL_HOLD := 0.6  # пауза вверху/внизу, сек
+const _DESC_SCROLL_MIN := 0.7  # мин. длительность прохода, сек
+const _DESC_SCROLL_MAX := 4.0  # макс. длительность прохода, сек
 
 var _cost: Label
 var _title: Label
 var _sub: Label
 var _desc: Label
+var _desc_scroll: ScrollContainer
+var _desc_tween: Tween
 var _art: TextureRect
 var _art_fill: ColorRect
 var _glyph: Label
@@ -123,12 +131,31 @@ func _build() -> void:
 	_sub.clip_text = true
 	tvb.add_child(_sub)
 
-	# Описание — на пергаменте.
+	# Описание — на пергаменте. Чёрный текст; не влезает → обрезаем по зоне
+	# (ScrollContainer клипует свой контент), а при наведении плавно прокручиваем
+	# вниз и обратно (_on_desc_hover_*). Дети — IGNORE, чтобы наведение ловила сама
+	# карта (self), а не скролл/лейбл.
 	var desc_zone := _zone("Desc", Z_DESC)
-	_desc = _centered_label("DescLabel", 12, C_DESC_TXT)
+	_desc_scroll = ScrollContainer.new()
+	_desc_scroll.name = "DescScroll"
+	_desc_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_desc_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_desc_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+	_desc_scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	desc_zone.add_child(_desc_scroll)
+	_desc = Label.new()
+	_desc.name = "DescLabel"
+	_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_desc.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_desc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	desc_zone.add_child(_desc)
+	_desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_desc.add_theme_font_size_override("font_size", 12)
+	_desc.add_theme_color_override("font_color", C_DESC_TXT)
+	_desc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_desc_scroll.add_child(_desc)
+
+	mouse_entered.connect(_on_desc_hover_start)
+	mouse_exited.connect(_on_desc_hover_end)
 
 
 ## Заполнить карту. Поля: cost, title, subtitle?, desc, art? (Texture2D),
@@ -142,6 +169,7 @@ func set_card(d: Dictionary) -> void:
 	_sub.text = String(d.get("subtitle", ""))
 	_sub.visible = not _sub.text.is_empty()
 	_desc.text = String(d.get("desc", ""))
+	_on_desc_hover_end()  # новый текст — гасим скролл и возвращаем к началу
 
 	var tex: Texture2D = d.get("art", null)
 	if tex != null:
@@ -153,6 +181,46 @@ func set_card(d: Dictionary) -> void:
 		_art_fill.color = d.get("art_color", C_ART_FILL)
 		_glyph.text = String(d.get("glyph", ""))
 		_glyph.visible = not _glyph.text.is_empty()
+
+
+# ── авто-скролл описания ───────────────────────────────────────────────────────
+
+
+# Наведение на карту: если описание не влезает в зону — циклично прокручиваем его
+# вниз и обратно (плавно, ease-in-out), чтобы прочесть скрытую часть.
+func _on_desc_hover_start() -> void:
+	if not (is_instance_valid(_desc_scroll) and is_instance_valid(_desc)):
+		return
+	var overflow: int = maxi(0, int(_desc.size.y) - int(_desc_scroll.size.y))
+	if overflow <= 0:
+		return  # текст влезает — скроллить нечего
+	if _desc_tween and _desc_tween.is_valid():
+		_desc_tween.kill()
+	var pass_dur: float = clampf(
+		float(overflow) / _DESC_SCROLL_SPEED, _DESC_SCROLL_MIN, _DESC_SCROLL_MAX
+	)
+	_desc_tween = create_tween().set_loops()
+	_desc_tween.tween_interval(_DESC_SCROLL_HOLD)
+	var down := _desc_tween.tween_method(_set_desc_scroll, 0.0, float(overflow), pass_dur)
+	down.set_trans(Tween.TRANS_SINE)
+	down.set_ease(Tween.EASE_IN_OUT)
+	_desc_tween.tween_interval(_DESC_SCROLL_HOLD)
+	var up := _desc_tween.tween_method(_set_desc_scroll, float(overflow), 0.0, pass_dur)
+	up.set_trans(Tween.TRANS_SINE)
+	up.set_ease(Tween.EASE_IN_OUT)
+
+
+# Курсор ушёл (или новый текст): останавливаем скролл и возвращаем к началу.
+func _on_desc_hover_end() -> void:
+	if _desc_tween and _desc_tween.is_valid():
+		_desc_tween.kill()
+	if is_instance_valid(_desc_scroll):
+		_desc_scroll.scroll_vertical = 0
+
+
+func _set_desc_scroll(v: float) -> void:
+	if is_instance_valid(_desc_scroll):
+		_desc_scroll.scroll_vertical = int(roundf(v))
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
