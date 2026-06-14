@@ -51,7 +51,7 @@ func _ready() -> void:
 
 
 func _apply_styles() -> void:
-	# Старый ColorRect фон заменяем на тайлированную main-gb.png.
+	# Старый ColorRect фон заменяем на тайлированную bg-pattern.png.
 	_bg.queue_free()
 	UIStyle.apply_main_bg(self)
 

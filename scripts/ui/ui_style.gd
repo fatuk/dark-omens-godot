@@ -9,7 +9,7 @@ class_name UIStyle
 ## BG_MODULATE затемняет фон — компенсирует sepia из PostFx, который
 ## слегка подсвечивает тёмные пиксели. Без этого фон в игре заметно светлее
 ## референса в Photoshop (где он почти чёрный).
-const BG_TEX: Texture2D = preload("res://assets/main-gb.png")
+const BG_TEX: Texture2D = preload("res://assets/bg-pattern.png")
 const BG_SCALE: float = 0.5
 const BG_MODULATE: Color = Color(1.0, 1.0, 1.0, 1.0)
 
@@ -365,7 +365,7 @@ static func panel(padding: int = 16) -> PanelContainer:
 
 # ── Модальная рамка ──────────────────────────────────────────────────────────
 # Единый ассет-скин для ВСЕХ модалок: орнаментная рамка modal-frame.png,
-# скомпонованная поверх паттерна main-gb.png (см. assets/modal/modal-panel-bg.png),
+# скомпонованная поверх паттерна bg-pattern.png (см. assets/modal/modal-panel-bg.png),
 # нарезанная 9-slice — углы фиксированы, центр тянется.
 
 const _MODAL_BG_TEX: Texture2D = preload("res://assets/modal/modal-panel-bg.png")
