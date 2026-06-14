@@ -7,6 +7,7 @@ extends Control
 
 const _BASE_FONT: Font = preload("res://assets/fonts/Forum-Regular.ttf")
 const _EMBOLDEN: float = 0.6  # сила утолщения глифов FontVariation
+const _SCRAMBLE_RUNES: int = 2  # сколько рун мелькает в кадре скрэмбла
 
 @export var label_text: String = "":
 	set(v):
@@ -14,8 +15,8 @@ const _EMBOLDEN: float = 0.6  # сила утолщения глифов FontVar
 			return  # то же значение — без анимации (set_info зовётся каждый рефреш)
 		label_text = v
 		if is_node_ready():
-			# Смена значения — рунный скрэмбл к новой цифре (rune_count ≈ длине).
-			UIStyle.rune_scramble(_label, v, maxi(1, v.length()))
+			# Смена значения — рунный скрэмбл к новой цифре (фикс. 2 руны в кадре).
+			UIStyle.rune_scramble(_label, v, _SCRAMBLE_RUNES)
 
 @onready var _label: Label = %Label
 
