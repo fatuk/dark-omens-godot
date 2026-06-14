@@ -106,8 +106,7 @@ func play_roll(values: Array, can_reroll: bool = false) -> void:
 		_spin(_dice[i], SPIN_BASE + i * SPIN_STAGGER)
 		_jitter(_dice[i])
 	if not _dice.is_empty():
-		# Клаттер + щелчок-активация на КАЖДЫЙ садящийся куб (лесенкой).
-		_play_roll_sfx(_dice.size())
+		_play_clatter(_dice.size())  # щелчки-активации бьёт _settle по всполохам
 
 
 ## Пустые кубы (рубашки) до броска.
@@ -129,7 +128,7 @@ func reroll_die(index: int, new_value: int, can_reroll: bool) -> void:
 			_settle(_dice[i], false)  # обновить свечение без кручения
 	_spin(_dice[index], SPIN_BASE)
 	_jitter(_dice[index])
-	_play_roll_sfx(1)  # переброс одного куба — клаттер + 1 щелчок-активация
+	_play_clatter(1)  # клаттер; щелчок — из _settle когда куб сядет
 
 
 # ── Сборка ──────────────────────────────────────────────────────────────────
@@ -317,6 +316,7 @@ func _settle(die: Dictionary, flash: bool) -> void:
 		root.modulate = Color(1.45, 1.4, 1.2)
 		var tw := create_tween()
 		tw.tween_property(root, "modulate", Color(1, 1, 1), LOCK_FLASH)
+		_activation_chime()  # щелчок ровно в момент всполоха — идеальная синхронизация
 
 
 # Покубовая «тряска» при броске: content куба дёргается на несколько px и
@@ -347,24 +347,18 @@ func _jitter(die: Dictionary) -> void:
 	die["jitter_tw"] = tw
 
 
-# Звук броска: клаттер от старта до оседания последнего куба, затем «активация» —
-# отдельный щелчок (хвостовой сегмент файла) на КАЖДЫЙ садящийся куб, лесенкой (как
-# визуальные всполохи). 1-й куб садится через SPIN_BASE, дальше каждые SPIN_STAGGER.
-# Fire-and-forget: при закрытии лотка корутина не возобновится.
-func _play_roll_sfx(n: int) -> void:
+# Клаттер броска: сегмент файла 0..settle_last (под весь спин). Щелчки-активации
+# НЕ здесь — их бьёт _settle ровно по всполоху каждого куба (идеальная синхронизация
+# с подсветкой, без дрейфа отдельных таймеров).
+func _play_clatter(n: int) -> void:
 	if n <= 0:
 		return
 	var settle_last: float = SPIN_BASE + float(n - 1) * SPIN_STAGGER
 	SfxManager.play_variation(SfxManager.SFX_DICE, 1, 0.0, [[0.0, settle_last]])
-	await get_tree().create_timer(SPIN_BASE).timeout
-	_activation_chime()
-	for _i in range(n - 1):
-		await get_tree().create_timer(SPIN_STAGGER).timeout
-		_activation_chime()
 
 
-# Щелчок-активация на оседание куба (хвостовой сегмент файла, лёгкий питч-разброс,
-# чтобы каскад не звучал механически).
+# Щелчок-активация на оседание (всполох) куба: хвостовой сегмент файла, лёгкий
+# питч-разброс, чтобы каскад одинаковых семплов не звучал механически.
 func _activation_chime() -> void:
 	SfxManager.play_variation(
 		SfxManager.SFX_DICE, 1, _SFX_ACT_PITCH, [[_SFX_ACT_START, _SFX_ACT_END]]
