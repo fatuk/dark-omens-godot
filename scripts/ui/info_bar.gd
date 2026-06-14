@@ -169,16 +169,26 @@ func _animate_vital(is_hp: bool, new_val: int, max_val: int) -> void:
 		return
 	var target_w: float = (float(new_val) / maxf(1.0, float(max_val))) * _fill_inner_w
 	var cur: int = _hp_cur if is_hp else _sanity_cur
-	# Первый показ или то же значение — мгновенно (max мог поменяться).
-	if cur < 0 or new_val == cur:
+	var prev: Tween = _hp_tween if is_hp else _sanity_tween
+	var animating: bool = prev != null and prev.is_valid()
+	# То же значение: если бар уже анимируется к нему — НЕ трогаем (иначе дубль
+	# state_changed от отдыха/синка снапнул бы бегущий твин на финал). Иначе
+	# (первый показ или смена только max без анимации) — выставляем мгновенно.
+	if new_val == cur:
+		if not animating:
+			label.remove_theme_font_override("font")
+			label.text = "%d / %d" % [new_val, max_val]
+			clip.size.x = target_w
+		return
+	if cur < 0:
+		# Первый показ — мгновенно (без анимации).
 		label.remove_theme_font_override("font")  # сбросить рунный шрифт scramble
 		label.text = "%d / %d" % [new_val, max_val]
 		clip.size.x = target_w
 		_set_vital_cur(is_hp, new_val)
 		return
-	# Гасим предыдущий тви́н этого бара, чтобы анимации не накладывались.
-	var prev: Tween = _hp_tween if is_hp else _sanity_tween
-	if prev and prev.is_valid():
+	# Значение изменилось — анимируем; гасим предыдущий твин, чтобы не накладывались.
+	if animating:
 		prev.kill()
 	var tw := create_tween().set_parallel(true)
 	tw.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
