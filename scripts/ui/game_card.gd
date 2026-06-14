@@ -42,10 +42,10 @@ const C_DESC_TXT := Color(0, 0, 0)  # чёрный — на пергаменте
 const C_ART_FILL := Color(0.10, 0.08, 0.14)  # заглушка арт-слота (закрывает белый бокс)
 const C_GLYPH := Color(0.55, 0.48, 0.35)
 
-# Скролл описания курсором (когда текст не влезает в зону пергамента): работает
-# ТОЛЬКО над блоком текста — позиция курсора по его высоте линейно задаёт
-# направление и скорость (верх блока → вверх, низ → вниз, центр → стоп).
-const _DESC_SCROLL_MAX_SPEED := 75.0  # px/сек у самого края блока текста
+# Скролл описания курсором (когда текст не влезает в зону пергамента): позиция
+# курсора по вертикали (клампится к высоте блока) задаёт направление и скорость —
+# выше центра скроллит вверх, ниже вниз, по центру стоит; линейно к краям.
+const _DESC_SCROLL_MAX_SPEED := 75.0  # px/сек на краях (вдвое медленнее прежнего)
 const _DESC_SCROLL_DEADZONE := 0.04  # доля высоты от центра, где скролл стоит
 
 var _cost: Label
@@ -198,9 +198,8 @@ func _on_desc_hover_end() -> void:
 		_desc_scroll.scroll_vertical = 0
 
 
-# Скролл — только когда курсор над блоком текста. Позиция курсора по высоте блока
-# линейно задаёт скорость/направление: t=0 (верх) → вверх, t=0.5 (центр) → стоп,
-# t=1 (низ) → вниз.
+# Позиция курсора по вертикали (клампится к высоте блока): t=0 (верх) → вверх,
+# t=0.5 (центр) → стоп, t=1 (низ) → вниз. Скорость линейна по отклонению от центра.
 func _process(delta: float) -> void:
 	if not (is_instance_valid(_desc_scroll) and is_instance_valid(_desc)):
 		return
@@ -208,11 +207,8 @@ func _process(delta: float) -> void:
 	var h: float = _desc_scroll.size.y
 	if overflow <= 0 or h <= 0.0:
 		return  # текст влезает — скроллить нечего
-	# Скроллим ТОЛЬКО над блоком текста; вне него (арт/заголовок) — стоп.
-	var lp: Vector2 = _desc_scroll.get_local_mouse_position()
-	if lp.x < 0.0 or lp.y < 0.0 or lp.x >= _desc_scroll.size.x or lp.y >= h:
-		return
-	var dir: float = (lp.y / h - 0.5) * 2.0  # [-1..1]: <0 вверх, >0 вниз; линейно к краям
+	var t: float = clampf(_desc_scroll.get_local_mouse_position().y / h, 0.0, 1.0)
+	var dir: float = (t - 0.5) * 2.0  # [-1..1]: <0 вверх, >0 вниз; линейно к краям
 	if absf(dir) < _DESC_SCROLL_DEADZONE:
 		return  # около центра — стоп
 	var pos: float = float(_desc_scroll.scroll_vertical) + dir * _DESC_SCROLL_MAX_SPEED * delta
