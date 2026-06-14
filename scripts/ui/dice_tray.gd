@@ -55,6 +55,7 @@ const SHAKE_DUR: float = 0.40  # длительность тряски (сек)
 const _SFX_ACT_START: float = 1.85  # начало «активации» в файле (после тишины), сек
 const _SFX_ACT_END: float = 2.137  # конец файла, сек
 const _SFX_ACT_PITCH: float = 0.05  # ± случайный питч щелчка-активации (живее каскад)
+const _SFX_ACT_LEAD: float = 0.10  # на сколько раньше всполоха бить щелчок (сек)
 
 # Свечение-подложка (за гранью, во внутреннем вырезе рамки).
 const C_GLOW_SUCCESS := UIColors.SUCCESS  # успех (≥5) — зелёное свечение
@@ -287,6 +288,10 @@ func _spin(die: Dictionary, dur: float) -> void:
 		. set_trans(Tween.TRANS_QUAD)
 		. set_ease(Tween.EASE_IN)
 	)
+	# Щелчок-активация чуть РАНЬШЕ всполоха: в ТОМ ЖЕ твине (упреждение точное
+	# относительно подсветки, без дрейфа отдельных таймеров) — параллельный callback
+	# с задержкой dur − LEAD; всполох (_settle) по-прежнему на dur.
+	tw.tween_callback(_activation_chime).set_delay(maxf(0.0, dur - _SFX_ACT_LEAD))
 	tw.set_parallel(false)
 	tw.tween_callback(func() -> void: _settle(die, true))
 
@@ -316,7 +321,6 @@ func _settle(die: Dictionary, flash: bool) -> void:
 		root.modulate = Color(1.45, 1.4, 1.2)
 		var tw := create_tween()
 		tw.tween_property(root, "modulate", Color(1, 1, 1), LOCK_FLASH)
-		_activation_chime()  # щелчок ровно в момент всполоха — идеальная синхронизация
 
 
 # Покубовая «тряска» при броске: content куба дёргается на несколько px и
