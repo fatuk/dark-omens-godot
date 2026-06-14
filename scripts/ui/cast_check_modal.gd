@@ -72,9 +72,9 @@ func _reroll_all_available() -> bool:
 
 func _refresh() -> void:
 	var cs: Dictionary = _cast()
-	var show: bool = not cs.is_empty()
-	_root.visible = show
-	if not show:
+	var casting: bool = not cs.is_empty()
+	_root.visible = casting
+	if not casting:
 		_sig = ""
 		_last_dice = []
 		return

@@ -454,10 +454,10 @@ func reroll_die(die_index: int) -> void:
 	pending_reroll_currency = ""  # потребили намерение (один жетон = один переброс)
 	if cur.is_empty():
 		cur = "free"  # без жетона — только бесплатный переброс от карт
-	var owner: String = String(active_check.get("owner", ""))
-	if owner == "shop":
+	var chk_owner: String = String(active_check.get("owner", ""))
+	if chk_owner == "shop":
 		shop_reroll(die_index, cur)
-	elif owner == "spell":
+	elif chk_owner == "spell":
 		spell_cast_reroll(die_index, cur)
 	else:
 		reroll_encounter(die_index, cur)
