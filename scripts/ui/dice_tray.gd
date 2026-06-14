@@ -46,6 +46,8 @@ const SPIN_STAGGER: float = 0.20  # +на каждый следующий куб
 const STRIP_MIN: int = 18  # сколько случайных граней прокрутить до финала
 const LOCK_FLASH: float = 0.42  # вспышка при остановке
 const BLUR_MAX: float = 0.30  # макс. вертикальный смаз (доля высоты грани, UV)
+const SHAKE_AMP: float = 5.0  # амплитуда «тряски» куба при броске (px)
+const SHAKE_DUR: float = 0.40  # длительность тряски (сек)
 
 # Свечение-подложка (за гранью, во внутреннем вырезе рамки).
 const C_GLOW_SUCCESS := UIColors.SUCCESS  # успех (≥5) — зелёное свечение
@@ -95,6 +97,7 @@ func play_roll(values: Array, can_reroll: bool = false) -> void:
 	_shake()
 	for i in range(_dice.size()):
 		_spin(_dice[i], SPIN_BASE + i * SPIN_STAGGER)
+		_jitter(_dice[i])
 
 
 ## Пустые кубы (рубашки) до броска.
@@ -115,6 +118,7 @@ func reroll_die(index: int, new_value: int, can_reroll: bool) -> void:
 		if i != index:
 			_settle(_dice[i], false)  # обновить свечение без кручения
 	_spin(_dice[index], SPIN_BASE)
+	_jitter(_dice[index])
 
 
 # ── Сборка ──────────────────────────────────────────────────────────────────
@@ -136,6 +140,15 @@ func _make_die(value: int, can_reroll: bool, index: int, is_pending: bool) -> Di
 	root.custom_minimum_size = Vector2(DIE_W, DIE_H)
 	root.size = Vector2(DIE_W, DIE_H)
 
+	# Внутренняя обёртка визуала: HBox задаёт позицию root'а, поэтому translate-тряску
+	# вешаем на content (его позицию контейнер не трогает). Клик ловит root.
+	var content := Control.new()
+	content.name = "Content"
+	content.position = Vector2.ZERO
+	content.size = Vector2(DIE_W, DIE_H)
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(content)
+
 	# Рамка (текстура) — кант + тёмный центр. Свечение и грань идут ПОВЕРХ.
 	var frame := TextureRect.new()
 	frame.name = "Frame"
@@ -145,7 +158,7 @@ func _make_die(value: int, can_reroll: bool, index: int, is_pending: bool) -> Di
 	frame.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(frame)
+	content.add_child(frame)
 
 	# Свечение-подложка — радиальная заливка во внутреннем вырезе (за гранью).
 	var glow := TextureRect.new()
@@ -157,7 +170,7 @@ func _make_die(value: int, can_reroll: bool, index: int, is_pending: bool) -> Di
 	glow.size = Vector2((1.0 - 2.0 * GLOW_INSET) * DIE_W, (1.0 - 2.0 * GLOW_INSET) * DIE_H)
 	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	glow.visible = false
-	root.add_child(glow)
+	content.add_child(glow)
 
 	# Окно с гранью — квадрат ПО ЦЕНТРУ; в нём ездит лента.
 	var window := Control.new()
@@ -166,7 +179,7 @@ func _make_die(value: int, can_reroll: bool, index: int, is_pending: bool) -> Di
 	window.size = Vector2(_FACE, _FACE)
 	window.clip_contents = true
 	window.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(window)
+	content.add_child(window)
 
 	var reel := Control.new()
 	reel.name = "Reel"
@@ -183,6 +196,7 @@ func _make_die(value: int, can_reroll: bool, index: int, is_pending: bool) -> Di
 	var clickable: bool = can_reroll and not is_pending and not Dice.is_success(value)
 	var die := {
 		"root": root,
+		"content": content,
 		"glow": glow,
 		"reel": reel,
 		"blur_mat": blur_mat,
@@ -292,6 +306,34 @@ func _settle(die: Dictionary, flash: bool) -> void:
 		root.modulate = Color(1.45, 1.4, 1.2)
 		var tw := create_tween()
 		tw.tween_property(root, "modulate", Color(1, 1, 1), LOCK_FLASH)
+
+
+# Покубовая «тряска» при броске: content куба дёргается на несколько px и
+# возвращается в ноль. Направление случайно на куб — кубы дребезжат вразнобой.
+# Прерываема (быстрые перебросы не накладывают тви́ны).
+func _jitter(die: Dictionary) -> void:
+	if die["pending"]:
+		return
+	var content: Control = die["content"]
+	if not is_instance_valid(content):
+		return
+	var prev: Variant = die.get("jitter_tw")
+	if prev and (prev as Tween).is_valid():
+		(prev as Tween).kill()
+	var a: float = SHAKE_AMP
+	var dir: float = 1.0 if randf() < 0.5 else -1.0
+	var steps: Array = [
+		Vector2(-a, a * 0.5) * dir,
+		Vector2(a * 1.1, -a * 0.45) * dir,
+		Vector2(-a * 0.6, -a * 0.3) * dir,
+		Vector2(a * 0.5, a * 0.35) * dir,
+		Vector2.ZERO,
+	]
+	var tw := content.create_tween()
+	var step_dur: float = SHAKE_DUR / float(steps.size())
+	for off: Vector2 in steps:
+		tw.tween_property(content, "position", off, step_dur).set_trans(Tween.TRANS_SINE)
+	die["jitter_tw"] = tw
 
 
 # Лёгкий «толчок» лотка при броске (масштаб не сбрасывается контейнером).
