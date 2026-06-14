@@ -13,6 +13,7 @@ const _DATA_PATH := "res://data/investigators.json"
 const BAR_H := 248.0  # высота полосы
 const _FRAME_PATCH_H := 300  # 9-slice торцы рамки (лево/право — не растягиваются)
 const _FRAME_PATCH_V := 110  # 9-slice верх/низ рамки
+const _FRAME_SCALE := 0.5  # ассет @2× → рисуем в 1× (рамка/борта вдвое мельче)
 const _CONTENT_PAD_X := 48.0  # инсет контента от левого края
 const _CONTENT_PAD_Y := 26.0  # инсет контента сверху
 const _AVATAR_D := 168.0  # диаметр аватара (кольцо avatar-round-frame)
@@ -76,7 +77,8 @@ func _build_ui() -> void:
 	bar.add_child(bg)
 
 	# Ornate-рамка на ВСЮ ширину (9-slice: торцы крепкие, середина тянется).
-	# Ассет @2× — NinePatch растягивает его на полосу (визуально масштаб «вниз»).
+	# Ассет @2× — рисуем через scale (борта вдвое тоньше); размер рамки делаем
+	# в 1/scale раз больше полосы, чтобы после масштаба она ровно её покрыла.
 	var frame := NinePatchRect.new()
 	frame.name = "Frame"
 	frame.texture = _FRAME_TEX
@@ -84,9 +86,13 @@ func _build_ui() -> void:
 	frame.patch_margin_right = _FRAME_PATCH_H
 	frame.patch_margin_top = _FRAME_PATCH_V
 	frame.patch_margin_bottom = _FRAME_PATCH_V
-	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	frame.scale = Vector2(_FRAME_SCALE, _FRAME_SCALE)
+	frame.position = Vector2.ZERO
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bar.add_child(frame)
+	var fit_frame := func() -> void: frame.size = bar.size / _FRAME_SCALE
+	bar.resized.connect(fit_frame)
+	fit_frame.call()
 
 	# Контент слева: [аватар] [compact InfoBar]. Справа в полосе — место под
 	# кнопки действий (ActionPanel — отдельный компонент). HBox по содержимому,
