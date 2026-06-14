@@ -758,12 +758,23 @@ const _SCRAMBLE_STEP_TIME: float = 0.08  # длительность одного
 static func rune_scramble(lbl: Label, final_text: String, rune_count: int = 1) -> void:
 	if not is_instance_valid(lbl):
 		return
+	var interrupted: bool = false
 	if lbl.has_meta("__scramble_tw"):
 		var prev: Variant = lbl.get_meta("__scramble_tw")
 		if prev and (prev as Tween).is_valid():
 			(prev as Tween).kill()
-	# Исходный font-override (Font или null) — вернём его в финале.
-	var base_font: Variant = lbl.get("theme_override_fonts/font")
+			interrupted = true
+	# Исходный font-override (Font или null) — вернём его в финале. ВАЖНО: если прошлый
+	# скрэмбл прерван, на лейбле СЕЙЧАС рунный шрифт — захватывать его нельзя, иначе
+	# финал «восстановит» руны (значение так и не проявится). Поэтому при прерывании
+	# берём сохранённый base из меты; иначе (settled) фиксируем текущий override.
+	# Оборачиваем в массив — чтобы null-override не путался с отсутствием меты.
+	var base_font: Variant
+	if interrupted and lbl.has_meta("__scramble_base"):
+		base_font = (lbl.get_meta("__scramble_base") as Array)[0]
+	else:
+		base_font = lbl.get("theme_override_fonts/font")
+		lbl.set_meta("__scramble_base", [base_font])
 	var tw := lbl.create_tween()
 	for i in range(_SCRAMBLE_STEPS):
 		tw.tween_callback(
