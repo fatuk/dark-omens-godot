@@ -51,6 +51,10 @@ var _items_list: VBoxContainer = null
 # Кнопка «Магазин» — создаётся программно, видна только в городе со своим сыщиком.
 var _shop_btn: Button = null
 
+# Кнопки покупки билетов (ж/д / корабль) — видны в моём городе по типам дорог.
+var _buy_train_btn: Button = null
+var _buy_ship_btn: Button = null
+
 
 func _ready() -> void:
 	UIStyle.style_panel(_panel, 18)
@@ -64,8 +68,10 @@ func _ready() -> void:
 	UIStyle.style_button(_travel_btn)
 	_travel_btn.pressed.connect(_on_travel_pressed)
 	_build_shop_button()
+	_build_buy_ticket_buttons()
 	GameState.state_changed.connect(_refresh_travel)
 	GameState.state_changed.connect(_refresh_shop)
+	GameState.state_changed.connect(_refresh_tickets)
 	GameState.state_changed.connect(_refresh_items)
 	_build_items_section()
 	_apply_offsets(true)
@@ -85,7 +91,40 @@ func _build_shop_button() -> void:
 	vbox.move_child(_shop_btn, _travel_btn.get_index() + 1)
 
 
-# Создаёт секцию «айтемы на локации» в VBox сразу после кнопки магазина.
+# Кнопки покупки билетов — сразу после кнопки магазина. Видимость/тип задаёт
+# _refresh_tickets (can_buy_ticket + available_ticket_types).
+func _build_buy_ticket_buttons() -> void:
+	var vbox: Node = _neighbors.get_parent()
+	_buy_train_btn = _make_buy_ticket_btn("SIDEBAR_BTN_TICKET_TRAIN", "train", CONN_COLORS["train"])
+	_buy_ship_btn = _make_buy_ticket_btn("SIDEBAR_BTN_TICKET_SHIP", "ship", CONN_COLORS["ship"])
+	vbox.add_child(_buy_train_btn)
+	vbox.add_child(_buy_ship_btn)
+	vbox.move_child(_buy_train_btn, _shop_btn.get_index() + 1)
+	vbox.move_child(_buy_ship_btn, _shop_btn.get_index() + 2)
+
+
+func _make_buy_ticket_btn(label_key: String, ticket_type: String, color: Color) -> Button:
+	var btn := Button.new()
+	btn.name = "BuyTicket_" + ticket_type
+	btn.text = label_key  # Godot переведёт по ключу
+	btn.visible = false
+	UIStyle.style_button(btn, color)
+	btn.pressed.connect(func() -> void: GameState.buy_ticket(ticket_type))
+	return btn
+
+
+## Кнопки покупки билетов: видны, если в городе можно купить (мой ход/локация/
+## действие) и есть дорога нужного типа.
+func _refresh_tickets() -> void:
+	if not (is_instance_valid(_buy_train_btn) and is_instance_valid(_buy_ship_btn)):
+		return
+	var can: bool = GameState.can_buy_ticket(_loc_id)
+	var avail: Array = GameState.available_ticket_types(_loc_id)
+	_buy_train_btn.visible = can and avail.has("train")
+	_buy_ship_btn.visible = can and avail.has("ship")
+
+
+# Создаёт секцию «айтемы на локации» в VBox сразу после кнопок билетов.
 func _build_items_section() -> void:
 	var vbox: Node = _neighbors.get_parent()  # Panel/Margin/VBox
 	_items_sep = HSeparator.new()
@@ -101,7 +140,7 @@ func _build_items_section() -> void:
 	vbox.add_child(_items_sep)
 	vbox.add_child(_items_hdr)
 	vbox.add_child(_items_list)
-	var at: int = _shop_btn.get_index() + 1
+	var at: int = _buy_ship_btn.get_index() + 1
 	vbox.move_child(_items_sep, at)
 	vbox.move_child(_items_hdr, at + 1)
 	vbox.move_child(_items_list, at + 2)
@@ -129,6 +168,7 @@ func show_location(data: Dictionary) -> void:
 	_populate_items(_loc_id)
 	_refresh_travel()
 	_refresh_shop()
+	_refresh_tickets()
 	if not _is_open:
 		_is_open = true
 		_animate(false)
@@ -140,6 +180,7 @@ func close_panel() -> void:
 	_is_open = false
 	_loc_id = ""
 	_refresh_travel()
+	_refresh_tickets()
 	_animate(true)
 	closed.emit()
 

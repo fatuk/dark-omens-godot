@@ -644,6 +644,27 @@ func can_shop(loc_id: String) -> bool:
 	return String(me.get("location", "")) == loc_id
 
 
+## Можно ли купить билет в loc_id прямо сейчас (для кнопок сайдбара). Условия как у
+## магазина: мой ход, мой текущий город, есть действие, buy_ticket ещё не сделан в
+## этом раунде. Конкретные типы билетов — available_ticket_types(loc_id).
+func can_buy_ticket(loc_id: String) -> bool:
+	if loc_id.is_empty() or not is_my_turn():
+		return false
+	var me: Dictionary = my_player()
+	if int(me.get("actions_left", 0)) <= 0:
+		return false
+	if (me.get("actions_used", []) as Array).has("buy_ticket"):
+		return false
+	if String(me.get("location", "")) != loc_id:
+		return false
+	return not available_ticket_types(loc_id).is_empty()
+
+
+## Купить билет типа ticket_type ("train"|"ship") — действие хосту.
+func buy_ticket(ticket_type: String) -> void:
+	perform_action("buy_ticket", {"type": ticket_type})
+
+
 ## Открытие магазина — старт проверки Влияния в pre-roll состоянии (БЕЗ траты
 ## действия), чтобы карты руки можно было активировать до броска. Действие
 ## тратится только на «Бросить кубы» (shop_begin → acquire_assets).
