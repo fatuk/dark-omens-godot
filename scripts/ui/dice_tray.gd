@@ -49,6 +49,12 @@ const BLUR_MAX: float = 0.30  # макс. вертикальный смаз (д�
 const SHAKE_AMP: float = 5.0  # амплитуда «тряски» куба при броске (px)
 const SHAKE_DUR: float = 0.40  # длительность тряски (сек)
 
+# Звук броска (SfxManager.SFX_DICE = dice-roll.wav): клаттер 0..settle (под спин),
+# затем «активация» — хвостовой сегмент после тихого участка, в момент оседания
+# последнего куба. Таймкоды подобраны по огибающей файла (тишина ~1.7–1.88 c).
+const _SFX_ACT_START: float = 1.85  # начало «активации» в файле (после тишины), сек
+const _SFX_ACT_END: float = 2.137  # конец файла, сек
+
 # Свечение-подложка (за гранью, во внутреннем вырезе рамки).
 const C_GLOW_SUCCESS := UIColors.SUCCESS  # успех (≥5) — зелёное свечение
 const C_GLOW_REROLL := UIColors.ACCENT  # провал + есть фокус → янтарь (кликабельно)
@@ -98,6 +104,9 @@ func play_roll(values: Array, can_reroll: bool = false) -> void:
 	for i in range(_dice.size()):
 		_spin(_dice[i], SPIN_BASE + i * SPIN_STAGGER)
 		_jitter(_dice[i])
+	if not _dice.is_empty():
+		# Клаттер до оседания ПОСЛЕДНЕГО куба, затем активация.
+		_play_roll_sfx(SPIN_BASE + maxf(0.0, float(_dice.size() - 1)) * SPIN_STAGGER)
 
 
 ## Пустые кубы (рубашки) до броска.
@@ -119,6 +128,7 @@ func reroll_die(index: int, new_value: int, can_reroll: bool) -> void:
 			_settle(_dice[i], false)  # обновить свечение без кручения
 	_spin(_dice[index], SPIN_BASE)
 	_jitter(_dice[index])
+	_play_roll_sfx(SPIN_BASE)  # переброс одного куба — короткий клаттер + активация
 
 
 # ── Сборка ──────────────────────────────────────────────────────────────────
@@ -334,6 +344,15 @@ func _jitter(die: Dictionary) -> void:
 	for off: Vector2 in steps:
 		tw.tween_property(content, "position", off, step_dur).set_trans(Tween.TRANS_SINE)
 	die["jitter_tw"] = tw
+
+
+# Звук броска: клаттер от старта до оседания последнего куба (settle), затем
+# «активация» (хвостовой сегмент файла) ровно в момент оседания. Без звука останова
+# отдельных кубов. Fire-and-forget: при закрытии лотка корутина не возобновится.
+func _play_roll_sfx(settle: float) -> void:
+	SfxManager.play_variation(SfxManager.SFX_DICE, 1, 0.0, [[0.0, settle]])
+	await get_tree().create_timer(maxf(0.05, settle)).timeout
+	SfxManager.play_variation(SfxManager.SFX_DICE, 1, 0.0, [[_SFX_ACT_START, _SFX_ACT_END]])
 
 
 # Лёгкий «толчок» лотка при броске (масштаб не сбрасывается контейнером).

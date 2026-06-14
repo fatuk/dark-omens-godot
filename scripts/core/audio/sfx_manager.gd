@@ -29,6 +29,9 @@ const SFX_CLUE_OPEN: AudioStream = preload("res://assets/audio/sfx/clue-open.wav
 ## Подсматривание следующего омена по наведению (peek in) и возврат (peek out).
 const SFX_OMEN_PICK_IN: AudioStream = preload("res://assets/audio/sfx/omen-pick-in.wav")
 const SFX_OMEN_PICK_OUT: AudioStream = preload("res://assets/audio/sfx/omen-pick-out.wav")
+## Бросок кубов: клаттер в начале файла + «активация» в хвосте (после тихого участка).
+## DiceTray нарезает сегментами через play_variation: клаттер под спин, активация — на оседание.
+const SFX_DICE: AudioStream = preload("res://assets/audio/sfx/dice-roll.wav")
 
 const BUS_NAME := "Sfx"
 const _POOL_SIZE: int = 4
@@ -38,7 +41,7 @@ const _POOL_SIZE: int = 4
 ## за каждое проигрывание. Меняющийся тембр читается заметнее. Шина-вариация на
 ## каждый плеер пула (round-robin → перекрытия не делят один фильтр).
 const FILTER_CENTER_HZ: float = 1500.0  # центр полосы (средние частоты)
-const FILTER_JITTER_HZ: float = 300.0  # ± случайный сдвиг центра за проигрывание
+const FILTER_JITTER_HZ: float = 350.0  # ± случайный сдвиг центра за проигрывание
 const FILTER_RESONANCE: float = 0.5  # Q полосы (ниже — шире, мягче окрас)
 
 var volume: float = 0.5  # 0.0..1.0, линейная шкала (default override: SettingsStore.sfx_volume)
