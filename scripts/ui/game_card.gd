@@ -47,12 +47,13 @@ const C_GLYPH := Color(0.55, 0.48, 0.35)
 # выше центра скроллит вверх, ниже вниз, по центру стоит; линейно к краям.
 const _DESC_SCROLL_MAX_SPEED := 75.0  # px/сек на краях (вдвое медленнее прежнего)
 const _DESC_SCROLL_DEADZONE := 0.04  # доля высоты от центра, где скролл стоит
+const _DESC_LABEL_H := 2000.0  # заведомо большая высота лейбла (любое описание влезет)
 
 var _cost: Label
 var _title: Label
 var _sub: Label
 var _desc: Label
-var _desc_scroll: ScrollContainer
+var _desc_offset: float = 0.0  # текущий сдвиг описания вверх (px), 0..overflow
 var _art: TextureRect
 var _art_fill: ColorRect
 var _glyph: Label
@@ -130,28 +131,30 @@ func _build() -> void:
 	_sub.clip_text = true
 	tvb.add_child(_sub)
 
-	# Описание — на пергаменте. Чёрный текст; не влезает → обрезаем по зоне
-	# (ScrollContainer клипует свой контент), а при наведении плавно прокручиваем
-	# вниз и обратно (_on_desc_hover_*). Дети — IGNORE, чтобы наведение ловила сама
-	# карта (self), а не скролл/лейбл.
+	# Описание — на пергаменте. Чёрный текст; не влезает → desc_zone клипует, а сам
+	# текст (заведомо высокий Label) сдвигается курсором при наведении (_process).
+	# Зона/лейбл — IGNORE, чтобы наведение ловила сама карта (self).
 	var desc_zone := _zone("Desc", Z_DESC)
-	_desc_scroll = ScrollContainer.new()
-	_desc_scroll.name = "DescScroll"
-	_desc_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_desc_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_desc_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
-	_desc_scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	desc_zone.add_child(_desc_scroll)
+	desc_zone.clip_contents = true
 	_desc = Label.new()
 	_desc.name = "DescLabel"
 	_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_desc.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_desc.add_theme_font_size_override("font_size", 12)
 	_desc.add_theme_color_override("font_color", C_DESC_TXT)
 	_desc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_desc_scroll.add_child(_desc)
+	# Ширина = зоне (anchor 0..1), верх у зоны; высота заведомо большая — текст
+	# рисуется с верха, лишнее клипует desc_zone. Скролл двигает offset_top/bottom.
+	_desc.anchor_left = 0.0
+	_desc.anchor_right = 1.0
+	_desc.anchor_top = 0.0
+	_desc.anchor_bottom = 0.0
+	_desc.offset_left = 0.0
+	_desc.offset_right = 0.0
+	_desc.offset_top = 0.0
+	_desc.offset_bottom = _DESC_LABEL_H
+	desc_zone.add_child(_desc)
 
 	mouse_entered.connect(_on_desc_hover_start)
 	mouse_exited.connect(_on_desc_hover_end)
@@ -194,25 +197,41 @@ func _on_desc_hover_start() -> void:
 
 func _on_desc_hover_end() -> void:
 	set_process(false)
-	if is_instance_valid(_desc_scroll):
-		_desc_scroll.scroll_vertical = 0
+	_desc_offset = 0.0
+	_apply_desc_offset()
 
 
-# Позиция курсора по вертикали (клампится к высоте блока): t=0 (верх) → вверх,
-# t=0.5 (центр) → стоп, t=1 (низ) → вниз. Скорость линейна по отклонению от центра.
-func _process(delta: float) -> void:
-	if not (is_instance_valid(_desc_scroll) and is_instance_valid(_desc)):
+# Двигаем высокий лейбл вверх на _desc_offset px (desc_zone клипует низ/верх).
+func _apply_desc_offset() -> void:
+	if not is_instance_valid(_desc):
 		return
-	var overflow: int = maxi(0, int(_desc.size.y) - int(_desc_scroll.size.y))
-	var h: float = _desc_scroll.size.y
-	if overflow <= 0 or h <= 0.0:
+	_desc.offset_top = -_desc_offset
+	_desc.offset_bottom = _DESC_LABEL_H - _desc_offset
+
+
+# Позиция курсора по вертикали в зоне (клампится к её высоте): t=0 (верх) → вверх,
+# t=0.5 (центр) → стоп, t=1 (низ) → вниз. Скорость линейна по отклонению от центра.
+# Высоту текста берём по числу перенесённых строк (ScrollContainer её не считал).
+func _process(delta: float) -> void:
+	if not is_instance_valid(_desc):
+		return
+	var zone: Control = _desc.get_parent()
+	var zh: float = zone.size.y
+	if zh <= 0.0:
+		return
+	var content_h: float = float(_desc.get_line_count()) * float(_desc.get_line_height())
+	var overflow: float = content_h - zh
+	if overflow <= 0.0:
+		if _desc_offset != 0.0:
+			_desc_offset = 0.0
+			_apply_desc_offset()
 		return  # текст влезает — скроллить нечего
-	var t: float = clampf(_desc_scroll.get_local_mouse_position().y / h, 0.0, 1.0)
+	var t: float = clampf(zone.get_local_mouse_position().y / zh, 0.0, 1.0)
 	var dir: float = (t - 0.5) * 2.0  # [-1..1]: <0 вверх, >0 вниз; линейно к краям
 	if absf(dir) < _DESC_SCROLL_DEADZONE:
 		return  # около центра — стоп
-	var pos: float = float(_desc_scroll.scroll_vertical) + dir * _DESC_SCROLL_MAX_SPEED * delta
-	_desc_scroll.scroll_vertical = int(roundf(clampf(pos, 0.0, float(overflow))))
+	_desc_offset = clampf(_desc_offset + dir * _DESC_SCROLL_MAX_SPEED * delta, 0.0, overflow)
+	_apply_desc_offset()
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
