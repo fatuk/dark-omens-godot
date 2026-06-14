@@ -41,6 +41,9 @@ var active_check: Dictionary = {}
 # Стек сохранённых проверок (хост-локальный, НЕ синкается): CheckFlow.push/pop для
 # вложенного каста — incantation запускает свою spell-проверку поверх боевой, на
 # «Применить» боевая возвращается. В каждый момент синкнутый active_check — видимая.
+# (Доступ кросс-объектный из CheckFlow через _gs._check_stack — статанализатор его
+# не видит, отсюда @warning_ignore.)
+@warning_ignore("unused_private_class_variable")
 var _check_stack: Array = []
 
 # Промпт «какие триггер-заклинания скастить» (напр. при отдыхе): { pid, event,
