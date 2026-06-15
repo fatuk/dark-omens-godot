@@ -77,6 +77,13 @@ func _reference_for(player_count: int) -> Dictionary:
 	return REFERENCE.get(clampi(player_count, 1, 8), REFERENCE[1])
 
 
+## Число из «карточки баланса» (REFERENCE) для текущего РАЗМЕРА партии по полю
+## ("clues"|"gates"|"surge"). Эффекты со scale:"balance" берут счётчик отсюда, чтобы
+## раскладка масштабировалась по числу игроков — как стартовый setup_board.
+func reference_amount(field: String) -> int:
+	return int(_reference_for(_gs._campaign.balance_player_count()).get(field, 1))
+
+
 ## Хост: начальная раскладка поля. Открыть врата (каждые → 1 монстр), разложить
 ## улики (≤1 на локацию), записать Наплыв. Зовётся из start_game до _broadcast_sync.
 func setup_board(player_count: int) -> void:

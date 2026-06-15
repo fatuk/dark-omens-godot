@@ -327,3 +327,12 @@ func test_setup_board_non_host_is_noop() -> void:
 	_gs.locations = [{"id": "g1", "gateColor": "green"}]
 	_board.setup_board(2)
 	assert_eq(_gs.gates.size(), 0, "не-хост раскладку не делает")
+
+
+func test_reference_amount_scales_with_party_size() -> void:
+	_gs._campaign.balance_pc = 4  # ref(4): gates 1, clues 3, surge 2
+	assert_eq(_board.reference_amount("clues"), 3, "улик по карте баланса на 4")
+	assert_eq(_board.reference_amount("gates"), 1, "врат по карте баланса на 4")
+	_gs._campaign.balance_pc = 7  # ref(7): clues 4
+	assert_eq(_board.reference_amount("clues"), 4, "улик по карте баланса на 7")
+	assert_eq(_board.reference_amount("missing"), 1, "неизвестное поле → 1")
