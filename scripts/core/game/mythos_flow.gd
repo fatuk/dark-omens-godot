@@ -138,6 +138,9 @@ func _apply_effects(effects: Array) -> void:
 	for i in range(effects.size()):
 		var eff: Dictionary = effects[i]
 		var verb: String = String(eff.get("do", ""))
+		if eff.has("forEach"):
+			await _run_for_each(eff)
+			continue
 		if eff.has("target"):
 			for uid: String in _gs.players:
 				if not bool(_gs.players[uid].get("connected", true)):
@@ -173,6 +176,91 @@ func _effect_delay(verb: String) -> float:
 		"monsterSurge":
 			return _DELAY_SURGE
 	return _DELAY_DEFAULT
+
+
+# ── forEach: интерактивный проход по сыщикам ──────────────────────────────────
+
+
+# Узел {forEach:"each", do:[…]} — проход по сыщикам (Ведущий первым); для КАЖДОГО
+# гоняем под-программу `do` интерактивно: выбор делает сам сыщик. Host-only,
+# корутина (ждёт решения каждого сыщика).
+func _run_for_each(node: Dictionary) -> void:
+	if not _gs._is_host():
+		return
+	var sub: Array = node.get("do", [])
+	if (sub as Array).is_empty():
+		return
+	var pids: Array = _for_each_pids(String(node.get("forEach", "each")))
+	for i: int in range(pids.size()):
+		await _run_player_subprogram(String(pids[i]), sub)
+	# Подчищаем выбор (на случай ранней очистки/дисконнекта) и синкаем.
+	_gs.mythos_decision = {}
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+
+
+# Сыщики forEach-прохода: подключённые в порядке turn_order (Ведущий = turn_order[0]
+# первым). Разбор цели (each/eachOn*) делегируем в TargetResolver.
+func _for_each_pids(target: String) -> Array:
+	return _gs._target._resolve_targets({"target": target})
+
+
+# Под-программа одного сыщика: dup-изоляция + интерактивный choice. Мутации игрока и
+# board-эффекты коммитим ТОЛЬКО при завершении без pending (иначе переигровка после
+# выбора применила бы их повторно). Относительные цели (rightNeighbor) внутри —
+# от ЭТОГО сыщика: штампуем _anchor_pid на board-узлы.
+func _run_player_subprogram(pid: String, sub: Array) -> void:
+	if not _gs.players.has(pid):
+		return
+	if _gs._cond.player_has_constraint(pid, "immuneToEffects"):
+		return  # whileHeld immuneToEffects (Lost in Time) — сыщик невосприимчив
+	var decisions: Dictionary = {}
+	var rolls: Dictionary = {}
+	while true:
+		var dup: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
+		var flow: Dictionary = {
+			"interactive": true,
+			"decisions": decisions,
+			"rolls": rolls,
+			"pending": {},
+			"slot": "",
+		}
+		var res: Dictionary = _EffectRunner.run(sub, dup, {}, flow)
+		rolls = flow.get("rolls", {})
+		var pending: Dictionary = res.get("pending", {})
+		if pending.is_empty():
+			_gs.players[pid] = dup  # коммит мутаций самого сыщика
+			for node_v: Variant in res.get("board", []):
+				var bnode: Dictionary = node_v
+				bnode["_anchor_pid"] = pid  # относительные цели — от этого сыщика
+				_gs._apply_board_effect(bnode)
+			for log_msg: Variant in res.get("logs", []):
+				GameConsole.log("[Mythos→%s] %s" % [_gs._name_of(pid), String(log_msg)])
+			_gs._broadcast_sync()
+			_gs._emit_changed()
+			await _gs.get_tree().create_timer(_DELAY_DEFAULT).timeout
+			return
+		# Пауза на выбор: показываем модалку сыщику pid, ждём его решение.
+		_gs.mythos_decision = {
+			"active": true,
+			"pid": pid,
+			"path": String(pending.get("path", "")),
+			"options": pending.get("options", []),
+			"by": String(pending.get("by", "self")),
+		}
+		_gs._broadcast_sync()
+		_gs._emit_changed()
+		decisions[String(pending.get("path", ""))] = await _await_decision()
+		_gs.mythos_decision = {}
+
+
+# Ждём решение сыщика. Уже проставлено (сигнал мог прийти до await) — берём сразу;
+# иначе блокируемся на сигнале mythos_decided.
+func _await_decision() -> int:
+	var pre: Variant = (_gs.mythos_decision as Dictionary).get("picked", null)
+	if pre != null:
+		return int(pre)
+	return int(await _gs.mythos_decided)
 
 
 # ── Реджойн ──────────────────────────────────────────────────────────────────

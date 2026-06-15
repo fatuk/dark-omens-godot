@@ -385,6 +385,20 @@ func host_apply_effect_choice(pid: String, index: int) -> bool:
 	return _commit_and_advance(pid)
 
 
+## Хост: сыщик выбрал ветку в forEach-проходе Мифов. Клампим индекс к числу веток,
+## кладём в mythos_decision.picked и будим ожидающую корутину MythosFlow сигналом.
+## Зовётся из GameState.decide_mythos и relay-router на game_mythos_decide.
+func host_apply_mythos_decision(pid: String, index: int) -> void:
+	var md: Dictionary = _gs.mythos_decision
+	if not bool(md.get("active", false)) or String(md.get("pid", "")) != pid:
+		return
+	var opts: Array = md.get("options", [])
+	var safe: int = clampi(index, 0, maxi(0, (opts as Array).size() - 1))
+	md["picked"] = safe
+	_gs.mythos_decision = md
+	_gs.mythos_decided.emit(safe)
+
+
 # Применить итоговые эффекты встречи и, если они полностью применились (не ждут
 # выбора игрока), передать ход дальше. Если коммит встал на паузу из-за choice —
 # просто синкаем состояние с pending_choice (модалка покажет выбор), ход замирает.
