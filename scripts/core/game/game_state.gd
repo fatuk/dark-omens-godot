@@ -102,6 +102,11 @@ var _locations_cache: Array = []
 # Активная карта Мифов (синкается). {} — фаза не mythos или карта уже разрешена.
 var current_mythos: Dictionary = {}
 
+# Карты Мифов «в игре» (ongoing) — синкается. Карта с onReckoning/whileInPlay остаётся
+# здесь после разрешения; её Расплата гоняется в шаге Расплаты (ReckoningFlow), а не на
+# вытягивании. Event-карты (без onReckoning/whileInPlay) сюда не попадают.
+var mythos_in_play: Array = []
+
 # Активный per-player выбор в forEach-проходе Мифов (синкается). {} — выбора нет.
 # {active, pid (чей выбор), path, options:[ветки], by, picked?}. Модалку показывает
 # тот клиент, у кого pid==мой; хост ждёт ответ через сигнал mythos_decided.
@@ -235,6 +240,7 @@ func _broadcast_sync() -> void:
 				"last_cast_result": last_cast_result,
 				"reckoning_results": reckoning_results,
 				"current_mythos": current_mythos,
+				"mythos_in_play": mythos_in_play,
 				"mythos_decision": mythos_decision,
 				"mythos_index": _mythos.index,
 				"gates": gates,
@@ -1013,6 +1019,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	last_cast_result = data.get("last_cast_result", {})
 	reckoning_results = data.get("reckoning_results", {})
 	current_mythos = data.get("current_mythos", {})
+	mythos_in_play = data.get("mythos_in_play", [])
 	mythos_decision = data.get("mythos_decision", {})
 	_mythos.index = int(data.get("mythos_index", 0))
 	gates = data.get("gates", {})
@@ -1389,6 +1396,7 @@ func reset_pregame() -> void:
 	last_cast_result = {}
 	reckoning_results = {}
 	current_mythos = {}
+	mythos_in_play = []
 	mythos_decision = {}
 	_mythos.deck = []
 	_mythos.index = 0

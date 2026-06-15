@@ -110,6 +110,9 @@ func _apply_resolve() -> void:
 	# Эффекты — последовательно, с ожиданием анимации каждого. Дум от омена
 	# считается внутри шага омена (до открытия новых врат) — см. _apply_board_effect.
 	await _apply_effects(effects)
+	# Ongoing-карта (есть whileInPlay/onReckoning-эффект) остаётся в игре — до шага
+	# Расплаты, чтобы свежая карта участвовала в текущей Расплате (тир «карты Мифов»).
+	_register_in_play(card)
 	# Карта-Расплата (её onReckoning содержит resolveReckoning) → выполняем шаг
 	# Расплаты: onReckoning состояний и пр. (см. ConditionFlow.host_resolve_reckoning).
 	var on_reck: Array = card.get("onReckoning", [])
@@ -120,6 +123,31 @@ func _apply_resolve() -> void:
 	_gs._phase.start_new_round()
 	_gs._broadcast_sync()
 	_gs._emit_changed()
+
+
+# Регистрирует карту как «в игре» (ongoing), если у неё есть whileInPlay или
+# onReckoning-ЭФФЕКТ (а не только триггер resolveReckoning). Без дублей по name.
+# Чистые event/триггер-карты в игре не остаются.
+func _register_in_play(card: Dictionary) -> void:
+	if not _has_ongoing(card):
+		return
+	var nm: String = String(card.get("name", ""))
+	for c_v: Variant in _gs.mythos_in_play:
+		if String((c_v as Dictionary).get("name", "")) == nm:
+			return  # уже в игре
+	(_gs.mythos_in_play as Array).append(card)
+	GameConsole.log("[Mythos] карта «%s» остаётся в игре" % nm)
+
+
+# Карта ongoing: есть whileInPlay ЛИБО onReckoning с эффектом (узел не-resolveReckoning;
+# структурный узел dieRoll/choice/group тоже считается эффектом).
+func _has_ongoing(card: Dictionary) -> bool:
+	if not (card.get("whileInPlay", []) as Array).is_empty():
+		return true
+	for n_v: Variant in card.get("onReckoning", []):
+		if n_v is Dictionary and String((n_v as Dictionary).get("do", "")) != "resolveReckoning":
+			return true
+	return false
 
 
 # Карта-триггер Расплаты: её onReckoning содержит узел resolveReckoning.
