@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/trade_modal.tscn" id="14_trademod"]
 [ext_resource type="PackedScene" path="res://scenes/ui/reckoning_result_modal.tscn" id="15_reckmod"]
 [ext_resource type="PackedScene" path="res://scenes/ui/cast_check_modal.tscn" id="16_castcheck"]
+[ext_resource type="PackedScene" path="res://scenes/ui/mythos_decision_modal.tscn" id="17_mythosdecide"]
 
 [node name="WorldMap" type="Node2D" unique_id=400240817]
 script = ExtResource("1_oru6e")
@@ -51,6 +52,8 @@ unique_name_in_owner = true
 [node name="MysterySidebar" parent="." unique_id=1511901215 instance=ExtResource("8_mystery")]
 
 [node name="MythosModal" parent="." unique_id=419872754 instance=ExtResource("9_mythosmod")]
+
+[node name="MythosDecisionModal" parent="." unique_id=419872755 instance=ExtResource("17_mythosdecide")]
 
 [node name="EncounterChoiceModal" parent="." unique_id=1049635943 instance=ExtResource("10_choicemod")]
 

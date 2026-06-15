@@ -797,6 +797,11 @@ MYTHOS_TGT_EACH,у каждого,each player
 MYTHOS_TGT_EACH_CITY,в городе,in a city
 MYTHOS_TGT_EACH_WILD,в дикой местности,in wilderness
 MYTHOS_TGT_EACH_SEA,в море,at sea
+MYTHOS_TGT_RIGHT,сосед справа,neighbor to the right
+MYTHOS_TGT_LEFT,сосед слева,neighbor to the left
+MYTHOS_EFF_LOSE_ALL,сбрасывает всё имущество,discards all possessions
+MYTHOS_DECISION_TITLE,Решение сыщика,Your Decision
+MYTHOS_DECISION_PROMPT,Выберите один эффект:,Resolve one effect of your choice:
 MON_AVIAN_THRALL_NAME,Avian Thrall,Avian Thrall
 MON_AVIAN_THRALL_ABILITY,"If you lose Sanity from the Will test, gain a Corruption Condition. Reckoning: Move this Monster to the nearest investigator. Then he encounters this Monster.","If you lose Sanity from the Will test, gain a Corruption Condition. Reckoning: Move this Monster to the nearest investigator. Then he encounters this Monster."
 MON_BYAKHEE_NAME,Byakhee,Byakhee
