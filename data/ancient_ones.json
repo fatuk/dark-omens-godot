@@ -1,6 +1,7 @@
 [
 	{ "id": "cthulhu",        "nameKey": "AO_CTHULHU" },
-	{ "id": "azathoth",       "nameKey": "AO_AZATHOTH" },
+	{ "id": "azathoth",       "nameKey": "AO_AZATHOTH",
+		"onReckoning": [ { "do": "advanceDoom", "amount": 1 } ] },
 	{ "id": "yog_sothoth",    "nameKey": "AO_YOG_SOTHOTH" },
 	{ "id": "hastur",         "nameKey": "AO_HASTUR" },
 	{ "id": "shub_niggurath", "nameKey": "AO_SHUB_NIGGURATH" },

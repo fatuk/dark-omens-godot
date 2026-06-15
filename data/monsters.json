@@ -16,7 +16,10 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_AVIAN_THRALL_ABILITY"
-		}
+		},
+		"onReckoning": [
+			{ "do": "loseSanity", "amount": 1, "target": "each" }
+		]
 	},
 	{
 		"id": "byakhee",
@@ -73,7 +76,10 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_CHILD_OF_THE_GOAT_ABILITY"
-		}
+		},
+		"onReckoning": [
+			{ "do": "loseHealth", "amount": 1, "target": "each" }
+		]
 	},
 	{
 		"id": "colour_out_of_space",

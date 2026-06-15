@@ -36,6 +36,12 @@ static func by_id(id: String) -> Dictionary:
 	return _by_id.get(id, {})
 
 
+## Программа Расплаты актива (effect.onReckoning) по id. [] — нет. Зовётся шагом
+## Расплаты сыщика (ReckoningFlow) наряду с состояниями.
+static func reckoning_of(id: String) -> Array:
+	return (by_id(id).get("effect", {}) as Dictionary).get("onReckoning", [])
+
+
 ## Несколько ассетов для витрины магазина (пока — первые `count` из набора core).
 ## Позже заменится на «резерв» (выложенные лицом карты) из стейта.
 static func shop_offer(count: int = 4) -> Array:

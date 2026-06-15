@@ -67,6 +67,12 @@ static func non_epic() -> Array:
 	return out
 
 
+## Программа Расплаты монстра (data onReckoning) по id. [] — нет. Зовётся шагом
+## Расплаты (ReckoningFlow) для каждого монстра на доске.
+static func reckoning_of(id: String) -> Array:
+	return by_id(id).get("onReckoning", [])
+
+
 ## Эффективная стойкость с учётом эпик-масштабирования по числу сыщиков.
 static func toughness_for(m: Dictionary, investigator_count: int) -> int:
 	return (
