@@ -106,12 +106,68 @@ func _reckon_investigators() -> void:
 
 
 # Расплата одного сыщика: его карты (состояния с onReckoning + активы с
-# effect.onReckoning) в дефолтном порядке.
+# effect.onReckoning). При >1 карте сыщик САМ выбирает порядок (mythos_decision),
+# по одной за раз; при ≤1 — без выбора.
 func _reckon_investigator(pid: String) -> void:
 	if not _gs.players.has(pid):
 		return
-	for card_v: Variant in _collect_reckoning_cards(pid):
-		await _resolve_card(pid, card_v as Dictionary)
+	var cards: Array = _collect_reckoning_cards(pid)
+	while not (cards as Array).is_empty():
+		var idx: int = 0
+		if (cards as Array).size() > 1:
+			_gs.mythos_decision = {
+				"active": true,
+				"pid": pid,
+				"path": "reckorder",
+				"options": _order_options(cards),
+				"by": "self",
+				"title_key": "RECK_ORDER_TITLE",
+				"prompt_key": "RECK_ORDER_PROMPT",
+			}
+			_gs._broadcast_sync()
+			_gs._emit_changed()
+			idx = clampi(await _await_decision(), 0, (cards as Array).size() - 1)
+			_gs.mythos_decision = {}
+		var card: Dictionary = cards[idx]
+		(cards as Array).remove_at(idx)
+		await _resolve_card(pid, card)
+		cards = _filter_valid(pid, cards)
+	_gs.mythos_decision = {}
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+
+
+# Опции выбора порядка: имя каждой карты (ключ перевода — модалка авто-переводит).
+func _order_options(cards: Array) -> Array:
+	var out: Array = []
+	for c_v: Variant in cards:
+		out.append({"text": String((c_v as Dictionary).get("name_key", ""))})
+	return out
+
+
+# Оставшиеся карты, что ещё валидны после резолва соседней (состояние могло быть
+# снято/перевёрнуто). Активы оставляем (в рамках одной Расплаты не «снимаются»).
+func _filter_valid(pid: String, cards: Array) -> Array:
+	var p: Dictionary = _gs.players.get(pid, {})
+	var out: Array = []
+	for c_v: Variant in cards:
+		var c: Dictionary = c_v
+		if String(c.get("kind", "")) != "condition":
+			out.append(c)
+		elif (
+			(p.get("conditions", []) as Array).has(String(c.get("id", "")))
+			and not (p.get("conditions_flipped", {}) as Dictionary).has(String(c.get("id", "")))
+		):
+			out.append(c)
+	return out
+
+
+# Ждём выбор сыщика. Уже проставлено (сигнал до await) — берём сразу; иначе — сигнал.
+func _await_decision() -> int:
+	var pre: Variant = (_gs.mythos_decision as Dictionary).get("picked", null)
+	if pre != null:
+		return int(pre)
+	return int(await _gs.mythos_decided)
 
 
 # Карты Расплаты сыщика: [{kind:"condition"|"asset", id, name_key}].

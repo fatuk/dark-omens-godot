@@ -38,13 +38,19 @@ func _refresh() -> void:
 
 
 func _build(options: Array) -> void:
+	var d: Dictionary = GameState.mythos_decision
 	for c in _vbox.get_children():
 		c.queue_free()
-	_vbox.add_child(UIStyle.modal_title(tr("MYTHOS_DECISION_TITLE"), UIColors.DANGER))
+	# title_key/prompt_key — опц. (forEach Мифов vs выбор порядка Расплаты и т.п.).
+	_vbox.add_child(
+		UIStyle.modal_title(
+			tr(String(d.get("title_key", "MYTHOS_DECISION_TITLE"))), UIColors.DANGER
+		)
+	)
 
 	var prompt := Label.new()
 	prompt.name = "Prompt"
-	prompt.text = tr("MYTHOS_DECISION_PROMPT")
+	prompt.text = tr(String(d.get("prompt_key", "MYTHOS_DECISION_PROMPT")))
 	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	prompt.add_theme_color_override("font_color", UIColors.MUTED)

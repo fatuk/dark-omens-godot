@@ -802,6 +802,8 @@ MYTHOS_TGT_LEFT,сосед слева,neighbor to the left
 MYTHOS_EFF_LOSE_ALL,сбрасывает всё имущество,discards all possessions
 MYTHOS_DECISION_TITLE,Решение сыщика,Your Decision
 MYTHOS_DECISION_PROMPT,Выберите один эффект:,Resolve one effect of your choice:
+RECK_ORDER_TITLE,Расплата,Reckoning
+RECK_ORDER_PROMPT,Какую карту Расплаты разрешить следующей?,Which Reckoning card to resolve next?
 MON_AVIAN_THRALL_NAME,Avian Thrall,Avian Thrall
 MON_AVIAN_THRALL_ABILITY,"If you lose Sanity from the Will test, gain a Corruption Condition. Reckoning: Move this Monster to the nearest investigator. Then he encounters this Monster.","If you lose Sanity from the Will test, gain a Corruption Condition. Reckoning: Move this Monster to the nearest investigator. Then he encounters this Monster."
 MON_BYAKHEE_NAME,Byakhee,Byakhee
