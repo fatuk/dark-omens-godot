@@ -67,7 +67,7 @@ func _refresh() -> void:
 	_status.text = (
 		tr("MYSTERY_STATUS_FMT")
 		% [
-			int(m.get("act", 1)),
+			GameState.active_mystery + 1,  # порядковый номер Тайны (актов у Тайн нет)
 			GameState.doom,
 			int(GameState.campaign.get("doomClock", 0)),
 		]

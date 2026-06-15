@@ -744,7 +744,7 @@ ITEM_OTHER,Предмет,Item
 
 MYSTERY_NONE_TITLE,Тайна ещё не открыта,The Mystery is not yet revealed
 MYSTERY_NONE_BODY,"Сценарная библия ещё генерируется. Тайна появится, когда кампания будет готова.",The scenario bible is still generating. The Mystery will appear once the campaign is ready.
-MYSTERY_STATUS_FMT,Акт %d · рок %d/%d,Act %d · doom %d/%d
+MYSTERY_STATUS_FMT,Тайна %d · рок %d/%d,Mystery %d · doom %d/%d
 MYSTERY_SOLVE,Условие закрытия,Solve condition
 MYSTERY_SOLVE_CLUES,собрать %d улик на карте тайны,gather %d clues on the Mystery card
 MYSTERY_SOLVE_TOKENS,разместить %d жетонов на карте тайны,place %d tokens on the Mystery card
@@ -755,7 +755,9 @@ CAMPAIGN_GATE_TITLE,Создание кампании,Creating the campaign
 CAMPAIGN_GATE_BODY,"Собираем сценарий вашей партии — Древний, Тайны и колода Мифов.","Assembling your game's scenario — the Ancient One, the Mysteries and the Mythos deck."
 
 INTRO_ANCIENT_EYEBROW,Древний,The Ancient One
-INTRO_MYSTERY_EYEBROW,Первая тайна,The First Mystery
+INTRO_MYSTERY_EYEBROW_1,Первая тайна,The First Mystery
+INTRO_MYSTERY_EYEBROW_2,Вторая тайна,The Second Mystery
+INTRO_MYSTERY_EYEBROW_3,Третья тайна,The Third Mystery
 INTRO_NEXT,Дальше,Next
 INTRO_START,Начать,Begin
 

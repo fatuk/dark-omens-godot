@@ -691,7 +691,10 @@ func _render_gate() -> void:
 			var m: Dictionary = GameState.current_mystery()
 			# Запоминаем, чей ревил показан — чтобы не повторять и ловить смену.
 			_revealed_mystery = GameState.active_mystery
-			_gate_eyebrow("INTRO_MYSTERY_EYEBROW")
+			# Eyebrow по порядковому номеру Тайны в последовательности (Первая/Вторая/
+			# Третья), а не по «акту» — актов у Тайн нет.
+			var ord: int = clampi(GameState.active_mystery + 1, 1, 3)
+			_gate_eyebrow("INTRO_MYSTERY_EYEBROW_%d" % ord)
 			_gate_title(String(m.get("title", "")))
 			var flavor: String = String(m.get("flavorText", ""))
 			if not flavor.is_empty():

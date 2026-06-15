@@ -196,12 +196,14 @@ func test_encounter_hook_at_eldritch_token() -> void:
 	assert_false(_m.mystery_encounter_hook("locA", "p").is_empty(), "хук на клетке с жетоном")
 
 
-func test_encounter_hook_at_mystery_location() -> void:
+func test_encounter_hook_at_marked_location() -> void:
+	# Помеченная локация = тот же жетон Знамения: encounterAtEldritchToken срабатывает
+	# и на ней (без entity-жетона на клетке).
 	_mystery(
 		{
 			"solveCondition": {"kind": "tokensOnCard"},
 			"locations": ["locM"],
-			"progress": [{"on": "encounterAtMysteryToken"}],
+			"progress": [{"on": "encounterAtEldritchToken"}],
 		}
 	)
 	assert_false(_m.mystery_encounter_hook("locM", "p").is_empty(), "хук на помеченной локации")
@@ -215,6 +217,20 @@ func test_encounter_hook_none_on_plain_location() -> void:
 		}
 	)
 	assert_true(_m.mystery_encounter_hook("plain", "p").is_empty())
+
+
+func test_encounter_hook_skips_claimed_marked_location() -> void:
+	# Снятую (mystery_claimed) помеченную локацию — метка ушла на карту — встреча
+	# больше не предлагает (иначе можно было бы фармить одну клетку).
+	_mystery(
+		{
+			"solveCondition": {"kind": "tokensOnCard"},
+			"locations": ["locM"],
+			"progress": [{"on": "encounterAtEldritchToken"}],
+		}
+	)
+	_gs.mystery_claimed = ["locM"]
+	assert_true(_m.mystery_encounter_hook("locM", "p").is_empty(), "снятая метка — встречи нет")
 
 
 # ── Оплата / применение ───────────────────────────────────────────────────────

@@ -89,27 +89,21 @@ func reset() -> void:
 # ── Анализ ───────────────────────────────────────────────────────────────────
 
 
-## Текущий акт (1–3) — по индексу активной Тайны. Прогресс игроков, не doom:
-## решили Тайну акта 1 → акт 2, и т.д. doom отдельно — часы поражения.
+## Стадия кампании (1–3) — по числу решённых Тайн (active_mystery): решили первую
+## Тайну → стадия 2 и т.д. У самих Тайн актов НЕТ (они просто последовательность);
+## акты живут только в колоде Мифов (полосы byAct) и в рецепте Древнего. Эта стадия
+## используется лишь как «акт» для подбора сложности встреч. doom отдельно.
 func current_act() -> int:
 	return clampi(_gs.active_mystery + 1, 1, 3)
 
 
-## Активная Тайна — по индексу active_mystery. {} — кампания/тайны не готовы
-## либо все 3 уже решены (outcome=="victory").
+## Активная Тайна — по индексу active_mystery (Тайны идут последовательностью, без
+## актов). {} — кампания/тайны не готовы либо все решены (outcome=="victory").
 func current_mystery() -> Dictionary:
 	var ms: Array = _gs.campaign.get("mysteries", [])
-	if ms.is_empty():
-		return {}
 	var idx: int = _gs.active_mystery
 	if idx < 0 or idx >= ms.size():
 		return {}
-	# Сначала пытаемся найти по полю act (стабильнее), иначе берём по индексу.
-	var act: int = current_act()
-	for i in range(ms.size()):
-		var m: Dictionary = ms[i]
-		if int(m.get("act", 0)) == act:
-			return m
 	return ms[idx]
 
 
@@ -216,23 +210,26 @@ func _summary(full: Dictionary) -> Dictionary:
 	var src: Array = full.get("mysteries", [])
 	for i in range(src.size()):
 		var m: Dictionary = src[i]
-		(
-			mysteries
-			. append(
-				{
-					"act": int(m.get("act", 0)),
-					"title": String(m.get("title", "")),
-					"flavorText": String(m.get("flavorText", "")),
-					"text": String(m.get("text", "")),
-					"solveCondition": m.get("solveCondition", {}),
-					# Помеченные локации Тайны — без них нет маркеров и mystery-встреч.
-					"locations": m.get("locations", []),
-					# onEnter — board-эффекты при активации Тайны (напр. раскладка
-					# жетонов Знамения для tokensOnCard). Лёгкий, синкаем.
-					"onEnter": m.get("onEnter", []),
-				}
-			)
-		)
+		var msum: Dictionary = {
+			"title": String(m.get("title", "")),
+			"flavorText": String(m.get("flavorText", "")),
+			"text": String(m.get("text", "")),
+			"solveCondition": m.get("solveCondition", {}),
+			# Помеченные локации Тайны — без них нет маркеров и mystery-встреч.
+			"locations": m.get("locations", []),
+			# onEnter — board-эффекты при активации Тайны (напр. раскладка
+			# жетонов Знамения для tokensOnCard). Лёгкий, синкаем.
+			"onEnter": m.get("onEnter", []),
+		}
+		# progress-хуки набора жетонов (реакции gateClosed/... + встречи-хуки
+		# encounterAtEldritchToken) — БЕЗ них tokensOnCard-Тайна не продвигается и
+		# не предлагает встречу. Лёгкие, синкаем как есть. Копируем только если есть
+		# (иначе пустой progress затенил бы легаси-progressHook в mystery_progress_hooks).
+		if m.has("progress"):
+			msum["progress"] = m.get("progress", [])
+		if m.has("progressHook"):
+			msum["progressHook"] = m.get("progressHook", {})
+		mysteries.append(msum)
 	return {
 		"id": String(full.get("id", "")),
 		"doomClock": int(full.get("doomClock", 0)),

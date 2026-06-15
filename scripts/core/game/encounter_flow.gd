@@ -609,9 +609,14 @@ func _commit_eldritch(pid: String) -> void:
 	if hook.is_empty():
 		return
 	var loc: String = String(enc.get("eldritch_loc", _gs.players[pid].get("location", "")))
-	# Азатот: переносим board-жетон (снимаем с клетки). Тунгуска: жетона нет → no-op.
+	# Снимаем жетон Тайны с клетки → на карту. Источник жетона — entity eldritch_token
+	# (Мифы) ИЛИ метка локации Тайны (mystery.locations). Метку «снимаем» через
+	# mystery_claimed: world_map перестаёт её рисовать, повторно зайти нельзя.
 	if (_gs.entities.get(loc, []) as Array).has("eldritch_token"):
 		_remove_eldritch_at(loc)
+	var mlocs: Array = _gs._campaign.current_mystery().get("locations", [])
+	if (mlocs as Array).has(loc) and not (_gs.mystery_claimed as Array).has(loc):
+		(_gs.mystery_claimed as Array).append(loc)
 	# Списать cost + применить effect (placeEldritchToken where:self → счётчик).
 	_gs._mystery.mystery_apply_hook(hook, pid)
 	GameConsole.log(

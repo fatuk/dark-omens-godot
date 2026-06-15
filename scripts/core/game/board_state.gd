@@ -369,6 +369,30 @@ func place_eldritch_token() -> void:
 	GameConsole.log("[Знамение] жетон на %s" % pick)
 
 
+## Положить до n жетонов Знамения на ПОМЕЧЕННЫЕ локации активной Тайны
+## (mystery.locations), по одному на локацию без жетона. Так метка Тайны и жетон
+## совпадают на клетке — единый повод для встречи (encounterAtEldritchToken).
+## Зовётся из placeEldritchToken с where:"marked" (обычно из onEnter Тайны).
+func place_eldritch_token_on_marked(n: int) -> void:
+	if not _gs._is_host():
+		return
+	var locs: Array = _gs._campaign.current_mystery().get("locations", [])
+	var placed: int = 0
+	for i: int in range(locs.size()):
+		if placed >= n:
+			break
+		var lid: String = String(locs[i])
+		if lid.is_empty():
+			continue
+		var arr: Array = _gs.entities.get(lid, [])
+		if not (arr as Array).has("eldritch_token"):
+			arr.append("eldritch_token")
+			_gs.entities[lid] = arr
+			placed += 1
+	if placed > 0:
+		GameConsole.log("[Знамение] %d жетон(ов) на помеченные локации Тайны" % placed)
+
+
 ## Положить слух на случайную локацию.
 func place_rumor() -> void:
 	if not _gs._is_host():

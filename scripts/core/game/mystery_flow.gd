@@ -113,20 +113,22 @@ func _eval_hook_when(when_v: Variant, ctx: Dictionary) -> bool:
 	return true
 
 
-## Хук, доступный как ВСТРЕЧА на локации (encounterAt*-триггеры), если игрок может
-## оплатить cost. {} — нет. encounterAtEldritchToken → клетка с жетоном Знамения;
-## encounterAtMysteryToken → помеченная локация Тайны.
+## Хук, доступный как ВСТРЕЧА на локации, если игрок может оплатить cost. {} — нет.
+## Повод — клетка с жетоном Знамения ЛИБО помеченная локация Тайны (метка = тот же
+## жетон Знамения, канон «eldritch»). Триггер хука — encounterAtEldritchToken.
 func mystery_encounter_hook(loc: String, pid: String) -> Dictionary:
 	if mystery_kind() != "tokensOnCard":
 		return {}
-	var event: String = ""
-	if (_gs.entities.get(loc, []) as Array).has("eldritch_token"):
-		event = "encounterAtEldritchToken"
-	elif (_gs._campaign.current_mystery().get("locations", []) as Array).has(loc):
-		event = "encounterAtMysteryToken"
-	else:
+	var has_token: bool = (_gs.entities.get(loc, []) as Array).has("eldritch_token")
+	# Помеченная локация = жетон Тайны, ПОКА не снята (mystery_claimed). Снятую локацию
+	# (метка убрана, жетон ушёл на карту) встречей больше не предлагаем.
+	var is_marked: bool = (
+		(_gs._campaign.current_mystery().get("locations", []) as Array).has(loc)
+		and not (_gs.mystery_claimed as Array).has(loc)
+	)
+	if not (has_token or is_marked):
 		return {}
-	var hook: Dictionary = mystery_hook_for(event, {"loc": loc})
+	var hook: Dictionary = mystery_hook_for("encounterAtEldritchToken", {"loc": loc})
 	if hook.is_empty() or not mystery_can_pay(hook, pid):
 		return {}
 	return hook
