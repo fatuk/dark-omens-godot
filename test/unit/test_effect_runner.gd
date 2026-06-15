@@ -457,6 +457,60 @@ func test_interactive_choice_resume_round_trip() -> void:
 	assert_eq((res2["pending"] as Dictionary).size(), 0)
 
 
+# ── Гейт стоимости у веток choice («сделай X, иначе штраф») ───────────────────
+
+
+func test_choice_cost_affordable_pauses_both() -> void:
+	var p: Dictionary = _player()
+	p["clues"] = 2
+	var effects: Array = [
+		{
+			"choice":
+			[
+				{"do": "text", "cost": {"spend": "clue", "amount": 1}},
+				{"do": "loseSanity", "amount": 2},
+			]
+		}
+	]
+	var res: Dictionary = EffectRunner.run(effects, p, {}, {"interactive": true})
+	assert_eq((res["pending"].get("options", []) as Array).size(), 2, "обе ветки доступны → пауза")
+	assert_eq(int(p["clues"]), 2, "на паузе улики не списаны")
+
+
+func test_choice_cost_unaffordable_auto_penalty() -> void:
+	var p: Dictionary = _player()
+	p["clues"] = 0  # заплатить нечем
+	var effects: Array = [
+		{
+			"choice":
+			[
+				{"do": "text", "cost": {"spend": "clue", "amount": 1}},
+				{"do": "loseSanity", "amount": 2},
+			]
+		}
+	]
+	var res: Dictionary = EffectRunner.run(effects, p, {}, {"interactive": true})
+	assert_eq((res["pending"] as Dictionary).size(), 0, "нет улик → без выбора, авто-штраф")
+	assert_eq(int(p["sanity"]), 3, "применился штраф (−2 рассудка)")
+
+
+func test_choice_cost_charged_on_pick() -> void:
+	var p: Dictionary = _player()
+	p["clues"] = 2
+	var effects: Array = [
+		{
+			"choice":
+			[
+				{"do": "text", "cost": {"spend": "clue", "amount": 1}},
+				{"do": "loseSanity", "amount": 2},
+			]
+		}
+	]
+	EffectRunner.run(effects, p, {}, {"interactive": true, "decisions": {"0": 0}})
+	assert_eq(int(p["clues"]), 1, "выбрал «потратить» → списана 1 улика")
+	assert_eq(int(p["sanity"]), 5, "штраф не применён")
+
+
 # ── Передача целей (Phase 4): chosenInvestigator → выбор → нода на доску ───────
 
 

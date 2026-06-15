@@ -220,11 +220,86 @@ static func _run_choice(
 	var decisions: Dictionary = flow.get("decisions", {})
 	if decisions.has(path):
 		var idx: int = clampi(int(decisions[path]), 0, branches.size() - 1)
+		_charge_cost(branches[idx], player, logs)
 		_run_node(branches[idx], player, logs, board, ctx, flow, path + "/c" + str(idx))
 		return
-	flow["pending"] = {
-		"path": path, "options": branches.duplicate(), "by": String(node.get("by", "active"))
-	}
+	# Ветка с cost (spend/amount) доступна только если игрок может заплатить — гейт
+	# «сделай X, иначе штраф» (closes «unless he spends 1 Clue» лазейку).
+	var affordable: Array = []
+	for k in range(branches.size()):
+		if _can_afford(branches[k], player):
+			affordable.append(k)
+	# Cost отсёк ветки до ≤1 доступной → выбора нет: применяем единственную (штраф).
+	# Если cost ничего не отсёк — пауза как раньше (даже на одной ветке).
+	if (affordable as Array).size() < branches.size() and (affordable as Array).size() <= 1:
+		var bk: int = int(affordable[0]) if not (affordable as Array).is_empty() else 0
+		_charge_cost(branches[bk], player, logs)
+		_run_node(branches[bk], player, logs, board, ctx, flow, path + "/c" + str(bk))
+		return
+	# Несколько доступных → пауза; опции несут флаг доступности (_affordable) для модалки.
+	var opts: Array = []
+	for k in range(branches.size()):
+		var o: Dictionary = (branches[k] as Dictionary).duplicate(true)
+		o["_affordable"] = (affordable as Array).has(k)
+		opts.append(o)
+	flow["pending"] = {"path": path, "options": opts, "by": String(node.get("by", "active"))}
+
+
+# Доступна ли ветка choice по стоимости (cost.spend/amount). Без cost / без spend — да.
+static func _can_afford(branch: Variant, player: Dictionary) -> bool:
+	if not (branch is Dictionary):
+		return true
+	var cost: Dictionary = (branch as Dictionary).get("cost", {})
+	var spend: String = String(cost.get("spend", ""))
+	if spend.is_empty():
+		return true
+	return _resource_of(player, spend) >= int(cost.get("amount", 1))
+
+
+# Списать стоимость выбранной ветки (cost.spend/amount). Без spend — no-op.
+static func _charge_cost(branch: Variant, player: Dictionary, logs: Array) -> void:
+	if not (branch is Dictionary):
+		return
+	var cost: Dictionary = (branch as Dictionary).get("cost", {})
+	var spend: String = String(cost.get("spend", ""))
+	if spend.is_empty():
+		return
+	var amt: int = int(cost.get("amount", 1))
+	_spend_resource(player, spend, amt)
+	logs.append("потрачено %s ×%d" % [spend, amt])
+
+
+static func _resource_of(player: Dictionary, res: String) -> int:
+	match res:
+		"clue", "clues":
+			return int(player.get("clues", 0))
+		"sanity":
+			return int(player.get("sanity", 0))
+		"health", "hp":
+			return int(player.get("hp", 0))
+		"focus", "concentration":
+			return int(player.get("concentration", 0))
+		"asset", "spell":
+			return (player.get("items", []) as Array).size()
+		_:
+			return 0
+
+
+static func _spend_resource(player: Dictionary, res: String, amt: int) -> void:
+	match res:
+		"clue", "clues":
+			player["clues"] = maxi(0, int(player.get("clues", 0)) - amt)
+		"sanity":
+			player["sanity"] = maxi(0, int(player.get("sanity", 0)) - amt)
+		"health", "hp":
+			player["hp"] = maxi(0, int(player.get("hp", 0)) - amt)
+		"focus", "concentration":
+			player["concentration"] = maxi(0, int(player.get("concentration", 0)) - amt)
+		"asset", "spell":
+			var items: Array = player.get("items", [])
+			if not (items as Array).is_empty():
+				items.pop_back()
+			player["items"] = items
 
 
 ## Вложенная проверка. Есть навыки в ctx → реальный бросок (как CheckFlow.pool):

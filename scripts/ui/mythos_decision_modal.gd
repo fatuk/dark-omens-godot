@@ -64,6 +64,7 @@ func _build(options: Array) -> void:
 		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		UIStyle.style_button(btn)
+		btn.disabled = not bool(opt.get("_affordable", true))  # ветка не по карману
 		var idx: int = i
 		btn.pressed.connect(func() -> void: _on_pick(idx))
 		_vbox.add_child(btn)
