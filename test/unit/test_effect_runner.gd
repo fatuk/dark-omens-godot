@@ -91,6 +91,17 @@ func test_lose_condition_clears_flipped() -> void:
 	assert_false((p["conditions_flipped"] as Dictionary).has("legInjury"), "flip-метка очищена")
 
 
+func test_lose_all_possessions_clears_items() -> void:
+	var p: Dictionary = _player()
+	p["items"] = [{"id": "a"}, {"id": "b", "kind": "spell"}]
+	p["conditions"] = ["blessed"]
+	p["clues"] = 3
+	EffectRunner.run([{"do": "loseAllPossessions"}], p)
+	assert_eq((p["items"] as Array).size(), 0, "весь инвентарь сброшен")
+	assert_true((p["conditions"] as Array).has("blessed"), "состояния — не имущество, целы")
+	assert_eq(int(p["clues"]), 3, "улики — не имущество, целы")
+
+
 func test_focus_gain_and_loss_clamp() -> void:
 	var p: Dictionary = _player()
 	EffectRunner.run([{"do": "gainFocus", "amount": 2}], p)

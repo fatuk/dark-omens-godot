@@ -26,6 +26,7 @@ const _PLAYER_VERBS := [
 	"loseAsset",
 	"loseSpell",
 	"loseImprovement",
+	"loseAllPossessions",
 	"gainFocus",
 	"loseFocus",
 	"improveSkill",
@@ -380,6 +381,11 @@ static func _apply_player_verb(
 				litems.pop_back()
 			player["items"] = litems
 			logs.append("утрачен предмет")
+		"loseAllPossessions":
+			# Сбросить весь инвентарь карт (активы/заклинания/артефакты). Состояния,
+			# улики, билеты — НЕ имущество (хранятся отдельными полями), их не трогаем.
+			player["items"] = []
+			logs.append("утрачено всё имущество")
 		"gainFocus":
 			player["concentration"] = int(player.get("concentration", 0)) + n
 			logs.append("+%d сосредоточения" % n)

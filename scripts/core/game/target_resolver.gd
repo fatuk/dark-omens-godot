@@ -72,9 +72,34 @@ func _resolve_targets(node: Dictionary) -> Array:
 		"chosenInvestigator", "chosen":
 			var pid: String = String(node.get("_target_pid", ""))
 			return [pid] if not pid.is_empty() and _gs.players.has(pid) else []
+		"rightNeighbor":
+			return _neighbor(_anchor_pid(node), 1)
+		"leftNeighbor":
+			return _neighbor(_anchor_pid(node), -1)
 		_:
 			var a: String = _gs._current_pid()
 			return [a] if not a.is_empty() else []
+
+
+# Якорь относительных целей: явный _anchor_pid (ставит forEach-драйвер Мифов) либо
+# активный игрок (встречи). Сосед считается ОТ него.
+func _anchor_pid(node: Dictionary) -> String:
+	return String(node.get("_anchor_pid", _gs._current_pid()))
+
+
+# Сосед якоря среди подключённых (порядок turn_order, со wrap): dir +1 — по часовой
+# (следующий), −1 — против. Якоря нет в списке / игрок один → пусто.
+func _neighbor(anchor: String, dir: int) -> Array:
+	if anchor.is_empty():
+		return []
+	var pids: Array = _connected_pids()
+	var n: int = (pids as Array).size()
+	if n <= 1:
+		return []
+	var idx: int = (pids as Array).find(anchor)
+	if idx < 0:
+		return []
+	return [String(pids[((idx + dir) % n + n) % n])]
 
 
 # Подключённые сыщики (id), в порядке turn_order.

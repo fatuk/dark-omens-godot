@@ -112,6 +112,59 @@ func test_loc_type_of_unknown_is_empty() -> void:
 	assert_eq(_t._loc_type_of("nope"), "", "неизвестная локация → пусто")
 
 
+# ── относительные соседи ──────────────────────────────────────────────────────
+
+
+func test_resolve_right_neighbor_from_active() -> void:
+	_player("p1")
+	_player("p2")
+	_player("p3")
+	# активный p1 (якорь по умолчанию) → сосед по часовой p2
+	assert_eq(_t._resolve_targets({"target": "rightNeighbor"}), ["p2"])
+
+
+func test_resolve_left_neighbor_wraps() -> void:
+	_player("p1")
+	_player("p2")
+	_player("p3")
+	# активный p1 → сосед против часовой p3 (wrap назад)
+	assert_eq(_t._resolve_targets({"target": "leftNeighbor"}), ["p3"])
+
+
+func test_resolve_neighbor_from_explicit_anchor() -> void:
+	_player("p1")
+	_player("p2")
+	_player("p3")
+	assert_eq(_t._resolve_targets({"target": "rightNeighbor", "_anchor_pid": "p2"}), ["p3"])
+	assert_eq(_t._resolve_targets({"target": "leftNeighbor", "_anchor_pid": "p1"}), ["p3"])
+
+
+func test_resolve_neighbor_skips_disconnected() -> void:
+	_player("p1")
+	_player("p2", {"connected": false})
+	_player("p3")
+	# подключённые [p1, p3]; сосед справа от p1 = p3 (отключённый p2 пропущен)
+	assert_eq(_t._resolve_targets({"target": "rightNeighbor", "_anchor_pid": "p1"}), ["p3"])
+
+
+func test_resolve_neighbor_single_player_empty() -> void:
+	_player("p1")
+	assert_eq(_t._resolve_targets({"target": "rightNeighbor"}), [], "один игрок — соседа нет")
+
+
+func test_apply_lose_all_possessions_to_right_neighbor() -> void:
+	_player("p1")
+	_player("p2", {"items": [{"id": "a"}, {"id": "b"}]})
+	_player("p3", {"items": [{"id": "c"}]})
+	_t.apply_targeted_effect(
+		{"do": "loseAllPossessions", "target": "rightNeighbor", "_anchor_pid": "p1"}
+	)
+	assert_eq(
+		(_gs.players["p2"]["items"] as Array).size(), 0, "сосед справа (p2) — инвентарь очищен"
+	)
+	assert_eq((_gs.players["p3"]["items"] as Array).size(), 1, "p3 не задет")
+
+
 # ── apply_targeted_effect (игровой verb к целям) ──────────────────────────────
 
 
