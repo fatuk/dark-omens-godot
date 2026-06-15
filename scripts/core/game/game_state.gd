@@ -867,15 +867,6 @@ func available_ticket_types(loc_id: String) -> Array:
 	return types
 
 
-## Аффинити бонусов локации (data/locations.json → rewardAffinity): { verb: weight }.
-## Пусто → у локации нет бонусов. Используется EncounterFlow для бонуса на успехе.
-func location_reward_affinity(loc_id: String) -> Dictionary:
-	for loc in _load_locations():
-		if String((loc as Dictionary).get("id", "")) == loc_id:
-			return (loc as Dictionary).get("rewardAffinity", {})
-	return {}
-
-
 # ── Mythos (фасад) ───────────────────────────────────────────────────────────
 
 

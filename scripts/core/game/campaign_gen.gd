@@ -236,4 +236,6 @@ func _summary(full: Dictionary) -> Dictionary:
 		"ancientOne": full.get("ancientOne", {}),
 		"theme": full.get("theme", []),
 		"mysteries": mysteries,
+		# Локации с авторской site-встречей — на них предлагаем выбор «общая/локационная».
+		"siteEncounterLocations": full.get("siteEncounterLocations", []),
 	}

@@ -506,11 +506,6 @@ func _outcome_text(src: Dictionary, passed: bool) -> String:
 		out = "%s\n\n%s" % [txt, _describe_effects(arr)]
 	else:
 		out = txt
-	# Бонус локации (на успехе) — отдельной строкой под исходом.
-	if passed:
-		var bonus: Array = GameState.current_encounter.get("loc_bonus", [])
-		if not bonus.is_empty():
-			out += "\n%s %s" % [tr("ENC_LOC_BONUS"), _describe_effects(bonus)]
 	return out
 
 

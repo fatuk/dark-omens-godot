@@ -349,8 +349,7 @@ active_mods += mods
   `_start_check_for_encounter(pid)` → `_check.start("encounter", pid, test.skill,
   test.modifier, ctx)`. Контекст из `_check_context()`; навык/модификатор из
   `_active_test()` (для врат/тайны — узел текущей стадии).
-- **«Бросить»** → `host_apply_resolve` → `_check.roll(pid)`. Для плоской встречи —
-  ещё `_update_loc_bonus` (бонус локации на успехе).
+- **«Бросить»** → `host_apply_resolve` → `_check.roll(pid)`.
 - **Врата, переход стадии** → `host_apply_advance_stage`: ветка из
   `active_check.passed` (success/failure) → `_start_check_for_encounter` (новая
   проверка стадии 2).

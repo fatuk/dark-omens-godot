@@ -680,7 +680,8 @@ SKILL_WILL,Воля,Will
 ENCOUNTER_TITLE,Встреча,Encounter
 ENCOUNTER_GENERATING,Готовим встречу…,Preparing an encounter…
 ENCOUNTER_CHOICE_TITLE,Выберите встречу,Choose an encounter
-ENCOUNTER_CHOICE_GENERAL,Локационная встреча,Location encounter
+ENCOUNTER_CHOICE_GENERAL,Общая встреча,General encounter
+ENCOUNTER_CHOICE_LOCAL,Локационная встреча,Location encounter
 ENCOUNTER_CHOICE_RESEARCH,Исследование (улика),Research (clue)
 ENCOUNTER_CHOICE_GATE,Войти во врата,Enter the gate
 ENCOUNTER_CHOICE_COMBAT,Бой,Combat
@@ -1383,7 +1384,6 @@ SETTINGS_USE_LLM,Тексты встреч (ИИ),Encounter text (AI)
 SETTINGS_USE_LLM_HINT,"Выкл. — встречи без художественного текста: только механические проверки (быстро, без затрат на ИИ).","Off — encounters show mechanical checks only, no narrative (fast, no AI cost)."
 ENC_REWARD,Успех,Success
 ENC_PENALTY,Провал,Failure
-ENC_LOC_BONUS,Бонус места:,Location bonus:
 ENC_EFF_NONE,—,—
 ENC_EFF_CLUE,Улики: %+d,Clues: %+d
 ENC_EFF_HP,Здоровье: %+d,Health: %+d

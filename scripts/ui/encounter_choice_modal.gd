@@ -17,6 +17,7 @@ const _KIND_KEYS := {
 	"combat": "ENCOUNTER_CHOICE_COMBAT",
 	"mystery": "ENCOUNTER_CHOICE_MYSTERY",
 	"eldritch": "ENCOUNTER_CHOICE_ELDRITCH",
+	"local": "ENCOUNTER_CHOICE_LOCAL",
 }
 
 var _sig: String = ""  # подпись текущего набора кнопок (чтобы не перестраивать зря)

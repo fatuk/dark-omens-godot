@@ -10,10 +10,6 @@ extends RefCounted
 
 const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
-# Шанс, что бонус локации (rewardAffinity) сработает на успехе встречи (Вариант A).
-const _LOC_BONUS_CHANCE := 0.5
-const _SKILLS := ["lore", "influence", "observation", "strength", "will"]
-
 var _gs: Node
 
 # Токен генерации: каждый новый generate() инкрементит его. После await писать
@@ -33,7 +29,7 @@ func _init(gs: Node) -> void:
 ## Хост: сгенерировать карту встречи (kind) для игрока, чей сейчас ход на
 ## встречу, и разослать её. Корутина: вызывается без await (fire-and-forget)
 ## из encounter-флоу.
-func generate(kind: String = "general") -> void:
+func generate(kind: String = "general", site_specific: bool = false) -> void:
 	if not _gs._is_host():
 		return
 	var pid: String = _gs._current_pid()
@@ -58,7 +54,7 @@ func generate(kind: String = "general") -> void:
 			_gs._emit_changed()
 		return
 
-	var req: Dictionary = _build_request(_gs.players[pid], kind)
+	var req: Dictionary = _build_request(_gs.players[pid], kind, site_specific)
 	# Захватываем раунд — после долгого await тот же игрок может оказаться
 	# уже в новом раунде с новой встречей, и старый ответ нельзя писать.
 	var captured_round: int = _gs.round_num
@@ -161,6 +157,8 @@ func host_apply_choose(pid: String, kind: String) -> bool:
 		_begin_combat(pid)
 	elif kind == "eldritch":
 		_begin_eldritch_move(pid)
+	elif kind == "local":
+		generate("general", true)  # локационная встреча (привязанная к клетке)
 	else:
 		generate(kind)
 	return true
@@ -382,6 +380,10 @@ func _compute_choices(pid: String) -> Array:
 		out.append("research")
 	if _gs.gates.has(loc):
 		out.append("gate")
+	# Локационная встреча: на клетке есть авторская site-встреча (список из библии).
+	# Игрок выберет «общая» (без привязки) vs «локационная» (привязанная к клетке).
+	if (_gs.campaign.get("siteEncounterLocations", []) as Array).has(loc):
+		out.append("local")
 	# Тайна (location-счётчик): локация помечена И не зачищена. Для tokensOnCard
 	# этот путь не используется — там прогресс через bind-ход (ниже).
 	var mystery: Dictionary = _gs._campaign.current_mystery()
@@ -420,12 +422,6 @@ func host_apply_resolve(pid: String) -> bool:
 		_start_check_for_encounter(pid)
 	if not _gs._check.roll(pid):
 		return false
-	# Бонус локации (на успехе) — для невратовых встреч; решаем на броске, чтобы
-	# показать в исходе (current_encounter.loc_bonus).
-	if enc_kind != "gate" and enc_kind != "mystery":
-		_update_loc_bonus(pid, bool(_gs.active_check.get("passed", false)))
-		_gs._broadcast_sync()
-		_gs._emit_changed()
 	(
 		GameConsole
 		. log(
@@ -552,9 +548,6 @@ func _commit_outcome(pid: String) -> void:
 			return  # ждём выбор игрока
 		# Исследование: забранная улика исчезает с локации (один раз, после слота).
 		_apply_research_clue_removal(pid, kind)
-		# Бонус локации (на успехе) — отдельный слот поверх результата карточки.
-		if passed and not _run_effect_slot(enc.get("loc_bonus", []), pid, "bonus"):
-			return
 	enc["committed"] = true
 	_gs._check.clear()  # проверка завершена — снять active_check
 
@@ -662,7 +655,10 @@ func _remove_clues_at(loc_id: String, n: int) -> void:
 
 
 # Тело запроса /encounters/draw для игрока (kind ∈ general/research/gate).
-func _build_request(p: Dictionary, kind: String = "general") -> Dictionary:
+# site_specific=true → локационная встреча (привязанная к клетке тегом location:<id>).
+func _build_request(
+	p: Dictionary, kind: String = "general", site_specific: bool = false
+) -> Dictionary:
 	var inv_id: String = String(p.get("investigator", ""))
 	var inv: Dictionary = Investigators.get_data(inv_id)
 	var inv_name: String = tr(String(inv.get("displayName", inv_id)))
@@ -687,6 +683,7 @@ func _build_request(p: Dictionary, kind: String = "general") -> Dictionary:
 		"conditions": [],
 		"count": 1,
 		"language": _gs._relay_language(),
+		"siteSpecific": site_specific,
 	}
 	# Библия готова — встреча несёт контекст кампании (Древний, акт, doom).
 	var cid: String = String(_gs.campaign.get("id", ""))
@@ -882,73 +879,3 @@ func _active_monster_toughness(loc: String) -> int:
 		return -1
 	@warning_ignore("unsafe_method_access")
 	return MonsterCatalog.toughness_for(m, maxi(1, _gs.players.size()))
-
-
-# ── Бонус локации (Вариант A: rewardAffinity в data/locations.json) ───────────────
-
-
-# Пересчёт бонуса по текущему исходу. Решается ОДИН раз при переходе в успех
-# (кэш loc_bonus_decided) — чтобы перебросы не «мигали» бонусом. Провал → нет бонуса.
-func _update_loc_bonus(pid: String, passed: bool) -> void:
-	var enc: Dictionary = _gs.current_encounter
-	if not passed:
-		enc["loc_bonus"] = []
-		enc["loc_bonus_decided"] = false
-		return
-	if bool(enc.get("loc_bonus_decided", false)):
-		return
-	enc["loc_bonus"] = _location_bonus(pid)
-	enc["loc_bonus_decided"] = true
-
-
-# С шансом _LOC_BONUS_CHANCE взвешенно выбираем глагол из rewardAffinity локации
-# игрока и строим эффект-ноду. [] — бонуса нет (нет affinity или не выпал шанс).
-func _location_bonus(pid: String) -> Array:
-	var loc_id: String = String(_gs.players[pid].get("location", ""))
-	var aff: Dictionary = _gs.location_reward_affinity(loc_id)
-	if aff.is_empty() or randf() >= _LOC_BONUS_CHANCE:
-		return []
-	var verb: String = _weighted_pick(aff)
-	return [_bonus_node(verb)] if not verb.is_empty() else []
-
-
-func _weighted_pick(weights: Dictionary) -> String:
-	var total: float = 0.0
-	for k: Variant in weights:
-		total += maxf(0.0, float(weights[k]))
-	if total <= 0.0:
-		return ""
-	var r: float = randf() * total
-	for k: Variant in weights:
-		r -= maxf(0.0, float(weights[k]))
-		if r < 0.0:
-			return String(k)
-	return ""
-
-
-# Эффект-нода бонуса по спецификации "verb" или "verb:param":
-#   improveSkill:observation — качает КОНКРЕТНЫЙ навык (без param — случайный);
-#   gainClue:2 / placeClue:2 / healSanity:2 — param как количество.
-# Поддержаны проверенные глаголы (board placeClue + player gainClue/improveSkill/
-# gainFocus/healSanity/gainAsset).
-func _bonus_node(spec: String) -> Dictionary:
-	var parts: PackedStringArray = spec.split(":")
-	var verb: String = parts[0]
-	var param: String = parts[1] if parts.size() > 1 else ""
-	var n: int = maxi(1, param.to_int()) if param.is_valid_int() else 1
-	match verb:
-		"placeClue":
-			return {"do": "placeClue", "count": n}
-		"gainClue":
-			return {"do": "gainClue", "count": n}
-		"improveSkill":
-			var skill: String = param if _SKILLS.has(param) else _SKILLS[randi() % _SKILLS.size()]
-			return {"do": "improveSkill", "skill": skill, "amount": 1}
-		"gainFocus":
-			return {"do": "gainFocus", "amount": n}
-		"healSanity":
-			return {"do": "healSanity", "amount": n}
-		"gainAsset":
-			return {"do": "gainAsset"}
-		_:
-			return {"do": verb, "count": n}

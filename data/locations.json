@@ -745,7 +745,6 @@
 		"type": "city",
 		"realWorldLocation": "LOC_SAN_FRANCISCO_REAL",
 		"description": "LOC_SAN_FRANCISCO_DESC",
-		"rewardAffinity": { "improveSkill:observation": 3, "gainClue": 1 },
 		"encounterTypes": [
 			"general",
 			"america"
@@ -784,7 +783,6 @@
 		"type": "city",
 		"realWorldLocation": "LOC_ARKHAM_REAL",
 		"description": "LOC_ARKHAM_DESC",
-		"rewardAffinity": { "gainSpell": 3, "gainClue": 1 },
 		"encounterTypes": [
 			"general",
 			"america"
@@ -823,7 +821,6 @@
 		"type": "city",
 		"realWorldLocation": "LOC_BUENOS_AIRES_REAL",
 		"description": "LOC_BUENOS_AIRES_DESC",
-		"rewardAffinity": { "gainSpell": 3, "gainClue": 1 },
 		"encounterTypes": [
 			"general",
 			"america"
@@ -866,7 +863,6 @@
 		"type": "city",
 		"realWorldLocation": "LOC_LONDON_REAL",
 		"description": "LOC_LONDON_DESC",
-		"rewardAffinity": { "placeClue": 3, "gainClue": 1 },
 		"encounterTypes": [
 			"general",
 			"europe"
@@ -935,7 +931,6 @@
 		"type": "city",
 		"realWorldLocation": "LOC_ISTANBUL_REAL",
 		"description": "LOC_ISTANBUL_DESC",
-		"rewardAffinity": { "improveSkill:lore": 3, "gainClue": 1 },
 		"encounterTypes": [
 			"general",
 			"europe"
