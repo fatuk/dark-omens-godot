@@ -511,6 +511,63 @@ func test_choice_cost_charged_on_pick() -> void:
 	assert_eq(int(p["sanity"]), 5, "штраф не применён")
 
 
+func test_choice_cost_discard_condition_affordable() -> void:
+	var p: Dictionary = _player()
+	p["conditions"] = ["blessed"]  # kind=boon
+	var effects: Array = [
+		{
+			"choice":
+			[
+				{"do": "text", "cost": {"discardCondition": "boon"}},
+				{"do": "loseSanity", "amount": 2},
+			]
+		}
+	]
+	var res: Dictionary = EffectRunner.run(effects, p, {}, {"interactive": true})
+	assert_eq((res["pending"].get("options", []) as Array).size(), 2, "есть состояние boon → выбор")
+
+
+func test_choice_cost_discard_condition_unaffordable_auto() -> void:
+	var p: Dictionary = _player()  # boon-состояний нет
+	var effects: Array = [
+		{
+			"choice":
+			[
+				{"do": "text", "cost": {"discardCondition": "boon"}},
+				{"do": "loseSanity", "amount": 2},
+			]
+		}
+	]
+	var res: Dictionary = EffectRunner.run(effects, p, {}, {"interactive": true})
+	assert_eq((res["pending"] as Dictionary).size(), 0, "нет состояния категории → авто-штраф")
+	assert_eq(int(p["sanity"]), 3)
+
+
+func test_choice_cost_discard_condition_charged() -> void:
+	var p: Dictionary = _player()
+	p["conditions"] = ["blessed", "debt"]  # boon + deal
+	(
+		EffectRunner
+		. run(
+			[
+				{
+					"choice":
+					[
+						{"do": "text", "cost": {"discardCondition": "boon"}},
+						{"do": "loseSanity", "amount": 2},
+					]
+				}
+			],
+			p,
+			{},
+			{"interactive": true, "decisions": {"0": 0}}
+		)
+	)
+	assert_false((p["conditions"] as Array).has("blessed"), "boon-состояние сброшено")
+	assert_true((p["conditions"] as Array).has("debt"), "прочие категории целы")
+	assert_eq(int(p["sanity"]), 5, "штраф не применён")
+
+
 # ── Передача целей (Phase 4): chosenInvestigator → выбор → нода на доску ───────
 
 

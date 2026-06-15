@@ -245,28 +245,51 @@ static func _run_choice(
 	flow["pending"] = {"path": path, "options": opts, "by": String(node.get("by", "active"))}
 
 
-# Доступна ли ветка choice по стоимости (cost.spend/amount). Без cost / без spend — да.
+# Доступна ли ветка choice по стоимости. spend → хватает ресурса; discardCondition →
+# есть состояние категории. Без cost — да.
 static func _can_afford(branch: Variant, player: Dictionary) -> bool:
 	if not (branch is Dictionary):
 		return true
 	var cost: Dictionary = (branch as Dictionary).get("cost", {})
 	var spend: String = String(cost.get("spend", ""))
-	if spend.is_empty():
-		return true
-	return _resource_of(player, spend) >= int(cost.get("amount", 1))
+	if not spend.is_empty():
+		return _resource_of(player, spend) >= int(cost.get("amount", 1))
+	var dk: String = String(cost.get("discardCondition", ""))
+	if not dk.is_empty():
+		return not _condition_of_kind(player, dk).is_empty()
+	return true
 
 
-# Списать стоимость выбранной ветки (cost.spend/amount). Без spend — no-op.
+# Списать стоимость выбранной ветки: spend-ресурс ЛИБО сброс состояния категории.
 static func _charge_cost(branch: Variant, player: Dictionary, logs: Array) -> void:
 	if not (branch is Dictionary):
 		return
 	var cost: Dictionary = (branch as Dictionary).get("cost", {})
 	var spend: String = String(cost.get("spend", ""))
-	if spend.is_empty():
+	if not spend.is_empty():
+		var amt: int = int(cost.get("amount", 1))
+		_spend_resource(player, spend, amt)
+		logs.append("потрачено %s ×%d" % [spend, amt])
 		return
-	var amt: int = int(cost.get("amount", 1))
-	_spend_resource(player, spend, amt)
-	logs.append("потрачено %s ×%d" % [spend, amt])
+	var dk: String = String(cost.get("discardCondition", ""))
+	if dk.is_empty():
+		return
+	var cid: String = _condition_of_kind(player, dk)
+	if cid.is_empty():
+		return
+	var conds: Array = player.get("conditions", [])
+	conds.erase(cid)
+	player["conditions"] = conds
+	(player.get("conditions_flipped", {}) as Dictionary).erase(cid)
+	logs.append("сброшено состояние «%s» (%s)" % [cid, dk])
+
+
+# id первого held-состояния игрока категории kind ("" — нет такого).
+static func _condition_of_kind(player: Dictionary, kind: String) -> String:
+	for cid_v: Variant in player.get("conditions", []) as Array:
+		if Conditions.kind_of(String(cid_v)) == kind:
+			return String(cid_v)
+	return ""
 
 
 static func _resource_of(player: Dictionary, res: String) -> int:
