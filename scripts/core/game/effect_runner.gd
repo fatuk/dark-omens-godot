@@ -310,6 +310,15 @@ static func _condition_of_kind(player: Dictionary, kind: String) -> String:
 	return ""
 
 
+# Стойкость выбранного монстра по его ref в ctx.monster_choices ([{ref,name,toughness}]).
+static func _monster_choice_toughness(ctx: Dictionary, ref: String) -> int:
+	for o_v: Variant in ctx.get("monster_choices", []) as Array:
+		var o: Dictionary = o_v
+		if String(o.get("ref", "")) == ref:
+			return int(o.get("toughness", 0))
+	return 0
+
+
 static func _resource_of(player: Dictionary, res: String) -> int:
 	match res:
 		"clue", "clues":
@@ -429,6 +438,23 @@ static func _run_action(
 		rnode["_target_pid"] = String(decisions[path])
 		rnode["_times"] = _repeat(node, player, ctx)
 		board.append(rnode)  # GameState применит к выбранному сыщику
+		return
+	# (2b) Интерактивный выбор МОНСТРА (discardMonster target:chosenMonster). Нет решения
+	#      → пауза (kind:monster); есть → ставим ctx.chosenMonsterToughness из выбранной
+	#      опции (для последующего repeat) и кладём board-узел с _target_monster (ref).
+	if interactive and target == "chosenMonster":
+		var mdec: Dictionary = flow.get("decisions", {})
+		if not mdec.has(path):
+			var mopts: Array = ctx.get("monster_choices", [])
+			if (mopts as Array).is_empty():
+				return  # монстров нет — эффект пропадает
+			flow["pending"] = {"kind": "monster", "path": path, "options": mopts.duplicate()}
+			return
+		var ref: String = String(mdec[path])
+		ctx["chosenMonsterToughness"] = _monster_choice_toughness(ctx, ref)
+		var mnode: Dictionary = node.duplicate(true)
+		mnode["_target_monster"] = ref
+		board.append(mnode)  # GameState снимет именно этого монстра
 		return
 	# (3) board-verb ИЛИ игровой verb с детерминированной целью (lead/each/eachOn*)
 	#     → на доску с разрешённым повтором; цель разрешит GameState.
@@ -591,6 +617,9 @@ static func _count_source(
 			return int(ctx.get("rumors_in_play", 1))
 		"monsterToughness":
 			return int(ctx.get("monster_toughness", 1))
+		"chosenMonsterToughness":
+			# Стойкость монстра, выбранного ранее в этой же программе (chosenMonster).
+			return int(ctx.get("chosenMonsterToughness", 0))
 		"conditions":
 			var conds: Array = player.get("conditions", [])
 			var cond: String = String(spec.get("condition", ""))

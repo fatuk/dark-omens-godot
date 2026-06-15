@@ -803,10 +803,13 @@ func record_effect_choice(pid: String, index: int) -> bool:
 	var options: Array = pending.get("options", [])
 	if index < 0 or index >= (options as Array).size():
 		return false
-	# choice → пишем индекс ветки; target → id выбранного сыщика (его читает _run_action).
+	# choice → индекс ветки; target → id сыщика; monster → ref монстра (читает _run_action).
 	var value: Variant = index
-	if String(pending.get("kind", "choice")) == "target":
+	var kind: String = String(pending.get("kind", "choice"))
+	if kind == "target":
 		value = String((options[index] as Dictionary).get("pid", ""))
+	elif kind == "monster":
+		value = String((options[index] as Dictionary).get("ref", ""))
 	var dec: Dictionary = enc.get("effect_decisions", {})
 	dec[String(pending.get("path", ""))] = value
 	enc["effect_decisions"] = dec
@@ -834,6 +837,7 @@ func _effect_ctx(pid: String) -> Dictionary:
 	if tough >= 0:
 		ctx["monster_toughness"] = tough
 	ctx["other_pids"] = _other_investigators(pid)
+	ctx["monster_choices"] = _gs._board.monster_choices()  # для chosenMonster
 	return ctx
 
 

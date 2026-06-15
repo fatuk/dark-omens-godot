@@ -1339,7 +1339,9 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 		"discardGate":
 			_board.discard_gate()
 		"discardMonster":
-			if String(node.get("maxToughness", "")) == "testResult":
+			if node.has("_target_monster"):
+				_board.discard_monster_ref(String(node.get("_target_monster", "")))  # выбранный
+			elif String(node.get("maxToughness", "")) == "testResult":
 				_board.remove_monsters_by_toughness(false, int(node.get("_successes", 0)))
 			else:
 				_board.remove_monster_at_active(false, n)  # снять без боя

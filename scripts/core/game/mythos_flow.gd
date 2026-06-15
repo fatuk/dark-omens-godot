@@ -237,6 +237,20 @@ func _for_each_pids(target: String) -> Array:
 	return _gs._target._resolve_targets({"target": target})
 
 
+# Прочие подключённые сыщики (кроме active_pid) как [{pid, name}] — варианты для
+# chosenInvestigator внутри forEach (зеркало EncounterFlow._other_investigators).
+func _other_pids(active_pid: String) -> Array:
+	var out: Array = []
+	for pid_v: Variant in _gs.turn_order:
+		var p: String = String(pid_v)
+		if p == active_pid or not _gs.players.has(p):
+			continue
+		if not bool(_gs.players[p].get("connected", true)):
+			continue
+		out.append({"pid": p, "name": _gs._name_of(p)})
+	return out
+
+
 # Под-программа одного сыщика: dup-изоляция + интерактивный choice. Мутации игрока и
 # board-эффекты коммитим ТОЛЬКО при завершении без pending (иначе переигровка после
 # выбора применила бы их повторно). Относительные цели (rightNeighbor) внутри —
@@ -248,6 +262,10 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 		return  # whileHeld immuneToEffects (Lost in Time) — сыщик невосприимчив
 	var decisions: Dictionary = {}
 	var rolls: Dictionary = {}
+	# Контекст интерактивного выбора: монстры на поле (chosenMonster) и прочие сыщики
+	# (chosenInvestigator). Стабилен на время прохода сыщика (сброс — на завершении).
+	var choices: Array = _gs._board.monster_choices()
+	var others: Array = _other_pids(pid)
 	while true:
 		var dup: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
 		var flow: Dictionary = {
@@ -257,7 +275,9 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 			"pending": {},
 			"slot": "",
 		}
-		var res: Dictionary = _EffectRunner.run(sub, dup, {}, flow)
+		var res: Dictionary = _EffectRunner.run(
+			sub, dup, {"monster_choices": choices, "other_pids": others}, flow
+		)
 		rolls = flow.get("rolls", {})
 		var pending: Dictionary = res.get("pending", {})
 		if pending.is_empty():
@@ -279,10 +299,20 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 			"path": String(pending.get("path", "")),
 			"options": pending.get("options", []),
 			"by": String(pending.get("by", "self")),
+			"kind": String(pending.get("kind", "choice")),  # choice | target | monster
 		}
 		_gs._broadcast_sync()
 		_gs._emit_changed()
-		decisions[String(pending.get("path", ""))] = await _await_decision()
+		# Решение: для target/monster пишем ref/pid выбранной опции, иначе — индекс ветки.
+		var idx: int = await _await_decision()
+		var pkind: String = String(pending.get("kind", "choice"))
+		var popts: Array = pending.get("options", [])
+		var dval: Variant = idx
+		if (pkind == "monster" or pkind == "target") and idx >= 0 and idx < (popts as Array).size():
+			dval = String(
+				(popts[idx] as Dictionary).get("ref" if pkind == "monster" else "pid", "")
+			)
+		decisions[String(pending.get("path", ""))] = dval
 		_gs.mythos_decision = {}
 
 

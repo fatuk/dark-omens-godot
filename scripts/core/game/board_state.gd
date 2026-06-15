@@ -216,6 +216,58 @@ func return_monster_to_bag(mid: String) -> void:
 	_gs.monster_bag.append(mid)
 
 
+## Список монстров на поле для интерактивного выбора (chosenMonster): [{ref:"loc#idx",
+## name:<ключ перевода имени>, toughness:<с учётом размера партии>}]. ref — локация и
+## индекс экземпляра; модалка переведёт name, движок снимет монстра по ref.
+func monster_choices() -> Array:
+	var out: Array = []
+	var pc: int = _gs._campaign.balance_player_count()
+	for loc_v: Variant in (_gs.monsters as Dictionary).keys():
+		var loc: String = String(loc_v)
+		var arr: Array = _gs.monsters[loc]
+		for i in range(arr.size()):
+			var inst: Variant = arr[i]
+			var mid: String = String(inst.get("id", "")) if inst is Dictionary else String(inst)
+			var m: Dictionary = MonsterCatalog.by_id(mid)
+			if m.is_empty():
+				continue
+			(
+				out
+				. append(
+					{
+						"ref": "%s#%d" % [loc, i],
+						"name": String(m.get("nameKey", mid)),
+						"toughness": maxi(1, MonsterCatalog.toughness_for(m, pc)),
+					}
+				)
+			)
+	return out
+
+
+## Снять КОНКРЕТНЫЙ экземпляр монстра по ref "loc#idx" (выбранный игроком, chosenMonster).
+## id возвращается в мешок. Зовётся board-verb'ом discardMonster с _target_monster.
+func discard_monster_ref(ref: String) -> void:
+	if not _gs._is_host():
+		return
+	var parts: PackedStringArray = ref.split("#")
+	if parts.size() != 2:
+		return
+	var loc: String = parts[0]
+	var idx: int = int(parts[1])
+	var arr: Array = _gs.monsters.get(loc, [])
+	if idx < 0 or idx >= (arr as Array).size():
+		return
+	var inst: Variant = arr[idx]
+	var mid: String = String(inst.get("id", "")) if inst is Dictionary else String(inst)
+	arr.remove_at(idx)
+	if (arr as Array).is_empty():
+		_gs.monsters.erase(loc)
+	else:
+		_gs.monsters[loc] = arr
+	return_monster_to_bag(mid)
+	GameConsole.log("[Монстр] сброшен %s (%s)" % [mid, loc])
+
+
 ## Локация активного игрока ("" — нет активного). Для board-verb'ов, бьющих «здесь».
 func _active_loc() -> String:
 	var pid: String = _gs._current_pid()

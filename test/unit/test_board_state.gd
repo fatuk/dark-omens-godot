@@ -329,6 +329,31 @@ func test_setup_board_non_host_is_noop() -> void:
 	assert_eq(_gs.gates.size(), 0, "не-хост раскладку не делает")
 
 
+func test_monster_choices_lists_ref_name_toughness() -> void:
+	_gs._campaign.balance_pc = 1
+	_gs.monsters = {"loc": [{"id": "avian_thrall", "health": 3}]}  # toughness 3
+	var ch: Array = _board.monster_choices()
+	assert_eq(ch.size(), 1)
+	assert_eq(String((ch[0] as Dictionary).get("ref", "")), "loc#0", "ref = локация#индекс")
+	assert_eq(int((ch[0] as Dictionary).get("toughness", 0)), 3, "стойкость с учётом партии")
+
+
+func test_discard_monster_ref_removes_instance_and_bags_id() -> void:
+	_gs.monsters = {"loc": [{"id": "avian_thrall"}, {"id": "byakhee"}]}
+	_board.discard_monster_ref("loc#0")
+	assert_eq((_gs.monsters["loc"] as Array).size(), 1, "снят один экземпляр")
+	assert_eq(
+		String((_gs.monsters["loc"][0] as Dictionary).get("id", "")), "byakhee", "остался второй"
+	)
+	assert_true((_gs.monster_bag as Array).has("avian_thrall"), "id вернулся в мешок")
+
+
+func test_discard_monster_ref_bad_ref_noop() -> void:
+	_gs.monsters = {"loc": [{"id": "avian_thrall"}]}
+	_board.discard_monster_ref("loc#9")  # индекс вне диапазона
+	assert_eq((_gs.monsters["loc"] as Array).size(), 1, "плохой ref — ничего не снято")
+
+
 func test_reference_amount_scales_with_party_size() -> void:
 	_gs._campaign.balance_pc = 4  # ref(4): gates 1, clues 3, surge 2
 	assert_eq(_board.reference_amount("clues"), 3, "улик по карте баланса на 4")

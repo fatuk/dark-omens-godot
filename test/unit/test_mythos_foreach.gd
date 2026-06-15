@@ -20,6 +20,14 @@ class StubCond:
 		return false
 
 
+# Стаб доски: forEach-драйвер запрашивает монстров для chosenMonster (здесь — пусто).
+class StubBoard:
+	extends RefCounted
+
+	func monster_choices() -> Array:
+		return []
+
+
 class MockGS:
 	extends Node
 	var players: Dictionary = {}
@@ -29,6 +37,7 @@ class MockGS:
 	var locations: Array = []
 	var _target: RefCounted
 	var _cond := StubCond.new()
+	var _board := StubBoard.new()
 
 	signal mythos_decided(idx: int)
 
