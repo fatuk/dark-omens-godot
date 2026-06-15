@@ -123,6 +123,18 @@ func test_mythos_in_play_skips_trigger_node() -> void:
 	assert_eq(_gs.doom, 1, "эффект применён, триггер resolveReckoning пропущен (без рекурсии)")
 
 
+func test_mythos_card_self_discards() -> void:
+	# Карта A: эффект + discardCard → применяется и уходит из игры. Карта B остаётся.
+	_gs.mythos_in_play = [
+		{"name": "A", "onReckoning": [{"do": "advanceDoom", "amount": 1}, {"do": "discardCard"}]},
+		{"name": "B", "onReckoning": [{"do": "advanceDoom", "amount": 1}]},
+	]
+	await _r.run_reckoning("mythosInPlay")
+	assert_eq(_gs.doom, 2, "обе карты применили эффект (+1 каждая)")
+	assert_eq((_gs.mythos_in_play as Array).size(), 1, "карта A сброшена, B осталась")
+	assert_eq(String((_gs.mythos_in_play[0] as Dictionary).get("name", "")), "B")
+
+
 func test_collect_reckoning_cards() -> void:
 	_player(
 		"p1", {"conditions": ["debt"], "items": [{"id": "conspiracy_theorist", "exhausted": false}]}

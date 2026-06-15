@@ -50,13 +50,42 @@ func _reckon_ancient() -> void:
 
 
 # Тир 2: Расплата каждой карты Мифов в игре (её onReckoning-эффект, без триггеров).
+# Узел discardCard в Расплате карты → карта уходит из игры (пересобираем mythos_in_play).
 func _reckon_mythos_in_play() -> void:
+	var keep: Array = []
 	for c_v: Variant in _gs.mythos_in_play as Array:
 		var card: Dictionary = c_v
-		_apply_global(
-			_effect_nodes(card.get("onReckoning", [])),
-			"Миф «%s»" % String(card.get("name", "?")),
-		)
+		if _run_card_reckoning(card):
+			GameConsole.log("[Расплата] карта Мифов «%s» сброшена" % String(card.get("name", "?")))
+		else:
+			keep.append(card)
+	_gs.mythos_in_play = keep
+
+
+# Прогон Расплаты одной карты Мифов в игре. Узел discardCard перехватывается →
+# возвращаем true (карту убрать из игры); прочие board-эффекты применяются обычно.
+# Зеркало обработки flipCard/discardCard над носителем-состоянием в ConditionFlow.
+func _run_card_reckoning(card: Dictionary) -> bool:
+	var prog: Array = _effect_nodes(card.get("onReckoning", []))
+	if (prog as Array).is_empty():
+		return false
+	var flow: Dictionary = {
+		"interactive": true, "decisions": {}, "rolls": {}, "pending": {}, "slot": ""
+	}
+	var res: Dictionary = _EffectRunner.run(prog, {}, {}, flow)
+	if not (res.get("pending", {}) as Dictionary).is_empty():
+		GameConsole.warn("[Расплата] выбор в Расплате карты Мифов не поддержан — пропуск")
+		return false
+	var discard: bool = false
+	for node_v: Variant in res.get("board", []):
+		if String((node_v as Dictionary).get("do", "")) == "discardCard":
+			discard = true  # сброс ЭТОЙ карты из игры
+		else:
+			_gs._apply_board_effect(node_v as Dictionary)
+	var label: String = "Миф «%s»" % String(card.get("name", "?"))
+	for l_v: Variant in res.get("logs", []):
+		GameConsole.log("[Расплата:%s] %s" % [label, String(l_v)])
+	return discard
 
 
 # Тир 3: Расплата каждого монстра на доске.
