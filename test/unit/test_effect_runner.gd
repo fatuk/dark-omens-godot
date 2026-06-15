@@ -172,6 +172,52 @@ func test_choice_non_interactive_takes_first_branch() -> void:
 	assert_eq(int(p["sanity"]), 5, "вторая ветка не тронута")
 
 
+func test_repeat_on_group_literal() -> void:
+	var p: Dictionary = _player()
+	EffectRunner.run([{"repeat": 2, "group": [{"do": "gainClue"}]}], p)
+	assert_eq(int(p["clues"]), 3, "group повторён 2 раза → +2 улики")
+
+
+func test_repeat_on_group_source() -> void:
+	var p: Dictionary = _player()
+	EffectRunner.run(
+		[{"repeat": {"source": "monstersOnBoard"}, "group": [{"do": "gainClue"}]}],
+		p,
+		{"monsters_on_board": 3}
+	)
+	assert_eq(int(p["clues"]), 4, "1 + 3 (по числу монстров)")
+
+
+func test_repeat_on_choice_pends_each_iteration() -> void:
+	var p: Dictionary = _player()
+	var effects: Array = [
+		{
+			"repeat": 2,
+			"choice": [{"do": "loseHealth", "amount": 1}, {"do": "loseSanity", "amount": 1}]
+		}
+	]
+	var res: Dictionary = EffectRunner.run(effects, p, {}, {"interactive": true})
+	assert_eq(
+		String((res["pending"] as Dictionary).get("path", "")), "0/r0", "первая итерация повисла"
+	)
+	assert_eq(int(p["hp"]), 5, "на паузе ничего не применено")
+
+
+func test_repeat_on_choice_two_picks() -> void:
+	var p: Dictionary = _player()
+	var effects: Array = [
+		{
+			"repeat": 2,
+			"choice": [{"do": "loseHealth", "amount": 1}, {"do": "loseSanity", "amount": 1}]
+		}
+	]
+	# r0 → ветка 0 (здоровье), r1 → ветка 1 (рассудок).
+	var flow: Dictionary = {"interactive": true, "decisions": {"0/r0": 0, "0/r1": 1}}
+	EffectRunner.run(effects, p, {}, flow)
+	assert_eq(int(p["hp"]), 4, "r0 → −1 здоровье")
+	assert_eq(int(p["sanity"]), 4, "r1 → −1 рассудок")
+
+
 func test_die_roll_low_range_branch() -> void:
 	var p: Dictionary = _player()
 	var node: Dictionary = {

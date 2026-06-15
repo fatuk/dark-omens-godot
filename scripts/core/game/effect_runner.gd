@@ -136,13 +136,31 @@ static func _run_node(
 		return
 	if node.has("group"):
 		var children: Array = node["group"]
-		for i in range(children.size()):
-			if _stopped(flow):
-				return
-			_run_node(children[i], player, logs, board, ctx, flow, path + "/g" + str(i))
+		# repeat у group → повторить весь блок N раз (под-путь с индексом повтора).
+		if node.has("repeat"):
+			for r in range(_repeat(node, player, ctx)):
+				for i in range(children.size()):
+					if _stopped(flow):
+						return
+					_run_node(
+						children[i], player, logs, board, ctx, flow, "%s/r%d_g%d" % [path, r, i]
+					)
+		else:
+			for i in range(children.size()):
+				if _stopped(flow):
+					return
+				_run_node(children[i], player, logs, board, ctx, flow, path + "/g" + str(i))
 		return
 	if node.has("choice"):
-		_run_choice(node, player, logs, board, ctx, flow, path)
+		# repeat у choice → N независимых выборов подряд (под-путь с индексом повтора);
+		# каждый — своя пауза/решение. Без repeat — один выбор (прежний путь).
+		if node.has("repeat"):
+			for r in range(_repeat(node, player, ctx)):
+				if _stopped(flow):
+					return
+				_run_choice(node, player, logs, board, ctx, flow, path + "/r" + str(r))
+		else:
+			_run_choice(node, player, logs, board, ctx, flow, path)
 		return
 	if node.has("dieRoll"):
 		var d: int = _die_value(flow, path)
