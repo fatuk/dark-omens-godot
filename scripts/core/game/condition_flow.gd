@@ -40,25 +40,30 @@ func _reckon_player(pid: String, flow: Dictionary = {}) -> void:
 	var p: Dictionary = _gs.players.get(pid, {})
 	# Снимок списка: outcome-эффекты могут менять состав состояний в процессе.
 	var conds: Array = (p.get("conditions", []) as Array).duplicate()
-	if conds.is_empty():
+	for i in range(conds.size()):
+		reckon_condition(pid, String(conds[i]), flow)
+
+
+## Хост: Расплата ОДНОГО состояния сыщика (onReckoning + flip/discard через
+## _apply_reckon_board). Уже перевёрнутое/снятое — no-op. Вынесено ради пер-карточного
+## резолва в ReckoningFlow (сыщик выбирает порядок) и для _reckon_player.
+func reckon_condition(pid: String, cid: String, flow: Dictionary = {}) -> void:
+	var p: Dictionary = _gs.players.get(pid, {})
+	if (p.get("conditions_flipped", {}) as Dictionary).has(cid):
+		return  # уже перевёрнуто — фронтовой onReckoning не действует
+	if not (p.get("conditions", []) as Array).has(cid):
+		return  # снято в ходе этой же расплаты
+	var def: Dictionary = Conditions.get_def(cid)
+	var program: Array = def.get("onReckoning", [])
+	if (program as Array).is_empty():
 		return
 	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
 	var ctx: Dictionary = {"skills": inv.get("skills", {})}
-	for i in range(conds.size()):
-		var cid: String = String(conds[i])
-		if (p.get("conditions_flipped", {}) as Dictionary).has(cid):
-			continue  # уже перевёрнуто — фронтовой onReckoning не действует
-		if not (p.get("conditions", []) as Array).has(cid):
-			continue  # снято в ходе этой же расплаты
-		var def: Dictionary = Conditions.get_def(cid)
-		var program: Array = def.get("onReckoning", [])
-		if (program as Array).is_empty():
-			continue
-		var res: Dictionary = _EffectRunner.run(program, p, ctx, flow)
-		for l_v: Variant in res.get("logs", []):
-			GameConsole.log("[Расплата] %s · %s: %s" % [_gs._name_of(pid), cid, String(l_v)])
-		for node_v: Variant in res.get("board", []):
-			_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx, flow)
+	var res: Dictionary = _EffectRunner.run(program, p, ctx, flow)
+	for l_v: Variant in res.get("logs", []):
+		GameConsole.log("[Расплата] %s · %s: %s" % [_gs._name_of(pid), cid, String(l_v)])
+	for node_v: Variant in res.get("board", []):
+		_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx, flow)
 
 
 # board-узел из onReckoning состояния: flipCard/discardCard — над носителем cid,

@@ -105,16 +105,17 @@ func _apply_resolve() -> void:
 	GameConsole.log("[Mythos] %s — разрешается" % String(card.get("name", "?")))
 	# Закрываем модалку мифа сразу, чтобы игроки видели анимации эффектов на карте.
 	_gs.current_mythos = {}
+	# Ongoing-карта (есть whileInPlay/onReckoning-эффект) входит в игру ДО onReveal —
+	# чтобы её Расплата участвовала, если onReveal сам триггерит шаг Расплаты
+	# (resolveReckoning scope:mythosInPlay — «resolve each Mythos card in play»).
+	_register_in_play(card)
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	# Эффекты — последовательно, с ожиданием анимации каждого. Дум от омена
 	# считается внутри шага омена (до открытия новых врат) — см. _apply_board_effect.
+	# Узел resolveReckoning внутри запускает корутину Расплаты (ReckoningFlow).
 	await _apply_effects(effects)
-	# Ongoing-карта (есть whileInPlay/onReckoning-эффект) остаётся в игре — до шага
-	# Расплаты, чтобы свежая карта участвовала в текущей Расплате (тир «карты Мифов»).
-	_register_in_play(card)
-	# Карта-Расплата (её onReckoning содержит resolveReckoning) → выполняем шаг
-	# Расплаты: onReckoning состояний и пр. (см. ConditionFlow.host_resolve_reckoning).
+	# Триггер Расплаты в onReckoning (legacy) → шаг Расплаты тем же путём.
 	var on_reck: Array = card.get("onReckoning", [])
 	if _is_reckoning_card(on_reck):
 		await _apply_effects(on_reck)
@@ -168,6 +169,9 @@ func _apply_effects(effects: Array) -> void:
 		var verb: String = String(eff.get("do", ""))
 		if eff.has("forEach"):
 			await _run_for_each(eff)
+			continue
+		if verb == "resolveReckoning":
+			await _gs._reckoning.run_reckoning(String(eff.get("scope", "")))
 			continue
 		if eff.has("target"):
 			for uid: String in _gs.players:

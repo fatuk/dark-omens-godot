@@ -182,6 +182,7 @@ var _encounter: EncounterFlow
 var _phase: PhaseController
 var _check: CheckFlow
 var _cond: ConditionFlow
+var _reckoning: ReckoningFlow
 var _board: BoardState
 var _mystery: MysteryFlow
 var _target: TargetResolver
@@ -200,6 +201,7 @@ func _ready() -> void:
 	_phase = PhaseController.new(self)
 	_check = CheckFlow.new(self)
 	_cond = ConditionFlow.new(self)
+	_reckoning = ReckoningFlow.new(self)
 	_board = BoardState.new(self)
 	_mystery = MysteryFlow.new(self)
 	_target = TargetResolver.new(self)
