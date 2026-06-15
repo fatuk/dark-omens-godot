@@ -242,6 +242,7 @@ func _solve_active_mystery() -> void:
 	_gs.mystery_progress = 0
 	_gs.mystery_claimed = []
 	_gs.mystery_tokens_on_card = 0
+	_gs._board.clear_eldritch_tokens()  # доска чистится — следующая Тайна разложит свои
 	var total: int = (_gs.campaign.get("mysteries", []) as Array).size()
 	if _gs.active_mystery >= total:
 		_gs.outcome = "victory"

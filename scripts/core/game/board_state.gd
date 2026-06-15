@@ -393,6 +393,41 @@ func place_eldritch_token_on_marked(n: int) -> void:
 		GameConsole.log("[Знамение] %d жетон(ов) на помеченные локации Тайны" % placed)
 
 
+## Положить жетон Знамения на КОНКРЕТНУЮ локацию по id (≤1 на клетку). Нет id /
+## уже есть жетон — no-op. Зовётся из placeEldritchToken с where:"<locationId>".
+func place_eldritch_token_at(loc_id: String) -> void:
+	if not _gs._is_host() or loc_id.is_empty():
+		return
+	var arr: Array = _gs.entities.get(loc_id, [])
+	if (arr as Array).has("eldritch_token"):
+		return
+	arr.append("eldritch_token")
+	_gs.entities[loc_id] = arr
+	GameConsole.log("[Знамение] жетон на %s" % loc_id)
+
+
+## Снять ВСЕ жетоны Знамения со всех локаций (синкаемое entities). Зовётся при
+## разгадке Тайны: доска чистится целиком, следующая Тайна раскладывает свои через
+## onEnter. Возвращает число снятых жетонов.
+func clear_eldritch_tokens() -> int:
+	if not _gs._is_host():
+		return 0
+	var removed: int = 0
+	for lid: String in _gs.entities.keys():
+		var arr: Array = _gs.entities[lid]
+		if not (arr as Array).has("eldritch_token"):
+			continue
+		arr.erase("eldritch_token")
+		removed += 1
+		if (arr as Array).is_empty():
+			_gs.entities.erase(lid)
+		else:
+			_gs.entities[lid] = arr
+	if removed > 0:
+		GameConsole.log("[Знамение] снято со стола при разгадке: %d жетон(ов)" % removed)
+	return removed
+
+
 ## Положить слух на случайную локацию.
 func place_rumor() -> void:
 	if not _gs._is_host():

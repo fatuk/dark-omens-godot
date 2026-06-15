@@ -20,9 +20,20 @@ class StubCampaign:
 class StubBoard:
 	extends RefCounted
 	var omen: String = "green"
+	var gs: Node  # ссылка на MockGameState ради доступа к entities
 
 	func current_omen_color() -> String:
 		return omen
+
+	func clear_eldritch_tokens() -> int:
+		var removed: int = 0
+		for lid: String in gs.entities.keys():
+			var arr: Array = gs.entities[lid]
+			if (arr as Array).has("eldritch_token"):
+				arr.erase("eldritch_token")
+				removed += 1
+				gs.entities[lid] = arr
+		return removed
 
 
 class MockGameState:
@@ -47,6 +58,7 @@ class MockGameState:
 	func _init() -> void:
 		_campaign = StubCampaign.new()
 		_board = StubBoard.new()
+		_board.gs = self
 
 	func _is_host() -> bool:
 		return host
@@ -289,6 +301,22 @@ func test_check_tokens_solve_at_target() -> void:
 	_m.check_mystery_tokens_solve()
 	assert_eq(_gs.active_mystery, 1, "набрано жетонов → Тайна решена")
 	assert_eq(_gs.mystery_tokens_on_card, 0, "счётчик сброшен")
+
+
+func test_solve_clears_eldritch_tokens_from_board() -> void:
+	_mystery({"solveCondition": {"kind": "tokensOnCard", "n": 1}})
+	_gs.campaign = {"mysteries": [{}, {}]}
+	_gs.entities = {"loc_a": ["eldritch_token"], "loc_b": ["clue", "eldritch_token"]}
+	_gs.mystery_tokens_on_card = 1
+	_m.check_mystery_tokens_solve()
+	assert_eq(_gs.active_mystery, 1, "Тайна решена")
+	assert_false(
+		(_gs.entities.get("loc_a", []) as Array).has("eldritch_token"), "жетон снят с loc_a"
+	)
+	assert_false(
+		(_gs.entities.get("loc_b", []) as Array).has("eldritch_token"), "жетон снят с loc_b"
+	)
+	assert_true((_gs.entities.get("loc_b", []) as Array).has("clue"), "прочие сущности целы")
 
 
 func test_check_tokens_solve_non_host_noop() -> void:

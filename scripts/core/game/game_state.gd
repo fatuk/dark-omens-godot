@@ -1263,16 +1263,19 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			# Единый жетон поля Знамения.
 			#   where=="self"   → жетон(ы) на карту активной Тайны (счётчик решения);
 			#   where=="marked" → на помеченные локации Тайны (метка и жетон совпадают);
-			#   иначе           → разложить N жетонов на случайные поля (как у Мифов).
+			#   where==""       → N жетонов на случайные поля (как у Мифов);
+			#   where=="<id>"   → на конкретную локацию по id (data/locations.json).
 			match String(node.get("where", "")):
 				"self":
 					mystery_tokens_on_card += n
 					GameConsole.log("[Тайна] жетонов на карте Тайны: %d" % mystery_tokens_on_card)
 				"marked":
 					_board.place_eldritch_token_on_marked(n)
-				_:
+				"":
 					for _i: int in n:
 						_board.place_eldritch_token()
+				var loc_id:
+					_board.place_eldritch_token_at(loc_id)
 		"monsterSurge":
 			_board.monster_surge()
 		"mysteryProgress":
