@@ -135,12 +135,20 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			_gs._check.roll(pid)
 		"condition_action":
 			# Локальное действие состояния (escape, напр. Detained: Влияние → сброс).
-			if not _gs._cond.host_run_condition_action(pid, String(payload.get("condition", ""))):
+			# С проверкой → ВИДИМЫЙ CheckFlow (как каст ритуала): держим ход
+			# (condition_acting) до «Применить» (apply_action → release_condition_turn).
+			# Без проверки → синхронный путь, как раньше.
+			var cond_id: String = String(payload.get("condition", ""))
+			if _gs._cond.begin_action(pid, cond_id):
+				p["condition_acting"] = true
+				p["actions_left"] = int(p["actions_left"]) - 1
+			elif _gs._cond.host_run_condition_action(pid, cond_id):
+				p["actions_left"] = int(p["actions_left"]) - 1
+			else:
 				GameConsole.warn(
 					"[Game] %s — нет локального действия состояния" % _gs._name_of(pid)
 				)
 				return false
-			p["actions_left"] = int(p["actions_left"]) - 1
 		"cast_spell":
 			# Ritual-заклинание: каст = действие. begin_ritual стартует spell-проверку
 			# (БЕЗ броска); игрок бросает/перебрасывает в модалке и жмёт «Применить»
@@ -176,6 +184,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 		and not bool(p.get("shopping", false))
 		and not bool(p.get("spell_prompt", false))
 		and not bool(p.get("casting", false))
+		and not bool(p.get("condition_acting", false))
 	):
 		advance_action_turn()
 
@@ -306,6 +315,19 @@ func release_cast_turn(pid: String) -> void:
 	var was_casting: bool = bool(p.get("casting", false))
 	p["casting"] = false
 	if was_casting and int(p.get("actions_left", 0)) == 0:
+		advance_action_turn()
+
+
+## Хост: локальное действие состояния применено («Применить») — снимаем удержание хода
+## condition_acting и, если действий не осталось, передаём отложенный ход. Зовётся из
+## ConditionFlow.apply_action (зеркало release_cast_turn).
+func release_condition_turn(pid: String) -> void:
+	if not _gs.players.has(pid):
+		return
+	var p: Dictionary = _gs.players[pid]
+	var was_acting: bool = bool(p.get("condition_acting", false))
+	p["condition_acting"] = false
+	if was_acting and int(p.get("actions_left", 0)) == 0:
 		advance_action_turn()
 
 

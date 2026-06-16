@@ -21,13 +21,40 @@ var _gs: MockGameState
 var _cond: ConditionFlow
 
 
-# Минимальный мок GameState: ConditionFlow обращается только к этим четырём членам.
+# Заглушка CheckFlow: ConditionFlow.begin/apply_action зовут start/roll/clear.
+class StubCheck:
+	extends RefCounted
+	var started: Dictionary = {}
+
+	func start(owner: String, pid: String, skill: String, _mod: int, _ctx: String) -> void:
+		started = {"owner": owner, "pid": pid, "skill": skill}
+
+	func roll(_pid: String) -> bool:
+		return true
+
+	func clear() -> void:
+		started = {}
+
+
+# Заглушка PhaseController: apply_action освобождает ход.
+class StubPhase:
+	extends RefCounted
+	var released: Array = []
+
+	func release_condition_turn(pid: String) -> void:
+		released.append(pid)
+
+
 class MockGameState:
 	extends Node
 	var players: Dictionary = {}
 	var board_effects: Array = []
 	var reckoning_results: Dictionary = {}
 	var host: bool = true
+	var active_check: Dictionary = {}
+	var condition_action: Dictionary = {}
+	var _check := StubCheck.new()
+	var _phase := StubPhase.new()
 
 	func _is_host() -> bool:
 		return host
@@ -385,3 +412,45 @@ func test_condition_action_non_host_returns_false() -> void:
 	_gs.host = false
 	_add_player("p", {"conditions": ["detained"]})
 	assert_false(_cond.host_run_condition_action("p", "detained"))
+
+
+# ── Видимая проверка действия (CheckFlow, как каст ритуала) ───────────────────
+
+
+func test_begin_action_starts_condition_check() -> void:
+	_add_player("p", {"conditions": ["detained"]})
+	assert_true(_cond.begin_action("p", "detained"), "detained — действие с проверкой")
+	assert_eq(String(_gs._check.started.get("owner", "")), "condition", "check owner=condition")
+	assert_eq(String(_gs._check.started.get("skill", "")), "influence", "навык из test-узла")
+	assert_eq(
+		String(_gs.condition_action.get("condition_id", "")), "detained", "ставит condition_action"
+	)
+
+
+func test_begin_action_no_test_returns_false() -> void:
+	# poisoned — без локального действия → видимой проверки нет.
+	_add_player("p", {"conditions": ["poisoned"]})
+	assert_false(_cond.begin_action("p", "poisoned"))
+	assert_eq(_gs.condition_action, {})
+
+
+func test_apply_action_passed_discards() -> void:
+	_add_player("p", {"conditions": ["detained"]})
+	_gs.condition_action = {"pid": "p", "condition_id": "detained"}
+	_gs.active_check = {"owner": "condition", "rolled": true, "passed": true}
+	assert_true(_cond.apply_action("p"))
+	assert_false(
+		(_gs.players["p"]["conditions"] as Array).has("detained"), "успех → сброс (onPass)"
+	)
+	assert_eq(_gs.condition_action, {}, "действие снято")
+	assert_true((_gs._phase.released as Array).has("p"), "ход освобождён")
+
+
+func test_apply_action_failed_keeps() -> void:
+	_add_player("p", {"conditions": ["detained"]})
+	_gs.condition_action = {"pid": "p", "condition_id": "detained"}
+	_gs.active_check = {"owner": "condition", "rolled": true, "passed": false}
+	assert_true(_cond.apply_action("p"))
+	assert_true(
+		(_gs.players["p"]["conditions"] as Array).has("detained"), "провал → держится (onFail пуст)"
+	)

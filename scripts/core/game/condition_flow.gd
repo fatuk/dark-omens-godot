@@ -252,6 +252,70 @@ func host_run_condition_action(pid: String, cond_id: String, flow: Dictionary = 
 	return true
 
 
+## Хост: начать ВИДИМУЮ проверку локального действия состояния (как каст ритуала).
+## Старт CheckFlow owner=condition (БЕЗ броска) + GameState.condition_action; ход держит
+## phase_controller (release_condition_turn). true — проверка начата (у действия есть
+## test-узел); false — действия с проверкой нет (вызывающий пробует синхронный путь).
+func begin_action(pid: String, cond_id: String) -> bool:
+	if not _gs._is_host():
+		return false
+	if not (_gs.players.get(pid, {}).get("conditions", []) as Array).has(cond_id):
+		return false
+	var test_node: Dictionary = _action_test_node(Conditions.get_def(cond_id))
+	if test_node.is_empty():
+		return false  # действие без проверки → синхронный host_run_condition_action
+	_gs._check.start(
+		"condition",
+		pid,
+		String(test_node.get("test", "influence")),
+		int(test_node.get("modifier", 0)),
+		"conditionAction"
+	)
+	_gs.condition_action = {"pid": pid, "condition_id": cond_id}
+	return true
+
+
+## Хост: применить результат проверки локального действия (кнопка «Применить»). По
+## active_check.passed применяет onPass/onFail test-узла над носителем cid (discardCard
+## и пр.), снимает проверку, освобождает ход.
+func apply_action(pid: String, flow: Dictionary = {}) -> bool:
+	if not _gs._is_host():
+		return false
+	var ca: Dictionary = _gs.condition_action
+	if ca.is_empty() or String(ca.get("pid", "")) != pid:
+		return false
+	var c: Dictionary = _gs.active_check
+	if String(c.get("owner", "")) != "condition":
+		return false
+	if not bool(c.get("rolled", false)):
+		_gs._check.roll(pid)  # страховка: применить без явного броска
+		c = _gs.active_check
+	var cid: String = String(ca.get("condition_id", ""))
+	var def: Dictionary = Conditions.get_def(cid)
+	var passed: bool = bool(c.get("passed", false))
+	var branch: Array = _action_test_node(def).get("onPass" if passed else "onFail", [])
+	var inv: Dictionary = Investigators.get_data(String(_gs.players[pid].get("investigator", "")))
+	_run_carrier_program(pid, cid, def, branch, {"skills": inv.get("skills", {})}, "Действие", flow)
+	GameConsole.log(
+		(
+			"[Действие] %s · %s — проверка %s"
+			% [_gs._name_of(pid), cid, "успех" if passed else "провал"]
+		)
+	)
+	_gs._check.clear()
+	_gs.condition_action = {}
+	_gs._phase.release_condition_turn(pid)
+	return true
+
+
+# Первый test-узел в локальном действии состояния ({} если действие без проверки).
+func _action_test_node(def: Dictionary) -> Dictionary:
+	for n_v: Variant in def.get("action", []):
+		if n_v is Dictionary and (n_v as Dictionary).has("test"):
+			return n_v
+	return {}
+
+
 # Прогон Effect-программы носителя-состояния (триггер/действие): мутирует игрока,
 # flipCard/discardCard — над cid, прочий board — обычным эффектом.
 func _run_carrier_program(

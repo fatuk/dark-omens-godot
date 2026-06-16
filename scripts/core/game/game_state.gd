@@ -57,6 +57,11 @@ var pending_spell_cast: Dictionary = {}
 # только метаданные. Хост-авторитетно, синкается. См. SpellFlow.begin_*/apply_cast.
 var casting_spell: Dictionary = {}
 
+# Локальное действие состояния «в процессе» (видимая проверка, как каст): {pid,
+# condition_id}. {} — нет. Кубы — в active_check (owner="condition"). Хост-авторитетно,
+# синкается. См. ConditionFlow.begin_action/apply_action.
+var condition_action: Dictionary = {}
+
 # Результат последнего каста для модалки расплаты: { pid, spell, back, text (flavor-
 # ключ оборота), successes, outcome:{health,sanity,clues,conditions,discarded} }.
 # {} — нет. Хост-авторитетно, синкается; модалку показывает владелец pid и сам её
@@ -239,6 +244,7 @@ func _broadcast_sync() -> void:
 				"active_check": active_check,
 				"pending_spell_cast": pending_spell_cast,
 				"casting_spell": casting_spell,
+				"condition_action": condition_action,
 				"last_cast_result": last_cast_result,
 				"reckoning_results": reckoning_results,
 				"current_mythos": current_mythos,
@@ -474,6 +480,8 @@ func reroll_die(die_index: int) -> void:
 		shop_reroll(die_index, cur)
 	elif chk_owner == "spell":
 		spell_cast_reroll(die_index, cur)
+	elif chk_owner == "condition":
+		condition_action_reroll(die_index, cur)
 	else:
 		reroll_encounter(die_index, cur)
 
@@ -617,6 +625,46 @@ func spell_cast_apply() -> void:
 			_emit_changed()
 	else:
 		_nm.relay_all({"action": "game_spell_cast_apply", "pid": my_pid})
+
+
+## Бросок проверки локального действия состояния (кнопка «Бросить»). _check.roll синкает сам.
+func condition_action_roll() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_check.roll(my_pid)
+	else:
+		_nm.relay_all({"action": "game_condition_action_roll", "pid": my_pid})
+
+
+## Переброс куба проверки локального действия. currency — явная валюта (жетон) или "".
+func condition_action_reroll(die_index: int, currency: String = "") -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_check.reroll(my_pid, die_index, currency)  # синкает сам
+	else:
+		(
+			_nm
+			. relay_all(
+				{
+					"action": "game_condition_action_reroll",
+					"pid": my_pid,
+					"die": die_index,
+					"currency": currency,
+				}
+			)
+		)
+
+
+## Применить локальное действие («Применить»): по броску onPass/onFail над состоянием,
+## снятие проверки, освобождение хода. См. ConditionFlow.apply_action.
+func condition_action_apply() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		if _cond.apply_action(my_pid):
+			_broadcast_sync()
+			_emit_changed()
+	else:
+		_nm.relay_all({"action": "game_condition_action_apply", "pid": my_pid})
 
 
 ## Активный игрок подтвердил выбор триггер-заклинаний (item-индексы) в промпте
@@ -1018,6 +1066,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	active_check = data.get("active_check", {})
 	pending_spell_cast = data.get("pending_spell_cast", {})
 	casting_spell = data.get("casting_spell", {})
+	condition_action = data.get("condition_action", {})
 	last_cast_result = data.get("last_cast_result", {})
 	reckoning_results = data.get("reckoning_results", {})
 	current_mythos = data.get("current_mythos", {})
@@ -1136,6 +1185,24 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"game_spell_cast_apply":
 			if _is_host():
 				if _spell.apply_cast(String(data.get("pid", ""))):
+					_broadcast_sync()
+					_emit_changed()
+
+		"game_condition_action_roll":
+			if _is_host():
+				_check.roll(String(data.get("pid", "")))
+
+		"game_condition_action_reroll":
+			if _is_host():
+				_check.reroll(
+					String(data.get("pid", "")),
+					int(data.get("die", -1)),
+					String(data.get("currency", ""))
+				)
+
+		"game_condition_action_apply":
+			if _is_host():
+				if _cond.apply_action(String(data.get("pid", ""))):
 					_broadcast_sync()
 					_emit_changed()
 
@@ -1400,6 +1467,7 @@ func reset_pregame() -> void:
 	_check_stack = []
 	pending_spell_cast = {}
 	casting_spell = {}
+	condition_action = {}
 	last_cast_result = {}
 	reckoning_results = {}
 	current_mythos = {}

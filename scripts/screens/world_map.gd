@@ -106,6 +106,7 @@ func _ready() -> void:
 	GameState.state_changed.connect(_refresh_campaign_gate)
 	_build_campaign_gate()
 	_build_outcome_modal()
+	_build_condition_action_modal()
 	_build_hand_carousel()
 	_refresh_game_panel()
 	_refresh_investigators()
@@ -182,6 +183,13 @@ func _build_outcome_modal() -> void:
 	var om: CanvasLayer = load("res://scripts/ui/outcome_modal.gd").new()
 	om.name = "OutcomeModal"
 	add_child(om)
+
+
+# Модалка видимой проверки локального действия состояния (как каст ритуала).
+func _build_condition_action_modal() -> void:
+	var cam: CanvasLayer = load("res://scripts/ui/condition_action_modal.gd").new()
+	cam.name = "ConditionActionModal"
+	add_child(cam)
 
 
 # Веер карт руки — открывается по Tab. Карты берём из реального имущества

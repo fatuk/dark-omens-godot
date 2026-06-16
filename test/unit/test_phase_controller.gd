@@ -28,6 +28,11 @@ class StubCond:
 	func fire_triggered(_pid: String, _event: String) -> Array:
 		return triggered
 
+	# false → phase_controller идёт синхронным путём (host_run_condition_action),
+	# который и проверяют эти тесты. Видимый CheckFlow-путь покрыт в test_condition_flow.
+	func begin_action(_pid: String, _cid: String) -> bool:
+		return false
+
 	func host_run_condition_action(_pid: String, _cid: String) -> bool:
 		return action_ok
 
