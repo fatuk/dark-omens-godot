@@ -311,7 +311,7 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 			}
 			_gs._broadcast_sync()
 			_gs._emit_changed()
-			var passed: bool = await _gs.effect_check_applied
+			var passed: bool = await _await_check(pid)
 			_gs.pending_check = {}
 			_gs._check.clear()
 			decisions[String(pending.get("path", ""))] = passed
@@ -347,6 +347,15 @@ func _await_decision() -> int:
 	if pre != null:
 		return int(pre)
 	return int(await _gs.mythos_decided)
+
+
+# Ждём применения видимой проверки сыщика pid: общий сигнал effect_check_applied(pid,
+# passed) — фильтруем по своему pid (на случай параллельных проверок Расплаты).
+func _await_check(pid: String) -> bool:
+	var r: Array = await _gs.effect_check_applied
+	while String(r[0]) != pid:
+		r = await _gs.effect_check_applied
+	return bool(r[1])
 
 
 # ── Реджойн ──────────────────────────────────────────────────────────────────

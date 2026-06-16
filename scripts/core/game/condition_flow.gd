@@ -100,24 +100,27 @@ func _reckon_condition_interactive(
 		rolls = fl.get("rolls", {})
 		var pending: Dictionary = res.get("pending", {})
 		if String(pending.get("kind", "")) == "check":
-			_gs._check.start(
-				"effectCheck",
+			# Per-player слот проверки Расплаты (параллельно с другими сыщиками): своя
+			# проверка в самом игроке, не в едином active_check. См. GameState.reckoning_*.
+			var p: Dictionary = _gs.players[pid]
+			p["reckoning_check"] = _gs._check.make_check(
+				"reckoning",
 				pid,
 				String(pending.get("skill", "will")),
 				int(pending.get("modifier", 0)),
 				"reckoning"
 			)
-			_gs.pending_check = {
-				"pid": pid,
-				"driver": "reckoning",
+			p["reckoning_pending"] = {
+				"cid": cid,
 				"path": String(pending.get("path", "")),
 				"subject": Conditions.card_payload(cid),
 			}
 			_gs._broadcast_sync()
 			_gs._emit_changed()
-			var passed: bool = await _gs.effect_check_applied
-			_gs.pending_check = {}
-			_gs._check.clear()
+			var passed: bool = await _await_my_check(pid)
+			var pp: Dictionary = _gs.players.get(pid, {})
+			pp.erase("reckoning_check")
+			pp.erase("reckoning_pending")
 			decisions[String(pending.get("path", ""))] = passed
 			continue
 		if not pending.is_empty():
@@ -125,6 +128,15 @@ func _reckon_condition_interactive(
 		_gs.players[pid] = dup  # коммит мутаций сыщика
 		_apply_reckon_output(pid, cid, def, ctx, res, {})
 		return
+
+
+# Ждём применения СВОЕЙ проверки Расплаты: общий сигнал effect_check_applied(pid, passed)
+# будит все ожидающие корутины — фильтруем по своему pid (остальные ждут дальше).
+func _await_my_check(pid: String) -> bool:
+	var r: Array = await _gs.effect_check_applied
+	while String(r[0]) != pid:
+		r = await _gs.effect_check_applied
+	return bool(r[1])
 
 
 # Логи + board-эффекты прогона onReckoning (flipCard/discardCard над cid и пр.).

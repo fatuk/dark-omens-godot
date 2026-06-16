@@ -16,7 +16,7 @@ extends Node
 signal state_changed  # любое изменение стейта
 signal phase_changed(new_phase: String)  # переход фазы
 signal mythos_decided(idx: int)  # сыщик выбрал ветку в forEach-проходе Мифов
-signal effect_check_applied(passed: bool)  # игрок применил видимую проверку test (корутины)
+signal effect_check_applied(pid: String, passed: bool)  # игрок применил видимую проверку test (корутины)
 
 const ACTIONS_PER_ROUND := 2
 const MAX_TICKETS := 2  # потолок билетов на руках (ж/д + корабль суммарно), как в EH
@@ -75,6 +75,12 @@ var last_cast_result: Dictionary = {}
 # name, text}}. Заполняет ConditionFlow._flip_condition; показывает владельцу pid,
 # он же закрывает (dismiss_reckoning_result). Хост-авторитетно, синкается.
 var reckoning_results: Dictionary = {}
+
+# Идёт ли ПАРАЛЛЕЛЬНЫЙ тир сыщиков Расплаты (все резолвят одновременно). true между
+# стартом и финишем всех; для оверлея «ждём других» у закончивших. Хост ставит/снимает
+# в ReckoningFlow. Per-player проверки — в players[pid].reckoning_check/reckoning_pending
+# (синкаются с players). Хост-авторитетно, синкается.
+var reckoning_active: bool = false
 
 # UI-локально: «заряженная» жетоном валюта переброса ("concentration"/"clue"/"") —
 # игрок закинул жетон на проверку, следующий тап по кубу тратит ИМЕННО её. Не
@@ -250,6 +256,7 @@ func _broadcast_sync() -> void:
 				"pending_check": pending_check,
 				"last_cast_result": last_cast_result,
 				"reckoning_results": reckoning_results,
+				"reckoning_active": reckoning_active,
 				"current_mythos": current_mythos,
 				"mythos_in_play": mythos_in_play,
 				"mythos_decision": mythos_decision,
@@ -356,6 +363,7 @@ func start_game(players_init: Array) -> void:
 	pending_spell_cast = {}
 	last_cast_result = {}
 	reckoning_results = {}
+	reckoning_active = false
 	# campaign / campaign_pending НЕ сбрасываем — библия могла быть прогрета
 	# заранее в лобби (prewarm_campaign). Сброс прошлой игры — reset_pregame().
 	for p: Dictionary in players_init:
@@ -692,14 +700,88 @@ func _resolve_pending_check_host(pid: String) -> bool:
 			_cond.resolve_action_check(pid, path, passed)
 		"encounter":
 			_encounter.resolve_encounter_check(pid, path, passed)
-		"mythos", "reckoning":
-			# Корутинные драйверы: будим ожидающую корутину результатом; она сама
-			# чистит pending_check/active_check и переигрывает свою программу.
-			effect_check_applied.emit(passed)
+		"mythos":
+			# Корутина forEach-Мифов: будим ожидающую её результатом; она сама чистит
+			# pending_check/active_check и переигрывает свою программу.
+			effect_check_applied.emit(pid, passed)
 		_:
 			push_warning("[GameState] resolve_pending_check: неизвестный driver %s" % pc)
 			pending_check = {}
 			_check.clear()
+	return true
+
+
+# ── Параллельная Расплата: per-player проверка в players[pid].reckoning_check ──
+
+
+# Слот проверки Расплаты игрока (players[pid].reckoning_check) — {} если нет.
+func _reckoning_slot(pid: String) -> Dictionary:
+	return (players.get(pid, {}) as Dictionary).get("reckoning_check", {})
+
+
+## Бросок СВОЕЙ проверки Расплаты (кнопка «Бросить» в параллельной Расплате).
+func reckoning_check_roll() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_check.roll(my_pid, _reckoning_slot(my_pid))  # _sync внутри
+	else:
+		_nm.relay_all({"action": "game_reckoning_roll", "pid": my_pid})
+
+
+## Переброс куба своей проверки Расплаты (тап по кубу). Маршрут валюты как reroll_die.
+func reckoning_reroll_die(die_index: int) -> void:
+	var cur: String = pending_reroll_currency
+	pending_reroll_currency = ""
+	if cur.is_empty():
+		cur = "free"
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_check.reroll(my_pid, die_index, cur, _reckoning_slot(my_pid))  # _sync внутри
+	else:
+		_nm.relay_all(
+			{"action": "game_reckoning_reroll", "pid": my_pid, "die": die_index, "currency": cur}
+		)
+
+
+## Перебросить ВСЕ кубы своей проверки Расплаты (карты «перебрось сколько угодно»).
+func reckoning_reroll_all() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_check.reroll_all(my_pid, _reckoning_slot(my_pid))  # _sync внутри
+	else:
+		_nm.relay_all({"action": "game_reckoning_reroll_all", "pid": my_pid})
+
+
+## Можно ли перебросить куб СВОЕЙ проверки Расплаты сейчас (бесплатный/жетон).
+func reckoning_can_reroll_now() -> bool:
+	var c: Dictionary = _reckoning_slot(_nm.my_user_id)
+	if c.is_empty() or not bool(c.get("rolled", false)):
+		return false
+	var free: int = int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0))
+	return free > 0 or not pending_reroll_currency.is_empty()
+
+
+## Применить СВОЮ проверку Расплаты («Применить»): будит её корутину результатом.
+func reckoning_check_apply() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		if _reckoning_apply_host(my_pid):
+			_broadcast_sync()
+			_emit_changed()
+	else:
+		_nm.relay_all({"action": "game_reckoning_apply", "pid": my_pid})
+
+
+## Хост: применить проверку Расплаты игрока — прочитать passed и разбудить его корутину
+## (она чистит per-player слоты и переигрывает программу состояния).
+func _reckoning_apply_host(pid: String) -> bool:
+	var c: Dictionary = _reckoning_slot(pid)
+	if c.is_empty():
+		return false
+	if not bool(c.get("rolled", false)):
+		_check.roll(pid, c)  # страховка: применить без явного броска
+		c = _reckoning_slot(pid)
+	effect_check_applied.emit(pid, bool(c.get("passed", false)))
 	return true
 
 
@@ -1105,6 +1187,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	pending_check = data.get("pending_check", {})
 	last_cast_result = data.get("last_cast_result", {})
 	reckoning_results = data.get("reckoning_results", {})
+	reckoning_active = bool(data.get("reckoning_active", false))
 	current_mythos = data.get("current_mythos", {})
 	mythos_in_play = data.get("mythos_in_play", [])
 	mythos_decision = data.get("mythos_decision", {})
@@ -1239,6 +1322,32 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"game_resolve_pending_check":
 			if _is_host():
 				if _resolve_pending_check_host(String(data.get("pid", ""))):
+					_broadcast_sync()
+					_emit_changed()
+
+		"game_reckoning_roll":
+			if _is_host():
+				var rp: String = String(data.get("pid", ""))
+				_check.roll(rp, _reckoning_slot(rp))
+
+		"game_reckoning_reroll":
+			if _is_host():
+				var rp: String = String(data.get("pid", ""))
+				_check.reroll(
+					rp,
+					int(data.get("die", -1)),
+					String(data.get("currency", "")),
+					_reckoning_slot(rp)
+				)
+
+		"game_reckoning_reroll_all":
+			if _is_host():
+				var rp: String = String(data.get("pid", ""))
+				_check.reroll_all(rp, _reckoning_slot(rp))
+
+		"game_reckoning_apply":
+			if _is_host():
+				if _reckoning_apply_host(String(data.get("pid", ""))):
 					_broadcast_sync()
 					_emit_changed()
 
@@ -1506,6 +1615,7 @@ func reset_pregame() -> void:
 	pending_check = {}
 	last_cast_result = {}
 	reckoning_results = {}
+	reckoning_active = false
 	current_mythos = {}
 	mythos_in_play = []
 	mythos_decision = {}

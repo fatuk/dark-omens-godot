@@ -30,7 +30,12 @@ class StubCheck:
 	func start(owner: String, pid: String, skill: String, _mod: int, _ctx: String) -> void:
 		started = {"owner": owner, "pid": pid, "skill": skill}
 
-	func roll(_pid: String) -> bool:
+	func make_check(
+		owner: String, pid: String, skill: String, _mod: int, _ctx: String
+	) -> Dictionary:
+		return {"owner": owner, "pid": pid, "skill": skill, "rolled": false, "passed": false}
+
+	func roll(_pid: String, _c: Dictionary = {}) -> bool:
 		return true
 
 	func clear() -> void:
@@ -48,7 +53,7 @@ class StubPhase:
 
 class MockGameState:
 	extends Node
-	signal effect_check_applied(passed: bool)  # будит интерактивную Расплату
+	signal effect_check_applied(pid: String, passed: bool)  # будит интерактивную Расплату
 	var players: Dictionary = {}
 	var board_effects: Array = []
 	var reckoning_results: Dictionary = {}
@@ -476,10 +481,12 @@ func test_resolve_action_check_failed_keeps() -> void:
 func test_reckon_condition_interactive_pends_check() -> void:
 	_add_player("p", {"conditions": ["amnesia"]})
 	_cond.reckon_condition("p", "amnesia", {}, true)  # корутина доходит до await
-	assert_eq(String(_gs.pending_check.get("driver", "")), "reckoning", "видимая проверка Расплаты")
-	assert_eq(String(_gs.pending_check.get("pid", "")), "p")
-	assert_eq(String(_gs._check.started.get("owner", "")), "effectCheck", "CheckFlow effectCheck")
-	_gs.effect_check_applied.emit(true)  # дренируем корутину (иначе она висит на await)
+	# Проверка лежит В ИГРОКЕ (per-player слот), параллельно с другими сыщиками.
+	var rp: Dictionary = (_gs.players["p"] as Dictionary).get("reckoning_pending", {})
+	assert_eq(String(rp.get("cid", "")), "amnesia", "per-player reckoning_pending выставлен")
+	var rc: Dictionary = (_gs.players["p"] as Dictionary).get("reckoning_check", {})
+	assert_eq(String(rc.get("owner", "")), "reckoning", "слот reckoning_check создан")
+	_gs.effect_check_applied.emit("p", true)  # дренируем корутину (иначе висит на await)
 
 
 # Состояние «активно лицом»: в conditions и НЕ перевёрнуто. flipCard может случайно
@@ -495,13 +502,13 @@ func _front_active(pid: String, cid: String) -> bool:
 func test_reckon_condition_interactive_fail_flips() -> void:
 	_add_player("p", {"conditions": ["amnesia"]})
 	_cond.reckon_condition("p", "amnesia", {}, true)
-	_gs.effect_check_applied.emit(false)  # провал → onFail flipCard
+	_gs.effect_check_applied.emit("p", false)  # провал → onFail flipCard
 	assert_false(_front_active("p", "amnesia"), "провал → onFail сработал (флип/сброс)")
-	assert_eq(_gs.pending_check, {}, "проверка снята после применения")
+	assert_false((_gs.players["p"] as Dictionary).has("reckoning_pending"), "слот проверки очищен")
 
 
 func test_reckon_condition_interactive_pass_no_flip() -> void:
 	_add_player("p", {"conditions": ["amnesia"]})
 	_cond.reckon_condition("p", "amnesia", {}, true)
-	_gs.effect_check_applied.emit(true)  # успех → ветки onPass нет, флипа нет
+	_gs.effect_check_applied.emit("p", true)  # успех → ветки onPass нет, флипа нет
 	assert_true(_front_active("p", "amnesia"), "успех → состояние осталось активным лицом")
