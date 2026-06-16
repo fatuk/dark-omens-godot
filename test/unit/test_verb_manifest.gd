@@ -44,3 +44,24 @@ func test_describe_group_joins_with_comma() -> void:
 func test_describe_list_empty_is_blank() -> void:
 	assert_eq(EffectManifest.describe_list([]), "")
 	assert_eq(EffectManifest.describe_list("nope"), "")
+
+
+# Регрессия: у forEach `do` — Array (под-программа), не verb. Раньше String(do) падал
+# («Nonexistent 'String' constructor») при показе social-карты Мифов.
+func test_describe_foreach_lists_subeffects() -> void:
+	var s: String = EffectManifest.describe(
+		{"forEach": "each", "do": [{"text": "X"}, {"text": "Y"}]}
+	)
+	assert_true("X" in s and "Y" in s, "под-эффекты forEach перечислены, без краша")
+
+
+func test_describe_dieroll_lists_faces() -> void:
+	var node := {
+		"dieRoll": [{"on": "6", "then": [{"text": "A"}]}, {"on": "1", "then": [{"text": "B"}]}]
+	}
+	assert_eq(EffectManifest.describe(node), "A / B")
+
+
+func test_describe_non_string_do_is_safe() -> void:
+	# Гард на структурный узел с нестроковым do → "" вместо краша String(Array).
+	assert_eq(EffectManifest.describe({"do": ["x"]}), "")

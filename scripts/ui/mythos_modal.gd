@@ -123,71 +123,12 @@ func _render_effects(effects: Array) -> void:
 	for i in range(effects.size()):
 		var lbl := Label.new()
 		lbl.name = "Label"
-		lbl.text = "• " + _describe_effect(effects[i])
+		lbl.text = "• " + EffectManifest.describe(effects[i])
 		lbl.add_theme_font_size_override("font_size", 13)
 		lbl.add_theme_color_override("font_color", UIColors.TEXT)
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_eff_box.add_child(lbl)
 	UIStyle.scale_modal_text(_eff_box)  # эффекты пересобираются — масштаб заново
-
-
-# Человекочитаемое описание узла Effect-DSL — для отображения, не применение.
-func _describe_effect(eff: Dictionary) -> String:
-	var verb: String = String(eff.get("do", ""))
-	var n: int = int(eff.get("amount", eff.get("count", 1)))
-	var target: String = String(eff.get("target", ""))
-	var s: String
-	match verb:
-		"advanceDoom":
-			s = tr("MYTHOS_EFF_ADVANCE_DOOM") % n
-		"advanceOmen", "moveOmen":
-			s = tr("MYTHOS_EFF_ADVANCE_OMEN") % n
-		"openGate":
-			s = tr("MYTHOS_EFF_OPEN_GATE") % n
-		"spawnMonster":
-			s = tr("MYTHOS_EFF_SPAWN_MONSTER") % n
-		"monsterSurge":
-			s = tr("MYTHOS_EFF_SURGE")
-		"placeClue":
-			s = tr("MYTHOS_EFF_PLACE_CLUE") % n
-		"placeEldritchToken":
-			s = tr("MYTHOS_EFF_PLACE_ELDRITCH") % n
-		"placeRumor":
-			s = tr("MYTHOS_EFF_PLACE_RUMOR")
-		"resolveReckoning":
-			s = tr("MYTHOS_EFF_RESOLVE_RECKONING")
-		"loseHealth":
-			s = tr("MYTHOS_EFF_LOSE_HEALTH") % n
-		"loseSanity":
-			s = tr("MYTHOS_EFF_LOSE_SANITY") % n
-		"gainCondition":
-			s = tr("MYTHOS_EFF_GAIN_CONDITION") % String(eff.get("condition", "?"))
-		"text":
-			s = String(eff.get("text", tr("MYTHOS_EFF_TEXT_FALLBACK")))
-		_:
-			if verb.is_empty():
-				s = tr("MYTHOS_EFF_COMBINATOR")
-			else:
-				s = verb
-	if not target.is_empty():
-		s += "  · %s" % _describe_target(target)
-	return s
-
-
-func _describe_target(t: String) -> String:
-	match t:
-		"lead":
-			return tr("MYTHOS_TGT_LEAD")
-		"each":
-			return tr("MYTHOS_TGT_EACH")
-		"eachOnCity":
-			return tr("MYTHOS_TGT_EACH_CITY")
-		"eachOnWilderness":
-			return tr("MYTHOS_TGT_EACH_WILD")
-		"eachOnSea":
-			return tr("MYTHOS_TGT_EACH_SEA")
-		_:
-			return t
 
 
 # ── Кнопка ────────────────────────────────────────────────────────────────────

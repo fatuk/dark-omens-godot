@@ -17,6 +17,9 @@ const _TARGET_KEYS := {
 	"leftNeighbor": "MYTHOS_TGT_LEFT",
 	"lead": "MYTHOS_TGT_LEAD",
 	"each": "MYTHOS_TGT_EACH",
+	"eachOnCity": "MYTHOS_TGT_EACH_CITY",
+	"eachOnWilderness": "MYTHOS_TGT_EACH_WILD",
+	"eachOnSea": "MYTHOS_TGT_EACH_SEA",
 }
 const _SKILL_KEYS := {
 	"lore": "SKILL_LORE",
@@ -57,12 +60,27 @@ static func describe(node: Dictionary) -> String:
 		return _join(node.get("choice", []), " / ")
 	if node.has("group"):
 		return _join(node.get("group", []), ", ")
+	if node.has("forEach"):  # do — под-программа (Array), а не verb: «у каждого: …»
+		return (
+			"%s: %s"
+			% [
+				describe_target(String(node.get("forEach", "each"))),
+				_join(node.get("do", []), ", ")
+			]
+		)
 	if node.has("test"):
 		return "%s: %s" % [_t("ENCOUNTER_CHECK"), _skill_name(String(node.get("test", "will")))]
-	# Лист-Action.
-	var verb: String = String(node.get("do", ""))
-	if verb.is_empty():
+	if node.has("dieRoll"):  # перечисляем эффекты всех граней
+		var faces := PackedStringArray()
+		for r_v: Variant in node.get("dieRoll", []) as Array:
+			if r_v is Dictionary:
+				faces.append(_join((r_v as Dictionary).get("then", []), ", "))
+		return " / ".join(faces)
+	# Лист-Action. do у структурных узлов уже отсеян выше; на всякий — гард.
+	var do_val: Variant = node.get("do", "")
+	if not (do_val is String) or (do_val as String).is_empty():
 		return ""
+	var verb: String = do_val
 	var def: Dictionary = verb_def(verb)
 	var key: String = String(def.get("describeKey", ""))
 	var s: String = _t(key) if not key.is_empty() else verb
