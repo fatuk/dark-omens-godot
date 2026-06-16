@@ -34,9 +34,12 @@ func _init(gs: Node) -> void:
 # ── Жизненный цикл проверки ───────────────────────────────────────────────────
 
 
-## Начать проверку (до броска). Перетирает прежнюю активную.
-func start(owner: String, pid: String, skill: String, modifier: int, context: String) -> void:
-	_gs.active_check = {
+## Свежая проверка (до броска) как словарь — для active_check ИЛИ per-player слота
+## (параллельная Расплата: players[pid].reckoning_check). Не привязана к _gs.active_check.
+func make_check(
+	owner: String, pid: String, skill: String, modifier: int, context: String
+) -> Dictionary:
+	return {
 		"owner": owner,
 		"pid": pid,
 		"skill": skill,
@@ -54,6 +57,11 @@ func start(owner: String, pid: String, skill: String, modifier: int, context: St
 		"reroll_all_used": 0,
 		"exhausted_cards": [],
 	}
+
+
+## Начать проверку (до броска). Перетирает прежнюю активную.
+func start(owner: String, pid: String, skill: String, modifier: int, context: String) -> void:
+	_gs.active_check = make_check(owner, pid, skill, modifier, context)
 
 
 ## Снять активную проверку.
@@ -88,9 +96,11 @@ func pool(c: Dictionary) -> int:
 # ── Операции (хост) ───────────────────────────────────────────────────────────
 
 
-## Хост: бросок активной проверки игрока pid. true — бросок сделан и разослан.
-func roll(pid: String) -> bool:
-	var c: Dictionary = _gs.active_check
+## Хост: бросок проверки игрока pid. c — слот проверки (пусто → _gs.active_check; иначе
+## per-player слот, напр. players[pid].reckoning_check). true — бросок сделан и разослан.
+func roll(pid: String, c: Dictionary = {}) -> bool:
+	if c.is_empty():
+		c = _gs.active_check
 	if c.is_empty() or String(c.get("pid", "")) != pid or bool(c.get("rolled", false)):
 		return false
 	_set_roll(c, Dice.roll(pool(c)))
@@ -106,8 +116,9 @@ func roll(pid: String) -> bool:
 ## Хост: переброс выбранного куба. currency — ЯВНАЯ валюта (перетащили жетон:
 ## "concentration"/"clue"/"free") или "" = авто-приоритет (тап по кубу: карта →
 ## концентрация → улика). Куб должен быть провальным по отображаемому значению.
-func reroll(pid: String, die_index: int, currency: String = "") -> bool:
-	var c: Dictionary = _gs.active_check
+func reroll(pid: String, die_index: int, currency: String = "", c: Dictionary = {}) -> bool:
+	if c.is_empty():
+		c = _gs.active_check
 	if c.is_empty() or String(c.get("pid", "")) != pid or not bool(c.get("rolled", false)):
 		return false
 	var p: Dictionary = _gs.players.get(pid, {})
@@ -306,8 +317,9 @@ func _allowance_all(c: Dictionary) -> int:
 ## Счастливый талисман). Бесплатно — расход одно использование reroll-all.
 ## Перебрасывает все кубы пула (включая успешные — это явный «полный переброс»;
 ## выборочно провальные перебрасывают тапом по кубу). true при перебросе.
-func reroll_all(pid: String) -> bool:
-	var c: Dictionary = _gs.active_check
+func reroll_all(pid: String, c: Dictionary = {}) -> bool:
+	if c.is_empty():
+		c = _gs.active_check
 	if c.is_empty() or String(c.get("pid", "")) != pid or not bool(c.get("rolled", false)):
 		return false
 	if int(c.get("reroll_all_used", 0)) >= int(c.get("reroll_all_allowance", 0)):
