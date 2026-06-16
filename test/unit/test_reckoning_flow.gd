@@ -90,7 +90,8 @@ func _player(pid: String, extra: Dictionary = {}) -> void:
 
 
 func test_run_reckoning_global_tiers() -> void:
-	_gs.campaign = {"ancientOne": "azathoth"}  # onReckoning: advanceDoom 1
+	# ancientOne — словарь {id, …} как от relay (НЕ строка), id адресует AncientCatalog.
+	_gs.campaign = {"ancientOne": {"id": "azathoth"}}  # onReckoning: advanceDoom 1
 	_gs.mythos_in_play = [{"name": "X", "onReckoning": [{"do": "advanceDoom", "amount": 1}]}]
 	_gs.monsters = {"loc": [{"id": "avian_thrall"}]}  # onReckoning: loseSanity 1 each
 	_player("p1")
@@ -102,7 +103,7 @@ func test_run_reckoning_global_tiers() -> void:
 
 
 func test_run_reckoning_scope_mythos_only() -> void:
-	_gs.campaign = {"ancientOne": "azathoth"}
+	_gs.campaign = {"ancientOne": {"id": "azathoth"}}
 	_gs.mythos_in_play = [{"name": "X", "onReckoning": [{"do": "advanceDoom", "amount": 1}]}]
 	_gs.monsters = {"loc": [{"id": "avian_thrall"}]}
 	_player("p1")

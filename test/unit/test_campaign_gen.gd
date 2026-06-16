@@ -38,3 +38,19 @@ func test_summary_preserves_progress_and_progress_hook() -> void:
 	# Нет хуков → ключи НЕ добавляются (иначе пустой progress затенил бы progressHook).
 	assert_false((ms[2] as Dictionary).has("progress"), "без хуков progress не добавляется")
 	assert_false((ms[2] as Dictionary).has("progressHook"))
+
+
+# Регрессия: relay шлёт ancientOne как {name, epithet, …} БЕЗ id, а ReckoningFlow/
+# AncientCatalog адресуются по id — _summary обязан проштамповать сид-id Древнего.
+func test_summary_stamps_ancient_id() -> void:
+	var cg := CampaignGen.new(autofree(Node.new()))
+	var full := {"ancientOne": {"name": "Азатот"}, "mysteries": []}
+	var s: Dictionary = cg._summary(full, "azathoth")
+	var ao: Dictionary = s["ancientOne"]
+	assert_eq(String(ao.get("id", "")), "azathoth", "id Древнего проштампован из сида")
+	assert_eq(String(ao.get("name", "")), "Азатот", "прочие поля сохранены")
+	# Уже есть id (на будущее, если relay начнёт слать) → не перетираем.
+	var s2: Dictionary = cg._summary({"ancientOne": {"id": "dagon"}, "mysteries": []}, "azathoth")
+	assert_eq(
+		String((s2["ancientOne"] as Dictionary).get("id", "")), "dagon", "существующий id цел"
+	)

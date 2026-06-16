@@ -44,9 +44,10 @@ func run_reckoning(scope: String = "") -> void:
 
 # Тир 1: Расплата активного Древнего.
 func _reckon_ancient() -> void:
-	_apply_global(
-		AncientCatalog.reckoning_of(String(_gs.campaign.get("ancientOne", ""))), "Древний"
-	)
+	# campaign.ancientOne — словарь {id, name, …} (relay-CMS), а не строка-id;
+	# id для AncientCatalog штампует CampaignGen при сборке (см. _summary).
+	var ao: Dictionary = _gs.campaign.get("ancientOne", {})
+	_apply_global(AncientCatalog.reckoning_of(String(ao.get("id", ""))), "Древний")
 
 
 # Тир 2: Расплата каждой карты Мифов в игре (её onReckoning-эффект, без триггеров).

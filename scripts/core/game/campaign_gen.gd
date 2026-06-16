@@ -145,7 +145,7 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 		return  # перебито новым циклом или reset — результат устарел
 	if bool(res.get("ok", false)):
 		var full: Dictionary = res.get("campaign", {})
-		_gs.campaign = _summary(full)
+		_gs.campaign = _summary(full, ancient_one)
 		# Размер партии, под который сгенерена кампания (мифос-колода, цели Тайн).
 		# Стартовая раскладка (_setup_board) обязана взять ИМЕННО его, а не число
 		# подключённых: иначе соло-тест партии на 5–8 даст раскладку как на 1.
@@ -205,7 +205,9 @@ func _build_request(player_count: int, ancient_one: String) -> Dictionary:
 
 # Компактная сводка библии для синка — без тяжёлой колоды Мифов и эффектов.
 # Полная библия сохранена на сервере и тянется по id при генерации встреч.
-func _summary(full: Dictionary) -> Dictionary:
+# ancient_id (id Древнего из сида комнаты) штампуем в ancientOne — relay шлёт
+# {name, epithet, …} без id, а ReckoningFlow/AncientCatalog адресуют именно по id.
+func _summary(full: Dictionary, ancient_id: String = "") -> Dictionary:
 	var mysteries: Array = []
 	var src: Array = full.get("mysteries", [])
 	for i in range(src.size()):
@@ -233,9 +235,19 @@ func _summary(full: Dictionary) -> Dictionary:
 	return {
 		"id": String(full.get("id", "")),
 		"doomClock": int(full.get("doomClock", 0)),
-		"ancientOne": full.get("ancientOne", {}),
+		"ancientOne": _stamp_ancient_id(full.get("ancientOne", {}), ancient_id),
 		"theme": full.get("theme", []),
 		"mysteries": mysteries,
 		# Локации с авторской site-встречей — на них предлагаем выбор «общая/локационная».
 		"siteEncounterLocations": full.get("siteEncounterLocations", []),
 	}
+
+
+# Проштамповать id Древнего (из сида комнаты) в объект ancientOne, если relay его
+# не прислал. Копию — чтобы не мутировать исходный full. Существующий id не трогаем.
+func _stamp_ancient_id(ao: Dictionary, ancient_id: String) -> Dictionary:
+	if ancient_id.is_empty() or String(ao.get("id", "")) != "":
+		return ao
+	var out: Dictionary = ao.duplicate(true)
+	out["id"] = ancient_id
+	return out
