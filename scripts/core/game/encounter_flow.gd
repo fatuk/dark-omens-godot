@@ -752,6 +752,7 @@ func _run_effect_slot(effects: Array, pid: String, slot: String) -> bool:
 	var dup: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
 	var flow: Dictionary = {
 		"interactive": true,
+		"checks_visible": true,  # вложенный test → ВИДИМАЯ проверка (общий движок)
 		"decisions": enc.get("effect_decisions", {}),
 		"rolls": enc.get("effect_rolls", {}),
 		"pending": {},
@@ -762,7 +763,25 @@ func _run_effect_slot(effects: Array, pid: String, slot: String) -> bool:
 	enc["effect_rolls"] = flow.get("rolls", {})  # сохранить записанные броски
 	var pending: Dictionary = res.get("pending", {})
 	if not pending.is_empty():
-		enc["pending_choice"] = pending  # модалка покажет выбор; ход замирает
+		if String(pending.get("kind", "")) == "check":
+			# Вложенная проверка эффекта: сохраняем основную проверку встречи в стек и
+			# стартуем видимую (общая модалка); resolve_encounter_check вернёт её pop'ом.
+			_gs._check.push()
+			_gs._check.start(
+				"effectCheck",
+				pid,
+				String(pending.get("skill", "influence")),
+				int(pending.get("modifier", 0)),
+				"encounterEffect"
+			)
+			_gs.pending_check = {
+				"pid": pid,
+				"driver": "encounter",
+				"path": String(pending.get("path", "")),
+				"subject": {},
+			}
+		else:
+			enc["pending_choice"] = pending  # модалка покажет выбор; ход замирает
 		return false
 	# Слот завершён — фиксируем мутации игрока, поле и логи.
 	_gs.players[pid] = dup
@@ -815,6 +834,23 @@ func record_effect_choice(pid: String, index: int) -> bool:
 	enc["effect_decisions"] = dec
 	enc["pending_choice"] = {}  # снято — _commit_outcome переиграет с решением
 	return true
+
+
+## Хост: записать результат ВИДИМОЙ проверки эффекта встречи (диспетч из
+## GameState.resolve_pending_check) и переиграть исход. Возвращает основную проверку
+## встречи из стека (pop) и переигрывает _commit_outcome через _commit_and_advance.
+func resolve_encounter_check(pid: String, path: String, passed: bool) -> bool:
+	if _gs.phase != "encounter" or _gs._current_pid() != pid:
+		return false
+	if String(_gs.pending_check.get("driver", "")) != "encounter":
+		return false
+	var enc: Dictionary = _gs.current_encounter
+	var dec: Dictionary = enc.get("effect_decisions", {})
+	dec[path] = passed
+	enc["effect_decisions"] = dec
+	_gs.pending_check = {}
+	_gs._check.pop()  # вернуть основную проверку встречи (её читает _commit_outcome)
+	return _gs._phase._commit_and_advance(pid)
 
 
 # Контекст исполнения Effect-DSL для активного игрока: навыки, тип локации, роль

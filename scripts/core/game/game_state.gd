@@ -689,6 +689,8 @@ func _resolve_pending_check_host(pid: String) -> bool:
 	match String(pc.get("driver", "")):
 		"condition":
 			_cond.resolve_action_check(pid, path, passed)
+		"encounter":
+			_encounter.resolve_encounter_check(pid, path, passed)
 		_:
 			push_warning("[GameState] resolve_pending_check: неизвестный driver %s" % pc)
 			pending_check = {}
