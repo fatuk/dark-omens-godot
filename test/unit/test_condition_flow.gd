@@ -48,6 +48,7 @@ class StubPhase:
 
 class MockGameState:
 	extends Node
+	signal effect_check_applied(passed: bool)  # будит интерактивную Расплату
 	var players: Dictionary = {}
 	var board_effects: Array = []
 	var reckoning_results: Dictionary = {}
@@ -65,6 +66,12 @@ class MockGameState:
 
 	func _apply_board_effect(node: Dictionary) -> void:
 		board_effects.append(node)
+
+	func _broadcast_sync() -> void:
+		pass
+
+	func _emit_changed() -> void:
+		pass
 
 
 func before_each() -> void:
@@ -459,3 +466,42 @@ func test_resolve_action_check_failed_keeps() -> void:
 	)
 	assert_eq(_gs.pending_check, {}, "проверка снята и при провале")
 	assert_true((_gs._phase.released as Array).has("p"), "ход освобождён")
+
+
+# ── Интерактивная Расплата: test onReckoning → ВИДИМАЯ проверка (Фаза E) ───────
+# amnesia: onReckoning test will → при провале flipCard. interactive=true пендит
+# проверку (pending_check{driver:reckoning}) и ждёт effect_check_applied.
+
+
+func test_reckon_condition_interactive_pends_check() -> void:
+	_add_player("p", {"conditions": ["amnesia"]})
+	_cond.reckon_condition("p", "amnesia", {}, true)  # корутина доходит до await
+	assert_eq(String(_gs.pending_check.get("driver", "")), "reckoning", "видимая проверка Расплаты")
+	assert_eq(String(_gs.pending_check.get("pid", "")), "p")
+	assert_eq(String(_gs._check.started.get("owner", "")), "effectCheck", "CheckFlow effectCheck")
+	_gs.effect_check_applied.emit(true)  # дренируем корутину (иначе она висит на await)
+
+
+# Состояние «активно лицом»: в conditions и НЕ перевёрнуто. flipCard может случайно
+# (random back) дать flip ИЛИ discard — в обоих случаях лицо перестаёт быть активным.
+func _front_active(pid: String, cid: String) -> bool:
+	var p: Dictionary = _gs.players.get(pid, {})
+	return (
+		(p.get("conditions", []) as Array).has(cid)
+		and not (p.get("conditions_flipped", {}) as Dictionary).has(cid)
+	)
+
+
+func test_reckon_condition_interactive_fail_flips() -> void:
+	_add_player("p", {"conditions": ["amnesia"]})
+	_cond.reckon_condition("p", "amnesia", {}, true)
+	_gs.effect_check_applied.emit(false)  # провал → onFail flipCard
+	assert_false(_front_active("p", "amnesia"), "провал → onFail сработал (флип/сброс)")
+	assert_eq(_gs.pending_check, {}, "проверка снята после применения")
+
+
+func test_reckon_condition_interactive_pass_no_flip() -> void:
+	_add_player("p", {"conditions": ["amnesia"]})
+	_cond.reckon_condition("p", "amnesia", {}, true)
+	_gs.effect_check_applied.emit(true)  # успех → ветки onPass нет, флипа нет
+	assert_true(_front_active("p", "amnesia"), "успех → состояние осталось активным лицом")

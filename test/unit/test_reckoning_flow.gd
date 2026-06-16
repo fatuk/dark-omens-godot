@@ -16,7 +16,9 @@ class StubCond:
 	extends RefCounted
 	var reckoned: Array = []  # [{pid, cid}]
 
-	func reckon_condition(pid: String, cid: String, _flow: Dictionary = {}) -> void:
+	func reckon_condition(
+		pid: String, cid: String, _flow: Dictionary = {}, _interactive: bool = false
+	) -> void:
 		reckoned.append({"pid": pid, "cid": cid})
 
 

@@ -228,7 +228,8 @@ func _collect_reckoning_cards(pid: String) -> Array:
 # Резолв одной карты Расплаты сыщика + синк/пауза под анимацию.
 func _resolve_card(pid: String, card: Dictionary) -> void:
 	if String(card.get("kind", "")) == "condition":
-		_gs._cond.reckon_condition(pid, String(card.get("id", "")))
+		# interactive: test-узлы onReckoning → видимая проверка игрока (корутина).
+		await _gs._cond.reckon_condition(pid, String(card.get("id", "")), {}, true)
 	else:
 		_reckon_asset(pid, String(card.get("id", "")))
 	_gs._broadcast_sync()

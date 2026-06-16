@@ -52,7 +52,12 @@ func _reckon_player(pid: String, flow: Dictionary = {}) -> void:
 ## Хост: Расплата ОДНОГО состояния сыщика (onReckoning + flip/discard через
 ## _apply_reckon_board). Уже перевёрнутое/снятое — no-op. Вынесено ради пер-карточного
 ## резолва в ReckoningFlow (сыщик выбирает порядок) и для _reckon_player.
-func reckon_condition(pid: String, cid: String, flow: Dictionary = {}) -> void:
+## interactive=true (живой шаг Расплаты, корутина): test-узлы onReckoning → ВИДИМАЯ
+## проверка игрока через общий движок (как cursed/anxious «тест Воли»). false (тесты,
+## board-applier fallback): прежний тихий детерминированный путь (flow.rolls).
+func reckon_condition(
+	pid: String, cid: String, flow: Dictionary = {}, interactive: bool = false
+) -> void:
 	var p: Dictionary = _gs.players.get(pid, {})
 	if (p.get("conditions_flipped", {}) as Dictionary).has(cid):
 		return  # уже перевёрнуто — фронтовой onReckoning не действует
@@ -64,7 +69,68 @@ func reckon_condition(pid: String, cid: String, flow: Dictionary = {}) -> void:
 		return
 	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
 	var ctx: Dictionary = {"skills": inv.get("skills", {})}
-	var res: Dictionary = _EffectRunner.run(program, p, ctx, flow)
+	if not interactive:
+		var res: Dictionary = _EffectRunner.run(program, p, ctx, flow)
+		_apply_reckon_output(pid, cid, def, ctx, res, flow)
+		return
+	await _reckon_condition_interactive(pid, cid, def, program, ctx)
+
+
+# Корутина интерактивной Расплаты состояния: test пендит видимую проверку (pending_check
+# {driver:reckoning} + CheckFlow), ждём effect_check_applied, пишем decision и
+# переигрываем (dup-изоляция, как mythos/encounter). dieRoll остаётся тихим.
+func _reckon_condition_interactive(
+	pid: String, cid: String, def: Dictionary, program: Array, ctx: Dictionary
+) -> void:
+	var decisions: Dictionary = {}
+	var rolls: Dictionary = {}
+	while true:
+		if not _gs.players.has(pid):
+			return
+		var dup: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
+		var fl: Dictionary = {
+			"interactive": true,
+			"checks_visible": true,
+			"decisions": decisions,
+			"rolls": rolls,
+			"pending": {},
+			"slot": "",
+		}
+		var res: Dictionary = _EffectRunner.run(program, dup, ctx, fl)
+		rolls = fl.get("rolls", {})
+		var pending: Dictionary = res.get("pending", {})
+		if String(pending.get("kind", "")) == "check":
+			_gs._check.start(
+				"effectCheck",
+				pid,
+				String(pending.get("skill", "will")),
+				int(pending.get("modifier", 0)),
+				"reckoning"
+			)
+			_gs.pending_check = {
+				"pid": pid,
+				"driver": "reckoning",
+				"path": String(pending.get("path", "")),
+				"subject": Conditions.card_payload(cid),
+			}
+			_gs._broadcast_sync()
+			_gs._emit_changed()
+			var passed: bool = await _gs.effect_check_applied
+			_gs.pending_check = {}
+			_gs._check.clear()
+			decisions[String(pending.get("path", ""))] = passed
+			continue
+		if not pending.is_empty():
+			GameConsole.warn("[Расплата] выбор в onReckoning состояния не поддержан — пропуск")
+		_gs.players[pid] = dup  # коммит мутаций сыщика
+		_apply_reckon_output(pid, cid, def, ctx, res, {})
+		return
+
+
+# Логи + board-эффекты прогона onReckoning (flipCard/discardCard над cid и пр.).
+func _apply_reckon_output(
+	pid: String, cid: String, def: Dictionary, ctx: Dictionary, res: Dictionary, flow: Dictionary
+) -> void:
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[Расплата] %s · %s: %s" % [_gs._name_of(pid), cid, String(l_v)])
 	for node_v: Variant in res.get("board", []):

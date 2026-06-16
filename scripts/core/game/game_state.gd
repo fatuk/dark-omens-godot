@@ -16,6 +16,7 @@ extends Node
 signal state_changed  # любое изменение стейта
 signal phase_changed(new_phase: String)  # переход фазы
 signal mythos_decided(idx: int)  # сыщик выбрал ветку в forEach-проходе Мифов
+signal effect_check_applied(passed: bool)  # игрок применил видимую проверку test (корутины)
 
 const ACTIONS_PER_ROUND := 2
 const MAX_TICKETS := 2  # потолок билетов на руках (ж/д + корабль суммарно), как в EH
@@ -691,6 +692,10 @@ func _resolve_pending_check_host(pid: String) -> bool:
 			_cond.resolve_action_check(pid, path, passed)
 		"encounter":
 			_encounter.resolve_encounter_check(pid, path, passed)
+		"mythos", "reckoning":
+			# Корутинные драйверы: будим ожидающую корутину результатом; она сама
+			# чистит pending_check/active_check и переигрывает свою программу.
+			effect_check_applied.emit(passed)
 		_:
 			push_warning("[GameState] resolve_pending_check: неизвестный driver %s" % pc)
 			pending_check = {}

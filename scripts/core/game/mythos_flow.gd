@@ -271,6 +271,7 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 		var dup: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
 		var flow: Dictionary = {
 			"interactive": true,
+			"checks_visible": true,  # test в forEach → ВИДИМАЯ проверка (общий движок)
 			"decisions": decisions,
 			"rolls": rolls,
 			"pending": {},
@@ -293,6 +294,28 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 			_gs._emit_changed()
 			await _gs.get_tree().create_timer(_DELAY_DEFAULT).timeout
 			return
+		# Видимая проверка test: общая модалка проверки (CheckFlow), не модалка выбора.
+		if String(pending.get("kind", "")) == "check":
+			_gs._check.start(
+				"effectCheck",
+				pid,
+				String(pending.get("skill", "will")),
+				int(pending.get("modifier", 0)),
+				"mythosEffect"
+			)
+			_gs.pending_check = {
+				"pid": pid,
+				"driver": "mythos",
+				"path": String(pending.get("path", "")),
+				"subject": {},
+			}
+			_gs._broadcast_sync()
+			_gs._emit_changed()
+			var passed: bool = await _gs.effect_check_applied
+			_gs.pending_check = {}
+			_gs._check.clear()
+			decisions[String(pending.get("path", ""))] = passed
+			continue
 		# Пауза на выбор: показываем модалку сыщику pid, ждём его решение.
 		_gs.mythos_decision = {
 			"active": true,
