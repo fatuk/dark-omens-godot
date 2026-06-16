@@ -315,3 +315,57 @@ func test_interactive_lead_target_routes_to_board() -> void:
 	assert_eq(String((board[0] as Dictionary)["target"]), "lead")
 	assert_eq(int((board[0] as Dictionary)["_times"]), 1)
 	assert_eq(int(p["hp"]), 5, "к себе не применяется (в отличие от не-interactive)")
+
+
+# ── Видимая проверка test (checks_visible): pend {kind:check} → decision → ветка ──
+
+
+func test_interactive_test_pends_check_without_decision() -> void:
+	var p: Dictionary = _player()
+	var node := {"test": "influence", "modifier": -1, "onPass": [{"do": "gainClue"}], "onFail": []}
+	var res: Dictionary = EffectRunner.run(
+		[node], p, {}, {"interactive": true, "checks_visible": true}
+	)
+	var pending: Dictionary = res["pending"]
+	assert_eq(String(pending.get("kind", "")), "check", "test пендит проверку")
+	assert_eq(String(pending.get("skill", "")), "influence", "навык проверки")
+	assert_eq(int(pending.get("modifier", 0)), -1, "модификатор проверки")
+	assert_eq(int(p["clues"]), 1, "до решения ветка не выполняется")
+
+
+func test_interactive_test_passed_decision_runs_onpass() -> void:
+	var p: Dictionary = _player()
+	# decisions[path]=true → onPass. Путь верхнеуровневой ноды 0 == "0".
+	EffectRunner.run(
+		[{"test": "influence", "onPass": [{"do": "gainClue"}], "onFail": [{"do": "loseSanity"}]}],
+		p,
+		{},
+		{"interactive": true, "checks_visible": true, "decisions": {"0": true}}
+	)
+	assert_eq(int(p["clues"]), 2, "passed → onPass (gainClue)")
+	assert_eq(int(p["sanity"]), 5, "onFail не выполнялся")
+
+
+func test_interactive_test_failed_decision_runs_onfail() -> void:
+	var p: Dictionary = _player()
+	EffectRunner.run(
+		[{"test": "influence", "onPass": [{"do": "gainClue"}], "onFail": [{"do": "loseSanity"}]}],
+		p,
+		{},
+		{"interactive": true, "checks_visible": true, "decisions": {"0": false}}
+	)
+	assert_eq(int(p["sanity"]), 4, "failed → onFail (loseSanity)")
+	assert_eq(int(p["clues"]), 1, "onPass не выполнялся")
+
+
+func test_test_silent_without_checks_visible_flag() -> void:
+	# Без флага checks_visible test кидает тихо (seeded). Пустой ctx.skills → auto-pass.
+	var p: Dictionary = _player()
+	var res: Dictionary = EffectRunner.run(
+		[{"test": "influence", "onPass": [{"do": "gainClue"}], "onFail": []}],
+		p,
+		{},
+		{"interactive": true}
+	)
+	assert_eq((res["pending"] as Dictionary).size(), 0, "без checks_visible проверка не пендит")
+	assert_eq(int(p["clues"]), 2, "тихий auto-pass (нет skills) → onPass")

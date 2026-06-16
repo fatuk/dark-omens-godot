@@ -191,7 +191,24 @@ static func _run_node(
 				break
 		return
 	if node.has("test"):
-		var passed: bool = _roll_test(node, player, ctx, flow, path)
+		# checks_visible (драйвер включил): ВИДИМАЯ проверка через CheckFlow (как choice
+		# пендит решение) — нет результата → pend {kind:"check"}, есть decisions[path]=
+		# passed → ветка. Иначе: прежний тихий seeded бросок (детерминизм тестов / фон,
+		# + драйверы, ещё не переведённые на видимые проверки).
+		var passed: bool
+		if bool(flow.get("checks_visible", false)):
+			var decisions: Dictionary = flow.get("decisions", {})
+			if not decisions.has(path):
+				flow["pending"] = {
+					"kind": "check",
+					"path": path,
+					"skill": String(node.get("test", "will")),
+					"modifier": int(node.get("modifier", 0)),
+				}
+				return
+			passed = bool(decisions[path])
+		else:
+			passed = _roll_test(node, player, ctx, flow, path)
 		var branch: Array = node.get("onPass" if passed else "onFail", [])
 		var pfx: String = "/p" if passed else "/f"
 		for i in range(branch.size()):
