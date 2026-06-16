@@ -211,6 +211,10 @@ func _build_hand_carousel() -> void:
 	)
 	# Жетон закинули на проверку — заряжаем валюту переброса; куб игрок выберет тапом.
 	hc.token_played.connect(func(currency: String) -> void: GameState.set_pending_reroll(currency))
+	# Сыграли карту состояния — запускаем его локальное действие (хост валидирует).
+	hc.condition_acted.connect(
+		func(cid: String) -> void: GameState.perform_action("condition_action", {"condition": cid})
+	)
 	GameState.state_changed.connect(_refresh_hand)
 	_refresh_hand()
 
@@ -232,6 +236,9 @@ func _refresh_hand() -> void:
 	var tokens: Array = _hand_tokens_section()
 	if not tokens.is_empty():
 		sections.append({"title": tr("HAND_TOKENS"), "items": tokens})
+	var conds: Array = _hand_conditions_section()
+	if not conds.is_empty():
+		sections.append({"title": tr("HAND_CONDITIONS"), "items": conds})
 	_hand_carousel.set_sections(sections)
 
 
@@ -321,6 +328,34 @@ func _token_payload(currency: String) -> Dictionary:
 		"glyph": "✦" if is_focus else "◆",
 		"desc": tr("TOKEN_REROLL_HINT"),
 	}
+
+
+# Веер «Состояния»: карты состояний игрока. Карта играбельна (клик/вытаскивание →
+# локальное действие), только если у состояния есть action, оно не на рубашке, и
+# действие сейчас доступно (мой ход действий, есть действия, condition_action ещё не
+# тратил в этом раунде — тот же гейт, что у action_panel). Прочие — серые (просмотр).
+func _hand_conditions_section() -> Array:
+	var me: Dictionary = GameState.my_player()
+	var conds: Array = me.get("conditions", [])
+	var flipped: Dictionary = me.get("conditions_flipped", {})
+	var used: Array = me.get("actions_used", [])
+	var can_act: bool = (
+		GameState.is_my_turn()
+		and int(me.get("actions_left", 0)) > 0
+		and not (used as Array).has("condition_action")
+	)
+	var out: Array = []
+	for i in range(conds.size()):
+		var cid: String = String(conds[i])
+		var pcard: Dictionary = Conditions.card_payload(cid, String(flipped.get(cid, "")))
+		if pcard.is_empty():
+			continue
+		var playable: bool = (
+			bool(pcard.get("has_action", false)) and not flipped.has(cid) and can_act
+		)
+		pcard["exhausted"] = not playable
+		out.append(pcard)
+	return out
 
 
 func _refresh_gates() -> void:

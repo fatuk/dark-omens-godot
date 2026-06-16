@@ -9,6 +9,10 @@ signal card_played(item_index: int)
 ## выбирает тапом по кубу (как и обычный переброс).
 signal token_played(currency: String)
 
+## Сыграли карту состояния (condition_id) → запустить локальное действие состояния
+## (Detained «сбежать» и т.п.). Слушает WorldMap → GameState.perform_action.
+signal condition_acted(condition_id: String)
+
 ## Веер карт руки сыщика (порт из HTML/CSS-макета).
 ## Открывается/закрывается по Tab. Карты задаются извне через set_cards()
 ## (в игре — реальное имущество игрока, см. WorldMap._refresh_hand; в пикере —
@@ -718,8 +722,11 @@ func _play_and_close(idx: int, item: Dictionary) -> void:
 	t.tween_callback(
 		func() -> void:
 			_playing = false
-			if String(item.get("kind", "asset")) == "token":
+			var k: String = String(item.get("kind", "asset"))
+			if k == "token":
 				token_played.emit(String(item.get("currency", "")))
+			elif k == "condition":
+				condition_acted.emit(String(item.get("condition_id", "")))
 			else:
 				card_played.emit(int(item.get("item_index", -1)))
 			close()

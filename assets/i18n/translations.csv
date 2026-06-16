@@ -719,6 +719,16 @@ ENCOUNTER_REROLL_DRAG,перетащите жетон на проверку дл
 HAND_ASSETS,Активы,Assets
 HAND_SPELLS,Заклинания,Spells
 HAND_TOKENS,Жетоны,Tokens
+HAND_CONDITIONS,Состояния,Conditions
+COND_KIND_DEAL,Сделка,Deal
+COND_KIND_MADNESS,Безумие,Madness
+COND_KIND_INJURY,Травма,Injury
+COND_KIND_ILLNESS,Болезнь,Illness
+COND_KIND_BANE,Проклятие,Bane
+COND_KIND_BOON,Благо,Boon
+COND_KIND_RESTRICTION,Ограничение,Restriction
+COND_KIND_EXPOSURE,Стихия,Exposure
+COND_KIND_PURSUIT,Преследование,Pursuit
 TOKEN_CONCENTRATION,Концентрация,Focus
 TOKEN_CLUE,Улика,Clue
 TOKEN_REROLL_HINT,перетащите на куб,drag onto a die

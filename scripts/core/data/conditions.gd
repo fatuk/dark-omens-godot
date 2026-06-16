@@ -13,6 +13,41 @@ const DATA_PATH := "res://data/conditions.json"
 static var _by_id: Dictionary = {}
 static var _outcome_by_id: Dictionary = {}  # агрегат backs всех состояний (id → оборот)
 
+# Вид состояния → подпись (i18n), глиф-заглушка (арта у состояний нет) и цвет фона.
+const KIND_KEY := {
+	"deal": "COND_KIND_DEAL",
+	"madness": "COND_KIND_MADNESS",
+	"injury": "COND_KIND_INJURY",
+	"illness": "COND_KIND_ILLNESS",
+	"bane": "COND_KIND_BANE",
+	"boon": "COND_KIND_BOON",
+	"restriction": "COND_KIND_RESTRICTION",
+	"exposure": "COND_KIND_EXPOSURE",
+	"pursuit": "COND_KIND_PURSUIT",
+}
+const KIND_GLYPH := {
+	"deal": "◆",
+	"madness": "◈",
+	"injury": "✚",
+	"illness": "◐",
+	"bane": "✖",
+	"boon": "☼",
+	"restriction": "■",
+	"exposure": "❄",
+	"pursuit": "➤",
+}
+const KIND_COLOR := {
+	"deal": Color(0.42, 0.34, 0.12),
+	"madness": Color(0.30, 0.16, 0.34),
+	"injury": Color(0.40, 0.12, 0.12),
+	"illness": Color(0.18, 0.32, 0.16),
+	"bane": Color(0.34, 0.10, 0.14),
+	"boon": Color(0.36, 0.32, 0.14),
+	"restriction": Color(0.20, 0.20, 0.24),
+	"exposure": Color(0.14, 0.28, 0.34),
+	"pursuit": Color(0.36, 0.22, 0.10),
+}
+
 
 ## Ключ перевода имени состояния по его id (либо сам id, если не найдено).
 static func name_key(id: String) -> String:
@@ -38,6 +73,30 @@ static func kind_of(id: String) -> String:
 static func outcome_def(id: String) -> Dictionary:
 	_ensure_loaded()
 	return _outcome_by_id.get(id, {})
+
+
+## Payload карты состояния для GameCard (веер состояний). Поля title/subtitle/desc —
+## i18n-КЛЮЧИ (Label переведёт сам). Арта нет → glyph/art_color по виду. flipped_outcome_id
+## != "" → desc = текст исхода (рубашка), иначе текст лица. has_action — есть ли локальное
+## действие (Detained «сбежать» и т.п.). {} для неизвестного id.
+static func card_payload(cid: String, flipped_outcome_id := "") -> Dictionary:
+	var def: Dictionary = get_def(cid)
+	if def.is_empty():
+		return {}
+	var kind: String = String(def.get("kind", ""))
+	var desc: String = String(def.get("front", ""))
+	if not flipped_outcome_id.is_empty():
+		desc = String(outcome_def(flipped_outcome_id).get("text", desc))
+	return {
+		"kind": "condition",
+		"condition_id": cid,
+		"title": name_key(cid),
+		"subtitle": String(KIND_KEY.get(kind, "")),
+		"desc": desc,
+		"glyph": String(KIND_GLYPH.get(kind, "◈")),
+		"art_color": KIND_COLOR.get(kind, Color(0.10, 0.08, 0.14)),
+		"has_action": not (def.get("action", []) as Array).is_empty(),
+	}
 
 
 # ── Внутренние ────────────────────────────────────────────────────────────────
