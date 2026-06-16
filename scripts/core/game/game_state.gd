@@ -1270,7 +1270,10 @@ func _apply_board_effect(node: Dictionary) -> void:
 # размеру партии): placeClue→clues, openGate→gates. Иначе — литерал count/amount.
 func _resolve_count(node: Dictionary, verb: String) -> int:
 	if String(node.get("scale", "")) == "balance":
-		var field: String = String({"placeClue": "clues", "openGate": "gates"}.get(verb, ""))
+		# NB: dict-литерал в локальную переменную — иначе GDScript парсит
+		# String({…}.get(…)) как String({…}) и падает на конструкторе.
+		var field_of := {"placeClue": "clues", "openGate": "gates"}
+		var field: String = field_of.get(verb, "")
 		if not field.is_empty():
 			return maxi(0, _board.reference_amount(field))
 	return int(node.get("amount", node.get("count", 1)))

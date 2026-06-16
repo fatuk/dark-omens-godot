@@ -166,10 +166,11 @@ func _is_reckoning_card(on_reck: Array) -> bool:
 func _apply_effects(effects: Array) -> void:
 	for i in range(effects.size()):
 		var eff: Dictionary = effects[i]
-		var verb: String = String(eff.get("do", ""))
+		# forEach ДО String(eff.do): у него do — под-программа (Array), не verb-строка.
 		if eff.has("forEach"):
 			await _run_for_each(eff)
 			continue
+		var verb: String = String(eff.get("do", ""))
 		if verb == "resolveReckoning":
 			await _gs._reckoning.run_reckoning(String(eff.get("scope", "")))
 			continue

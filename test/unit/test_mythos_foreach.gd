@@ -175,3 +175,16 @@ func test_subprogram_choice_branch_a_targets_self() -> void:
 	assert_true(_done, "под-программа завершилась")
 	assert_true((_gs.players["p1"]["conditions"] as Array).has("darkPact"), "p1 получил darkPact")
 	assert_eq(int(_gs.players["p2"]["hp"]), 5, "сосед не задет (выбрана ветка A)")
+
+
+# Регрессия: _apply_effects обходит forEach-узел ДО String(eff.do). Раньше do —
+# Array (под-программа) → String([…]) падал на конструкторе при применении карты.
+func test_apply_effects_routes_foreach_without_crash() -> void:
+	_setup_players(["p1", "p2"])
+	var node: Dictionary = {
+		"forEach": "each", "do": [{"do": "loseHealth", "amount": 1, "target": "rightNeighbor"}]
+	}
+	await _mythos._apply_effects([node])
+	# p1 бьёт соседа p2, p2 — соседа p1 (wrap) → у обоих −1.
+	assert_eq(int(_gs.players["p1"]["hp"]), 4, "forEach применился без краша")
+	assert_eq(int(_gs.players["p2"]["hp"]), 4)
