@@ -692,6 +692,7 @@ ENCOUNTER_MYSTERY_TRIAL,Расследование на месте Тайны �
 ENCOUNTER_PROCEED,Вы идёте дальше.,You press on.
 ENCOUNTER_CHOOSE,Сделайте выбор,Make a choice
 ENCOUNTER_CHOOSE_TARGET,Кому передать?,Give to whom?
+ENCOUNTER_CHOOSE_MONSTER,Какого монстра сбросить?,Discard which monster?
 COMBAT_HEALTH,Здоровье,Health
 COMBAT_SANITY,Рассудок,Sanity
 COMBAT_MDMG,Урон,Damage
@@ -802,6 +803,9 @@ MYTHOS_TGT_LEFT,сосед слева,neighbor to the left
 MYTHOS_EFF_LOSE_ALL,сбрасывает всё имущество,discards all possessions
 MYTHOS_DECISION_TITLE,Решение сыщика,Your Decision
 MYTHOS_DECISION_PROMPT,Выберите один эффект:,Resolve one effect of your choice:
+MYTHOS_CHOOSE_TARGET,Кому передать?,Give to whom?
+MYTHOS_CHOOSE_MONSTER,Какого монстра сбросить?,Discard which monster?
+MONSTER_CHOICE_LABEL,%s · стойкость %d,%s · toughness %d
 RECK_ORDER_TITLE,Расплата,Reckoning
 RECK_ORDER_PROMPT,Какую карту Расплаты разрешить следующей?,Which Reckoning card to resolve next?
 CHOICE_SPEND_CLUE,Потратить 1 улику,Spend 1 Clue

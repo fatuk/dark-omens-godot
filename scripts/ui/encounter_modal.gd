@@ -152,9 +152,9 @@ func _show_loading() -> void:
 # Клик → GameState.choose_effect(index); хост запишет выбор и доиграет коммит.
 func _show_choice(card: Dictionary) -> void:
 	var pending: Dictionary = card.get("pending_choice", {})
-	var is_target: bool = String(pending.get("kind", "choice")) == "target"
+	var kind: String = String(pending.get("kind", "choice"))  # choice | target | monster
 	_title.text = _title_text(card)
-	_main_text.text = tr("ENCOUNTER_CHOOSE_TARGET" if is_target else "ENCOUNTER_CHOOSE")
+	_main_text.text = tr(_choose_prompt_key(kind))
 	for node: Control in [_check, _roll_btn, _dice, _outcome, _finish_btn]:
 		node.visible = false
 	_hide_dice()
@@ -164,11 +164,7 @@ func _show_choice(card: Dictionary) -> void:
 		var b: Variant = options[i]
 		var btn := Button.new()
 		btn.name = "ChoiceBtn%d" % i
-		# target → имя сыщика; choice → описание ветки эффектов.
-		if is_target:
-			btn.text = String((b as Dictionary).get("name", "?")) if b is Dictionary else "?"
-		else:
-			btn.text = _branch_label(b if b is Dictionary else {})
+		btn.text = _choice_label(b if b is Dictionary else {}, kind)
 		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		UIStyle.style_button(btn)
@@ -176,6 +172,29 @@ func _show_choice(card: Dictionary) -> void:
 		btn.pressed.connect(func() -> void: _on_choice_pressed(idx))
 		_choice_holder.add_child(btn)
 	_choice_holder.visible = true
+
+
+# Подсказка выбора по виду: монстр (сброс) / сыщик (передача) / ветка эффектов.
+func _choose_prompt_key(kind: String) -> String:
+	match kind:
+		"monster":
+			return "ENCOUNTER_CHOOSE_MONSTER"
+		"target":
+			return "ENCOUNTER_CHOOSE_TARGET"
+		_:
+			return "ENCOUNTER_CHOOSE"
+
+
+# Метка опции: монстр — имя + стойкость; сыщик — имя; ветка — описание эффектов.
+func _choice_label(opt: Dictionary, kind: String) -> String:
+	match kind:
+		"monster":
+			var nm: String = tr(String(opt.get("name", "?")))
+			return tr("MONSTER_CHOICE_LABEL") % [nm, int(opt.get("toughness", 1))]
+		"target":
+			return String(opt.get("name", "?"))
+		_:
+			return _branch_label(opt)
 
 
 func _clear_choice() -> void:

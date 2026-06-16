@@ -39,6 +39,7 @@ func _refresh() -> void:
 
 func _build(options: Array) -> void:
 	var d: Dictionary = GameState.mythos_decision
+	var kind: String = String(d.get("kind", "choice"))  # choice | target | monster
 	for c in _vbox.get_children():
 		c.queue_free()
 	# title_key/prompt_key — опц. (forEach Мифов vs выбор порядка Расплаты и т.п.).
@@ -50,7 +51,7 @@ func _build(options: Array) -> void:
 
 	var prompt := Label.new()
 	prompt.name = "Prompt"
-	prompt.text = tr(String(d.get("prompt_key", "MYTHOS_DECISION_PROMPT")))
+	prompt.text = tr(String(d.get("prompt_key", _default_prompt_key(kind))))
 	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	prompt.add_theme_color_override("font_color", UIColors.MUTED)
@@ -60,7 +61,7 @@ func _build(options: Array) -> void:
 		var opt: Dictionary = options[i] if options[i] is Dictionary else {}
 		var btn := Button.new()
 		btn.name = "ChoiceBtn%d" % i
-		btn.text = _branch_label(opt)
+		btn.text = _option_label(opt, kind)
 		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		UIStyle.style_button(btn)
@@ -69,6 +70,29 @@ func _build(options: Array) -> void:
 		btn.pressed.connect(func() -> void: _on_pick(idx))
 		_vbox.add_child(btn)
 	UIStyle.scale_modal_text(_vbox)
+
+
+# Подсказка по умолчанию — зависит от вида выбора (ветка эффектов / сыщик / монстр).
+func _default_prompt_key(kind: String) -> String:
+	match kind:
+		"monster":
+			return "MYTHOS_CHOOSE_MONSTER"
+		"target":
+			return "MYTHOS_CHOOSE_TARGET"
+		_:
+			return "MYTHOS_DECISION_PROMPT"
+
+
+# Метка опции: монстр — имя + стойкость; цель — имя сыщика; ветка — описание эффектов.
+func _option_label(opt: Dictionary, kind: String) -> String:
+	match kind:
+		"monster":
+			var nm: String = tr(String(opt.get("name", "?")))
+			return tr("MONSTER_CHOICE_LABEL") % [nm, int(opt.get("toughness", 1))]
+		"target":
+			return String(opt.get("name", "?"))
+		_:
+			return _branch_label(opt)
 
 
 func _on_pick(index: int) -> void:
