@@ -142,6 +142,8 @@ func _reckon_investigators() -> void:
 		return
 	_reck_total = (pids as Array).size()
 	_reck_done = 0
+	for pid_v: Variant in pids:
+		(_gs.players.get(String(pid_v), {}) as Dictionary).erase("reckoning_done")  # свежий старт
 	_gs.reckoning_active = true
 	_gs._broadcast_sync()
 	_gs._emit_changed()
@@ -150,12 +152,15 @@ func _reckon_investigators() -> void:
 	while _reck_done < _reck_total:
 		await player_reckoned  # ждём, пока все N не отметятся
 	_gs.reckoning_active = false
+	for pid_v: Variant in pids:
+		(_gs.players.get(String(pid_v), {}) as Dictionary).erase("reckoning_done")
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 
 
 # Расплата одного сыщика (своя корутина): его карты в АВТО-порядке (состояния → активы);
-# по карте await своей проверки. На финише инкремент гейта + сигнал player_reckoned.
+# по карте await своей проверки. На финише ставит reckoning_done (для оверлея «ждём
+# других» — не мигает между своими картами) + инкремент гейта + сигнал player_reckoned.
 func _reckon_investigator(pid: String) -> void:
 	if _gs.players.has(pid):
 		var cards: Array = _collect_reckoning_cards(pid)
@@ -164,6 +169,8 @@ func _reckon_investigator(pid: String) -> void:
 			(cards as Array).remove_at(0)
 			await _resolve_card(pid, card)
 			cards = _filter_valid(pid, cards)
+		if _gs.players.has(pid):
+			(_gs.players[pid] as Dictionary)["reckoning_done"] = true
 		_gs._broadcast_sync()
 		_gs._emit_changed()
 	_reck_done += 1
