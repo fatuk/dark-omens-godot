@@ -38,3 +38,14 @@ func test_payload_flipped_desc_is_outcome_text() -> void:
 
 func test_payload_unknown_is_empty() -> void:
 	assert_eq(Conditions.card_payload("nope"), {})
+
+
+# Регрессия: состояния, чьё ЛИЦО обещает «Локальное действие», должны иметь action
+# (иначе в веере карта серая и действие не запустить). agreement — известное
+# исключение (optional «потратить 2 улики», ждёт интерактивного condition-action).
+func test_local_action_conditions_are_wired() -> void:
+	for cid: String in ["debt", "detained"]:
+		assert_true(
+			bool(Conditions.card_payload(cid).get("has_action", false)),
+			"%s: локальное действие подключено" % cid
+		)

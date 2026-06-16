@@ -12,6 +12,17 @@
 		  "do": "flipCard"
 		}
 	  ],
+	  "action": [
+		{
+		  "test": "influence",
+		  "onPass": [
+			{
+			  "do": "discardCard"
+			}
+		  ],
+		  "onFail": []
+		}
+	  ],
 	  "backs": [
 		{
 		  "id": "collectorsCall",
