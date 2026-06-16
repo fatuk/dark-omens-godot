@@ -1,11 +1,11 @@
 extends CanvasLayer
 
 ## Общая модалка ВИДИМОЙ проверки test-узла Effect-DSL (Detained/Debt-действие, вложенный
-## test встречи, Расплата и пр.). Видна владельцу GameState.pending_check. Показывает
-## карту-носитель (subject, если есть), кубы проверки (CheckFlow owner="effectCheck") и
-## кнопки «Бросить»/«Применить» — ровно как каст ритуала (cast_check_modal). Бросок/
-## перебросы хост-авторитетны в active_check; модалка лишь отражает синкнутое состояние.
-## Строится кодом, монтируется из world_map. Заменяет частные cast/condition модалки.
+## test встречи, Расплата). Dual-mode: в ПАРАЛЛЕЛЬНОЙ Расплате читает свой per-player слот
+## players[me].reckoning_pending/reckoning_check и роутит бросок/перебросы/применить в
+## reckoning_*-фасады; иначе — единый pending_check/active_check (owner="effectCheck").
+## Показывает карту-носитель (subject), кубы и «Бросить»/«Применить» — как каст ритуала.
+## Хост-авторитетно; модалка лишь отражает синк. Код, монтируется из world_map.
 
 const _CARD_MIN := Vector2(290, 459)
 
@@ -64,14 +64,31 @@ func _build_frame() -> void:
 # ── Доступ к стейту ───────────────────────────────────────────────────────────
 
 
-# Ожидающая видимая проверка этого игрока (иначе {}).
+# Моя ожидающая проверка Расплаты (per-player слот players[me].reckoning_pending), {} — нет.
+func _reck() -> Dictionary:
+	return GameState.my_player().get("reckoning_pending", {})
+
+
+# Режим параллельной Расплаты (своя проверка в игроке, не в едином pending_check).
+func _reck_mode() -> bool:
+	return not _reck().is_empty()
+
+
+# Ожидающая видимая проверка этого игрока: сначала параллельная Расплата (per-player
+# слот), иначе одиночный pending_check (фаза действий/встреча). {} — нет.
 func _pc() -> Dictionary:
+	var r: Dictionary = _reck()
+	if not r.is_empty():
+		return r
 	var pc: Dictionary = GameState.pending_check
 	return pc if String(pc.get("pid", "")) == _my_id() else {}
 
 
-# Активная проверка, если она от движка test (иначе {}).
+# Источник кубов: слот Расплаты players[me].reckoning_check в режиме Расплаты, иначе
+# единый active_check (если это проверка движка test).
 func _chk() -> Dictionary:
+	if _reck_mode():
+		return GameState.my_player().get("reckoning_check", {})
 	var c: Dictionary = GameState.active_check
 	return c if String(c.get("owner", "")) == "effectCheck" else {}
 
@@ -102,7 +119,7 @@ func _refresh() -> void:
 		_sig = ""
 		_last_dice = []
 		return
-	var sig: String = String(pc.get("path", "")) + "|" + String(pc.get("driver", ""))
+	var sig: String = String(pc.get("path", "")) + "|" + String(pc.get("cid", pc.get("driver", "")))
 	if sig != _sig:
 		_sig = sig
 		_last_dice = []
@@ -180,7 +197,7 @@ func _render_dice() -> void:
 		_tray.show_pending(_check_pool())  # рубашки до броска
 		return
 	var dice: Array = _chk().get("dice", [])
-	var can: bool = GameState.can_reroll_now()
+	var can: bool = _can_reroll()
 	if dice != _last_dice:
 		var prev: Array = _last_dice
 		var diff: int = _single_diff(prev, dice)
@@ -226,24 +243,41 @@ func _check_pool() -> int:
 # ── Действия ───────────────────────────────────────────────────────────────────
 
 
+# Можно ли перебросить куб сейчас — в режиме Расплаты свой per-player счётчик.
+func _can_reroll() -> bool:
+	return GameState.reckoning_can_reroll_now() if _reck_mode() else GameState.can_reroll_now()
+
+
 func _on_roll() -> void:
 	if _rolled():
 		if _reroll_all_available():
-			GameState.reroll_all_dice()
+			if _reck_mode():
+				GameState.reckoning_reroll_all()
+			else:
+				GameState.reroll_all_dice()
 		return
 	_roll_btn.disabled = true
-	GameState.check_roll()
+	if _reck_mode():
+		GameState.reckoning_check_roll()
+	else:
+		GameState.check_roll()
 
 
 func _on_die_clicked(index: int) -> void:
-	if not GameState.can_reroll_now():
+	if not _can_reroll():
 		return
-	GameState.reroll_die(index)  # маршрутится по owner="effectCheck"
+	if _reck_mode():
+		GameState.reckoning_reroll_die(index)  # свой слот Расплаты
+	else:
+		GameState.reroll_die(index)  # маршрутится по owner="effectCheck"
 
 
 func _on_apply() -> void:
 	_apply_btn.disabled = true
-	GameState.resolve_pending_check()
+	if _reck_mode():
+		GameState.reckoning_check_apply()
+	else:
+		GameState.resolve_pending_check()
 
 
 func _update_buttons() -> void:

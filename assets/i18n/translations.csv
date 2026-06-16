@@ -852,8 +852,7 @@ VERB_PLACE_RUMOR,слух,place a Rumor
 VERB_RESOLVE_RECKONING,Расплата,Reckoning
 VERB_DRAW_MYTHOS,карта Мифов,draw a Mythos
 VERB_MYSTERY_PROGRESS,прогресс Тайны,Mystery progress
-RECK_ORDER_TITLE,Расплата,Reckoning
-RECK_ORDER_PROMPT,Какую карту Расплаты разрешить следующей?,Which Reckoning card to resolve next?
+RECK_WAIT,Расплата: ждём других сыщиков…,Reckoning: waiting for other investigators…
 CHOICE_SPEND_CLUE,Потратить 1 улику,Spend 1 Clue
 MON_AVIAN_THRALL_NAME,Avian Thrall,Avian Thrall
 MON_AVIAN_THRALL_ABILITY,"If you lose Sanity from the Will test, gain a Corruption Condition. Reckoning: Move this Monster to the nearest investigator. Then he encounters this Monster.","If you lose Sanity from the Will test, gain a Corruption Condition. Reckoning: Move this Monster to the nearest investigator. Then he encounters this Monster."

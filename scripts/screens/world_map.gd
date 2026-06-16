@@ -107,6 +107,7 @@ func _ready() -> void:
 	_build_campaign_gate()
 	_build_outcome_modal()
 	_build_check_roll_modal()
+	_build_reckoning_wait_overlay()
 	_build_hand_carousel()
 	_refresh_game_panel()
 	_refresh_investigators()
@@ -190,6 +191,13 @@ func _build_check_roll_modal() -> void:
 	var cam: CanvasLayer = load("res://scripts/ui/check_roll_modal.gd").new()
 	cam.name = "CheckRollModal"
 	add_child(cam)
+
+
+# Оверлей «ждём других сыщиков» в параллельной Расплате (для уже закончивших).
+func _build_reckoning_wait_overlay() -> void:
+	var ov: CanvasLayer = load("res://scripts/ui/reckoning_wait_overlay.gd").new()
+	ov.name = "ReckoningWaitOverlay"
+	add_child(ov)
 
 
 # Веер карт руки — открывается по Tab. Карты берём из реального имущества
