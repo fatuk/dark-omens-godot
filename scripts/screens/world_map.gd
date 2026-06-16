@@ -106,7 +106,7 @@ func _ready() -> void:
 	GameState.state_changed.connect(_refresh_campaign_gate)
 	_build_campaign_gate()
 	_build_outcome_modal()
-	_build_condition_action_modal()
+	_build_check_roll_modal()
 	_build_hand_carousel()
 	_refresh_game_panel()
 	_refresh_investigators()
@@ -185,10 +185,10 @@ func _build_outcome_modal() -> void:
 	add_child(om)
 
 
-# Модалка видимой проверки локального действия состояния (как каст ритуала).
-func _build_condition_action_modal() -> void:
-	var cam: CanvasLayer = load("res://scripts/ui/condition_action_modal.gd").new()
-	cam.name = "ConditionActionModal"
+# Общая модалка видимой проверки test-узла (действия состояний, вложенные test и пр.).
+func _build_check_roll_modal() -> void:
+	var cam: CanvasLayer = load("res://scripts/ui/check_roll_modal.gd").new()
+	cam.name = "CheckRollModal"
 	add_child(cam)
 
 

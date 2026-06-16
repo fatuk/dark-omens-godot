@@ -1504,7 +1504,7 @@ SPELL_CAST_CONFIRM,Скастить выбранные,Cast selected
 CAST_TITLE,Чтение заклинания,Casting spell
 CAST_ROLL,Бросить кубы,Roll dice
 CAST_APPLY,Применить,Apply
-COND_ACTION_TITLE,Локальное действие,Local action
+CHECK_TITLE,Проверка,Skill check
 
 RECK_SHRIVELING_B1,"Иссохший разум крошится, и заклинание ускользает из пальцев","Your mind rots away and the spell crumbles from your grip"
 RECK_SHRIVELING_B2,"Тлен расползается под кожей, отравляя кровь","The decay spreads beneath your skin and curdles your blood"

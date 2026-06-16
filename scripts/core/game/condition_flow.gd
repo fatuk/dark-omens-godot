@@ -14,6 +14,11 @@ const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
 var _gs: Node
 
+# Идущее локальное действие состояния (хост-only, НЕ синкается): {pid, cid, decisions,
+# rolls}. Накапливает решения видимых проверок между переигрываниями программы действия.
+# {} — действия нет. Видимая часть (карта/кубы) — в синкаемых pending_check/active_check.
+var _action_run: Dictionary = {}
+
 
 func _init(gs: Node) -> void:
 	_gs = gs
@@ -252,60 +257,85 @@ func host_run_condition_action(pid: String, cond_id: String, flow: Dictionary = 
 	return true
 
 
-## Хост: начать ВИДИМУЮ проверку локального действия состояния (как каст ритуала).
-## Старт CheckFlow owner=condition (БЕЗ броска) + GameState.condition_action; ход держит
-## phase_controller (release_condition_turn). true — проверка начата (у действия есть
+## Хост: начать локальное действие состояния через ОБЩИЙ интерактивный движок test.
+## Гоняет всю action-программу интерактивно (checks_visible) — её test-узел сам пендит
+## видимую проверку (pending_check + CheckFlow owner=effectCheck); ход держит
+## phase_controller (release_condition_turn). true — действие запущено (у него есть
 ## test-узел); false — действия с проверкой нет (вызывающий пробует синхронный путь).
 func begin_action(pid: String, cond_id: String) -> bool:
 	if not _gs._is_host():
 		return false
 	if not (_gs.players.get(pid, {}).get("conditions", []) as Array).has(cond_id):
 		return false
-	var test_node: Dictionary = _action_test_node(Conditions.get_def(cond_id))
-	if test_node.is_empty():
+	var def: Dictionary = Conditions.get_def(cond_id)
+	if (def.get("action", []) as Array).is_empty():
+		return false
+	if _action_test_node(def).is_empty():
 		return false  # действие без проверки → синхронный host_run_condition_action
-	_gs._check.start(
-		"condition",
-		pid,
-		String(test_node.get("test", "influence")),
-		int(test_node.get("modifier", 0)),
-		"conditionAction"
-	)
-	_gs.condition_action = {"pid": pid, "condition_id": cond_id}
+	_action_run = {"pid": pid, "cid": cond_id, "decisions": {}, "rolls": {}}
+	_run_action_program(pid)  # запустит программу и пендит первую видимую проверку
 	return true
 
 
-## Хост: применить результат проверки локального действия (кнопка «Применить»). По
-## active_check.passed применяет onPass/onFail test-узла над носителем cid (discardCard
-## и пр.), снимает проверку, освобождает ход.
-func apply_action(pid: String, flow: Dictionary = {}) -> bool:
+## Хост: разрешить видимую проверку action-программы (диспетч из resolve_pending_check).
+## Пишет решение и ПЕРЕИГРЫВАЕТ программу: та либо пендит следующую проверку, либо
+## завершается (применяя onPass/onFail). path — узел проверки, passed — результат.
+func resolve_action_check(pid: String, path: String, passed: bool) -> void:
 	if not _gs._is_host():
-		return false
-	var ca: Dictionary = _gs.condition_action
-	if ca.is_empty() or String(ca.get("pid", "")) != pid:
-		return false
-	var c: Dictionary = _gs.active_check
-	if String(c.get("owner", "")) != "condition":
-		return false
-	if not bool(c.get("rolled", false)):
-		_gs._check.roll(pid)  # страховка: применить без явного броска
-		c = _gs.active_check
-	var cid: String = String(ca.get("condition_id", ""))
+		return
+	if _action_run.is_empty() or String(_action_run.get("pid", "")) != pid:
+		return
+	(_action_run["decisions"] as Dictionary)[path] = passed
+	_run_action_program(pid)
+
+
+## Прогон action-программы с dup-изоляцией (как mythos/encounter): на pend видимой
+## проверки выставляет pending_check + CheckFlow и держит ход; на завершении коммитит
+## мутации, применяет board (discardCard/flipCard над cid), чистит стейт и освобождает ход.
+func _run_action_program(pid: String) -> void:
+	var ar: Dictionary = _action_run
+	var cid: String = String(ar.get("cid", ""))
 	var def: Dictionary = Conditions.get_def(cid)
-	var passed: bool = bool(c.get("passed", false))
-	var branch: Array = _action_test_node(def).get("onPass" if passed else "onFail", [])
+	var program: Array = def.get("action", [])
 	var inv: Dictionary = Investigators.get_data(String(_gs.players[pid].get("investigator", "")))
-	_run_carrier_program(pid, cid, def, branch, {"skills": inv.get("skills", {})}, "Действие", flow)
-	GameConsole.log(
-		(
-			"[Действие] %s · %s — проверка %s"
-			% [_gs._name_of(pid), cid, "успех" if passed else "провал"]
+	var dup: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
+	var flow: Dictionary = {
+		"interactive": true,
+		"checks_visible": true,
+		"decisions": ar.get("decisions", {}),
+		"rolls": ar.get("rolls", {}),
+		"pending": {},
+		"slot": "",
+	}
+	var res: Dictionary = _EffectRunner.run(program, dup, {"skills": inv.get("skills", {})}, flow)
+	ar["rolls"] = flow.get("rolls", {})
+	var pending: Dictionary = res.get("pending", {})
+	if String(pending.get("kind", "")) == "check":
+		_gs._check.start(
+			"effectCheck",
+			pid,
+			String(pending.get("skill", "influence")),
+			int(pending.get("modifier", 0)),
+			"conditionAction"
 		)
-	)
+		_gs.pending_check = {
+			"pid": pid,
+			"driver": "condition",
+			"path": String(pending.get("path", "")),
+			"subject": Conditions.card_payload(cid),
+		}
+		return  # ждём resolve_action_check; ход держит phase_controller
+	# Завершено: коммит мутаций игрока + board-эффекты над носителем cid.
+	_gs.players[pid] = dup
+	for l_v: Variant in res.get("logs", []):
+		GameConsole.log("[Действие] %s · %s: %s" % [_gs._name_of(pid), cid, String(l_v)])
+	for node_v: Variant in res.get("board", []):
+		_apply_reckon_board(pid, cid, def, node_v as Dictionary, {}, {})
+	GameConsole.log("[Действие] %s · %s — завершено" % [_gs._name_of(pid), cid])
+	_action_run = {}
+	_gs.pending_check = {}
 	_gs._check.clear()
-	_gs.condition_action = {}
 	_gs._phase.release_condition_turn(pid)
-	return true
 
 
 # Первый test-узел в локальном действии состояния ({} если действие без проверки).

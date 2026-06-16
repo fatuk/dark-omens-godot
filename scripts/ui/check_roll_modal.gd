@@ -1,11 +1,11 @@
 extends CanvasLayer
 
-## Интерактивное локальное действие состояния (Detained/Debt: «проверка Влияния → при
-## успехе сбросить»). Видна владельцу GameState.condition_action. Показывает карту
-## состояния, кубы проверки (CheckFlow owner="condition") и кнопки «Бросить»/«Применить»
-## — ровно как каст ритуала (cast_check_modal). Бросок/перебросы хост-авторитетны в
-## active_check; модалка лишь отражает синкнутое состояние. Строится кодом, монтируется
-## из world_map.
+## Общая модалка ВИДИМОЙ проверки test-узла Effect-DSL (Detained/Debt-действие, вложенный
+## test встречи, Расплата и пр.). Видна владельцу GameState.pending_check. Показывает
+## карту-носитель (subject, если есть), кубы проверки (CheckFlow owner="effectCheck") и
+## кнопки «Бросить»/«Применить» — ровно как каст ритуала (cast_check_modal). Бросок/
+## перебросы хост-авторитетны в active_check; модалка лишь отражает синкнутое состояние.
+## Строится кодом, монтируется из world_map. Заменяет частные cast/condition модалки.
 
 const _CARD_MIN := Vector2(290, 459)
 
@@ -64,16 +64,16 @@ func _build_frame() -> void:
 # ── Доступ к стейту ───────────────────────────────────────────────────────────
 
 
-# Активное действие состояния этого игрока (иначе {}).
-func _action() -> Dictionary:
-	var ca: Dictionary = GameState.condition_action
-	return ca if String(ca.get("pid", "")) == _my_id() else {}
+# Ожидающая видимая проверка этого игрока (иначе {}).
+func _pc() -> Dictionary:
+	var pc: Dictionary = GameState.pending_check
+	return pc if String(pc.get("pid", "")) == _my_id() else {}
 
 
-# Активная проверка, если она condition-проверка (иначе {}).
+# Активная проверка, если она от движка test (иначе {}).
 func _chk() -> Dictionary:
 	var c: Dictionary = GameState.active_check
-	return c if String(c.get("owner", "")) == "condition" else {}
+	return c if String(c.get("owner", "")) == "effectCheck" else {}
 
 
 func _my_id() -> String:
@@ -95,39 +95,41 @@ func _reroll_all_available() -> bool:
 
 
 func _refresh() -> void:
-	var ca: Dictionary = _action()
-	var acting: bool = not ca.is_empty()
-	_root.visible = acting
-	if not acting:
+	var pc: Dictionary = _pc()
+	var active: bool = not pc.is_empty()
+	_root.visible = active
+	if not active:
 		_sig = ""
 		_last_dice = []
 		return
-	var sig: String = String(ca.get("condition_id", ""))
+	var sig: String = String(pc.get("path", "")) + "|" + String(pc.get("driver", ""))
 	if sig != _sig:
 		_sig = sig
 		_last_dice = []
-		_build(ca)
+		_build(pc)
 	_render_dice()
 	_update_buttons()
 
 
-func _build(ca: Dictionary) -> void:
+func _build(pc: Dictionary) -> void:
 	for c in _vbox.get_children():
 		c.queue_free()
 	_tray = null
 
-	_vbox.add_child(UIStyle.modal_title("COND_ACTION_TITLE"))
+	_vbox.add_child(UIStyle.modal_title("CHECK_TITLE"))
 
-	# Карта состояния (лицо) по центру.
-	var card_row := HBoxContainer.new()
-	card_row.name = "CardRow"
-	card_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	_vbox.add_child(card_row)
-	var card := GameCard.new()
-	card.name = "ConditionCard"
-	card.custom_minimum_size = _CARD_MIN
-	card.set_card(Conditions.card_payload(String(ca.get("condition_id", ""))))
-	card_row.add_child(card)
+	# Карта-носитель (subject) по центру, если передана.
+	var subject: Dictionary = pc.get("subject", {})
+	if not subject.is_empty():
+		var card_row := HBoxContainer.new()
+		card_row.name = "CardRow"
+		card_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		_vbox.add_child(card_row)
+		var card := GameCard.new()
+		card.name = "SubjectCard"
+		card.custom_minimum_size = _CARD_MIN
+		card.set_card(subject)
+		card_row.add_child(card)
 
 	# Кубы проверки.
 	_dice_box = HBoxContainer.new()
@@ -175,7 +177,7 @@ func _render_dice() -> void:
 	if not _rolled():
 		if not _last_dice.is_empty():
 			_last_dice = []
-		_tray.show_pending(_action_pool())  # рубашки до броска
+		_tray.show_pending(_check_pool())  # рубашки до броска
 		return
 	var dice: Array = _chk().get("dice", [])
 	var can: bool = GameState.can_reroll_now()
@@ -210,7 +212,7 @@ func _single_diff(a: Array, b: Array) -> int:
 
 
 # Пул кубов навыка проверки до броска (для рубашек): навык + skill_mods + modifier + доп.кубы.
-func _action_pool() -> int:
+func _check_pool() -> int:
 	var c: Dictionary = _chk()
 	var skill: String = String(c.get("skill", "influence"))
 	var me: Dictionary = GameState.my_player()
@@ -230,18 +232,18 @@ func _on_roll() -> void:
 			GameState.reroll_all_dice()
 		return
 	_roll_btn.disabled = true
-	GameState.condition_action_roll()
+	GameState.check_roll()
 
 
 func _on_die_clicked(index: int) -> void:
 	if not GameState.can_reroll_now():
 		return
-	GameState.reroll_die(index)  # маршрутится по owner="condition"
+	GameState.reroll_die(index)  # маршрутится по owner="effectCheck"
 
 
 func _on_apply() -> void:
 	_apply_btn.disabled = true
-	GameState.condition_action_apply()
+	GameState.resolve_pending_check()
 
 
 func _update_buttons() -> void:

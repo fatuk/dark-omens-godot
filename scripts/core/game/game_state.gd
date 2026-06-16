@@ -57,10 +57,12 @@ var pending_spell_cast: Dictionary = {}
 # только метаданные. Хост-авторитетно, синкается. См. SpellFlow.begin_*/apply_cast.
 var casting_spell: Dictionary = {}
 
-# Локальное действие состояния «в процессе» (видимая проверка, как каст): {pid,
-# condition_id}. {} — нет. Кубы — в active_check (owner="condition"). Хост-авторитетно,
-# синкается. См. ConditionFlow.begin_action/apply_action.
-var condition_action: Dictionary = {}
+# Ожидающая ВИДИМАЯ проверка test-узла Effect-DSL (общий движок для всех драйверов):
+# {pid, driver, path, skill, modifier, subject?}. {} — нет. Кубы — в active_check
+# (owner="effectCheck"); subject — payload карты-носителя для модалки (или {}). На
+# «Применить» resolve_pending_check диспетчит по driver в *.resolve_*_check, тот пишет
+# decisions[path]=passed и переигрывает свою программу. Хост-авторитетно, синкается.
+var pending_check: Dictionary = {}
 
 # Результат последнего каста для модалки расплаты: { pid, spell, back, text (flavor-
 # ключ оборота), successes, outcome:{health,sanity,clues,conditions,discarded} }.
@@ -244,7 +246,7 @@ func _broadcast_sync() -> void:
 				"active_check": active_check,
 				"pending_spell_cast": pending_spell_cast,
 				"casting_spell": casting_spell,
-				"condition_action": condition_action,
+				"pending_check": pending_check,
 				"last_cast_result": last_cast_result,
 				"reckoning_results": reckoning_results,
 				"current_mythos": current_mythos,
@@ -480,8 +482,8 @@ func reroll_die(die_index: int) -> void:
 		shop_reroll(die_index, cur)
 	elif chk_owner == "spell":
 		spell_cast_reroll(die_index, cur)
-	elif chk_owner == "condition":
-		condition_action_reroll(die_index, cur)
+	elif chk_owner == "effectCheck":
+		check_reroll(die_index, cur)
 	else:
 		reroll_encounter(die_index, cur)
 
@@ -627,17 +629,17 @@ func spell_cast_apply() -> void:
 		_nm.relay_all({"action": "game_spell_cast_apply", "pid": my_pid})
 
 
-## Бросок проверки локального действия состояния (кнопка «Бросить»). _check.roll синкает сам.
-func condition_action_roll() -> void:
+## Бросок ожидающей видимой проверки test-узла (кнопка «Бросить»). _check.roll синкает сам.
+func check_roll() -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
 		_check.roll(my_pid)
 	else:
-		_nm.relay_all({"action": "game_condition_action_roll", "pid": my_pid})
+		_nm.relay_all({"action": "game_check_roll", "pid": my_pid})
 
 
-## Переброс куба проверки локального действия. currency — явная валюта (жетон) или "".
-func condition_action_reroll(die_index: int, currency: String = "") -> void:
+## Переброс куба ожидающей видимой проверки. currency — явная валюта (жетон) или "".
+func check_reroll(die_index: int, currency: String = "") -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
 		_check.reroll(my_pid, die_index, currency)  # синкает сам
@@ -646,7 +648,7 @@ func condition_action_reroll(die_index: int, currency: String = "") -> void:
 			_nm
 			. relay_all(
 				{
-					"action": "game_condition_action_reroll",
+					"action": "game_check_reroll",
 					"pid": my_pid,
 					"die": die_index,
 					"currency": currency,
@@ -655,16 +657,43 @@ func condition_action_reroll(die_index: int, currency: String = "") -> void:
 		)
 
 
-## Применить локальное действие («Применить»): по броску onPass/onFail над состоянием,
-## снятие проверки, освобождение хода. См. ConditionFlow.apply_action.
-func condition_action_apply() -> void:
+## Применить ожидающую видимую проверку («Применить»): по броску active_check.passed →
+## resolve_pending_check диспетчит по pending_check.driver в *.resolve_*_check, тот пишет
+## decisions[path] и переигрывает программу (применяя onPass/onFail). Хост-авторитетно.
+func resolve_pending_check() -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
-		if _cond.apply_action(my_pid):
+		if _resolve_pending_check_host(my_pid):
 			_broadcast_sync()
 			_emit_changed()
 	else:
-		_nm.relay_all({"action": "game_condition_action_apply", "pid": my_pid})
+		_nm.relay_all({"action": "game_resolve_pending_check", "pid": my_pid})
+
+
+## Хост: разрешить ожидающую проверку — прочитать passed и диспетчить в драйвер по
+## pending_check.driver. Драйвер сам пишет decisions[path]=passed и ПЕРЕИГРЫВАЕТ свою
+## программу: если та снова пендит чек — драйвер выставит новые pending_check/active_check;
+## если завершилась — драйвер их очистит и освободит ход. Поэтому здесь НЕ чистим стейт.
+func _resolve_pending_check_host(pid: String) -> bool:
+	var pc: Dictionary = pending_check
+	if pc.is_empty() or String(pc.get("pid", "")) != pid:
+		return false
+	var c: Dictionary = active_check
+	if String(c.get("owner", "")) != "effectCheck":
+		return false
+	if not bool(c.get("rolled", false)):
+		_check.roll(pid)  # страховка: применить без явного броска
+		c = active_check
+	var passed: bool = bool(c.get("passed", false))
+	var path: String = String(pc.get("path", ""))
+	match String(pc.get("driver", "")):
+		"condition":
+			_cond.resolve_action_check(pid, path, passed)
+		_:
+			push_warning("[GameState] resolve_pending_check: неизвестный driver %s" % pc)
+			pending_check = {}
+			_check.clear()
+	return true
 
 
 ## Активный игрок подтвердил выбор триггер-заклинаний (item-индексы) в промпте
@@ -1066,7 +1095,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	active_check = data.get("active_check", {})
 	pending_spell_cast = data.get("pending_spell_cast", {})
 	casting_spell = data.get("casting_spell", {})
-	condition_action = data.get("condition_action", {})
+	pending_check = data.get("pending_check", {})
 	last_cast_result = data.get("last_cast_result", {})
 	reckoning_results = data.get("reckoning_results", {})
 	current_mythos = data.get("current_mythos", {})
@@ -1188,11 +1217,11 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 					_broadcast_sync()
 					_emit_changed()
 
-		"game_condition_action_roll":
+		"game_check_roll":
 			if _is_host():
 				_check.roll(String(data.get("pid", "")))
 
-		"game_condition_action_reroll":
+		"game_check_reroll":
 			if _is_host():
 				_check.reroll(
 					String(data.get("pid", "")),
@@ -1200,9 +1229,9 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 					String(data.get("currency", ""))
 				)
 
-		"game_condition_action_apply":
+		"game_resolve_pending_check":
 			if _is_host():
-				if _cond.apply_action(String(data.get("pid", ""))):
+				if _resolve_pending_check_host(String(data.get("pid", ""))):
 					_broadcast_sync()
 					_emit_changed()
 
@@ -1467,7 +1496,7 @@ func reset_pregame() -> void:
 	_check_stack = []
 	pending_spell_cast = {}
 	casting_spell = {}
-	condition_action = {}
+	pending_check = {}
 	last_cast_result = {}
 	reckoning_results = {}
 	current_mythos = {}

@@ -135,9 +135,9 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			_gs._check.roll(pid)
 		"condition_action":
 			# Локальное действие состояния (escape, напр. Detained: Влияние → сброс).
-			# С проверкой → ВИДИМЫЙ CheckFlow (как каст ритуала): держим ход
-			# (condition_acting) до «Применить» (apply_action → release_condition_turn).
-			# Без проверки → синхронный путь, как раньше.
+			# С проверкой → ОБЩИЙ движок test: видимая проверка через pending_check;
+			# держим ход (condition_acting) до «Применить» (resolve_pending_check →
+			# resolve_action_check → release_condition_turn). Без проверки → синхронно.
 			var cond_id: String = String(payload.get("condition", ""))
 			if _gs._cond.begin_action(pid, cond_id):
 				p["condition_acting"] = true
@@ -318,9 +318,9 @@ func release_cast_turn(pid: String) -> void:
 		advance_action_turn()
 
 
-## Хост: локальное действие состояния применено («Применить») — снимаем удержание хода
-## condition_acting и, если действий не осталось, передаём отложенный ход. Зовётся из
-## ConditionFlow.apply_action (зеркало release_cast_turn).
+## Хост: локальное действие состояния завершено — снимаем удержание хода condition_acting
+## и, если действий не осталось, передаём отложенный ход. Зовётся из
+## ConditionFlow._run_action_program (зеркало release_cast_turn).
 func release_condition_turn(pid: String) -> void:
 	if not _gs.players.has(pid):
 		return

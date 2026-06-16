@@ -21,7 +21,8 @@ var _gs: MockGameState
 var _cond: ConditionFlow
 
 
-# Заглушка CheckFlow: ConditionFlow.begin/apply_action зовут start/roll/clear.
+# Заглушка CheckFlow: ConditionFlow._run_action_program зовёт start/clear (бросок —
+# интерактивный, результат приходит через resolve_action_check, а не roll).
 class StubCheck:
 	extends RefCounted
 	var started: Dictionary = {}
@@ -36,7 +37,7 @@ class StubCheck:
 		started = {}
 
 
-# Заглушка PhaseController: apply_action освобождает ход.
+# Заглушка PhaseController: завершение действия освобождает ход.
 class StubPhase:
 	extends RefCounted
 	var released: Array = []
@@ -52,7 +53,7 @@ class MockGameState:
 	var reckoning_results: Dictionary = {}
 	var host: bool = true
 	var active_check: Dictionary = {}
-	var condition_action: Dictionary = {}
+	var pending_check: Dictionary = {}
 	var _check := StubCheck.new()
 	var _phase := StubPhase.new()
 
@@ -414,43 +415,47 @@ func test_condition_action_non_host_returns_false() -> void:
 	assert_false(_cond.host_run_condition_action("p", "detained"))
 
 
-# ── Видимая проверка действия (CheckFlow, как каст ритуала) ───────────────────
+# ── Видимая проверка действия через ОБЩИЙ движок test (pend → resolve) ─────────
 
 
-func test_begin_action_starts_condition_check() -> void:
+func test_begin_action_starts_visible_check() -> void:
 	_add_player("p", {"conditions": ["detained"]})
 	assert_true(_cond.begin_action("p", "detained"), "detained — действие с проверкой")
-	assert_eq(String(_gs._check.started.get("owner", "")), "condition", "check owner=condition")
+	assert_eq(String(_gs._check.started.get("owner", "")), "effectCheck", "check owner=effectCheck")
 	assert_eq(String(_gs._check.started.get("skill", "")), "influence", "навык из test-узла")
 	assert_eq(
-		String(_gs.condition_action.get("condition_id", "")), "detained", "ставит condition_action"
+		String(_gs.pending_check.get("driver", "")), "condition", "pending_check.driver=condition"
 	)
+	assert_eq(String(_gs.pending_check.get("pid", "")), "p")
+	assert_true(_gs.pending_check.has("path"), "путь проверки задан")
 
 
 func test_begin_action_no_test_returns_false() -> void:
 	# poisoned — без локального действия → видимой проверки нет.
 	_add_player("p", {"conditions": ["poisoned"]})
 	assert_false(_cond.begin_action("p", "poisoned"))
-	assert_eq(_gs.condition_action, {})
+	assert_eq(_gs.pending_check, {})
 
 
-func test_apply_action_passed_discards() -> void:
+func test_resolve_action_check_passed_discards() -> void:
 	_add_player("p", {"conditions": ["detained"]})
-	_gs.condition_action = {"pid": "p", "condition_id": "detained"}
-	_gs.active_check = {"owner": "condition", "rolled": true, "passed": true}
-	assert_true(_cond.apply_action("p"))
+	assert_true(_cond.begin_action("p", "detained"))
+	var path: String = String(_gs.pending_check.get("path", ""))
+	_cond.resolve_action_check("p", path, true)
 	assert_false(
 		(_gs.players["p"]["conditions"] as Array).has("detained"), "успех → сброс (onPass)"
 	)
-	assert_eq(_gs.condition_action, {}, "действие снято")
+	assert_eq(_gs.pending_check, {}, "проверка снята")
 	assert_true((_gs._phase.released as Array).has("p"), "ход освобождён")
 
 
-func test_apply_action_failed_keeps() -> void:
+func test_resolve_action_check_failed_keeps() -> void:
 	_add_player("p", {"conditions": ["detained"]})
-	_gs.condition_action = {"pid": "p", "condition_id": "detained"}
-	_gs.active_check = {"owner": "condition", "rolled": true, "passed": false}
-	assert_true(_cond.apply_action("p"))
+	assert_true(_cond.begin_action("p", "detained"))
+	var path: String = String(_gs.pending_check.get("path", ""))
+	_cond.resolve_action_check("p", path, false)
 	assert_true(
 		(_gs.players["p"]["conditions"] as Array).has("detained"), "провал → держится (onFail пуст)"
 	)
+	assert_eq(_gs.pending_check, {}, "проверка снята и при провале")
+	assert_true((_gs._phase.released as Array).has("p"), "ход освобождён")
