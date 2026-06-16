@@ -92,69 +92,10 @@ func _option_label(opt: Dictionary, kind: String) -> String:
 		"target":
 			return String(opt.get("name", "?"))
 		_:
-			return _branch_label(opt)
+			return EffectManifest.describe(opt)
 
 
 func _on_pick(index: int) -> void:
 	_root.visible = false  # скрыть сразу, не ждать синка от хоста
 	_sig = ""
 	GameState.decide_mythos(index)
-
-
-# Метка кнопки ветки: художественный text → описание group/choice → одиночный эффект.
-func _branch_label(b: Dictionary) -> String:
-	var txt: String = String(b.get("text", "")).strip_edges()
-	if not txt.is_empty():
-		return txt
-	if b.has("group"):
-		return _describe_list(b.get("group", []))
-	if b.has("choice"):
-		return _describe_list(b.get("choice", []))
-	return _describe_one(b)
-
-
-func _describe_list(effs: Array) -> String:
-	var parts: Array = []
-	for i in range(effs.size()):
-		if effs[i] is Dictionary:
-			parts.append(_describe_one(effs[i]))
-	return ", ".join(parts)
-
-
-# Компактное описание одного эффекта — для метки кнопки.
-func _describe_one(eff: Dictionary) -> String:
-	var verb: String = String(eff.get("do", ""))
-	var n: int = int(eff.get("amount", eff.get("count", 1)))
-	var target: String = String(eff.get("target", ""))
-	var s: String
-	match verb:
-		"loseHealth":
-			s = tr("MYTHOS_EFF_LOSE_HEALTH") % n
-		"loseSanity":
-			s = tr("MYTHOS_EFF_LOSE_SANITY") % n
-		"gainCondition":
-			s = (
-				tr("MYTHOS_EFF_GAIN_CONDITION")
-				% tr(Conditions.name_key(String(eff.get("condition", "?"))))
-			)
-		"loseAllPossessions":
-			s = tr("MYTHOS_EFF_LOSE_ALL")
-		_:
-			s = verb
-	if not target.is_empty() and target != "self":
-		s += " · %s" % _describe_target(target)
-	return s
-
-
-func _describe_target(t: String) -> String:
-	match t:
-		"rightNeighbor":
-			return tr("MYTHOS_TGT_RIGHT")
-		"leftNeighbor":
-			return tr("MYTHOS_TGT_LEFT")
-		"lead":
-			return tr("MYTHOS_TGT_LEAD")
-		"each":
-			return tr("MYTHOS_TGT_EACH")
-		_:
-			return t

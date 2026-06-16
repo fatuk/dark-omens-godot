@@ -194,7 +194,7 @@ func _choice_label(opt: Dictionary, kind: String) -> String:
 		"target":
 			return String(opt.get("name", "?"))
 		_:
-			return _branch_label(opt)
+			return EffectManifest.describe(opt)
 
 
 func _clear_choice() -> void:
@@ -208,22 +208,6 @@ func _clear_choice() -> void:
 func _on_choice_pressed(index: int) -> void:
 	_clear_choice()  # блокируем повторные клики до синка от хоста
 	GameState.choose_effect(index)
-
-
-# Метка кнопки ветки choice: художественный text → описание group/вложенного
-# choice/проверки → описание одиночного эффекта (механический режим, как ставки).
-func _branch_label(b: Dictionary) -> String:
-	var txt: String = String(b.get("text", "")).strip_edges()
-	if not txt.is_empty():
-		return txt
-	if b.has("group"):
-		return _describe_effects(b.get("group", []))
-	if b.has("choice"):
-		return _describe_effects(b.get("choice", [])).replace(", ", " / ")
-	if b.has("test"):
-		var sk: String = String(_SKILL_KEYS.get(String(b.get("test", "will")), "SKILL_WILL"))
-		return "%s: %s" % [tr("ENCOUNTER_CHECK"), tr(sk)]
-	return _describe_one(b)
 
 
 func _show_card(card: Dictionary) -> void:
@@ -504,9 +488,9 @@ func _main_or_stakes(src: Dictionary) -> String:
 		"%s: %s\n%s: %s"
 		% [
 			tr("ENC_REWARD"),
-			_describe_effects(succ),
+			_eff(succ),
 			tr("ENC_PENALTY"),
-			_describe_effects(fail),
+			_eff(fail),
 		]
 	)
 
@@ -519,74 +503,22 @@ func _outcome_text(src: Dictionary, passed: bool) -> String:
 	var out: String
 	# Механический режим (без флейвора) — только описание эффектов / «идём дальше».
 	if txt.is_empty():
-		out = _describe_effects(arr) if not arr.is_empty() else tr("ENCOUNTER_PROCEED")
+		out = _eff(arr) if not arr.is_empty() else tr("ENCOUNTER_PROCEED")
 	elif not arr.is_empty():
 		# Есть флейвор: под ним отдельной строкой — что именно получил/потерял.
-		out = "%s\n\n%s" % [txt, _describe_effects(arr)]
+		out = "%s\n\n%s" % [txt, _eff(arr)]
 	else:
 		out = txt
 	return out
 
 
-# ── Описание эффектов (для механического режима) ───────────────────────────────
+# ── Описание эффектов (механический режим) — через единый verb-манифест ─────────
 
 
-func _describe_effects(arr: Variant) -> String:
-	if not (arr is Array) or (arr as Array).is_empty():
-		return tr("ENC_EFF_NONE")
-	var parts := PackedStringArray()
-	for i in range((arr as Array).size()):
-		var e: Variant = (arr as Array)[i]
-		if e is Dictionary:
-			parts.append(_describe_one(e))
-	return ", ".join(parts) if parts.size() > 0 else tr("ENC_EFF_NONE")
-
-
-func _describe_one(eff: Dictionary) -> String:
-	var verb: String = String(eff.get("do", ""))
-	var amount: int = int(eff.get("amount", eff.get("count", 1)))
-	match verb:
-		"gainClue":
-			return tr("ENC_EFF_CLUE") % amount
-		"loseClue":
-			return tr("ENC_EFF_CLUE") % -amount
-		"healHealth":
-			return tr("ENC_EFF_HP") % amount
-		"loseHealth":
-			return tr("ENC_EFF_HP") % -amount
-		"healSanity":
-			return tr("ENC_EFF_SAN") % amount
-		"loseSanity":
-			return tr("ENC_EFF_SAN") % -amount
-		"gainSpell":
-			return tr("ENC_EFF_SPELL")
-		"gainArtifact":
-			return tr("ENC_EFF_ARTIFACT")
-		"gainAsset":
-			return tr("ENC_EFF_ASSET")
-		"improveSkill":
-			return tr("ENC_EFF_IMPROVE") % amount
-		"gainCondition":
-			return (
-				tr("ENC_EFF_COND_GAIN") % tr(Conditions.name_key(String(eff.get("condition", ""))))
-			)
-		"loseCondition":
-			return (
-				tr("ENC_EFF_COND_LOSE") % tr(Conditions.name_key(String(eff.get("condition", ""))))
-			)
-		"move":
-			return tr("ENC_EFF_MOVE")
-		"closeGate":
-			return tr("ENC_EFF_CLOSE_GATE")
-		"":
-			# Комбинатор: choice → ветви через «/», group → перечисление.
-			if eff.has("choice"):
-				return _describe_effects(eff.get("choice", [])).replace(", ", " / ")
-			if eff.has("group"):
-				return _describe_effects(eff.get("group", []))
-			return verb
-		_:
-			return verb
+# Список эффектов человекочитаемо (EffectManifest), пусто → «—».
+func _eff(arr: Variant) -> String:
+	var s: String = EffectManifest.describe_list(arr)
+	return s if not s.is_empty() else tr("ENC_EFF_NONE")
 
 
 func _check_label(test: Dictionary) -> String:

@@ -806,6 +806,42 @@ MYTHOS_DECISION_PROMPT,Выберите один эффект:,Resolve one effec
 MYTHOS_CHOOSE_TARGET,Кому передать?,Give to whom?
 MYTHOS_CHOOSE_MONSTER,Какого монстра сбросить?,Discard which monster?
 MONSTER_CHOICE_LABEL,%s · стойкость %d,%s · toughness %d
+VERB_LOSE_HEALTH,−{amount} здоровья,−{amount} Health
+VERB_HEAL_HEALTH,+{amount} здоровья,+{amount} Health
+VERB_LOSE_SANITY,−{amount} рассудка,−{amount} Sanity
+VERB_HEAL_SANITY,+{amount} рассудка,+{amount} Sanity
+VERB_GAIN_CLUE,+{amount} улик,+{amount} Clues
+VERB_LOSE_CLUE,−{amount} улик,−{amount} Clues
+VERB_SPEND_CLUE,−{amount} улик,spend {amount} Clues
+VERB_GAIN_CONDITION,состояние: {condition},gains {condition}
+VERB_LOSE_CONDITION,снять: {condition},loses {condition}
+VERB_GAIN_ASSET,получает актив,gains an Asset
+VERB_GAIN_SPELL,получает заклинание,gains a Spell
+VERB_GAIN_ARTIFACT,получает артефакт,gains an Artifact
+VERB_LOSE_SPELL,сбрасывает заклинание,loses a Spell
+VERB_LOSE_ALL_POSSESSIONS,сбрасывает всё имущество,discards all possessions
+VERB_IMPROVE_SKILL,улучшить навык +{amount},improve a skill +{amount}
+VERB_IMPAIR_SKILL,ухудшить навык −{amount},impair a skill −{amount}
+VERB_MOVE,переместиться,move
+VERB_BECOME_DELAYED,становится Задержан,becomes Delayed
+VERB_GAIN_FOCUS,+{amount} концентрации,+{amount} Focus
+VERB_LOSE_FOCUS,−{amount} концентрации,−{amount} Focus
+VERB_GAIN_IMPROVEMENT,перманентное улучшение навыка,permanent skill improvement
+VERB_ADVANCE_DOOM,рок +{amount},Doom +{amount}
+VERB_RETREAT_DOOM,рок −{amount},Doom −{amount}
+VERB_ADVANCE_OMEN,знамение дальше на {steps},advance Omen by {steps}
+VERB_OPEN_GATE,открыть врата ×{count},open {count} Gate(s)
+VERB_CLOSE_GATE,закрыть врата,close a Gate
+VERB_SPAWN_MONSTER,монстры ×{count},spawn {count} Monster(s)
+VERB_MONSTER_SURGE,наплыв монстров,monster surge
+VERB_DISCARD_MONSTER,сбросить монстра,discard a Monster
+VERB_DAMAGE_MONSTER,монстру −{amount},Monster −{amount}
+VERB_PLACE_CLUE,улики ×{count},place {count} Clue(s)
+VERB_PLACE_ELDRITCH_TOKEN,жетоны Знамения ×{count},place {count} Eldritch token(s)
+VERB_PLACE_RUMOR,слух,place a Rumor
+VERB_RESOLVE_RECKONING,Расплата,Reckoning
+VERB_DRAW_MYTHOS,карта Мифов,draw a Mythos
+VERB_MYSTERY_PROGRESS,прогресс Тайны,Mystery progress
 RECK_ORDER_TITLE,Расплата,Reckoning
 RECK_ORDER_PROMPT,Какую карту Расплаты разрешить следующей?,Which Reckoning card to resolve next?
 CHOICE_SPEND_CLUE,Потратить 1 улику,Spend 1 Clue

@@ -1,0 +1,1125 @@
+{
+  "version": 1,
+  "targetGroups": {
+    "players": [
+      "lead",
+      "self",
+      "each",
+      "eachOnCity",
+      "eachOnWilderness",
+      "eachOnSea",
+      "eachOnSpace",
+      "eachWith",
+      "chosen",
+      "chosenInvestigator",
+      "rightNeighbor",
+      "leftNeighbor"
+    ],
+    "foreach": [
+      "each",
+      "eachOnCity",
+      "eachOnWilderness",
+      "eachOnSea",
+      "eachOnSpace"
+    ],
+    "oneInvestigator": [
+      "chosenInvestigator",
+      "rightNeighbor",
+      "leftNeighbor"
+    ],
+    "oneMonster": [
+      "chosenMonster",
+      "eachMonster",
+      "eachMonsterOnSpace",
+      "eachMonsterYouEncounter"
+    ]
+  },
+  "verbs": {
+    "loseHealth": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "scales": "amount",
+      "repeatable": true,
+      "describeKey": "VERB_LOSE_HEALTH"
+    },
+    "healHealth": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "repeatable": true,
+      "describeKey": "VERB_HEAL_HEALTH"
+    },
+    "loseSanity": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "scales": "amount",
+      "repeatable": true,
+      "describeKey": "VERB_LOSE_SANITY"
+    },
+    "healSanity": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "repeatable": true,
+      "describeKey": "VERB_HEAL_SANITY"
+    },
+    "gainCondition": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "condition",
+          "type": {
+            "t": "ref",
+            "of": "condition"
+          },
+          "required": true
+        }
+      ],
+      "targets": "players",
+      "describeKey": "VERB_GAIN_CONDITION"
+    },
+    "loseCondition": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "condition",
+          "type": {
+            "t": "ref",
+            "of": "condition"
+          },
+          "required": true
+        }
+      ],
+      "targets": "players",
+      "describeKey": "VERB_LOSE_CONDITION"
+    },
+    "gainClue": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "repeatable": true,
+      "describeKey": "VERB_GAIN_CLUE"
+    },
+    "loseClue": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "repeatable": true,
+      "describeKey": "VERB_LOSE_CLUE"
+    },
+    "spendClue": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "describeKey": "VERB_SPEND_CLUE"
+    },
+    "gainAsset": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "from",
+          "type": {
+            "t": "str"
+          }
+        },
+        {
+          "name": "trait",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": "players",
+      "describeKey": "VERB_GAIN_ASSET"
+    },
+    "loseAsset": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "keep",
+          "type": {
+            "t": "int",
+            "min": 0
+          }
+        },
+        {
+          "name": "trait",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": "players",
+      "describeKey": "VERB_LOSE_ASSET"
+    },
+    "gainSpell": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "trait",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": "players",
+      "repeatable": true,
+      "describeKey": "VERB_GAIN_SPELL"
+    },
+    "loseSpell": {
+      "kind": "player",
+      "params": [],
+      "targets": "players",
+      "describeKey": "VERB_LOSE_SPELL"
+    },
+    "gainArtifact": {
+      "kind": "player",
+      "params": [],
+      "targets": "players",
+      "describeKey": "VERB_GAIN_ARTIFACT"
+    },
+    "loseAllPossessions": {
+      "kind": "player",
+      "params": [],
+      "targets": "players",
+      "describeKey": "VERB_LOSE_ALL_POSSESSIONS"
+    },
+    "improveSkill": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "skill",
+          "type": {
+            "t": "ref",
+            "of": "skill"
+          },
+          "required": false
+        },
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
+          "name": "all",
+          "type": {
+            "t": "bool"
+          }
+        }
+      ],
+      "targets": "players",
+      "repeatable": true,
+      "describeKey": "VERB_IMPROVE_SKILL"
+    },
+    "impairSkill": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "skill",
+          "type": {
+            "t": "ref",
+            "of": "skill"
+          },
+          "required": false
+        },
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
+          "name": "all",
+          "type": {
+            "t": "bool"
+          }
+        }
+      ],
+      "targets": "players",
+      "repeatable": true,
+      "describeKey": "VERB_IMPAIR_SKILL"
+    },
+    "move": {
+      "kind": "player",
+      "params": [],
+      "targets": "players",
+      "describeKey": "VERB_MOVE"
+    },
+    "becomeDelayed": {
+      "kind": "player",
+      "params": [],
+      "targets": "players",
+      "describeKey": "VERB_BECOME_DELAYED"
+    },
+    "gainImprovement": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "skill",
+          "type": {
+            "t": "ref",
+            "of": "skill"
+          },
+          "required": false
+        }
+      ],
+      "targets": "players",
+      "describeKey": "VERB_GAIN_IMPROVEMENT"
+    },
+    "loseImprovement": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "skill",
+          "type": {
+            "t": "ref",
+            "of": "skill"
+          },
+          "required": false
+        }
+      ],
+      "targets": "players",
+      "describeKey": "VERB_LOSE_IMPROVEMENT"
+    },
+    "gainFocus": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "repeatable": true,
+      "describeKey": "VERB_GAIN_FOCUS"
+    },
+    "loseFocus": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "repeatable": true,
+      "describeKey": "VERB_LOSE_FOCUS"
+    },
+    "advanceDoom": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": null,
+      "scales": "amount",
+      "repeatable": true,
+      "describeKey": "VERB_ADVANCE_DOOM"
+    },
+    "advanceOmen": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "direction",
+          "type": {
+            "t": "ref",
+            "of": "omenDirection"
+          },
+          "required": false
+        },
+        {
+          "name": "steps",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_ADVANCE_OMEN"
+    },
+    "openGate": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": null,
+      "scales": "count",
+      "repeatable": true,
+      "describeKey": "VERB_OPEN_GATE"
+    },
+    "closeGate": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_CLOSE_GATE"
+    },
+    "discardGate": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_DISCARD_GATE"
+    },
+    "spawnMonster": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
+          "name": "trait",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "scales": "count",
+      "repeatable": true,
+      "describeKey": "VERB_SPAWN_MONSTER"
+    },
+    "discardMonster": {
+      "kind": "board",
+      "params": [],
+      "targets": "oneMonster",
+      "describeKey": "VERB_DISCARD_MONSTER"
+    },
+    "monsterSurge": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_MONSTER_SURGE"
+    },
+    "placeClue": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
+          "name": "scale",
+          "type": {
+            "t": "enum",
+            "values": [
+              "balance"
+            ]
+          }
+        }
+      ],
+      "targets": null,
+      "scales": "count",
+      "describeKey": "VERB_PLACE_CLUE"
+    },
+    "placeEldritchToken": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
+          "name": "where",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "scales": "count",
+      "describeKey": "VERB_PLACE_ELDRITCH_TOKEN"
+    },
+    "placeRumor": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "location",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_PLACE_RUMOR"
+    },
+    "resolveReckoning": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "scope",
+          "type": {
+            "t": "enum",
+            "values": [
+              "mythosInPlay"
+            ]
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_RESOLVE_RECKONING"
+    },
+    "flipCard": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_FLIP_CARD"
+    },
+    "discardCard": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_DISCARD_CARD"
+    },
+    "drawMythos": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_DRAW_MYTHOS"
+    },
+    "drawCard": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_DRAW_CARD"
+    },
+    "rerollDice": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        },
+        {
+          "name": "skill",
+          "type": {
+            "t": "ref",
+            "of": "skill"
+          },
+          "required": false
+        },
+        {
+          "name": "context",
+          "type": {
+            "t": "str"
+          }
+        },
+        {
+          "name": "all",
+          "type": {
+            "t": "bool"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_REROLL_DICE"
+    },
+    "rollAdditionalDice": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        },
+        {
+          "name": "skill",
+          "type": {
+            "t": "ref",
+            "of": "skill"
+          },
+          "required": false
+        },
+        {
+          "name": "context",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_ROLL_ADDITIONAL_DICE"
+    },
+    "addToDie": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        },
+        {
+          "name": "skill",
+          "type": {
+            "t": "ref",
+            "of": "skill"
+          },
+          "required": false
+        },
+        {
+          "name": "context",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_ADD_TO_DIE"
+    },
+    "convertDie": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "on",
+          "type": {
+            "t": "str"
+          }
+        },
+        {
+          "name": "successes",
+          "type": {
+            "t": "int",
+            "min": 0
+          }
+        },
+        {
+          "name": "negate",
+          "type": {
+            "t": "bool"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_CONVERT_DIE"
+    },
+    "damageMonster": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "oneMonster",
+      "repeatable": true,
+      "describeKey": "VERB_DAMAGE_MONSTER"
+    },
+    "reduceMonsterDamage": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
+          "name": "min",
+          "type": {
+            "t": "int",
+            "min": 0
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_REDUCE_MONSTER_DAMAGE"
+    },
+    "reduceMonsterHorror": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
+          "name": "min",
+          "type": {
+            "t": "int",
+            "min": 0
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_REDUCE_MONSTER_HORROR"
+    },
+    "retreatDoom": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_RETREAT_DOOM"
+    },
+    "preventLoss": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "stat",
+          "type": {
+            "t": "enum",
+            "values": [
+              "health",
+              "sanity"
+            ]
+          }
+        },
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_PREVENT_LOSS"
+    },
+    "defeatMonster": {
+      "kind": "board",
+      "params": [],
+      "targets": "oneMonster",
+      "describeKey": "VERB_DEFEAT_MONSTER"
+    },
+    "giveAsset": {
+      "kind": "give",
+      "params": [
+        {
+          "name": "trait",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": "oneInvestigator",
+      "describeKey": "VERB_GIVE_ASSET"
+    },
+    "giveClue": {
+      "kind": "give",
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        },
+        {
+          "name": "all",
+          "type": {
+            "t": "bool"
+          }
+        }
+      ],
+      "targets": "oneInvestigator",
+      "repeatable": true,
+      "describeKey": "VERB_GIVE_CLUE"
+    },
+    "substituteSkill": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "fromSkill",
+          "type": {
+            "t": "ref",
+            "of": "skill"
+          },
+          "required": true
+        },
+        {
+          "name": "toSkill",
+          "type": {
+            "t": "ref",
+            "of": "skill"
+          },
+          "required": true
+        },
+        {
+          "name": "context",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_SUBSTITUTE_SKILL"
+    },
+    "substituteResource": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "fromResource",
+          "type": {
+            "t": "ref",
+            "of": "resource"
+          },
+          "required": true
+        },
+        {
+          "name": "toResource",
+          "type": {
+            "t": "ref",
+            "of": "resource"
+          },
+          "required": true
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_SUBSTITUTE_RESOURCE"
+    },
+    "enhanceReroll": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        },
+        {
+          "name": "skill",
+          "type": {
+            "t": "ref",
+            "of": "skill"
+          },
+          "required": false
+        },
+        {
+          "name": "context",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_ENHANCE_REROLL"
+    },
+    "rerollMatching": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        },
+        {
+          "name": "all",
+          "type": {
+            "t": "bool"
+          }
+        },
+        {
+          "name": "skill",
+          "type": {
+            "t": "ref",
+            "of": "skill"
+          },
+          "required": false
+        },
+        {
+          "name": "context",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_REROLL_MATCHING"
+    },
+    "minDice": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_MIN_DICE"
+    },
+    "immuneTo": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "status",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_IMMUNE_TO"
+    },
+    "protectResource": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "resource",
+          "type": {
+            "t": "ref",
+            "of": "resource"
+          },
+          "required": true
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_PROTECT_RESOURCE"
+    },
+    "lookAtGates": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_LOOK_AT_GATES"
+    },
+    "reorderGates": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_REORDER_GATES"
+    },
+    "cannotMove": {
+      "kind": "player",
+      "passive": true,
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_CANNOT_MOVE"
+    },
+    "cannotAct": {
+      "kind": "player",
+      "passive": true,
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_CANNOT_ACT"
+    },
+    "cannotRecover": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "stat",
+          "type": {
+            "t": "enum",
+            "values": [
+              "health",
+              "sanity"
+            ]
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_CANNOT_RECOVER"
+    },
+    "removeFromBoard": {
+      "kind": "player",
+      "passive": true,
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_REMOVE_FROM_BOARD"
+    },
+    "immuneToEffects": {
+      "kind": "player",
+      "passive": true,
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_IMMUNE_TO_EFFECTS"
+    },
+    "mysteryProgress": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_MYSTERY_PROGRESS"
+    },
+    "text": {
+      "kind": "meta",
+      "params": [
+        {
+          "name": "text",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_TEXT"
+    }
+  }
+}
