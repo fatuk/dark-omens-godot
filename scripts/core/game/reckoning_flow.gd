@@ -1,20 +1,25 @@
 class_name ReckoningFlow
 extends RefCounted
 
-## Шаг Расплаты (host-only, корутина). Полный порядок: Древний → карты Мифов в игре →
-## монстры → сыщики (по ходу, Ведущий первым). Глобальные тиры гоняют onReckoning через
-## EffectRunner (board-эффекты типа advanceDoom/dieRoll и цели target:each). Тир сыщиков
-## резолвит карты Расплаты: состояния — флип через ConditionFlow; активы — effect
-## .onReckoning. scope=="mythosInPlay" → только тир карт Мифов в игре (для строки
-## «resolve the Reckoning of each Mythos card in play»). Создаётся в GameState (_reckoning).
+## Шаг Расплаты (host-only, корутина). Глобальные тиры ПОСЛЕДОВАТЕЛЬНО: Древний → карты
+## Мифов в игре → монстры (хост-тихо, board-эффекты типа advanceDoom/dieRoll, цели
+## target:each). Затем тир сыщиков ПАРАЛЛЕЛЬНО: каждый у себя одновременно резолвит свои
+## карты Расплаты (состояния — видимая проверка + флип через ConditionFlow; активы —
+## effect.onReckoning), фаза завершается, когда ВСЕ закончили (гейт player_reckoned).
+## scope=="mythosInPlay" → только тир карт Мифов в игре (для строки «resolve the Reckoning
+## of each Mythos card in play»). Создаётся в GameState (_reckoning).
 ##
-## NB: порядок карт сыщика здесь ДЕФОЛТНЫЙ (состояния, затем активы). Выбор порядка
-## самим сыщиком добавляется отдельным шагом (через mythos_decision).
+## NB: порядок карт сыщика — АВТО (состояния, затем активы); per-player выбор порядка убран
+## ради параллельности (одна модалка выбора на всех конфликтовала бы).
 
 const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 const _CARD_DELAY := 0.3  # пауза между картами Расплаты сыщика (под анимацию)
 
+signal player_reckoned  # сыщик закончил свою Расплату (для гейта завершения всех)
+
 var _gs: Node
+var _reck_total: int = 0  # сколько сыщиков в параллельном тире
+var _reck_done: int = 0  # сколько уже закончили
 
 
 func _init(gs: Node) -> void:
@@ -129,50 +134,40 @@ func _effect_nodes(prog: Array) -> Array:
 # ── Тир сыщиков ───────────────────────────────────────────────────────────────
 
 
-# Сыщики по ходу (Ведущий первым); каждый резолвит свои карты Расплаты.
+# ПАРАЛЛЕЛЬНЫЙ тир: все сыщики резолвят свою Расплату одновременно (каждый у себя),
+# фаза завершается, когда ВСЕ закончили. reckoning_active — для оверлея «ждём других».
 func _reckon_investigators() -> void:
-	for pid_v: Variant in _gs._target._resolve_targets({"target": "each"}):
-		await _reckon_investigator(String(pid_v))
-
-
-# Расплата одного сыщика: его карты (состояния с onReckoning + активы с
-# effect.onReckoning). При >1 карте сыщик САМ выбирает порядок (mythos_decision),
-# по одной за раз; при ≤1 — без выбора.
-func _reckon_investigator(pid: String) -> void:
-	if not _gs.players.has(pid):
+	var pids: Array = _gs._target._resolve_targets({"target": "each"})
+	if (pids as Array).is_empty():
 		return
-	var cards: Array = _collect_reckoning_cards(pid)
-	while not (cards as Array).is_empty():
-		var idx: int = 0
-		if (cards as Array).size() > 1:
-			_gs.mythos_decision = {
-				"active": true,
-				"pid": pid,
-				"path": "reckorder",
-				"options": _order_options(cards),
-				"by": "self",
-				"title_key": "RECK_ORDER_TITLE",
-				"prompt_key": "RECK_ORDER_PROMPT",
-			}
-			_gs._broadcast_sync()
-			_gs._emit_changed()
-			idx = clampi(await _await_decision(), 0, (cards as Array).size() - 1)
-			_gs.mythos_decision = {}
-		var card: Dictionary = cards[idx]
-		(cards as Array).remove_at(idx)
-		await _resolve_card(pid, card)
-		cards = _filter_valid(pid, cards)
-	_gs.mythos_decision = {}
+	_reck_total = (pids as Array).size()
+	_reck_done = 0
+	_gs.reckoning_active = true
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	for pid_v: Variant in pids:
+		_reckon_investigator(String(pid_v))  # запускаем корутину БЕЗ await — параллельно
+	while _reck_done < _reck_total:
+		await player_reckoned  # ждём, пока все N не отметятся
+	_gs.reckoning_active = false
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 
 
-# Опции выбора порядка: имя каждой карты (ключ перевода — модалка авто-переводит).
-func _order_options(cards: Array) -> Array:
-	var out: Array = []
-	for c_v: Variant in cards:
-		out.append({"text": String((c_v as Dictionary).get("name_key", ""))})
-	return out
+# Расплата одного сыщика (своя корутина): его карты в АВТО-порядке (состояния → активы);
+# по карте await своей проверки. На финише инкремент гейта + сигнал player_reckoned.
+func _reckon_investigator(pid: String) -> void:
+	if _gs.players.has(pid):
+		var cards: Array = _collect_reckoning_cards(pid)
+		while not (cards as Array).is_empty():
+			var card: Dictionary = cards[0]
+			(cards as Array).remove_at(0)
+			await _resolve_card(pid, card)
+			cards = _filter_valid(pid, cards)
+		_gs._broadcast_sync()
+		_gs._emit_changed()
+	_reck_done += 1
+	player_reckoned.emit()
 
 
 # Оставшиеся карты, что ещё валидны после резолва соседней (состояние могло быть
@@ -190,14 +185,6 @@ func _filter_valid(pid: String, cards: Array) -> Array:
 		):
 			out.append(c)
 	return out
-
-
-# Ждём выбор сыщика. Уже проставлено (сигнал до await) — берём сразу; иначе — сигнал.
-func _await_decision() -> int:
-	var pre: Variant = (_gs.mythos_decision as Dictionary).get("picked", null)
-	if pre != null:
-		return int(pre)
-	return int(await _gs.mythos_decided)
 
 
 # Карты Расплаты сыщика: [{kind:"condition"|"asset", id, name_key}].

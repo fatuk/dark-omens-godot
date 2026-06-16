@@ -9,7 +9,6 @@ const _TargetResolver = preload("res://scripts/core/game/target_resolver.gd")
 
 var _gs: MockGS
 var _r: ReckoningFlow
-var _done: bool = false
 
 
 class StubCond:
@@ -33,6 +32,7 @@ class MockGS:
 	var doom: int = 0
 	var locations: Array = []
 	var mythos_decision: Dictionary = {}
+	var reckoning_active: bool = false
 	var _target: RefCounted
 	var _cond := StubCond.new()
 
@@ -157,32 +157,27 @@ func test_collect_skips_flipped_condition() -> void:
 
 
 func test_investigator_single_condition_auto() -> void:
-	_player("p1", {"conditions": ["debt"]})  # одна карта — без выбора порядка
+	_player("p1", {"conditions": ["debt"]})  # одна карта
 	await _r.run_reckoning("")
-	assert_eq(
-		(_gs._cond.reckoned as Array).size(), 1, "единственное состояние разрешено без выбора"
-	)
+	assert_eq((_gs._cond.reckoned as Array).size(), 1, "единственное состояние разрешено")
 
 
-# Фоновый запуск Расплаты — повиснет на первом выборе порядка.
-func _run_async(scope: String) -> void:
-	_done = false
-	await _r.run_reckoning(scope)
-	_done = true
-
-
-func test_investigator_ordering_resolves_chosen_first() -> void:
-	_player("p1", {"conditions": ["debt", "darkPact"]})  # 2 карты → выбор порядка
-	_run_async("")
-	assert_true(bool(_gs.mythos_decision.get("active", false)), "повисли на выборе порядка")
-	assert_eq(String(_gs.mythos_decision.get("pid", "")), "p1")
-	assert_eq((_gs.mythos_decision.get("options", []) as Array).size(), 2, "две карты Расплаты")
-	_gs.mythos_decided.emit(1)  # выбрал вторую (darkPact) первой
-	await get_tree().create_timer(1.0).timeout  # дать корутине доиграть оба резолва
-	assert_true(_done, "Расплата сыщика завершилась")
+func test_investigator_auto_order_resolves_all() -> void:
+	# Авто-порядок: две карты-состояния резолвятся в порядке списка (без модалки выбора).
+	_player("p1", {"conditions": ["debt", "darkPact"]})
+	await _r.run_reckoning("")
+	assert_false(bool(_gs.mythos_decision.get("active", false)), "модалки выбора порядка нет")
 	assert_eq((_gs._cond.reckoned as Array).size(), 2, "оба состояния разрешены")
 	assert_eq(
-		String((_gs._cond.reckoned[0] as Dictionary).get("cid", "")),
-		"darkPact",
-		"выбранное — первым"
+		String((_gs._cond.reckoned[0] as Dictionary).get("cid", "")), "debt", "авто-порядок: первое"
 	)
+
+
+func test_parallel_gate_waits_for_all_players() -> void:
+	# Параллельный тир: оба сыщика резолвят свою Расплату; фаза завершается, когда ОБА
+	# закончили (гейт). reckoning_active снимается в конце.
+	_player("p1", {"conditions": ["debt"]})
+	_player("p2", {"conditions": ["darkPact"]})
+	await _r.run_reckoning("")
+	assert_eq((_gs._cond.reckoned as Array).size(), 2, "Расплата обоих сыщиков выполнена")
+	assert_false(_gs.reckoning_active, "reckoning_active снят после завершения всех")
