@@ -134,6 +134,7 @@ const _CHAT_PAD_X := 110.0  # native отступ текста от рваных
 const _CHAT_RISE := 130.0  # подъём НОВОГО облачка над центром пина (экранно, ×inv·inv_factor)
 const _CHAT_GAP := 84.0  # шаг стопки вверх между облачками (экранно)
 const _CHAT_SPAWN_DROP := 46.0  # на сколько НИЖЕ target стартует новое (всплытие снизу)
+const _CHAT_EXIT_RISE := 60.0  # на сколько уезжает вверх облачко при растворении (уход)
 const _CHAT_SMOOTH := 9.0  # скорость лёрпа подъёма/сдвига (экспон. сглаживание)
 const _CHAT_IN := 0.45  # сек проявления (fade-in)
 const _CHAT_HOLD := 20.0  # сек висит непрозрачным
@@ -878,6 +879,8 @@ func _kill_chat_bubble(pid: String, entry: Dictionary) -> void:
 		return
 	entry["dying"] = true
 	_reslot_chat(pid)  # этот больше не живой → остальные подтянутся
+	# Уход: цель выше текущей → rise лёрпится вверх ⇒ облачко уезжает вверх, растворяясь.
+	entry["target"] = float(entry.get("target", _CHAT_RISE)) + _CHAT_EXIT_RISE
 	var node: Node2D = entry.get("node")
 	if is_instance_valid(node):
 		var tw: Tween = create_tween()
