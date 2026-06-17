@@ -123,16 +123,31 @@ var _token_tex: Texture2D = null  # запасной жетон (нет файл
 # {pid: [{node, rise, target, dying}, …]} — rise лёрпится к target (плавный подъём/сдвиг).
 var _chat_bubbles: Dictionary = {}
 var _chat_sfx: AudioStream = null  # звук появления (подхватится, когда придёт ассет)
+var _chat_mat: ShaderMaterial = null  # darken-наложение фона-баллона (общий)
 const _CHAT_SFX_PATH := "res://assets/audio/sfx/chat-message.wav"
 const _CHAT_BALLOON: Texture2D = preload("res://assets/map/message-balloon.png")  # 400×140 @2×
+# Наложение «darken» (Photoshop): per-channel min(баллон, фон-экран). В Godot встроенного
+# нет → шейдер читает экран под облачком (hint_screen_texture) и берёт min, смешивая по
+# alpha баллона. blend_disabled — пишем готовый композит напрямую.
+const _CHAT_DARKEN_SHADER := """
+shader_type canvas_item;
+render_mode blend_disabled, unshaded;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+void fragment() {
+	vec4 src = texture(TEXTURE, UV);
+	vec3 dst = texture(screen_tex, SCREEN_UV).rgb;
+	vec3 darkened = min(src.rgb, dst);
+	COLOR = vec4(mix(dst, darkened, src.a), 1.0);
+}
+"""
 # Геометрия облачка — в НАТИВНЫХ (@2×) px; сам Node2D даунскейлится на _CHAT_DOWNSCALE.
 const _CHAT_DOWNSCALE := 0.5  # @2×: рисуем ассет в половину натурального (как все assets/)
-const _CHAT_FONT := 88  # native кегль (экранный ≈ ×0.5·inv·inv_factor)
+const _CHAT_FONT := 70  # native кегль (экранный ≈ ×0.5·inv·inv_factor)
 const _CHAT_BALLOON_H := 140.0  # native высота = высоте текстуры (без верт. растяжения)
 const _CHAT_MIN_W := 300.0  # native мин. ширина баллона (для коротких сообщений)
 const _CHAT_PAD_X := 110.0  # native отступ текста от рваных краёв по горизонтали
 const _CHAT_RISE := 130.0  # подъём НОВОГО облачка над центром пина (экранно, ×inv·inv_factor)
-const _CHAT_GAP := 58.0  # шаг стопки вверх между облачками (экранно)
+const _CHAT_GAP := 70.0  # шаг стопки вверх между облачками (экранно)
 const _CHAT_SPAWN_DROP := 46.0  # на сколько НИЖЕ target стартует новое (всплытие снизу)
 const _CHAT_EXIT_RISE := 60.0  # на сколько уезжает вверх облачко при растворении (уход)
 const _CHAT_SMOOTH := 9.0  # скорость лёрпа подъёма/сдвига (экспон. сглаживание)
@@ -168,6 +183,9 @@ func _ready() -> void:
 		"sea": load("res://assets/map/sea.png"),
 		"wilderness": load("res://assets/map/wilderness.png"),
 	}
+	_chat_mat = ShaderMaterial.new()
+	_chat_mat.shader = Shader.new()
+	_chat_mat.shader.code = _CHAT_DARKEN_SHADER  # darken-наложение фона облачка
 	if ResourceLoader.exists(_CHAT_SFX_PATH):
 		_chat_sfx = load(_CHAT_SFX_PATH)  # звук подхватится, когда ассет добавят
 	GameState.chat_received.connect(_on_chat_received)
@@ -962,6 +980,7 @@ func _make_chat_bubble(text: String) -> Node2D:
 	var bg := Sprite2D.new()
 	bg.name = "Cloud"
 	bg.texture = _CHAT_BALLOON  # centered=true по умолчанию (вокруг origin)
+	bg.material = _chat_mat  # darken (per-channel min с фоном); текст — отдельный, не задет
 	b.add_child(bg)
 	var lbl := Label.new()
 	lbl.name = "Text"
