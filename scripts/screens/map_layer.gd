@@ -148,14 +148,15 @@ const _CHAT_FONT := 70  # native кегль (экранный ≈ ×0.5·inv·in
 const _CHAT_BALLOON_H := 140.0  # native высота = высоте текстуры (без верт. растяжения)
 const _CHAT_MIN_W := 300.0  # native мин. ширина баллона (для коротких сообщений)
 const _CHAT_PAD_X := 110.0  # native отступ текста от рваных краёв по горизонтали
+const _CHAT_TEXT_PAD := 10.0  # доп. отступ-«воздух» вокруг текста (native; ≈5 экранных @0.5)
 const _CHAT_RISE := 130.0  # подъём НОВОГО облачка над центром пина (экранно, ×inv·inv_factor)
 const _CHAT_GAP := 70.0  # шаг стопки вверх между облачками (экранно)
 const _CHAT_SPAWN_DROP := 46.0  # на сколько НИЖЕ target стартует новое (всплытие снизу)
-const _CHAT_EXIT_RISE := 60.0  # на сколько уезжает вверх облачко при растворении (уход)
+const _CHAT_EXIT_RISE := 10.0  # на сколько уезжает вверх облачко при растворении (уход)
 const _CHAT_SMOOTH := 9.0  # скорость лёрпа подъёма/сдвига (экспон. сглаживание)
 const _CHAT_IN := 0.45  # сек проявления (fade-in)
 const _CHAT_HOLD := 20.0  # сек висит непрозрачным
-const _CHAT_FADE := 1.6  # сек растворяется
+const _CHAT_FADE := 0.3  # сек растворяется
 const _CHAT_MAX := 3  # макс. ЖИВЫХ облачек на сыщика (лишние — растворяются)
 
 # Открытые врата: по 3 пары (outer+inner) на каждые врата для wrap-копий.
@@ -1004,9 +1005,11 @@ func _fit_chat_bubble(b: Node2D) -> void:
 	if bg == null or lbl == null:
 		return
 	var ts: Vector2 = lbl.get_minimum_size()
-	var target_w: float = maxf(_CHAT_MIN_W, ts.x + _CHAT_PAD_X * 2.0)
+	# +_CHAT_TEXT_PAD «воздуха» вокруг текста по всем сторонам (фон, кегль не трогаем).
+	var target_w: float = maxf(_CHAT_MIN_W, ts.x + (_CHAT_PAD_X + _CHAT_TEXT_PAD) * 2.0)
+	var target_h: float = _CHAT_BALLOON_H + _CHAT_TEXT_PAD * 2.0
 	var tex: Vector2 = _CHAT_BALLOON.get_size()
-	bg.scale = Vector2(target_w / tex.x, _CHAT_BALLOON_H / tex.y)
+	bg.scale = Vector2(target_w / tex.x, target_h / tex.y)
 	lbl.position = -ts * 0.5  # текст по центру (origin)
 	lbl.size = ts
 
