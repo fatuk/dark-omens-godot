@@ -13,6 +13,15 @@ signal token_played(currency: String)
 ## (Detained «сбежать» и т.п.). Слушает WorldMap → GameState.perform_action.
 signal condition_acted(condition_id: String)
 
+## Чат-композер: «разыграли» карту чата (id шаблона/слова). Слушает ChatComposer.
+signal chat_card_played(id: String)
+
+## Сменилась активная (наведённая/выбранная) карта — для живого превью в композере.
+signal card_focused(item: Dictionary)
+
+## Веер закрылся (Esc / клик мимо / close()) — композер сбрасывает своё состояние.
+signal closed
+
 ## Веер карт руки сыщика (порт из HTML/CSS-макета).
 ## Открывается/закрывается по Tab. Карты задаются извне через set_cards()
 ## (в игре — реальное имущество игрока, см. WorldMap._refresh_hand; в пикере —
@@ -170,6 +179,7 @@ const CARDS: Array[Dictionary] = [
 ]
 
 var tab_enabled: bool = true  # Tab открывает/закрывает (рука в игре); в пикере — false
+var keep_open: bool = false  # true → «разыграл» НЕ закрывает веер (чат: серия выборов)
 var _deck: Array = []  # payload'ы карт (GameCard.set_card); пусто → дефолтная фейк-рука
 var _backdrop: ColorRect
 var _els: Array[Control] = []
@@ -500,6 +510,8 @@ func _layout(animate: bool) -> void:
 func set_active(i: int) -> void:
 	_active = i
 	_layout(true)
+	if i >= 0 and i < _deck.size():
+		card_focused.emit(_deck[i] as Dictionary)
 
 
 ## Перечитать тюнинг-параметры (после правки в дебаг-панели): pivot зависит от
@@ -566,6 +578,7 @@ func close() -> void:
 		return
 	_open = false
 	_active = -1
+	closed.emit()
 	_collapse_timer.stop()
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
@@ -727,9 +740,12 @@ func _play_and_close(idx: int, item: Dictionary) -> void:
 				token_played.emit(String(item.get("currency", "")))
 			elif k == "condition":
 				condition_acted.emit(String(item.get("condition_id", "")))
+			elif k == "chat":
+				chat_card_played.emit(String(item.get("id", "")))
 			else:
 				card_played.emit(int(item.get("item_index", -1)))
-			close()
+			if not keep_open:
+				close()
 	)
 
 
