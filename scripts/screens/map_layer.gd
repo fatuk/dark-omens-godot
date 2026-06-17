@@ -128,17 +128,17 @@ const _CHAT_SFX_PATH := "res://assets/audio/sfx/chat-message.wav"
 const _CHAT_BALLOON: Texture2D = preload("res://assets/map/message-balloon.png")  # 400×140 @2×
 # Наложение «darken» (Photoshop): per-channel min(баллон, фон-экран). В Godot встроенного
 # нет → шейдер читает экран под облачком (hint_screen_texture) и берёт min, смешивая по
-# alpha баллона × MODULATE.a (каскадная альфа узла → фон ГАСНЕТ при fade-out). blend_disabled
-# — пишем готовый композит напрямую.
+# входной COLOR.a (= modulate.a × alpha баллона; Godot домножает modulate ДО фрагмента) —
+# так darken и работает по форме баллона, и ГАСНЕТ при fade-out. blend_disabled — пишем
+# готовый композит напрямую.
 const _CHAT_DARKEN_SHADER := """
 shader_type canvas_item;
 render_mode blend_disabled, unshaded;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 void fragment() {
-	vec4 src = texture(TEXTURE, UV);
+	float a = COLOR.a;
 	vec3 dst = texture(screen_tex, SCREEN_UV).rgb;
-	vec3 darkened = min(src.rgb, dst);
-	float a = src.a * MODULATE.a;
+	vec3 darkened = min(texture(TEXTURE, UV).rgb, dst);
 	COLOR = vec4(mix(dst, darkened, a), 1.0);
 }
 """
