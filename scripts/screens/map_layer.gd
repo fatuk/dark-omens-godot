@@ -145,9 +145,9 @@ void fragment() {
 # Геометрия облачка — в НАТИВНЫХ (@2×) px; сам Node2D даунскейлится на _CHAT_DOWNSCALE.
 const _CHAT_DOWNSCALE := 0.5  # @2×: рисуем ассет в половину натурального (как все assets/)
 const _CHAT_FONT := 70  # native кегль (экранный ≈ ×0.5·inv·inv_factor)
-const _CHAT_BALLOON_H := 140.0  # native высота = высоте текстуры (без верт. растяжения)
 const _CHAT_MIN_W := 300.0  # native мин. ширина баллона (для коротких сообщений)
-const _CHAT_PAD_X := 110.0  # native отступ текста от рваных краёв по горизонтали
+const _CHAT_PAD_X := 140.0  # native отступ текста от краёв баллона по ГОРИЗОНТАЛИ
+const _CHAT_PAD_Y := 30.0  # native отступ текста от краёв баллона по ВЕРТИКАЛИ (симметрично X)
 const _CHAT_TEXT_PAD := 10.0  # доп. отступ-«воздух» вокруг текста (native; ≈5 экранных @0.5)
 const _CHAT_RISE := 130.0  # подъём НОВОГО облачка над центром пина (экранно, ×inv·inv_factor)
 const _CHAT_GAP := 70.0  # шаг стопки вверх между облачками (экранно)
@@ -997,17 +997,17 @@ func _make_chat_bubble(text: String) -> Node2D:
 	return b  # размер — в _fit_chat_bubble ПОСЛЕ add_child (иначе get_minimum_size пустой)
 
 
-# Подогнать облачко под текст: баллон-Sprite растягиваем по X под ширину текста (высота
-# фикс.), текст центрируем на origin. Зовётся ТОЛЬКО когда нода в дереве (шрифт разрешён).
+# Подогнать облачко под текст: баллон-Sprite растягиваем под размер текста — по X на
+# _CHAT_PAD_X, по Y на _CHAT_PAD_Y (симметрично) + общий «воздух» _CHAT_TEXT_PAD по всем
+# сторонам. Текст центрируем на origin. Зовётся ТОЛЬКО когда нода в дереве (шрифт разрешён).
 func _fit_chat_bubble(b: Node2D) -> void:
 	var bg: Sprite2D = b.get_node_or_null("Cloud") as Sprite2D
 	var lbl: Label = b.get_node_or_null("Text") as Label
 	if bg == null or lbl == null:
 		return
 	var ts: Vector2 = lbl.get_minimum_size()
-	# +_CHAT_TEXT_PAD «воздуха» вокруг текста по всем сторонам (фон, кегль не трогаем).
 	var target_w: float = maxf(_CHAT_MIN_W, ts.x + (_CHAT_PAD_X + _CHAT_TEXT_PAD) * 2.0)
-	var target_h: float = _CHAT_BALLOON_H + _CHAT_TEXT_PAD * 2.0
+	var target_h: float = ts.y + (_CHAT_PAD_Y + _CHAT_TEXT_PAD) * 2.0
 	var tex: Vector2 = _CHAT_BALLOON.get_size()
 	bg.scale = Vector2(target_w / tex.x, target_h / tex.y)
 	lbl.position = -ts * 0.5  # текст по центру (origin)
