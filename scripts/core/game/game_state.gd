@@ -17,6 +17,7 @@ signal state_changed  # любое изменение стейта
 signal phase_changed(new_phase: String)  # переход фазы
 signal mythos_decided(idx: int)  # сыщик выбрал ветку в forEach-проходе Мифов
 signal effect_check_applied(pid: String, passed: bool)  # игрок применил видимую проверку test (корутины)
+signal chat_received(pid: String, phrase_id: String, noun_ids: Array)  # транзиентный чат (Dark Souls-style)
 
 const ACTIONS_PER_ROUND := 2
 const MAX_TICKETS := 2  # потолок билетов на руках (ж/д + корабль суммарно), как в EH
@@ -86,6 +87,10 @@ var reckoning_active: bool = false
 # игрок закинул жетон на проверку, следующий тап по кубу тратит ИМЕННО её. Не
 # синкается (намерение локального игрока), потребляется в reroll_die.
 var pending_reroll_currency: String = ""
+
+# UI-локально: время последнего отправленного сообщения чата (анти-спам кулдаун).
+const CHAT_COOLDOWN_MS := 800
+var _chat_last_ms: int = 0
 
 # Компактная сводка сгенерированной кампании: {id, doomClock, ancientOne,
 # theme, mysteries}. {} — кампания ещё генерится либо не настроена. Полная
@@ -785,6 +790,30 @@ func _reckoning_apply_host(pid: String) -> bool:
 	return true
 
 
+# ── Чат (Dark Souls-style): транзиентный broadcast, НЕ часть snapshot ──────────
+
+
+## Отправить сообщение чата (шаблон + выбранные слова) — broadcast ВСЕМ включая себя
+## (relay эхо-возвращает отправителю → облачко покажется и над своей фишкой). Текст не
+## шлём: каждый клиент рендерит локально по id на своём языке. Лёгкий кулдаун от спама.
+func send_chat(phrase_id: String, noun_ids: Array) -> void:
+	var now: int = Time.get_ticks_msec()
+	if now - _chat_last_ms < CHAT_COOLDOWN_MS:
+		return
+	_chat_last_ms = now
+	(
+		_nm
+		. relay_all(
+			{
+				"action": "game_chat",
+				"pid": _nm.my_user_id,
+				"phrase_id": phrase_id,
+				"noun_ids": (noun_ids as Array).slice(0, 2),
+			}
+		)
+	)
+
+
 ## Активный игрок подтвердил выбор триггер-заклинаний (item-индексы) в промпте
 ## pending_spell_cast (напр. при отдыхе): хост кастует только выбранные и чистит
 ## промпт. Пустой список — «ничего не кастить» (промпт всё равно закрывается).
@@ -1350,6 +1379,14 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 				if _reckoning_apply_host(String(data.get("pid", ""))):
 					_broadcast_sync()
 					_emit_changed()
+
+		"game_chat":
+			# Транзиентный чат: каждый клиент (вкл. отправителя) рендерит локально. Не
+			# host-only, не в snapshot — просто эмитим сигнал для облачка над фишкой.
+			var c_pid: String = String(data.get("pid", ""))
+			var c_phrase: String = String(data.get("phrase_id", ""))
+			if not c_pid.is_empty() and not Messages.phrase(c_phrase).is_empty():
+				chat_received.emit(c_pid, c_phrase, (data.get("noun_ids", []) as Array).slice(0, 2))
 
 		"game_cast_trigger_spells":
 			if _is_host():
