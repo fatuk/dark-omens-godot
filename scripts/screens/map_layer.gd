@@ -121,7 +121,7 @@ var _token_tex: Texture2D = null  # запасной жетон (нет файл
 # дети map_layer; в _process якорятся над БЛИЖАЙШИМ к камере пином этого pid (wrap-копии).
 # Новое — снизу стопки, старые сдвигаются вверх и растворяются. {pid: [Node2D, …]}.
 var _chat_bubbles: Dictionary = {}
-var _chat_bg: StyleBoxTexture = null  # фон облачка (баллон-ассет, NinePatch по ширине)
+var _chat_mat: CanvasItemMaterial = null  # «darken»/multiply для фона-баллона (общий)
 var _chat_sfx: AudioStream = null  # звук появления (подхватится, когда придёт ассет)
 const _CHAT_SFX_PATH := "res://assets/audio/sfx/chat-message.wav"
 const _CHAT_BALLOON: Texture2D = preload("res://assets/map/message-balloon.png")  # 400×140 @2×
@@ -129,7 +129,7 @@ const _CHAT_BALLOON: Texture2D = preload("res://assets/map/message-balloon.png")
 const _CHAT_DOWNSCALE := 0.5  # @2×: рисуем ассет в половину натурального (как все assets/)
 const _CHAT_FONT := 88  # native кегль (экранный ≈ ×0.5·inv·inv_factor)
 const _CHAT_BALLOON_H := 140.0  # native высота = высоте текстуры (без верт. растяжения)
-const _CHAT_MIN_W := 300.0  # native мин. ширина (≥ суммы шапок texture_margin)
+const _CHAT_MIN_W := 300.0  # native мин. ширина баллона (для коротких сообщений)
 const _CHAT_PAD_X := 110.0  # native отступ текста от рваных краёв по горизонтали
 const _CHAT_RISE := 130.0  # подъём первого облачка над центром пина (экранно, ×inv·inv_factor)
 const _CHAT_GAP := 84.0  # шаг стопки вверх между облачками (экранно)
@@ -164,7 +164,8 @@ func _ready() -> void:
 		"sea": load("res://assets/map/sea.png"),
 		"wilderness": load("res://assets/map/wilderness.png"),
 	}
-	_chat_bg = _make_chat_bg()
+	_chat_mat = CanvasItemMaterial.new()
+	_chat_mat.blend_mode = CanvasItemMaterial.BLEND_MODE_MUL  # «darken»: баллон затемняет карту
 	if ResourceLoader.exists(_CHAT_SFX_PATH):
 		_chat_sfx = load(_CHAT_SFX_PATH)  # звук подхватится, когда ассет добавят
 	GameState.chat_received.connect(_on_chat_received)
@@ -900,22 +901,18 @@ func _nearest_inv_pin(pid: String, cam_x: float) -> Node2D:
 	return best
 
 
-# Облачко: Node2D с баллон-фоном (NinePatch по ширине, наложение «darken»/multiply) +
-# текст. Геометрия в native (@2×) px; Node2D даунскейлит на _CHAT_DOWNSCALE в раскладке.
+# Облачко: Node2D с фоном-баллоном (Sprite2D — РАВНОМЕРНОЕ растяжение по ширине, мягкие
+# alpha-края PNG целы, без NinePatch-коробки) под «darken»/multiply + текст по центру.
+# Геометрия в native (@2×) px; Node2D даунскейлит на _CHAT_DOWNSCALE в раскладке.
 func _make_chat_bubble(text: String) -> Node2D:
 	var b := Node2D.new()
 	b.name = "ChatBubble"
 	b.z_index = 9  # над пинами сыщиков (z=7)
-	var panel := Panel.new()
-	panel.name = "Cloud"
-	panel.add_theme_stylebox_override("panel", _chat_bg)
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# «Darken»: баллон затемняет карту под собой (встроенный множащий бленд). Текст —
-	# отдельный CanvasItem с дефолтным материалом, multiply его не задевает.
-	var mat := CanvasItemMaterial.new()
-	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_MUL
-	panel.material = mat
-	b.add_child(panel)
+	var bg := Sprite2D.new()
+	bg.name = "Cloud"
+	bg.texture = _CHAT_BALLOON  # centered=true по умолчанию (вокруг origin)
+	bg.material = _chat_mat  # multiply (darken); текст — отдельный CanvasItem, не задет
+	b.add_child(bg)
 	var lbl := Label.new()
 	lbl.name = "Text"
 	lbl.text = text
@@ -924,37 +921,23 @@ func _make_chat_bubble(text: String) -> Node2D:
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(lbl)
+	b.add_child(lbl)  # поверх фона (порядок детей)
 	return b  # размер — в _fit_chat_bubble ПОСЛЕ add_child (иначе get_minimum_size пустой)
 
 
-# Подогнать облачко под текст: высота фикс. (= текстуре), ширина по тексту (но не уже
-# суммы шапок). Вызывать ТОЛЬКО когда нода уже в дереве (шрифт разрешён → размер верный).
+# Подогнать облачко под текст: баллон-Sprite растягиваем по X под ширину текста (высота
+# фикс.), текст центрируем на origin. Зовётся ТОЛЬКО когда нода в дереве (шрифт разрешён).
 func _fit_chat_bubble(b: Node2D) -> void:
-	var panel: Panel = b.get_node_or_null("Cloud") as Panel
-	if panel == null:
-		return
-	var lbl: Label = panel.get_node_or_null("Text") as Label
-	if lbl == null:
+	var bg: Sprite2D = b.get_node_or_null("Cloud") as Sprite2D
+	var lbl: Label = b.get_node_or_null("Text") as Label
+	if bg == null or lbl == null:
 		return
 	var ts: Vector2 = lbl.get_minimum_size()
-	var bsize := Vector2(maxf(_CHAT_MIN_W, ts.x + _CHAT_PAD_X * 2.0), _CHAT_BALLOON_H)
-	panel.size = bsize
-	panel.position = -bsize * 0.5
-	lbl.position = Vector2.ZERO
-	lbl.size = bsize  # текст по центру всего баллона
-
-
-# Фон облачка из ассета-баллона: NinePatch — растягиваем ТОЛЬКО центр по ширине, рваные
-# края-«шапки» (texture_margin, native px текстуры 400×140) остаются целыми.
-func _make_chat_bg() -> StyleBoxTexture:
-	var sb := StyleBoxTexture.new()
-	sb.texture = _CHAT_BALLOON
-	sb.texture_margin_left = 96.0
-	sb.texture_margin_right = 96.0
-	sb.texture_margin_top = 40.0
-	sb.texture_margin_bottom = 40.0
-	return sb
+	var target_w: float = maxf(_CHAT_MIN_W, ts.x + _CHAT_PAD_X * 2.0)
+	var tex: Vector2 = _CHAT_BALLOON.get_size()
+	bg.scale = Vector2(target_w / tex.x, _CHAT_BALLOON_H / tex.y)
+	lbl.position = -ts * 0.5  # текст по центру (origin)
+	lbl.size = ts
 
 
 ## Текстура маркера: портрет сыщика, либо общий жетон-кружок, если файла нет.
