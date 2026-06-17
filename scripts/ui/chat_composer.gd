@@ -118,11 +118,14 @@ func _locale() -> String:
 
 
 func _set_template_sections() -> void:
-	var items: Array = []
-	for p_v: Variant in Messages.phrases():
-		var pid: String = String((p_v as Dictionary).get("id", ""))
-		items.append({"kind": "chat", "id": pid, "title": _template_label(pid)})
-	_fan.set_sections([{"title": tr("CHAT_PICK_TEMPLATE"), "items": items}])
+	var sections: Array = []
+	for cat: String in Messages.PHRASE_CATEGORY_ORDER:
+		var items: Array = []
+		for p_v: Variant in Messages.phrases_in(cat):
+			var pid: String = String((p_v as Dictionary).get("id", ""))
+			items.append({"kind": "chat", "id": pid, "title": _template_label(pid)})
+		sections.append({"title": Messages.phrase_category_title(cat, _locale()), "items": items})
+	_fan.set_sections(sections)
 
 
 func _set_noun_sections() -> void:

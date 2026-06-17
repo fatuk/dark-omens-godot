@@ -12,6 +12,16 @@ const CATEGORY_ORDER: Array[String] = [
 	"mechanic", "skill", "state", "being", "person", "thing", "place", "concept"
 ]
 
+# Порядок и заголовки категорий ШАБЛОНОВ фраз (секции веера на этапе выбора шаблона).
+const PHRASE_CATEGORY_ORDER: Array[String] = ["place", "event", "sign", "cry", "special"]
+const PHRASE_CATEGORY_TITLES := {
+	"place": {"en": "Place", "ru": "Место"},
+	"event": {"en": "Event", "ru": "Событие"},
+	"sign": {"en": "Sign", "ru": "Знак"},
+	"cry": {"en": "Cry", "ru": "Возглас"},
+	"special": {"en": "Special", "ru": "Особое"},
+}
+
 # Локализованные заголовки секций (категории — UI-хром композера, не из словаря).
 const CATEGORY_TITLES := {
 	"mechanic": {"en": "Mechanics", "ru": "Механика"},
@@ -24,16 +34,29 @@ const CATEGORY_TITLES := {
 	"concept": {"en": "Concepts", "ru": "Понятия"},
 }
 
-static var _phrases: Dictionary = {}  # id -> {id, slots, en, ru}
+static var _phrases: Dictionary = {}  # id -> {id, category, slots, en, ru}
 static var _phrase_list: Array = []  # порядок как в JSON
+static var _phrases_by_cat: Dictionary = {}  # phrase category -> [phrase dict, …]
 static var _nouns: Dictionary = {}  # id -> {id, category, en, ru}
 static var _nouns_by_cat: Dictionary = {}  # category -> [noun dict, …]
 
 
-## Все шаблоны в порядке словаря: [{id, slots, en, ru}, …].
+## Все шаблоны в порядке словаря: [{id, category, slots, en, ru}, …].
 static func phrases() -> Array:
 	_ensure()
 	return _phrase_list
+
+
+## Шаблоны категории в порядке словаря ([] если нет).
+static func phrases_in(category: String) -> Array:
+	_ensure()
+	return _phrases_by_cat.get(category, [])
+
+
+## Локализованный заголовок категории-секции шаблонов.
+static func phrase_category_title(category: String, locale: String) -> String:
+	var t: Dictionary = PHRASE_CATEGORY_TITLES.get(category, {})
+	return String(t.get(locale, t.get("en", category)))
 
 
 ## Шаблон по id ({} если нет).
@@ -102,10 +125,16 @@ static func _ensure() -> void:
 	if not _phrases.is_empty():
 		return
 	var data: Dictionary = DataLoader.load_dict(DATA_PATH)
+	for cat: String in PHRASE_CATEGORY_ORDER:
+		_phrases_by_cat[cat] = []
 	for p_v: Variant in data.get("phrases", []):
 		var p: Dictionary = p_v
 		_phrases[String(p.get("id", ""))] = p
 		_phrase_list.append(p)
+		var pcat: String = String(p.get("category", ""))
+		if not _phrases_by_cat.has(pcat):
+			_phrases_by_cat[pcat] = []
+		(_phrases_by_cat[pcat] as Array).append(p)
 	for cat: String in CATEGORY_ORDER:
 		_nouns_by_cat[cat] = []
 	for n_v: Variant in data.get("nouns", []):

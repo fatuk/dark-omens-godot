@@ -61,3 +61,20 @@ func test_category_title_localized() -> void:
 func test_fill_preview_with_blank() -> void:
 	# Превью незаполненного слота: подставляем "____".
 	assert_eq(Messages.fill("noun_here", ["____"], "en"), "____ here")
+
+
+func test_phrases_in_category() -> void:
+	assert_eq(Messages.phrases_in("place").size(), 13, "13 шаблонов места")
+	assert_eq(Messages.phrases_in("special").size(), 2, "telegraph_pair + invocation_double")
+
+
+func test_phrase_category_title_localized() -> void:
+	assert_eq(Messages.phrase_category_title("place", "ru"), "Место")
+	assert_eq(Messages.phrase_category_title("cry", "en"), "Cry")
+
+
+func test_phrase_categories_cover_all() -> void:
+	var total: int = 0
+	for cat: String in Messages.PHRASE_CATEGORY_ORDER:
+		total += Messages.phrases_in(cat).size()
+	assert_eq(total, Messages.phrases().size(), "сумма по секциям = всем шаблонам (30)")
