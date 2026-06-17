@@ -879,15 +879,22 @@ func _kill_chat_bubble(pid: String, entry: Dictionary) -> void:
 		return
 	entry["dying"] = true
 	_reslot_chat(pid)  # этот больше не живой → остальные подтянутся
-	# Уход: цель выше текущей → rise лёрпится вверх ⇒ облачко уезжает вверх, растворяясь.
-	entry["target"] = float(entry.get("target", _CHAT_RISE)) + _CHAT_EXIT_RISE
 	var node: Node2D = entry.get("node")
-	if is_instance_valid(node):
-		var tw: Tween = create_tween()
-		tw.tween_property(node, "modulate:a", 0.0, _CHAT_FADE)
-		tw.tween_callback(_drop_chat_bubble.bind(pid, entry))
-	else:
+	if not is_instance_valid(node):
 		_drop_chat_bubble(pid, entry)
+		return
+	# Уход: подъём ВВЕРХ и растворение — ОДНОВРЕМЕННО, за одно и то же _CHAT_FADE. rise здесь
+	# драйвит твин (а не _process-лёрп — для умирающих он отключён), синхронно с alpha.
+	var from_rise: float = float(entry.get("rise", _CHAT_RISE))
+	var tw: Tween = create_tween().set_parallel(true)
+	tw.tween_property(node, "modulate:a", 0.0, _CHAT_FADE)
+	tw.tween_method(
+		func(v: float) -> void: entry["rise"] = v,
+		from_rise,
+		from_rise + _CHAT_EXIT_RISE,
+		_CHAT_FADE
+	)
+	tw.chain().tween_callback(_drop_chat_bubble.bind(pid, entry))
 
 
 func _drop_chat_bubble(pid: String, entry: Dictionary) -> void:
@@ -920,7 +927,8 @@ func _layout_chat_bubbles(bscale: float, delta: float) -> void:
 				node.visible = false
 				continue
 			node.visible = true
-			entry["rise"] = lerpf(float(entry["rise"]), float(entry["target"]), t)
+			if not bool(entry.get("dying", false)):  # умирающим rise драйвит exit-твин
+				entry["rise"] = lerpf(float(entry["rise"]), float(entry["target"]), t)
 			node.scale = Vector2.ONE * _CHAT_DOWNSCALE * bscale  # @2× → половина натурального
 			node.position = Vector2(pin.position.x, pin.position.y - float(entry["rise"]) * bscale)
 
