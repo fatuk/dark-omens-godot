@@ -121,12 +121,18 @@ var _token_tex: Texture2D = null  # запасной жетон (нет файл
 # дети map_layer; в _process якорятся над БЛИЖАЙШИМ к камере пином этого pid (wrap-копии).
 # Новое — снизу стопки, старые сдвигаются вверх и растворяются. {pid: [Node2D, …]}.
 var _chat_bubbles: Dictionary = {}
-var _chat_bg: StyleBoxFlat = null  # плейсхолдер облачка (своп на ассет-NinePatch позже)
+var _chat_bg: StyleBoxTexture = null  # фон облачка (баллон-ассет, NinePatch по ширине)
 var _chat_sfx: AudioStream = null  # звук появления (подхватится, когда придёт ассет)
 const _CHAT_SFX_PATH := "res://assets/audio/sfx/chat-message.wav"
-const _CHAT_FONT := 44  # локальный кегль (экранный ≈ ×inv·inv_factor, как у пинов)
-const _CHAT_RISE := 130.0  # подъём первого облачка над центром пина (в ед. пина)
-const _CHAT_GAP := 64.0  # шаг стопки вверх между облачками
+const _CHAT_BALLOON: Texture2D = preload("res://assets/map/message-balloon.png")  # 400×140 @2×
+# Геометрия облачка — в НАТИВНЫХ (@2×) px; сам Node2D даунскейлится на _CHAT_DOWNSCALE.
+const _CHAT_DOWNSCALE := 0.5  # @2×: рисуем ассет в половину натурального (как все assets/)
+const _CHAT_FONT := 88  # native кегль (экранный ≈ ×0.5·inv·inv_factor)
+const _CHAT_BALLOON_H := 140.0  # native высота = высоте текстуры (без верт. растяжения)
+const _CHAT_MIN_W := 300.0  # native мин. ширина (≥ суммы шапок texture_margin)
+const _CHAT_PAD_X := 110.0  # native отступ текста от рваных краёв по горизонтали
+const _CHAT_RISE := 130.0  # подъём первого облачка над центром пина (экранно, ×inv·inv_factor)
+const _CHAT_GAP := 84.0  # шаг стопки вверх между облачками (экранно)
 const _CHAT_HOLD := 20.0  # сек висит непрозрачным
 const _CHAT_FADE := 1.6  # сек растворяется
 const _CHAT_MAX := 4  # потолок облачек на сыщика
@@ -869,7 +875,7 @@ func _layout_chat_bubbles(bscale: float) -> void:
 			if not is_instance_valid(node):
 				continue
 			node.visible = true
-			node.scale = Vector2.ONE * bscale
+			node.scale = Vector2.ONE * _CHAT_DOWNSCALE * bscale  # @2× → половина натурального
 			node.position = Vector2(pin.position.x, y)
 			y -= _CHAT_GAP * bscale
 
@@ -893,7 +899,8 @@ func _nearest_inv_pin(pid: String, cam_x: float) -> Node2D:
 	return best
 
 
-# Облачко: Node2D с Panel-фоном (плейсхолдер; своп на ассет-NinePatch позже) + текст.
+# Облачко: Node2D с баллон-фоном (NinePatch по ширине, наложение «darken»/multiply) +
+# текст. Геометрия в native (@2×) px; Node2D даунскейлит на _CHAT_DOWNSCALE в раскладке.
 func _make_chat_bubble(text: String) -> Node2D:
 	var b := Node2D.new()
 	b.name = "ChatBubble"
@@ -902,6 +909,11 @@ func _make_chat_bubble(text: String) -> Node2D:
 	panel.name = "Cloud"
 	panel.add_theme_stylebox_override("panel", _chat_bg)
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# «Darken»: баллон затемняет карту под собой (встроенный множащий бленд). Текст —
+	# отдельный CanvasItem с дефолтным материалом, multiply его не задевает.
+	var mat := CanvasItemMaterial.new()
+	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_MUL
+	panel.material = mat
 	b.add_child(panel)
 	var lbl := Label.new()
 	lbl.name = "Text"
@@ -912,23 +924,25 @@ func _make_chat_bubble(text: String) -> Node2D:
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(lbl)
-	var pad := Vector2(30.0, 16.0)
+	# Высота фикс. (= текстуре), ширина под текст (но не уже суммы шапок).
 	var ts: Vector2 = lbl.get_minimum_size()
-	var bsize: Vector2 = ts + pad * 2.0
+	var bsize := Vector2(maxf(_CHAT_MIN_W, ts.x + _CHAT_PAD_X * 2.0), _CHAT_BALLOON_H)
 	panel.size = bsize
 	panel.position = -bsize * 0.5
-	lbl.position = pad
-	lbl.size = ts
+	lbl.position = Vector2.ZERO
+	lbl.size = bsize  # текст по центру всего баллона
 	return b
 
 
-# Плейсхолдер фона облачка (тёмная скруглённая плашка с тонкой рамкой) до ассета.
-func _make_chat_bg() -> StyleBoxFlat:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.06, 0.05, 0.09, 0.86)
-	sb.set_corner_radius_all(18)
-	sb.set_border_width_all(2)
-	sb.border_color = Color(0.55, 0.48, 0.35, 0.7)
+# Фон облачка из ассета-баллона: NinePatch — растягиваем ТОЛЬКО центр по ширине, рваные
+# края-«шапки» (texture_margin, native px текстуры 400×140) остаются целыми.
+func _make_chat_bg() -> StyleBoxTexture:
+	var sb := StyleBoxTexture.new()
+	sb.texture = _CHAT_BALLOON
+	sb.texture_margin_left = 96.0
+	sb.texture_margin_right = 96.0
+	sb.texture_margin_top = 40.0
+	sb.texture_margin_bottom = 40.0
 	return sb
 
 
