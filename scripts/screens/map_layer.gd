@@ -121,7 +121,6 @@ var _token_tex: Texture2D = null  # запасной жетон (нет файл
 # дети map_layer; в _process якорятся над БЛИЖАЙШИМ к камере пином этого pid (wrap-копии).
 # Новое — снизу стопки, старые сдвигаются вверх и растворяются. {pid: [Node2D, …]}.
 var _chat_bubbles: Dictionary = {}
-var _chat_mat: CanvasItemMaterial = null  # «darken»/multiply для фона-баллона (общий)
 var _chat_sfx: AudioStream = null  # звук появления (подхватится, когда придёт ассет)
 const _CHAT_SFX_PATH := "res://assets/audio/sfx/chat-message.wav"
 const _CHAT_BALLOON: Texture2D = preload("res://assets/map/message-balloon.png")  # 400×140 @2×
@@ -164,8 +163,6 @@ func _ready() -> void:
 		"sea": load("res://assets/map/sea.png"),
 		"wilderness": load("res://assets/map/wilderness.png"),
 	}
-	_chat_mat = CanvasItemMaterial.new()
-	_chat_mat.blend_mode = CanvasItemMaterial.BLEND_MODE_MUL  # «darken»: баллон затемняет карту
 	if ResourceLoader.exists(_CHAT_SFX_PATH):
 		_chat_sfx = load(_CHAT_SFX_PATH)  # звук подхватится, когда ассет добавят
 	GameState.chat_received.connect(_on_chat_received)
@@ -902,7 +899,7 @@ func _nearest_inv_pin(pid: String, cam_x: float) -> Node2D:
 
 
 # Облачко: Node2D с фоном-баллоном (Sprite2D — РАВНОМЕРНОЕ растяжение по ширине, мягкие
-# alpha-края PNG целы, без NinePatch-коробки) под «darken»/multiply + текст по центру.
+# alpha-края PNG целы, без NinePatch-коробки) + текст по центру. Бленд — обычный (normal).
 # Геометрия в native (@2×) px; Node2D даунскейлит на _CHAT_DOWNSCALE в раскладке.
 func _make_chat_bubble(text: String) -> Node2D:
 	var b := Node2D.new()
@@ -911,7 +908,6 @@ func _make_chat_bubble(text: String) -> Node2D:
 	var bg := Sprite2D.new()
 	bg.name = "Cloud"
 	bg.texture = _CHAT_BALLOON  # centered=true по умолчанию (вокруг origin)
-	bg.material = _chat_mat  # multiply (darken); текст — отдельный CanvasItem, не задет
 	b.add_child(bg)
 	var lbl := Label.new()
 	lbl.name = "Text"
