@@ -127,7 +127,7 @@ const _CHAT_SFX_PATH := "res://assets/audio/sfx/chat-message.wav"
 const _CHAT_FONT := 44  # локальный кегль (экранный ≈ ×inv·inv_factor, как у пинов)
 const _CHAT_RISE := 130.0  # подъём первого облачка над центром пина (в ед. пина)
 const _CHAT_GAP := 64.0  # шаг стопки вверх между облачками
-const _CHAT_HOLD := 4.0  # сек висит непрозрачным
+const _CHAT_HOLD := 20.0  # сек висит непрозрачным
 const _CHAT_FADE := 1.6  # сек растворяется
 const _CHAT_MAX := 4  # потолок облачек на сыщика
 
