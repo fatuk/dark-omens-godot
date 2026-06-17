@@ -119,7 +119,8 @@ var _token_tex: Texture2D = null  # запасной жетон (нет файл
 
 # Чат (Dark Souls-style): облачка сообщений над фишкой сыщика. Транзиентные, world-space
 # дети map_layer; в _process якорятся над БЛИЖАЙШИМ к камере пином этого pid (wrap-копии).
-# Новое — снизу стопки, старые сдвигаются вверх и растворяются. {pid: [Node2D, …]}.
+# Новое всплывает снизу из прозрачности; старые плавно сдвигаются вверх и растворяются.
+# {pid: [{node, rise, target, dying}, …]} — rise лёрпится к target (плавный подъём/сдвиг).
 var _chat_bubbles: Dictionary = {}
 var _chat_sfx: AudioStream = null  # звук появления (подхватится, когда придёт ассет)
 const _CHAT_SFX_PATH := "res://assets/audio/sfx/chat-message.wav"
@@ -130,11 +131,14 @@ const _CHAT_FONT := 88  # native кегль (экранный ≈ ×0.5·inv·in
 const _CHAT_BALLOON_H := 140.0  # native высота = высоте текстуры (без верт. растяжения)
 const _CHAT_MIN_W := 300.0  # native мин. ширина баллона (для коротких сообщений)
 const _CHAT_PAD_X := 110.0  # native отступ текста от рваных краёв по горизонтали
-const _CHAT_RISE := 130.0  # подъём первого облачка над центром пина (экранно, ×inv·inv_factor)
+const _CHAT_RISE := 130.0  # подъём НОВОГО облачка над центром пина (экранно, ×inv·inv_factor)
 const _CHAT_GAP := 84.0  # шаг стопки вверх между облачками (экранно)
+const _CHAT_SPAWN_DROP := 46.0  # на сколько НИЖЕ target стартует новое (всплытие снизу)
+const _CHAT_SMOOTH := 9.0  # скорость лёрпа подъёма/сдвига (экспон. сглаживание)
+const _CHAT_IN := 0.45  # сек проявления (fade-in)
 const _CHAT_HOLD := 20.0  # сек висит непрозрачным
 const _CHAT_FADE := 1.6  # сек растворяется
-const _CHAT_MAX := 4  # потолок облачек на сыщика
+const _CHAT_MAX := 3  # макс. ЖИВЫХ облачек на сыщика (лишние — растворяются)
 
 # Открытые врата: по 3 пары (outer+inner) на каждые врата для wrap-копий.
 # Накопленные углы общие на все спрайты — wrap-копии крутятся синхронно.
@@ -286,7 +290,7 @@ func _process(delta: float) -> void:
 
 	# Облачка чата — стопкой над ближайшим к камере пином каждого сыщика.
 	if not _chat_bubbles.is_empty():
-		_layout_chat_bubbles(inv * inv_factor)
+		_layout_chat_bubbles(inv * inv_factor, delta)
 
 	# Открытые врата — заполняют кружок маркера, оба слоя вращаются.
 	# Накопленные углы общие для всех wrap-копий — они крутятся синхронно.
@@ -824,59 +828,98 @@ func _on_chat_received(pid: String, phrase_id: String, noun_ids: Array) -> void:
 	_spawn_chat_bubble(pid, text)
 
 
-# Создать облачко, добавить в стопку pid (с потолком), запустить жизненный цикл, звук.
+# Создать облачко, добавить в стопку pid, запустить появление/жизненный цикл, звук. Если
+# живых уже _CHAT_MAX — старейшего живого отправляем растворяться (анимированно).
 func _spawn_chat_bubble(pid: String, text: String) -> void:
 	var b: Node2D = _make_chat_bubble(text)
 	add_child(b)
 	_fit_chat_bubble(b)  # размер по тексту — ТОЛЬКО в дереве (иначе get_minimum_size = 0)
+	b.modulate.a = 0.0  # старт прозрачным → fade-in
 	var stack: Array = _chat_bubbles.get(pid, [])
-	stack.append(b)
-	while stack.size() > _CHAT_MAX:
-		var old_v: Variant = stack.pop_front()
-		if is_instance_valid(old_v):
-			(old_v as Node2D).queue_free()
+	var live: int = 0
+	for e_v: Variant in stack:
+		if not bool((e_v as Dictionary).get("dying", false)):
+			live += 1
+	if live >= _CHAT_MAX:  # лишний — старейшего живого растворяем
+		for e_v: Variant in stack:
+			if not bool((e_v as Dictionary).get("dying", false)):
+				_kill_chat_bubble(pid, e_v as Dictionary)
+				break
+	# Новое стартует НИЖЕ своей цели (всплывает снизу), rise лёрпится к target в _process.
+	var entry: Dictionary = {
+		"node": b, "rise": _CHAT_RISE - _CHAT_SPAWN_DROP, "target": _CHAT_RISE, "dying": false
+	}
+	stack.append(entry)
 	_chat_bubbles[pid] = stack
-	var tw: Tween = create_tween()
-	tw.tween_interval(_CHAT_HOLD)
-	tw.tween_property(b, "modulate:a", 0.0, _CHAT_FADE)
-	tw.tween_callback(_remove_chat_bubble.bind(pid, b))
+	_reslot_chat(pid)  # новое толкает старых вверх (их target растёт → плавный сдвиг)
+	create_tween().tween_property(b, "modulate:a", 1.0, _CHAT_IN)  # проявление
+	var life: Tween = create_tween()
+	life.tween_interval(_CHAT_HOLD)
+	life.tween_callback(_kill_chat_bubble.bind(pid, entry))  # естественная смерть по таймеру
 	if _chat_sfx != null:
 		SfxManager.play(_chat_sfx)
 
 
-func _remove_chat_bubble(pid: String, node: Node2D) -> void:
+# Пересчитать target-подъёмы ЖИВЫХ облачек pid: новейшее — слот 0 (внизу), старые выше.
+func _reslot_chat(pid: String) -> void:
+	var live: Array = []
+	for e_v: Variant in _chat_bubbles.get(pid, []):
+		if not bool((e_v as Dictionary).get("dying", false)):
+			live.append(e_v)  # порядок: старые → новые
+	var n: int = live.size()
+	for i: int in range(n):
+		var slot: int = n - 1 - i  # старейший живой → верхний слот, новейший → 0
+		(live[i] as Dictionary)["target"] = _CHAT_RISE + float(slot) * _CHAT_GAP
+
+
+# Отправить облачко растворяться (идемпотентно): fade-out → удалить. Живые пересчитываются.
+func _kill_chat_bubble(pid: String, entry: Dictionary) -> void:
+	if bool(entry.get("dying", false)):
+		return
+	entry["dying"] = true
+	_reslot_chat(pid)  # этот больше не живой → остальные подтянутся
+	var node: Node2D = entry.get("node")
+	if is_instance_valid(node):
+		var tw: Tween = create_tween()
+		tw.tween_property(node, "modulate:a", 0.0, _CHAT_FADE)
+		tw.tween_callback(_drop_chat_bubble.bind(pid, entry))
+	else:
+		_drop_chat_bubble(pid, entry)
+
+
+func _drop_chat_bubble(pid: String, entry: Dictionary) -> void:
 	var stack: Array = _chat_bubbles.get(pid, [])
-	stack.erase(node)
+	stack.erase(entry)
 	if stack.is_empty():
 		_chat_bubbles.erase(pid)
 	else:
 		_chat_bubbles[pid] = stack
+	var node: Node2D = entry.get("node")
 	if is_instance_valid(node):
 		node.queue_free()
 
 
-# Разложить облачка над ближайшим к камере пином каждого pid (wrap-копии); новейшее —
-# снизу стопки, старые выше. Масштаб как у маркеров (bscale = inv·inv_factor).
-func _layout_chat_bubbles(bscale: float) -> void:
+# Разложить облачка над ближайшим к камере пином каждого pid (wrap-копии). rise плавно
+# лёрпится к target (всплытие/сдвиг), x/масштаб — как у маркеров (bscale = inv·inv_factor).
+func _layout_chat_bubbles(bscale: float, delta: float) -> void:
 	var cam_x: float = camera.position.x if is_instance_valid(camera) else 0.0
+	var t: float = 1.0 - exp(-delta * _CHAT_SMOOTH)  # кадронезависимое экспон. сглаживание
 	for pid_v: Variant in _chat_bubbles.keys():
 		var pid: String = pid_v
 		var stack: Array = _chat_bubbles[pid]
 		var pin: Node2D = _nearest_inv_pin(pid, cam_x)
-		if pin == null:
-			for n_v: Variant in stack:
-				if is_instance_valid(n_v):
-					(n_v as Node2D).visible = false
-			continue
-		var y: float = pin.position.y - _CHAT_RISE * bscale
-		for i: int in range(stack.size() - 1, -1, -1):
-			var node: Node2D = stack[i]
+		for e_v: Variant in stack:
+			var entry: Dictionary = e_v
+			var node: Node2D = entry.get("node")
 			if not is_instance_valid(node):
 				continue
+			if pin == null:
+				node.visible = false
+				continue
 			node.visible = true
+			entry["rise"] = lerpf(float(entry["rise"]), float(entry["target"]), t)
 			node.scale = Vector2.ONE * _CHAT_DOWNSCALE * bscale  # @2× → половина натурального
-			node.position = Vector2(pin.position.x, y)
-			y -= _CHAT_GAP * bscale
+			node.position = Vector2(pin.position.x, pin.position.y - float(entry["rise"]) * bscale)
 
 
 # Ближайшая к камере wrap-копия пина сыщика pid (видимая на экране), либо null.
