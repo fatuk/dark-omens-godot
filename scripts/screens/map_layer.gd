@@ -117,6 +117,20 @@ var _inv_markers: Array = []  # [{sprite, base, screen_off, base_scale}]
 var _inv_signature: String = ""  # для пропуска лишних перестроений
 var _token_tex: Texture2D = null  # запасной жетон (нет файла портрета)
 
+# Чат (Dark Souls-style): облачка сообщений над фишкой сыщика. Транзиентные, world-space
+# дети map_layer; в _process якорятся над БЛИЖАЙШИМ к камере пином этого pid (wrap-копии).
+# Новое — снизу стопки, старые сдвигаются вверх и растворяются. {pid: [Node2D, …]}.
+var _chat_bubbles: Dictionary = {}
+var _chat_bg: StyleBoxFlat = null  # плейсхолдер облачка (своп на ассет-NinePatch позже)
+var _chat_sfx: AudioStream = null  # звук появления (подхватится, когда придёт ассет)
+const _CHAT_SFX_PATH := "res://assets/audio/sfx/chat-message.wav"
+const _CHAT_FONT := 44  # локальный кегль (экранный ≈ ×inv·inv_factor, как у пинов)
+const _CHAT_RISE := 130.0  # подъём первого облачка над центром пина (в ед. пина)
+const _CHAT_GAP := 64.0  # шаг стопки вверх между облачками
+const _CHAT_HOLD := 4.0  # сек висит непрозрачным
+const _CHAT_FADE := 1.6  # сек растворяется
+const _CHAT_MAX := 4  # потолок облачек на сыщика
+
 # Открытые врата: по 3 пары (outer+inner) на каждые врата для wrap-копий.
 # Накопленные углы общие на все спрайты — wrap-копии крутятся синхронно.
 var _gate_markers: Array = []  # [{outer, inner, outer_h, inner_h}]
@@ -144,6 +158,10 @@ func _ready() -> void:
 		"sea": load("res://assets/map/sea.png"),
 		"wilderness": load("res://assets/map/wilderness.png"),
 	}
+	_chat_bg = _make_chat_bg()
+	if ResourceLoader.exists(_CHAT_SFX_PATH):
+		_chat_sfx = load(_CHAT_SFX_PATH)  # звук подхватится, когда ассет добавят
+	GameState.chat_received.connect(_on_chat_received)
 
 
 func load_from_file(path: String) -> void:
@@ -152,6 +170,7 @@ func load_from_file(path: String) -> void:
 	_markers.clear()
 	_inv_markers.clear()
 	_inv_signature = ""
+	_chat_bubbles.clear()  # дети уже освобождены циклом queue_free выше
 	_gate_markers.clear()
 	_gate_signature = ""
 	_entity_markers.clear()
@@ -260,6 +279,10 @@ func _process(delta: float) -> void:
 		var iscale: float = im.base_scale
 		isp.scale = Vector2.ONE * iscale * inv * inv_factor
 		isp.position = ibase + ioff * inv * inv_factor
+
+	# Облачка чата — стопкой над ближайшим к камере пином каждого сыщика.
+	if not _chat_bubbles.is_empty():
+		_layout_chat_bubbles(inv * inv_factor)
 
 	# Открытые врата — заполняют кружок маркера, оба слоя вращаются.
 	# Накопленные углы общие для всех wrap-копий — они крутятся синхронно.
@@ -783,6 +806,130 @@ func set_investigators(list: Array) -> void:
 					}
 				)
 			)
+
+
+# ── Чат: облачка сообщений над фишкой сыщика ──────────────────────────────────
+
+
+# Пришло сообщение чата (от любого игрока, вкл. себя): рендерим на своём языке и
+# поднимаем облачко над фишкой этого сыщика.
+func _on_chat_received(pid: String, phrase_id: String, noun_ids: Array) -> void:
+	var text: String = Messages.render(phrase_id, noun_ids, I18n.get_locale())
+	if text.strip_edges().is_empty():
+		return
+	_spawn_chat_bubble(pid, text)
+
+
+# Создать облачко, добавить в стопку pid (с потолком), запустить жизненный цикл, звук.
+func _spawn_chat_bubble(pid: String, text: String) -> void:
+	var b: Node2D = _make_chat_bubble(text)
+	add_child(b)
+	var stack: Array = _chat_bubbles.get(pid, [])
+	stack.append(b)
+	while stack.size() > _CHAT_MAX:
+		var old_v: Variant = stack.pop_front()
+		if is_instance_valid(old_v):
+			(old_v as Node2D).queue_free()
+	_chat_bubbles[pid] = stack
+	var tw: Tween = create_tween()
+	tw.tween_interval(_CHAT_HOLD)
+	tw.tween_property(b, "modulate:a", 0.0, _CHAT_FADE)
+	tw.tween_callback(_remove_chat_bubble.bind(pid, b))
+	if _chat_sfx != null:
+		SfxManager.play(_chat_sfx)
+
+
+func _remove_chat_bubble(pid: String, node: Node2D) -> void:
+	var stack: Array = _chat_bubbles.get(pid, [])
+	stack.erase(node)
+	if stack.is_empty():
+		_chat_bubbles.erase(pid)
+	else:
+		_chat_bubbles[pid] = stack
+	if is_instance_valid(node):
+		node.queue_free()
+
+
+# Разложить облачка над ближайшим к камере пином каждого pid (wrap-копии); новейшее —
+# снизу стопки, старые выше. Масштаб как у маркеров (bscale = inv·inv_factor).
+func _layout_chat_bubbles(bscale: float) -> void:
+	var cam_x: float = camera.position.x if is_instance_valid(camera) else 0.0
+	for pid_v: Variant in _chat_bubbles.keys():
+		var pid: String = pid_v
+		var stack: Array = _chat_bubbles[pid]
+		var pin: Node2D = _nearest_inv_pin(pid, cam_x)
+		if pin == null:
+			for n_v: Variant in stack:
+				if is_instance_valid(n_v):
+					(n_v as Node2D).visible = false
+			continue
+		var y: float = pin.position.y - _CHAT_RISE * bscale
+		for i: int in range(stack.size() - 1, -1, -1):
+			var node: Node2D = stack[i]
+			if not is_instance_valid(node):
+				continue
+			node.visible = true
+			node.scale = Vector2.ONE * bscale
+			node.position = Vector2(pin.position.x, y)
+			y -= _CHAT_GAP * bscale
+
+
+# Ближайшая к камере wrap-копия пина сыщика pid (видимая на экране), либо null.
+func _nearest_inv_pin(pid: String, cam_x: float) -> Node2D:
+	var best: Node2D = null
+	var best_d: float = INF
+	for im_v: Variant in _inv_markers:
+		var im: Dictionary = im_v
+		if String(im.get("pid", "")) != pid:
+			continue
+		var sp_v: Variant = im.get("sprite")
+		if not is_instance_valid(sp_v):
+			continue
+		var sp: Node2D = sp_v
+		var d: float = absf(sp.position.x - cam_x)
+		if d < best_d:
+			best_d = d
+			best = sp
+	return best
+
+
+# Облачко: Node2D с Panel-фоном (плейсхолдер; своп на ассет-NinePatch позже) + текст.
+func _make_chat_bubble(text: String) -> Node2D:
+	var b := Node2D.new()
+	b.name = "ChatBubble"
+	b.z_index = 9  # над пинами сыщиков (z=7)
+	var panel := Panel.new()
+	panel.name = "Cloud"
+	panel.add_theme_stylebox_override("panel", _chat_bg)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(panel)
+	var lbl := Label.new()
+	lbl.name = "Text"
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", _CHAT_FONT)
+	lbl.add_theme_color_override("font_color", Color(0.93, 0.90, 0.82))
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(lbl)
+	var pad := Vector2(30.0, 16.0)
+	var ts: Vector2 = lbl.get_minimum_size()
+	var bsize: Vector2 = ts + pad * 2.0
+	panel.size = bsize
+	panel.position = -bsize * 0.5
+	lbl.position = pad
+	lbl.size = ts
+	return b
+
+
+# Плейсхолдер фона облачка (тёмная скруглённая плашка с тонкой рамкой) до ассета.
+func _make_chat_bg() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.06, 0.05, 0.09, 0.86)
+	sb.set_corner_radius_all(18)
+	sb.set_border_width_all(2)
+	sb.border_color = Color(0.55, 0.48, 0.35, 0.7)
+	return sb
 
 
 ## Текстура маркера: портрет сыщика, либо общий жетон-кружок, если файла нет.
