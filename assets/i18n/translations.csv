@@ -1504,6 +1504,11 @@ CAST_TITLE,Чтение заклинания,Casting spell
 CAST_ROLL,Бросить кубы,Roll dice
 CAST_APPLY,Применить,Apply
 CHECK_TITLE,Проверка,Skill check
+CHAT_BACK,Назад,Back
+CHAT_CANCEL,Отмена,Cancel
+CHAT_SEND,Отправить,Send
+CHAT_PICK_TEMPLATE,Выберите фразу,Pick a phrase
+CHAT_HINT,◄ ► категории · колесо — листать · клик — выбрать,◄ ► sections · wheel scrolls · click to pick
 
 RECK_SHRIVELING_B1,"Иссохший разум крошится, и заклинание ускользает из пальцев","Your mind rots away and the spell crumbles from your grip"
 RECK_SHRIVELING_B2,"Тлен расползается под кожей, отравляя кровь","The decay spreads beneath your skin and curdles your blood"

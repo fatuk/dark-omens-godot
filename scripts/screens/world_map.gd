@@ -108,6 +108,7 @@ func _ready() -> void:
 	_build_outcome_modal()
 	_build_check_roll_modal()
 	_build_reckoning_wait_overlay()
+	_build_chat_composer()
 	_build_hand_carousel()
 	_refresh_game_panel()
 	_refresh_investigators()
@@ -198,6 +199,13 @@ func _build_reckoning_wait_overlay() -> void:
 	var ov: CanvasLayer = load("res://scripts/ui/reckoning_wait_overlay.gd").new()
 	ov.name = "ReckoningWaitOverlay"
 	add_child(ov)
+
+
+# Композер чата (C): веер шаблонов → веер слов по секциям → центр-превью → Отправить.
+func _build_chat_composer() -> void:
+	var cc: CanvasLayer = load("res://scripts/ui/chat_composer.gd").new()
+	cc.name = "ChatComposer"
+	add_child(cc)
 
 
 # Веер карт руки — открывается по Tab. Карты берём из реального имущества
