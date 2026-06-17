@@ -147,10 +147,10 @@ const _CHAT_DOWNSCALE := 0.5  # @2×: рисуем ассет в половин�
 const _CHAT_FONT := 70  # native кегль (экранный ≈ ×0.5·inv·inv_factor)
 const _CHAT_MIN_W := 300.0  # native мин. ширина баллона (для коротких сообщений)
 const _CHAT_PAD_X := 140.0  # native отступ текста от краёв баллона по ГОРИЗОНТАЛИ
-const _CHAT_PAD_Y := 30.0  # native отступ текста от краёв баллона по ВЕРТИКАЛИ (симметрично X)
+const _CHAT_PAD_Y := 100.0  # native отступ текста от краёв баллона по ВЕРТИКАЛИ (симметрично X)
 const _CHAT_TEXT_PAD := 10.0  # доп. отступ-«воздух» вокруг текста (native; ≈5 экранных @0.5)
 const _CHAT_RISE := 130.0  # подъём НОВОГО облачка над центром пина (экранно, ×inv·inv_factor)
-const _CHAT_GAP := 70.0  # шаг стопки вверх между облачками (экранно)
+const _CHAT_GAP := 16.0  # ВОЗДУХ между краями соседних облачек (rise-ед.; высота баллона учтена)
 const _CHAT_SPAWN_DROP := 46.0  # на сколько НИЖЕ target стартует новое (всплытие снизу)
 const _CHAT_EXIT_RISE := 10.0  # на сколько уезжает вверх облачко при растворении (уход)
 const _CHAT_SMOOTH := 9.0  # скорость лёрпа подъёма/сдвига (экспон. сглаживание)
@@ -883,15 +883,31 @@ func _spawn_chat_bubble(pid: String, text: String) -> void:
 
 
 # Пересчитать target-подъёмы ЖИВЫХ облачек pid: новейшее — слот 0 (внизу), старые выше.
+# rise — это смещение от пина до ЦЕНТРА облачка, поэтому разнос центр-к-центру =
+# ½·высоты нижнего + _CHAT_GAP (воздух между краями) + ½·высоты верхнего. Так стопка не
+# наезжает при любой высоте баллона (крупный _CHAT_PAD_Y).
 func _reslot_chat(pid: String) -> void:
 	var live: Array = []
 	for e_v: Variant in _chat_bubbles.get(pid, []):
 		if not bool((e_v as Dictionary).get("dying", false)):
 			live.append(e_v)  # порядок: старые → новые
 	var n: int = live.size()
-	for i: int in range(n):
-		var slot: int = n - 1 - i  # старейший живой → верхний слот, новейший → 0
-		(live[i] as Dictionary)["target"] = _CHAT_RISE + float(slot) * _CHAT_GAP
+	var center := 0.0
+	var prev_half := 0.0
+	for slot: int in range(n):  # slot 0 — новейшее (внизу), дальше старые выше
+		var entry: Dictionary = live[n - 1 - slot]
+		var half: float = _chat_bubble_half_h(entry)
+		center = _CHAT_RISE if slot == 0 else center + prev_half + _CHAT_GAP + half
+		entry["target"] = center
+		prev_half = half
+
+
+# Половина высоты баллона в rise-единицах (записана в _fit_chat_bubble; 0 — ещё не подогнан).
+func _chat_bubble_half_h(entry: Dictionary) -> float:
+	var node: Node2D = entry.get("node")
+	if is_instance_valid(node) and node.has_meta("chat_rise_h"):
+		return float(node.get_meta("chat_rise_h")) * 0.5
+	return 0.0
 
 
 # Отправить облачко растворяться (идемпотентно): fade-out → удалить. Живые пересчитываются.
@@ -1012,6 +1028,9 @@ func _fit_chat_bubble(b: Node2D) -> void:
 	bg.scale = Vector2(target_w / tex.x, target_h / tex.y)
 	lbl.position = -ts * 0.5  # текст по центру (origin)
 	lbl.size = ts
+	# Высота баллона в rise-единицах (native·_CHAT_DOWNSCALE) — для расчёта разноса в стопке,
+	# чтобы соседние облачка не наезжали при крупном _CHAT_PAD_Y. См. _reslot_chat.
+	b.set_meta("chat_rise_h", target_h * _CHAT_DOWNSCALE)
 
 
 ## Текстура маркера: портрет сыщика, либо общий жетон-кружок, если файла нет.
