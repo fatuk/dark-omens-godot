@@ -99,6 +99,8 @@ const ARROW_TEX_L := "res://assets/L_arrow.png"
 const ARROW_TEX_R := "res://assets/R_arrow.png"
 # Минимальная высота области клика (запас для попадания).
 const ARROW_MIN_H := 64.0
+# Отступ шевронов от КРАЯ экрана (статично, чтобы не прыгали от ширины веера).
+const ARROW_EDGE_X := 56.0
 # Дёрг стрелки при нажатии (как в пикере сыщиков): наружу и обратно.
 const ARROW_NUDGE_PX := 12.0
 const ARROW_NUDGE_OUT := 0.10
@@ -332,19 +334,17 @@ func _make_arrow(tex_path: String, dir: int) -> Control:
 	return a
 
 
-# Стрелки — ВПРИТЫК к бокам веера (а не к краям экрана), по его вертикали; заголовок
-# секции — ПОД нижним краем колоды по центру.
+# Стрелки — СТАТИЧНО у краёв экрана (а не впритык к вееру: иначе прыгают от ширины веера/
+# числа карт в секции), по вертикали веера; заголовок секции — ПОД нижним краем колоды.
 func _position_chrome() -> void:
 	if not is_instance_valid(_arrow_l) or not is_instance_valid(_arrow_r):
 		return
 	var vp: Vector2 = get_viewport().get_visible_rect().size
-	var cx: float = vp.x * 0.5
-	var half: float = _mid * GAP_X + CARD_W * 0.6 + 40.0  # полуширина веера + отступ
 	var cy: float = _p0().y + CARD_H * 0.5  # вертикальный центр веера
 	var aw: float = _arrow_r.size.x
 	var ah: float = _arrow_r.size.y
-	_arrow_l.position = Vector2(cx - half - aw, cy - ah * 0.5)
-	_arrow_r.position = Vector2(cx + half, cy - ah * 0.5)
+	_arrow_l.position = Vector2(ARROW_EDGE_X, cy - ah * 0.5)
+	_arrow_r.position = Vector2(vp.x - ARROW_EDGE_X - aw, cy - ah * 0.5)
 	_arrow_l.set_meta("rest_x", _arrow_l.position.x)  # true-rest по X для нуджа
 	_arrow_r.set_meta("rest_x", _arrow_r.position.x)
 	# Подпись секции — под колодой (нижний край карт + отступ).

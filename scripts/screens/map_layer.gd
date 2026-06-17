@@ -830,6 +830,7 @@ func _on_chat_received(pid: String, phrase_id: String, noun_ids: Array) -> void:
 func _spawn_chat_bubble(pid: String, text: String) -> void:
 	var b: Node2D = _make_chat_bubble(text)
 	add_child(b)
+	_fit_chat_bubble(b)  # размер по тексту — ТОЛЬКО в дереве (иначе get_minimum_size = 0)
 	var stack: Array = _chat_bubbles.get(pid, [])
 	stack.append(b)
 	while stack.size() > _CHAT_MAX:
@@ -924,14 +925,24 @@ func _make_chat_bubble(text: String) -> Node2D:
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(lbl)
-	# Высота фикс. (= текстуре), ширина под текст (но не уже суммы шапок).
+	return b  # размер — в _fit_chat_bubble ПОСЛЕ add_child (иначе get_minimum_size пустой)
+
+
+# Подогнать облачко под текст: высота фикс. (= текстуре), ширина по тексту (но не уже
+# суммы шапок). Вызывать ТОЛЬКО когда нода уже в дереве (шрифт разрешён → размер верный).
+func _fit_chat_bubble(b: Node2D) -> void:
+	var panel: Panel = b.get_node_or_null("Cloud") as Panel
+	if panel == null:
+		return
+	var lbl: Label = panel.get_node_or_null("Text") as Label
+	if lbl == null:
+		return
 	var ts: Vector2 = lbl.get_minimum_size()
 	var bsize := Vector2(maxf(_CHAT_MIN_W, ts.x + _CHAT_PAD_X * 2.0), _CHAT_BALLOON_H)
 	panel.size = bsize
 	panel.position = -bsize * 0.5
 	lbl.position = Vector2.ZERO
 	lbl.size = bsize  # текст по центру всего баллона
-	return b
 
 
 # Фон облачка из ассета-баллона: NinePatch — растягиваем ТОЛЬКО центр по ширине, рваные
