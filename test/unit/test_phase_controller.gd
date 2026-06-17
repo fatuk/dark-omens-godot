@@ -155,6 +155,12 @@ class MockGameState:
 	func _emit_changed() -> void:
 		pass
 
+	func loc_name_key(loc_id: String) -> String:
+		return loc_id
+
+	func announce_action(_pid: String, _action_id: String, _params: Dictionary = {}) -> void:
+		pass
+
 
 func before_each() -> void:
 	_gs = autofree(MockGameState.new())

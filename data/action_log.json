@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "name": "Dark Omens — Action Feed Dictionary",
+    "version": "0.1.0",
+    "languages": ["en", "ru"],
+    "purpose": "Transient 'action feed': every investigator's standard action is broadcast as a short literary bubble over their map pin, so waiting players can read what others are doing. Mirrors the chat bubble system but the text is auto-generated from the action, not player-composed.",
+    "placeholders": {
+      "place": "{place}",
+      "monster": "{monster}",
+      "condition": "{condition}",
+      "note": "Placeholder values are i18n KEYS (LOC_*_NAME / MONSTER_*_NAME / COND_*_NAME), resolved on each client via TranslationServer in its own locale. Never send pre-rendered text."
+    },
+    "style": [
+      "No investigator name — the bubble floats over the actor's pin, so who is already obvious (Dark Souls feel).",
+      "Third person, terse, atmospheric.",
+      "Proper-noun params appear as NOMINATIVE appositions set off by punctuation (ellipsis / period), e.g. ru 'Держит путь… {place}.' — this stays grammatically valid for any RU name regardless of gender/case, matching the grammar-invariant design of the chat dictionary.",
+      "ids stay in English (stable code identifiers); only en/ru are human-readable."
+    ]
+  },
+  "actions": [
+    {"id": "travel",             "en": "Sets out — {place}.",            "ru": "Держит путь… {place}."},
+    {"id": "buy_ticket",         "en": "Buys passage onward.",            "ru": "Берёт билет в дорогу."},
+    {"id": "take_concentration", "en": "Gathers focus.",                  "ru": "Собирается с мыслями."},
+    {"id": "rest",               "en": "Stops to rest.",                  "ru": "Переводит дух."},
+    {"id": "trade",              "en": "Trades supplies.",                "ru": "Делится снаряжением."},
+    {"id": "acquire_assets",     "en": "Browses the shops.",              "ru": "Заходит в лавки."},
+    {"id": "condition_action",   "en": "Fights an affliction — {condition}.", "ru": "Силится одолеть… {condition}."},
+    {"id": "cast_spell",         "en": "Whispers an incantation.",        "ru": "Шепчет заклинание."},
+
+    {"id": "combat",             "en": "A clash! {monster}.",             "ru": "Схватка! {monster}."},
+    {"id": "combat_won",         "en": "The foe falls. {monster}.",       "ru": "Враг повержен. {monster}."},
+    {"id": "combat_lost",        "en": "The foe endures. {monster}.",     "ru": "Враг уцелел. {monster}."},
+    {"id": "gate",               "en": "Steps through the gate…",         "ru": "Шаг во врата…"},
+    {"id": "research",           "en": "Searches for clues.",             "ru": "Ищет улики."},
+    {"id": "mystery",            "en": "Pries at the Mystery.",           "ru": "Подступает к Тайне."},
+    {"id": "eldritch",           "en": "Reads the omens here.",           "ru": "Читает знамения места."},
+    {"id": "encounter",          "en": "Faces the unknown.",              "ru": "Встречает неизвестное."}
+  ]
+}

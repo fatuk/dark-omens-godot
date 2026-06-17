@@ -36,6 +36,12 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 	if pid.is_empty() or not _gs.players.has(pid):
 		return
 
+	# Лента действий: тип не-боевой встречи (бой → _begin_combat, eldritch → _begin_eldritch_move).
+	var feed_id: String = {"research": "research", "gate": "gate", "mystery": "mystery"}.get(
+		kind, "encounter"
+	)
+	_gs.announce_action(pid, feed_id)
+
 	# Новый токен — инвалидирует любой предыдущий generate(), ещё висящий в await.
 	_gen_token += 1
 	var token: int = _gen_token
@@ -189,6 +195,7 @@ func _begin_eldritch_move(pid: String) -> void:
 		"eldritch_loc": loc,
 		"hook": hook,
 	}
+	_gs.announce_action(pid, "eldritch")  # лента: изучает знамения места
 	_start_check_for_encounter(pid)
 	GameConsole.log("[Знамение] %s изучает место, чтобы связать его с Тайной" % _gs._name_of(pid))
 	_gs._broadcast_sync()
@@ -233,6 +240,7 @@ func _begin_combat(pid: String) -> void:
 		"toughness": tough,  # изначальная стойкость (для шкалы)
 		"health": cur,  # текущее здоровье экземпляра
 	}
+	_gs.announce_action(pid, "combat", {"monster": String(m.get("nameKey", mid))})  # лента: бой
 	_start_combat_will(pid)  # проверка Воли (pre-roll) — окно активации карт до броска
 	GameConsole.log("[Бой] %s vs %s (здоровье %d/%d)" % [_gs._name_of(pid), mid, cur, tough])
 	_gs._broadcast_sync()
@@ -564,6 +572,9 @@ func _commit_combat(pid: String) -> void:
 	if not enc.has("resolution"):
 		enc["resolution"] = _combat_resolution(enc, _gs.active_check)
 	var r: Dictionary = enc["resolution"]
+	var won: bool = bool(r.get("won", false))
+	var mon_name: String = String(enc.get("monsterName", ""))
+	_gs.announce_action(pid, "combat_won" if won else "combat_lost", {"monster": mon_name})
 	var hp_loss: int = int(r.get("hp_loss", 0))
 	if hp_loss > 0:
 		p["hp"] = maxi(0, int(p.get("hp", 0)) - hp_loss)

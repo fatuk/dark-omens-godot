@@ -147,10 +147,10 @@ const _CHAT_DOWNSCALE := 0.5  # @2×: рисуем ассет в половин�
 const _CHAT_FONT := 70  # native кегль (экранный ≈ ×0.5·inv·inv_factor)
 const _CHAT_MIN_W := 300.0  # native мин. ширина баллона (для коротких сообщений)
 const _CHAT_PAD_X := 140.0  # native отступ текста от краёв баллона по ГОРИЗОНТАЛИ
-const _CHAT_PAD_Y := 100.0  # native отступ текста от краёв баллона по ВЕРТИКАЛИ (симметрично X)
+const _CHAT_PAD_Y := 80.0  # native отступ текста от краёв баллона по ВЕРТИКАЛИ (симметрично X)
 const _CHAT_TEXT_PAD := 10.0  # доп. отступ-«воздух» вокруг текста (native; ≈5 экранных @0.5)
 const _CHAT_RISE := 130.0  # подъём НОВОГО облачка над центром пина (экранно, ×inv·inv_factor)
-const _CHAT_GAP := 16.0  # ВОЗДУХ между краями соседних облачек (rise-ед.; высота баллона учтена)
+const _CHAT_GAP := -5.0  # ВОЗДУХ между краями соседних облачек (rise-ед.; высота баллона учтена)
 const _CHAT_SPAWN_DROP := 46.0  # на сколько НИЖЕ target стартует новое (всплытие снизу)
 const _CHAT_EXIT_RISE := 10.0  # на сколько уезжает вверх облачко при растворении (уход)
 const _CHAT_SMOOTH := 9.0  # скорость лёрпа подъёма/сдвига (экспон. сглаживание)
@@ -192,6 +192,7 @@ func _ready() -> void:
 	if ResourceLoader.exists(_CHAT_SFX_PATH):
 		_chat_sfx = load(_CHAT_SFX_PATH)  # звук подхватится, когда ассет добавят
 	GameState.chat_received.connect(_on_chat_received)
+	GameState.action_announced.connect(_on_action_announced)
 
 
 func load_from_file(path: String) -> void:
@@ -845,6 +846,14 @@ func set_investigators(list: Array) -> void:
 # поднимаем облачко над фишкой этого сыщика.
 func _on_chat_received(pid: String, phrase_id: String, noun_ids: Array) -> void:
 	var text: String = Messages.render(phrase_id, noun_ids, I18n.get_locale())
+	if text.strip_edges().is_empty():
+		return
+	_spawn_chat_bubble(pid, text)
+
+
+# Лента действий: то же облачко над фишкой, текст — из ActionLog по id (рендер в своей локали).
+func _on_action_announced(pid: String, action_id: String, params: Dictionary) -> void:
+	var text: String = ActionLog.render(action_id, params, I18n.get_locale())
 	if text.strip_edges().is_empty():
 		return
 	_spawn_chat_bubble(pid, text)

@@ -170,6 +170,8 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 		used.append(action_type)
 		p["actions_used"] = used
 
+	_announce_action_feed(pid, action_type, payload)  # облачко над фишкой: все видят действие
+
 	GameConsole.log(
 		(
 			"[Game] %s · %s · осталось действий: %d"
@@ -191,6 +193,22 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
+
+
+# Транзиентная «лента действий»: над фишкой игрока всплывает облачко с литературным описанием
+# (ActionLog) — все видят, что он делает. Зовётся ПОСЛЕ успешного коммита. params — i18n-ключи
+# (локация/состояние), клиент сам tr(). pass не анонсируем (шум), исход боя — в encounter_flow.
+func _announce_action_feed(pid: String, action_type: String, payload: Dictionary) -> void:
+	match action_type:
+		"travel":
+			var dest: String = String(payload.get("to", ""))
+			_gs.announce_action(pid, "travel", {"place": _gs.loc_name_key(dest)})
+		"condition_action":
+			var cid: String = String(payload.get("condition", ""))
+			_gs.announce_action(pid, "condition_action", {"condition": Conditions.name_key(cid)})
+		"buy_ticket", "take_concentration", "rest", "trade", "acquire_assets", "cast_spell":
+			_gs.announce_action(pid, action_type)
+		# "pass" — не анонсируем
 
 
 ## Хост: игрок подтвердил выбор триггер-заклинаний в промпте отдыха (item-индексы;

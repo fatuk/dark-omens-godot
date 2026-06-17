@@ -18,6 +18,7 @@ signal phase_changed(new_phase: String)  # переход фазы
 signal mythos_decided(idx: int)  # сыщик выбрал ветку в forEach-проходе Мифов
 signal effect_check_applied(pid: String, passed: bool)  # игрок применил видимую проверку test (корутины)
 signal chat_received(pid: String, phrase_id: String, noun_ids: Array)  # транзиентный чат (Dark Souls-style)
+signal action_announced(pid: String, action_id: String, params: Dictionary)  # транзиентная лента действий
 
 const ACTIONS_PER_ROUND := 2
 const MAX_TICKETS := 2  # потолок билетов на руках (ж/д + корабль суммарно), как в EH
@@ -807,6 +808,18 @@ func send_chat(phrase_id: String, noun_ids: Array) -> void:
 	chat_received.emit(my_pid, phrase_id, nouns)  # своё — рисуем локально (реле его не вернёт)
 
 
+## Транзиентная «лента действий»: над фишкой действующего игрока (pid) у ВСЕХ всплывает
+## облачко с литературным описанием действия (ActionLog). НЕ часть snapshot. Зовётся ТОЛЬКО
+## хостом после коммита действия (host_apply_action / encounter_flow). Реле шлёт всем КРОМЕ
+## хоста-отправителя, поэтому хост ещё и локально эмитит (как send_chat). params —
+## {placeholder: i18n-ключ}; каждый клиент сам tr() в своей локали.
+func announce_action(pid: String, action_id: String, params: Dictionary = {}) -> void:
+	if not _is_host() or pid.is_empty() or action_id.is_empty():
+		return
+	_nm.relay_all({"action": "game_action_feed", "pid": pid, "id": action_id, "params": params})
+	action_announced.emit(pid, action_id, params)  # своё — рисуем локально (реле его не вернёт)
+
+
 ## Активный игрок подтвердил выбор триггер-заклинаний (item-индексы) в промпте
 ## pending_spell_cast (напр. при отдыхе): хост кастует только выбранные и чистит
 ## промпт. Пустой список — «ничего не кастить» (промпт всё равно закрывается).
@@ -1049,6 +1062,15 @@ func location_type(loc_id: String) -> String:
 		if String((loc as Dictionary).get("id", "")) == loc_id:
 			return String((loc as Dictionary).get("type", ""))
 	return ""
+
+
+## i18n-ключ игрового имени локации (LOC_*_NAME) по id; fallback — сам id. Для ленты
+## действий: ключ шлём в announce_action, клиент сам tr() в своей локали.
+func loc_name_key(loc_id: String) -> String:
+	for loc in _load_locations():
+		if String((loc as Dictionary).get("id", "")) == loc_id:
+			return String((loc as Dictionary).get("name", loc_id))
+	return loc_id
 
 
 ## Какие билеты можно купить в локации (по типам исходящих дорог). Билеты продаются
@@ -1380,6 +1402,15 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 			var c_phrase: String = String(data.get("phrase_id", ""))
 			if not c_pid.is_empty() and not Messages.phrase(c_phrase).is_empty():
 				chat_received.emit(c_pid, c_phrase, (data.get("noun_ids", []) as Array).slice(0, 2))
+
+		"game_action_feed":
+			# Транзиентная лента действий: рассылает хост, рендерим локально по id (как
+			# game_chat). Не в snapshot. params — плейсхолдер→i18n-ключ (клиент сам tr()).
+			var f_pid: String = String(data.get("pid", ""))
+			var f_id: String = String(data.get("id", ""))
+			if not f_pid.is_empty() and not ActionLog.entry(f_id).is_empty():
+				var f_params: Variant = data.get("params", {})
+				action_announced.emit(f_pid, f_id, f_params if f_params is Dictionary else {})
 
 		"game_cast_trigger_spells":
 			if _is_host():
