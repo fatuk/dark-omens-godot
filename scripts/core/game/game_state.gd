@@ -793,25 +793,18 @@ func _reckoning_apply_host(pid: String) -> bool:
 # ── Чат (Dark Souls-style): транзиентный broadcast, НЕ часть snapshot ──────────
 
 
-## Отправить сообщение чата (шаблон + выбранные слова) — broadcast ВСЕМ включая себя
-## (relay эхо-возвращает отправителю → облачко покажется и над своей фишкой). Текст не
-## шлём: каждый клиент рендерит локально по id на своём языке. Лёгкий кулдаун от спама.
+## Отправить сообщение чата (шаблон + выбранные слова). Реле шлёт всем КРОМЕ отправителя
+## (обычный relay исключает self), поэтому СВОЁ облачко просто рисуем локально тут же
+## (chat_received → map_layer). Текст не шлём: каждый клиент рендерит по id на своём языке.
 func send_chat(phrase_id: String, noun_ids: Array) -> void:
 	var now: int = Time.get_ticks_msec()
 	if now - _chat_last_ms < CHAT_COOLDOWN_MS:
 		return
 	_chat_last_ms = now
-	(
-		_nm
-		. relay_all(
-			{
-				"action": "game_chat",
-				"pid": _nm.my_user_id,
-				"phrase_id": phrase_id,
-				"noun_ids": (noun_ids as Array).slice(0, 2),
-			}
-		)
-	)
+	var nouns: Array = (noun_ids as Array).slice(0, 2)
+	var my_pid: String = _nm.my_user_id
+	_nm.relay_all({"action": "game_chat", "pid": my_pid, "phrase_id": phrase_id, "noun_ids": nouns})
+	chat_received.emit(my_pid, phrase_id, nouns)  # своё — рисуем локально (реле его не вернёт)
 
 
 ## Активный игрок подтвердил выбор триггер-заклинаний (item-индексы) в промпте
