@@ -163,6 +163,8 @@ func host_apply_choose(pid: String, kind: String) -> bool:
 		_begin_combat(pid)
 	elif kind == "eldritch":
 		_begin_eldritch_move(pid)
+	elif kind == "rumor":
+		_begin_rumor_encounter(pid)
 	elif kind == "local":
 		generate("general", true)  # локационная встреча (привязанная к клетке)
 	else:
@@ -200,6 +202,41 @@ func _begin_eldritch_move(pid: String) -> void:
 	GameConsole.log("[Знамение] %s изучает место, чтобы связать его с Тайной" % _gs._name_of(pid))
 	_gs._broadcast_sync()
 	_gs._emit_changed()
+
+
+# Хост: встреча-решение Слуха (solve=encounter) на клетке слуха. Имя/текст — с карты
+# Слуха, проверка — из rumor.solve.test (дефолт Знание). На успехе (_commit_rumor) Слух
+# развеивается. Без хука/cost (cost — следующая итерация); сейчас — навыковая проверка.
+func _begin_rumor_encounter(pid: String) -> void:
+	if not _gs._is_host():
+		return
+	var loc: String = String(_gs.players[pid].get("location", ""))
+	var card: Dictionary = _gs._rumor.encounter_card_for(loc)
+	if card.is_empty():
+		generate("general")  # слуха тут уже нет (страховка)
+		return
+	var ru: bool = I18n.get_locale() == "ru"
+	_gs.current_encounter = {
+		"kind": "rumor",
+		"name": String(card.get("name", "Слух" if ru else "Rumor")),
+		"mainText": String(card.get("text", "")),
+		"test": _gs._rumor.encounter_test(loc),
+		"successText": "Слух развеян." if ru else "The Rumor is dispelled.",
+		"failureText": "Слух не поддаётся." if ru else "The Rumor resists.",
+		"rumor_loc": loc,
+	}
+	_gs.announce_action(pid, "research")  # лента: «ищет улики» (ближайшее по смыслу)
+	_start_check_for_encounter(pid)
+	GameConsole.log("[Слух] %s разыгрывает встречу-решение на %s" % [_gs._name_of(pid), loc])
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+
+
+# Итог встречи-решения Слуха: успех — развеять Слух на его локации; провал — ничего.
+func _commit_rumor(_pid: String) -> void:
+	if bool(_gs.active_check.get("passed", false)):
+		_gs._rumor.solve_encounter_at(String(_gs.current_encounter.get("rumor_loc", "")))
+	_gs._check.clear()
 
 
 # ── Бой (локально, по статам монстра из MonsterCatalog) ───────────────────────
@@ -403,6 +440,9 @@ func _compute_choices(pid: String) -> Array:
 	# или метка Тайны) и игрок может оплатить cost — см. GameState.mystery_encounter_hook.
 	if not _gs._mystery.mystery_encounter_hook(loc, pid).is_empty():
 		out.append("eldritch")
+	# Слух с solve=encounter: игрок на клетке слуха может разыграть встречу-решение.
+	if not _gs._rumor.encounter_location_for(pid).is_empty():
+		out.append("rumor")
 	return out
 
 
@@ -542,6 +582,10 @@ func _commit_outcome(pid: String) -> void:
 	if kind == "eldritch":
 		enc["committed"] = true
 		_commit_eldritch(pid)
+		return
+	if kind == "rumor":
+		enc["committed"] = true
+		_commit_rumor(pid)
 		return
 	var passed: bool = bool(_gs.active_check.get("passed", false))
 	if kind == "gate" or kind == "mystery":

@@ -13,6 +13,7 @@ class MockBoard:
 	extends RefCounted
 	var _gs: Node
 	var next_loc: String = "portalLoc"  # что вернёт open_gate (или "" — нет гейт-локаций)
+	var marked: Array = []  # локации с меткой слуха (place_rumor_at)
 
 	func _init(gs: Node) -> void:
 		_gs = gs
@@ -23,11 +24,20 @@ class MockBoard:
 		_gs.gates[next_loc] = "green"
 		return next_loc
 
+	func place_rumor_at(loc: String) -> void:
+		if not marked.has(loc):
+			marked.append(loc)
+
+	func remove_rumor_at(loc: String) -> void:
+		marked.erase(loc)
+
 
 class MockGS:
 	extends Node
 	var gates: Dictionary = {}
 	var mythos_in_play: Array = []
+	var players: Dictionary = {}
+	var locations: Array = []
 	var doom: int = 0
 	var _board: MockBoard
 
@@ -36,6 +46,9 @@ class MockGS:
 
 	func _is_host() -> bool:
 		return true
+
+	func _load_locations() -> Array:
+		return locations
 
 	# Зеркало GameState._apply_board_effect (минимум): advanceDoom с учётом _times (repeat).
 	func _apply_board_effect(node: Dictionary) -> void:
@@ -167,3 +180,44 @@ func test_solve_on_gate_close_ignores_unrelated_location() -> void:
 	_gs.mythos_in_play = [r1]
 	_rumor.solve_on_gate_close("elsewhere", "p1")
 	assert_eq(_gs.mythos_in_play.size(), 1, "врата не на портале — Слух остаётся")
+
+
+# ── solve=encounter ───────────────────────────────────────────────────────────
+
+
+func test_on_enter_encounter_kind_marks_location_no_gate() -> void:
+	_gs.locations = [{"id": "loc7"}]
+	var card: Dictionary = _rumor_card(3, {"solve": {"kind": "encounter"}})
+	_rumor.on_enter(card)
+	assert_eq(String(card.get("rumorLocation", "")), "loc7", "локация-метка записана")
+	assert_true(_gs._board.marked.has("loc7"), "метка слуха поставлена")
+	assert_false(_gs.gates.has("loc7"), "врата НЕ открывались (encounter, не gateClose)")
+
+
+func test_encounter_location_for_player_on_spot() -> void:
+	var card: Dictionary = _rumor_card(2, {"solve": {"kind": "encounter"}}, "Слух-E")
+	card["rumorLocation"] = "loc7"
+	_gs.mythos_in_play = [card]
+	_gs.players = {"p1": {"location": "loc7"}}
+	assert_eq(_rumor.encounter_location_for("p1"), "loc7", "игрок на клетке слуха")
+	assert_eq(_rumor.encounter_location_for("p2"), "", "игрока p2 нет")
+
+
+func test_solve_encounter_at_removes_and_unmarks() -> void:
+	var card: Dictionary = _rumor_card(2, {"solve": {"kind": "encounter"}}, "Слух-E")
+	card["rumorLocation"] = "loc7"
+	_gs.mythos_in_play = [card]
+	_gs._board.place_rumor_at("loc7")
+	assert_true(_rumor.solve_encounter_at("loc7"), "встреча развеяла Слух")
+	assert_eq(_gs.mythos_in_play.size(), 0, "карта ушла из игры")
+	assert_false(_gs._board.marked.has("loc7"), "метка снята")
+
+
+func test_encounter_test_custom_and_default() -> void:
+	var card: Dictionary = _rumor_card(
+		1, {"solve": {"kind": "encounter", "test": {"skill": "observation", "modifier": 1}}}
+	)
+	card["rumorLocation"] = "L"
+	_gs.mythos_in_play = [card]
+	assert_eq(String(_rumor.encounter_test("L").get("skill", "")), "observation", "тест с карты")
+	assert_eq(String(_rumor.encounter_test("none").get("skill", "")), "lore", "дефолт — Знание")

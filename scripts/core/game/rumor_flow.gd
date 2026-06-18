@@ -47,23 +47,36 @@ func on_enter(card: Dictionary) -> void:
 		return
 	var rumor: Dictionary = card.get("rumor", {})
 	card["tokens"] = maxi(0, int(rumor.get("tokens", 0)))
-	if solve_kind(card) == "gateClose":
-		var loc: String = String(_gs._board.open_gate(""))  # случайная свободная гейт-локация
-		card["rumorLocation"] = loc
-		if loc.is_empty():
-			GameConsole.warn("[Слух] «%s» — нет свободной гейт-локации для портала" % _name(card))
-		else:
+	match solve_kind(card):
+		"gateClose":
+			var loc: String = String(_gs._board.open_gate(""))  # случайная свободная гейт-локация
+			card["rumorLocation"] = loc
+			if loc.is_empty():
+				GameConsole.warn(
+					"[Слух] «%s» — нет свободной гейт-локации для портала" % _name(card)
+				)
+			else:
+				GameConsole.log(
+					(
+						"[Слух] «%s»: портал на %s, жетонов %d"
+						% [_name(card), loc, int(card["tokens"])]
+					)
+				)
+		"encounter":
+			# Метка слуха на локации — туда идут разыгрывать встречу-решение.
+			var eloc: String = _pick_marked_location()
+			card["rumorLocation"] = eloc
 			GameConsole.log(
-				"[Слух] «%s»: портал на %s, жетонов %d" % [_name(card), loc, int(card["tokens"])]
+				"[Слух] «%s»: встреча на %s, жетонов %d" % [_name(card), eloc, int(card["tokens"])]
 			)
-	else:
-		# encounter/monsterDefeated/toughnessOnCard — решение придёт в следующих фазах.
-		GameConsole.log(
-			(
-				"[Слух] «%s» в игре (solve=%s), жетонов %d"
-				% [_name(card), solve_kind(card), int(card["tokens"])]
+		_:
+			# monsterDefeated/toughnessOnCard — следующая фаза.
+			GameConsole.log(
+				(
+					"[Слух] «%s» в игре (solve=%s), жетонов %d"
+					% [_name(card), solve_kind(card), int(card["tokens"])]
+				)
 			)
-		)
 
 
 ## Расплата Слуха: прогнать onReckoning (дефолт — снять 1 жетон); если жетонов стало 0 —
@@ -92,6 +105,67 @@ func solve_on_gate_close(loc: String, _pid: String) -> void:
 			and String(card.get("rumorLocation", "")) == loc
 		):
 			_solve(card, "портал закрыт на %s" % loc)
+
+
+# ── Решение через встречу (solve=encounter) ──────────────────────────────────
+
+
+## Локация encounter-Слуха, совпадающая с локацией игрока ("" — нет). Для EncounterFlow:
+## предложить встречу-решение на клетке слуха.
+func encounter_location_for(pid: String) -> String:
+	if not _gs.players.has(pid):
+		return ""
+	var loc: String = String(_gs.players[pid].get("location", ""))
+	return loc if not _encounter_card_at(loc).is_empty() else ""
+
+
+## Карта encounter-Слуха на локации loc ({} — нет).
+func _encounter_card_at(loc: String) -> Dictionary:
+	if loc.is_empty():
+		return {}
+	for c_v: Variant in _gs.mythos_in_play as Array:
+		var card: Dictionary = c_v
+		if (
+			is_rumor(card)
+			and solve_kind(card) == "encounter"
+			and String(card.get("rumorLocation", "")) == loc
+		):
+			return card
+	return {}
+
+
+## Имя/текст карты encounter-Слуха на локации (для модалки встречи). {} — нет.
+func encounter_card_for(loc: String) -> Dictionary:
+	return _encounter_card_at(loc)
+
+
+## Тест-узел встречи-решения (solve.test), дефолт — Знание.
+func encounter_test(loc: String) -> Dictionary:
+	var card: Dictionary = _encounter_card_at(loc)
+	var solve: Dictionary = (card.get("rumor", {}) as Dictionary).get("solve", {})
+	return solve.get("test", {"skill": "lore", "modifier": 0})
+
+
+## Развеять encounter-Слух на loc (после УСПЕХА встречи). true — развеян. Снимает метку.
+func solve_encounter_at(loc: String) -> bool:
+	if not _gs._is_host():
+		return false
+	var card: Dictionary = _encounter_card_at(loc)
+	if card.is_empty():
+		return false
+	_gs._board.remove_rumor_at(loc)
+	_solve(card, "встреча у Слуха на %s" % loc)
+	return true
+
+
+# Выбрать случайную локацию для метки encounter-Слуха и поставить метку. "" — нет локаций.
+func _pick_marked_location() -> String:
+	var locs: Array = _gs._load_locations()
+	if (locs as Array).is_empty():
+		return ""
+	var loc: String = String((locs[randi() % locs.size()] as Dictionary).get("id", ""))
+	_gs._board.place_rumor_at(loc)
+	return loc
 
 
 # ── Внутреннее ────────────────────────────────────────────────────────────────

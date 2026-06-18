@@ -524,6 +524,30 @@ func discard_all_gates() -> int:
 	return removed
 
 
+## Положить метку слуха на КОНКРЕТНУЮ локацию (для Слуха с solve=encounter — куда идти
+## развеивать). Идемпотентно. Отдельная иконка "rumor" (не путать с eldritch_token Тайны).
+func place_rumor_at(loc_id: String) -> void:
+	if not _gs._is_host() or loc_id.is_empty():
+		return
+	var arr: Array = _gs.entities.get(loc_id, [])
+	if not (arr as Array).has("rumor"):
+		arr.append("rumor")
+		_gs.entities[loc_id] = arr
+
+
+## Снять метку слуха с локации (после развеивания encounter-Слуха).
+func remove_rumor_at(loc_id: String) -> void:
+	if not _gs._is_host() or loc_id.is_empty():
+		return
+	var arr: Array = _gs.entities.get(loc_id, [])
+	if (arr as Array).has("rumor"):
+		arr.erase("rumor")
+		if (arr as Array).is_empty():
+			_gs.entities.erase(loc_id)
+		else:
+			_gs.entities[loc_id] = arr
+
+
 ## Положить слух на случайную локацию.
 func place_rumor() -> void:
 	if not _gs._is_host():
