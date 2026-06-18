@@ -1066,6 +1066,16 @@ func location_type(loc_id: String) -> String:
 	return ""
 
 
+## Карты-Слухи (Ongoing Rumor), что сейчас в игре — для UI (сайдбар Тайны). Каждая
+## несёт tokens (таймер) и rumorLocation (портал). [] — слухов нет.
+func rumors_in_play() -> Array:
+	var out: Array = []
+	for c_v: Variant in mythos_in_play:
+		if _rumor.is_rumor(c_v as Dictionary):
+			out.append(c_v)
+	return out
+
+
 ## i18n-ключ игрового имени локации (LOC_*_NAME) по id; fallback — сам id. Для ленты
 ## действий: ключ шлём в announce_action, клиент сам tr() в своей локали.
 func loc_name_key(loc_id: String) -> String:

@@ -12,6 +12,7 @@ const ANIM_TIME: float = 0.22
 @onready var _flavor: Label = %Flavor
 @onready var _text: Label = %Text
 @onready var _solve: Label = %Solve
+@onready var _rumors: Label = %Rumors
 @onready var _close_btn: Button = %CloseBtn
 
 var _is_open: bool = false
@@ -27,6 +28,7 @@ func _ready() -> void:
 	_flavor.add_theme_color_override("font_color", UIColors.MUTED)
 	_text.add_theme_color_override("font_color", UIColors.TEXT)
 	_solve.add_theme_color_override("font_color", UIColors.ACCENT)
+	_rumors.add_theme_color_override("font_color", UIColors.WARNING)
 	_close_btn.pressed.connect(close_panel)
 	_apply_offsets(true)
 
@@ -55,6 +57,7 @@ func close_panel() -> void:
 
 
 func _refresh() -> void:
+	_refresh_rumors()  # Слухи в игре — независимо от наличия активной Тайны
 	var m: Dictionary = GameState.current_mystery()
 	if m.is_empty():
 		_title.text = "MYSTERY_NONE_TITLE"
@@ -91,6 +94,32 @@ func _refresh() -> void:
 		locs_lines.append("%s %s" % [prefix, loc_name])
 	var progress_line: String = tr("MYSTERY_PROGRESS_FMT") % [done, target]
 	_solve.text = "%s\n%s" % [progress_line, "\n".join(locs_lines)]
+
+
+# Слухи (Ongoing Rumor) в игре: имя карты + остаток жетонов-таймера + локация портала.
+# Имя карты уже на языке кампании (карта Мифов одноязычна). Скрываем блок, если слухов нет.
+func _refresh_rumors() -> void:
+	var rumors: Array = GameState.rumors_in_play()
+	if rumors.is_empty():
+		_rumors.text = ""
+		_rumors.visible = false
+		return
+	_rumors.visible = true
+	var ru: bool = I18n.get_locale() == "ru"
+	var tok_w: String = "жетонов" if ru else "tokens"
+	var portal_w: String = "портал" if ru else "portal"
+	var lines: PackedStringArray = PackedStringArray()
+	lines.append("— %s —" % ("Слухи в игре" if ru else "Rumors in play"))
+	for r_v: Variant in rumors:
+		var r: Dictionary = r_v
+		var nm: String = String(r.get("name", "?"))
+		var tok: int = int(r.get("tokens", 0))
+		var loc: String = _localized_loc(String(r.get("rumorLocation", "")))
+		if loc.is_empty():
+			lines.append("• %s — %d %s" % [nm, tok, tok_w])
+		else:
+			lines.append("• %s — %d %s · %s: %s" % [nm, tok, tok_w, portal_w, loc])
+	_rumors.text = "\n".join(lines)
 
 
 # Локализованное имя локации по её id (data/locations.json). Возвращает id,
