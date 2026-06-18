@@ -213,6 +213,12 @@ func _spawn_monster(loc_id: String) -> void:
 	)
 
 
+## Заспаунить монстра на КОНКРЕТНОЙ локации (публичная обёртка над _spawn_monster).
+## Для Слуха с solve=monsterDefeated — монстр-цель, чья гибель развеет Слух.
+func spawn_monster_at(loc_id: String) -> void:
+	_spawn_monster(loc_id)
+
+
 ## Вернуть монстра в «мешок» (после гибели/снятия с поля). Культист всегда в
 ## мешке (его не вынимали) — не дублируем.
 func return_monster_to_bag(mid: String) -> void:

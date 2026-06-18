@@ -69,8 +69,17 @@ func on_enter(card: Dictionary) -> void:
 			GameConsole.log(
 				"[Слух] «%s»: встреча на %s, жетонов %d" % [_name(card), eloc, int(card["tokens"])]
 			)
+		"monsterDefeated":
+			# Спаунить монстра-цель на случайной локации; его гибель развеет Слух.
+			var mloc: String = _pick_location()
+			card["rumorLocation"] = mloc
+			if not mloc.is_empty():
+				_gs._board.spawn_monster_at(mloc)
+			GameConsole.log(
+				"[Слух] «%s»: монстр на %s, жетонов %d" % [_name(card), mloc, int(card["tokens"])]
+			)
 		_:
-			# monsterDefeated/toughnessOnCard — следующая фаза.
+			# toughnessOnCard и пр. — пока без особого спауна (таймер всё равно тикает).
 			GameConsole.log(
 				(
 					"[Слух] «%s» в игре (solve=%s), жетонов %d"
@@ -158,14 +167,40 @@ func solve_encounter_at(loc: String) -> bool:
 	return true
 
 
-# Выбрать случайную локацию для метки encounter-Слуха и поставить метку. "" — нет локаций.
-func _pick_marked_location() -> String:
+# Случайная локация (id) или "" — нет локаций.
+func _pick_location() -> String:
 	var locs: Array = _gs._load_locations()
 	if (locs as Array).is_empty():
 		return ""
-	var loc: String = String((locs[randi() % locs.size()] as Dictionary).get("id", ""))
-	_gs._board.place_rumor_at(loc)
+	return String((locs[randi() % locs.size()] as Dictionary).get("id", ""))
+
+
+# Случайная локация + метка слуха на ней (для encounter-Слуха).
+func _pick_marked_location() -> String:
+	var loc: String = _pick_location()
+	if not loc.is_empty():
+		_gs._board.place_rumor_at(loc)
 	return loc
+
+
+# ── Решение через гибель монстра (solve=monsterDefeated) ──────────────────────
+
+
+## Гибель монстра на loc развеивает monsterDefeated-Слух, чья локация == loc. Зовётся из
+## EncounterFlow._commit_combat при победе сыщика. true — Слух развеян.
+func notify_monster_defeated(loc: String) -> bool:
+	if not _gs._is_host() or loc.is_empty():
+		return false
+	for c_v: Variant in (_gs.mythos_in_play as Array).duplicate():
+		var card: Dictionary = c_v
+		if (
+			is_rumor(card)
+			and solve_kind(card) == "monsterDefeated"
+			and String(card.get("rumorLocation", "")) == loc
+		):
+			_solve(card, "монстр повержен на %s" % loc)
+			return true
+	return false
 
 
 # ── Внутреннее ────────────────────────────────────────────────────────────────

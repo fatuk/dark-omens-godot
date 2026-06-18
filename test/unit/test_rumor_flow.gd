@@ -24,12 +24,17 @@ class MockBoard:
 		_gs.gates[next_loc] = "green"
 		return next_loc
 
+	var spawned: Array = []  # локации, где спаунили монстра (spawn_monster_at)
+
 	func place_rumor_at(loc: String) -> void:
 		if not marked.has(loc):
 			marked.append(loc)
 
 	func remove_rumor_at(loc: String) -> void:
 		marked.erase(loc)
+
+	func spawn_monster_at(loc: String) -> void:
+		spawned.append(loc)
 
 
 class MockGS:
@@ -221,3 +226,31 @@ func test_encounter_test_custom_and_default() -> void:
 	_gs.mythos_in_play = [card]
 	assert_eq(String(_rumor.encounter_test("L").get("skill", "")), "observation", "тест с карты")
 	assert_eq(String(_rumor.encounter_test("none").get("skill", "")), "lore", "дефолт — Знание")
+
+
+# ── solve=monsterDefeated ─────────────────────────────────────────────────────
+
+
+func test_on_enter_monster_defeated_spawns_monster() -> void:
+	_gs.locations = [{"id": "loc9"}]
+	var card: Dictionary = _rumor_card(3, {"solve": {"kind": "monsterDefeated"}})
+	_rumor.on_enter(card)
+	assert_eq(String(card.get("rumorLocation", "")), "loc9", "локация монстра записана")
+	assert_true(_gs._board.spawned.has("loc9"), "монстр заспаунен на локации")
+	assert_false(_gs.gates.has("loc9"), "врата НЕ открывались")
+
+
+func test_notify_monster_defeated_solves() -> void:
+	var card: Dictionary = _rumor_card(2, {"solve": {"kind": "monsterDefeated"}}, "Слух-M")
+	card["rumorLocation"] = "loc9"
+	_gs.mythos_in_play = [card]
+	assert_true(_rumor.notify_monster_defeated("loc9"), "гибель монстра развеяла Слух")
+	assert_eq(_gs.mythos_in_play.size(), 0, "карта ушла из игры")
+
+
+func test_notify_monster_defeated_ignores_other_location() -> void:
+	var card: Dictionary = _rumor_card(2, {"solve": {"kind": "monsterDefeated"}}, "Слух-M")
+	card["rumorLocation"] = "loc9"
+	_gs.mythos_in_play = [card]
+	assert_false(_rumor.notify_monster_defeated("elsewhere"), "монстр не там — Слух остаётся")
+	assert_eq(_gs.mythos_in_play.size(), 1, "карта в игре")

@@ -626,6 +626,7 @@ func _commit_combat(pid: String) -> void:
 	if bool(r.get("won", false)):
 		_remove_monster_instance(loc, 0)
 		_gs._board.return_monster_to_bag(String(enc.get("monsterId", "")))  # монстр умер → в мешок
+		_gs._rumor.notify_monster_defeated(loc)  # Слух с solve=monsterDefeated развеян
 	else:
 		_set_monster_health(loc, 0, int(r.get("health_after", 0)))
 	_gs._check.clear()  # проверка боя завершена — снять active_check
