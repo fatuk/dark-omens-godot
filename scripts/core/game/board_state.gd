@@ -492,6 +492,38 @@ func clear_eldritch_tokens() -> int:
 	return removed
 
 
+## Снять ВСЕ улики с поля (синкаемое entities). Возвращает число снятых. Для эффектов
+## Слухов вроде «сбросить все улики на поле» (Lost Knowledge).
+func discard_all_clues() -> int:
+	if not _gs._is_host():
+		return 0
+	var removed: int = 0
+	for lid: String in _gs.entities.keys():
+		var arr: Array = _gs.entities[lid]
+		while (arr as Array).has("clue"):
+			arr.erase("clue")
+			removed += 1
+		if (arr as Array).is_empty():
+			_gs.entities.erase(lid)
+		else:
+			_gs.entities[lid] = arr
+	if removed > 0:
+		GameConsole.log("[Эффект] сброшены все улики с поля: %d" % removed)
+	return removed
+
+
+## Закрыть/убрать ВСЕ открытые врата (синкаемое gates). Возвращает число убранных. Для
+## эффектов Слухов вроде «сбросить все врата» (Devourer of Stars, The White Ship).
+func discard_all_gates() -> int:
+	if not _gs._is_host():
+		return 0
+	var removed: int = (_gs.gates as Dictionary).size()
+	_gs.gates = {}
+	if removed > 0:
+		GameConsole.log("[Эффект] убраны все врата: %d" % removed)
+	return removed
+
+
 ## Положить слух на случайную локацию.
 func place_rumor() -> void:
 	if not _gs._is_host():

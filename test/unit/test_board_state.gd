@@ -291,6 +291,22 @@ func test_place_rumor_single_candidate() -> void:
 	assert_true((_gs.entities["only"] as Array).has("rumor"))
 
 
+func test_discard_all_clues() -> void:
+	_gs.entities = {"a": ["clue"], "b": ["clue", "eldritch_token"], "c": ["monster"]}
+	var removed: int = _board.discard_all_clues()
+	assert_eq(removed, 2, "снято 2 улики")
+	assert_false(_gs.entities.has("a"), "локация только с уликой — очищена")
+	assert_eq(_gs.entities["b"], ["eldritch_token"], "у b остался только жетон")
+	assert_eq(_gs.entities["c"], ["monster"], "монстр не тронут")
+
+
+func test_discard_all_gates() -> void:
+	_gs.gates = {"g1": "green", "g2": "red", "g3": "blue"}
+	var removed: int = _board.discard_all_gates()
+	assert_eq(removed, 3, "убрано 3 врат")
+	assert_eq((_gs.gates as Dictionary).size(), 0, "врат не осталось")
+
+
 # ── Наплыв ────────────────────────────────────────────────────────────────────
 
 

@@ -1629,6 +1629,19 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 		"retreatDoom":
 			doom = maxi(0, doom - n)
 			GameConsole.log("[Эффект] doom −%d (откат) → %d" % [n, doom])
+		"setDoom":
+			doom = maxi(0, int(node.get("amount", node.get("count", 0))))
+			GameConsole.log("[Эффект] doom = %d" % doom)
+			_mystery.check_defeat()
+		"loseGame":
+			# Партия проигрывает (эффект Слуха «investigators lose the game»).
+			if outcome.is_empty():
+				outcome = "defeat"
+				GameConsole.log("[Финал] поражение партии (эффект)")
+		"discardAllClues":
+			_board.discard_all_clues()
+		"discardAllGates":
+			_board.discard_all_gates()
 		"discardGate":
 			_board.discard_gate()
 		"discardMonster":
