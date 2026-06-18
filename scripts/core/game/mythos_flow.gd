@@ -138,11 +138,15 @@ func _register_in_play(card: Dictionary) -> void:
 			return  # уже в игре
 	(_gs.mythos_in_play as Array).append(card)
 	GameConsole.log("[Mythos] карта «%s» остаётся в игре" % nm)
+	if _gs._rumor.is_rumor(card):
+		_gs._rumor.on_enter(card)  # Слух: открыть врата-портал + задать счётчик жетонов
 
 
 # Карта ongoing: есть whileInPlay ЛИБО onReckoning с эффектом (узел не-resolveReckoning;
 # структурный узел dieRoll/choice/group тоже считается эффектом).
 func _has_ongoing(card: Dictionary) -> bool:
+	if _gs._rumor.is_rumor(card):
+		return true  # Слух всегда остаётся в игре (таймер + решение через врата)
 	if not (card.get("whileInPlay", []) as Array).is_empty():
 		return true
 	for n_v: Variant in card.get("onReckoning", []):

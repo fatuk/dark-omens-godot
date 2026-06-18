@@ -35,8 +35,12 @@ class MockGS:
 	var reckoning_active: bool = false
 	var _target: RefCounted
 	var _cond := StubCond.new()
+	var _rumor: RumorFlow
 
 	signal mythos_decided(idx: int)
+
+	func _init() -> void:
+		_rumor = RumorFlow.new(self)
 
 	func _is_host() -> bool:
 		return host

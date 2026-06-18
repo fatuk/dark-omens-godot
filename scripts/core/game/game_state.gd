@@ -205,6 +205,7 @@ var _cond: ConditionFlow
 var _reckoning: ReckoningFlow
 var _board: BoardState
 var _mystery: MysteryFlow
+var _rumor: RumorFlow
 var _target: TargetResolver
 var _spell: SpellFlow
 
@@ -224,6 +225,7 @@ func _ready() -> void:
 	_reckoning = ReckoningFlow.new(self)
 	_board = BoardState.new(self)
 	_mystery = MysteryFlow.new(self)
+	_rumor = RumorFlow.new(self)
 	_target = TargetResolver.new(self)
 	_spell = SpellFlow.new(self)
 	_nm.relay_received.connect(_on_relay_received)

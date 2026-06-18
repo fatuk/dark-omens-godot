@@ -45,12 +45,15 @@ class MockGameState:
 	var current_idx: int = 0
 	var locations: Array = []
 	var shop_filled: int = 0
+	var mythos_in_play: Array = []
 	var _campaign: StubCampaign
 	var _mystery: StubMystery
+	var _rumor: RumorFlow
 
 	func _init() -> void:
 		_campaign = StubCampaign.new()
 		_mystery = StubMystery.new()
+		_rumor = RumorFlow.new(self)
 
 	func _is_host() -> bool:
 		return host

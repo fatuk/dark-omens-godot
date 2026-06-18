@@ -10,6 +10,10 @@ var _m: MythosFlow
 class MockGS:
 	extends Node
 	var mythos_in_play: Array = []
+	var _rumor: RumorFlow
+
+	func _init() -> void:
+		_rumor = RumorFlow.new(self)
 
 
 func before_each() -> void:

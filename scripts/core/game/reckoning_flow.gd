@@ -61,6 +61,10 @@ func _reckon_mythos_in_play() -> void:
 	var keep: Array = []
 	for c_v: Variant in _gs.mythos_in_play as Array:
 		var card: Dictionary = c_v
+		if _gs._rumor.is_rumor(card):
+			_gs._rumor.reckon(card)  # Слух: снять жетон / Рок за врата. Остаётся в игре.
+			keep.append(card)
+			continue
 		if _run_card_reckoning(card):
 			GameConsole.log("[Расплата] карта Мифов «%s» сброшена" % String(card.get("name", "?")))
 		else:

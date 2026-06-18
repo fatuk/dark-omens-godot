@@ -117,9 +117,11 @@ func setup_board(player_count: int) -> void:
 
 ## Открыть врата. loc_id пустой → случайная свободная локация; color пустой →
 ## по циклу цветов омена. Каждые новые врата выпускают 1 монстра.
-func open_gate(loc_id: String = "", color: String = "") -> void:
+## Открыть врата. Возвращает локацию, где врата открылись ("" — не удалось: не хост
+## либо нет свободной гейт-локации). Возврат нужен RumorFlow (привязка портала Слуха).
+func open_gate(loc_id: String = "", color: String = "") -> String:
 	if not _gs._is_host():
-		return
+		return ""
 	var lid: String = loc_id
 	if lid.is_empty():
 		# Врата открываются ТОЛЬКО на гейт-спейсах (локации с gateColor), как на
@@ -136,7 +138,7 @@ func open_gate(loc_id: String = "", color: String = "") -> void:
 			candidates.append(did)
 		if candidates.is_empty():
 			GameConsole.warn("[Врата] нет свободных гейт-локаций")
-			return
+			return ""
 		lid = String(candidates[randi() % candidates.size()])
 	# Цвет привязан к локации (каноничный цвет спейса EH); явный аргумент имеет
 	# приоритет. Фолбэк (локация без gateColor) — зелёный.
@@ -146,6 +148,7 @@ func open_gate(loc_id: String = "", color: String = "") -> void:
 	_gs.gates[lid] = col
 	GameConsole.log("[Врата] открылись (%s) на %s" % [col, lid])
 	_spawn_monster(lid)  # каждые новые врата → 1 монстр
+	return lid
 
 
 ## Каноничный цвет врат локации (из data/locations.json → gateColor). Локация
@@ -175,6 +178,8 @@ func close_gate_at_active_player() -> void:
 		GameConsole.log("[Врата] закрыты на %s" % loc)
 		# Триггер Тайны: закрытие врат (напр. «врата цвета омена → −1 улика → жетон»)
 		_gs._mystery.try_mystery_hook("gateClosed", {"loc": loc, "color": color}, pid)
+		# Слух: закрытие врат-портала на этой локации развеивает Слух (если он там).
+		_gs._rumor.solve_on_gate_close(loc, pid)
 
 
 ## Заспаунить монстра на локации, ВЫТЯНУВ случайный id из «мешка» (без повторов).
