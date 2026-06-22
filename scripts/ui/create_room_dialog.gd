@@ -14,7 +14,6 @@ extends ColorRect
 signal submitted(room_name: String, password: String, max_players: int, ancient_one: String)
 signal cancelled
 
-const _AO_DATA := "res://data/ancient_ones.json"
 const _MIN_PLAYERS := 1
 const _MAX_PLAYERS := 8
 const _DEFAULT_PLAYERS := 4
@@ -33,10 +32,10 @@ var _ao_entries: Array = []  # [{id, name}, ...] — name уже локализ�
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP  # клики мимо панели не падают вниз
 	UIStyle.style_modal_panel(_panel)
-	_ao_entries = _fallback_entries()  # статичный список — пока не пришёл актуальный
+	_ao_entries = []  # дропдаун пуст до ответа relay — единственный источник Древних
 	_build()
 	_name_input.grab_focus()
-	_load_ancients()  # подтянуть актуальный список из relay (async)
+	_load_ancients()  # подтянуть список Древних из relay (async); заполнит дропдаун
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -119,15 +118,6 @@ func _labeled_row(label_key: String, control: Control, node_name: String) -> HBo
 # ── Список Древних ────────────────────────────────────────────────────────────
 
 
-## Запасной список из статичного ancient_ones.json (если relay недоступен).
-func _fallback_entries() -> Array:
-	var out: Array = []
-	for e in DataLoader.load_array(_AO_DATA):
-		var d: Dictionary = e
-		out.append({"id": String(d.get("id", "")), "name": tr(String(d.get("nameKey", "")))})
-	return out
-
-
 ## Имена для дропдауна из текущих _ao_entries.
 func _ao_names() -> Array[String]:
 	var names: Array[String] = []
@@ -144,7 +134,7 @@ func _load_ancients() -> void:
 		return
 	var list: Array = await api.get_ancients(TranslationServer.get_locale())
 	if list.is_empty():
-		return  # relay недоступен/пусто — остаётся запасной список
+		return  # relay недоступен/пусто — дропдаун остаётся пустым (партию без relay не собрать)
 	var entries: Array = []
 	for a in list:
 		var d: Dictionary = a
