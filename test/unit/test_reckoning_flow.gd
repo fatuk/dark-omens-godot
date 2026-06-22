@@ -96,8 +96,11 @@ func _player(pid: String, extra: Dictionary = {}) -> void:
 
 
 func test_run_reckoning_global_tiers() -> void:
-	# ancientOne — словарь {id, …} как от relay (НЕ строка), id адресует AncientCatalog.
-	_gs.campaign = {"ancientOne": {"id": "azathoth"}}  # onReckoning: advanceDoom 1
+	# ancientOne — словарь {id, onReckoning, …} как от relay (CMS): onReckoning несёт
+	# DSL Расплаты Древнего прямо в библии (раньше адресовалось по id в AncientCatalog).
+	_gs.campaign = {
+		"ancientOne": {"id": "azathoth", "onReckoning": [{"do": "advanceDoom", "amount": 1}]}
+	}
 	_gs.mythos_in_play = [{"name": "X", "onReckoning": [{"do": "advanceDoom", "amount": 1}]}]
 	_gs.monsters = {"loc": [{"id": "avian_thrall"}]}  # onReckoning: loseSanity 1 each
 	_player("p1")

@@ -40,8 +40,8 @@ func test_summary_preserves_progress_and_progress_hook() -> void:
 	assert_false((ms[2] as Dictionary).has("progressHook"))
 
 
-# Регрессия: relay шлёт ancientOne как {name, epithet, …} БЕЗ id, а ReckoningFlow/
-# AncientCatalog адресуются по id — _summary обязан проштамповать сид-id Древнего.
+# Регрессия: relay шлёт ancientOne как {name, epithet, onReckoning, …} БЕЗ id —
+# _summary обязан проштамповать сид-id Древнего (идентичность/дебаг).
 func test_summary_stamps_ancient_id() -> void:
 	var cg := CampaignGen.new(autofree(Node.new()))
 	var full := {"ancientOne": {"name": "Азатот"}, "mysteries": []}

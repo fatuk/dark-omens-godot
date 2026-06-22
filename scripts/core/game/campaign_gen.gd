@@ -205,8 +205,9 @@ func _build_request(player_count: int, ancient_one: String) -> Dictionary:
 
 # Компактная сводка библии для синка — без тяжёлой колоды Мифов и эффектов.
 # Полная библия сохранена на сервере и тянется по id при генерации встреч.
-# ancient_id (id Древнего из сида комнаты) штампуем в ancientOne — relay шлёт
-# {name, epithet, …} без id, а ReckoningFlow/AncientCatalog адресуют именно по id.
+# ancient_id (id Древнего из сида комнаты) штампуем в ancientOne для идентичности —
+# relay шлёт {name, epithet, onReckoning, …} без id. Расплату Древнего ReckoningFlow
+# берёт из ancientOne.onReckoning (из CMS), а не адресует по id.
 func _summary(full: Dictionary, ancient_id: String = "") -> Dictionary:
 	var mysteries: Array = []
 	var src: Array = full.get("mysteries", [])
