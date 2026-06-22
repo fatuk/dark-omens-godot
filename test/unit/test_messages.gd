@@ -22,11 +22,8 @@ func test_render_two_slots() -> void:
 
 func test_render_double_noun_same_word() -> void:
 	# invocation_double: ОБА {noun} заполняются ОДНИМ выбранным словом.
-	assert_eq(
-		Messages.render("invocation_double", ["ancient_one"], "en"),
-		"O The Ancient One, The Ancient One!"
-	)
-	assert_eq(Messages.render("invocation_double", ["ancient_one"], "ru"), "Древний, о Древний!")
+	assert_eq(Messages.render("invocation_double", ["doom"], "en"), "O Doom, Doom!")
+	assert_eq(Messages.render("invocation_double", ["doom"], "ru"), "Рок, о Рок!")
 
 
 func test_render_unknown_phrase_is_empty() -> void:
@@ -64,7 +61,7 @@ func test_fill_preview_with_blank() -> void:
 
 
 func test_phrases_in_category() -> void:
-	assert_eq(Messages.phrases_in("place").size(), 13, "13 шаблонов места")
+	assert_eq(Messages.phrases_in("place").size(), 7, "7 шаблонов места")
 	assert_eq(Messages.phrases_in("special").size(), 2, "telegraph_pair + invocation_double")
 
 
@@ -77,4 +74,4 @@ func test_phrase_categories_cover_all() -> void:
 	var total: int = 0
 	for cat: String in Messages.PHRASE_CATEGORY_ORDER:
 		total += Messages.phrases_in(cat).size()
-	assert_eq(total, Messages.phrases().size(), "сумма по секциям = всем шаблонам (30)")
+	assert_eq(total, Messages.phrases().size(), "сумма по секциям = всем шаблонам (22)")
