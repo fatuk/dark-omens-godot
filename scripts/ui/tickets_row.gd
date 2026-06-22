@@ -76,11 +76,9 @@ func _tilt(idx: int) -> float:
 	return _TILT_DEG * (1.0 if idx % 2 == 1 else -1.0)
 
 
-func _make_ticket(
-	tex: Texture2D, node_name: String, ticket_height_px: float, tilt_deg: float
-) -> Control:
+func _make_ticket(tex: Texture2D, node_name: String, height_px: float, tilt_deg: float) -> Control:
 	var tex_size: Vector2 = tex.get_size()
-	var ticket_size := Vector2(ticket_height_px * tex_size.x / tex_size.y, ticket_height_px)
+	var ticket_size := Vector2(height_px * tex_size.x / tex_size.y, height_px)
 
 	# holder — прямой ребёнок HBox. Контейнер сбрасывает rotation своих детей
 	# (fit_child_in_rect), поэтому наклоняем вложенный Tilt, а не holder.

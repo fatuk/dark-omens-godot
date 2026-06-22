@@ -116,7 +116,7 @@ func _build(allies: Array) -> void:
 # Секция «отдать»/«взять»: чекбоксы предметов (sel[idx]) + счётчик улик. is_mine
 # выбирает, какой счётчик улик правит (_give_clues/_take_clues), и его потолок.
 func _section(
-	title_key: String, items: Array, sel: Dictionary, owner: Dictionary, is_mine: bool
+	title_key: String, items: Array, sel: Dictionary, owner_data: Dictionary, is_mine: bool
 ) -> void:
 	var hdr := Label.new()
 	hdr.name = "Header"
@@ -132,7 +132,7 @@ func _section(
 		cb.toggled.connect(func(on: bool) -> void: sel[idx] = on)
 		_vbox.add_child(cb)
 
-	var clues: int = int(owner.get("clues", 0))
+	var clues: int = int(owner_data.get("clues", 0))
 	var sb := SpinBox.new()
 	sb.name = "Clues"
 	sb.min_value = 0

@@ -95,7 +95,10 @@ static func resists(m: Dictionary, dmg_type: String) -> bool:
 static func apply_resistance(m: Dictionary, amount: int, dmg_type: String) -> int:
 	if amount <= 0:
 		return amount
-	return amount / 2 if resists(m, dmg_type) else amount
+	if not resists(m, dmg_type):
+		return amount
+	@warning_ignore("integer_division")
+	return amount / 2  # совпал тип сопротивления → вдвое, округление вниз
 
 
 static func _load() -> void:

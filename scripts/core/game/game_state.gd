@@ -1519,8 +1519,9 @@ func have_finished_encounter() -> bool:
 	return bool(players[_nm.my_user_id].get("encounter_done", false))
 
 
-## Мой собственный user_id ("" если сеть ещё не готова).
-func my_pid() -> String:
+## Мой собственный user_id ("" если сеть ещё не готова). Имя local_pid, а не my_pid:
+## в классе уже куча локальных `var my_pid` — одноимённый метод их затенял (ворнинг).
+func local_pid() -> String:
 	return _nm.my_user_id if is_instance_valid(_nm) else ""
 
 
