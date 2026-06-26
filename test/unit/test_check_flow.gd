@@ -242,6 +242,16 @@ func test_die_is_rerollable_false_before_roll() -> void:
 	assert_false(_cf.die_is_rerollable("p", 0), "до броска перебрасывать нечего")
 
 
+# Метка переброса: UI крутит куб даже при перебросе в ТО ЖЕ значение (иначе клик
+# выглядит «съеденным»). Каждый успешный reroll инкрементит nonce и пишет индекс.
+func test_reroll_stamps_nonce_and_index() -> void:
+	_player({"concentration": 2})
+	_rolled()  # base/dice [2, 6], куб 0 = провал
+	assert_true(_cf.reroll("p", 0, "concentration"), "провальный куб переброшен")
+	assert_eq(int(_gs.active_check.get("reroll_nonce", 0)), 1, "nonce инкрементнулся")
+	assert_eq(int(_gs.active_check.get("reroll_index", -1)), 0, "индекс переброшенного куба")
+
+
 func test_reroll_rejected_before_roll() -> void:
 	_player({"concentration": 5})
 	_rolled({"rolled": false})
