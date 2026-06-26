@@ -490,6 +490,11 @@ func reroll_encounter(die_index: int, currency: String = "") -> void:
 ## тратится ИМЕННО эта валюта (один раз). Без жетона — только БЕСПЛАТНЫЙ переброс от
 ## карт (concentration/улика без розыгрыша жетона не тратятся). Маршрут по владельцу.
 func reroll_die(die_index: int) -> void:
+	# Гард ДО списания заряда: клик по НЕперебрасываемому кубу (успех по порогу
+	# проверки / вне диапазона / ещё не брошено) не должен «съедать» заряженный жетон
+	# и засчитывать попытку. Валидируем по ЖИВОМУ active_check — как сделает хост.
+	if not _check.die_is_rerollable(_nm.my_user_id, die_index, active_check):
+		return
 	var cur: String = pending_reroll_currency
 	pending_reroll_currency = ""  # потребили намерение (один жетон = один переброс)
 	if cur.is_empty():
@@ -738,11 +743,15 @@ func reckoning_check_roll() -> void:
 
 ## Переброс куба своей проверки Расплаты (тап по кубу). Маршрут валюты как reroll_die.
 func reckoning_reroll_die(die_index: int) -> void:
+	var my_pid: String = _nm.my_user_id
+	# Тот же гард, что и в reroll_die: не тратим заряд жетона на клик по
+	# неперебрасываемому кубу своей проверки Расплаты (успех по порогу / вне диапазона).
+	if not _check.die_is_rerollable(my_pid, die_index, _reckoning_slot(my_pid)):
+		return
 	var cur: String = pending_reroll_currency
 	pending_reroll_currency = ""
 	if cur.is_empty():
 		cur = "free"
-	var my_pid: String = _nm.my_user_id
 	if _is_host():
 		_check.reroll(my_pid, die_index, cur, _reckoning_slot(my_pid))  # _sync внутри
 	else:

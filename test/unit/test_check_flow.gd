@@ -223,6 +223,25 @@ func test_reroll_rejected_out_of_range() -> void:
 	assert_false(_cf.reroll("p", 9, "concentration"), "индекс вне диапазона")
 
 
+# Гард для UI (GameState.reroll_die): тапнули по неперебрасываемому кубу → НЕ тратим
+# заряженный жетон. die_is_rerollable зеркалит гард reroll() без мутаций.
+func test_die_is_rerollable_mirrors_reroll_guard() -> void:
+	_player({"concentration": 1})
+	_rolled()  # base/dice [2, 6], порог по умолчанию 5
+	assert_true(_cf.die_is_rerollable("p", 0), "куб 0 = 2 (провал) — перебрасываемый")
+	assert_false(_cf.die_is_rerollable("p", 1), "куб 1 = 6 (успех) — не перебрасываемый")
+	assert_false(_cf.die_is_rerollable("p", 5), "индекс вне диапазона")
+	assert_false(_cf.die_is_rerollable("p", -1), "отрицательный индекс")
+	assert_false(_cf.die_is_rerollable("other", 0), "не своя проверка (чужой pid)")
+	assert_eq(int(_gs.players["p"]["concentration"]), 1, "валидация без мутаций — фокус цел")
+
+
+func test_die_is_rerollable_false_before_roll() -> void:
+	_player({"concentration": 1})
+	_rolled({"rolled": false})
+	assert_false(_cf.die_is_rerollable("p", 0), "до броска перебрасывать нечего")
+
+
 func test_reroll_rejected_before_roll() -> void:
 	_player({"concentration": 5})
 	_rolled({"rolled": false})
