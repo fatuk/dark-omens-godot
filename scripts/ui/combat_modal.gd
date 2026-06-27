@@ -250,7 +250,11 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 
 	# Шаг 2 — атака (обычно Сила). Пропускаем, если монстр повержен на шаге 1 (спец-
 	# способность defeatOnPass — напр. Crazed Mob от пройденной проверки Влияния).
-	if has_will and not bool(card.get("defeated_on_horror", false)):
+	if (
+		has_will
+		and not bool(card.get("defeated_on_horror", false))
+		and not bool(card.get("defeated_by_trigger", false))
+	):
 		col.add_child(
 			_lbl(
 				_step_label("COMBAT_STEP2", card.get("combat", {}), "strength"), 15, UIColors.ACCENT

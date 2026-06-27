@@ -572,7 +572,10 @@ func choose_effect(index: int) -> void:
 func activate_card(item_index: int) -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
-		_check.activate(my_pid, item_index)  # единая активная проверка (встреча/магазин/бой)
+		# Боевой триггер карты (on:combatEncounter, напр. Handcuffs: фокус→победа)
+		# имеет приоритет; не подошёл — обычный check-mod (бафф навыка/переброс).
+		if not _encounter.try_combat_trigger(my_pid, item_index):
+			_check.activate(my_pid, item_index)  # единая активная проверка (встреча/магазин/бой)
 	else:
 		_nm.relay_all({"action": "game_activate_card", "pid": my_pid, "index": item_index})
 
@@ -1338,7 +1341,10 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 
 		"game_activate_card":
 			if _is_host():
-				_check.activate(data.get("pid", ""), int(data.get("index", -1)))
+				var acp: String = data.get("pid", "")
+				var aci: int = int(data.get("index", -1))
+				if not _encounter.try_combat_trigger(acp, aci):
+					_check.activate(acp, aci)
 
 		"game_cast_incantation":
 			if _is_host():

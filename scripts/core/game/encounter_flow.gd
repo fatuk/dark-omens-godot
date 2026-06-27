@@ -632,6 +632,94 @@ func _commit_combat(pid: String) -> void:
 	_gs._check.clear()  # проверка боя завершена — снять active_check
 
 
+## Хост: боевой триггер карты (effect.triggered, on:"combatEncounter") — напр.
+## Handcuffs: потратить фокус → победить монстра ДО проверки Силы, если его стойкость
+## ≤ n. true — триггер применён (монстр повержен). false — карта не подходит (нет
+## триггера / монстр крепче / нечем платить) → роутер пробует обычный check-mod
+## (CheckFlow.activate). Зовётся из GameState.activate_card / relay-router.
+func try_combat_trigger(pid: String, item_index: int) -> bool:
+	if not _gs._is_host() or _gs.phase != "encounter" or _gs._current_pid() != pid:
+		return false
+	if not _gs.players.has(pid):
+		return false
+	var enc: Dictionary = _gs.current_encounter
+	if (
+		String(enc.get("kind", "")) != "combat"
+		or enc.has("resolution")
+		or bool(enc.get("committed", false))
+	):
+		return false  # только в активном бою до фиксации итога («перед проверкой Силы»)
+	var p: Dictionary = _gs.players[pid]
+	var items: Array = p.get("items", [])
+	if item_index < 0 or item_index >= items.size():
+		return false
+	var it: Dictionary = items[item_index]
+	if bool(it.get("exhausted", false)):
+		return false
+	var asset: Dictionary = AssetCatalog.by_id(AssetCatalog.entry_id(it))
+	var node: Dictionary = _combat_trigger_node(asset)
+	if node.is_empty():
+		return false
+	# Предикат: монстр достаточно слаб (стойкость ≤ n).
+	var when_v: Dictionary = node.get("when", {})
+	if (
+		String(when_v.get("kind", "")) == "monsterToughnessAtMost"
+		and int(enc.get("toughness", 99)) > int(when_v.get("n", 0))
+	):
+		return false
+	# Стоимость (напр. фокус). Не хватает — карта не применяется.
+	var cost: Dictionary = node.get("cost", {})
+	if cost.has("spend"):
+		var resf: String = _cost_field(String(cost.get("spend", "")))
+		var amt: int = int(cost.get("amount", 1))
+		if int(p.get(resf, 0)) < amt:
+			return false
+		p[resf] = int(p.get(resf, 0)) - amt
+	# Монстр повержен без проверки Силы (как defeatOnPass). Победную резолюцию доводит
+	# _commit_combat при «Завершить»: снимет монстра, вернёт в мешок, развеет Слух.
+	enc["defeated_by_trigger"] = true
+	enc["resolution"] = {
+		"won": true,
+		"strength": {"dice": [], "successes": 0},
+		"hp_loss": 0,
+		"dealt": int(enc.get("toughness", 0)),
+		"health_after": 0,
+	}
+	_gs._check.clear()  # шага Силы не будет
+	GameConsole.log("[Бой] %s · карта-триггер → монстр повержен (без боя)" % _gs._name_of(pid))
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
+# Первый узел do=="defeatMonster" из триггера on=="combatEncounter" актива. {} — нет.
+func _combat_trigger_node(asset: Dictionary) -> Dictionary:
+	for t_v: Variant in (asset.get("effect", {}) as Dictionary).get("triggered", []):
+		if not (t_v is Dictionary):
+			continue
+		if String((t_v as Dictionary).get("on", "")) != "combatEncounter":
+			continue
+		for d_v: Variant in (t_v as Dictionary).get("do", []) as Array:
+			if d_v is Dictionary and String((d_v as Dictionary).get("do", "")) == "defeatMonster":
+				return d_v
+	return {}
+
+
+# Поле-ресурс игрока для cost.spend ("focus"→"concentration" и т.п.).
+func _cost_field(spend: String) -> String:
+	match spend:
+		"focus", "concentration":
+			return "concentration"
+		"clue", "clues":
+			return "clues"
+		"health", "hp":
+			return "hp"
+		"sanity":
+			return "sanity"
+		_:
+			return spend
+
+
 ## Хост: переброс ОДНОГО выбранного куба (die_index) активной проверки. currency —
 ## явная валюта (жетон) или "" = авто-приоритет. Куб должен быть провальным.
 ## Доступен, пока встреча не зафиксирована. Зовётся из GameState.reroll_encounter /
