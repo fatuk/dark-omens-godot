@@ -33,6 +33,7 @@ const _TRAIT_KEY := {
 var _debt_taken: bool = false
 var _selected: Dictionary = {}  # asset_id -> cost
 var _last_dice: Array = []  # последний показанный набор (спин только на свежем)
+var _last_nonce: int = 0  # метка последнего отрисованного переброса (CheckFlow.reroll_nonce)
 var _last_can: bool = false  # последнее состояние кликабельности (для обновления без смены кубов)
 
 # Узлы для обновления.
@@ -258,6 +259,7 @@ func _render_dice() -> void:
 		return
 	var dice: Array = _check().get("dice", [])
 	var can: bool = _can_reroll()
+	var nonce: int = int(_check().get("reroll_nonce", 0))
 	if dice != _last_dice:
 		var prev: Array = _last_dice
 		var diff: int = _single_diff(prev, dice)
@@ -271,6 +273,15 @@ func _render_dice() -> void:
 		else:
 			_tray.show_roll(dice, can)  # размер изменился (докинули кубы) — статикой
 		_last_can = can
+		_last_nonce = nonce
+	elif nonce != _last_nonce:
+		# Переброс в ТО ЖЕ значение: массив не изменился, но nonce вырос — крутим
+		# затронутый куб, иначе клик «съеденный» (фокус ушёл, куб не дёрнулся).
+		var ri: int = int(_check().get("reroll_index", -1))
+		if ri >= 0 and ri < dice.size():
+			_tray.reroll_die(ri, int(dice[ri]), can)
+		_last_can = can
+		_last_nonce = nonce
 	elif can != _last_can:
 		# Кубы те же, но кликабельность изменилась (активировали карту-переброс
 		# после броска) — обновляем лоток статикой, иначе кубик не нажать.

@@ -15,6 +15,7 @@ var _will_tray: DiceTray
 var _str_tray: DiceTray
 var _last_will: Array = []
 var _last_str: Array = []
+var _last_nonce: int = 0  # метка последнего отрисованного переброса активного шага
 
 
 func _ready() -> void:
@@ -101,12 +102,20 @@ func _ensure_tray(t: DiceTray) -> DiceTray:
 
 
 # Показать бросок: свежий → спин всех; переброс одного куба → крутится он; тот же
-# бросок (ре-синк) → статикой (обновить кликабельность, не рвать спин).
-func _configure_tray(tray: DiceTray, dice: Array, last: Array, can: bool) -> void:
+# бросок (ре-синк) → статикой (обновить кликабельность, не рвать спин). nonce/ri —
+# метка переброса из CheckFlow: при перебросе в ТО ЖЕ значение массив не меняется,
+# но nonce растёт — всё равно крутим затронутый куб (иначе клик «съеденный»). nonce<0
+# — кадр без переброса (замороженный снимок), метку не трогаем.
+func _configure_tray(
+	tray: DiceTray, dice: Array, last: Array, can: bool, nonce: int = -1, ri: int = -1
+) -> void:
 	if last.is_empty():
 		tray.play_roll(dice, can)
 	elif dice == last:
-		tray.show_roll(dice, can)
+		if nonce >= 0 and nonce != _last_nonce and ri >= 0 and ri < dice.size():
+			tray.reroll_die(ri, int(dice[ri]), can)  # переброс в ту же грань — всё равно спин
+		else:
+			tray.show_roll(dice, can)
 	else:
 		var diff: int = _single_diff(last, dice)
 		if diff >= 0:
@@ -115,6 +124,8 @@ func _configure_tray(tray: DiceTray, dice: Array, last: Array, can: bool) -> voi
 			tray.play_roll(dice, can)  # несколько изменилось (reroll-all) — спин всех
 		else:
 			tray.show_roll(dice, can)  # размер изменился (докинули кубы) — статикой
+	if nonce >= 0:
+		_last_nonce = nonce
 
 
 # Индекс единственного отличия наборов (-1 если нет / несколько / разный размер).
@@ -222,7 +233,14 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 		_will_line(col, int((card["will"] as Dictionary).get("successes", 0)), card)
 	elif rolled:  # Воля брошена (живая) — можно перебрасывать
 		var wd: Array = c.get("dice", [])
-		_configure_tray(_will_tray, wd, _last_will, can)
+		_configure_tray(
+			_will_tray,
+			wd,
+			_last_will,
+			can,
+			int(c.get("reroll_nonce", 0)),
+			int(c.get("reroll_index", -1))
+		)
 		_last_will = wd.duplicate()
 		_will_line(col, int(c.get("successes", 0)), card)
 		_reroll_hint(col, can)
@@ -251,7 +269,14 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 			)
 		elif rolled:  # Сила брошена (живая) — превью исхода, можно перебрасывать
 			var sd: Array = c.get("dice", [])
-			_configure_tray(_str_tray, sd, _last_str, can)
+			_configure_tray(
+				_str_tray,
+				sd,
+				_last_str,
+				can,
+				int(c.get("reroll_nonce", 0)),
+				int(c.get("reroll_index", -1))
+			)
 			_last_str = sd.duplicate()
 			var hits: int = int(c.get("successes", 0))
 			var dmg: int = int((card.get("combat", {}) as Dictionary).get("damage", 0))

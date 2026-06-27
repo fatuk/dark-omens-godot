@@ -27,6 +27,7 @@ var _dice_holder: VBoxContainer
 var _choice_holder: VBoxContainer
 var _tray: DiceTray  # единый лоток, создаётся лениво и переиспользуется
 var _last_dice: Array = []  # последний показанный бросок (спин — только на свежем)
+var _last_nonce: int = 0  # метка последнего отрисованного переброса (CheckFlow.reroll_nonce)
 var _last_can: bool = false  # последняя кликабельность кубов (обновление без смены кубов)
 var _pending_n: int = -1  # сколько рубашек показано до броска
 # Пока есть перебросы (концентрация), исход ПРОВАЛА скрыт, чтобы не спойлить до
@@ -368,6 +369,7 @@ func _show_dice_result(res: Dictionary) -> void:
 	# Тапом перебросить можно ТОЛЬКО бесплатно (карта) или заряженным жетоном.
 	# Концентрация/улика — лишь через розыгрыш жетона. После «принятия» (_revealed) — нет.
 	var can: bool = GameState.can_reroll_now() and not committed and not _revealed
+	var nonce: int = int(res.get("reroll_nonce", 0))
 	if dice != _last_dice:
 		var prev: Array = _last_dice
 		var diff: int = _single_diff(prev, dice)
@@ -382,6 +384,15 @@ func _show_dice_result(res: Dictionary) -> void:
 		else:
 			_tray.show_roll(dice, can)  # размер изменился (докинули кубы) → статикой
 		_last_can = can
+		_last_nonce = nonce
+	elif nonce != _last_nonce:
+		# Переброс в ТО ЖЕ значение: массив не изменился, но nonce вырос — крутим
+		# затронутый куб, иначе клик «съеденный» (фокус ушёл, куб не дёрнулся).
+		var ri: int = int(res.get("reroll_index", -1))
+		if ri >= 0 and ri < dice.size():
+			_tray.reroll_die(ri, int(dice[ri]), can)
+		_last_can = can
+		_last_nonce = nonce
 	elif can != _last_can:
 		# Кубы те же, но кликабельность изменилась (активировали карту-переброс
 		# после броска) — обновляем лоток, иначе кубик не нажать.
