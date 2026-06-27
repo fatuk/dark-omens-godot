@@ -638,43 +638,18 @@ func _commit_combat(pid: String) -> void:
 ## триггера / монстр крепче / нечем платить) → роутер пробует обычный check-mod
 ## (CheckFlow.activate). Зовётся из GameState.activate_card / relay-router.
 func try_combat_trigger(pid: String, item_index: int) -> bool:
-	if not _gs._is_host() or _gs.phase != "encounter" or _gs._current_pid() != pid:
+	if not _gs._is_host():
 		return false
-	if not _gs.players.has(pid):
-		return false
-	var enc: Dictionary = _gs.current_encounter
-	if (
-		String(enc.get("kind", "")) != "combat"
-		or enc.has("resolution")
-		or bool(enc.get("committed", false))
-	):
-		return false  # только в активном бою до фиксации итога («перед проверкой Силы»)
-	var p: Dictionary = _gs.players[pid]
-	var items: Array = p.get("items", [])
-	if item_index < 0 or item_index >= items.size():
-		return false
-	var it: Dictionary = items[item_index]
-	if bool(it.get("exhausted", false)):
-		return false
-	var asset: Dictionary = AssetCatalog.by_id(AssetCatalog.entry_id(it))
-	var node: Dictionary = _combat_trigger_node(asset)
+	var node: Dictionary = combat_trigger_node_ready(pid, item_index)
 	if node.is_empty():
-		return false
-	# Предикат: монстр достаточно слаб (стойкость ≤ n).
-	var when_v: Dictionary = node.get("when", {})
-	if (
-		String(when_v.get("kind", "")) == "monsterToughnessAtMost"
-		and int(enc.get("toughness", 99)) > int(when_v.get("n", 0))
-	):
-		return false
-	# Стоимость (напр. фокус). Не хватает — карта не применяется.
+		return false  # карта не подходит (нет триггера / монстр крепче / нечем платить)
+	var p: Dictionary = _gs.players[pid]
+	var enc: Dictionary = _gs.current_encounter
+	# Стоимость (напр. фокус) — уже проверена в combat_trigger_node_ready, списываем.
 	var cost: Dictionary = node.get("cost", {})
 	if cost.has("spend"):
 		var resf: String = _cost_field(String(cost.get("spend", "")))
-		var amt: int = int(cost.get("amount", 1))
-		if int(p.get(resf, 0)) < amt:
-			return false
-		p[resf] = int(p.get(resf, 0)) - amt
+		p[resf] = int(p.get(resf, 0)) - int(cost.get("amount", 1))
 	# Монстр повержен без проверки Силы (как defeatOnPass). Победную резолюцию доводит
 	# _commit_combat при «Завершить»: снимет монстра, вернёт в мешок, развеет Слух.
 	enc["defeated_by_trigger"] = true
@@ -690,6 +665,45 @@ func try_combat_trigger(pid: String, item_index: int) -> bool:
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
+
+
+## Узел defeatMonster применимого СЕЙЧАС боевого триггера карты (предикат стойкости и
+## оплата проходят). {} — карта не подходит. Read-only (без списаний/мутаций) — годится
+## и для подсветки карты в веере (любой клиент), и для try_combat_trigger перед
+## применением. БЕЗ host-гарда: это логическая применимость, авторитет — у вызывателя.
+func combat_trigger_node_ready(pid: String, item_index: int) -> Dictionary:
+	if _gs.phase != "encounter" or _gs._current_pid() != pid or not _gs.players.has(pid):
+		return {}
+	var enc: Dictionary = _gs.current_encounter
+	if (
+		String(enc.get("kind", "")) != "combat"
+		or enc.has("resolution")
+		or bool(enc.get("committed", false))
+	):
+		return {}  # только в активном бою до фиксации итога («перед проверкой Силы»)
+	var p: Dictionary = _gs.players[pid]
+	var items: Array = p.get("items", [])
+	if item_index < 0 or item_index >= items.size():
+		return {}
+	var it: Dictionary = items[item_index]
+	if bool(it.get("exhausted", false)):
+		return {}
+	var node: Dictionary = _combat_trigger_node(AssetCatalog.by_id(AssetCatalog.entry_id(it)))
+	if node.is_empty():
+		return {}
+	# Предикат: монстр достаточно слаб (стойкость ≤ n).
+	var when_v: Dictionary = node.get("when", {})
+	if (
+		String(when_v.get("kind", "")) == "monsterToughnessAtMost"
+		and int(enc.get("toughness", 99)) > int(when_v.get("n", 0))
+	):
+		return {}
+	# Стоимость (напр. фокус) — есть ли чем платить.
+	var cost: Dictionary = node.get("cost", {})
+	if cost.has("spend"):
+		if int(p.get(_cost_field(String(cost.get("spend", ""))), 0)) < int(cost.get("amount", 1)):
+			return {}
+	return node
 
 
 # Первый узел do=="defeatMonster" из триггера on=="combatEncounter" актива. {} — нет.

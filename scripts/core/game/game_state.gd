@@ -569,6 +569,12 @@ func choose_effect(index: int) -> void:
 
 ## Активный игрок активирует карту руки (item_index в player.items) во время
 ## проверки встречи — её способность правит текущий бросок. Хост применяет.
+## Применим ли боевой триггер карты (on:combatEncounter, напр. Handcuffs) ПРЯМО
+## СЕЙЧАС — для веера: показать карту играбельной, хотя у неё нет check-mod. Read-only.
+func combat_trigger_ready(item_index: int) -> bool:
+	return not _encounter.combat_trigger_node_ready(_nm.my_user_id, item_index).is_empty()
+
+
 func activate_card(item_index: int) -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():

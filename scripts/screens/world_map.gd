@@ -312,6 +312,11 @@ func _hand_spells_section() -> Array:
 # Применима ли карта к ТЕКУЩЕЙ активной проверке: есть ли у неё мод (action/whileOwned),
 # подходящий по контексту + навыку шага + таймингу (до/после броска). Вне проверки — да.
 func _card_applicable_now(pcard: Dictionary) -> bool:
+	# Боевой триггер карты (on:combatEncounter, напр. Handcuffs: фокус→победа) — у неё
+	# нет check-mod, но в бою она применима, если предикат/оплата проходят. Проверяем
+	# первым: триггер не зависит от active_check (шага Воли/Силы).
+	if GameState.combat_trigger_ready(int(pcard.get("item_index", -1))):
+		return true
 	var c: Dictionary = GameState.active_check
 	if c.is_empty():
 		return true
