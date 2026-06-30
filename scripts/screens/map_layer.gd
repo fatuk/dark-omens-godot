@@ -203,15 +203,15 @@ func _ready() -> void:
 	_chat_mat = ShaderMaterial.new()
 	_chat_mat.shader = Shader.new()
 	_chat_mat.shader.code = _CHAT_DARKEN_SHADER  # darken-наложение фона облачка
+	if ResourceLoader.exists(_CHAT_SFX_PATH):
+		_chat_sfx = load(_CHAT_SFX_PATH)  # звук подхватится, когда ассет добавят
+	GameState.chat_received.connect(_on_chat_received)
+	GameState.action_announced.connect(_on_action_announced)
 
 
 ## Материал «клубящегося дыма» балуна чата — для дебаг-панели шейдеров (Ctrl+M).
 func chat_smoke_material() -> ShaderMaterial:
 	return _chat_mat
-	if ResourceLoader.exists(_CHAT_SFX_PATH):
-		_chat_sfx = load(_CHAT_SFX_PATH)  # звук подхватится, когда ассет добавят
-	GameState.chat_received.connect(_on_chat_received)
-	GameState.action_announced.connect(_on_action_announced)
 
 
 func load_from_file(path: String) -> void:
