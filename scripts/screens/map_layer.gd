@@ -135,10 +135,23 @@ const _CHAT_DARKEN_SHADER := """
 shader_type canvas_item;
 render_mode blend_disabled, unshaded;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+// «Клубление» дыма: медленный domain-warp UV (2 октавы синусов по TIME) — дрейфуют
+// только дымные клочья, силуэт баллона и текст (отдельный узел) стоят на месте.
+uniform float swirl_amp : hint_range(0.0, 0.05) = 0.014;   // глубина искажения (в UV)
+uniform float swirl_speed : hint_range(0.0, 1.0) = 0.22;   // скорость дрейфа
 void fragment() {
-	float a = COLOR.a;
+	float t = TIME * swirl_speed;
+	vec2 w = vec2(
+		sin(UV.y * 6.3 + t * 1.3) + 0.5 * sin(UV.x * 11.0 - t * 2.1),
+		cos(UV.x * 5.1 - t * 1.1) + 0.5 * sin(UV.y * 9.0 + t * 1.7)
+	) * swirl_amp;
+	vec4 bal = texture(TEXTURE, UV + w);          // дым в искажённой точке
+	float orig_a = texture(TEXTURE, UV).a;
+	// COLOR.a = modulate.a × orig_a → /orig_a ×bal.a = modulate.a × bal.a:
+	// fade сохраняется, форма клубится. orig_a→0 (вне дыма) → COLOR.a→0, артефактов нет.
+	float a = clamp(COLOR.a * bal.a / max(orig_a, 0.001), 0.0, 1.0);
 	vec3 dst = texture(screen_tex, SCREEN_UV).rgb;
-	vec3 darkened = min(texture(TEXTURE, UV).rgb, dst);
+	vec3 darkened = min(bal.rgb, dst);
 	COLOR = vec4(mix(dst, darkened, a), 1.0);
 }
 """
