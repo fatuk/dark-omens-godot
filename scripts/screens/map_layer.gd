@@ -194,6 +194,7 @@ const MYSTERY_TEX: Texture2D = preload("res://assets/map/mystery-icon.png")
 
 
 func _ready() -> void:
+	add_to_group("map_layer")  # чтобы дебаг-панель шейдеров (Ctrl+M) нашла _chat_mat
 	_textures = {
 		"city": load("res://assets/map/city.png"),
 		"sea": load("res://assets/map/sea.png"),
@@ -202,6 +203,11 @@ func _ready() -> void:
 	_chat_mat = ShaderMaterial.new()
 	_chat_mat.shader = Shader.new()
 	_chat_mat.shader.code = _CHAT_DARKEN_SHADER  # darken-наложение фона облачка
+
+
+## Материал «клубящегося дыма» балуна чата — для дебаг-панели шейдеров (Ctrl+M).
+func chat_smoke_material() -> ShaderMaterial:
+	return _chat_mat
 	if ResourceLoader.exists(_CHAT_SFX_PATH):
 		_chat_sfx = load(_CHAT_SFX_PATH)  # звук подхватится, когда ассет добавят
 	GameState.chat_received.connect(_on_chat_received)

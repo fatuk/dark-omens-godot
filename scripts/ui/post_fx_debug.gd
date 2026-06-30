@@ -295,6 +295,25 @@ func _build_specs() -> Array:
 			"default": 4.0,
 			"set": _set_fog_oct
 		},
+		{"section": "ДЫМ ЧАТА"},
+		{
+			"key": "chat_swirl_amp",
+			"label": "Размах",
+			"min": 0.0,
+			"max": 0.05,
+			"step": 0.001,
+			"default": 0.014,
+			"set": _set_chat_swirl_amp
+		},
+		{
+			"key": "chat_swirl_speed",
+			"label": "Скорость",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.22,
+			"set": _set_chat_swirl_speed
+		},
 	]
 
 
@@ -615,3 +634,27 @@ func _set_fog_oct(v: float) -> void:
 	var n := _fog_noise()
 	if n:
 		n.fractal_octaves = int(round(v))
+
+
+# ── Дым чата (балун сообщения; map_layer в группе "map_layer") ────────────────
+# Униформы swirl_* пишем прямо в общий материал балуна. Вне карты map_layer нет —
+# сеттеры тогда просто ничего не делают (как у тумана вне home-сцены).
+
+
+func _chat_smoke_mat() -> ShaderMaterial:
+	var n := get_tree().get_first_node_in_group("map_layer")
+	if n != null and n.has_method("chat_smoke_material"):
+		return n.call("chat_smoke_material") as ShaderMaterial
+	return null
+
+
+func _set_chat_swirl_amp(v: float) -> void:
+	var m := _chat_smoke_mat()
+	if m:
+		m.set_shader_parameter("swirl_amp", v)
+
+
+func _set_chat_swirl_speed(v: float) -> void:
+	var m := _chat_smoke_mat()
+	if m:
+		m.set_shader_parameter("swirl_speed", v)
