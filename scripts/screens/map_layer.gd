@@ -162,6 +162,7 @@ const _CHAT_MIN_W := 300.0  # native мин. ширина баллона (для
 const _CHAT_PAD_X := 140.0  # native отступ текста от краёв баллона по ГОРИЗОНТАЛИ
 const _CHAT_PAD_Y := 80.0  # native отступ текста от краёв баллона по ВЕРТИКАЛИ (симметрично X)
 const _CHAT_TEXT_PAD := 10.0  # доп. отступ-«воздух» вокруг текста (native; ≈5 экранных @0.5)
+const _CHAT_TEXT_RISE := 16.0  # native: текст чуть ВЫШЕ центра — визуальная масса дыма выше геом. центра
 const _CHAT_RISE := 130.0  # подъём НОВОГО облачка над центром пина (экранно, ×inv·inv_factor)
 const _CHAT_GAP := -5.0  # ВОЗДУХ между краями соседних облачек (rise-ед.; высота баллона учтена)
 const _CHAT_SPAWN_DROP := 46.0  # на сколько НИЖЕ target стартует новое (всплытие снизу)
@@ -1058,7 +1059,7 @@ func _fit_chat_bubble(b: Node2D) -> void:
 	var target_h: float = ts.y + (_CHAT_PAD_Y + _CHAT_TEXT_PAD) * 2.0
 	var tex: Vector2 = _CHAT_BALLOON.get_size()
 	bg.scale = Vector2(target_w / tex.x, target_h / tex.y)
-	lbl.position = -ts * 0.5  # текст по центру (origin)
+	lbl.position = Vector2(-ts.x * 0.5, -ts.y * 0.5 - _CHAT_TEXT_RISE)  # центр + подъём
 	lbl.size = ts
 	# Высота баллона в rise-единицах (native·_CHAT_DOWNSCALE) — для расчёта разноса в стопке,
 	# чтобы соседние облачка не наезжали при крупном _CHAT_PAD_Y. См. _reslot_chat.
