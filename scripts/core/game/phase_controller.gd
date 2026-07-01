@@ -312,12 +312,43 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 		return false
 	if _gs.location_type(String(p.get("location", ""))) != "city":
 		return false
+	# Валидируем покупку по авторитетным данным хоста, а не по доверию клиенту:
+	# успехи считаем только из активной проверки магазина (иначе монеты неизвестны).
+	if String(_gs.active_check.get("owner", "")) != "shop":
+		return false
+	# Монеты = успехи броска + бонус за «Долг» (как считает клиент, shop_modal._coins).
+	# Долг из прошлого похода мог бы дать лишние +2, но повторный debt запрещён —
+	# в худшем случае переоценка на 2, что безопаснее ложного отказа в покупке.
+	var coins: int = int(_gs.active_check.get("successes", 0))
+	if (p.get("conditions", []) as Array).has("debt"):
+		coins += 2
+	# Каждый товар обязан лежать на витрине (shop_reserve), суммарная стоимость —
+	# укладываться в монеты. Иначе баг/чит клиента выдал бы бесплатные или чужие карты.
+	var reserve: Array = _gs.shop_reserve
+	var total_cost: int = 0
 	for aid_v: Variant in assets:
 		var aid: String = String(aid_v)
-		if not AssetCatalog.by_id(aid).is_empty():
-			_gs._cond.host_grant_asset(pid, aid)  # исполнит onGain (сервисы срабатывают и сбрасываются)
+		var a: Dictionary = AssetCatalog.by_id(aid)
+		if a.is_empty() or not reserve.has(aid):
+			GameConsole.log(
+				"[Магазин] %s: товар %s не на витрине — отказ" % [_gs._name_of(pid), aid]
+			)
+			return false
+		total_cost += int(a.get("cost", 0))
+	if total_cost > coins:
+		GameConsole.log(
+			(
+				"[Магазин] %s: не хватает монет (%d > %d) — отказ"
+				% [_gs._name_of(pid), total_cost, coins]
+			)
+		)
+		return false
+	for aid_v: Variant in assets:
+		_gs._cond.host_grant_asset(pid, String(aid_v))  # исполнит onGain (сервисы срабатывают и сбрасываются)
 	_gs._refill_shop_reserve(assets)  # купленные → заменить новыми
-	GameConsole.log("[Магазин] %s купил %d товар(ов)" % [_gs._name_of(pid), assets.size()])
+	GameConsole.log(
+		"[Магазин] %s купил %d товар(ов) за %d" % [_gs._name_of(pid), assets.size(), total_cost]
+	)
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true

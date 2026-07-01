@@ -132,9 +132,15 @@ func _reckon_condition_interactive(
 
 # Ждём применения СВОЕЙ проверки Расплаты: общий сигнал effect_check_applied(pid, passed)
 # будит все ожидающие корутины — фильтруем по своему pid (остальные ждут дальше).
+# Отвалившийся сыщик броска не пришлёт — считаем проверку проваленной и не ждём,
+# иначе весь тир Расплаты зависнет навсегда. _on_player_left будит парковку эмитом.
 func _await_my_check(pid: String) -> bool:
+	if not bool(_gs.players.get(pid, {}).get("connected", true)):
+		return false
 	var r: Array = await _gs.effect_check_applied
 	while String(r[0]) != pid:
+		if not bool(_gs.players.get(pid, {}).get("connected", true)):
+			return false
 		r = await _gs.effect_check_applied
 	return bool(r[1])
 

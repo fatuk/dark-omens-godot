@@ -33,6 +33,7 @@ var room_name: String = ""
 var players: Dictionary = {}  # pid -> {id, user_id, name, ready, investigator}
 
 var _is_host_flag: bool = false
+var _host_id: String = ""  # id соединения текущего хоста ("" — ещё неизвестен)
 var game_started: bool = false  # true если игровая сессия уже запущена (из DB)
 
 # Сохранённое состояние для rejoin при реконнекте
@@ -66,6 +67,7 @@ func connect_to_relay(player_name: String, relay_url: String = "ws://127.0.0.1:3
 	room_name = ""
 	players.clear()
 	_is_host_flag = false
+	_host_id = ""
 	return _transport().connect_to_server(relay_url)
 
 
@@ -140,6 +142,14 @@ func is_host() -> bool:
 	return _is_host_flag
 
 
+# id соединения текущего хоста ("" если ещё неизвестен). Используется GameState,
+# чтобы принимать game_sync только от хоста. Мы сами хост → наш id соединения.
+func host_id() -> String:
+	if _is_host_flag:
+		return my_id
+	return _host_id
+
+
 # ── Транспортные события ──────────────────────────────────────────────────────
 
 
@@ -192,6 +202,9 @@ func _handle_message(msg: Dictionary) -> void:
 			room_id = msg.get("room_id", "")
 			room_name = msg.get("room_name", "")
 			_is_host_flag = msg.get("is_host", false)
+			# id хоста, если relay его присылает (иначе останется "" — тогда
+			# GameState не сможет отфильтровать чужой game_sync, но и не сломается).
+			_host_id = String(msg.get("host_id", ""))
 			game_started = msg.get("game_started", false)
 			_saved_room_id = room_id
 			players.clear()
@@ -253,6 +266,9 @@ func _handle_message(msg: Dictionary) -> void:
 			var left_uid: String = msg.get("user_id", "")
 			var pname: String = players.get(pid, {}).get("name", pid)
 			players.erase(pid)
+			# relay мигрировал хоста на new_host — обновляем его id соединения.
+			if not new_host.is_empty():
+				_host_id = new_host
 			if not new_host.is_empty() and new_host == my_id:
 				_is_host_flag = true
 				GameConsole.log("%s вышел  ·  вы стали ведущим" % pname)
@@ -313,4 +329,5 @@ func _clear_room_state() -> void:
 	_saved_investigator = ""
 	players.clear()
 	_is_host_flag = false
+	_host_id = ""
 	game_started = false

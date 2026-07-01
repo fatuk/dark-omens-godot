@@ -355,9 +355,15 @@ func _await_decision() -> int:
 
 # Ждём применения видимой проверки сыщика pid: общий сигнал effect_check_applied(pid,
 # passed) — фильтруем по своему pid (на случай параллельных проверок Расплаты).
+# Отвалившийся сыщик броска не пришлёт — считаем проверку проваленной, иначе фаза
+# Мифов зависнет навсегда. _on_player_left будит парковку эмитом.
 func _await_check(pid: String) -> bool:
+	if not bool(_gs.players.get(pid, {}).get("connected", true)):
+		return false
 	var r: Array = await _gs.effect_check_applied
 	while String(r[0]) != pid:
+		if not bool(_gs.players.get(pid, {}).get("connected", true)):
+			return false
 		r = await _gs.effect_check_applied
 	return bool(r[1])
 

@@ -99,6 +99,7 @@ class MockGameState:
 	var current_idx: int = 0
 	var round_num: int = 1
 	var active_check: Dictionary = {}
+	var shop_reserve: Array = []
 	var current_encounter: Dictionary = {}
 	var pending_spell_cast: Dictionary = {}
 	var locations: Array = []
@@ -594,3 +595,50 @@ func test_cast_spell_not_blocked_by_repeat_guard() -> void:
 		1,
 		"cast_spell не дублируется в actions_used"
 	)
+
+
+# ── host_apply_shop_grant: валидация витрины и оплаты ─────────────────────────
+# Реальные ассеты из data/assets.json: 18_derringer=1, 45_automatic=2, arcane_tome=3.
+
+
+# Игрок в разгар похода в магазин: в городе, «acquire_assets» уже потрачено,
+# активна проверка магазина с заданными успехами, витрина = reserve.
+func _shopper(successes: int, reserve: Array, extra: Dictionary = {}) -> void:
+	_gs.loc_types = {"arkham": "city"}
+	var base: Dictionary = {"actions_used": ["acquire_assets"], "location": "arkham"}
+	for k_v: Variant in extra:
+		base[k_v] = extra[k_v]
+	_solo(base)
+	_gs.active_check = {"owner": "shop", "successes": successes}
+	_gs.shop_reserve = reserve
+
+
+func test_shop_grant_rejects_item_not_in_reserve() -> void:
+	_shopper(9, ["18_derringer"])  # монет вдоволь, но axe нет на витрине
+	assert_false(_pc.host_apply_shop_grant("p", ["axe"]), "товар не с витрины — отказ")
+	assert_eq(_gs._cond.granted, [], "ничего не выдано")
+
+
+func test_shop_grant_rejects_insufficient_coins() -> void:
+	_shopper(2, ["arcane_tome"])  # tome стоит 3, успехов только 2
+	assert_false(_pc.host_apply_shop_grant("p", ["arcane_tome"]), "не хватает монет — отказ")
+	assert_eq(_gs._cond.granted, [], "ничего не выдано")
+
+
+func test_shop_grant_debt_adds_two_coins() -> void:
+	# tome=3; успехов 1, но состояние «debt» даёт +2 → ровно хватает.
+	_shopper(1, ["arcane_tome"], {"conditions": ["debt"]})
+	assert_true(_pc.host_apply_shop_grant("p", ["arcane_tome"]), "1 успех + Долг(+2) = 3")
+	assert_eq(_gs._cond.granted, ["arcane_tome"], "товар выдан")
+
+
+func test_shop_grant_success_within_budget() -> void:
+	_shopper(3, ["18_derringer", "45_automatic"])  # 1 + 2 = 3 ровно
+	assert_true(_pc.host_apply_shop_grant("p", ["18_derringer", "45_automatic"]))
+	assert_eq(_gs._cond.granted, ["18_derringer", "45_automatic"], "оба товара выданы")
+
+
+func test_shop_grant_rejects_without_active_shop_check() -> void:
+	_shopper(9, ["18_derringer"])
+	_gs.active_check = {}  # проверка магазина уже снята — монеты неизвестны
+	assert_false(_pc.host_apply_shop_grant("p", ["18_derringer"]), "нет активной проверки — отказ")

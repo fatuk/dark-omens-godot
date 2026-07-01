@@ -23,6 +23,45 @@ signal action_announced(pid: String, action_id: String, params: Dictionary)  # �
 const ACTIONS_PER_ROUND := 2
 const MAX_TICKETS := 2  # потолок билетов на руках (ж/д + корабль суммарно), как в EH
 
+# Relay-действия, которые хост применяет ОТ ЛИЦА игрока data.pid. Для них pid
+# обязан принадлежать отправителю сообщения (from_id) — иначе один клиент мог бы
+# ходить/тратить перебросы/закрывать модалки за другого (спуфинг pid). Проверка
+# централизована в _on_relay_received. Транзиентные широковещалки (game_sync,
+# game_chat, game_action_feed) и служебные (set_ready, game_resolve_mythos) — вне
+# набора, у них своя логика доверия.
+const _PID_OWNED_ACTIONS := {
+	"game_action": true,
+	"game_finish_encounter": true,
+	"game_resolve_encounter": true,
+	"game_reroll_encounter": true,
+	"game_choose_encounter": true,
+	"game_advance_stage": true,
+	"game_choose_effect": true,
+	"game_activate_card": true,
+	"game_cast_incantation": true,
+	"game_cast_glamour": true,
+	"game_spell_cast_roll": true,
+	"game_spell_cast_reroll": true,
+	"game_spell_cast_apply": true,
+	"game_check_roll": true,
+	"game_check_reroll": true,
+	"game_resolve_pending_check": true,
+	"game_reckoning_roll": true,
+	"game_reckoning_reroll": true,
+	"game_reckoning_reroll_all": true,
+	"game_reckoning_apply": true,
+	"game_cast_trigger_spells": true,
+	"game_dismiss_cast_result": true,
+	"game_dismiss_reckoning": true,
+	"game_shop_grant": true,
+	"game_shop_close": true,
+	"game_shop_debt": true,
+	"game_shop_open": true,
+	"game_shop_reroll": true,
+	"game_reroll_all": true,
+	"game_mythos_decide": true,
+}
+
 # ── Глобальный стейт ──────────────────────────────────────────────────────────
 var round_num: int = 0
 var phase: String = ""  # "action" | "encounter" | "mythos" | ""
@@ -1166,6 +1205,17 @@ func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -
 		mythos_decision["picked"] = 0
 		mythos_decided.emit(0)
 
+	# Если отвалился сыщик, чьей видимой проверки ждёт корутина (Расплата или
+	# mythos-driver test) — будим её «провалом». Сама парковка после пробуждения
+	# видит connected=false и мгновенно дренирует остаток карт, не зависая.
+	var awaiting_check: bool = (
+		String(pending_check.get("pid", "")) == uid
+		or players[uid].has("reckoning_pending")
+		or players[uid].has("reckoning_check")
+	)
+	if awaiting_check:
+		effect_check_applied.emit(uid, false)
+
 	# Если отключился игрок, чей сейчас ход — пропускаем его, иначе партия
 	# застрянет на «ходит несуществующий игрок».
 	if _current_pid() == uid:
@@ -1305,11 +1355,44 @@ func _apply_snapshot(data: Dictionary) -> void:
 # ── Не-хост: приём от relay ──────────────────────────────────────────────────
 
 
-func _on_relay_received(_from_id: String, data: Dictionary) -> void:
-	match data.get("action", ""):
+# user_id отправителя по его id соединения (from_id, проставлен relay-сервером).
+# Аноним → сам from_id (тот же фолбэк, что при заведении слота игрока).
+func _sender_uid(from_id: String) -> String:
+	if is_instance_valid(_nm) and _nm.players.has(from_id):
+		var u: String = String(_nm.players[from_id].get("user_id", ""))
+		if not u.is_empty():
+			return u
+	return from_id
+
+
+func _on_relay_received(from_id: String, data: Dictionary) -> void:
+	var action: String = String(data.get("action", ""))
+
+	# Граница доверия. from_id проставляет relay-сервер (id соединения отправителя)
+	# — ему верим, содержимому data.pid — нет. Для действий «от лица игрока» pid
+	# обязан совпасть с user_id отправителя. Проверяем только когда from_id известен
+	# (сервер его проставил) — иначе не ломаем игру на старом relay без from_id.
+	if not from_id.is_empty() and _PID_OWNED_ACTIONS.has(action):
+		var claimed: String = String(data.get("pid", ""))
+		var sender: String = _sender_uid(from_id)
+		if claimed != sender:
+			GameConsole.warn(
+				"[Game] Отклонено %s: pid=%s ≠ отправитель=%s" % [action, claimed, sender]
+			)
+			return
+
+	match action:
 		"game_sync":
 			# Хост прислал полный стейт — применяем тем же путём, что снапшот
-			# с сервера (joined_room.game_state).
+			# с сервера (joined_room.game_state). Хост авторитетен и НИКОГДА не
+			# перезаписывает себя чужим снапшотом; не-хост принимает sync только
+			# от текущего хоста (если его id известен — см. NetworkManager._host_id).
+			if _is_host():
+				return
+			var host_id: String = _nm.host_id() if is_instance_valid(_nm) else ""
+			if not host_id.is_empty() and not from_id.is_empty() and from_id != host_id:
+				GameConsole.warn("[Game] Отклонён game_sync не от хоста (%s)" % from_id)
+				return
 			_apply_snapshot(data)
 
 		"game_action":
@@ -1433,6 +1516,9 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 			# host-only, не в snapshot — просто эмитим сигнал для облачка над фишкой.
 			var c_pid: String = String(data.get("pid", ""))
 			var c_phrase: String = String(data.get("phrase_id", ""))
+			# Чат идёт от лица c_pid — не даём писать за другого (спуфинг облачка).
+			if not from_id.is_empty() and c_pid != _sender_uid(from_id):
+				return
 			if not c_pid.is_empty() and not Messages.phrase(c_phrase).is_empty():
 				chat_received.emit(c_pid, c_phrase, (data.get("noun_ids", []) as Array).slice(0, 2))
 
