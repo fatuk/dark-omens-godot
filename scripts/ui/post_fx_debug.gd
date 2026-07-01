@@ -302,7 +302,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 0.05,
 			"step": 0.001,
-			"default": 0.014,
+			"default": 0.01,
 			"set": _set_chat_swirl_amp
 		},
 		{
@@ -311,7 +311,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
-			"default": 0.22,
+			"default": 1.0,
 			"set": _set_chat_swirl_speed
 		},
 	]

@@ -137,13 +137,14 @@ render_mode blend_disabled, unshaded;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 // «Клубление» дыма: медленный domain-warp UV (2 октавы синусов по TIME) — дрейфуют
 // только дымные клочья, силуэт баллона и текст (отдельный узел) стоят на месте.
-uniform float swirl_amp : hint_range(0.0, 0.05) = 0.014;   // глубина искажения (в UV)
-uniform float swirl_speed : hint_range(0.0, 1.0) = 0.22;   // скорость дрейфа
+uniform float swirl_amp : hint_range(0.0, 0.05) = 0.01;    // глубина искажения (в UV)
+uniform float swirl_speed : hint_range(0.0, 1.0) = 1.0;    // скорость дрейфа
+uniform float seed = 0.0;   // фазовый сдвиг НА ОБЛАЧКО — у каждого свой (см. _make_chat_bubble)
 void fragment() {
 	float t = TIME * swirl_speed;
 	vec2 w = vec2(
-		sin(UV.y * 6.3 + t * 1.3) + 0.5 * sin(UV.x * 11.0 - t * 2.1),
-		cos(UV.x * 5.1 - t * 1.1) + 0.5 * sin(UV.y * 9.0 + t * 1.7)
+		sin(UV.y * 6.3 + t * 1.3 + seed) + 0.5 * sin(UV.x * 11.0 - t * 2.1 + seed * 1.7),
+		cos(UV.x * 5.1 - t * 1.1 + seed * 0.7) + 0.5 * sin(UV.y * 9.0 + t * 1.7 + seed * 2.3)
 	) * swirl_amp;
 	vec4 bal = texture(TEXTURE, UV + w);          // дым в искажённой точке
 	float orig_a = texture(TEXTURE, UV).a;
@@ -1032,7 +1033,11 @@ func _make_chat_bubble(text: String) -> Node2D:
 	var bg := Sprite2D.new()
 	bg.name = "Cloud"
 	bg.texture = _CHAT_BALLOON  # centered=true по умолчанию (вокруг origin)
-	bg.material = _chat_mat  # darken (per-channel min с фоном); текст — отдельный, не задет
+	# Своя КОПИЯ материала на облачко — чтобы у каждого был свой фазовый сид дыма
+	# (иначе все клубятся синхронно). amp/speed наследуются из _chat_mat (правит панель).
+	var mat: ShaderMaterial = _chat_mat.duplicate()
+	mat.set_shader_parameter("seed", randf() * 100.0)
+	bg.material = mat  # darken (per-channel min с фоном); текст — отдельный, не задет
 	b.add_child(bg)
 	var lbl := Label.new()
 	lbl.name = "Text"
