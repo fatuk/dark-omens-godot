@@ -423,7 +423,7 @@
 			},
 			{
 				"to": "Tunguska",
-				"type": "train"
+				"type": "uncharted"
 			},
 			{
 				"to": "14",
@@ -515,7 +515,7 @@
 			},
 			{
 				"to": "Tunguska",
-				"type": "train"
+				"type": "uncharted"
 			},
 			{
 				"to": "1",

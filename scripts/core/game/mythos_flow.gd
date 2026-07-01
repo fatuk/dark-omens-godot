@@ -179,9 +179,15 @@ func _apply_effects(effects: Array) -> void:
 			await _gs._reckoning.run_reckoning(String(eff.get("scope", "")))
 			continue
 		if eff.has("target"):
-			for uid: String in _gs.players:
-				if not bool(_gs.players[uid].get("connected", true)):
+			# Цель разбирает TargetResolver (lead/each/eachOn*/neighbor/chosen). Раньше
+			# здесь был безусловный проход по ВСЕМ игрокам — любой target деградировал
+			# в «each»: карта с target:"lead"/"rightNeighbor"/"eachOnSea" била по всем.
+			for uid_v: Variant in _gs._target._resolve_targets(eff):
+				var uid: String = String(uid_v)
+				if not _gs.players.has(uid):
 					continue
+				if not bool(_gs.players[uid].get("connected", true)):
+					continue  # lead/chosen резолвер не фильтрует отключённых — страхуем
 				if _gs._cond.player_has_constraint(uid, "immuneToEffects"):
 					continue  # whileHeld immuneToEffects (Lost in Time)
 				var res: Dictionary = _EffectRunner.run([eff], _gs.players[uid])

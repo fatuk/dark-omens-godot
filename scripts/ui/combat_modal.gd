@@ -24,6 +24,15 @@ func _ready() -> void:
 	_refresh()
 
 
+func _exit_tree() -> void:
+	# Персистентные лотки, отвязанные при последней пересборке (_build) и не
+	# подвешенные обратно — шаг Силы пропущен на defeatOnHorror/defeatByTrigger —
+	# не удалятся с модалкой: нода без родителя не входит в дерево. Чистим вручную.
+	for t in [_will_tray, _str_tray]:
+		if is_instance_valid(t) and t.get_parent() == null:
+			t.free()
+
+
 func _refresh() -> void:
 	var mine: bool = GameState.is_my_encounter_turn()
 	var card: Dictionary = GameState.current_encounter
@@ -161,7 +170,7 @@ func _skill_name(skill: String) -> String:
 func _step_label(step_key: String, test: Dictionary, default_skill: String) -> String:
 	var skill: String = String(test.get("skill", default_skill))
 	var txt: String = tr(step_key) % _skill_name(skill)
-	var mod: int = int(test.get("modificator", 0))
+	var mod: int = int(test.get("modifier", 0))
 	if mod != 0:
 		txt += "  %s%d" % ["+" if mod > 0 else "−", absi(mod)]
 	return txt
@@ -169,12 +178,12 @@ func _step_label(step_key: String, test: Dictionary, default_skill: String) -> S
 
 func _will_pool(card: Dictionary) -> int:
 	var h: Dictionary = card.get("horror", {})
-	return _check_pool(String(h.get("skill", "will")), int(h.get("modificator", 0)))
+	return _check_pool(String(h.get("skill", "will")), int(h.get("modifier", 0)))
 
 
 func _str_pool(card: Dictionary) -> int:
 	var c: Dictionary = card.get("combat", {})
-	return _check_pool(String(c.get("skill", "strength")), int(c.get("modificator", 0)))
+	return _check_pool(String(c.get("skill", "strength")), int(c.get("modifier", 0)))
 
 
 # ── Колонки ───────────────────────────────────────────────────────────────────

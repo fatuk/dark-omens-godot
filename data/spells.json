@@ -1088,7 +1088,7 @@
 				"id": "beast_within_b3",
 				"text": "RECK_BEAST_WITHIN_B3",
 				"tiers": [
-					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "gangrene" }] },
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "infection" }] },
 					{ "on": "1+", "effect": [{ "do": "improveSkill", "skill": "strength", "amount": 1 }] }
 				]
 			},
@@ -1096,7 +1096,7 @@
 				"id": "beast_within_b4",
 				"text": "RECK_BEAST_WITHIN_B4",
 				"tiers": [
-					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "gangrene" }] },
+					{ "on": "0", "effect": [{ "do": "gainCondition", "condition": "infection" }] },
 					{ "on": "1+", "effect": [] }
 				]
 			}

@@ -321,7 +321,7 @@ func _stat_line(label_key: String, stat: Dictionary) -> Label:
 	l.name = "Label"
 	var skill: String = String(stat.get("skill", "none"))
 	var skill_tr: String = tr("SKILL_" + skill.to_upper())
-	var mod: int = int(stat.get("modificator", 0))
+	var mod: int = int(stat.get("modifier", 0))
 	var mod_s: String = ("%+d" % mod) if mod != 0 else "0"
 	l.text = (
 		"%s: %s %s · %s %d"

@@ -42,6 +42,12 @@ var _saved_room_pass: String = ""
 var _saved_ready: bool = false
 var _saved_investigator: String = ""
 
+# Очередь игрового трафика (relay/relay_to), не ушедшего при закрытом сокете во
+# время короткого реконнекта. Дошлётся после rejoin (_flush_outbox). Без неё
+# действие, совершённое в момент разрыва, молча терялось.
+const _OUTBOX_MAX := 64  # потолок очереди (защита от разбухания, если rejoin затянулся)
+var _outbox: Array = []
+
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
 
@@ -68,6 +74,7 @@ func connect_to_relay(player_name: String, relay_url: String = "ws://127.0.0.1:3
 	players.clear()
 	_is_host_flag = false
 	_host_id = ""
+	_outbox.clear()
 	return _transport().connect_to_server(relay_url)
 
 
@@ -119,11 +126,11 @@ func relay_all(data: Dictionary) -> void:
 	if data.get("action", "") == "set_ready":
 		_saved_ready = true
 		_saved_investigator = data.get("investigator", "")
-	_send({"type": "relay", "data": data})
+	_queue_or_send({"type": "relay", "data": data})
 
 
 func relay_to(player_id: String, data: Dictionary) -> void:
-	_send({"type": "relay_to", "to": player_id, "data": data})
+	_queue_or_send({"type": "relay_to", "to": player_id, "data": data})
 
 
 func is_connected_to_relay() -> bool:
@@ -239,6 +246,8 @@ func _handle_message(msg: Dictionary) -> void:
 							}
 						}
 					)
+				# Rejoin подтверждён — дошлём трафик, накопленный за разрыв.
+				_flush_outbox()
 			joined_room.emit(room_id, room_name, _is_host_flag, raw_players)
 			# Снапшот игрового стейта (если сервер прислал) — кладём в GameState.
 			# GameState инициализируется до перехода в world_map.
@@ -316,6 +325,42 @@ func _send(data: Dictionary) -> void:
 	_transport().send_raw(data)
 
 
+# Отправить игровой трафик (relay/relay_to). Сокет открыт — сразу; закрыт, но мы
+# в комнате (короткий реконнект) — в очередь, дошлём после rejoin. Вне комнаты —
+# дропаем (терять нечего). Подряд идущие game_sync схлопываем до последнего: важен
+# лишь свежий снапшот, а не история.
+func _queue_or_send(data: Dictionary) -> void:
+	if _transport().is_open():
+		_send(data)
+		return
+	if _saved_room_id.is_empty():
+		return
+	if _is_game_sync(data):
+		_outbox = _outbox.filter(func(m: Variant) -> bool: return not _is_game_sync(m))
+	_outbox.append(data)
+	if _outbox.size() > _OUTBOX_MAX:
+		_outbox.pop_front()  # переполнение — жертвуем самым старым
+
+
+func _is_game_sync(m: Variant) -> bool:
+	if not (m is Dictionary):
+		return false
+	var d: Variant = (m as Dictionary).get("data", {})
+	return d is Dictionary and String((d as Dictionary).get("action", "")) == "game_sync"
+
+
+# Дошлём накопленный за реконнект игровой трафик в порядке очереди. Хостовые
+# game_sync доедут снапшотом; действия не-хоста дойдут до хоста, который их
+# отвалидирует (устаревшие по очереди/фазе отклонит). Зовётся после rejoin.
+func _flush_outbox() -> void:
+	if _outbox.is_empty():
+		return
+	var pending: Array = _outbox
+	_outbox = []
+	for m_v: Variant in pending:
+		_send(m_v as Dictionary)
+
+
 func _transport() -> Node:
 	return get_node("/root/RelayTransport")
 
@@ -330,4 +375,5 @@ func _clear_room_state() -> void:
 	players.clear()
 	_is_host_flag = false
 	_host_id = ""
+	_outbox.clear()  # осознанный выход из комнаты — накопленный трафик не нужен
 	game_started = false

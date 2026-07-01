@@ -289,11 +289,7 @@ func _begin_combat(pid: String) -> void:
 func _start_combat_will(pid: String) -> void:
 	var h: Dictionary = _gs.current_encounter.get("horror", {})
 	_gs._check.start(
-		"combat",
-		pid,
-		String(h.get("skill", "will")),
-		int(h.get("modificator", 0)),
-		"combatEncounter"
+		"combat", pid, String(h.get("skill", "will")), int(h.get("modifier", 0)), "combatEncounter"
 	)
 
 
@@ -345,7 +341,7 @@ func _resolve_combat(pid: String) -> bool:
 			"combat",
 			pid,
 			String(cb.get("skill", "strength")),
-			int(cb.get("modificator", 0)),
+			int(cb.get("modifier", 0)),
 			"combatEncounter"
 		)
 		GameConsole.log(

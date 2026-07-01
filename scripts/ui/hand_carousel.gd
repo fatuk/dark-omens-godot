@@ -1,9 +1,10 @@
 extends CanvasLayer
 class_name HandCarousel
 
-## Клик по НЕистощённой карте — запрос активации (item_index в player.items).
-## Слушает WorldMap → GameState.activate_card; в пикере слушателя нет (просмотр).
-signal card_played(item_index: int)
+## Клик по НЕистощённой карте — запрос активации (item_index в player.items + id
+## карты для валидации: между сборкой веера и emit'ом идёт анимация ~0.28с, за
+## которую items мог сместиться синком от хоста). Слушает WorldMap → GameState.
+signal card_played(item_index: int, item_id: String)
 
 ## «Закинули» жетон (currency) на проверку → зарядить валюту переброса; куб игрок
 ## выбирает тапом по кубу (как и обычный переброс).
@@ -407,6 +408,10 @@ func _update_section_chrome() -> void:
 
 # Пересобрать карты из _deck (после set_cards). Хром (фон/подсказка) не трогаем.
 func _rebuild_cards() -> void:
+	# Пересборка инвалидирует _els/_deck — тянущаяся карта больше не существует.
+	# Сбрасываем перетаскивание, иначе _end_drag сыграл бы карту не по тому индексу
+	# (state_changed от хоста во время драга — в мультиплеере обычное дело).
+	_drag_idx = -1
 	for c in _els:
 		c.queue_free()
 	_els.clear()
@@ -743,7 +748,7 @@ func _play_and_close(idx: int, item: Dictionary) -> void:
 			elif k == "chat":
 				chat_card_played.emit(String(item.get("id", "")))
 			else:
-				card_played.emit(int(item.get("item_index", -1)))
+				card_played.emit(int(item.get("item_index", -1)), String(item.get("id", "")))
 			if not keep_open:
 				close()
 	)

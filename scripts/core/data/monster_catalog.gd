@@ -9,8 +9,8 @@ extends RefCounted
 ##     toughnessPerInvestigator:int,  # опц.: стойкость += это×(число сыщиков)
 ##     epic:bool,                      # опц.: эпик-монстр (спавнится по имени)
 ##     resist: "physical"|"magical",   # опц.: сопротивление урону типа (получает вдвое)
-##     horror:{ skill, modificator:int, damage:int },   # проверка рассудка
-##     combat:{ skill, modificator:int, damage:int },    # проверка боя
+##     horror:{ skill, modifier:int, damage:int },   # проверка рассудка
+##     combat:{ skill, modifier:int, damage:int },    # проверка боя
 ##     ability:{ trigger, textKey }
 ##   }
 ## skill ∈ "will" | "lore" | "influence" | "observation" | "strength" |

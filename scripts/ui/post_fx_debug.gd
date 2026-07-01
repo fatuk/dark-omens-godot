@@ -407,6 +407,8 @@ func _ready() -> void:
 	_root.visible = false
 	UIStyle.style_panel(%Panel, 12)
 	_build_ui()
+	# Панель тюнинга шейдеров (Ctrl+M) — только dev; в релизе игрок её не открывает.
+	set_process_unhandled_input(OS.is_debug_build())
 
 
 func _unhandled_input(event: InputEvent) -> void:

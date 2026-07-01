@@ -852,6 +852,8 @@ VERB_PLACE_RUMOR,слух,place a Rumor
 VERB_RESOLVE_RECKONING,Расплата,Reckoning
 VERB_DRAW_MYTHOS,карта Мифов,draw a Mythos
 VERB_MYSTERY_PROGRESS,прогресс Тайны,Mystery progress
+VERB_ADD_SUCCESSES,+{amount} к успехам,+{amount} success(es)
+VERB_SUCCESS_THRESHOLD,успех на {value}+,success on {value}+
 RECK_WAIT,Расплата: ждём других сыщиков…,Reckoning: waiting for other investigators…
 CHOICE_SPEND_CLUE,Потратить 1 улику,Spend 1 Clue
 MON_AVIAN_THRALL_NAME,Avian Thrall,Avian Thrall

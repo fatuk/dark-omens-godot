@@ -217,21 +217,24 @@ func _build_hand_carousel() -> void:
 	_hand_carousel = hc
 	# Карту вытащили на проверку. Заклинание (kind:"spell") → каст; актив → активация.
 	hc.card_played.connect(
-		func(item_index: int) -> void:
+		func(item_index: int, item_id: String) -> void:
 			var items: Array = GameState.my_player().get("items", [])
-			var it: Variant = (
-				items[item_index] if item_index >= 0 and item_index < items.size() else null
-			)
+			# item_index захвачен при сборке веера; за время анимации розыгрыша items мог
+			# сместиться синком от хоста — переразрешаем по id, иначе сыграли бы соседнюю.
+			var idx: int = _resolve_played_index(items, item_index, item_id)
+			if idx < 0:
+				return  # карта ушла из руки — розыгрыш отменяем
+			var it: Variant = items[idx]
 			if not (it is Dictionary) or String((it as Dictionary).get("kind", "")) != "spell":
-				GameState.activate_card(item_index)
+				GameState.activate_card(idx)
 				return
 			# Glamour во время активной проверки → применить пассив-ауру (как актив);
 			# иначе (Ritual/Incantation/glamour вне проверки) → каст.
 			var sid: String = String((it as Dictionary).get("id", ""))
 			if SpellCatalog.is_glamour(sid) and not GameState.active_check.is_empty():
-				GameState.activate_card(item_index)
+				GameState.activate_card(idx)
 			else:
-				GameState.cast_spell(item_index)
+				GameState.cast_spell(idx)
 	)
 	# Жетон закинули на проверку — заряжаем валюту переброса; куб игрок выберет тапом.
 	hc.token_played.connect(func(currency: String) -> void: GameState.set_pending_reroll(currency))
@@ -241,6 +244,25 @@ func _build_hand_carousel() -> void:
 	)
 	GameState.state_changed.connect(_refresh_hand)
 	_refresh_hand()
+
+
+# Актуальный индекс сыгранной карты в items. item_index захвачен при сборке веера;
+# если за время анимации розыгрыша items сместился (синк от хоста), сверяем по id и
+# ищем ту же карту заново. Нет совпадения id ни по индексу, ни где-либо — карта ушла
+# из руки, возвращаем -1 (розыгрыш отменяется). Пустой id — старый путь без валидации.
+func _resolve_played_index(items: Array, item_index: int, item_id: String) -> int:
+	if item_id.is_empty():
+		return item_index
+	if (
+		item_index >= 0
+		and item_index < items.size()
+		and AssetCatalog.entry_id(items[item_index]) == item_id
+	):
+		return item_index
+	for i in range(items.size()):
+		if AssetCatalog.entry_id(items[i]) == item_id:
+			return i
+	return -1
 
 
 # Перечитать веер: секции имущества и жетонов из стейта игрока. Пустые секции не

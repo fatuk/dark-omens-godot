@@ -730,6 +730,21 @@
       "targets": null,
       "describeKey": "VERB_CONVERT_DIE"
     },
+    "addSuccesses": {
+      "kind": "meta",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_ADD_SUCCESSES"
+    },
     "damageMonster": {
       "kind": "board",
       "params": [
@@ -806,6 +821,61 @@
       ],
       "targets": null,
       "describeKey": "VERB_RETREAT_DOOM"
+    },
+    "setDoom": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_SET_DOOM"
+    },
+    "loseGame": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_LOSE_GAME"
+    },
+    "discardAllClues": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_DISCARD_ALL_CLUES"
+    },
+    "discardAllGates": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_DISCARD_ALL_GATES"
+    },
+    "discardEldritchToken": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
+          "name": "where",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "repeatable": true,
+      "describeKey": "VERB_DISCARD_ELDRITCH_TOKEN"
     },
     "preventLoss": {
       "kind": "player",
@@ -1101,6 +1171,21 @@
       "params": [],
       "targets": null,
       "describeKey": "VERB_IMMUNE_TO_EFFECTS"
+    },
+    "successThreshold": {
+      "kind": "player",
+      "passive": true,
+      "params": [
+        {
+          "name": "value",
+          "type": {
+            "t": "int",
+            "min": 1
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_SUCCESS_THRESHOLD"
     },
     "mysteryProgress": {
       "kind": "board",

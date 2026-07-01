@@ -1189,6 +1189,9 @@ func decide_mythos(index: int) -> void:
 func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -> void:
 	if not active or not _is_host():
 		return
+	# Мог только что стать хостом (старый хост вышел): host-only колода Мифов у
+	# нас пуста — восстанавливаем, иначе следующая вытяжка Мифов выпадет в заглушку.
+	_ensure_mythos_deck()
 	# Ключ слота — стабильный user_id; аноним → фолбэк на id соединения.
 	var uid: String = user_id
 	if uid.is_empty():
@@ -1344,12 +1347,21 @@ func _apply_snapshot(data: Dictionary) -> void:
 
 	# Реджойн хоста: колода Мифов — host-only, в снапшот не попадает. При
 	# перезапуске процесса колода теряется → следующая вытяжка выпала бы в
-	# заглушку. Тянем полную библию из relay-API по campaign.id и
-	# восстанавливаем колоду; индекс уже подтянулся из snapshot выше.
-	if _is_host() and active and _mythos.deck.is_empty() and not campaign.is_empty():
-		var camp_id: String = String(campaign.get("id", ""))
-		if not camp_id.is_empty():
-			_mythos.restore_deck.call_deferred(camp_id)
+	# заглушку. Индекс уже подтянулся из snapshot выше; колоду восстанавливаем.
+	_ensure_mythos_deck()
+
+
+# Host-only колода Мифов не входит в снапшот. Восстанавливаем её по campaign.id из
+# relay-API, когда мы хост, партия активна, а колода пуста. Срабатывает и при
+# реджойне хоста (перезапуск процесса, см. _apply_snapshot), и при промоушене
+# не-хоста в хосты (старый хост вышел, см. _on_player_left) — у свежего хоста
+# колоды никогда не было. Гард по пустой колоде делает вызов идемпотентным.
+func _ensure_mythos_deck() -> void:
+	if not (_is_host() and active and _mythos.deck.is_empty() and not campaign.is_empty()):
+		return
+	var camp_id: String = String(campaign.get("id", ""))
+	if not camp_id.is_empty():
+		_mythos.restore_deck.call_deferred(camp_id)
 
 
 # ── Не-хост: приём от relay ──────────────────────────────────────────────────

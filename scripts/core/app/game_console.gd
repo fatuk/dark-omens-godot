@@ -40,6 +40,9 @@ func err(msg: String) -> void:
 func _ready() -> void:
 	layer = 100
 	_build_ui()
+	# Панель по «~» — только в dev-сборках; в релизе игрок консоль не открывает
+	# (логирование через GameConsole.log при этом работает всегда).
+	set_process_input(OS.is_debug_build())
 
 
 func _input(event: InputEvent) -> void:
