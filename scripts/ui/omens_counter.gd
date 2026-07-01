@@ -13,14 +13,14 @@ extends Control
 # Настройки арта круга — static, чтобы тюнить на лету в дебаг-панели шейдеров
 # (Ctrl+M, секция «КРУГ ЗНАМЕНИЙ») и переживать пересоздание узла.
 static var STEP_DEG: float = 45.0  # градусов между оменами на диске
-static var START_ANGLE_DEG: float = -82.0  # база поворота диска (выравнивает омен под окно)
+static var START_ANGLE_DEG: float = -90.0  # база поворота диска (выравнивает омен под окно)
 static var MASK_RADIUS: float = 46.0  # радиус видимого окошка (canvas-координаты)
 static var MASK_OFFSET_X: float = 0.0  # сдвиг ОКНА-маски от центра компонента (под арт рамки)
 static var MASK_OFFSET_Y: float = 0.0
 static var POS_OFFSET_X: float = 0.0  # сдвиг ВСЕГО виджета на панели (позиция узла)
 static var POS_OFFSET_Y: float = 0.0
-static var DIAL_OFFSET_X: float = 0.0  # сдвиг ВНУТРЕННЕГО диска (_circle) — центровать символ в окне
-static var DIAL_OFFSET_Y: float = 0.0
+static var DIAL_OFFSET_X: float = 3.5  # сдвиг ВНУТРЕННЕГО диска (_circle) — центровать символ в окне
+static var DIAL_OFFSET_Y: float = -5.5
 const PEEK_AMOUNT: float = 0.3
 const TWEEN_TIME: float = 0.3  # секунды — короткий peek по наведению
 const OMEN_MOVE_TIME: float = 0.3  # фолбэк длительности сдвига (берём длину omen-move.wav)
