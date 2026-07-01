@@ -1,3 +1,4 @@
+class_name OmensCounter
 extends Control
 
 ## Компасный диск «омен» — слева на главной панели.
@@ -9,12 +10,16 @@ extends Control
 ## плавно подкручивается на +0.3 шага, чтобы юзер мог «подсмотреть»
 ## следующий омен. Уход мыши — возвращает на current_step.
 
-const STEP_DEG: float = 45.0
-const START_ANGLE_DEG: float = -82.0  # как в React-прототипе
+# Настройки арта круга — static, чтобы тюнить на лету в дебаг-панели шейдеров
+# (Ctrl+M, секция «КРУГ ЗНАМЕНИЙ») и переживать пересоздание узла.
+static var STEP_DEG: float = 45.0  # градусов между оменами на диске
+static var START_ANGLE_DEG: float = -82.0  # база поворота диска (выравнивает омен под окно)
+static var MASK_RADIUS: float = 46.0  # радиус видимого окошка (canvas-координаты)
+static var MASK_OFFSET_X: float = 0.0  # сдвиг окошка от центра компонента (под новый арт)
+static var MASK_OFFSET_Y: float = 0.0
 const PEEK_AMOUNT: float = 0.3
 const TWEEN_TIME: float = 0.3  # секунды — короткий peek по наведению
 const OMEN_MOVE_TIME: float = 0.3  # фолбэк длительности сдвига (берём длину omen-move.wav)
-const MASK_RADIUS: float = 46.0  # радиус видимого окошка в canvas-координатах
 
 @export var current_step: float = 0.0:
 	set(v):
@@ -36,11 +41,11 @@ const MASK_RADIUS: float = 46.0  # радиус видимого окошка в
 @onready var _circle: TextureRect = %Circle
 
 var _tween: Tween = null
-var _last_center: Vector2 = Vector2.INF
 var _initialized: bool = false
 
 
 func _ready() -> void:
+	add_to_group("omens_counter")  # чтобы дебаг-панель шейдеров (Ctrl+M) нашла узел
 	mouse_entered.connect(_on_hover)
 	mouse_exited.connect(_on_unhover)
 	# Первый layout-pass для корректных global_position/size
@@ -94,9 +99,16 @@ func _update_mask_center() -> void:
 	var mat: ShaderMaterial = _circle.material as ShaderMaterial
 	if mat == null:
 		return
-	var center: Vector2 = global_position + size * 0.5
-	if center == _last_center:
-		return
-	_last_center = center
-	mat.set_shader_parameter("mask_center", center)
+	# Пишем каждый кадр (дёшево) — так живая подстройка радиуса/сдвига из дебаг-панели
+	# сразу видна. Сдвиг MASK_OFFSET — под центр отверстия нового арта рамки.
+	mat.set_shader_parameter(
+		"mask_center", global_position + size * 0.5 + Vector2(MASK_OFFSET_X, MASK_OFFSET_Y)
+	)
 	mat.set_shader_parameter("mask_radius", MASK_RADIUS)
+
+
+## Переприменить поворот диска под текущие STEP_DEG/START_ANGLE_DEG (для дебаг-панели).
+## Во время твина (peek/сдвиг) не трогаем — иначе дёрнется.
+func debug_reapply_angle() -> void:
+	if is_instance_valid(_circle) and not (_tween and _tween.is_valid()):
+		_circle.rotation_degrees = _angle_for(current_step)

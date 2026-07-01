@@ -314,6 +314,52 @@ func _build_specs() -> Array:
 			"default": 1.0,
 			"set": _set_chat_swirl_speed
 		},
+		{"section": "КРУГ ЗНАМЕНИЙ"},
+		{
+			"key": "omen_radius",
+			"label": "Радиус окна",
+			"min": 20.0,
+			"max": 120.0,
+			"step": 1.0,
+			"default": OmensCounter.MASK_RADIUS,
+			"set": _set_omen_radius
+		},
+		{
+			"key": "omen_off_x",
+			"label": "Сдвиг X",
+			"min": -60.0,
+			"max": 60.0,
+			"step": 0.5,
+			"default": OmensCounter.MASK_OFFSET_X,
+			"set": _set_omen_off_x
+		},
+		{
+			"key": "omen_off_y",
+			"label": "Сдвиг Y",
+			"min": -60.0,
+			"max": 60.0,
+			"step": 0.5,
+			"default": OmensCounter.MASK_OFFSET_Y,
+			"set": _set_omen_off_y
+		},
+		{
+			"key": "omen_angle",
+			"label": "База угла",
+			"min": -180.0,
+			"max": 180.0,
+			"step": 1.0,
+			"default": OmensCounter.START_ANGLE_DEG,
+			"set": _set_omen_angle
+		},
+		{
+			"key": "omen_step",
+			"label": "Шаг омена",
+			"min": 10.0,
+			"max": 90.0,
+			"step": 1.0,
+			"default": OmensCounter.STEP_DEG,
+			"set": _set_omen_step
+		},
 	]
 
 
@@ -658,3 +704,36 @@ func _set_chat_swirl_speed(v: float) -> void:
 	var m := _chat_smoke_mat()
 	if m:
 		m.set_shader_parameter("swirl_speed", v)
+
+
+# ── Круг знамений (OmensCounter, группа "omens_counter") ──────────────────────
+# Радиус/сдвиг маски применяет сам OmensCounter в _process (читает static). Угол/шаг
+# требуют переприменения поворота — дёргаем живой узел (вне игры его нет — no-op).
+
+
+func _omens_reapply() -> void:
+	var n := get_tree().get_first_node_in_group("omens_counter")
+	if n != null and n.has_method("debug_reapply_angle"):
+		n.call("debug_reapply_angle")
+
+
+func _set_omen_radius(v: float) -> void:
+	OmensCounter.MASK_RADIUS = v
+
+
+func _set_omen_off_x(v: float) -> void:
+	OmensCounter.MASK_OFFSET_X = v
+
+
+func _set_omen_off_y(v: float) -> void:
+	OmensCounter.MASK_OFFSET_Y = v
+
+
+func _set_omen_angle(v: float) -> void:
+	OmensCounter.START_ANGLE_DEG = v
+	_omens_reapply()
+
+
+func _set_omen_step(v: float) -> void:
+	OmensCounter.STEP_DEG = v
+	_omens_reapply()
