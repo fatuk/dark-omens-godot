@@ -326,7 +326,7 @@ func _build_specs() -> Array:
 		},
 		{
 			"key": "omen_off_x",
-			"label": "Сдвиг X",
+			"label": "Окно X",
 			"min": -60.0,
 			"max": 60.0,
 			"step": 0.5,
@@ -335,12 +335,30 @@ func _build_specs() -> Array:
 		},
 		{
 			"key": "omen_off_y",
-			"label": "Сдвиг Y",
+			"label": "Окно Y",
 			"min": -60.0,
 			"max": 60.0,
 			"step": 0.5,
 			"default": OmensCounter.MASK_OFFSET_Y,
 			"set": _set_omen_off_y
+		},
+		{
+			"key": "omen_pos_x",
+			"label": "Позиция X",
+			"min": -200.0,
+			"max": 200.0,
+			"step": 1.0,
+			"default": OmensCounter.POS_OFFSET_X,
+			"set": _set_omen_pos_x
+		},
+		{
+			"key": "omen_pos_y",
+			"label": "Позиция Y",
+			"min": -200.0,
+			"max": 200.0,
+			"step": 1.0,
+			"default": OmensCounter.POS_OFFSET_Y,
+			"set": _set_omen_pos_y
 		},
 		{
 			"key": "omen_angle",
@@ -727,6 +745,14 @@ func _set_omen_off_x(v: float) -> void:
 
 func _set_omen_off_y(v: float) -> void:
 	OmensCounter.MASK_OFFSET_Y = v
+
+
+func _set_omen_pos_x(v: float) -> void:
+	OmensCounter.POS_OFFSET_X = v  # применяет сам узел в _process
+
+
+func _set_omen_pos_y(v: float) -> void:
+	OmensCounter.POS_OFFSET_Y = v
 
 
 func _set_omen_angle(v: float) -> void:

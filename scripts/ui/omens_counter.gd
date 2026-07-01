@@ -15,8 +15,10 @@ extends Control
 static var STEP_DEG: float = 45.0  # градусов между оменами на диске
 static var START_ANGLE_DEG: float = -82.0  # база поворота диска (выравнивает омен под окно)
 static var MASK_RADIUS: float = 46.0  # радиус видимого окошка (canvas-координаты)
-static var MASK_OFFSET_X: float = 0.0  # сдвиг окошка от центра компонента (под новый арт)
+static var MASK_OFFSET_X: float = 0.0  # сдвиг ОКНА-маски от центра компонента (под арт рамки)
 static var MASK_OFFSET_Y: float = 0.0
+static var POS_OFFSET_X: float = 0.0  # сдвиг ВСЕГО виджета на панели (позиция узла)
+static var POS_OFFSET_Y: float = 0.0
 const PEEK_AMOUNT: float = 0.3
 const TWEEN_TIME: float = 0.3  # секунды — короткий peek по наведению
 const OMEN_MOVE_TIME: float = 0.3  # фолбэк длительности сдвига (берём длину omen-move.wav)
@@ -42,6 +44,8 @@ const OMEN_MOVE_TIME: float = 0.3  # фолбэк длительности сд�
 
 var _tween: Tween = null
 var _initialized: bool = false
+var _base_pos: Vector2 = Vector2.ZERO  # позиция из раскладки; POS_OFFSET прибавляем к ней
+var _base_pos_set: bool = false
 
 
 func _ready() -> void:
@@ -50,12 +54,18 @@ func _ready() -> void:
 	mouse_exited.connect(_on_unhover)
 	# Первый layout-pass для корректных global_position/size
 	await get_tree().process_frame
+	_base_pos = position
+	_base_pos_set = true
 	_update_mask_center()
 	_circle.rotation_degrees = _angle_for(current_step)
 
 
 func _process(_delta: float) -> void:
-	# Если позиция компонента поменялась (resize окна и т.д.) — пересчитываем.
+	# Сдвиг всего виджета (дебаг-панель) — от базовой позиции раскладки. Узел
+	# anchor-based (не в контейнере), так что position не перетирается.
+	if _base_pos_set:
+		position = _base_pos + Vector2(POS_OFFSET_X, POS_OFFSET_Y)
+	# Позиция компонента могла смениться (сдвиг/resize) — пересчитать центр маски.
 	_update_mask_center()
 
 
