@@ -130,7 +130,9 @@ func _check_auto_ready() -> void:
 	_was_ready = true
 	_nm.set_lobby_ready(_nm.my_id, selected)
 	_picker.lock_confirm()
-	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
+	_nm.relay_all(
+		{"action": RelayActions.SET_READY, "player_id": _nm.my_id, "investigator": selected}
+	)
 	_refresh_start_button()
 
 
@@ -234,7 +236,7 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 			var inv: String = data.get("investigator", "")
 			_nm.set_lobby_investigator(pid, inv)
 			_recompute_taken()
-		"set_ready":
+		RelayActions.SET_READY:
 			var pid: String = data.get("player_id", "")
 			var inv_name: String = data.get("investigator", "")
 			_nm.set_lobby_ready(pid, inv_name)
@@ -276,7 +278,9 @@ func _on_ready_pressed() -> void:
 	_picker.lock_confirm()
 	_nm.set_lobby_ready(_nm.my_id, selected)
 	# Хост тоже рассылает — другие игроки увидят его статус и сыщика.
-	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
+	_nm.relay_all(
+		{"action": RelayActions.SET_READY, "player_id": _nm.my_id, "investigator": selected}
+	)
 	_refresh_start_button()
 	# Хост: страховка — если прогрев кампании ещё не стартовал (промоут в
 	# хосты и т.п.), запускаем сейчас. Идемпотентно: если уже идёт — no-op.
@@ -295,7 +299,9 @@ func _resend_ready() -> void:
 	if selected.is_empty():
 		return
 	_nm.set_lobby_ready(_nm.my_id, selected)
-	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
+	_nm.relay_all(
+		{"action": RelayActions.SET_READY, "player_id": _nm.my_id, "investigator": selected}
+	)
 
 
 func _on_start_pressed() -> void:

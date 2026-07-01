@@ -52,7 +52,7 @@ func resolve() -> void:
 	if _gs._is_host():
 		_apply_resolve()
 	else:
-		_gs._nm.relay_all({"action": "game_resolve_mythos"})
+		_gs._nm.relay_all({"action": RelayActions.RESOLVE_MYTHOS})
 
 
 # ── Host-only: вытяжка ───────────────────────────────────────────────────────

@@ -23,45 +23,6 @@ signal action_announced(pid: String, action_id: String, params: Dictionary)  # �
 const ACTIONS_PER_ROUND := 2
 const MAX_TICKETS := 2  # потолок билетов на руках (ж/д + корабль суммарно), как в EH
 
-# Relay-действия, которые хост применяет ОТ ЛИЦА игрока data.pid. Для них pid
-# обязан принадлежать отправителю сообщения (from_id) — иначе один клиент мог бы
-# ходить/тратить перебросы/закрывать модалки за другого (спуфинг pid). Проверка
-# централизована в _on_relay_received. Транзиентные широковещалки (game_sync,
-# game_chat, game_action_feed) и служебные (set_ready, game_resolve_mythos) — вне
-# набора, у них своя логика доверия.
-const _PID_OWNED_ACTIONS := {
-	"game_action": true,
-	"game_finish_encounter": true,
-	"game_resolve_encounter": true,
-	"game_reroll_encounter": true,
-	"game_choose_encounter": true,
-	"game_advance_stage": true,
-	"game_choose_effect": true,
-	"game_activate_card": true,
-	"game_cast_incantation": true,
-	"game_cast_glamour": true,
-	"game_spell_cast_roll": true,
-	"game_spell_cast_reroll": true,
-	"game_spell_cast_apply": true,
-	"game_check_roll": true,
-	"game_check_reroll": true,
-	"game_resolve_pending_check": true,
-	"game_reckoning_roll": true,
-	"game_reckoning_reroll": true,
-	"game_reckoning_reroll_all": true,
-	"game_reckoning_apply": true,
-	"game_cast_trigger_spells": true,
-	"game_dismiss_cast_result": true,
-	"game_dismiss_reckoning": true,
-	"game_shop_grant": true,
-	"game_shop_close": true,
-	"game_shop_debt": true,
-	"game_shop_open": true,
-	"game_shop_reroll": true,
-	"game_reroll_all": true,
-	"game_mythos_decide": true,
-}
-
 # ── Глобальный стейт ──────────────────────────────────────────────────────────
 var round_num: int = 0
 var phase: String = ""  # "action" | "encounter" | "mythos" | ""
@@ -253,6 +214,11 @@ var _spell: SpellFlow
 # в _ready после создания модулей (см. _build_action_registry).
 var _relay_actions: Dictionary = {}
 
+# Подмножество _relay_actions, действующих ОТ ЛИЦА игрока data.pid — для них pid
+# сверяется с отправителем (защита от спуфинга). Выводится из реестра (минус
+# безадресные RESOLVE_MYTHOS/SET_READY) в _build_action_registry.
+var _pid_owned: Dictionary = {}
+
 # ── Lifecycle ────────────────────────────────────────────────────────────────
 
 
@@ -294,7 +260,7 @@ func _broadcast_sync() -> void:
 		_nm
 		. relay_all(
 			{
-				"action": "game_sync",
+				"action": RelayActions.SYNC,
 				"round_num": round_num,
 				"phase": phase,
 				"current_idx": current_idx,
@@ -480,7 +446,7 @@ func perform_action(action_type: String, payload: Dictionary = {}) -> void:
 			_nm
 			. relay_all(
 				{
-					"action": "game_action",
+					"action": RelayActions.ACTION,
 					"type": action_type,
 					"pid": my_pid,
 					"payload": payload,
@@ -498,7 +464,7 @@ func finish_encounter() -> void:
 	if _is_host():
 		_phase.host_apply_finish_encounter(my_pid)
 	else:
-		_nm.relay_all({"action": "game_finish_encounter", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.FINISH_ENCOUNTER, "pid": my_pid})
 
 
 ## Активный игрок бросает проверку встречи. Хост катит результат (эффекты
@@ -508,7 +474,7 @@ func resolve_encounter() -> void:
 	if _is_host():
 		_encounter.host_apply_resolve(my_pid)
 	else:
-		_nm.relay_all({"action": "game_resolve_encounter", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.RESOLVE_ENCOUNTER, "pid": my_pid})
 
 
 ## Активный игрок перебрасывает ОДИН выбранный куб проверки. currency — явная
@@ -522,7 +488,7 @@ func reroll_encounter(die_index: int, currency: String = "") -> void:
 			_nm
 			. relay_all(
 				{
-					"action": "game_reroll_encounter",
+					"action": RelayActions.REROLL_ENCOUNTER,
 					"pid": my_pid,
 					"die": die_index,
 					"currency": currency,
@@ -590,7 +556,7 @@ func choose_encounter(kind: String) -> void:
 	if _is_host():
 		_encounter.host_apply_choose(my_pid, kind)
 	else:
-		_nm.relay_all({"action": "game_choose_encounter", "pid": my_pid, "kind": kind})
+		_nm.relay_all({"action": RelayActions.CHOOSE_ENCOUNTER, "pid": my_pid, "kind": kind})
 
 
 ## Активный игрок переходит к следующей стадии gate-встречи (после успеха).
@@ -599,7 +565,7 @@ func advance_encounter_stage() -> void:
 	if _is_host():
 		_encounter.host_apply_advance_stage(my_pid)
 	else:
-		_nm.relay_all({"action": "game_advance_stage", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.ADVANCE_STAGE, "pid": my_pid})
 
 
 ## Активный игрок выбрал ветку интерактивного choice в эффектах встречи (index —
@@ -609,7 +575,7 @@ func choose_effect(index: int) -> void:
 	if _is_host():
 		_phase.host_apply_effect_choice(my_pid, index)
 	else:
-		_nm.relay_all({"action": "game_choose_effect", "pid": my_pid, "index": index})
+		_nm.relay_all({"action": RelayActions.CHOOSE_EFFECT, "pid": my_pid, "index": index})
 
 
 ## Активный игрок активирует карту руки (item_index в player.items) во время
@@ -628,7 +594,7 @@ func activate_card(item_index: int) -> void:
 		if not _encounter.try_combat_trigger(my_pid, item_index):
 			_check.activate(my_pid, item_index)  # единая активная проверка (встреча/магазин/бой)
 	else:
-		_nm.relay_all({"action": "game_activate_card", "pid": my_pid, "index": item_index})
+		_nm.relay_all({"action": RelayActions.ACTIVATE_CARD, "pid": my_pid, "index": item_index})
 
 
 ## UI: каст заклинания из веера. Ritual → действие cast_spell (тратит действие,
@@ -655,14 +621,14 @@ func cast_spell(item_index: int) -> void:
 				_broadcast_sync()
 				_emit_changed()
 		else:
-			_nm.relay_all({"action": "game_cast_glamour", "pid": my_pid, "index": item_index})
+			_nm.relay_all({"action": RelayActions.CAST_GLAMOUR, "pid": my_pid, "index": item_index})
 		return
 	if _is_host():  # incantation — вложенная проверка поверх боя
 		if _spell.begin_incantation(my_pid, item_index):
 			_broadcast_sync()
 			_emit_changed()
 	else:
-		_nm.relay_all({"action": "game_cast_incantation", "pid": my_pid, "index": item_index})
+		_nm.relay_all({"action": RelayActions.CAST_INCANTATION, "pid": my_pid, "index": item_index})
 
 
 ## Бросок spell-проверки текущего каста (кнопка «Бросить кубы»). _check.roll синкает сам.
@@ -671,7 +637,7 @@ func spell_cast_roll() -> void:
 	if _is_host():
 		_spell.roll_cast(my_pid)
 	else:
-		_nm.relay_all({"action": "game_spell_cast_roll", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.SPELL_CAST_ROLL, "pid": my_pid})
 
 
 ## Переброс куба spell-проверки при касте. currency — явная валюта (жетон) или "".
@@ -684,7 +650,7 @@ func spell_cast_reroll(die_index: int, currency: String = "") -> void:
 			_nm
 			. relay_all(
 				{
-					"action": "game_spell_cast_reroll",
+					"action": RelayActions.SPELL_CAST_REROLL,
 					"pid": my_pid,
 					"die": die_index,
 					"currency": currency,
@@ -702,7 +668,7 @@ func spell_cast_apply() -> void:
 			_broadcast_sync()
 			_emit_changed()
 	else:
-		_nm.relay_all({"action": "game_spell_cast_apply", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.SPELL_CAST_APPLY, "pid": my_pid})
 
 
 ## Бросок ожидающей видимой проверки test-узла (кнопка «Бросить»). _check.roll синкает сам.
@@ -711,7 +677,7 @@ func check_roll() -> void:
 	if _is_host():
 		_check.roll(my_pid)
 	else:
-		_nm.relay_all({"action": "game_check_roll", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.CHECK_ROLL, "pid": my_pid})
 
 
 ## Переброс куба ожидающей видимой проверки. currency — явная валюта (жетон) или "".
@@ -724,7 +690,7 @@ func check_reroll(die_index: int, currency: String = "") -> void:
 			_nm
 			. relay_all(
 				{
-					"action": "game_check_reroll",
+					"action": RelayActions.CHECK_REROLL,
 					"pid": my_pid,
 					"die": die_index,
 					"currency": currency,
@@ -743,7 +709,7 @@ func resolve_pending_check() -> void:
 			_broadcast_sync()
 			_emit_changed()
 	else:
-		_nm.relay_all({"action": "game_resolve_pending_check", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.RESOLVE_PENDING_CHECK, "pid": my_pid})
 
 
 ## Хост: разрешить ожидающую проверку — прочитать passed и диспетчить в драйвер по
@@ -792,7 +758,7 @@ func reckoning_check_roll() -> void:
 	if _is_host():
 		_check.roll(my_pid, _reckoning_slot(my_pid))  # _sync внутри
 	else:
-		_nm.relay_all({"action": "game_reckoning_roll", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.RECKONING_ROLL, "pid": my_pid})
 
 
 ## Переброс куба своей проверки Расплаты (тап по кубу). Маршрут валюты как reroll_die.
@@ -810,7 +776,12 @@ func reckoning_reroll_die(die_index: int) -> void:
 		_check.reroll(my_pid, die_index, cur, _reckoning_slot(my_pid))  # _sync внутри
 	else:
 		_nm.relay_all(
-			{"action": "game_reckoning_reroll", "pid": my_pid, "die": die_index, "currency": cur}
+			{
+				"action": RelayActions.RECKONING_REROLL,
+				"pid": my_pid,
+				"die": die_index,
+				"currency": cur
+			}
 		)
 
 
@@ -820,7 +791,7 @@ func reckoning_reroll_all() -> void:
 	if _is_host():
 		_check.reroll_all(my_pid, _reckoning_slot(my_pid))  # _sync внутри
 	else:
-		_nm.relay_all({"action": "game_reckoning_reroll_all", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.RECKONING_REROLL_ALL, "pid": my_pid})
 
 
 ## Можно ли перебросить куб СВОЕЙ проверки Расплаты сейчас (бесплатный/жетон).
@@ -840,7 +811,7 @@ func reckoning_check_apply() -> void:
 			_broadcast_sync()
 			_emit_changed()
 	else:
-		_nm.relay_all({"action": "game_reckoning_apply", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.RECKONING_APPLY, "pid": my_pid})
 
 
 ## Хост: применить проверку Расплаты игрока — прочитать passed и разбудить его корутину
@@ -869,7 +840,9 @@ func send_chat(phrase_id: String, noun_ids: Array) -> void:
 	_chat_last_ms = now
 	var nouns: Array = (noun_ids as Array).slice(0, 2)
 	var my_pid: String = _nm.my_user_id
-	_nm.relay_all({"action": "game_chat", "pid": my_pid, "phrase_id": phrase_id, "noun_ids": nouns})
+	_nm.relay_all(
+		{"action": RelayActions.CHAT, "pid": my_pid, "phrase_id": phrase_id, "noun_ids": nouns}
+	)
 	chat_received.emit(my_pid, phrase_id, nouns)  # своё — рисуем локально (реле его не вернёт)
 
 
@@ -881,7 +854,9 @@ func send_chat(phrase_id: String, noun_ids: Array) -> void:
 func announce_action(pid: String, action_id: String, params: Dictionary = {}) -> void:
 	if not _is_host() or pid.is_empty() or action_id.is_empty():
 		return
-	_nm.relay_all({"action": "game_action_feed", "pid": pid, "id": action_id, "params": params})
+	_nm.relay_all(
+		{"action": RelayActions.ACTION_FEED, "pid": pid, "id": action_id, "params": params}
+	)
 	action_announced.emit(pid, action_id, params)  # своё — рисуем локально (реле его не вернёт)
 
 
@@ -893,7 +868,9 @@ func cast_trigger_spells(indices: Array) -> void:
 	if _is_host():
 		_phase.host_apply_cast_trigger_spells(my_pid, indices)
 	else:
-		_nm.relay_all({"action": "game_cast_trigger_spells", "pid": my_pid, "spells": indices})
+		_nm.relay_all(
+			{"action": RelayActions.CAST_TRIGGER_SPELLS, "pid": my_pid, "spells": indices}
+		)
 
 
 ## Владелец результата каста закрыл модалку расплаты — хост чистит last_cast_result.
@@ -902,7 +879,7 @@ func dismiss_cast_result() -> void:
 	if _is_host():
 		_host_dismiss_cast_result(my_pid)
 	else:
-		_nm.relay_all({"action": "game_dismiss_cast_result", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.DISMISS_CAST_RESULT, "pid": my_pid})
 
 
 # Хост: очистить результат каста, если его закрыл владелец (pid совпал).
@@ -920,7 +897,7 @@ func dismiss_reckoning_result() -> void:
 	if _is_host():
 		_host_dismiss_reckoning(my_pid)
 	else:
-		_nm.relay_all({"action": "game_dismiss_reckoning", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.DISMISS_RECKONING, "pid": my_pid})
 
 
 # Хост: убрать запись результата флипа игрока (по закрытию модалки).
@@ -940,7 +917,7 @@ func reroll_all_dice() -> void:
 	if _is_host():
 		_check.reroll_all(my_pid)
 	else:
-		_nm.relay_all({"action": "game_reroll_all", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.REROLL_ALL, "pid": my_pid})
 
 
 # ── Travel (фасады) ───────────────────────────────────────────────────────────
@@ -1018,7 +995,7 @@ func shop_open() -> void:
 		_broadcast_sync()
 		_emit_changed()
 	else:
-		_nm.relay_all({"action": "game_shop_open", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.SHOP_OPEN, "pid": my_pid})
 
 
 ## Бросок кубов = совершение действия «acquire_assets» (раз за раунд). Тратит
@@ -1033,7 +1010,7 @@ func shop_grant(assets: Array) -> void:
 	if _is_host():
 		_phase.host_apply_shop_grant(my_pid, assets)
 	else:
-		_nm.relay_all({"action": "game_shop_grant", "pid": my_pid, "assets": assets})
+		_nm.relay_all({"action": RelayActions.SHOP_GRANT, "pid": my_pid, "assets": assets})
 
 
 ## Закрытие магазина — снимает отложенную передачу хода (если магазин был
@@ -1043,7 +1020,7 @@ func shop_close() -> void:
 	if _is_host():
 		_phase.host_apply_shop_close(my_pid)
 	else:
-		_nm.relay_all({"action": "game_shop_close", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.SHOP_CLOSE, "pid": my_pid})
 
 
 ## Взять долг — вешает состояние «Долг» (без дублей).
@@ -1052,7 +1029,7 @@ func shop_take_debt() -> void:
 	if _is_host():
 		_phase.host_apply_shop_debt(my_pid)
 	else:
-		_nm.relay_all({"action": "game_shop_debt", "pid": my_pid})
+		_nm.relay_all({"action": RelayActions.SHOP_DEBT, "pid": my_pid})
 
 
 ## Переброс куба магазина (die_index) — через общий механизм проверки (бесплатные
@@ -1066,7 +1043,7 @@ func shop_reroll(die_index: int, currency: String = "") -> void:
 			_nm
 			. relay_all(
 				{
-					"action": "game_shop_reroll",
+					"action": RelayActions.SHOP_REROLL,
 					"pid": my_pid,
 					"die": die_index,
 					"currency": currency,
@@ -1182,7 +1159,7 @@ func decide_mythos(index: int) -> void:
 	if _is_host():
 		_phase.host_apply_mythos_decision(my_pid, index)
 	else:
-		_nm.relay_all({"action": "game_mythos_decide", "pid": my_pid, "index": index})
+		_nm.relay_all({"action": RelayActions.MYTHOS_DECIDE, "pid": my_pid, "index": index})
 
 
 # ── Уход игрока ──────────────────────────────────────────────────────────────
@@ -1396,40 +1373,45 @@ func _broadcast_and_emit() -> void:
 
 
 func _build_action_registry() -> void:
-	_relay_actions = {
-		"game_action": _act_action,
-		"game_finish_encounter": _act_finish_encounter,
-		"game_resolve_encounter": _act_resolve_encounter,
-		"game_reroll_encounter": _act_reroll_encounter,
-		"game_choose_encounter": _act_choose_encounter,
-		"game_advance_stage": _act_advance_stage,
-		"game_choose_effect": _act_choose_effect,
-		"game_activate_card": _act_activate_card,
-		"game_cast_incantation": _act_cast_incantation,
-		"game_cast_glamour": _act_cast_glamour,
-		"game_spell_cast_roll": _act_spell_cast_roll,
-		"game_spell_cast_reroll": _act_spell_cast_reroll,
-		"game_spell_cast_apply": _act_spell_cast_apply,
-		"game_check_roll": _act_check_roll,
-		"game_check_reroll": _act_check_reroll,
-		"game_resolve_pending_check": _act_resolve_pending_check,
-		"game_reckoning_roll": _act_reckoning_roll,
-		"game_reckoning_reroll": _act_reckoning_reroll,
-		"game_reckoning_reroll_all": _act_reckoning_reroll_all,
-		"game_reckoning_apply": _act_reckoning_apply,
-		"game_cast_trigger_spells": _act_cast_trigger_spells,
-		"game_dismiss_cast_result": _act_dismiss_cast_result,
-		"game_dismiss_reckoning": _act_dismiss_reckoning,
-		"game_shop_grant": _act_shop_grant,
-		"game_shop_close": _act_shop_close,
-		"game_shop_debt": _act_shop_debt,
-		"game_shop_open": _act_shop_open,
-		"game_shop_reroll": _act_shop_reroll,
-		"game_reroll_all": _act_reroll_all,
-		"game_resolve_mythos": _act_resolve_mythos,
-		"game_mythos_decide": _act_mythos_decide,
-		"set_ready": _act_late_join,
-	}
+	_relay_actions[RelayActions.ACTION] = _act_action
+	_relay_actions[RelayActions.FINISH_ENCOUNTER] = _act_finish_encounter
+	_relay_actions[RelayActions.RESOLVE_ENCOUNTER] = _act_resolve_encounter
+	_relay_actions[RelayActions.REROLL_ENCOUNTER] = _act_reroll_encounter
+	_relay_actions[RelayActions.CHOOSE_ENCOUNTER] = _act_choose_encounter
+	_relay_actions[RelayActions.ADVANCE_STAGE] = _act_advance_stage
+	_relay_actions[RelayActions.CHOOSE_EFFECT] = _act_choose_effect
+	_relay_actions[RelayActions.ACTIVATE_CARD] = _act_activate_card
+	_relay_actions[RelayActions.CAST_INCANTATION] = _act_cast_incantation
+	_relay_actions[RelayActions.CAST_GLAMOUR] = _act_cast_glamour
+	_relay_actions[RelayActions.SPELL_CAST_ROLL] = _act_spell_cast_roll
+	_relay_actions[RelayActions.SPELL_CAST_REROLL] = _act_spell_cast_reroll
+	_relay_actions[RelayActions.SPELL_CAST_APPLY] = _act_spell_cast_apply
+	_relay_actions[RelayActions.CHECK_ROLL] = _act_check_roll
+	_relay_actions[RelayActions.CHECK_REROLL] = _act_check_reroll
+	_relay_actions[RelayActions.RESOLVE_PENDING_CHECK] = _act_resolve_pending_check
+	_relay_actions[RelayActions.RECKONING_ROLL] = _act_reckoning_roll
+	_relay_actions[RelayActions.RECKONING_REROLL] = _act_reckoning_reroll
+	_relay_actions[RelayActions.RECKONING_REROLL_ALL] = _act_reckoning_reroll_all
+	_relay_actions[RelayActions.RECKONING_APPLY] = _act_reckoning_apply
+	_relay_actions[RelayActions.CAST_TRIGGER_SPELLS] = _act_cast_trigger_spells
+	_relay_actions[RelayActions.DISMISS_CAST_RESULT] = _act_dismiss_cast_result
+	_relay_actions[RelayActions.DISMISS_RECKONING] = _act_dismiss_reckoning
+	_relay_actions[RelayActions.SHOP_GRANT] = _act_shop_grant
+	_relay_actions[RelayActions.SHOP_CLOSE] = _act_shop_close
+	_relay_actions[RelayActions.SHOP_DEBT] = _act_shop_debt
+	_relay_actions[RelayActions.SHOP_OPEN] = _act_shop_open
+	_relay_actions[RelayActions.SHOP_REROLL] = _act_shop_reroll
+	_relay_actions[RelayActions.REROLL_ALL] = _act_reroll_all
+	_relay_actions[RelayActions.RESOLVE_MYTHOS] = _act_resolve_mythos
+	_relay_actions[RelayActions.MYTHOS_DECIDE] = _act_mythos_decide
+	_relay_actions[RelayActions.SET_READY] = _act_late_join
+
+	# pid-владельческие = все действия реестра, КРОМЕ безадресных: RESOLVE_MYTHOS
+	# (без pid) и SET_READY (по connection id). Для остальных _on_relay_received сверяет
+	# pid с отправителем. Выводим из реестра — отдельный список не нужен.
+	for a: Variant in _relay_actions:
+		if a != RelayActions.RESOLVE_MYTHOS and a != RelayActions.SET_READY:
+			_pid_owned[String(a)] = true
 
 
 func _act_action(d: Dictionary) -> void:
@@ -1585,7 +1567,7 @@ func _on_relay_received(from_id: String, data: Dictionary) -> void:
 	# — ему верим, содержимому data.pid — нет. Для действий «от лица игрока» pid
 	# обязан совпасть с user_id отправителя. Проверяем только когда from_id известен
 	# (сервер его проставил) — иначе не ломаем игру на старом relay без from_id.
-	if not from_id.is_empty() and _PID_OWNED_ACTIONS.has(action):
+	if not from_id.is_empty() and _pid_owned.has(action):
 		var claimed: String = String(data.get("pid", ""))
 		var sender: String = _sender_uid(from_id)
 		if claimed != sender:
@@ -1604,7 +1586,7 @@ func _on_relay_received(from_id: String, data: Dictionary) -> void:
 
 	# Транзиентные широковещалки — рендерятся у ВСЕХ клиентов (не host-only).
 	match action:
-		"game_sync":
+		RelayActions.SYNC:
 			# Хост прислал полный стейт — применяем тем же путём, что снапшот
 			# с сервера (joined_room.game_state). Хост авторитетен и НИКОГДА не
 			# перезаписывает себя чужим снапшотом; не-хост принимает sync только
@@ -1617,7 +1599,7 @@ func _on_relay_received(from_id: String, data: Dictionary) -> void:
 				return
 			_apply_snapshot(data)
 
-		"game_chat":
+		RelayActions.CHAT:
 			# Транзиентный чат: каждый клиент (вкл. отправителя) рендерит локально. Не
 			# host-only, не в snapshot — просто эмитим сигнал для облачка над фишкой.
 			var c_pid: String = String(data.get("pid", ""))
@@ -1628,7 +1610,7 @@ func _on_relay_received(from_id: String, data: Dictionary) -> void:
 			if not c_pid.is_empty() and not Messages.phrase(c_phrase).is_empty():
 				chat_received.emit(c_pid, c_phrase, (data.get("noun_ids", []) as Array).slice(0, 2))
 
-		"game_action_feed":
+		RelayActions.ACTION_FEED:
 			# Транзиентная лента действий: рассылает хост, рендерим локально по id (как
 			# game_chat). Не в snapshot. params — плейсхолдер→i18n-ключ (клиент сам tr()).
 			var f_pid: String = String(data.get("pid", ""))
