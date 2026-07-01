@@ -442,7 +442,7 @@ func start_game(players_init: Array) -> void:
 	turn_order.sort()
 
 	round_num = 1
-	phase = "action"
+	phase = Phases.ACTION
 	current_idx = 0
 	doom = 0
 	omens_step = 0
@@ -1228,9 +1228,9 @@ func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -
 	# Если отключился игрок, чей сейчас ход — пропускаем его, иначе партия
 	# застрянет на «ходит несуществующий игрок».
 	if _current_pid() == uid:
-		if phase == "action":
+		if phase == Phases.ACTION:
 			_phase.advance_action_turn()
-		elif phase == "encounter":
+		elif phase == Phases.ENCOUNTER:
 			_phase.advance_encounter_turn()
 
 	_broadcast_sync()
@@ -1347,7 +1347,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 	# в момент await api.draw_encounter, снапшот сохранился в loading-
 	# состоянии). Без перезапуска генерации модалка зависнет на «загрузке».
 	# call_deferred — чтобы не дёргать сеть из коллбэка снапшота.
-	if _is_host() and active and phase == "encounter" and current_encounter.is_empty():
+	if _is_host() and active and phase == Phases.ENCOUNTER and current_encounter.is_empty():
 		GameConsole.log("[Game] Реджойн в фазу встреч с пустой картой — перегенерируем")
 		_encounter.generate.call_deferred()
 
@@ -1655,7 +1655,7 @@ func _name_of(pid: String) -> String:
 
 ## Узнать, мой ли ход сейчас (только для phase=action).
 func is_my_turn() -> bool:
-	return active and phase == "action" and _current_pid() == _nm.my_user_id
+	return active and phase == Phases.ACTION and _current_pid() == _nm.my_user_id
 
 
 ## Публичный доступ к held-ограничению игрока (whileHeld: removeFromBoard/cannotAct/…).
@@ -1674,7 +1674,7 @@ func locations() -> Array:
 func is_my_encounter_turn() -> bool:
 	return (
 		active
-		and phase == "encounter"
+		and phase == Phases.ENCOUNTER
 		and _current_pid() == _nm.my_user_id
 		and not have_finished_encounter()
 	)
@@ -1791,7 +1791,7 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			# Зачёт текущей локации активного игрока в активную Тайну. Выдаётся
 			# только из mystery-встреч (см. relay encounter-tables). За пределами
 			# фазы encounter — тихо игнорируем.
-			if phase != "encounter":
+			if phase != Phases.ENCOUNTER:
 				GameConsole.log("[Эффект] mysteryProgress вне фазы encounter — игнор")
 			else:
 				_mystery.apply_mystery_progress()

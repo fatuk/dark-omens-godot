@@ -73,7 +73,11 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 		return
 	# Проверяем, что за время await ничего не сменилось: фаза, активный
 	# игрок и раунд. Старый ответ — в мусор.
-	if _gs.phase != "encounter" or _gs._current_pid() != pid or _gs.round_num != captured_round:
+	if (
+		_gs.phase != Phases.ENCOUNTER
+		or _gs._current_pid() != pid
+		or _gs.round_num != captured_round
+	):
 		return
 
 	var encs: Array = res.get("encounters", [])
@@ -150,7 +154,7 @@ func continue_encounter_turn(pid: String) -> bool:
 
 ## Хост: игрок выбрал тип встречи — генерируем её. combat (бой) — пока заглушка.
 func host_apply_choose(pid: String, kind: String) -> bool:
-	if _gs.phase != "encounter" or _gs._current_pid() != pid:
+	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid:
 		return false
 	if (
 		(_gs.encounter_choices as Array).is_empty()
@@ -449,7 +453,7 @@ func _compute_choices(pid: String) -> Array:
 ## рассылает синком. Зовётся из GameState.resolve_encounter (фасад) или
 ## напрямую из relay-router при game_resolve_encounter.
 func host_apply_resolve(pid: String) -> bool:
-	if _gs.phase != "encounter" or not _gs.players.has(pid):
+	if _gs.phase != Phases.ENCOUNTER or not _gs.players.has(pid):
 		return false
 	if _gs._current_pid() != pid:
 		return false
@@ -499,7 +503,7 @@ func _gate_node(card: Dictionary, stage: int) -> Dictionary:
 ## ветку success, провал — в ветку failure (обе дают вторую проверку).
 ## Зовётся из GameState.advance_encounter_stage / relay-router.
 func host_apply_advance_stage(pid: String) -> bool:
-	if _gs.phase != "encounter" or _gs._current_pid() != pid:
+	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid:
 		return false
 	var k: String = String(_gs.current_encounter.get("kind", ""))
 	if k != "gate" and k != "mystery":
@@ -669,7 +673,7 @@ func try_combat_trigger(pid: String, item_index: int) -> bool:
 ## и для подсветки карты в веере (любой клиент), и для try_combat_trigger перед
 ## применением. БЕЗ host-гарда: это логическая применимость, авторитет — у вызывателя.
 func combat_trigger_node_ready(pid: String, item_index: int) -> Dictionary:
-	if _gs.phase != "encounter" or _gs._current_pid() != pid or not _gs.players.has(pid):
+	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid or not _gs.players.has(pid):
 		return {}
 	var enc: Dictionary = _gs.current_encounter
 	if (
@@ -721,7 +725,7 @@ func _combat_trigger_node(asset: Dictionary) -> Dictionary:
 ## Доступен, пока встреча не зафиксирована. Зовётся из GameState.reroll_encounter /
 ## relay-router. Возвращает true при перебросе.
 func host_apply_reroll(pid: String, die_index: int, currency: String = "") -> bool:
-	if _gs.phase != "encounter" or _gs._current_pid() != pid or not _gs.players.has(pid):
+	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid or not _gs.players.has(pid):
 		return false
 	var enc: Dictionary = _gs.current_encounter
 	if enc.is_empty() or bool(enc.get("committed", false)):
@@ -953,7 +957,7 @@ func _apply_research_clue_removal(pid: String, kind: String) -> void:
 ## решение принято (далее зовущий переигрывает _commit_outcome). Зовётся из
 ## PhaseController.host_apply_effect_choice.
 func record_effect_choice(pid: String, index: int) -> bool:
-	if _gs.phase != "encounter" or _gs._current_pid() != pid:
+	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid:
 		return false
 	var enc: Dictionary = _gs.current_encounter
 	var pending: Dictionary = enc.get("pending_choice", {})
@@ -980,7 +984,7 @@ func record_effect_choice(pid: String, index: int) -> bool:
 ## GameState.resolve_pending_check) и переиграть исход. Возвращает основную проверку
 ## встречи из стека (pop) и переигрывает _commit_outcome через _commit_and_advance.
 func resolve_encounter_check(pid: String, path: String, passed: bool) -> bool:
-	if _gs.phase != "encounter" or _gs._current_pid() != pid:
+	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid:
 		return false
 	if String(_gs.pending_check.get("driver", "")) != "encounter":
 		return false

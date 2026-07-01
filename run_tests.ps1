@@ -1,17 +1,18 @@
 # Run GUT unit tests headless.
 #   .\run_tests.ps1                 - whole test/unit/ suite
 #   .\run_tests.ps1 test_dice.gd    - single script (by filename)
-# Godot is taken from $env:GODOT, otherwise the default path below.
+# Godot is taken from $env:GODOT, otherwise the 'godot' command on PATH.
 
 $ErrorActionPreference = "Stop"
 $proj = $PSScriptRoot
 
 $exe = $env:GODOT
 if (-not $exe) {
-	$exe = "C:\Users\fatuk\Downloads\Godot_v4.6.2-stable_win64.exe\Godot_v4.6.2-stable_win64_console.exe"
+	$cmd = Get-Command godot -ErrorAction SilentlyContinue
+	if ($cmd) { $exe = $cmd.Source }
 }
-if (-not (Test-Path $exe)) {
-	Write-Error "Godot not found: $exe`nSet `$env:GODOT or fix the default in run_tests.ps1."
+if (-not $exe -or -not (Test-Path $exe)) {
+	Write-Error "Godot not found. Set `$env:GODOT to your Godot console executable, or put 'godot' on PATH.`n  Example: `$env:GODOT = 'C:\path\to\Godot_console.exe'"
 	exit 1
 }
 if (-not (Test-Path (Join-Path $proj "addons\gut\gut_cmdln.gd"))) {

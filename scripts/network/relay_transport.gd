@@ -15,6 +15,7 @@ const RECONNECT_BASE := 3.0  # начальная задержка (секунд
 const RECONNECT_MAX_DELAY := 60.0  # максимальная задержка
 const RECONNECT_MAX := 10  # количество попыток перед сдачей
 const KEEPALIVE_INTERVAL := 20.0  # интервал app-level ping
+const KEEPALIVE_TIMEOUT := 15.0  # молчание сверх интервала → соединение считаем мёртвым
 
 # ── Внутреннее состояние ───────────────────────────────────────────────────────
 var _ws := WebSocketPeer.new()
@@ -25,6 +26,7 @@ var _reconnect_enabled: bool = false
 var _reconnect_attempts: int = 0
 var _reconnect_timer: float = 0.0
 var _keepalive_timer: float = KEEPALIVE_INTERVAL
+var _silence_timer: float = 0.0  # время без входящих пакетов (сброс на любом пакете)
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
@@ -98,6 +100,7 @@ func _process(delta: float) -> void:
 			WebSocketPeer.STATE_OPEN:
 				_reconnect_attempts = 0
 				_keepalive_timer = KEEPALIVE_INTERVAL
+				_silence_timer = 0.0
 				ws_opened.emit()
 			WebSocketPeer.STATE_CLOSED:
 				ws_closed.emit()
@@ -108,15 +111,23 @@ func _process(delta: float) -> void:
 					print("[Transport] Gave up reconnecting after %d attempts" % RECONNECT_MAX)
 					connection_lost.emit()
 
-	# Keepalive ping
+	# Keepalive ping + детект полумёртвого соединения. Любой входящий пакет (в т.ч.
+	# pong) сбрасывает _silence_timer ниже. Молчание дольше интервала пинга + grace —
+	# сокет мёртв без RST (сеть пропала): закрываем принудительно → сработает реконнект.
 	if cur_state == WebSocketPeer.STATE_OPEN:
 		_keepalive_timer -= delta
 		if _keepalive_timer <= 0.0:
 			_keepalive_timer = KEEPALIVE_INTERVAL
 			send_raw({"type": "ping"})
+		_silence_timer += delta
+		if _silence_timer > KEEPALIVE_INTERVAL + KEEPALIVE_TIMEOUT:
+			print("[Transport] No packets for %.0fs — assuming dead, closing" % _silence_timer)
+			_silence_timer = 0.0
+			_ws.close()
 
 	# Чтение входящих пакетов
 	while _ws.get_available_packet_count() > 0:
+		_silence_timer = 0.0  # пакет пришёл → соединение живо
 		var text: String = _ws.get_packet().get_string_from_utf8()
 		raw_received.emit(text)
 

@@ -46,10 +46,6 @@ window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
-[editor]
-
-movie_writer/movie_file="C:/Users/fatuk/godot_projects/demo.avi"
-
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")

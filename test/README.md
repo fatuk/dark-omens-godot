@@ -25,8 +25,9 @@ cp -r /tmp/gut/addons/gut <корень проекта>/addons/gut
 .\run_tests.ps1 test_dice.gd     # один файл
 ```
 
-Скрипт ищет Godot в `$env:GODOT`, иначе берёт дефолтный путь (правится в
-`run_tests.ps1`). Конфиг прогона — `.gutconfig.json` в корне.
+Скрипт ищет Godot в `$env:GODOT`, иначе — команду `godot` в `PATH`. Задайте
+`$env:GODOT` под свою сборку (например, `$env:GODOT = 'C:\path\to\Godot_console.exe'`).
+Конфиг прогона — `.gutconfig.json` в корне.
 
 Напрямую:
 
@@ -37,11 +38,24 @@ cp -r /tmp/gut/addons/gut <корень проекта>/addons/gut
 
 ## Что покрыто
 
-| Файл | Модуль | Поверхность |
-|------|--------|-------------|
-| `test_effect_runner.gd` | `scripts/core/effect_runner.gd` | интерпретатор Effect-DSL: игровые verb'ы + кламп, `group`/`choice`/`dieRoll`/`test`, `when`, `repeat`, маршрутизация целей |
-| `test_dice.gd` | `scripts/core/dice.gd` | броски d6, подсчёт успехов (≥5), переброс провала, конвейер модификаторов карт (pre/post-roll) |
-| `test_condition_flow.gd` | `scripts/core/condition_flow.gd` | whileHeld-ограничения, расплата (детерминированный `onReckoning`), подавление flipped, выдача активов с `onGain` |
+`test/unit/` — 27 файлов; исходники под `scripts/core/game/` и `scripts/core/data/`.
+Основные области:
+
+| Область | Файлы |
+|---------|-------|
+| Effect-DSL интерпретатор | `test_effect_runner.gd`, `test_effect_runner_interactive.gd`, `test_verb_manifest.gd` |
+| Броски и проверки | `test_dice.gd`, `test_check_flow.gd` |
+| Фазы и действия хоста | `test_phase_controller.gd`, `test_relay_action_registry.gd` |
+| Встречи / бой / магазин | `test_encounter_flow.gd` |
+| Состояния и Расплата | `test_condition_flow.gd`, `test_conditions.gd`, `test_reckoning_flow.gd`, `test_reckoning_data.gd` |
+| Мифы и цели | `test_mythos_foreach.gd`, `test_mythos_in_play.gd`, `test_target_resolver.gd` |
+| Заклинания / Тайны / Слухи | `test_spell_flow.gd`, `test_spell_catalog.gd`, `test_mystery_flow.gd`, `test_rumor_flow.gd` |
+| Поле, кампания, монстры | `test_board_state.gd`, `test_campaign_gen.gd`, `test_monster_catalog.gd` |
+| Данные и i18n | `test_data_integrity.gd`, `test_messages.gd`, `test_action_log.gd` |
+| UI | `test_game_card.gd`, `test_ui_style.gd` |
+
+`test_data_integrity.gd` — ссылочная целостность боевых JSON (состояния, verb'ы в
+манифесте, симметрия локаций, стартовые наборы сыщиков).
 
 ## Принципы
 

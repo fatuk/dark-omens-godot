@@ -24,9 +24,9 @@ signal card_focused(item: Dictionary)
 signal closed
 
 ## Веер карт руки сыщика (порт из HTML/CSS-макета).
-## Открывается/закрывается по Tab. Карты задаются извне через set_cards()
-## (в игре — реальное имущество игрока, см. WorldMap._refresh_hand; в пикере —
-## имущество выбранного сыщика). Без set_cards — дефолтная демо-рука (_default_deck).
+## Открывается/закрывается по Tab. Карты задаются извне через set_cards()/
+## set_sections() (в игре — реальное имущество игрока, см. WorldMap._refresh_hand;
+## в пикере — имущество выбранного сыщика). Без них веер пуст.
 ##
 ## Навигация: ← / → или колесо мыши — листать; наведение мышью — выбрать;
 ## клик ЛКМ — «вспышка»; Esc или Tab — закрыть.
@@ -41,10 +41,6 @@ signal closed
 # Размер карты в пропорциях рамки asset-card (аспект ≈0.632, см. GameCard.ASPECT).
 const CARD_W: float = 186.0
 const CARD_H: float = 294.0
-
-# Тестовый арт для ВСЕХ карт руки (пока нет уникальных артов карт). Кладётся в
-# арт-слот рамки GameCard; перекрывает глиф-заглушку.
-const _TEST_ART: Texture2D = preload("res://assets/asset-card/18 Derringer.png")
 
 # Тюнинг ПОЛОЖЕНИЯ карт и АНИМАЦИИ — правится вживую в дебаг-панели (Ctrl+M,
 # секция «ВЕЕР КАРТ»). static var, а не const: панель меняет значения без ссылки
@@ -107,83 +103,9 @@ const ARROW_NUDGE_PX := 12.0
 const ARROW_NUDGE_OUT := 0.10
 const ARROW_NUDGE_BACK := 0.18
 
-# Фейковая рука (10 карт из прототипа).
-const CARDS: Array[Dictionary] = [
-	{
-		"cost": 0,
-		"title": "Мистраль",
-		"glyph": "🌀",
-		"art": "1f8f7a",
-		"desc": "Повышает характеристики следующей карты «Брони»."
-	},
-	{
-		"cost": 3,
-		"title": "Виток смерти",
-		"glyph": "🗡",
-		"art": "7a1f6f",
-		"desc": "Наносит 728 урона переднему ряду. Крит. удар."
-	},
-	{
-		"cost": 2,
-		"title": "Топор",
-		"glyph": "🪓",
-		"art": "5a6b1f",
-		"desc": "Наносит 336 урона с шансом отталкивания."
-	},
-	{
-		"cost": 0,
-		"title": "Криотин",
-		"glyph": "🧊",
-		"art": "1f5a8f",
-		"desc": "Понизьте стоимость следующей карты на 1."
-	},
-	{
-		"cost": 3,
-		"title": "Молот зари",
-		"glyph": "🔨",
-		"art": "8f6a1f",
-		"desc": "Наносит урон и оглушает переднего врага."
-	},
-	{
-		"cost": 2,
-		"title": "Тёмный шквал",
-		"glyph": "🌑",
-		"art": "3a1f8f",
-		"desc": "Наносит несколько ударов по случайным целям."
-	},
-	{
-		"cost": 5,
-		"title": "Пентаграмма",
-		"glyph": "🔮",
-		"art": "5a1f6f",
-		"desc": "Призывает демона на 3 хода. Жертва: 5 HP."
-	},
-	{
-		"cost": 1,
-		"title": "Пугна",
-		"glyph": "🏹",
-		"art": "1f6f5a",
-		"desc": "Стирание 6 ряда. Обратный отсчёт."
-	},
-	{
-		"cost": 2,
-		"title": "Воробей",
-		"glyph": "🦅",
-		"art": "6f5a1f",
-		"desc": "Сила: на 20% больше урона по Бродяге."
-	},
-	{
-		"cost": 3,
-		"title": "Фиера Туфелло",
-		"glyph": "⚔",
-		"art": "8f1f2f",
-		"desc": "Наносит 700 урона. Игнорирует броню."
-	},
-]
-
 var tab_enabled: bool = true  # Tab открывает/закрывает (рука в игре); в пикере — false
 var keep_open: bool = false  # true → «разыграл» НЕ закрывает веер (чат: серия выборов)
-var _deck: Array = []  # payload'ы карт (GameCard.set_card); пусто → дефолтная фейк-рука
+var _deck: Array = []  # payload'ы карт активной секции (GameCard.set_card)
 var _backdrop: ColorRect
 var _els: Array[Control] = []
 var _exhausted: Array = []  # параллельно _els: истощена ли карта (нельзя активировать)
@@ -212,9 +134,7 @@ func _ready() -> void:
 	layer = 95
 	add_to_group("hand_carousel")  # чтобы дебаг-панель (Ctrl+M) нашла инстанс
 	_build_chrome()
-	if _sections.is_empty():
-		_sections = [{"title": "", "items": _default_deck()}]  # дефолтная фейк-рука
-	_apply_section(false)
+	_apply_section(false)  # секции задаёт вызывающий (WorldMap._refresh_hand)
 	visible = false
 	get_viewport().size_changed.connect(_on_resize)
 
@@ -255,23 +175,6 @@ func _apply_section(animate: bool, slide_dir: int = 0) -> void:
 		_layout(true)  # тянем к базовым позициям → слайд внутрь
 	else:
 		_layout(animate)
-
-
-# Дефолтная фейк-рука из CARDS (тестовый арт на всех картах).
-func _default_deck() -> Array:
-	var out: Array = []
-	for i in range(CARDS.size()):
-		var d: Dictionary = CARDS[i]
-		out.append(
-			{
-				"cost": d["cost"],
-				"title": d["title"],
-				"desc": d["desc"],
-				"art": _TEST_ART,
-				"glyph": d["glyph"]
-			}
-		)
-	return out
 
 
 # ── Сборка ─────────────────────────────────────────────────────────────────────
@@ -432,7 +335,7 @@ func _build_card(data: Dictionary, idx: int) -> Control:
 	card.size = Vector2(CARD_W, CARD_H)
 	card.pivot_offset = Vector2(CARD_W * 0.5, CARD_H * PIVOT_Y_FRAC)
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
-	card.set_card(data)  # payload готов у вызывающего (set_cards / _default_deck)
+	card.set_card(data)  # payload готов у вызывающего (set_cards / set_sections)
 
 	# Сигналы наведения/клика на саму карту.
 	card.mouse_entered.connect(_on_card_enter.bind(idx))

@@ -36,7 +36,7 @@ func _init(gs: Node) -> void:
 ## Хост сразу вытягивает карту и рассылает sync; не-хост дождётся синка с
 ## готовой current_mythos и покажет модалку.
 func enter_phase() -> void:
-	_gs.phase = "mythos"
+	_gs.phase = Phases.MYTHOS
 	_gs.current_encounter = {}
 	GameConsole.log("[Game] Фаза Мифов")
 	_gs.phase_changed.emit(_gs.phase)
@@ -98,7 +98,7 @@ const _DELAY_DEFAULT: float = 0.45
 # Хост: применить onDraw активной карты (последовательно) и стартовать раунд.
 # Корутина: эффекты проигрываются по одному с паузой на анимацию каждого.
 func _apply_resolve() -> void:
-	if _gs.phase != "mythos" or _gs.current_mythos.is_empty():
+	if _gs.phase != Phases.MYTHOS or _gs.current_mythos.is_empty():
 		return
 	var card: Dictionary = _gs.current_mythos
 	var effects: Array = card.get("onDraw", [])

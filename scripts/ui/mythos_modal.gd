@@ -83,7 +83,9 @@ func _build() -> void:
 
 
 func _refresh() -> void:
-	var show_modal: bool = GameState.phase == "mythos" and not GameState.current_mythos.is_empty()
+	var show_modal: bool = (
+		GameState.phase == Phases.MYTHOS and not GameState.current_mythos.is_empty()
+	)
 	_root.visible = show_modal
 	if not show_modal:
 		_last_card_key = ""

@@ -90,12 +90,18 @@ func verify_otp(email: String, code: String) -> void:
 	if _pending != "":
 		return
 	_pending = "otp_verify"
-	_http.request(
+	var err := _http.request(
 		api_base + "/auth/verify",
 		["Content-Type: application/json"],
 		HTTPClient.METHOD_POST,
 		JSON.stringify({"email": email, "code": code})
 	)
+	# Если запрос не ушёл — сбрасываем _pending, иначе он навсегда блокирует auth
+	# (гарды request_otp/verify_otp/check_session молча возвращают). Зеркало request_otp.
+	if err != OK:
+		push_warning("AuthManager: HTTPRequest.request failed (err=%d)" % err)
+		_pending = ""
+		login_failed.emit("Не удалось отправить код (err %d)" % err)
 
 
 ## Выйти из аккаунта.

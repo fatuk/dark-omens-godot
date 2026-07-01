@@ -24,7 +24,7 @@ const FACE_TEX := {
 	1: preload("res://assets/dice/side1.png"),
 	2: preload("res://assets/dice/side2.png"),
 	3: preload("res://assets/dice/side3.png"),
-	4: preload("res://assets/dice/sode4.png"),  # опечатка в имени файла (side4)
+	4: preload("res://assets/dice/side4.png"),
 	5: preload("res://assets/dice/side5.png"),
 	6: preload("res://assets/dice/side6.png"),
 }

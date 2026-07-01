@@ -528,7 +528,7 @@ func _phase_label_for(p: String) -> String:
 
 
 func _current_player_name() -> String:
-	if GameState.phase != "action" and GameState.phase != "encounter":
+	if GameState.phase != Phases.ACTION and GameState.phase != Phases.ENCOUNTER:
 		return ""
 	if GameState.turn_order.is_empty():
 		return ""
@@ -741,7 +741,7 @@ func _refresh_campaign_gate() -> void:
 		_intro_step = 1 if not GameState.campaign.is_empty() else 3
 	elif (
 		_intro_step == 3
-		and GameState.phase == "action"
+		and GameState.phase == Phases.ACTION
 		and GameState.outcome.is_empty()
 		and GameState.active_mystery != _revealed_mystery
 		and not GameState.current_mystery().is_empty()

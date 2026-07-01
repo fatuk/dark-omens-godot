@@ -30,7 +30,7 @@ func _init(gs: Node) -> void:
 ## Зовётся из GameState.perform_action (для своего действия) и из relay-router
 ## на game_action (для чужого).
 func host_apply_action(pid: String, action_type: String, payload: Dictionary = {}) -> bool:
-	if _gs.phase != "action":
+	if _gs.phase != Phases.ACTION:
 		GameConsole.warn("[Game] Действие вне фазы action отклонено")
 		return false
 	if _gs._current_pid() != pid:
@@ -430,7 +430,7 @@ func host_apply_shop_debt(pid: String) -> bool:
 ## Возвращает true при успехе. Зовётся из GameState.finish_encounter и из
 ## relay-router на game_finish_encounter.
 func host_apply_finish_encounter(pid: String) -> bool:
-	if _gs.phase != "encounter":
+	if _gs.phase != Phases.ENCOUNTER:
 		return false
 	if not _gs.players.has(pid):
 		return false
@@ -447,7 +447,7 @@ func host_apply_finish_encounter(pid: String) -> bool:
 ## решение и переигрываем коммит (если выбор закрыл паузу — ход идёт дальше).
 ## Зовётся из GameState.choose_effect и relay-router на game_choose_effect.
 func host_apply_effect_choice(pid: String, index: int) -> bool:
-	if _gs.phase != "encounter" or not _gs.players.has(pid):
+	if _gs.phase != Phases.ENCOUNTER or not _gs.players.has(pid):
 		return false
 	if _gs._current_pid() != pid:
 		return false
@@ -517,7 +517,7 @@ func advance_action_turn() -> void:
 ## encounter_done у всех, запускает _encounter.generate. Если живых игроков
 ## не осталось — пропуск сразу в mythos.
 func enter_encounter() -> void:
-	_gs.phase = "encounter"
+	_gs.phase = Phases.ENCOUNTER
 	_gs.current_idx = 0  # первый игрок начинает встречу, остальные ждут своей очереди
 	for pid: String in _gs.players:
 		_gs.players[pid]["encounter_done"] = false
@@ -545,7 +545,7 @@ func advance_encounter_turn() -> void:
 ## раунд++, фаза action, action-окно у всех восстановлено, встречи закрыты.
 func start_new_round() -> void:
 	_gs.round_num += 1
-	_gs.phase = "action"
+	_gs.phase = Phases.ACTION
 	_gs.current_idx = 0
 	_gs.pending_spell_cast = {}
 	for pid: String in _gs.players:
