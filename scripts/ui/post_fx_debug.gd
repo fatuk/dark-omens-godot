@@ -361,6 +361,24 @@ func _build_specs() -> Array:
 			"set": _set_omen_pos_y
 		},
 		{
+			"key": "omen_dial_x",
+			"label": "Диск X",
+			"min": -80.0,
+			"max": 80.0,
+			"step": 0.5,
+			"default": OmensCounter.DIAL_OFFSET_X,
+			"set": _set_omen_dial_x
+		},
+		{
+			"key": "omen_dial_y",
+			"label": "Диск Y",
+			"min": -80.0,
+			"max": 80.0,
+			"step": 0.5,
+			"default": OmensCounter.DIAL_OFFSET_Y,
+			"set": _set_omen_dial_y
+		},
+		{
 			"key": "omen_angle",
 			"label": "База угла",
 			"min": -180.0,
@@ -753,6 +771,14 @@ func _set_omen_pos_x(v: float) -> void:
 
 func _set_omen_pos_y(v: float) -> void:
 	OmensCounter.POS_OFFSET_Y = v
+
+
+func _set_omen_dial_x(v: float) -> void:
+	OmensCounter.DIAL_OFFSET_X = v  # применяет сам узел в _process
+
+
+func _set_omen_dial_y(v: float) -> void:
+	OmensCounter.DIAL_OFFSET_Y = v
 
 
 func _set_omen_angle(v: float) -> void:

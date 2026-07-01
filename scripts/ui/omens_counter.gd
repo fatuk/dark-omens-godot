@@ -19,6 +19,8 @@ static var MASK_OFFSET_X: float = 0.0  # сдвиг ОКНА-маски от ц�
 static var MASK_OFFSET_Y: float = 0.0
 static var POS_OFFSET_X: float = 0.0  # сдвиг ВСЕГО виджета на панели (позиция узла)
 static var POS_OFFSET_Y: float = 0.0
+static var DIAL_OFFSET_X: float = 0.0  # сдвиг ВНУТРЕННЕГО диска (_circle) — центровать символ в окне
+static var DIAL_OFFSET_Y: float = 0.0
 const PEEK_AMOUNT: float = 0.3
 const TWEEN_TIME: float = 0.3  # секунды — короткий peek по наведению
 const OMEN_MOVE_TIME: float = 0.3  # фолбэк длительности сдвига (берём длину omen-move.wav)
@@ -45,6 +47,7 @@ const OMEN_MOVE_TIME: float = 0.3  # фолбэк длительности сд�
 var _tween: Tween = null
 var _initialized: bool = false
 var _base_pos: Vector2 = Vector2.ZERO  # позиция из раскладки; POS_OFFSET прибавляем к ней
+var _circle_base_pos: Vector2 = Vector2.ZERO  # база позиции внутреннего диска; +DIAL_OFFSET
 var _base_pos_set: bool = false
 
 
@@ -55,16 +58,19 @@ func _ready() -> void:
 	# Первый layout-pass для корректных global_position/size
 	await get_tree().process_frame
 	_base_pos = position
+	_circle_base_pos = _circle.position
 	_base_pos_set = true
 	_update_mask_center()
 	_circle.rotation_degrees = _angle_for(current_step)
 
 
 func _process(_delta: float) -> void:
-	# Сдвиг всего виджета (дебаг-панель) — от базовой позиции раскладки. Узел
-	# anchor-based (не в контейнере), так что position не перетирается.
 	if _base_pos_set:
+		# Сдвиг всего виджета — от базовой позиции раскладки (узел anchor-based, не в
+		# контейнере, position не перетирается).
 		position = _base_pos + Vector2(POS_OFFSET_X, POS_OFFSET_Y)
+		# Сдвиг внутреннего диска — центрует символ знамения в окне-маске.
+		_circle.position = _circle_base_pos + Vector2(DIAL_OFFSET_X, DIAL_OFFSET_Y)
 	# Позиция компонента могла смениться (сдвиг/resize) — пересчитать центр маски.
 	_update_mask_center()
 
