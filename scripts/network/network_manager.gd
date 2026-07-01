@@ -133,6 +133,23 @@ func relay_to(player_id: String, data: Dictionary) -> void:
 	_queue_or_send({"type": "relay_to", "to": player_id, "data": data})
 
 
+## Лобби: записать выбранного сыщика игрока в список комнаты (локально; рассылку
+## делает вызывающий). NetworkManager владеет players — UI не пишет туда напрямую.
+func set_lobby_investigator(pid: String, investigator: String) -> void:
+	if players.has(pid):
+		players[pid]["investigator"] = investigator
+
+
+## Лобби: отметить игрока готовым (+ сыщик, если задан непустым). См.
+## set_lobby_investigator — единственный владелец мутаций players.
+func set_lobby_ready(pid: String, investigator: String = "") -> void:
+	if not players.has(pid):
+		return
+	players[pid]["ready"] = true
+	if not investigator.is_empty():
+		players[pid]["investigator"] = investigator
+
+
 func is_connected_to_relay() -> bool:
 	return _transport().is_open()
 
@@ -304,8 +321,9 @@ func _handle_message(msg: Dictionary) -> void:
 			room_deleted.emit(msg.get("reason", "Комната закрыта"))
 
 		"error":
-			var err_msg: String = msg.get("message", "Ошибка сервера")
-			if "Сессия" in err_msg and "недействительна" in err_msg:
+			var err_msg: String = msg.get("message", tr("NET_ERR_SERVER"))
+			# Протухший токен — по коду от сервера, не по подстроке локализованного текста.
+			if String(msg.get("code", "")) == "session_invalid":
 				var auth: Node = get_node_or_null("/root/AuthManager")
 				if auth:
 					(auth as Node).set("session_token", "")

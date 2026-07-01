@@ -69,6 +69,28 @@ static func kind_of(id: String) -> String:
 	return String(get_def(id).get("kind", ""))
 
 
+## Порог успеха проверок сыщика от held-состояний (whileHeld successThreshold):
+## Cursed → 6 («только 6»), Blessed → 4 («4-6»). Перевёрнутые фронтом не действуют.
+## Конфликт (Cursed+Blessed разом) → нейтральные Dice.SUCCESS_MIN. Единый источник
+## для видимых (CheckFlow) и тихих (EffectRunner/SpellFlow) бросков.
+static func success_threshold(conditions: Array, flipped: Dictionary) -> int:
+	var vals: Array = []
+	for i in range(conditions.size()):
+		var cid: String = String(conditions[i])
+		if flipped.has(cid):
+			continue
+		for n_v: Variant in get_def(cid).get("whileHeld", []):
+			if String((n_v as Dictionary).get("do", "")) == "successThreshold":
+				vals.append(int((n_v as Dictionary).get("value", Dice.SUCCESS_MIN)))
+	if vals.is_empty():
+		return Dice.SUCCESS_MIN
+	var first: int = int(vals[0])
+	for v_v: Variant in vals:
+		if int(v_v) != first:
+			return Dice.SUCCESS_MIN  # конфликт (напр. Cursed+Blessed) → нейтрально
+	return first
+
+
 ## Определение оборота-исхода по id (агрегат backs всех состояний; {} если нет).
 static func outcome_def(id: String) -> Dictionary:
 	_ensure_loaded()

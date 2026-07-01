@@ -238,7 +238,11 @@ func _lore_roll(p: Dictionary, modifier: int, flow: Dictionary) -> Dictionary:
 	var lore: int = int((inv.get("skills", {}) as Dictionary).get("lore", 1))
 	var mods: int = int((p.get("skill_mods", {}) as Dictionary).get("lore", 0))
 	var dice: Array = Dice.roll(maxi(1, lore + mods + modifier))
-	return {"successes": int(Dice.result(dice).get("successes", 0)), "dice": dice}
+	# Порог Blessed/Cursed действует и в тихих кастах (как в видимом CheckFlow).
+	var threshold: int = Conditions.success_threshold(
+		p.get("conditions", []), p.get("conditions_flipped", {})
+	)
+	return {"successes": int(Dice.result(dice, threshold).get("successes", 0)), "dice": dice}
 
 
 ## Хост: сработавший spell-триггер по игровому событию (onRest/onTravel/…). Кастует

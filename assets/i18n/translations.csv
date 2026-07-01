@@ -1619,3 +1619,17 @@ RECK_BEAST_WITHIN_B1,"Зверь рвётся наружу — плоть пла
 RECK_BEAST_WITHIN_B2,"Звериное чутьё обостряет взгляд, но мутит разум","Bestial instinct sharpens the eye but fogs the mind"
 RECK_BEAST_WITHIN_B3,"Хищная сила наполняет мышцы, оставляя раны на коже","Predatory strength fills the muscles, leaving wounds on the skin"
 RECK_BEAST_WITHIN_B4,"Перерождение неполно, и тело идёт трещинами","The change is incomplete, and the body fractures"
+MENU_STATUS_CONNECTED,Подключено · %s,Connected · %s
+MENU_STATUS_CONNECTING,Подключение к %s...,Connecting to %s...
+MENU_STATUS_CONNECT_ERROR,Ошибка подключения: %s,Connection error: %s
+MENU_STATUS_CREATING_ROOM,Создание комнаты «%s»...,"Creating room "%s"..."
+MENU_STATUS_ROOM_CLOSED,Комната закрыта: %s,Room closed: %s
+MENU_STATUS_ERROR,Ошибка: %s,Error: %s
+LOBBY_OVERLAY_RECONNECTING,Соединение потеряно · переподключение... (попытка %d),Connection lost · reconnecting... (attempt %d)
+LOBBY_OVERLAY_ROOM_NOT_FOUND,Комната не найдена · возврат в меню...,Room not found · returning to menu...
+LOBBY_OVERLAY_NO_CONNECTION,Нет связи с сервером · возврат в меню...,No server connection · returning to menu...
+LOBBY_OVERLAY_ROOM_CLOSED,Комната закрыта: %s · возврат в меню...,Room closed: %s · returning to menu...
+LOGIN_STATUS_SENDING,Отправляем код на %s...,Sending code to %s...
+LOGIN_STATUS_CODE_SENT,Код отправлен на %s,Code sent to %s
+LOGIN_STATUS_ERROR,Ошибка: %s,Error: %s
+NET_ERR_SERVER,Ошибка сервера,Server error

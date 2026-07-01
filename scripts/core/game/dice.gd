@@ -31,11 +31,11 @@ static func is_success(value: int, threshold: int = SUCCESS_MIN) -> bool:
 	return value >= threshold
 
 
-## Сколько успехов в наборе.
-static func count_successes(dice: Array) -> int:
+## Сколько успехов в наборе. threshold — порог успеха (Cursed → 6, Blessed → 4).
+static func count_successes(dice: Array, threshold: int = SUCCESS_MIN) -> int:
 	var n: int = 0
 	for i in range(dice.size()):
-		if int(dice[i]) >= SUCCESS_MIN:
+		if int(dice[i]) >= threshold:
 			n += 1
 	return n
 
@@ -51,8 +51,8 @@ static func reroll_failure(dice: Array, idx: int) -> bool:
 
 ## Стандартный результат проверки: { dice, successes, passed }. Единый формат
 ## для встреч и боя.
-static func result(dice: Array) -> Dictionary:
-	var s: int = count_successes(dice)
+static func result(dice: Array, threshold: int = SUCCESS_MIN) -> Dictionary:
+	var s: int = count_successes(dice, threshold)
 	return {"dice": dice, "successes": s, "passed": s >= PASS_MIN}
 
 

@@ -110,7 +110,7 @@ func _on_send_pressed() -> void:
 		return
 	_current_email = email
 	_send_btn.disabled = true
-	_show_status("Отправляем код на %s..." % email, UIColors.WARNING)
+	_show_status(tr("LOGIN_STATUS_SENDING") % email, UIColors.WARNING)
 	_auth.request_otp(email)
 
 
@@ -135,7 +135,7 @@ func _on_back_pressed() -> void:
 
 func _on_otp_sent() -> void:
 	_send_btn.disabled = false
-	_code_label.text = "Код отправлен на %s" % _current_email
+	_code_label.text = tr("LOGIN_STATUS_CODE_SENT") % _current_email
 	_show_panel("code")
 	_show_status("LOGIN_STATUS_CHECK_MAIL", UIColors.SUCCESS)
 	_code_input.grab_focus()
@@ -143,7 +143,7 @@ func _on_otp_sent() -> void:
 
 func _on_otp_failed(error: String) -> void:
 	_send_btn.disabled = false
-	_show_status("Ошибка: %s" % error, UIColors.ERROR)
+	_show_status(tr("LOGIN_STATUS_ERROR") % error, UIColors.ERROR)
 
 
 func _on_login_succeeded(_user: Dictionary) -> void:
@@ -153,7 +153,7 @@ func _on_login_succeeded(_user: Dictionary) -> void:
 
 func _on_login_failed(error: String) -> void:
 	_verify_btn.disabled = false
-	_show_status("Ошибка: %s" % error, UIColors.ERROR)
+	_show_status(tr("LOGIN_STATUS_ERROR") % error, UIColors.ERROR)
 
 
 func _on_session_invalid() -> void:

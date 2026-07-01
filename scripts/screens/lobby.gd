@@ -128,9 +128,7 @@ func _check_auto_ready() -> void:
 	# Уже были готовы в этой комнате — восстанавливаем статус,
 	# но НЕ переходим сразу: ждём start_game от хоста (или сами нажмём «Начать»).
 	_was_ready = true
-	if _nm.players.has(_nm.my_id):
-		_nm.players[_nm.my_id]["ready"] = true
-		_nm.players[_nm.my_id]["investigator"] = selected
+	_nm.set_lobby_ready(_nm.my_id, selected)
 	_picker.lock_confirm()
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
 	_refresh_start_button()
@@ -142,8 +140,7 @@ func _check_auto_ready() -> void:
 func _on_selection_changed(inv_name: String) -> void:
 	# Локальное состояние + броадкаст: остальные игроки сразу видят
 	# нашего сыщика как занятого, не дожидаясь нажатия «Готов».
-	if _nm.players.has(_nm.my_id):
-		_nm.players[_nm.my_id]["investigator"] = inv_name
+	_nm.set_lobby_investigator(_nm.my_id, inv_name)
 	_nm.relay_all({"action": "picking", "player_id": _nm.my_id, "investigator": inv_name})
 	_refresh_start_button()
 
@@ -201,7 +198,7 @@ func _release_player_investigator(id: String) -> void:
 
 func _on_reconnecting(attempt: int) -> void:
 	GameConsole.warn("Соединение потеряно — попытка переподключения %d" % attempt)
-	_show_reconnect_overlay("Соединение потеряно\nПереподключение... (попытка %d)" % attempt)
+	_show_reconnect_overlay(tr("LOBBY_OVERLAY_RECONNECTING") % attempt)
 
 
 func _on_reconnected() -> void:
@@ -215,13 +212,13 @@ func _on_reconnected() -> void:
 
 
 func _on_rejoin_failed() -> void:
-	_show_reconnect_overlay("Комната не найдена\nВозврат в главное меню...")
+	_show_reconnect_overlay(tr("LOBBY_OVERLAY_ROOM_NOT_FOUND"))
 	await get_tree().create_timer(2.0).timeout
 	SceneManager.go("main_menu")
 
 
 func _on_connection_lost() -> void:
-	_show_reconnect_overlay("Нет связи с сервером\nВозврат в главное меню...")
+	_show_reconnect_overlay(tr("LOBBY_OVERLAY_NO_CONNECTION"))
 	await get_tree().create_timer(3.0).timeout
 	SceneManager.go("main_menu")
 
@@ -235,16 +232,12 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"picking":
 			var pid: String = data.get("player_id", "")
 			var inv: String = data.get("investigator", "")
-			if _nm.players.has(pid):
-				_nm.players[pid]["investigator"] = inv
+			_nm.set_lobby_investigator(pid, inv)
 			_recompute_taken()
 		"set_ready":
 			var pid: String = data.get("player_id", "")
 			var inv_name: String = data.get("investigator", "")
-			if _nm.players.has(pid):
-				_nm.players[pid]["ready"] = true
-				if not inv_name.is_empty():
-					_nm.players[pid]["investigator"] = inv_name
+			_nm.set_lobby_ready(pid, inv_name)
 			var pname: String = _player_names.get(pid, pid)
 			GameConsole.log("%s готов  ·  сыщик: %s" % [pname, inv_name])
 			# Блокируем сыщика для остальных
@@ -268,7 +261,7 @@ func _on_back_pressed() -> void:
 
 func _on_room_deleted(reason: String) -> void:
 	GameConsole.warn("Комната удалена: %s" % reason)
-	_show_reconnect_overlay("Комната закрыта: %s\nВозврат в меню..." % reason)
+	_show_reconnect_overlay(tr("LOBBY_OVERLAY_ROOM_CLOSED") % reason)
 	await get_tree().create_timer(1.5).timeout
 	SceneManager.go("main_menu")
 
@@ -281,9 +274,7 @@ func _on_ready_pressed() -> void:
 	_save_ready_state()
 	GameConsole.log("Вы готовы  ·  сыщик: %s" % selected)
 	_picker.lock_confirm()
-	if _nm.players.has(_nm.my_id):
-		_nm.players[_nm.my_id]["ready"] = true
-		_nm.players[_nm.my_id]["investigator"] = selected
+	_nm.set_lobby_ready(_nm.my_id, selected)
 	# Хост тоже рассылает — другие игроки увидят его статус и сыщика.
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
 	_refresh_start_button()
@@ -303,9 +294,7 @@ func _resend_ready() -> void:
 	var selected: String = _picker.get_selected()
 	if selected.is_empty():
 		return
-	if _nm.players.has(_nm.my_id):
-		_nm.players[_nm.my_id]["ready"] = true
-		_nm.players[_nm.my_id]["investigator"] = selected
+	_nm.set_lobby_ready(_nm.my_id, selected)
 	_nm.relay_all({"action": "set_ready", "player_id": _nm.my_id, "investigator": selected})
 
 
@@ -315,8 +304,7 @@ func _on_start_pressed() -> void:
 	var selected: String = _picker.get_selected()
 	if selected.is_empty():
 		return
-	if _nm.players.has(_nm.my_id):
-		_nm.players[_nm.my_id]["investigator"] = selected
+	_nm.set_lobby_investigator(_nm.my_id, selected)
 	GameConsole.log("Игра началась! Игроков: %d" % _nm.players.size())
 	_clear_ready_state()
 	# Инициализируем игровое состояние ДО рассылки start_game и перехода —

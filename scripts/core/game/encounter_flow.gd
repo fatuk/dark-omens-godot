@@ -262,7 +262,9 @@ func _begin_combat(pid: String) -> void:
 	if m.is_empty():
 		generate("general")
 		return
-	var inv_count: int = maxi(1, _gs.players.size())
+	# Стойкость — по тому же авторитету размера партии, что и спаун (board_state),
+	# иначе шкала боя расходится с hp, с которым монстр реально появился.
+	var inv_count: int = _gs._campaign.balance_player_count()
 	@warning_ignore("unsafe_method_access")
 	var tough: int = MonsterCatalog.toughness_for(m, inv_count)
 	var cur: int = inst_health if inst_health >= 0 else tough  # легаси/без health → полное
@@ -644,8 +646,7 @@ func try_combat_trigger(pid: String, item_index: int) -> bool:
 	# Стоимость (напр. фокус) — уже проверена в combat_trigger_node_ready, списываем.
 	var cost: Dictionary = node.get("cost", {})
 	if cost.has("spend"):
-		var resf: String = _cost_field(String(cost.get("spend", "")))
-		p[resf] = int(p.get(resf, 0)) - int(cost.get("amount", 1))
+		ResourceLedger.spend(p, String(cost.get("spend", "")), int(cost.get("amount", 1)))
 	# Монстр повержен без проверки Силы (как defeatOnPass). Победную резолюцию доводит
 	# _commit_combat при «Завершить»: снимет монстра, вернёт в мешок, развеет Слух.
 	enc["defeated_by_trigger"] = true
@@ -697,7 +698,7 @@ func combat_trigger_node_ready(pid: String, item_index: int) -> Dictionary:
 	# Стоимость (напр. фокус) — есть ли чем платить.
 	var cost: Dictionary = node.get("cost", {})
 	if cost.has("spend"):
-		if int(p.get(_cost_field(String(cost.get("spend", ""))), 0)) < int(cost.get("amount", 1)):
+		if not ResourceLedger.can_pay(p, String(cost.get("spend", "")), int(cost.get("amount", 1))):
 			return {}
 	return node
 
@@ -713,21 +714,6 @@ func _combat_trigger_node(asset: Dictionary) -> Dictionary:
 			if d_v is Dictionary and String((d_v as Dictionary).get("do", "")) == "defeatMonster":
 				return d_v
 	return {}
-
-
-# Поле-ресурс игрока для cost.spend ("focus"→"concentration" и т.п.).
-func _cost_field(spend: String) -> String:
-	match spend:
-		"focus", "concentration":
-			return "concentration"
-		"clue", "clues":
-			return "clues"
-		"health", "hp":
-			return "hp"
-		"sanity":
-			return "sanity"
-		_:
-			return spend
 
 
 ## Хост: переброс ОДНОГО выбранного куба (die_index) активной проверки. currency —
@@ -1074,4 +1060,4 @@ func _active_monster_toughness(loc: String) -> int:
 	if m.is_empty():
 		return -1
 	@warning_ignore("unsafe_method_access")
-	return MonsterCatalog.toughness_for(m, maxi(1, _gs.players.size()))
+	return MonsterCatalog.toughness_for(m, _gs._campaign.balance_player_count())

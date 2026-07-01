@@ -1620,6 +1620,17 @@ func is_my_turn() -> bool:
 	return active and phase == "action" and _current_pid() == _nm.my_user_id
 
 
+## Публичный доступ к held-ограничению игрока (whileHeld: removeFromBoard/cannotAct/…).
+## Для UI — вместо лазанья в приватный _cond.
+func player_has_constraint(pid: String, verb: String) -> bool:
+	return _cond.player_has_constraint(pid, verb)
+
+
+## Публичный список локаций (data/locations.json, кэш). Для UI — вместо _load_locations.
+func locations() -> Array:
+	return _load_locations()
+
+
 ## Узнать, моя ли очередь на встречу (только для phase=encounter).
 ## Встречи проходят последовательно по turn_order.
 func is_my_encounter_turn() -> bool:

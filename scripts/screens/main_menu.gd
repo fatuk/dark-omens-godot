@@ -137,7 +137,7 @@ func _on_relay_url_changed(new_url: String) -> void:
 
 func _auto_connect() -> void:
 	if _nm.is_connected_to_relay():
-		_show_status("Подключено · %s" % _nm.my_name, UIColors.SUCCESS)
+		_show_status(tr("MENU_STATUS_CONNECTED") % _nm.my_name, UIColors.SUCCESS)
 		_nm.list_rooms()
 		return
 	if _nm.is_reconnecting():
@@ -147,11 +147,11 @@ func _auto_connect() -> void:
 		return
 	# Либо первый заход, либо все попытки исчерпаны — стартуем заново
 	var pname: String = _auth.current_user.get("name", "Player")
-	_show_status("Подключение к %s..." % SettingsStore.relay_url, UIColors.WARNING)
+	_show_status(tr("MENU_STATUS_CONNECTING") % SettingsStore.relay_url, UIColors.WARNING)
 	_rooms_panel.modulate.a = 0.4
 	var err: Error = _nm.connect_to_relay(pname, SettingsStore.relay_url)
 	if err != OK:
-		_show_status("Ошибка подключения: %s" % error_string(err), UIColors.ERROR)
+		_show_status(tr("MENU_STATUS_CONNECT_ERROR") % error_string(err), UIColors.ERROR)
 		_rooms_panel.modulate.a = 1.0
 
 
@@ -193,7 +193,7 @@ func _on_room_form_submitted(
 ) -> void:
 	GameState.set_campaign_seed(ancient_one, max_players)
 	_nm.create_room(room_name, password, max_players)
-	_show_status("Создание комнаты «%s»..." % room_name, UIColors.WARNING)
+	_show_status(tr("MENU_STATUS_CREATING_ROOM") % room_name, UIColors.WARNING)
 
 
 func _on_join_pressed() -> void:
@@ -210,7 +210,7 @@ func _on_join_pressed() -> void:
 
 func _on_connected() -> void:
 	_rooms_panel.modulate.a = 1.0
-	_show_status("Подключено · %s" % _nm.my_name, UIColors.SUCCESS)
+	_show_status(tr("MENU_STATUS_CONNECTED") % _nm.my_name, UIColors.SUCCESS)
 	_nm.list_rooms()
 
 
@@ -294,13 +294,13 @@ func _on_rejoin_failed_in_menu() -> void:
 
 func _on_room_deleted_in_menu(reason: String) -> void:
 	_rooms_panel.modulate.a = 1.0
-	_show_status("Комната закрыта: %s" % reason, UIColors.WARNING)
+	_show_status(tr("MENU_STATUS_ROOM_CLOSED") % reason, UIColors.WARNING)
 	_nm.list_rooms()
 
 
 func _on_relay_error(message: String) -> void:
 	_join_btn.disabled = _selected_room_id.is_empty()
-	_show_status("Ошибка: %s" % message, UIColors.ERROR)
+	_show_status(tr("MENU_STATUS_ERROR") % message, UIColors.ERROR)
 
 
 # ── Вспомогательные ───────────────────────────────────────────────────────────

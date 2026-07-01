@@ -170,33 +170,13 @@ func try_mystery_hook(event: String, ctx: Dictionary, pid: String) -> void:
 func _player_resource(pid: String, res: String) -> int:
 	if not _gs.players.has(pid):
 		return 0
-	var p: Dictionary = _gs.players[pid]
-	match res:
-		"clue", "clues":
-			return int(p.get("clues", 0))
-		"sanity":
-			return int(p.get("sanity", 0))
-		"health", "hp":
-			return int(p.get("hp", 0))
-		"focus", "concentration":
-			return int(p.get("concentration", 0))
-		_:
-			return 0
+	return ResourceLedger.amount_of(_gs.players[pid], res)
 
 
 func _spend_resource(pid: String, res: String, amt: int) -> void:
 	if not _gs.players.has(pid):
 		return
-	var p: Dictionary = _gs.players[pid]
-	match res:
-		"clue", "clues":
-			p["clues"] = maxi(0, int(p.get("clues", 0)) - amt)
-		"sanity":
-			p["sanity"] = maxi(0, int(p.get("sanity", 0)) - amt)
-		"health", "hp":
-			p["hp"] = maxi(0, int(p.get("hp", 0)) - amt)
-		"focus", "concentration":
-			p["concentration"] = maxi(0, int(p.get("concentration", 0)) - amt)
+	ResourceLedger.spend(_gs.players[pid], res, amt)
 
 
 ## Хост: проверка решения Тайны по жетонам на карте. Зовётся в КОНЦЕ Фазы Мифов

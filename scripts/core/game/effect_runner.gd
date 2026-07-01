@@ -337,36 +337,11 @@ static func _monster_choice_toughness(ctx: Dictionary, ref: String) -> int:
 
 
 static func _resource_of(player: Dictionary, res: String) -> int:
-	match res:
-		"clue", "clues":
-			return int(player.get("clues", 0))
-		"sanity":
-			return int(player.get("sanity", 0))
-		"health", "hp":
-			return int(player.get("hp", 0))
-		"focus", "concentration":
-			return int(player.get("concentration", 0))
-		"asset", "spell":
-			return (player.get("items", []) as Array).size()
-		_:
-			return 0
+	return ResourceLedger.amount_of(player, res)
 
 
 static func _spend_resource(player: Dictionary, res: String, amt: int) -> void:
-	match res:
-		"clue", "clues":
-			player["clues"] = maxi(0, int(player.get("clues", 0)) - amt)
-		"sanity":
-			player["sanity"] = maxi(0, int(player.get("sanity", 0)) - amt)
-		"health", "hp":
-			player["hp"] = maxi(0, int(player.get("hp", 0)) - amt)
-		"focus", "concentration":
-			player["concentration"] = maxi(0, int(player.get("concentration", 0)) - amt)
-		"asset", "spell":
-			var items: Array = player.get("items", [])
-			if not (items as Array).is_empty():
-				items.pop_back()
-			player["items"] = items
+	ResourceLedger.spend(player, res, amt)
 
 
 ## Вложенная проверка. Есть навыки в ctx → реальный бросок (как CheckFlow.pool):
@@ -383,7 +358,11 @@ static func _roll_test(
 	var pool: int = maxi(
 		1, int(skills.get(skill, 1)) + int(mods.get(skill, 0)) + int(node.get("modifier", 0))
 	)
-	return bool(Dice.result(_roll_dice(flow, path, pool)).get("passed", false))
+	# Порог Blessed/Cursed действует и в тихих test'ах (как в видимом CheckFlow).
+	var threshold: int = Conditions.success_threshold(
+		player.get("conditions", []), player.get("conditions_flipped", {})
+	)
+	return bool(Dice.result(_roll_dice(flow, path, pool), threshold).get("passed", false))
 
 
 # Бросок пула d6 с записью/переигровкой по path (детерминизм при возобновлении

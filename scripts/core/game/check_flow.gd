@@ -358,31 +358,14 @@ func reroll_all(pid: String, c: Dictionary = {}) -> bool:
 
 
 # Может ли игрок оплатить ресурс-стоимость активации (asset/spell пока не поддержаны).
+# Стоимость активации карты не может убить владельца → allow_lethal=false («> amt»).
 func _can_pay(p: Dictionary, res: String, amt: int) -> bool:
-	match res:
-		"clue":
-			return int(p.get("clues", 0)) >= amt
-		"focus":
-			return int(p.get("concentration", 0)) >= amt
-		"health":
-			return int(p.get("hp", 0)) > amt  # не до смерти
-		"sanity":
-			return int(p.get("sanity", 0)) > amt
-		_:
-			return false
+	return ResourceLedger.can_pay(p, res, amt, false)
 
 
 # Списать ресурс-стоимость активации.
 func _pay(p: Dictionary, res: String, amt: int) -> void:
-	match res:
-		"clue":
-			p["clues"] = maxi(0, int(p.get("clues", 0)) - amt)
-		"focus":
-			p["concentration"] = maxi(0, int(p.get("concentration", 0)) - amt)
-		"health":
-			p["hp"] = maxi(0, int(p.get("hp", 0)) - amt)
-		"sanity":
-			p["sanity"] = maxi(0, int(p.get("sanity", 0)) - amt)
+	ResourceLedger.spend(p, res, amt)
 
 
 func _sync() -> void:

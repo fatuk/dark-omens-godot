@@ -112,6 +112,12 @@ var _markers: Array = []  # [{sprite, label, indicator, pos, loc_name}]
 var _textures: Dictionary = {}
 var _selected_name: String = ""
 
+# Кэш для _process: раскладка маркеров/карточек зум-инвариантна между кадрами —
+# пересчитываем её только при смене зума ИЛИ перестройке/смене выбора (_layout_dirty).
+# Врата/сущности/чат анимируются delta — их пересчёт не гейтится (см. _process).
+var _last_zoom: float = -1.0
+var _layout_dirty: bool = true
+
 # Маркеры сыщиков — поверх маркеров локаций.
 var _inv_markers: Array = []  # [{sprite, base, screen_off, base_scale}]
 var _inv_signature: String = ""  # для пропуска лишних перестроений
@@ -229,6 +235,7 @@ func load_from_file(path: String) -> void:
 	_entity_signature = ""
 	_entity_hover_state.clear()
 	_locs.clear()
+	_layout_dirty = true  # маркеры пересоздаются — их раскладку надо пересчитать
 
 	var data: Array = DataLoader.load_array(path)
 	if data.is_empty():
@@ -297,23 +304,27 @@ func _process(delta: float) -> void:
 	var sp_scale: Vector2 = Vector2.ONE * (marker_screen / 150.0) * inv
 	var ind_scale: Vector2 = Vector2.ONE * inv * marker_factor
 
-	for i: int in range(_markers.size()):
-		var m: Dictionary = _markers[i]
-		var sp: Sprite2D = m.sprite as Sprite2D
-		var lb: Label = m.label as Label
-		var ind: Node2D = m.indicator as Node2D
+	# Маркеры/лейблы/индикаторы зум-инвариантны — трогаем их только при смене зума
+	# или перестройке/выборе (иначе это самый горячий UI-код впустую каждый кадр).
+	var relayout: bool = z != _last_zoom or _layout_dirty
+	if relayout:
+		for i: int in range(_markers.size()):
+			var m: Dictionary = _markers[i]
+			var sp: Sprite2D = m.sprite as Sprite2D
+			var lb: Label = m.label as Label
+			var ind: Node2D = m.indicator as Node2D
 
-		if is_instance_valid(sp):
-			sp.scale = sp_scale
+			if is_instance_valid(sp):
+				sp.scale = sp_scale
 
-		if is_instance_valid(ind) and ind.visible:
-			ind.scale = ind_scale
-			# Центр бордера выбора — на 2px ниже центра медальона (экранные px).
-			ind.position = m.pos + Vector2(0.0, SELECTION_Y_OFFSET * inv)
+			if is_instance_valid(ind) and ind.visible:
+				ind.scale = ind_scale
+				# Центр бордера выбора — на 2px ниже центра медальона (экранные px).
+				ind.position = m.pos + Vector2(0.0, SELECTION_Y_OFFSET * inv)
 
-		if is_instance_valid(lb) and lb.size.x > 0.0:
-			lb.scale = Vector2.ONE * inv
-			lb.position = m.pos + Vector2(-lb.size.x * inv * 0.5, label_y * inv)  # горизонтальное центрирование  # отступ ниже маркера (лерп по zoom)
+			if is_instance_valid(lb) and lb.size.x > 0.0:
+				lb.scale = Vector2.ONE * inv
+				lb.position = m.pos + Vector2(-lb.size.x * inv * 0.5, label_y * inv)  # горизонтальное центрирование  # отступ ниже маркера (лерп по zoom)
 
 	# Фото-карточки сыщиков — высота лерпится по зуму (FAR/NEAR). Подъём над
 	# локацией масштабируется тем же фактором, чтобы основание карточки
@@ -321,16 +332,17 @@ func _process(delta: float) -> void:
 	var inv_factor: float = (
 		lerpf(INVESTIGATOR_CARD_H_FAR, INVESTIGATOR_CARD_H_NEAR, t) / INVESTIGATOR_CARD_H_NEAR
 	)
-	for i: int in range(_inv_markers.size()):
-		var im: Dictionary = _inv_markers[i]
-		var isp: Node2D = im.sprite as Node2D
-		if not is_instance_valid(isp):
-			continue
-		var ibase: Vector2 = im.base
-		var ioff: Vector2 = im.screen_off
-		var iscale: float = im.base_scale
-		isp.scale = Vector2.ONE * iscale * inv * inv_factor
-		isp.position = ibase + ioff * inv * inv_factor
+	if relayout:
+		for i: int in range(_inv_markers.size()):
+			var im: Dictionary = _inv_markers[i]
+			var isp: Node2D = im.sprite as Node2D
+			if not is_instance_valid(isp):
+				continue
+			var ibase: Vector2 = im.base
+			var ioff: Vector2 = im.screen_off
+			var iscale: float = im.base_scale
+			isp.scale = Vector2.ONE * iscale * inv * inv_factor
+			isp.position = ibase + ioff * inv * inv_factor
 
 	# Облачка чата — стопкой над ближайшим к камере пином каждого сыщика.
 	if not _chat_bubbles.is_empty():
@@ -387,6 +399,9 @@ func _process(delta: float) -> void:
 			if not now_expanded.has(lid_v):
 				SfxManager.play(SfxManager.SFX_MAP_ITEM_BLUR)
 		_entity_hover_state = now_expanded
+
+	_last_zoom = z
+	_layout_dirty = false
 
 
 # ── Маркеры ───────────────────────────────────────────────────────────────────
@@ -769,6 +784,7 @@ func set_selected(loc_name: String) -> void:
 	if loc_name == _selected_name:
 		return
 	_selected_name = loc_name
+	_layout_dirty = true  # индикатору нужен пересчёт позиции в ближайшем _process
 	var inv: float = 1.0 / camera.zoom.x if is_instance_valid(camera) else 1.0
 	# Тот же marker_factor, что в _process — индикатор сразу под текущий зум,
 	# чтобы между set_selected и первым _process не дрогнул размер.
@@ -797,6 +813,7 @@ func set_investigators(list: Array) -> void:
 	if sig == _inv_signature:
 		return
 	_inv_signature = sig
+	_layout_dirty = true  # состав маркеров сыщиков сменился — пересчитать раскладку
 
 	for i: int in range(_inv_markers.size()):
 		var old_e: Dictionary = _inv_markers[i]
