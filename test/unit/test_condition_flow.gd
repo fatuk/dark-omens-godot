@@ -100,6 +100,18 @@ func _add_player(pid: String, extra: Dictionary = {}) -> void:
 	_gs.players[pid] = base
 
 
+# ── Регрессия дедлока: проверка Расплаты отвалившегося ────────────────────────
+
+
+# Отвалившийся во время своей проверки Расплаты сыщик броска не пришлёт. _await_my_check
+# не должен виснуть на effect_check_applied — сразу возвращает «провалено». Если бы
+# гард по connected регрессировал, этот тест завис бы (таймаут GUT), а не прошёл.
+func test_await_my_check_fails_fast_for_disconnected() -> void:
+	_add_player("p", {"connected": false})
+	var passed: bool = await _cond._await_my_check("p")
+	assert_false(passed, "проверка отвалившегося = провал, без ожидания сигнала")
+
+
 # ── whileHeld-ограничения ─────────────────────────────────────────────────────
 
 

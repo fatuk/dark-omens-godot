@@ -188,3 +188,27 @@ func test_apply_effects_routes_foreach_without_crash() -> void:
 	# p1 бьёт соседа p2, p2 — соседа p1 (wrap) → у обоих −1.
 	assert_eq(int(_gs.players["p1"]["hp"]), 4, "forEach применился без краша")
 	assert_eq(int(_gs.players["p2"]["hp"]), 4)
+
+
+# Регрессия: target у прямого (не-forEach) эффекта Мифов разбирается TargetResolver.
+# Раньше _apply_effects бил по ВСЕМ игрокам — target:"lead" деградировал в "each".
+func test_apply_effects_target_lead_hits_only_lead() -> void:
+	_setup_players(["p1", "p2", "p3"])  # p1 = Ведущий (turn_order[0])
+	await _mythos._apply_effects([{"do": "loseHealth", "amount": 2, "target": "lead"}])
+	assert_eq(int(_gs.players["p1"]["hp"]), 3, "лид p1 получил −2")
+	assert_eq(int(_gs.players["p2"]["hp"]), 5, "p2 не задет")
+	assert_eq(int(_gs.players["p3"]["hp"]), 5, "p3 не задет")
+
+
+func test_apply_effects_target_each_hits_all() -> void:
+	_setup_players(["p1", "p2"])
+	await _mythos._apply_effects([{"do": "loseHealth", "amount": 1, "target": "each"}])
+	assert_eq(int(_gs.players["p1"]["hp"]), 4, "each — все подключённые")
+	assert_eq(int(_gs.players["p2"]["hp"]), 4)
+
+
+func test_apply_effects_skips_disconnected_target() -> void:
+	_setup_players(["p1", "p2"])
+	_gs.players["p1"]["connected"] = false  # лид отключился
+	await _mythos._apply_effects([{"do": "loseHealth", "amount": 2, "target": "lead"}])
+	assert_eq(int(_gs.players["p1"]["hp"]), 5, "отключённый лид не задет")
