@@ -13,7 +13,7 @@ extends Control
 # Настройки арта круга — static, чтобы тюнить на лету в дебаг-панели шейдеров
 # (Ctrl+M, секция «КРУГ ЗНАМЕНИЙ») и переживать пересоздание узла.
 static var STEP_DEG: float = 45.0  # градусов между оменами на диске
-static var START_ANGLE_DEG: float = -180.0  # база поворота диска (выравнивает омен под окно)
+static var START_ANGLE_DEG: float = 0.0  # база поворота диска (выравнивает омен под окно)
 static var MASK_RADIUS: float = 46.0  # радиус видимого окошка (canvas-координаты)
 static var MASK_OFFSET_X: float = 0.0  # сдвиг ОКНА-маски от центра компонента (под арт рамки)
 static var MASK_OFFSET_Y: float = 0.0
