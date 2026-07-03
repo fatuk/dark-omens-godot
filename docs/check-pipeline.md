@@ -63,6 +63,7 @@ active_check = {
     reroll_all_allowance: int,  # «перебросить ВСЕ кубы разом» — сколько раз доступно
     reroll_all_used:      int,  # сколько раз уже перебросили всё
     exhausted_cards:  [int],    # item_index карт, истощённых на ЭТУ проверку
+    add_targets:      [int],    # кубы, на которые игрок положил +1 (addToDie) тапом (§4.5)
 }
 ```
 
@@ -125,13 +126,15 @@ pool = max(1,  базовый_навык_сыщика
 | `rollAdditionalDice` | до броска  | +`count` кубов в пул (складываются — разные источники)          |
 | `improveSkill`       | до броска  | +`amount` кубов по навыку — **НЕ складываются**: берётся МАКСИМУМ (две пушки +2/+3 → +3, не +5) |
 | `impairSkill`        | до броска  | −`amount` кубов, если `skill` совпал                            |
-| `addToDie`           | после      | +`amount` к `count` кубам, **жадно** — наибольшим провальным    |
+| `addToDie`           | после      | +`amount` к `count` кубам — на **выбранные игроком** тапом (любой куб < 6, см. §4.5) |
 | `convertDie`         | подсчёт    | грань `on` даёт `successes` успехов (или снимает при `negate`)  |
 | `rerollDice` (count < 10) | —     | +`count` к ПОШТУЧНЫМ бесплатным перебросам (`reroll_allowance`) |
 | `rerollDice` (count ≥ 10) | —     | «перебросить ВСЕ кубы разом» — +1 к `reroll_all_allowance`      |
 
-- `apply_add_to_die` доводит до успеха в первую очередь самый «близкий» провальный
-  куб (наибольший < 5), потом следующий — чтобы +1 не тратился впустую.
+- `apply_add_to_die_at` кладёт +1 на кубы из `add_targets` (выбор игрока, §4.5) —
+  без жадности. Жадный `apply_add_to_die` (наибольший провальный < 5) остался
+  ТОЛЬКО для симулятора баланса (`result_with(add_targets=null)`), где нет игрока;
+  в игре он не вызывается.
 - `count_successes_with` считает успехи поштучно через `_die_successes` с учётом
   `convertDie`.
 
@@ -155,16 +158,45 @@ pool = max(1,  базовый_навык_сыщика
 ### 4.4 Идемпотентный пересчёт — `CheckFlow._set_roll(c, base)`
 
 ```gdscript
-var r = Dice.result_with(base, active_mods, skill)   # {dice, successes, passed}
+var r = Dice.result_with(base, active_mods, skill, threshold, add_targets)  # {dice, successes, passed}
 c.base = base
-c.dice = r.dice        # base + addToDie (на копии)
+c.dice = r.dice        # base + addToDie(add_targets) на копии
 c.successes = r.successes
 c.passed = r.passed
 ```
 
-Любая операция (бросок, переброс, активация) меняет **только `base`** и зовёт
-`_set_roll`. `dice`/`successes` всегда выводятся заново из `base` + `active_mods` —
-поэтому `addToDie` не накапливается, а порядок активаций/перебросов не важен.
+Любая операция (бросок, переброс, активация, +1) меняет **только `base`/`add_targets`**
+и зовёт `_set_roll`. `dice`/`successes` всегда выводятся заново из `base` +
+`active_mods` + `add_targets` — поэтому `addToDie` не накапливается, а порядок
+активаций/перебросов/выборов не важен.
+
+### 4.5 +1 на выбранный куб — `CheckFlow.add_die(pid, die_index)`
+
+`addToDie` не раскидывается автоматически: активированная карта **заряжает** +1
+(как жетон-валюта заряжает переброс, §6), а игрок сам **тапает куб**. Аналог реролла,
+но со своими правилами:
+
+```
+заряды       = Dice.add_charges(active_mods, skill)   # count кубов × amount, плоским списком
+add_available = len(заряды) − len(add_targets)          # ещё не положенных +1
+die_can_add: rolled, pid совпал, есть свободный заряд, dice[i] < 6 (SIDES)
+add_die(i):  add_targets += [i];  _set_roll(base);  reroll_nonce++ (лоток крутит куб)
+```
+
+Отличия от переброса (§5):
+
+- **Применимо и к УСПЕШНЫМ кубам:** порог — не «< 5», а **`< 6`**. Куб на 5 можно
+  довести до 6 — ради карт, которым нужны шестёрки (`convertDie on:6`, matching).
+  Шестёрку улучшать некуда.
+- **Приоритет тапа.** Заряженный +1 тратится ПЕРВЫМ: `GameState.reroll_die` (и
+  `reckoning_reroll_die`) сначала пробуют `die_can_add` → `add_die`, и лишь потом
+  переброс. Игрок зарядил карту осознанно — сперва кладём её.
+- **Заряд выводится из `active_mods`,** отдельного «pending»-флага (как у жетона
+  переброса) нет: активировал addToDie-карту — заряд появился, положил на куб —
+  ушёл в `add_targets`.
+
+Сеть: relay `ADD_DIE` (active_check) / `RECKONING_ADD_DIE` (слот Расплаты) →
+`CheckFlow.add_die`. `add_targets` едет в снапшоте вместе с `active_check`.
 
 ---
 
@@ -483,6 +515,14 @@ can = (free > 0 or concentration > 0 or clues > 0) and not committed and not rev
 > какую-то валюту (как было с уликами), хост бы переброс разрешил, но игрок не
 > сможет нажать кубик. Подсказка под кубами показывает источник по приоритету:
 > карта (бесплатно) → концентрация → улика.
+
+**+1 (addToDie) расширяет кликабельность.** Помимо переброса, куб кликабелен под
+`+1`, если заряд свободен (§4.5) — тут порог **`< 6`**, а не `< 5`. `DiceTray`:
+`clickable = (can_reroll и dice[i] < 5) ИЛИ (can_add и dice[i] < 6)`, где
+`can_add = GameState.can_add_die_now(reckoning?)`. Модалки следят за доступностью
++1 (`_last_add`) и перерисовывают лоток при её смене — иначе куб-5 не станет
+нажимаемым сразу после розыгрыша карты. Тап приоритетно кладёт +1 (§4.5), затем
+переброс.
 
 **«Перебросить кубы».** Когда `reroll_all_allowance − reroll_all_used > 0`, модалки
 встречи/магазина **переиспользуют кнопку броска** (текст → «Перебросить кубы»,
