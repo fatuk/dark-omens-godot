@@ -505,3 +505,16 @@ func test_become_delayed_respects_immunity() -> void:
 	var p2: Dictionary = {"conditions": [], "items": [{"id": "pocket_watch", "exhausted": false}]}
 	EffectRunner.run([{"do": "becomeDelayed"}], p2)
 	assert_does_not_have(p2["conditions"], "delayed", "Pocket Watch — иммунитет к задержке")
+
+
+func test_protect_resource_clue_blocks_involuntary_loss() -> void:
+	# Scribe's Journal (whileOwned protectResource resource:clue): loseClue не отнимает,
+	# но добровольная трата (spendClue) работает.
+	var p: Dictionary = {"clues": 3, "items": [{"id": "scribes_journal", "exhausted": false}]}
+	EffectRunner.run([{"do": "loseClue", "amount": 2}], p)
+	assert_eq(int(p["clues"]), 3, "улики защищены от потери")
+	EffectRunner.run([{"do": "spendClue", "amount": 1}], p)
+	assert_eq(int(p["clues"]), 2, "трата (spendClue) работает")
+	var p2: Dictionary = {"clues": 3, "items": []}
+	EffectRunner.run([{"do": "loseClue", "amount": 2}], p2)
+	assert_eq(int(p2["clues"]), 1, "без защиты — теряются")

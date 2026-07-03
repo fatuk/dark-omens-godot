@@ -234,18 +234,25 @@ static func is_player_verb(verb: String) -> bool:
 	return _PLAYER_VERBS.has(verb)
 
 
-## Есть ли у игрока иммунитет к статусу (whileOwned immuneTo status==X). Pocket Watch:
-## immuneTo delayed → becomeDelayed не срабатывает.
-static func _owns_immunity(player: Dictionary, status: String) -> bool:
+## Есть ли у игрока принадлежащий whileOwned-пассив с do==verb и field==value. Основа
+## для иммунитета (immuneTo status:X — Pocket Watch) и защиты ресурса (protectResource
+## resource:clue — Scribe's Journal).
+static func _owns_whileowned(
+	player: Dictionary, verb: String, field: String, value: String
+) -> bool:
 	for it_v: Variant in player.get("items", []):
 		var a: Dictionary = AssetCatalog.by_id(AssetCatalog.entry_id(it_v))
 		if a.is_empty():
 			continue
 		for n_v: Variant in (a.get("effect", {}) as Dictionary).get("whileOwned", []):
 			var n: Dictionary = n_v
-			if String(n.get("do", "")) == "immuneTo" and String(n.get("status", "")) == status:
+			if String(n.get("do", "")) == verb and String(n.get(field, "")) == value:
 				return true
 	return false
+
+
+static func _owns_immunity(player: Dictionary, status: String) -> bool:
+	return _owns_whileowned(player, "immuneTo", "status", status)
 
 
 # Узел choice. Без interactive — берём первую ветку (легаси). С interactive: есть
@@ -501,7 +508,15 @@ static func _apply_player_verb(
 		"gainClue":
 			player["clues"] = int(player.get("clues", 0)) + n
 			logs.append("+%d улик" % n)
-		"loseClue", "spendClue":
+		"loseClue":
+			# protectResource clue (Scribe's Journal) — улики нельзя ОТНЯТЬ (невольная
+			# потеря от эффектов); добровольная трата (spendClue) не защищается.
+			if _owns_whileowned(player, "protectResource", "resource", "clue"):
+				logs.append("улики защищены")
+			else:
+				player["clues"] = maxi(0, int(player.get("clues", 0)) - n)
+				logs.append("−%d улик" % n)
+		"spendClue":
 			player["clues"] = maxi(0, int(player.get("clues", 0)) - n)
 			logs.append("−%d улик" % n)
 		"gainCondition":
