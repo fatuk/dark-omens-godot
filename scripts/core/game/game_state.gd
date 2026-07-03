@@ -239,52 +239,55 @@ func _is_host() -> bool:
 	return is_instance_valid(_nm) and _nm.is_host()
 
 
+# Синкаемый стейт: имена полей GameState, у которых ключ снапшота == имя переменной.
+# Единый список для рассылки (_broadcast_sync) и приёма (_apply_snapshot) — новое
+# синкаемое поле добавляется в ОДНОМ месте. Особые (ключ ≠ поле) — mythos_index
+# (_mythos.index) — обрабатываются отдельно. Host-only (колода Мифов) сюда НЕ входят.
+const _SYNC_FIELDS: Array[String] = [
+	"round_num",
+	"phase",
+	"current_idx",
+	"turn_order",
+	"doom",
+	"omens_step",
+	"players",
+	"current_encounter",
+	"active_check",
+	"pending_spell_cast",
+	"casting_spell",
+	"pending_check",
+	"last_cast_result",
+	"reckoning_results",
+	"reckoning_active",
+	"current_mythos",
+	"mythos_in_play",
+	"mythos_decision",
+	"gates",
+	"entities",
+	"monsters",
+	"monster_bag",
+	"monster_surge",
+	"encounter_choices",
+	"shop_reserve",
+	"campaign",
+	"campaign_pending",
+	"active",
+	"active_mystery",
+	"mystery_progress",
+	"mystery_claimed",
+	"mystery_tokens_on_card",
+	"outcome",
+]
+
+
 func _broadcast_sync() -> void:
 	# Только хост рассылает полное состояние
 	if not _is_host():
 		return
-	(
-		_nm
-		. relay_all(
-			{
-				"action": RelayActions.SYNC,
-				"round_num": round_num,
-				"phase": phase,
-				"current_idx": current_idx,
-				"turn_order": turn_order,
-				"doom": doom,
-				"omens_step": omens_step,
-				"players": players,
-				"current_encounter": current_encounter,
-				"active_check": active_check,
-				"pending_spell_cast": pending_spell_cast,
-				"casting_spell": casting_spell,
-				"pending_check": pending_check,
-				"last_cast_result": last_cast_result,
-				"reckoning_results": reckoning_results,
-				"reckoning_active": reckoning_active,
-				"current_mythos": current_mythos,
-				"mythos_in_play": mythos_in_play,
-				"mythos_decision": mythos_decision,
-				"mythos_index": _mythos.index,
-				"gates": gates,
-				"entities": entities,
-				"monsters": monsters,
-				"monster_bag": monster_bag,
-				"monster_surge": monster_surge,
-				"encounter_choices": encounter_choices,
-				"shop_reserve": shop_reserve,
-				"campaign": campaign,
-				"campaign_pending": campaign_pending,
-				"active": active,
-				"active_mystery": active_mystery,
-				"mystery_progress": mystery_progress,
-				"mystery_claimed": mystery_claimed,
-				"mystery_tokens_on_card": mystery_tokens_on_card,
-				"outcome": outcome,
-			}
-		)
-	)
+	var payload: Dictionary = {"action": RelayActions.SYNC, "mythos_index": _mythos.index}
+	for f: String in _SYNC_FIELDS:
+		payload[f] = get(f)
+	_nm.relay_all(payload)
 
 
 func _emit_changed() -> void:
@@ -1305,40 +1308,11 @@ func _add_player_mid_game(uid: String, pname: String, investigator: String) -> v
 
 
 func _apply_snapshot(data: Dictionary) -> void:
-	round_num = int(data.get("round_num", 0))
-	phase = String(data.get("phase", ""))
-	current_idx = int(data.get("current_idx", 0))
-	turn_order = data.get("turn_order", [])
-	doom = int(data.get("doom", 0))
-	omens_step = int(data.get("omens_step", 0))
-	players = data.get("players", {})
-	current_encounter = data.get("current_encounter", {})
-	active_check = data.get("active_check", {})
-	pending_spell_cast = data.get("pending_spell_cast", {})
-	casting_spell = data.get("casting_spell", {})
-	pending_check = data.get("pending_check", {})
-	last_cast_result = data.get("last_cast_result", {})
-	reckoning_results = data.get("reckoning_results", {})
-	reckoning_active = bool(data.get("reckoning_active", false))
-	current_mythos = data.get("current_mythos", {})
-	mythos_in_play = data.get("mythos_in_play", [])
-	mythos_decision = data.get("mythos_decision", {})
+	# Восстанавливаем поля из _SYNC_FIELDS: set() коэрсит под тип переменной
+	# (JSON-число float → int-поле и т.п.); отсутствующий ключ → оставляем текущее.
+	for f: String in _SYNC_FIELDS:
+		set(f, data.get(f, get(f)))
 	_mythos.index = int(data.get("mythos_index", 0))
-	gates = data.get("gates", {})
-	entities = data.get("entities", {})
-	monsters = data.get("monsters", {})
-	monster_bag = data.get("monster_bag", [])
-	monster_surge = int(data.get("monster_surge", 0))
-	encounter_choices = data.get("encounter_choices", [])
-	shop_reserve = data.get("shop_reserve", [])
-	campaign = data.get("campaign", {})
-	campaign_pending = bool(data.get("campaign_pending", false))
-	active = bool(data.get("active", false))
-	active_mystery = int(data.get("active_mystery", 0))
-	mystery_progress = int(data.get("mystery_progress", 0))
-	mystery_claimed = data.get("mystery_claimed", [])
-	mystery_tokens_on_card = int(data.get("mystery_tokens_on_card", 0))
-	outcome = String(data.get("outcome", ""))
 	_emit_changed()
 	phase_changed.emit(phase)
 
