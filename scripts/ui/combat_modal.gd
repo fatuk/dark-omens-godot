@@ -118,21 +118,22 @@ func _ensure_tray(t: DiceTray) -> DiceTray:
 func _configure_tray(
 	tray: DiceTray, dice: Array, last: Array, can: bool, nonce: int = -1, ri: int = -1
 ) -> void:
+	var add: bool = GameState.can_add_die_now()  # заряжен +1 → кубы < 6 кликабельны
 	if last.is_empty():
-		tray.play_roll(dice, can)
+		tray.play_roll(dice, can, add)
 	elif dice == last:
 		if nonce >= 0 and nonce != _last_nonce and ri >= 0 and ri < dice.size():
-			tray.reroll_die(ri, int(dice[ri]), can)  # переброс в ту же грань — всё равно спин
+			tray.reroll_die(ri, int(dice[ri]), can, add)  # переброс в ту же грань — всё равно спин
 		else:
-			tray.show_roll(dice, can)
+			tray.show_roll(dice, can, add)
 	else:
 		var diff: int = _single_diff(last, dice)
 		if diff >= 0:
-			tray.reroll_die(diff, int(dice[diff]), can)  # переброс одного — крутится он
+			tray.reroll_die(diff, int(dice[diff]), can, add)  # переброс одного — крутится он
 		elif last.size() == dice.size():
-			tray.play_roll(dice, can)  # несколько изменилось (reroll-all) — спин всех
+			tray.play_roll(dice, can, add)  # несколько изменилось (reroll-all) — спин всех
 		else:
-			tray.show_roll(dice, can)  # размер изменился (докинули кубы) — статикой
+			tray.show_roll(dice, can, add)  # размер изменился (докинули кубы) — статикой
 	if nonce >= 0:
 		_last_nonce = nonce
 

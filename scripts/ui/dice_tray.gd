@@ -93,15 +93,25 @@ func _init() -> void:
 
 
 ## Показать результат сразу (без анимации) — для ре-рендера на синке.
-func show_roll(values: Array, can_reroll: bool = false) -> void:
-	_build(values, can_reroll)
+func show_roll(values: Array, can_reroll: bool = false, can_add: bool = false) -> void:
+	_build(values, can_reroll, 0, can_add)
 	for d in _dice:
 		_settle(d, false)
 
 
+## Куб кликабелен: под переброс (провал по порогу + есть чем) ИЛИ под +1 addToDie
+## (любой куб < 6, если заряд свободен). Не «рубашка».
+static func _clickable(value: int, is_pending: bool, can_reroll: bool, can_add: bool) -> bool:
+	if is_pending:
+		return false
+	if can_reroll and not Dice.is_success(value):
+		return true
+	return can_add and value < Dice.SIDES
+
+
 ## Показать бросок со спином (свежий бросок). Кубы оседают по очереди.
-func play_roll(values: Array, can_reroll: bool = false) -> void:
-	_build(values, can_reroll)
+func play_roll(values: Array, can_reroll: bool = false, can_add: bool = false) -> void:
+	_build(values, can_reroll, 0, can_add)
 	_shake()
 	for i in range(_dice.size()):
 		_spin(_dice[i], SPIN_BASE + i * SPIN_STAGGER)
@@ -117,12 +127,12 @@ func show_pending(count: int) -> void:
 
 ## Перебросить ОДИН куб (по индексу): крутится только он. Остальные лишь
 ## обновляют доступность — фокус мог иссякнуть (can_reroll = есть ли ещё фокус).
-func reroll_die(index: int, new_value: int, can_reroll: bool) -> void:
+func reroll_die(index: int, new_value: int, can_reroll: bool, can_add: bool = false) -> void:
 	if index < 0 or index >= _dice.size():
 		return
 	_dice[index]["value"] = new_value
 	for d in _dice:
-		d["clickable"] = can_reroll and not d["pending"] and not Dice.is_success(int(d["value"]))
+		d["clickable"] = _clickable(int(d["value"]), bool(d["pending"]), can_reroll, can_add)
 		_apply_click(d)
 	for i in range(_dice.size()):
 		if i != index:
@@ -135,17 +145,19 @@ func reroll_die(index: int, new_value: int, can_reroll: bool) -> void:
 # ── Сборка ──────────────────────────────────────────────────────────────────
 
 
-func _build(values: Array, can_reroll: bool, pending: int = 0) -> void:
+func _build(values: Array, can_reroll: bool, pending: int = 0, can_add: bool = false) -> void:
 	for c in get_children():
 		c.queue_free()
 	_dice.clear()
 	var n: int = values.size() if not values.is_empty() else pending
 	for i in range(n):
 		var val: int = int(values[i]) if i < values.size() else 0
-		_dice.append(_make_die(val, can_reroll, i, values.is_empty()))
+		_dice.append(_make_die(val, can_reroll, i, values.is_empty(), can_add))
 
 
-func _make_die(value: int, can_reroll: bool, index: int, is_pending: bool) -> Dictionary:
+func _make_die(
+	value: int, can_reroll: bool, index: int, is_pending: bool, can_add: bool = false
+) -> Dictionary:
 	var root := Control.new()
 	root.name = "Die%d" % index
 	root.custom_minimum_size = Vector2(DIE_W, DIE_H)
@@ -204,7 +216,7 @@ func _make_die(value: int, can_reroll: bool, index: int, is_pending: bool) -> Di
 	blur_mat.shader = sh
 	blur_mat.set_shader_parameter("blur", 0.0)
 
-	var clickable: bool = can_reroll and not is_pending and not Dice.is_success(value)
+	var clickable: bool = _clickable(value, is_pending, can_reroll, can_add)
 	var die := {
 		"root": root,
 		"content": content,

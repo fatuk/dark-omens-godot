@@ -35,6 +35,7 @@ var _selected: Dictionary = {}  # asset_id -> cost
 var _last_dice: Array = []  # последний показанный набор (спин только на свежем)
 var _last_nonce: int = 0  # метка последнего отрисованного переброса (CheckFlow.reroll_nonce)
 var _last_can: bool = false  # последнее состояние кликабельности (для обновления без смены кубов)
+var _last_add: bool = false  # последняя доступность +1 (addToDie) — тоже меняет кликабельность
 
 # Узлы для обновления.
 var _dice_box: HBoxContainer
@@ -259,34 +260,38 @@ func _render_dice() -> void:
 		return
 	var dice: Array = _check().get("dice", [])
 	var can: bool = _can_reroll()
+	var add: bool = GameState.can_add_die_now()  # заряжен +1 → кубы < 6 кликабельны
 	var nonce: int = int(_check().get("reroll_nonce", 0))
 	if dice != _last_dice:
 		var prev: Array = _last_dice
 		var diff: int = _single_diff(prev, dice)
 		_last_dice = dice.duplicate()
 		if prev.is_empty():
-			_tray.play_roll(dice, can)  # свежий бросок — спин
+			_tray.play_roll(dice, can, add)  # свежий бросок — спин
 		elif diff >= 0:
-			_tray.reroll_die(diff, int(dice[diff]), can)  # переброс одного — крутится он
+			_tray.reroll_die(diff, int(dice[diff]), can, add)  # переброс одного — крутится он
 		elif prev.size() == dice.size():
-			_tray.play_roll(dice, can)  # несколько изменилось (reroll-all) — спин всех
+			_tray.play_roll(dice, can, add)  # несколько изменилось (reroll-all) — спин всех
 		else:
-			_tray.show_roll(dice, can)  # размер изменился (докинули кубы) — статикой
+			_tray.show_roll(dice, can, add)  # размер изменился (докинули кубы) — статикой
 		_last_can = can
+		_last_add = add
 		_last_nonce = nonce
 	elif nonce != _last_nonce:
 		# Переброс в ТО ЖЕ значение: массив не изменился, но nonce вырос — крутим
 		# затронутый куб, иначе клик «съеденный» (фокус ушёл, куб не дёрнулся).
 		var ri: int = int(_check().get("reroll_index", -1))
 		if ri >= 0 and ri < dice.size():
-			_tray.reroll_die(ri, int(dice[ri]), can)
+			_tray.reroll_die(ri, int(dice[ri]), can, add)
 		_last_can = can
+		_last_add = add
 		_last_nonce = nonce
-	elif can != _last_can:
-		# Кубы те же, но кликабельность изменилась (активировали карту-переброс
+	elif can != _last_can or add != _last_add:
+		# Кубы те же, но кликабельность изменилась (активировали карту-переброс/+1
 		# после броска) — обновляем лоток статикой, иначе кубик не нажать.
-		_tray.show_roll(dice, can)
+		_tray.show_roll(dice, can, add)
 		_last_can = can
+		_last_add = add
 
 
 # Индекс единственного отличия наборов (-1 если 0 или >1 отличий / разные размеры).

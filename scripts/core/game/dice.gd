@@ -121,6 +121,35 @@ static func apply_add_to_die(
 	return out
 
 
+## Заряды +бонуса от addToDie: плоский список величин (по одному на куб). Карта
+## «+amount к count кубам» даёт count зарядов по amount. Игрок распределяет их сам
+## (тапом по кубу) — см. apply_add_to_die_at. Skill-фильтр как везде (карты боя).
+static func add_charges(mods: Array, skill: String = "") -> Array:
+	var out: Array = []
+	for m_v: Variant in mods:
+		var m: Dictionary = m_v
+		if String(m.get("do", "")) != "addToDie" or not mod_skill_ok(m, skill):
+			continue
+		var amount: int = int(m.get("amount", 1))
+		var count: int = maxi(1, int(m.get("count", 1)))
+		for _c in range(count):
+			out.append(amount)
+	return out
+
+
+## Применить addToDie к ВЫБРАННЫМ игроком кубам: заряд i (add_charges) идёт на куб
+## targets[i]. В отличие от жадного apply_add_to_die — цель выбирает игрок (любой куб
+## < SIDES, включая 5→6 ради карт, которым нужны шестёрки). Возвращает НОВЫЙ массив.
+static func apply_add_to_die_at(dice: Array, mods: Array, skill: String, targets: Array) -> Array:
+	var out: Array = dice.duplicate()
+	var charges: Array = add_charges(mods, skill)
+	for i in range(mini(charges.size(), targets.size())):
+		var idx: int = int(targets[i])
+		if idx >= 0 and idx < out.size():
+			out[idx] = mini(SIDES, int(out[idx]) + int(charges[i]))
+	return out
+
+
 # Индекс наибольшего провального куба (<threshold) — лучший кандидат под +бонус.
 # Все кубы успешны → -1.
 static func _best_die_for_bonus(dice: Array, threshold: int = SUCCESS_MIN) -> int:
@@ -163,9 +192,21 @@ static func _die_successes(
 ## Результат проверки с пост-бросковыми модификаторами: применяет addToDie к копии
 ## кубов, считает успехи с convertDie. skill (если задан) отсекает моды «не своего»
 ## навыка (карты боя на чужой шаг). { dice (модиф.), successes, passed }.
+##
+## add_targets: null → addToDie раскидывается ЖАДНО (симулятор, оценка). Массив (в т.ч.
+## пустой) → игрок выбирает кубы сам: +бонус только на targets, остальные заряды ждут
+## тапа (в игре — CheckFlow передаёт c.add_targets).
 static func result_with(
-	dice: Array, mods: Array, skill: String = "", threshold: int = SUCCESS_MIN
+	dice: Array,
+	mods: Array,
+	skill: String = "",
+	threshold: int = SUCCESS_MIN,
+	add_targets: Variant = null
 ) -> Dictionary:
-	var modded: Array = apply_add_to_die(dice, mods, skill, threshold)
+	var modded: Array
+	if add_targets == null:
+		modded = apply_add_to_die(dice, mods, skill, threshold)
+	else:
+		modded = apply_add_to_die_at(dice, mods, skill, add_targets as Array)
 	var s: int = count_successes_with(modded, mods, skill, threshold)
 	return {"dice": modded, "successes": s, "passed": s >= PASS_MIN}

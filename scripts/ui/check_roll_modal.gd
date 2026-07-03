@@ -20,6 +20,7 @@ var _apply_btn: Button
 var _sig: String = ""
 var _last_dice: Array = []
 var _last_can: bool = false
+var _last_add: bool = false  # доступность +1 (addToDie) — тоже влияет на кликабельность
 var _last_nonce: int = 0  # метка последнего отрисованного переброса (CheckFlow.reroll_nonce)
 
 
@@ -199,20 +200,22 @@ func _render_dice() -> void:
 		return
 	var dice: Array = _chk().get("dice", [])
 	var can: bool = _can_reroll()
+	var add: bool = GameState.can_add_die_now(_reck_mode())  # заряжен +1 → кубы < 6 кликабельны
 	var nonce: int = int(_chk().get("reroll_nonce", 0))
 	if dice != _last_dice:
 		var prev: Array = _last_dice
 		var diff: int = _single_diff(prev, dice)
 		_last_dice = dice.duplicate()
 		if prev.is_empty():
-			_tray.play_roll(dice, can)
+			_tray.play_roll(dice, can, add)
 		elif diff >= 0:
-			_tray.reroll_die(diff, int(dice[diff]), can)
+			_tray.reroll_die(diff, int(dice[diff]), can, add)
 		elif prev.size() == dice.size():
-			_tray.play_roll(dice, can)
+			_tray.play_roll(dice, can, add)
 		else:
-			_tray.show_roll(dice, can)
+			_tray.show_roll(dice, can, add)
 		_last_can = can
+		_last_add = add
 		_last_nonce = nonce
 	elif nonce != _last_nonce:
 		# Переброс выпал в ТО ЖЕ значение: массив кубов не изменился, но фокус потрачен
@@ -220,12 +223,14 @@ func _render_dice() -> void:
 		# «смазанным»/съеденным (фокус ушёл, куб не дёрнулся).
 		var ri: int = int(_chk().get("reroll_index", -1))
 		if ri >= 0 and ri < dice.size():
-			_tray.reroll_die(ri, int(dice[ri]), can)
+			_tray.reroll_die(ri, int(dice[ri]), can, add)
 		_last_can = can
+		_last_add = add
 		_last_nonce = nonce
-	elif can != _last_can:
-		_tray.show_roll(dice, can)
+	elif can != _last_can or add != _last_add:
+		_tray.show_roll(dice, can, add)
 		_last_can = can
+		_last_add = add
 
 
 func _single_diff(a: Array, b: Array) -> int:

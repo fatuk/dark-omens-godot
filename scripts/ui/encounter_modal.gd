@@ -29,6 +29,7 @@ var _tray: DiceTray  # единый лоток, создаётся лениво 
 var _last_dice: Array = []  # последний показанный бросок (спин — только на свежем)
 var _last_nonce: int = 0  # метка последнего отрисованного переброса (CheckFlow.reroll_nonce)
 var _last_can: bool = false  # последняя кликабельность кубов (обновление без смены кубов)
+var _last_add: bool = false  # последняя доступность +1 (addToDie) — тоже меняет кликабельность
 var _pending_n: int = -1  # сколько рубашек показано до броска
 # Пока есть перебросы (концентрация), исход ПРОВАЛА скрыт, чтобы не спойлить до
 # решения перебросить/принять. true → игрок «принял» (раскрыл) текущий провал.
@@ -369,6 +370,7 @@ func _show_dice_result(res: Dictionary) -> void:
 	# Тапом перебросить можно ТОЛЬКО бесплатно (карта) или заряженным жетоном.
 	# Концентрация/улика — лишь через розыгрыш жетона. После «принятия» (_revealed) — нет.
 	var can: bool = GameState.can_reroll_now() and not committed and not _revealed
+	var add: bool = GameState.can_add_die_now() and not committed and not _revealed
 	var nonce: int = int(res.get("reroll_nonce", 0))
 	if dice != _last_dice:
 		var prev: Array = _last_dice
@@ -376,28 +378,31 @@ func _show_dice_result(res: Dictionary) -> void:
 		_last_dice = dice.duplicate()
 		_pending_n = -1
 		if prev.is_empty():
-			_tray.play_roll(dice, can)  # первый бросок — спин всех
+			_tray.play_roll(dice, can, add)  # первый бросок — спин всех
 		elif diff >= 0:
-			_tray.reroll_die(diff, int(dice[diff]), can)  # переброс одного — крутится он
+			_tray.reroll_die(diff, int(dice[diff]), can, add)  # переброс одного — крутится он
 		elif prev.size() == dice.size():
-			_tray.play_roll(dice, can)  # тот же размер, изменилось несколько → reroll-all (спин всех)
+			_tray.play_roll(dice, can, add)  # тот же размер, изменилось несколько → reroll-all (спин)
 		else:
-			_tray.show_roll(dice, can)  # размер изменился (докинули кубы) → статикой
+			_tray.show_roll(dice, can, add)  # размер изменился (докинули кубы) → статикой
 		_last_can = can
+		_last_add = add
 		_last_nonce = nonce
 	elif nonce != _last_nonce:
 		# Переброс в ТО ЖЕ значение: массив не изменился, но nonce вырос — крутим
 		# затронутый куб, иначе клик «съеденный» (фокус ушёл, куб не дёрнулся).
 		var ri: int = int(res.get("reroll_index", -1))
 		if ri >= 0 and ri < dice.size():
-			_tray.reroll_die(ri, int(dice[ri]), can)
+			_tray.reroll_die(ri, int(dice[ri]), can, add)
 		_last_can = can
+		_last_add = add
 		_last_nonce = nonce
-	elif can != _last_can:
-		# Кубы те же, но кликабельность изменилась (активировали карту-переброс
+	elif can != _last_can or add != _last_add:
+		# Кубы те же, но кликабельность изменилась (активировали карту-переброс/+1
 		# после броска) — обновляем лоток, иначе кубик не нажать.
-		_tray.show_roll(dice, can)
+		_tray.show_roll(dice, can, add)
 		_last_can = can
+		_last_add = add
 	_dice_holder.visible = true
 	# Строку-итог «успехов: N · перетащите жетон…» убрали — кубы говорят сами за себя.
 	_dice.visible = false

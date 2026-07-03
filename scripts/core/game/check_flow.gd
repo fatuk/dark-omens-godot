@@ -56,6 +56,7 @@ func make_check(
 		"reroll_all_allowance": 0,
 		"reroll_all_used": 0,
 		"exhausted_cards": [],
+		"add_targets": [],  # кубы, на которые игрок положил +1 от addToDie (тапом)
 	}
 
 
@@ -183,6 +184,52 @@ func die_is_rerollable(pid: String, die_index: int, c: Dictionary = {}) -> bool:
 	return not Dice.is_success(int(shown[die_index]), _threshold(c))
 
 
+## Сколько зарядов +1 (addToDie) ещё не положено на кубы: всего зарядов из карт
+## минус уже распределённых (add_targets). 0 → добавлять нечего.
+func add_available(c: Dictionary = {}) -> int:
+	if c.is_empty():
+		c = _gs.active_check
+	if c.is_empty() or not bool(c.get("rolled", false)):
+		return 0
+	var total: int = Dice.add_charges(c.get("active_mods", []), String(c.get("skill", ""))).size()
+	return maxi(0, total - (c.get("add_targets", []) as Array).size())
+
+
+## UI-валидация (без мутаций): можно ли положить +1 на ЭТОТ куб — есть свободный заряд
+## и куб ещё не «шестёрка» (< SIDES). В отличие от переброса, применимо и к успешным
+## кубам (5→6 ради карт, которым нужны шестёрки). Зеркалит гард apply_add_die.
+func die_can_add(pid: String, die_index: int, c: Dictionary = {}) -> bool:
+	if c.is_empty():
+		c = _gs.active_check
+	if c.is_empty() or String(c.get("pid", "")) != pid or not bool(c.get("rolled", false)):
+		return false
+	if add_available(c) <= 0:
+		return false
+	var shown: Array = c.get("dice", c.get("base", []))
+	if die_index < 0 or die_index >= shown.size():
+		return false
+	return int(shown[die_index]) < Dice.SIDES
+
+
+## Хост: положить +1 (addToDie) на выбранный игроком куб. Заряд один — куб любой < 6.
+## Пересчёт идемпотентен (dice выводится из base + active_mods + add_targets). true —
+## заряд лёг и разослан.
+func add_die(pid: String, die_index: int, c: Dictionary = {}) -> bool:
+	if c.is_empty():
+		c = _gs.active_check
+	if not die_can_add(pid, die_index, c):
+		return false
+	var targets: Array = c.get("add_targets", [])
+	targets.append(die_index)
+	c["add_targets"] = targets
+	_set_roll(c, c.get("base", []))
+	# reroll_nonce/index — чтобы лоток анимировал изменившийся куб (как при перебросе).
+	c["reroll_nonce"] = int(c.get("reroll_nonce", 0)) + 1
+	c["reroll_index"] = die_index
+	_sync()
+	return true
+
+
 ## Хост: применить карту руки (item_index) к активной проверке (тап в вееро). Любая
 ## карта применяется вручную — иммерсивно: и action (по выбору), и пассивы whileOwned
 ## (.38 Revolver, Lucky Ring). Способность правит бросок; карта оплачивается/истощается.
@@ -292,8 +339,14 @@ func activate(pid: String, item_index: int) -> bool:
 # Выставить результат из сырых кубов base + active_mods (идемпотентно: dice/успехи
 # всегда выводятся из base, addToDie не накапливается).
 func _set_roll(c: Dictionary, base: Array) -> void:
+	# add_targets (даже пустой) → addToDie кладётся ТОЛЬКО на выбранные игроком кубы,
+	# без жадности: незаряженные +1 ждут тапа (apply_add_die).
 	var r: Dictionary = Dice.result_with(
-		base, c.get("active_mods", []), String(c.get("skill", "")), _threshold(c)
+		base,
+		c.get("active_mods", []),
+		String(c.get("skill", "")),
+		_threshold(c),
+		c.get("add_targets", [])
 	)
 	c["base"] = base
 	c["dice"] = r.get("dice", base)

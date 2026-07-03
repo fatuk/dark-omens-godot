@@ -154,3 +154,34 @@ func test_result_with_combines_add_and_count() -> void:
 	assert_eq(r["dice"], [5, 1], "addToDie применён к копии")
 	assert_eq(int(r["successes"]), 1, "доведённый до 5 куб — успех")
 	assert_true(bool(r["passed"]))
+
+
+# ── addToDie: выбор куба игроком (add_targets) ────────────────────────────────
+func test_add_charges_flattens_amount_per_die() -> void:
+	var charges: Array = Dice.add_charges(
+		[{"do": "addToDie", "amount": 2, "count": 3}, {"do": "addToDie", "amount": 1, "count": 1}]
+	)
+	assert_eq(charges, [2, 2, 2, 1], "count кубов × amount, плоским списком")
+
+
+func test_apply_add_to_die_at_targets_chosen_die() -> void:
+	# Заряд i (add_charges) идёт на куб targets[i]; жадности нет.
+	var out: Array = Dice.apply_add_to_die_at(
+		[2, 5, 3], [{"do": "addToDie", "amount": 1, "count": 1}], "", [1]
+	)
+	assert_eq(out, [2, 6, 3], "+1 лёг на выбранный куб 5→6, остальные не тронуты")
+
+
+func test_apply_add_to_die_at_caps_at_six() -> void:
+	var out: Array = Dice.apply_add_to_die_at(
+		[6], [{"do": "addToDie", "amount": 3, "count": 1}], "", [0]
+	)
+	assert_eq(out, [6], "не выше SIDES")
+
+
+func test_result_with_targets_ignores_greedy() -> void:
+	# add_targets=[] → addToDie НЕ раскидывается жадно (ждёт тапа), в отличие от null.
+	var r: Dictionary = Dice.result_with(
+		[4, 1], [{"do": "addToDie", "amount": 1, "count": 1}], "", Dice.SUCCESS_MIN, []
+	)
+	assert_eq(r["dice"], [4, 1], "без выбранных кубов +1 не применяется")

@@ -419,3 +419,38 @@ func test_activate_glamour_aura() -> void:
 	for m_v: Variant in _gs.active_check["active_mods"]:
 		verbs.append(String((m_v as Dictionary).get("do", "")))
 	assert_has(verbs, "rerollDice", "аура glamour в active_mods")
+
+
+# ── addToDie: заряд + тап по кубу (add_die / die_can_add) ──────────────────────
+func test_add_available_counts_unassigned_charges() -> void:
+	_player()
+	_rolled({"active_mods": [{"do": "addToDie", "amount": 1, "count": 1}]})
+	assert_eq(_cf.add_available(_gs.active_check), 1, "один заряд addToDie свободен")
+	assert_true(_cf.add_die("p", 0), "тап кладёт +1 на куб 0")
+	assert_eq(_cf.add_available(_gs.active_check), 0, "заряд израсходован")
+
+
+func test_add_die_pushes_five_to_six() -> void:
+	# База [2,5]: куб-5 (успех) можно улучшить до 6 — для карт, которым нужны шестёрки.
+	_player()
+	_rolled(
+		{
+			"base": [2, 5],
+			"dice": [2, 5],
+			"active_mods": [{"do": "addToDie", "amount": 1, "count": 1}],
+		}
+	)
+	assert_true(_cf.die_can_add("p", 1, _gs.active_check), "куб 5 (< 6) можно улучшить")
+	assert_true(_cf.add_die("p", 1))
+	assert_eq(_gs.active_check["dice"], [2, 6], "5→6 на выбранном кубе")
+
+
+func test_die_can_add_rejects_six_and_no_charges() -> void:
+	_player()
+	# Куб уже 6 — улучшать некуда, даже с зарядом.
+	_rolled({"base": [6, 2], "dice": [6, 2], "active_mods": [{"do": "addToDie", "count": 1}]})
+	assert_false(_cf.die_can_add("p", 0, _gs.active_check), "шестёрку не улучшить")
+	assert_true(_cf.die_can_add("p", 1, _gs.active_check), "куб 2 — можно")
+	# Без addToDie-мода зарядов нет.
+	_rolled({"base": [2, 3], "dice": [2, 3], "active_mods": []})
+	assert_false(_cf.die_can_add("p", 0, _gs.active_check), "нет заряда — нельзя")

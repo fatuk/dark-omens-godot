@@ -501,6 +501,11 @@ func reroll_encounter(die_index: int, currency: String = "") -> void:
 ## тратится ИМЕННО эта валюта (один раз). Без жетона — только БЕСПЛАТНЫЙ переброс от
 ## карт (concentration/улика без розыгрыша жетона не тратятся). Маршрут по владельцу.
 func reroll_die(die_index: int) -> void:
+	# Приоритет: если заряжен +1 (addToDie) и куб можно улучшить (< 6) — кладём +1
+	# на этот куб, а не перебрасываем. Игрок зарядил карту осознанно; сперва тратим её.
+	if _check.die_can_add(_nm.my_user_id, die_index, active_check):
+		_add_die(die_index)
+		return
 	# Гард ДО списания заряда: клик по НЕперебрасываемому кубу (успех по порогу
 	# проверки / вне диапазона / ещё не брошено) не должен «съедать» заряженный жетон
 	# и засчитывать попытку. Валидируем по ЖИВОМУ active_check — как сделает хост.
@@ -536,6 +541,32 @@ func can_reroll_now() -> bool:
 		return false
 	var free: int = int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0))
 	return free > 0 or not pending_reroll_currency.is_empty()
+
+
+# Приватный фасад: положить +1 (addToDie) на куб активной проверки. Хост применяет
+# сразу; клиент шлёт намерение. Зовётся из reroll_die (приоритет тапа над рероллом).
+func _add_die(die_index: int) -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_check.add_die(my_pid, die_index)
+	else:
+		_nm.relay_all({"action": RelayActions.ADD_DIE, "pid": my_pid, "die": die_index})
+
+
+# То же для проверки Расплаты (per-player слот).
+func _reckoning_add_die(die_index: int) -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_check.add_die(my_pid, die_index, _reckoning_slot(my_pid))
+	else:
+		_nm.relay_all({"action": RelayActions.RECKONING_ADD_DIE, "pid": my_pid, "die": die_index})
+
+
+## Есть ли незаряженный +1 (addToDie) — куб можно улучшить тапом. reckoning=true —
+## для проверки Расплаты (per-player слот), иначе active_check. Для кликабельности в UI.
+func can_add_die_now(reckoning: bool = false) -> bool:
+	var c: Dictionary = _reckoning_slot(_nm.my_user_id) if reckoning else active_check
+	return _check.add_available(c) > 0
 
 
 ## Есть ли ВООБЩЕ чем перебросить (бесплатно / концентрация / улика) — для скрытия
@@ -764,6 +795,10 @@ func reckoning_check_roll() -> void:
 ## Переброс куба своей проверки Расплаты (тап по кубу). Маршрут валюты как reroll_die.
 func reckoning_reroll_die(die_index: int) -> void:
 	var my_pid: String = _nm.my_user_id
+	# Приоритет +1 (addToDie), как в reroll_die.
+	if _check.die_can_add(my_pid, die_index, _reckoning_slot(my_pid)):
+		_reckoning_add_die(die_index)
+		return
 	# Тот же гард, что и в reroll_die: не тратим заряд жетона на клик по
 	# неперебрасываемому кубу своей проверки Расплаты (успех по порогу / вне диапазона).
 	if not _check.die_is_rerollable(my_pid, die_index, _reckoning_slot(my_pid)):
@@ -1388,10 +1423,12 @@ func _build_action_registry() -> void:
 	_relay_actions[RelayActions.SPELL_CAST_APPLY] = _act_spell_cast_apply
 	_relay_actions[RelayActions.CHECK_ROLL] = _act_check_roll
 	_relay_actions[RelayActions.CHECK_REROLL] = _act_check_reroll
+	_relay_actions[RelayActions.ADD_DIE] = _act_add_die
 	_relay_actions[RelayActions.RESOLVE_PENDING_CHECK] = _act_resolve_pending_check
 	_relay_actions[RelayActions.RECKONING_ROLL] = _act_reckoning_roll
 	_relay_actions[RelayActions.RECKONING_REROLL] = _act_reckoning_reroll
 	_relay_actions[RelayActions.RECKONING_REROLL_ALL] = _act_reckoning_reroll_all
+	_relay_actions[RelayActions.RECKONING_ADD_DIE] = _act_reckoning_add_die
 	_relay_actions[RelayActions.RECKONING_APPLY] = _act_reckoning_apply
 	_relay_actions[RelayActions.CAST_TRIGGER_SPELLS] = _act_cast_trigger_spells
 	_relay_actions[RelayActions.DISMISS_CAST_RESULT] = _act_dismiss_cast_result
@@ -1492,6 +1529,15 @@ func _act_resolve_pending_check(d: Dictionary) -> void:
 func _act_reckoning_roll(d: Dictionary) -> void:
 	var rp: String = String(d.get("pid", ""))
 	_check.roll(rp, _reckoning_slot(rp))
+
+
+func _act_add_die(d: Dictionary) -> void:
+	_check.add_die(String(d.get("pid", "")), int(d.get("die", -1)))
+
+
+func _act_reckoning_add_die(d: Dictionary) -> void:
+	var rp: String = String(d.get("pid", ""))
+	_check.add_die(rp, int(d.get("die", -1)), _reckoning_slot(rp))
 
 
 func _act_reckoning_reroll(d: Dictionary) -> void:
@@ -1652,103 +1698,28 @@ func locations() -> Array:
 
 
 # ── Debug (только dev-сборка + хост) ──────────────────────────────────────────
-# Единая точка для GameConsole. Держим ОДНИМ публичным методом (max-public-methods):
-# разбор команд/резолв id — на стороне консоли, сюда приходит op + готовые id.
-# Мутации идут ТЕМ ЖЕ хост-путём, что геймплей, и синкают всем; гейт `_debug_ok()`
-# двойной (релиз ИЛИ не-хост → no-op). Возврат — человекочитаемый статус.
-# op: mypid | give_asset | give_spell | spawn | gate | condition.
-
-
+# Единая точка для GameConsole. Разбор команд/резолв id — на стороне консоли, сюда
+# приходит op + готовые id. Мутации (DebugGrant) идут ТЕМ ЖЕ хост-путём, что геймплей,
+# и синкают всем; гейт двойной (релиз ИЛИ не-хост → no-op). op: mypid | give_asset |
+# give_spell | spawn | gate | condition.
 func debug_exec(op: String, a: String = "", b: String = "") -> String:
+	if op == "mypid":
+		return _nm.my_user_id
+	if not (OS.is_debug_build() and _is_host()):
+		return "debug-выдача только на хосте (dev-сборка)"
 	match op:
-		"mypid":
-			return _nm.my_user_id
 		"give_asset":
-			return _debug_give_asset(a, b)
+			return DebugGrant.give_asset(self, a, b)
 		"give_spell":
-			return _debug_give_spell(a, b)
+			return DebugGrant.give_spell(self, a, b)
 		"spawn":  # a=локация, b=монстр
-			return _debug_spawn_monster(a, b)
+			return DebugGrant.spawn_monster(self, a, b)
 		"gate":  # a=локация, b=цвет
-			return _debug_open_gate(a, b)
+			return DebugGrant.open_gate(self, a, b)
 		"condition":
-			return _debug_gain_condition(a, b)
+			return DebugGrant.gain_condition(self, a, b)
 		_:
 			return "неизвестная debug-операция «%s»" % op
-
-
-func _debug_ok() -> bool:
-	return OS.is_debug_build() and _is_host()
-
-
-func _debug_give_asset(pid: String, asset_id: String) -> String:
-	if not _debug_ok():
-		return "debug-выдача только на хосте (dev-сборка)"
-	if not players.has(pid):
-		return "нет игрока «%s»" % pid
-	if AssetCatalog.by_id(asset_id).is_empty():
-		return "нет актива «%s»" % asset_id
-	_cond.host_grant_asset(pid, asset_id)  # с onGain-эффектами
-	_broadcast_and_emit()
-	return "актив «%s» → %s" % [asset_id, _name_of(pid)]
-
-
-func _debug_give_spell(pid: String, spell_id: String) -> String:
-	if not _debug_ok():
-		return "debug-выдача только на хосте (dev-сборка)"
-	if not players.has(pid):
-		return "нет игрока «%s»" % pid
-	if SpellCatalog.by_id(spell_id).is_empty():
-		return "нет заклинания «%s»" % spell_id
-	_spell.grant_spell(pid, spell_id)
-	_broadcast_and_emit()
-	return "заклинание «%s» → %s" % [spell_id, _name_of(pid)]
-
-
-# Конкретный монстр на локации — в обход мешка (нужен именно этот id). Стойкость
-# по размеру партии, как штатный спаун.
-func _debug_spawn_monster(loc_id: String, monster_id: String) -> String:
-	if not _debug_ok():
-		return "debug-выдача только на хосте (dev-сборка)"
-	if loc_id.is_empty():
-		return "не указана локация"
-	var m: Dictionary = MonsterCatalog.by_id(monster_id)
-	if m.is_empty():
-		return "нет монстра «%s»" % monster_id
-	var hp: int = maxi(1, MonsterCatalog.toughness_for(m, _campaign.balance_player_count()))
-	var arr: Array = monsters.get(loc_id, [])
-	arr.append({"id": monster_id, "health": hp})
-	monsters[loc_id] = arr
-	_broadcast_and_emit()
-	return "монстр «%s» (стойк. %d) на %s" % [monster_id, hp, loc_id]
-
-
-# Пустая loc → случайный свободный гейт-спейс; явная → форсит на любой локации.
-func _debug_open_gate(loc_id: String, color: String) -> String:
-	if not _debug_ok():
-		return "debug-выдача только на хосте (dev-сборка)"
-	var opened: String = _board.open_gate(loc_id, color)  # сам спаунит монстра
-	if opened.is_empty():
-		return "врата не открылись (нет свободных гейт-локаций?)"
-	_broadcast_and_emit()
-	return "врата на %s" % opened
-
-
-func _debug_gain_condition(pid: String, cid: String) -> String:
-	if not _debug_ok():
-		return "debug-выдача только на хосте (dev-сборка)"
-	if not players.has(pid):
-		return "нет игрока «%s»" % pid
-	if Conditions.get_def(cid).is_empty():
-		return "нет состояния «%s»" % cid
-	var p: Dictionary = players[pid]
-	var conds: Array = p.get("conditions", [])
-	if conds.has(cid):
-		return "%s уже имеет «%s»" % [_name_of(pid), cid]
-	conds.append(cid)
-	p["conditions"] = conds
-	_broadcast_and_emit()
-	return "состояние «%s» → %s" % [cid, _name_of(pid)]
 
 
 ## Узнать, моя ли очередь на встречу (только для phase=encounter).
