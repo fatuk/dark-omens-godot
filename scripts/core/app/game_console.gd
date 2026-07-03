@@ -73,12 +73,12 @@ func _build_ui() -> void:
 	_root.visible = false
 	add_child(_root)
 
-	# Панель: нижние 30% экрана, начальные смещения = 0
+	# Панель: нижняя половина экрана, начальные смещения = 0
 	_panel = PanelContainer.new()
 	_panel.name = "Panel"
 	_panel.anchor_left = 0.0
 	_panel.anchor_right = 1.0
-	_panel.anchor_top = 0.70
+	_panel.anchor_top = 0.50
 	_panel.anchor_bottom = 1.0
 	_panel.offset_left = 0
 	_panel.offset_right = 0
@@ -160,7 +160,7 @@ func _toggle() -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
 
-	var panel_h: float = get_viewport().get_visible_rect().size.y * 0.30
+	var panel_h: float = get_viewport().get_visible_rect().size.y * 0.50
 
 	if _shown:
 		# Сдвигаем панель вниз за экран перед показом
