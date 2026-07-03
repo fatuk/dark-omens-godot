@@ -1651,6 +1651,106 @@ func locations() -> Array:
 	return _load_locations()
 
 
+# ── Debug (только dev-сборка + хост) ──────────────────────────────────────────
+# Единая точка для GameConsole. Держим ОДНИМ публичным методом (max-public-methods):
+# разбор команд/резолв id — на стороне консоли, сюда приходит op + готовые id.
+# Мутации идут ТЕМ ЖЕ хост-путём, что геймплей, и синкают всем; гейт `_debug_ok()`
+# двойной (релиз ИЛИ не-хост → no-op). Возврат — человекочитаемый статус.
+# op: mypid | give_asset | give_spell | spawn | gate | condition.
+
+
+func debug_exec(op: String, a: String = "", b: String = "") -> String:
+	match op:
+		"mypid":
+			return _nm.my_user_id
+		"give_asset":
+			return _debug_give_asset(a, b)
+		"give_spell":
+			return _debug_give_spell(a, b)
+		"spawn":  # a=локация, b=монстр
+			return _debug_spawn_monster(a, b)
+		"gate":  # a=локация, b=цвет
+			return _debug_open_gate(a, b)
+		"condition":
+			return _debug_gain_condition(a, b)
+		_:
+			return "неизвестная debug-операция «%s»" % op
+
+
+func _debug_ok() -> bool:
+	return OS.is_debug_build() and _is_host()
+
+
+func _debug_give_asset(pid: String, asset_id: String) -> String:
+	if not _debug_ok():
+		return "debug-выдача только на хосте (dev-сборка)"
+	if not players.has(pid):
+		return "нет игрока «%s»" % pid
+	if AssetCatalog.by_id(asset_id).is_empty():
+		return "нет актива «%s»" % asset_id
+	_cond.host_grant_asset(pid, asset_id)  # с onGain-эффектами
+	_broadcast_and_emit()
+	return "актив «%s» → %s" % [asset_id, _name_of(pid)]
+
+
+func _debug_give_spell(pid: String, spell_id: String) -> String:
+	if not _debug_ok():
+		return "debug-выдача только на хосте (dev-сборка)"
+	if not players.has(pid):
+		return "нет игрока «%s»" % pid
+	if SpellCatalog.by_id(spell_id).is_empty():
+		return "нет заклинания «%s»" % spell_id
+	_spell.grant_spell(pid, spell_id)
+	_broadcast_and_emit()
+	return "заклинание «%s» → %s" % [spell_id, _name_of(pid)]
+
+
+# Конкретный монстр на локации — в обход мешка (нужен именно этот id). Стойкость
+# по размеру партии, как штатный спаун.
+func _debug_spawn_monster(loc_id: String, monster_id: String) -> String:
+	if not _debug_ok():
+		return "debug-выдача только на хосте (dev-сборка)"
+	if loc_id.is_empty():
+		return "не указана локация"
+	var m: Dictionary = MonsterCatalog.by_id(monster_id)
+	if m.is_empty():
+		return "нет монстра «%s»" % monster_id
+	var hp: int = maxi(1, MonsterCatalog.toughness_for(m, _campaign.balance_player_count()))
+	var arr: Array = monsters.get(loc_id, [])
+	arr.append({"id": monster_id, "health": hp})
+	monsters[loc_id] = arr
+	_broadcast_and_emit()
+	return "монстр «%s» (стойк. %d) на %s" % [monster_id, hp, loc_id]
+
+
+# Пустая loc → случайный свободный гейт-спейс; явная → форсит на любой локации.
+func _debug_open_gate(loc_id: String, color: String) -> String:
+	if not _debug_ok():
+		return "debug-выдача только на хосте (dev-сборка)"
+	var opened: String = _board.open_gate(loc_id, color)  # сам спаунит монстра
+	if opened.is_empty():
+		return "врата не открылись (нет свободных гейт-локаций?)"
+	_broadcast_and_emit()
+	return "врата на %s" % opened
+
+
+func _debug_gain_condition(pid: String, cid: String) -> String:
+	if not _debug_ok():
+		return "debug-выдача только на хосте (dev-сборка)"
+	if not players.has(pid):
+		return "нет игрока «%s»" % pid
+	if Conditions.get_def(cid).is_empty():
+		return "нет состояния «%s»" % cid
+	var p: Dictionary = players[pid]
+	var conds: Array = p.get("conditions", [])
+	if conds.has(cid):
+		return "%s уже имеет «%s»" % [_name_of(pid), cid]
+	conds.append(cid)
+	p["conditions"] = conds
+	_broadcast_and_emit()
+	return "состояние «%s» → %s" % [cid, _name_of(pid)]
+
+
 ## Узнать, моя ли очередь на встречу (только для phase=encounter).
 ## Встречи проходят последовательно по turn_order.
 func is_my_encounter_turn() -> bool:

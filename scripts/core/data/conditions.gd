@@ -64,6 +64,12 @@ static func get_def(id: String) -> Dictionary:
 	return _by_id.get(id, {})
 
 
+## Все id состояний (для автодополнения/списка в debug-консоли).
+static func all_ids() -> Array:
+	_ensure_loaded()
+	return _by_id.keys()
+
+
 ## Вид состояния (injury/madness/…) по id.
 static func kind_of(id: String) -> String:
 	return String(get_def(id).get("kind", ""))
