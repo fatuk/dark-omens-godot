@@ -31,3 +31,30 @@ func test_apply_combat_reduce() -> void:
 	assert_eq(
 		AssetCatalog.apply_combat_reduce(3, {"amount": 0, "min": 1}), 3, "amount 0 → не трогаем"
 	)
+
+
+# ── is_supported: фильтр пула выдачи (только полностью рабочие карты) ──────────
+func test_is_supported_classifies_cards() -> void:
+	assert_true(
+		AssetCatalog.is_supported(AssetCatalog.by_id("arcane_scholar")),
+		"improveSkill+rerollDice без слепых слотов — поддержана"
+	)
+	assert_true(
+		AssetCatalog.is_supported(AssetCatalog.by_id("handcuffs")),
+		"только боевой триггер (defeatMonster) — поддержана"
+	)
+	assert_false(
+		AssetCatalog.is_supported(AssetCatalog.by_id("bandages")), "preventLoss — не поддержана"
+	)
+	assert_false(
+		AssetCatalog.is_supported(AssetCatalog.by_id("arcane_tome")),
+		"triggered on:rest не диспатчится — не поддержана"
+	)
+
+
+func test_supported_ids_excludes_unsupported() -> void:
+	var ids: Array = AssetCatalog.supported_ids()
+	assert_has(ids, "arcane_scholar")
+	assert_does_not_have(ids, "bandages")
+	assert_does_not_have(ids, "arcane_tome")
+	assert_true(ids.size() > 120, "большинство карт (131) поддержано: %d" % ids.size())

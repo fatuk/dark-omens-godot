@@ -207,6 +207,118 @@ static func apply_combat_reduce(base: int, reduce: Dictionary) -> int:
 	return maxi(int(reduce.get("min", 0)), base - amt)
 
 
+# Verb'ы, которые движок реально исполняет (для фильтра пула выдачи, is_supported).
+# Пополняется по мере реализации механик — карта включается в игру САМА. См.
+# docs/asset-effects-support (аудит) и check-pipeline.
+const _SUPPORTED_VERBS := [
+	# конвейер проверок
+	"improveSkill",
+	"impairSkill",
+	"rollAdditionalDice",
+	"addToDie",
+	"convertDie",
+	"rerollDice",
+	"minDice",
+	"substituteSkill",
+	# эффекты на сыщика
+	"gainClue",
+	"loseClue",
+	"spendClue",
+	"gainCondition",
+	"loseCondition",
+	"gainAsset",
+	"loseAsset",
+	"gainSpell",
+	"loseSpell",
+	"gainArtifact",
+	"gainImprovement",
+	"loseImprovement",
+	"loseAllPossessions",
+	"gainFocus",
+	"loseFocus",
+	"healHealth",
+	"healSanity",
+	"loseHealth",
+	"loseSanity",
+	"becomeDelayed",
+	"extraAction",
+	"move",
+	"addSuccesses",
+	"text",
+	"discardCard",
+	# эффекты поля
+	"openGate",
+	"closeGate",
+	"spawnMonster",
+	"discardMonster",
+	"damageMonster",
+	"advanceDoom",
+	"advanceOmen",
+	"moveOmen",
+	"retreatDoom",
+	"placeClue",
+	"placeRumor",
+	"placeEldritchToken",
+	"giveAsset",
+	"giveClue",
+	# боевая митигация / пассивы
+	"reduceMonsterDamage",
+	"reduceMonsterHorror",
+	"protectResource",
+	"immuneTo",
+	"substituteResource",
+	# боевой триггер (on:combatEncounter)
+	"defeatMonster",
+]
+
+
+## Полностью ли поддержаны ВСЕ эффекты карты — для фильтра пула выдачи (магазин /
+## случайный gainAsset). Слото-осознанно: triggered с on!=combatEncounter и onReckoning
+## НЕ срабатывают → карта не поддержана; verb'ы в поддержанных слотах (whileOwned/action/
+## onGain/боевой триггер) должны быть в _SUPPORTED_VERBS. Самоподдерживающийся: реализуем
+## verb или событийный слот → карта включается САМА, без ручных пометок.
+static func is_supported(a: Dictionary) -> bool:
+	var eff: Dictionary = a.get("effect", {})
+	if not (eff.get("onReckoning", []) as Array).is_empty():
+		return false
+	for t_v: Variant in eff.get("triggered", []):
+		var t: Dictionary = t_v
+		if String(t.get("on", "")) != "combatEncounter":
+			return false  # не-боевой триггер пока не диспатчится
+		if not _verbs_supported(t.get("do", [])):
+			return false
+	for slot: String in ["whileOwned", "action", "onGain"]:
+		if not _verbs_supported(eff.get(slot, [])):
+			return false
+	return true
+
+
+# Рекурсивно: все do-verb'ы узла из _SUPPORTED_VERBS.
+static func _verbs_supported(node: Variant) -> bool:
+	if node is Dictionary:
+		var do_v: Variant = (node as Dictionary).get("do", null)
+		if do_v is String and not _SUPPORTED_VERBS.has(do_v):
+			return false
+		for k: Variant in node:
+			if not _verbs_supported((node as Dictionary)[k]):
+				return false
+	elif node is Array:
+		for x: Variant in node:
+			if not _verbs_supported(x):
+				return false
+	return true
+
+
+## id всех ПОДДЕРЖАННЫХ активов (для пула выдачи — магазин/случайный gainAsset).
+static func supported_ids() -> Array:
+	var out: Array = []
+	for a_v: Variant in all():
+		var a: Dictionary = a_v
+		if is_supported(a):
+			out.append(String(a.get("id", "")))
+	return out
+
+
 ## Активируемые сейчас ноды — только слот action (по контексту). Пассивы whileOwned
 ## применяются автоматически (passive_check_mods), не через активацию.
 static func activatable_mods(a: Dictionary, context: String) -> Array:

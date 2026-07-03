@@ -1115,7 +1115,9 @@ func _draw_shop_assets(n: int) -> void:
 	var pool: Array = []
 	for a in AssetCatalog.all():
 		var aid: String = String((a as Dictionary).get("id", ""))
-		if not aid.is_empty() and not taken.has(aid):
+		# Только ПОЛНОСТЬЮ поддержанные карты попадают в витрину — карты с ещё не
+		# реализованными эффектами вводим в игру, когда допилим их (AssetCatalog.is_supported).
+		if not aid.is_empty() and not taken.has(aid) and AssetCatalog.is_supported(a):
 			pool.append(aid)
 	pool.shuffle()
 	for i: int in mini(n, pool.size()):
