@@ -563,6 +563,8 @@ func _fan_open() -> bool:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if GameConsole.is_open():
+		return  # консоль открыта — не зумим/не таскаем/не кликаем карту, пока печатаешь
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		match mb.button_index:
