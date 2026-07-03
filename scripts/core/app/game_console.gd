@@ -463,7 +463,7 @@ func _category_cands() -> Array:
 
 func _on_command_submitted(text: String) -> void:
 	_input_line.clear()
-	_input_line.grab_focus()  # держим фокус для цепочки команд
+	_input_line.grab_focus.call_deferred()  # держим фокус для цепочки команд (idle — иначе не липнет)
 	_hide_suggestions()
 	var line: String = text.strip_edges()
 	if line.is_empty():
@@ -494,7 +494,7 @@ func _on_command_submitted(text: String) -> void:
 		_:
 			err("неизвестная команда «%s» — введите `help`" % cmd)
 	_scroll_bottom_deferred()  # вывод команды мог добавить строки — промотать вниз
-	_input_line.grab_focus()  # вернуть фокус: можно сразу продолжать ввод
+	# фокус вернётся отложенным grab_focus выше (call_deferred, после диспатча)
 
 
 func _cmd_help() -> void:
