@@ -520,8 +520,10 @@ func is_open() -> bool:
 func _input(event: InputEvent) -> void:
 	# Tab — открыть/закрыть (перехватываем до ui_focus_next). Только если включено
 	# (рука в игре); в пикере веер открывают кликом по карте, Tab не трогаем.
+	# При открытой debug-консоли Tab отдаём ей (автодополнение) — веер не трогаем.
 	if (
 		tab_enabled
+		and not GameConsole.is_open()
 		and event is InputEventKey
 		and event.pressed
 		and not event.echo
