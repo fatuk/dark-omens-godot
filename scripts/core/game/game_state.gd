@@ -281,7 +281,6 @@ const _SYNC_FIELDS: Array[String] = [
 
 
 func _broadcast_sync() -> void:
-	# Только хост рассылает полное состояние
 	if not _is_host():
 		return
 	var payload: Dictionary = {"action": RelayActions.SYNC, "mythos_index": _mythos.index}
