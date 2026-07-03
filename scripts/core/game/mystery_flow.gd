@@ -8,13 +8,15 @@ extends RefCounted
 ##   • onEnter активной Тайны; финал партии (победа/поражение по doomClock).
 ##
 ## Синкаемый стейт Тайн (active_mystery/mystery_progress/mystery_claimed/
-## mystery_tokens_on_card/outcome/_on_enter_applied_idx) ОСТАЁТСЯ полями GameState —
-## модуль мутирует его через _gs. Источник данных Тайн — _gs._campaign.current_mystery().
+## mystery_tokens_on_card/outcome) ОСТАЁТСЯ полями GameState — модуль мутирует его через
+## _gs. Дедуп onEnter (_on_enter_applied_idx) — хост-локальный, живёт в самом модуле.
+## Источник данных Тайн — _gs._campaign.current_mystery().
 ## Доступ к стейту/услугам — через _gs: _gs.players, _gs._current_pid(), _gs._name_of(),
 ## _gs._is_host(), _gs._campaign, _gs._board.current_omen_color(), _gs.entities,
 ## _gs.campaign, _gs.doom, _gs._apply_board_effect(). Создаётся в GameState (поле _mystery).
 
 var _gs: Node
+var _on_enter_applied_idx: int = -1  # дедуп onEnter активной Тайны (хост-локально)
 
 
 func _init(gs: Node) -> void:
@@ -204,9 +206,9 @@ func apply_mystery_on_enter() -> void:
 		return
 	var m: Dictionary = _gs._campaign.current_mystery()
 	# Библия ещё не готова → выходим без отметки гарда (повторим, когда придёт).
-	if m.is_empty() or _gs._on_enter_applied_idx == _gs.active_mystery:
+	if m.is_empty() or _on_enter_applied_idx == _gs.active_mystery:
 		return
-	_gs._on_enter_applied_idx = _gs.active_mystery
+	_on_enter_applied_idx = _gs.active_mystery
 	var on_enter: Array = m.get("onEnter", [])
 	for i: int in range(on_enter.size()):
 		var node: Dictionary = on_enter[i]

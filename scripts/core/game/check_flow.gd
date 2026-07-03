@@ -26,6 +26,11 @@ const _REROLL_ALL_MIN := 10
 
 var _gs: Node
 
+# Стек сохранённых проверок (хост-локальный, НЕ синкается): push/pop для вложенного
+# каста — incantation запускает свою spell-проверку поверх боевой, на «Применить»
+# боевая возвращается. В каждый момент синкнутый active_check — видимая.
+var _stack: Array = []
+
 
 func _init(gs: Node) -> void:
 	_gs = gs
@@ -73,13 +78,17 @@ func clear() -> void:
 ## Сохранить текущую активную проверку в стек (вложенный каст: incantation над
 ## боевой проверкой). Затем start() поверх перетрёт active_check; pop() — вернёт.
 func push() -> void:
-	(_gs._check_stack as Array).append((_gs.active_check as Dictionary).duplicate(true))
+	_stack.append((_gs.active_check as Dictionary).duplicate(true))
 
 
 ## Вернуть последнюю сохранённую проверку в active_check (либо {} если стек пуст).
 func pop() -> void:
-	var stack: Array = _gs._check_stack
-	_gs.active_check = stack.pop_back() if not stack.is_empty() else {}
+	_gs.active_check = _stack.pop_back() if not _stack.is_empty() else {}
+
+
+## Сбросить стек (новая партия). Зовётся из GameState при reset игры.
+func reset_stack() -> void:
+	_stack.clear()
 
 
 ## Пул d6 = навык сыщика + модификаторы навыка + модификатор проверки + доп.кубы

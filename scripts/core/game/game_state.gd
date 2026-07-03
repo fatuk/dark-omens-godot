@@ -42,14 +42,6 @@ var current_encounter: Dictionary = {}
 # {} — активной проверки нет. См. check_flow.gd.
 var active_check: Dictionary = {}
 
-# Стек сохранённых проверок (хост-локальный, НЕ синкается): CheckFlow.push/pop для
-# вложенного каста — incantation запускает свою spell-проверку поверх боевой, на
-# «Применить» боевая возвращается. В каждый момент синкнутый active_check — видимая.
-# (Доступ кросс-объектный из CheckFlow через _gs._check_stack — статанализатор его
-# не видит, отсюда @warning_ignore.)
-@warning_ignore("unused_private_class_variable")
-var _check_stack: Array = []
-
 # Промпт «какие триггер-заклинания скастить» (напр. при отдыхе): { pid, event,
 # options:[{index, id}] }. {} — промпта нет. Хост-авторитетно, синкается; решает
 # только владелец pid (cast_trigger_spells). См. SpellFlow.prompt_trigger.
@@ -182,12 +174,6 @@ var mystery_claimed: Array = []
 # kind=="tokensOnCard"). Растёт, когда сыщик тратит улики на клетке с жетоном;
 # проверяется в конце Фазы Мифов. При решении Тайны сбрасывается.
 var mystery_tokens_on_card: int = 0
-# Индекс Тайны, чей onEnter уже применён (хост-локальный гард идемпотентности —
-# onEnter может зваться из нескольких хуков: старт партии / приход библии / решение).
-# Доступ к полю — из MysteryFlow через _gs (per-file анализатор GameState этого
-# не видит и считает «неиспользуемым» — глушим).
-@warning_ignore("unused_private_class_variable")
-var _on_enter_applied_idx: int = -1
 # Финал партии: "" — ещё идёт; "victory" — все 3 Тайны решены; "defeat" — doom
 # достиг doomClock. Клиент по этому полю показывает финальные модалки.
 var outcome: String = ""
@@ -1737,7 +1723,7 @@ func reset_pregame() -> void:
 	_campaign.reset()
 	current_encounter = {}
 	active_check = {}
-	_check_stack = []
+	_check.reset_stack()
 	pending_spell_cast = {}
 	casting_spell = {}
 	pending_check = {}
