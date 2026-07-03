@@ -46,8 +46,8 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	# whileHeld cannotAct (Detained / Lost in Time): любые действия запрещены, кроме
 	# pass и локального действия состояния (condition_action — это escape).
 	if (
-		action_type != "pass"
-		and action_type != "condition_action"
+		action_type != GameActions.PASS
+		and action_type != GameActions.CONDITION_ACTION
 		and _gs._cond.player_has_constraint(pid, "cannotAct")
 	):
 		GameConsole.warn("[Game] %s не может действовать (состояние)" % _gs._name_of(pid))
@@ -57,14 +57,18 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	# — исключение: за ход можно скастить несколько (каждый тратит действие), как
 	# Component Action в EH; лимит — только число действий.
 	var used: Array = p.get("actions_used", [])
-	if action_type != "pass" and action_type != "cast_spell" and used.has(action_type):
+	if (
+		action_type != GameActions.PASS
+		and action_type != GameActions.CAST_SPELL
+		and used.has(action_type)
+	):
 		GameConsole.warn(
 			"[Game] %s — «%s» уже использовано в этом раунде" % [_gs._name_of(pid), action_type]
 		)
 		return false
 
 	match action_type:
-		"buy_ticket":
+		GameActions.BUY_TICKET:
 			# Билет продаётся только в городе; тип — по дорогам города
 			# (payload {"type":"train"|"ship"}): train → ж/д, ship → корабль.
 			var tkt_type: String = String(payload.get("type", ""))
@@ -85,15 +89,15 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			var tkt_field: String = "train_tickets" if tkt_type == "train" else "ship_tickets"
 			p[tkt_field] = int(p.get(tkt_field, 0)) + 1
 			p["actions_left"] = int(p["actions_left"]) - 1
-		"take_concentration":
+		GameActions.TAKE_CONCENTRATION:
 			p["concentration"] = int(p.get("concentration", 0)) + 1
 			p["actions_left"] = int(p["actions_left"]) - 1
-		"rest":
+		GameActions.REST:
 			# whileHeld cannotRecover + triggered on:rest (Hypothermia: не лечит здоровье
 			# + бросок 4-6 сбросить). fire_triggered исполняет dieRoll/сброс и возвращает
 			# дополнительные cannotRecover-статы для подавления лечения этого отдыха.
 			var rec: Array = _gs._cond.player_constraints(pid).get("cannotRecover", [])
-			rec.append_array(_gs._cond.fire_triggered(pid, "rest"))
+			rec.append_array(_gs._cond.fire_triggered(pid, GameActions.REST))
 			if not rec.has("health"):
 				p["hp"] = mini(int(p["hp_max"]), int(p["hp"]) + REST_HEAL_HP)
 			if not rec.has("sanity"):
@@ -104,19 +108,19 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			if _gs._spell.prompt_trigger(pid, "onRest"):
 				p["spell_prompt"] = true
 			p["actions_left"] = int(p["actions_left"]) - 1
-		"travel":
+		GameActions.TRAVEL:
 			var dest: String = String(payload.get("to", ""))
 			if not can_travel(pid, dest):
 				GameConsole.warn("[Game] %s — недопустимое перемещение" % _gs._name_of(pid))
 				return false
 			p["location"] = dest
 			p["actions_left"] = int(p["actions_left"]) - 1
-		"trade":
+		GameActions.TRADE:
 			# Обмен предметами/уликами с со-локационным напарником (атомарно).
 			if not _apply_trade(pid, payload):
 				return false
 			p["actions_left"] = int(p["actions_left"]) - 1
-		"acquire_assets":
+		GameActions.ACQUIRE_ASSETS:
 			# Поход в магазин — уникальное действие (раз за раунд). Фиксируется уже
 			# при БРОСКЕ кубов: тратит действие сразу, поэтому отмена покупки не
 			# вернёт возможность снова пойти в магазин. Сами товары выдаются позже
@@ -133,7 +137,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			if String(_gs.active_check.get("owner", "")) != "shop":
 				_gs._check.start("shop", pid, "influence", 0, "acquireAssets")
 			_gs._check.roll(pid)
-		"condition_action":
+		GameActions.CONDITION_ACTION:
 			# Локальное действие состояния (escape, напр. Detained: Влияние → сброс).
 			# С проверкой → ОБЩИЙ движок test: видимая проверка через pending_check;
 			# держим ход (condition_acting) до «Применить» (resolve_pending_check →
@@ -149,7 +153,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 					"[Game] %s — нет локального действия состояния" % _gs._name_of(pid)
 				)
 				return false
-		"cast_spell":
+		GameActions.CAST_SPELL:
 			# Ritual-заклинание: каст = действие. begin_ritual стартует spell-проверку
 			# (БЕЗ броска); игрок бросает/перебрасывает в модалке и жмёт «Применить»
 			# (apply_cast → release_cast_turn). casting держит ход до применения, как
@@ -159,14 +163,14 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				return false
 			p["casting"] = true
 			p["actions_left"] = int(p["actions_left"]) - 1
-		"pass":
+		GameActions.PASS:
 			p["actions_left"] = 0
 		_:
 			GameConsole.warn("[Game] Неизвестное действие: %s" % action_type)
 			return false
 
 	# cast_spell не отмечаем (можно кастовать несколько за ход — лимит лишь по действиям).
-	if action_type != "pass" and action_type != "cast_spell":
+	if action_type != GameActions.PASS and action_type != GameActions.CAST_SPELL:
 		used.append(action_type)
 		p["actions_used"] = used
 
@@ -200,15 +204,17 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 # (локация/состояние), клиент сам tr(). pass не анонсируем (шум), исход боя — в encounter_flow.
 func _announce_action_feed(pid: String, action_type: String, payload: Dictionary) -> void:
 	match action_type:
-		"travel":
+		GameActions.TRAVEL:
 			var dest: String = String(payload.get("to", ""))
-			_gs.announce_action(pid, "travel", {"place": _gs.loc_name_key(dest)})
-		"condition_action":
+			_gs.announce_action(pid, GameActions.TRAVEL, {"place": _gs.loc_name_key(dest)})
+		GameActions.CONDITION_ACTION:
 			var cid: String = String(payload.get("condition", ""))
-			_gs.announce_action(pid, "condition_action", {"condition": Conditions.name_key(cid)})
-		"buy_ticket", "take_concentration", "rest", "trade", "acquire_assets", "cast_spell":
+			_gs.announce_action(
+				pid, GameActions.CONDITION_ACTION, {"condition": Conditions.name_key(cid)}
+			)
+		GameActions.BUY_TICKET, GameActions.TAKE_CONCENTRATION, GameActions.REST, GameActions.TRADE, GameActions.ACQUIRE_ASSETS, GameActions.CAST_SPELL:
 			_gs.announce_action(pid, action_type)
-		# "pass" — не анонсируем
+		# GameActions.PASS — не анонсируем
 
 
 ## Хост: игрок подтвердил выбор триггер-заклинаний в промпте отдыха (item-индексы;
@@ -308,7 +314,7 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 	if not _gs.players.has(pid) or assets.is_empty():
 		return false
 	var p: Dictionary = _gs.players[pid]
-	if not (p.get("actions_used", []) as Array).has("acquire_assets"):
+	if not (p.get("actions_used", []) as Array).has(GameActions.ACQUIRE_ASSETS):
 		return false
 	if _gs.location_type(String(p.get("location", ""))) != "city":
 		return false

@@ -240,7 +240,8 @@ func _build_hand_carousel() -> void:
 	hc.token_played.connect(func(currency: String) -> void: GameState.set_pending_reroll(currency))
 	# Сыграли карту состояния — запускаем его локальное действие (хост валидирует).
 	hc.condition_acted.connect(
-		func(cid: String) -> void: GameState.perform_action("condition_action", {"condition": cid})
+		func(cid: String) -> void:
+			GameState.perform_action(GameActions.CONDITION_ACTION, {"condition": cid})
 	)
 	GameState.state_changed.connect(_refresh_hand)
 	_refresh_hand()
@@ -393,7 +394,7 @@ func _hand_conditions_section() -> Array:
 	var can_act: bool = (
 		GameState.is_my_turn()
 		and int(me.get("actions_left", 0)) > 0
-		and not (used as Array).has("condition_action")
+		and not (used as Array).has(GameActions.CONDITION_ACTION)
 	)
 	var out: Array = []
 	for i in range(conds.size()):

@@ -641,7 +641,7 @@ func cast_spell(item_index: int) -> void:
 		return
 	var subtype: String = String(spell.get("subtype", ""))
 	if subtype == "ritual":
-		perform_action("cast_spell", {"item": item_index})
+		perform_action(GameActions.CAST_SPELL, {"item": item_index})
 		return
 	var my_pid: String = _nm.my_user_id
 	if subtype == "glamour":
@@ -961,7 +961,7 @@ func reroll_all_dice() -> void:
 
 ## Переместиться в связанную локацию dest (расходует действие).
 func travel(dest: String) -> void:
-	perform_action("travel", {"to": dest})
+	perform_action(GameActions.TRAVEL, {"to": dest})
 
 
 ## Может ли локальный игрок переместиться в dest прямо сейчас (для UI сайдбара).
@@ -974,7 +974,7 @@ func can_travel_to(dest: String) -> bool:
 	if int(me.get("actions_left", 0)) <= 0:
 		return false
 	var used: Array = me.get("actions_used", [])
-	if used.has("travel"):
+	if used.has(GameActions.TRAVEL):
 		return false
 	return _phase.can_travel(_nm.my_user_id, dest)
 
@@ -990,7 +990,7 @@ func can_shop(loc_id: String) -> bool:
 	var me: Dictionary = my_player()
 	if int(me.get("actions_left", 0)) <= 0:
 		return false
-	if (me.get("actions_used", []) as Array).has("acquire_assets"):
+	if (me.get("actions_used", []) as Array).has(GameActions.ACQUIRE_ASSETS):
 		return false
 	if location_type(loc_id) != "city":
 		return false
@@ -1006,7 +1006,7 @@ func can_buy_ticket(loc_id: String) -> bool:
 	var me: Dictionary = my_player()
 	if int(me.get("actions_left", 0)) <= 0:
 		return false
-	if (me.get("actions_used", []) as Array).has("buy_ticket"):
+	if (me.get("actions_used", []) as Array).has(GameActions.BUY_TICKET):
 		return false
 	if String(me.get("location", "")) != loc_id:
 		return false
@@ -1018,7 +1018,7 @@ func can_buy_ticket(loc_id: String) -> bool:
 
 ## Купить билет типа ticket_type ("train"|"ship") — действие хосту.
 func buy_ticket(ticket_type: String) -> void:
-	perform_action("buy_ticket", {"type": ticket_type})
+	perform_action(GameActions.BUY_TICKET, {"type": ticket_type})
 
 
 ## Открытие магазина — старт проверки Влияния в pre-roll состоянии (БЕЗ траты
@@ -1037,7 +1037,7 @@ func shop_open() -> void:
 ## Бросок кубов = совершение действия «acquire_assets» (раз за раунд). Тратит
 ## действие сразу — отмена покупки уже не вернёт поход в магазин в этом раунде.
 func shop_begin() -> void:
-	perform_action("acquire_assets", {})
+	perform_action(GameActions.ACQUIRE_ASSETS, {})
 
 
 ## Выдать купленные ассеты (по «Купить»). Действие уже потрачено на броске.

@@ -25,9 +25,11 @@ func _ready() -> void:
 	UIStyle.style_button(_pass_btn, UIColors.WARNING)
 	_hint_label.add_theme_color_override("font_color", UIColors.MUTED)
 
-	_concent_btn.pressed.connect(func() -> void: GameState.perform_action("take_concentration"))
-	_rest_btn.pressed.connect(func() -> void: GameState.perform_action("rest"))
-	_pass_btn.pressed.connect(func() -> void: GameState.perform_action("pass"))
+	_concent_btn.pressed.connect(
+		func() -> void: GameState.perform_action(GameActions.TAKE_CONCENTRATION)
+	)
+	_rest_btn.pressed.connect(func() -> void: GameState.perform_action(GameActions.REST))
+	_pass_btn.pressed.connect(func() -> void: GameState.perform_action(GameActions.PASS))
 
 	# «Обмен» — программная кнопка (как cond-кнопки). Открывает модалку обмена
 	# через группу trade_modal. Видимость/блок — в _refresh.
@@ -57,10 +59,10 @@ func _refresh() -> void:
 	var me: Dictionary = GameState.my_player()
 	# Одно действие нельзя повторять в раунде — гасим уже использованные кнопки.
 	var used: Array = me.get("actions_used", [])
-	_concent_btn.disabled = used.has("take_concentration")
-	_rest_btn.disabled = used.has("rest")
+	_concent_btn.disabled = used.has(GameActions.TAKE_CONCENTRATION)
+	_rest_btn.disabled = used.has(GameActions.REST)
 	_trade_btn.visible = _has_colocated_ally()
-	_trade_btn.disabled = used.has("trade")
+	_trade_btn.disabled = used.has(GameActions.TRADE)
 	_refresh_condition_actions(me, used)
 	# Билеты под кнопками: ж/д + морские. Ребилд лишь при смене суммарного числа.
 	var n_train: int = int(me.get("train_tickets", 0))
@@ -109,12 +111,12 @@ func _refresh_condition_actions(me: Dictionary, used: Array) -> void:
 			var bound_id: String = aid
 			btn.pressed.connect(
 				func() -> void:
-					GameState.perform_action("condition_action", {"condition": bound_id})
+					GameState.perform_action(GameActions.CONDITION_ACTION, {"condition": bound_id})
 			)
 			_rest_btn.get_parent().add_child(btn)
 			_cond_btns[aid] = btn
 		btn.text = "▸ " + tr(Conditions.name_key(aid))
-		btn.disabled = used.has("condition_action")
+		btn.disabled = used.has(GameActions.CONDITION_ACTION)
 
 
 # Есть ли подключённый напарник на моей локации (для кнопки «Обмен»).
