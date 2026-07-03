@@ -37,43 +37,43 @@ var active: bool = false  # игра запущена?
 # синком всем.
 var current_encounter: Dictionary = {}
 
-# Единая активная проверка (встреча/магазин/бой) — хост-авторитетна, синкается.
+# Единая активная проверка (встреча/магазин/бой).
 # Управляется CheckFlow (_check); потоки начинают проверку и читают результат.
 # {} — активной проверки нет. См. check_flow.gd.
 var active_check: Dictionary = {}
 
 # Промпт «какие триггер-заклинания скастить» (напр. при отдыхе): { pid, event,
-# options:[{index, id}] }. {} — промпта нет. Хост-авторитетно, синкается; решает
+# options:[{index, id}] }. {} — промпта нет. Решает
 # только владелец pid (cast_trigger_spells). См. SpellFlow.prompt_trigger.
 var pending_spell_cast: Dictionary = {}
 
 # Каст «в процессе» (интерактивный бросок): {pid, item_index, spell_id, subtype,
 # context, nested}. {} — каста нет. Кубы — в active_check (owner="spell"); здесь
-# только метаданные. Хост-авторитетно, синкается. См. SpellFlow.begin_*/apply_cast.
+# только метаданные. См. SpellFlow.begin_*/apply_cast.
 var casting_spell: Dictionary = {}
 
 # Ожидающая ВИДИМАЯ проверка test-узла Effect-DSL (общий движок для всех драйверов):
 # {pid, driver, path, skill, modifier, subject?}. {} — нет. Кубы — в active_check
 # (owner="effectCheck"); subject — payload карты-носителя для модалки (или {}). На
 # «Применить» resolve_pending_check диспетчит по driver в *.resolve_*_check, тот пишет
-# decisions[path]=passed и переигрывает свою программу. Хост-авторитетно, синкается.
+# decisions[path]=passed и переигрывает свою программу.
 var pending_check: Dictionary = {}
 
 # Результат последнего каста для модалки расплаты: { pid, spell, back, text (flavor-
 # ключ оборота), successes, outcome:{health,sanity,clues,conditions,discarded} }.
-# {} — нет. Хост-авторитетно, синкается; модалку показывает владелец pid и сам её
+# {} — нет. Модалку показывает владелец pid и сам её
 # закрывает (dismiss_cast_result). Не привязан к ходу. См. SpellFlow.resolve_cast.
 var last_cast_result: Dictionary = {}
 
 # Результаты флипа состояний на Расплате, per-player, для модалки: {pid: {cid, back,
 # name, text}}. Заполняет ConditionFlow._flip_condition; показывает владельцу pid,
-# он же закрывает (dismiss_reckoning_result). Хост-авторитетно, синкается.
+# он же закрывает (dismiss_reckoning_result).
 var reckoning_results: Dictionary = {}
 
 # Идёт ли ПАРАЛЛЕЛЬНЫЙ тир сыщиков Расплаты (все резолвят одновременно). true между
 # стартом и финишем всех; для оверлея «ждём других» у закончивших. Хост ставит/снимает
 # в ReckoningFlow. Per-player проверки — в players[pid].reckoning_check/reckoning_pending
-# (синкаются с players). Хост-авторитетно, синкается.
+# (синкаются с players).
 var reckoning_active: bool = false
 
 # UI-локально: «заряженная» жетоном валюта переброса ("concentration"/"clue"/"") —
@@ -111,55 +111,55 @@ var _nm: Node = null
 # проверки связности при travel. Лениво загружается через _load_locations().
 var _locations_cache: Array = []
 
-# Активная карта Мифов (синкается). {} — фаза не mythos или карта уже разрешена.
+# Активная карта Мифов. {} — фаза не mythos или карта уже разрешена.
 var current_mythos: Dictionary = {}
 
-# Карты Мифов «в игре» (ongoing) — синкается. Карта с onReckoning/whileInPlay остаётся
+# Карты Мифов «в игре» (ongoing). Карта с onReckoning/whileInPlay остаётся
 # здесь после разрешения; её Расплата гоняется в шаге Расплаты (ReckoningFlow), а не на
 # вытягивании. Event-карты (без onReckoning/whileInPlay) сюда не попадают.
 var mythos_in_play: Array = []
 
-# Активный per-player выбор в forEach-проходе Мифов (синкается). {} — выбора нет.
+# Активный per-player выбор в forEach-проходе Мифов. {} — выбора нет.
 # {active, pid (чей выбор), path, options:[ветки], by, picked?}. Модалку показывает
 # тот клиент, у кого pid==мой; хост ждёт ответ через сигнал mythos_decided.
 var mythos_decision: Dictionary = {}
 
-# Открытые врата по локациям (синкается). {loc_id: "red"|"green"|"blue"}.
+# Открытые врата по локациям. {loc_id: "red"|"green"|"blue"}.
 # Меняется через _apply_board_effect("openGate"). MapLayer.set_gates рендерит
 # их визуально на маркерах с вращающейся анимацией.
 var gates: Dictionary = {}
 
-# Сущности по локациям (синкается). {loc_id: [type,…]} — улики/слухи (token-ы)
+# Сущности по локациям. {loc_id: [type,…]} — улики/слухи (token-ы)
 # (type ∈ "clue"|"rumor"). Монстры хранятся отдельно (monsters), но на карте
 # показываются тем же набором иконок (world_map склеивает вид).
 var entities: Dictionary = {}
 
-# Монстры по локациям (синкается). {loc_id: [{id, health},…]} — экземпляры из
+# Монстры по локациям. {loc_id: [{id, health},…]} — экземпляры из
 # MonsterCatalog с текущим здоровьем (урон в бою сохраняется между встречами).
 # Визуально склеиваются с entities (по количеству).
 var monsters: Dictionary = {}
 
-# «Мешок» доступных монстров (синкается) — список id, ещё не выставленных на
+# «Мешок» доступных монстров — список id, ещё не выставленных на
 # поле. Спаун тянет случайный id из мешка (без повторов), смерть монстра
 # возвращает его id обратно. Наполняется на старте всеми не-эпиками.
 var monster_bag: Array = []
 
-# Параметр «Наплыв монстров» (синкается) — сколько монстров лезет из каждых врат
+# Параметр «Наплыв монстров» — сколько монстров лезет из каждых врат
 # текущего омена при событии Наплыва. Задаётся по таблице Icon Reference на старте.
 var monster_surge: int = 0
 
-# Доступные типы встречи активного игрока в фазе encounter (синкается). Непусто
+# Доступные типы встречи активного игрока в фазе encounter. Непусто
 # → клиент показывает модалку выбора; выбор шлётся choose_encounter, после чего
 # хост генерирует встречу выбранного kind. Очищается после выбора/смены хода.
 # Элементы ∈ "general" | "research" | "gate" | "combat".
 var encounter_choices: Array = []
 
-# Витрина магазина (синкается) — список id выложенных «лицом» ассетов. После
+# Витрина магазина — список id выложенных «лицом» ассетов. После
 # покупки купленные заменяются новыми (см. _refill_shop_reserve).
 const SHOP_RESERVE_SIZE: int = 4
 var shop_reserve: Array = []
 
-# ── Цикл Тайн (синкается) ────────────────────────────────────────────────────
+# ── Цикл Тайн ────────────────────────────────────────────────────
 # Активная Тайна — индекс 0/1/2 в campaign.mysteries[]. Не от doom: акт = это+1.
 # Партия проходит Тайны по порядку; каждая решается набором «зачётов» помеченных
 # локаций через двух-фазную mystery-встречу (см. encounter_flow + effect_runner).
