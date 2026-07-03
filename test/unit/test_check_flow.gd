@@ -502,3 +502,17 @@ func test_activate_ally_improve_and_reroll_both_apply() -> void:
 	assert_has(verbs, "rerollDice", "переброс лёг (post-roll в любой фазе)")
 	_cf.roll("p")
 	assert_eq(int(_gs.active_check["reroll_allowance"]), 1, "+1 бесплатный переброс после броска")
+
+
+func test_pool_min_dice_floors_pool() -> void:
+	# minDice (Gambler's Dice): пул не меньше count, даже если навык мал.
+	_player()
+	var c: Dictionary = {
+		"pid": "p",
+		"skill": "lore",
+		"modifier": 0,
+		"active_mods": [{"do": "minDice", "count": 3, "skill": "lore"}],
+	}
+	assert_eq(_cf.pool(c), 3, "навык 1 < minDice 3 → пул 3")
+	c["modifier"] = 5
+	assert_eq(_cf.pool(c), 6, "1 + 5 = 6 > minDice 3 → пул 6 (не режет)")

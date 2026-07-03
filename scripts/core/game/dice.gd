@@ -80,6 +80,17 @@ static func mod_is_pre_roll(m: Dictionary) -> bool:
 	return PRE_ROLL_VERBS.has(String(m.get("do", "")))
 
 
+## Минимальный размер пула от minDice-модов (Gambler's Dice: «бросай не меньше count»).
+## Берём МАКСИМУМ count среди подходящих по навыку. 0 — таких модов нет.
+static func min_dice(mods: Array, skill: String = "") -> int:
+	var floor_n: int = 0
+	for m_v: Variant in mods:
+		var m: Dictionary = m_v
+		if String(m.get("do", "")) == "minDice" and mod_skill_ok(m, skill):
+			floor_n = maxi(floor_n, int(m.get("count", 0)))
+	return floor_n
+
+
 ## Доп. кубы к ПУЛУ от активных модификаторов (применяется ДО броска):
 ## rollAdditionalDice — складываются (разные источники); improveSkill — НЕ
 ## складываются (бонусы навыка/оружие не суммируются: берём МАКСИМУМ по навыку,

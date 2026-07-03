@@ -99,8 +99,12 @@ func pool(c: Dictionary) -> int:
 	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
 	var base: int = int((inv.get("skills", {}) as Dictionary).get(skill, 1))
 	var mods: int = int((p.get("skill_mods", {}) as Dictionary).get(skill, 0))
-	var bonus: int = Dice.pre_roll_bonus(c.get("active_mods", []), skill)
-	return maxi(1, base + mods + int(c.get("modifier", 0)) + bonus)
+	var active: Array = c.get("active_mods", [])
+	var bonus: int = Dice.pre_roll_bonus(active, skill)
+	# minDice (Gambler's Dice) — пул не меньше count, поверх всех прочих слагаемых.
+	return maxi(
+		Dice.min_dice(active, skill), maxi(1, base + mods + int(c.get("modifier", 0)) + bonus)
+	)
 
 
 # ── Операции (хост) ───────────────────────────────────────────────────────────
