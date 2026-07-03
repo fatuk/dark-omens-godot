@@ -320,7 +320,14 @@ func _resolve_combat(pid: String) -> bool:
 		# PRE-ROLL — окно для карт усиления (оружие +Сила применяется ДО броска), сам
 		# бросок Силы — следующим нажатием.
 		var horror: Dictionary = enc.get("horror", {})
-		var hd: int = int(horror.get("damage", 0))
+		# Пассивная защита от ужаса (Elder Sign и т.п., whileOwned) — авто, урон монстра
+		# по рассудку снижается ДО вычитания успехов Воли (пол min).
+		var hd: int = AssetCatalog.apply_combat_reduce(
+			int(horror.get("damage", 0)),
+			AssetCatalog.owned_combat_reduce(
+				_gs.players.get(pid, {}).get("items", []), "reduceMonsterHorror"
+			)
+		)
 		var w_succ: int = int(c.get("successes", 0))
 		enc["will"] = {"dice": (c.get("dice", []) as Array).duplicate(), "successes": w_succ}
 		enc["sanity_loss"] = maxi(0, hd - w_succ)
@@ -369,7 +376,7 @@ func _resolve_combat(pid: String) -> bool:
 
 # Итог боя из стартового здоровья монстра (enc.health) и активной проверки Силы —
 # чистый расчёт без применения (для _commit_combat).
-func _combat_resolution(enc: Dictionary, c: Dictionary) -> Dictionary:
+func _combat_resolution(enc: Dictionary, c: Dictionary, pid: String) -> Dictionary:
 	var cb: Dictionary = enc.get("combat", {})
 	var hits: int = int(c.get("successes", 0))
 	# Боевой урон — ФИЗИЧЕСКИЙ: монстр с physical-резистом получает вдвое меньше.
@@ -377,10 +384,18 @@ func _combat_resolution(enc: Dictionary, c: Dictionary) -> Dictionary:
 	var m: Dictionary = MonsterCatalog.by_id(String(enc.get("monsterId", "")))
 	var dealt: int = MonsterCatalog.apply_resistance(m, hits, "physical")
 	var health_after: int = maxi(0, int(enc.get("health", 0)) - dealt)
+	# Пассивная защита от урона (Fishing Net и т.п., whileOwned) — авто, урон монстра
+	# по сыщику снижается ДО вычитания успехов Силы (пол min).
+	var cd: int = AssetCatalog.apply_combat_reduce(
+		int(cb.get("damage", 0)),
+		AssetCatalog.owned_combat_reduce(
+			_gs.players.get(pid, {}).get("items", []), "reduceMonsterDamage"
+		)
+	)
 	return {
 		"won": health_after <= 0,
 		"strength": {"dice": (c.get("dice", []) as Array).duplicate(), "successes": hits},
-		"hp_loss": maxi(0, int(cb.get("damage", 0)) - hits),
+		"hp_loss": maxi(0, cd - hits),
 		"dealt": dealt,
 		"health_after": health_after,
 	}
@@ -616,7 +631,7 @@ func _commit_combat(pid: String) -> void:
 		p["sanity"] = maxi(0, int(p.get("sanity", 0)) - sl)
 	# Зафиксировать итог Силы из активной проверки (если ещё не зафиксирован).
 	if not enc.has("resolution"):
-		enc["resolution"] = _combat_resolution(enc, _gs.active_check)
+		enc["resolution"] = _combat_resolution(enc, _gs.active_check, pid)
 	var r: Dictionary = enc["resolution"]
 	var won: bool = bool(r.get("won", false))
 	var mon_name: String = String(enc.get("monsterName", ""))

@@ -179,6 +179,33 @@ static func passive_check_mods(a: Dictionary, context: String) -> Array:
 	return out
 
 
+## Суммарный пассивный вычет урона/ужаса монстра по всем ПРИНАДЛЕЖАЩИМ активам
+## (whileOwned do==verb: reduceMonsterDamage/reduceMonsterHorror). Применяется
+## АВТОМАТИЧЕСКИ (не тапом) в боевом резолве. {amount: сумма amount, min: макс. пол}:
+## эффективный урон монстра = max(min, base − amount), если amount > 0 (иначе не трогаем).
+static func owned_combat_reduce(items: Array, verb: String) -> Dictionary:
+	var amount: int = 0
+	var floor_min: int = 0
+	for it_v: Variant in items:
+		var a: Dictionary = by_id(entry_id(it_v))
+		if a.is_empty():
+			continue
+		for n_v: Variant in (a.get("effect", {}) as Dictionary).get("whileOwned", []):
+			var n: Dictionary = n_v
+			if String(n.get("do", "")) == verb:
+				amount += int(n.get("amount", 0))
+				floor_min = maxi(floor_min, int(n.get("min", 0)))
+	return {"amount": amount, "min": floor_min}
+
+
+## Применить вычет к базовому урону монстра: max(min, base − amount) при amount>0.
+static func apply_combat_reduce(base: int, reduce: Dictionary) -> int:
+	var amt: int = int(reduce.get("amount", 0))
+	if amt <= 0:
+		return base
+	return maxi(int(reduce.get("min", 0)), base - amt)
+
+
 ## Активируемые сейчас ноды — только слот action (по контексту). Пассивы whileOwned
 ## применяются автоматически (passive_check_mods), не через активацию.
 static func activatable_mods(a: Dictionary, context: String) -> Array:
