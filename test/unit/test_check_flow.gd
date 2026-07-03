@@ -485,3 +485,20 @@ func test_activate_spell_effect_card_on_cast_check() -> void:
 		verbs.append(String((m_v as Dictionary).get("do", "")))
 	assert_has(verbs, "improveSkill", "improveSkill lore лёг в active_mods")
 	assert_eq(_cf.pool(_gs.active_check), 3, "пул = Знание 1 + improveSkill 2")
+
+
+func test_activate_ally_improve_and_reroll_both_apply() -> void:
+	# arcane_scholar: improveSkill lore +1 (pre-roll) + rerollDice lore ×1 (post-roll),
+	# БЕЗ context → любая проверка Знания. Тап до броска кладёт ОБА мода; на броске
+	# reroll_allowance получает +1. Архетип «союзника» (навык + переброс).
+	_player({"items": [{"id": "arcane_scholar", "exhausted": false}]})
+	_cf.start("effectCheck", "p", "lore", 0, "")  # context "" — матчит любую Lore-проверку
+	assert_true(_cf.activate("p", 0), "союзник применим на Lore-проверке")
+	assert_eq(_cf.pool(_gs.active_check), 2, "пул = Знание 1 + improveSkill 1")
+	var verbs: Array = []
+	for m_v: Variant in _gs.active_check["active_mods"]:
+		verbs.append(String((m_v as Dictionary).get("do", "")))
+	assert_has(verbs, "improveSkill", "усиление навыка легло")
+	assert_has(verbs, "rerollDice", "переброс лёг (post-roll в любой фазе)")
+	_cf.roll("p")
+	assert_eq(int(_gs.active_check["reroll_allowance"]), 1, "+1 бесплатный переброс после броска")
