@@ -298,6 +298,7 @@ active_mods += mods
 | Врата (иной мир)       | `otherWorldEncounter`|
 | Магазин (Влияние)      | `acquireAssets`      |
 | Бой (Воля и Сила)      | `combatEncounter`    |
+| Каст заклинания (Знание) | `spellEffect`      |
 
 (Контексты карт в данных: `combatEncounter` 68, `spellEffect` 20, `anyTest` 13,
 `otherWorldEncounter` 3, `researchEncounter` 2, `acquireAssets` 2 и т.д.)

@@ -169,14 +169,18 @@ func _begin_check(
 ) -> void:
 	var front: Dictionary = spell.get("front", {})
 	_gs._check.start(
-		"spell", pid, String(front.get("test", "lore")), int(front.get("modifier", 0)), "castSpell"
+		"spell",
+		pid,
+		String(front.get("test", "lore")),
+		int(front.get("modifier", 0)),
+		"spellEffect"
 	)
 	_gs.casting_spell = {
 		"pid": pid,
 		"item_index": item_index,
 		"spell_id": _spell_id((_gs.players[pid] as Dictionary).get("items", [])[item_index]),
 		"subtype": subtype,
-		"context": "castSpell",
+		"context": "spellEffect",
 		"nested": nested,
 	}
 

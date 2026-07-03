@@ -98,7 +98,7 @@ func test_push_then_start_then_pop_restores_outer_check() -> void:
 	_cf.start("combat", "p", "will", 0, "combatEncounter")
 	var combat_snapshot: Dictionary = _gs.active_check.duplicate(true)
 	_cf.push()
-	_cf.start("spell", "p", "lore", 0, "castSpell")
+	_cf.start("spell", "p", "lore", 0, "spellEffect")
 	assert_eq(String(_gs.active_check["owner"]), "spell", "поверх — spell-проверка")
 	# pop → боевая проверка возвращается БЕЗ изменений (round-trip).
 	_cf.pop()
@@ -108,7 +108,7 @@ func test_push_then_start_then_pop_restores_outer_check() -> void:
 
 
 func test_pop_on_empty_stack_clears_active_check() -> void:
-	_cf.start("spell", "p", "lore", 0, "castSpell")
+	_cf.start("spell", "p", "lore", 0, "spellEffect")
 	_cf.pop()  # стек пуст → active_check очищается
 	assert_eq(_gs.active_check.size(), 0, "pop без сохранённой → active_check пуст")
 
@@ -471,3 +471,17 @@ func test_activate_combined_pre_and_post_roll_mods_both_apply() -> void:
 	assert_has(verbs, "improveSkill", "усиление пула легло")
 	assert_has(verbs, "convertDie", "скоринг-мод тоже лёг (post-roll в любой фазе)")
 	assert_eq(_cf.pool(_gs.active_check), 5, "пул = навык 1 + improveSkill 4")
+
+
+func test_activate_spell_effect_card_on_cast_check() -> void:
+	# Аркан-предмет (context spellEffect) усиливает Знание при касте. Проверка каста
+	# идёт с context spellEffect (SpellFlow._begin_check) — до фикса карта несла
+	# spellEffect, а движок гонял castSpell, и бонус молча не применялся.
+	_player({"items": [{"id": "arcane_tome", "exhausted": false}]})
+	_rolled({"context": "spellEffect", "skill": "lore", "rolled": false, "base": [], "dice": []})
+	assert_true(_cf.activate("p", 0), "аркан-предмет применим на проверке каста")
+	var verbs: Array = []
+	for m_v: Variant in _gs.active_check["active_mods"]:
+		verbs.append(String((m_v as Dictionary).get("do", "")))
+	assert_has(verbs, "improveSkill", "improveSkill lore лёг в active_mods")
+	assert_eq(_cf.pool(_gs.active_check), 3, "пул = Знание 1 + improveSkill 2")
