@@ -530,3 +530,29 @@ func test_pool_substitute_skill() -> void:
 	assert_eq(_cf.pool(c), 4, "база по Влиянию: 1 + skill_mods 3 = 4")
 	c["active_mods"] = []
 	assert_eq(_cf.pool(c), 1, "без карты — по Силе: 1 + 0")
+
+
+func test_substitute_resource_pays_focus_with_clue() -> void:
+	# Tome of Secrets (substituteResource clue→focus, oncePerRound): focus-стоимость
+	# закрывается уликой, когда фокуса нет; карта истощается на раунд.
+	_player(
+		{"concentration": 0, "clues": 2, "items": [{"id": "tome_of_secrets", "exhausted": false}]}
+	)
+	var p: Dictionary = _gs.players["p"]
+	assert_true(_cf._can_pay(p, "focus", 1), "нет фокуса, но Tome of Secrets подменяет уликой")
+	_cf._pay(p, "focus", 1)
+	assert_eq(int(p["clues"]), 1, "улика списана вместо фокуса")
+	assert_eq(int(p["concentration"]), 0, "фокус не тронут")
+	assert_true(bool(p["items"][0]["exhausted"]), "oncePerRound: карта истрачена")
+	assert_false(_cf._can_pay(p, "focus", 1), "раз/раунд — повторно нельзя")
+
+
+func test_substitute_resource_prefers_direct_payment() -> void:
+	_player(
+		{"concentration": 2, "clues": 2, "items": [{"id": "tome_of_secrets", "exhausted": false}]}
+	)
+	var p: Dictionary = _gs.players["p"]
+	_cf._pay(p, "focus", 1)
+	assert_eq(int(p["concentration"]), 1, "есть фокус — платим им напрямую")
+	assert_eq(int(p["clues"]), 2, "улики целы")
+	assert_false(bool(p["items"][0]["exhausted"]), "карта не истрачена")

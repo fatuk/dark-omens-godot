@@ -431,12 +431,43 @@ func reroll_all(pid: String, c: Dictionary = {}) -> bool:
 # Может ли игрок оплатить ресурс-стоимость активации (asset/spell пока не поддержаны).
 # Стоимость активации карты не может убить владельца → allow_lethal=false («> amt»).
 func _can_pay(p: Dictionary, res: String, amt: int) -> bool:
-	return ResourceLedger.can_pay(p, res, amt, false)
+	return (
+		ResourceLedger.can_pay(p, res, amt, false) or not _find_substitute(p, res, amt).is_empty()
+	)
 
 
-# Списать ресурс-стоимость активации.
+# Списать ресурс-стоимость активации. Не хватает напрямую — пробуем подмену ресурса
+# (substituteResource: Tome of Secrets платит focus-стоимость уликой, раз/раунд).
 func _pay(p: Dictionary, res: String, amt: int) -> void:
-	ResourceLedger.spend(p, res, amt)
+	if ResourceLedger.can_pay(p, res, amt, false):
+		ResourceLedger.spend(p, res, amt)
+		return
+	var sub: Dictionary = _find_substitute(p, res, amt)
+	if not sub.is_empty():
+		ResourceLedger.spend(p, String(sub["from"]), amt)
+		var items: Array = p.get("items", [])
+		(items[int(sub["idx"])] as Dictionary)["exhausted"] = true  # oncePerRound → до Refresh
+
+
+# Применимая substituteResource-подмена под ресурс res: принадлежащий не-истощённый
+# актив (whileOwned toResource==res), у игрока хватает fromResource. {from, idx} или {}.
+func _find_substitute(p: Dictionary, res: String, amt: int) -> Dictionary:
+	var items: Array = p.get("items", [])
+	for i in range(items.size()):
+		var it_v: Variant = items[i]
+		if not (it_v is Dictionary) or bool((it_v as Dictionary).get("exhausted", false)):
+			continue
+		var a: Dictionary = AssetCatalog.by_id(AssetCatalog.entry_id(it_v))
+		for n_v: Variant in (a.get("effect", {}) as Dictionary).get("whileOwned", []):
+			var n: Dictionary = n_v
+			if String(n.get("do", "")) != "substituteResource":
+				continue
+			if String(n.get("toResource", "")) != res:
+				continue
+			var frm: String = String(n.get("fromResource", ""))
+			if ResourceLedger.can_pay(p, frm, amt, false):
+				return {"from": frm, "idx": i}
+	return {}
 
 
 func _sync() -> void:
