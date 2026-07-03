@@ -22,6 +22,7 @@ signal action_announced(pid: String, action_id: String, params: Dictionary)  # �
 
 const ACTIONS_PER_ROUND := 2
 const MAX_TICKETS := 2  # потолок билетов на руках (ж/д + корабль суммарно), как в EH
+const MAX_CONCENTRATION := 2  # потолок жетонов концентрации у сыщика
 
 # ── Глобальный стейт ──────────────────────────────────────────────────────────
 var round_num: int = 0

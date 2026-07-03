@@ -518,3 +518,10 @@ func test_protect_resource_clue_blocks_involuntary_loss() -> void:
 	var p2: Dictionary = {"clues": 3, "items": []}
 	EffectRunner.run([{"do": "loseClue", "amount": 2}], p2)
 	assert_eq(int(p2["clues"]), 1, "без защиты — теряются")
+
+
+func test_gain_focus_capped_at_max() -> void:
+	# Потолок концентрации: gainFocus не поднимает выше GameState.MAX_CONCENTRATION.
+	var p: Dictionary = {"concentration": 1}
+	EffectRunner.run([{"do": "gainFocus", "amount": 5}], p)
+	assert_eq(int(p["concentration"]), GameState.MAX_CONCENTRATION, "концентрация не выше потолка")

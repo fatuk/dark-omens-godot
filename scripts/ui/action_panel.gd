@@ -59,7 +59,11 @@ func _refresh() -> void:
 	var me: Dictionary = GameState.my_player()
 	# Одно действие нельзя повторять в раунде — гасим уже использованные кнопки.
 	var used: Array = me.get("actions_used", [])
-	_concent_btn.disabled = used.has(GameActions.TAKE_CONCENTRATION)
+	# Недоступна, если уже брал в этом раунде ИЛИ достигнут потолок концентрации.
+	_concent_btn.disabled = (
+		used.has(GameActions.TAKE_CONCENTRATION)
+		or int(me.get("concentration", 0)) >= GameState.MAX_CONCENTRATION
+	)
 	_rest_btn.disabled = used.has(GameActions.REST)
 	_trade_btn.visible = _has_colocated_ally()
 	_trade_btn.disabled = used.has(GameActions.TRADE)

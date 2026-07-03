@@ -90,6 +90,15 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			p[tkt_field] = int(p.get(tkt_field, 0)) + 1
 			p["actions_left"] = int(p["actions_left"]) - 1
 		GameActions.TAKE_CONCENTRATION:
+			# Потолок концентрации — как у билетов; при максимуме действие не тратим.
+			if int(p.get("concentration", 0)) >= _gs.MAX_CONCENTRATION:
+				GameConsole.warn(
+					(
+						"[Game] %s — нельзя держать больше %d концентрации"
+						% [_gs._name_of(pid), _gs.MAX_CONCENTRATION]
+					)
+				)
+				return false
 			p["concentration"] = int(p.get("concentration", 0)) + 1
 			p["actions_left"] = int(p["actions_left"]) - 1
 		GameActions.REST:

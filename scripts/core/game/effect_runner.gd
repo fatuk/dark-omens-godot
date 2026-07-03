@@ -554,7 +554,10 @@ static func _apply_player_verb(
 			player["items"] = []
 			logs.append("утрачено всё имущество")
 		"gainFocus":
-			player["concentration"] = int(player.get("concentration", 0)) + n
+			# Потолок концентрации (GameState.MAX_CONCENTRATION) — как и action «взять».
+			player["concentration"] = mini(
+				GameState.MAX_CONCENTRATION, int(player.get("concentration", 0)) + n
+			)
 			logs.append("+%d сосредоточения" % n)
 		"loseFocus":
 			player["concentration"] = maxi(0, int(player.get("concentration", 0)) - n)
