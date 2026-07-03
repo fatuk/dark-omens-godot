@@ -255,6 +255,8 @@ func _add_entry(text: String, color: Color) -> void:
 
 
 func _scroll_bottom_deferred() -> void:
+	# Двух кадров хватает, чтобы контейнер пересчитал высоту после пачки строк.
+	await get_tree().process_frame
 	await get_tree().process_frame
 	if is_instance_valid(_scroll):
 		_scroll.scroll_vertical = int(_scroll.get_v_scroll_bar().max_value)
@@ -478,6 +480,8 @@ func _on_command_submitted(text: String) -> void:
 			_cmd_cond(args)
 		_:
 			err("неизвестная команда «%s» — введите `help`" % cmd)
+	_scroll_bottom_deferred()  # вывод команды мог добавить строки — промотать вниз
+	_input_line.grab_focus()  # вернуть фокус: можно сразу продолжать ввод
 
 
 func _cmd_help() -> void:
