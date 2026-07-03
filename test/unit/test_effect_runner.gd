@@ -495,3 +495,13 @@ func test_when_rolled_any_skips_without_face() -> void:
 	assert_eq(int(p["sanity"]), 5, "нет 1 в кубах → пропущено")
 	EffectRunner.run([node], p, {})
 	assert_eq(int(p["sanity"]), 5, "нет ctx.dice → пропущено")
+
+
+func test_become_delayed_respects_immunity() -> void:
+	# Pocket Watch (whileOwned immuneTo status:delayed) блокирует becomeDelayed.
+	var p1: Dictionary = {"conditions": [], "items": []}
+	EffectRunner.run([{"do": "becomeDelayed"}], p1)
+	assert_has(p1["conditions"], "delayed", "без иммунитета — задержка ставится")
+	var p2: Dictionary = {"conditions": [], "items": [{"id": "pocket_watch", "exhausted": false}]}
+	EffectRunner.run([{"do": "becomeDelayed"}], p2)
+	assert_does_not_have(p2["conditions"], "delayed", "Pocket Watch — иммунитет к задержке")
