@@ -6,7 +6,8 @@ extends Control
 ## (стоимость / арт / заголовок / описание). Когда зоны/рамка поменяются — правка
 ## в одном месте, и обе колоды обновятся.
 ##
-## API: set_card({cost, title, subtitle?, desc, art? : Texture2D, art_color?, glyph?})
+## API: set_card({cost, title, subtitle?, desc, art? : Texture2D, art_color?, glyph?,
+##                frame? : Texture2D})  — frame: полно-артовая рамка (карта Концентрации).
 
 const FRAME_TEX: Texture2D = preload("res://assets/asset-card/asset-card.png")
 
@@ -58,6 +59,7 @@ var _desc_offset: float = 0.0  # текущий сдвиг описания вв
 var _art: TextureRect
 var _art_fill: ColorRect
 var _glyph: Label
+var _frame: TextureRect
 
 
 func _init() -> void:
@@ -101,15 +103,15 @@ func _build() -> void:
 
 	# Рамка — ПОВЕРХ арта: бронзовый кант и плашки рисуются над артом, прозрачное
 	# окно открывает арт.
-	var frame := TextureRect.new()
-	frame.name = "Frame"
-	frame.texture = FRAME_TEX
-	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	frame.stretch_mode = TextureRect.STRETCH_SCALE
-	frame.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(frame)
+	_frame = TextureRect.new()
+	_frame.name = "Frame"
+	_frame.texture = FRAME_TEX
+	_frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_frame.stretch_mode = TextureRect.STRETCH_SCALE
+	_frame.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	_frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_frame)
 
 	# Стоимость — в гербе сверху-слева.
 	var cost_zone := _zone("Cost", Z_COST)
@@ -175,8 +177,18 @@ func set_card(d: Dictionary) -> void:
 	_desc.text = String(d.get("desc", ""))
 	_on_desc_hover_end()  # новый текст — гасим скролл и возвращаем к началу
 
+	# Кастомная рамка (frame): ПОЛНО-артовая карта (арт+рамка+пергамент единым
+	# изображением, напр. карта Концентрации). Тогда своя арт-зона/глиф не нужны —
+	# всё рисует рамка; текст ложится в зоны Title/Desc (совпадают по разметке).
+	var frame_tex: Texture2D = d.get("frame", null)
+	_frame.texture = frame_tex if frame_tex != null else FRAME_TEX
+
 	var tex: Texture2D = d.get("art", null)
-	if tex != null:
+	if frame_tex != null:
+		_art.visible = false
+		_glyph.visible = false
+		_art_fill.color = Color(0, 0, 0, 0)  # прозрачно — полно-артовая рамка сама всё рисует
+	elif tex != null:
 		_art.texture = tex
 		_art.visible = true
 		_glyph.visible = false

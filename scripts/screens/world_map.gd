@@ -6,6 +6,8 @@ extends Node2D
 # Здесь дублировать не надо: world_map двигает камеру по тем же координатам,
 # что MapLayer рисует маркеры.
 
+const _CONCENTRATION_FRAME: Texture2D = preload("res://assets/concentration-card/card-frame.png")
+
 const ZOOM_MIN: float = 0.5
 const ZOOM_MAX: float = 1.2
 const ZOOM_STEP: float = 0.15
@@ -370,15 +372,25 @@ func _hand_tokens_section() -> Array:
 	return out
 
 
-# Payload жетона для GameCard (вариант A — в размер карты: глиф + подпись, без цены).
+# Payload жетона для GameCard. Улика — глиф + подпись. Концентрация — полно-артовая
+# карта (своя рамка) со СЛУЧАЙНОЙ цитатой стоика (автор/источник/текст) для разнообразия.
 func _token_payload(currency: String) -> Dictionary:
-	var is_focus: bool = currency == "concentration"
+	if currency != "concentration":
+		return {
+			"kind": "token",
+			"currency": currency,
+			"title": tr("TOKEN_CLUE"),
+			"glyph": "◆",
+			"desc": tr("TOKEN_REROLL_HINT"),
+		}
+	var q: Dictionary = StoicQuotes.random()
 	return {
 		"kind": "token",
 		"currency": currency,
-		"title": tr("TOKEN_CONCENTRATION") if is_focus else tr("TOKEN_CLUE"),
-		"glyph": "✦" if is_focus else "◆",
-		"desc": tr("TOKEN_REROLL_HINT"),
+		"frame": _CONCENTRATION_FRAME,
+		"title": String(q.get("author", tr("TOKEN_CONCENTRATION"))),
+		"subtitle": String(q.get("source", "")),
+		"desc": String(q.get("text", tr("TOKEN_REROLL_HINT"))),
 	}
 
 

@@ -1,0 +1,148 @@
+{
+	"stoic_quotes": [
+		{
+			"id": "stoic_01",
+			"author_ru": "Марк Аврелий",
+			"author_en": "Marcus Aurelius",
+			"source": "Размышления / Meditations IV.49",
+			"translator_en": "George Long",
+			"ru": "Будь как утёс, о который непрестанно бьётся волна: он стоит недвижно и укрощает ярость вод вокруг себя.",
+			"en": "Be like the promontory against which the waves continually break, but it stands firm and tames the fury of the water around it."
+		},
+		{
+			"id": "stoic_02",
+			"author_ru": "Марк Аврелий",
+			"author_en": "Marcus Aurelius",
+			"source": "Размышления / Meditations IV.3",
+			"translator_en": "George Long",
+			"ru": "Нигде человек не найдёт приюта тише и покойнее, чем в собственной душе.",
+			"en": "For nowhere either with more quiet or more freedom from trouble does a man retire than into his own soul."
+		},
+		{
+			"id": "stoic_03",
+			"author_ru": "Марк Аврелий",
+			"author_en": "Marcus Aurelius",
+			"source": "Размышления / Meditations VIII.48",
+			"translator_en": "George Long",
+			"ru": "Разум, свободный от страстей, — это цитадель: нет у человека твердыни надёжнее, где он укрылся бы навек.",
+			"en": "The mind which is free from passions is a citadel, for man has nothing more secure to which he can fly for refuge."
+		},
+		{
+			"id": "stoic_04",
+			"author_ru": "Марк Аврелий",
+			"author_en": "Marcus Aurelius",
+			"source": "Размышления / Meditations VII.59",
+			"translator_en": "George Long",
+			"ru": "Загляни внутрь себя. Там источник добра, и он не иссякнет, доколе ты копаешь.",
+			"en": "Look within. Within is the fountain of good, and it will ever bubble up, if thou wilt ever dig."
+		},
+		{
+			"id": "stoic_05",
+			"author_ru": "Марк Аврелий",
+			"author_en": "Marcus Aurelius",
+			"source": "Размышления / Meditations VII.61",
+			"translator_en": "George Long",
+			"ru": "Искусство жить сродни борьбе, а не пляске: должно стоять твёрдо и наготове перед ударами внезапными и нежданными.",
+			"en": "The art of life is more like the wrestler's art than the dancer's, in respect of this, that it should stand ready and firm to meet onsets which are sudden and unexpected."
+		},
+		{
+			"id": "stoic_06",
+			"author_ru": "Марк Аврелий",
+			"author_en": "Marcus Aurelius",
+			"source": "Размышления / Meditations IV.1",
+			"translator_en": "George Long",
+			"ru": "Ум обращает себе в пищу всё, что ему противится, — как пламя охватывает то, что в него падает.",
+			"en": "It makes a material for itself out of that which opposes it, as fire lays hold of what falls into it."
+		},
+		{
+			"id": "stoic_07",
+			"author_ru": "Эпиктет",
+			"author_en": "Epictetus",
+			"source": "Энхиридион / Enchiridion 1",
+			"translator_en": "Elizabeth Carter",
+			"ru": "Одно в нашей власти, другое — нет.",
+			"en": "Some things are in our control and others not."
+		},
+		{
+			"id": "stoic_08",
+			"author_ru": "Эпиктет",
+			"author_en": "Epictetus",
+			"source": "Энхиридион / Enchiridion 1",
+			"translator_en": "Elizabeth Carter",
+			"ru": "Приучись говорить всякому пугающему призраку: «Ты лишь видимость, а не то, чем кажешься».",
+			"en": "Work to be able to say to every harsh appearance, “You are but an appearance, and not absolutely the thing you appear to be.”"
+		},
+		{
+			"id": "stoic_09",
+			"author_ru": "Эпиктет",
+			"author_en": "Epictetus",
+			"source": "Энхиридион / Enchiridion 5",
+			"translator_en": "Elizabeth Carter",
+			"ru": "Людей смущают не сами вещи, а мнения, что они о вещах составляют.",
+			"en": "Men are disturbed not by things, but by the principles and notions which they form concerning things."
+		},
+		{
+			"id": "stoic_10",
+			"author_ru": "Эпиктет",
+			"author_en": "Epictetus",
+			"source": "Энхиридион / Enchiridion 8",
+			"translator_en": "George Long",
+			"ru": "Не желай, чтобы всё шло, как ты хочешь; хоти, чтобы шло, как идёт, — и жизнь твоя потечёт безмятежно.",
+			"en": "Seek not that the things which happen should happen as you wish; but wish the things which happen to be as they are, and you will have a tranquil flow of life."
+		},
+		{
+			"id": "stoic_11",
+			"author_ru": "Эпиктет",
+			"author_en": "Epictetus",
+			"source": "Энхиридион / Enchiridion 20",
+			"translator_en": "George Long",
+			"ru": "Не тот оскорбляет тебя, кто бранит или бьёт, а твоё мнение, будто это оскорбление.",
+			"en": "It is not he who reviles you or strikes you who insults you, but your opinion about these things as being insulting."
+		},
+		{
+			"id": "stoic_12",
+			"author_ru": "Эпиктет",
+			"author_en": "Epictetus",
+			"source": "Фрагменты / Fragments",
+			"translator_en": "George Long",
+			"ru": "Укрепи себя довольством — вот неприступная крепость.",
+			"en": "Fortify yourself with contentment, for this is an impregnable fortress."
+		},
+		{
+			"id": "stoic_13",
+			"author_ru": "Эпиктет",
+			"author_en": "Epictetus",
+			"source": "Фрагменты / Fragments",
+			"translator_en": "George Long",
+			"ru": "Хочешь жить без печали — думай о грядущем как об уже свершившемся.",
+			"en": "If you wish to live a life free from sorrow, think of what is going to happen as if it had already happened."
+		},
+		{
+			"id": "stoic_14",
+			"author_ru": "Сенека",
+			"author_en": "Seneca",
+			"source": "Нравственные письма / Letters 13",
+			"translator_en": "Richard M. Gummere",
+			"ru": "Больше того, что грозит нас сокрушить, — того, что лишь пугает; и страдаем мы чаще в воображении, чем наяву.",
+			"en": "There are more things likely to frighten us than to crush us; we suffer more often in imagination than in reality."
+		},
+		{
+			"id": "stoic_15",
+			"author_ru": "Сенека",
+			"author_en": "Seneca",
+			"source": "Нравственные письма / Letters 78",
+			"translator_en": "Richard M. Gummere",
+			"ru": "Страдаем мы сообразно тому, что мыслим о страдании.",
+			"en": "It is according to opinion that we suffer."
+		},
+		{
+			"id": "stoic_16",
+			"author_ru": "Сенека",
+			"author_en": "Seneca",
+			"source": "Нравственные письма / Letters 78",
+			"translator_en": "Richard M. Gummere",
+			"ru": "Никто не страдает и тяжко, и долго разом: природа устроила нас так, что боль либо терпима, либо кратка.",
+			"en": "No man can suffer both severely and for a long time; Nature, who loves us most tenderly, has so constituted us as to make pain either endurable or short."
+		}
+	]
+}
