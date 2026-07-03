@@ -454,3 +454,20 @@ func test_die_can_add_rejects_six_and_no_charges() -> void:
 	# Без addToDie-мода зарядов нет.
 	_rolled({"base": [2, 3], "dice": [2, 3], "active_mods": []})
 	assert_false(_cf.die_can_add("p", 0, _gs.active_check), "нет заряда — нельзя")
+
+
+func test_activate_combined_pre_and_post_roll_mods_both_apply() -> void:
+	# double_barreled_shotgun: improveSkill(pre-roll) + convertDie(post-roll) в одном
+	# whileOwned. Тап ДО броска должен положить ОБА мода: pre-roll усиливает пул сразу,
+	# post-roll (скоринг) ждёт подсчёта. Раньше один из них терялся (не в свою фазу).
+	_player({"items": [{"id": "double_barreled_shotgun", "exhausted": false}]})
+	_rolled(
+		{"context": "combatEncounter", "skill": "strength", "rolled": false, "base": [], "dice": []}
+	)
+	assert_true(_cf.activate("p", 0), "оружие применимо до броска")
+	var verbs: Array = []
+	for m_v: Variant in _gs.active_check["active_mods"]:
+		verbs.append(String((m_v as Dictionary).get("do", "")))
+	assert_has(verbs, "improveSkill", "усиление пула легло")
+	assert_has(verbs, "convertDie", "скоринг-мод тоже лёг (post-roll в любой фазе)")
+	assert_eq(_cf.pool(_gs.active_check), 5, "пул = навык 1 + improveSkill 4")

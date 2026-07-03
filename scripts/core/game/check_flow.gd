@@ -262,9 +262,12 @@ func activate(pid: String, item_index: int) -> bool:
 	var rolled: bool = bool(c.get("rolled", false))
 	# Фильтр модов: (1) навык шага (карта боя combatEncounter несёт skill strength/will
 	# — на «не свой» шаг не применяем, иначе карта истощится впустую); (2) ТАЙМИНГ —
-	# усиление пула (навык/доп.кубы) только ДО броска, результат/перебросы только ПОСЛЕ.
+	# усиление пула (pre-roll: навык/доп.кубы) только ДО броска; результат/скоринг
+	# (post-roll: addToDie/convertDie/rerollDice…) — в ЛЮБОЙ фазе. Так карта с
+	# improveSkill(pre)+convertDie(post) в одном whileOwned одним тапом до броска даёт
+	# ОБА эффекта (иначе второй мод — не в свою фазу, а повторный тап истощён).
 	var ok := func(m_v3: Variant) -> bool:
-		return Dice.mod_skill_ok(m_v3, skill) and Dice.mod_is_pre_roll(m_v3) != rolled
+		return Dice.mod_skill_ok(m_v3, skill) and (not Dice.mod_is_pre_roll(m_v3) or not rolled)
 	# Glamour — только пассив-аура (без cost/limit); актив — action + passive.
 	var action_mods: Array = (
 		[] if is_glam else AssetCatalog.action_check_mods(asset, ctx).filter(ok)
