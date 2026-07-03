@@ -139,6 +139,7 @@ const _CHECK_MOD_VERBS := [
 	"rerollMatching",
 	"enhanceReroll",
 	"minDice",
+	"substituteSkill",
 ]
 
 

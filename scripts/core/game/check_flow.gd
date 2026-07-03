@@ -97,9 +97,11 @@ func pool(c: Dictionary) -> int:
 	var p: Dictionary = _gs.players.get(String(c.get("pid", "")), {})
 	var skill: String = String(c.get("skill", "will"))
 	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-	var base: int = int((inv.get("skills", {}) as Dictionary).get(skill, 1))
-	var mods: int = int((p.get("skill_mods", {}) as Dictionary).get(skill, 0))
 	var active: Array = c.get("active_mods", [])
+	# substituteSkill (Security Squad): база пула по ДРУГОМУ навыку (Влияние вместо Силы).
+	var stat: String = Dice.substituted_skill(active, skill)
+	var base: int = int((inv.get("skills", {}) as Dictionary).get(stat, 1))
+	var mods: int = int((p.get("skill_mods", {}) as Dictionary).get(stat, 0))
 	var bonus: int = Dice.pre_roll_bonus(active, skill)
 	# minDice (Gambler's Dice) — пул не меньше count, поверх всех прочих слагаемых.
 	return maxi(

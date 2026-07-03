@@ -516,3 +516,17 @@ func test_pool_min_dice_floors_pool() -> void:
 	assert_eq(_cf.pool(c), 3, "навык 1 < minDice 3 → пул 3")
 	c["modifier"] = 5
 	assert_eq(_cf.pool(c), 6, "1 + 5 = 6 > minDice 3 → пул 6 (не режет)")
+
+
+func test_pool_substitute_skill() -> void:
+	# substituteSkill (Security Squad): база пула по Влиянию вместо Силы.
+	_player({"skill_mods": {"influence": 3}})
+	var c: Dictionary = {
+		"pid": "p",
+		"skill": "strength",
+		"modifier": 0,
+		"active_mods": [{"do": "substituteSkill", "fromSkill": "strength", "toSkill": "influence"}],
+	}
+	assert_eq(_cf.pool(c), 4, "база по Влиянию: 1 + skill_mods 3 = 4")
+	c["active_mods"] = []
+	assert_eq(_cf.pool(c), 1, "без карты — по Силе: 1 + 0")

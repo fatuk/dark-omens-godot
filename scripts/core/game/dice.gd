@@ -72,12 +72,25 @@ static func mod_skill_ok(m: Dictionary, skill: String) -> bool:
 # Глаголы, меняющие ПУЛ (число кубов) — применяются ТОЛЬКО до броска: в уже
 # брошенный набор их не докинуть. Прочие check-mod-глаголы (addToDie/convertDie/
 # rerollDice/rerollMatching/enhanceReroll) — результат/перебросы, только ПОСЛЕ.
-const PRE_ROLL_VERBS: Array = ["improveSkill", "impairSkill", "rollAdditionalDice", "minDice"]
+const PRE_ROLL_VERBS: Array = [
+	"improveSkill", "impairSkill", "rollAdditionalDice", "minDice", "substituteSkill"
+]
 
 
 ## Применяется ли мод ДО броска (усиление пула) — иначе после (результат/переброс).
 static func mod_is_pre_roll(m: Dictionary) -> bool:
 	return PRE_ROLL_VERBS.has(String(m.get("do", "")))
+
+
+## Эффективный навык для базы пула: substituteSkill (fromSkill==skill) → toSkill
+## (Security Squad: Влияние вместо Силы). Карта тапается опционально — свапаем стат,
+## когда выгодно. Нет подходящего мода → исходный skill.
+static func substituted_skill(mods: Array, skill: String) -> String:
+	for m_v: Variant in mods:
+		var m: Dictionary = m_v
+		if String(m.get("do", "")) == "substituteSkill" and String(m.get("fromSkill", "")) == skill:
+			return String(m.get("toSkill", skill))
+	return skill
 
 
 ## Минимальный размер пула от minDice-модов (Gambler's Dice: «бросай не меньше count»).
