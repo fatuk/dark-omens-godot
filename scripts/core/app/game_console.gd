@@ -314,17 +314,30 @@ func _candidates(toks: Array, arg_index: int, editing: String) -> Array:
 	var cmd: String = String(toks[0]).to_lower()
 	match cmd:
 		"give":
-			return _players_cands() if arg_index == 1 else _asset_entries() + _spell_entries()
+			return (
+				_players_cands()
+				if arg_index == 1
+				else _as_cands(_asset_entries() + _spell_entries())
+			)
 		"cond", "condition":
-			return _players_cands() if arg_index == 1 else _condition_entries()
+			return _players_cands() if arg_index == 1 else _as_cands(_condition_entries())
 		"spawn", "mon":
-			return _location_cands() if editing.begins_with("@") else _monster_entries()
+			return _location_cands() if editing.begins_with("@") else _as_cands(_monster_entries())
 		"gate":
 			return _location_cands() if editing.begins_with("@") else _colors_cands()
 		"list", "ls":
-			return _category_cands() if arg_index == 1 else _entries_for(String(toks[1]))
+			return _category_cands() if arg_index == 1 else _as_cands(_entries_for(String(toks[1])))
 		_:
 			return []
+
+
+## Каталожные записи {id, label, kind} → единая форма подсказок {text, hint}.
+func _as_cands(entries: Array) -> Array:
+	var out: Array = []
+	for e_v: Variant in entries:
+		var e: Dictionary = e_v
+		out.append({"text": String(e.get("id", "")), "hint": String(e.get("label", ""))})
+	return out
 
 
 ## Отфильтровать кандидатов по вводимому префиксу: сперва begins_with, потом contains.
