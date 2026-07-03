@@ -18,7 +18,14 @@ var _panel: PanelContainer = null
 var _scroll: ScrollContainer = null
 var _log_box: VBoxContainer = null
 var _input_line: LineEdit = null
+var _suggest_panel: PanelContainer = null
+var _suggest_box: VBoxContainer = null
+var _matches: Array = []  # текущие подсказки [{text, hint}]
+var _sel: int = 0  # выбранная подсказка (индекс в _matches)
 var _tween: Tween = null
+
+const _SUGGEST_MAX := 8  # сколько подсказок показывать разом
+const _COLORS := ["green", "blue", "red"]  # цвета врат для gate
 
 # ── Публичный API ─────────────────────────────────────────────────────────────
 
@@ -52,14 +59,32 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if (
-		event is InputEventKey
-		and (event as InputEventKey).pressed
-		and not (event as InputEventKey).echo
-	):
-		if (event as InputEventKey).keycode == KEY_QUOTELEFT:
-			_toggle()
+	if not (event is InputEventKey and (event as InputEventKey).pressed):
+		return
+	var key := event as InputEventKey
+	if key.keycode == KEY_QUOTELEFT and not key.echo:
+		_toggle()
+		get_viewport().set_input_as_handled()
+		return
+	# Навигация по автодополнению — только пока строка ввода в фокусе.
+	if not (_shown and is_instance_valid(_input_line) and _input_line.has_focus()):
+		return
+	match key.keycode:
+		KEY_TAB:  # принять/дописать ближайшую подсказку (echo — автоповтор удержания)
+			_accept_current()
 			get_viewport().set_input_as_handled()
+		KEY_UP:
+			if not _matches.is_empty():
+				_move_sel(-1)
+				get_viewport().set_input_as_handled()
+		KEY_DOWN:
+			if not _matches.is_empty():
+				_move_sel(1)
+				get_viewport().set_input_as_handled()
+		KEY_ESCAPE:
+			if _suggest_panel.visible:
+				_hide_suggestions()
+				get_viewport().set_input_as_handled()
 
 
 # ── Построение UI ─────────────────────────────────────────────────────────────
@@ -132,6 +157,27 @@ func _build_ui() -> void:
 	_log_box.add_theme_constant_override("separation", 2)
 	_scroll.add_child(_log_box)
 
+	# Панель автодополнения (над вводом; скрыта, пока нет подсказок).
+	_suggest_panel = PanelContainer.new()
+	_suggest_panel.name = "Suggest"
+	_suggest_panel.visible = false
+	_suggest_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sg_style := StyleBoxFlat.new()
+	sg_style.bg_color = Color(0.02, 0.02, 0.05, 0.95)
+	sg_style.border_color = Color(0.30, 0.24, 0.50, 0.45)
+	sg_style.set_border_width_all(1)
+	sg_style.content_margin_left = 8
+	sg_style.content_margin_right = 8
+	sg_style.content_margin_top = 4
+	sg_style.content_margin_bottom = 4
+	_suggest_panel.add_theme_stylebox_override("panel", sg_style)
+	vbox.add_child(_suggest_panel)
+
+	_suggest_box = VBoxContainer.new()
+	_suggest_box.name = "SuggestBox"
+	_suggest_box.add_theme_constant_override("separation", 1)
+	_suggest_panel.add_child(_suggest_box)
+
 	# Строка ввода debug-команд (give / spawn / gate / cond / list / who / help).
 	_input_line = LineEdit.new()
 	_input_line.name = "Input"
@@ -149,6 +195,7 @@ func _build_ui() -> void:
 	_input_line.add_theme_stylebox_override("normal", in_style)
 	_input_line.add_theme_stylebox_override("focus", in_style)
 	_input_line.text_submitted.connect(_on_command_submitted)
+	_input_line.text_changed.connect(_on_text_changed)
 	vbox.add_child(_input_line)
 
 
@@ -177,6 +224,7 @@ func _toggle() -> void:
 		if is_instance_valid(_input_line):
 			_input_line.grab_focus()
 	else:
+		_hide_suggestions()
 		if is_instance_valid(_input_line):
 			_input_line.release_focus()  # чтобы поле не ело клавиатуру в игре
 		_tween = create_tween()
@@ -216,6 +264,181 @@ func _ts() -> String:
 	return Time.get_time_string_from_system()
 
 
+# ── Автодополнение (shell-стиль) ──────────────────────────────────────────────
+# По мере ввода над строкой всплывает список подсказок для ТЕКУЩЕГО токена
+# (команда → её аргумент по контексту). Tab — принять выбранную (дописать + пробел),
+# ↑/↓ — перебрать, Esc — скрыть. Кандидаты берутся из тех же каталогов/игроков,
+# что и резолв, — рассинхрона «подсказали одно, приняло другое» нет.
+
+const _COMMANDS := [
+	{"text": "give", "hint": "актив/заклинание в руку"},
+	{"text": "spawn", "hint": "монстр на локации"},
+	{"text": "gate", "hint": "открыть врата"},
+	{"text": "cond", "hint": "наложить состояние"},
+	{"text": "list", "hint": "список каталога"},
+	{"text": "who", "hint": "игроки"},
+	{"text": "clear", "hint": "очистить консоль"},
+	{"text": "help", "hint": "справка"},
+]
+
+
+func _on_text_changed(_new_text: String) -> void:
+	_recompute_suggestions()
+
+
+## Пересобрать список подсказок по текущему тексту и позиции токена.
+func _recompute_suggestions() -> void:
+	var text: String = _input_line.text
+	var ends_space: bool = text.length() > 0 and text.ends_with(" ")
+	var toks: Array = Array(text.split(" ", false))
+	var arg_index: int = toks.size() if ends_space else maxi(0, toks.size() - 1)
+	var editing: String = "" if ends_space or toks.is_empty() else String(toks[toks.size() - 1])
+
+	# Пустой ввод в позиции команды — не сыпем весь список, ждём первый символ.
+	if editing.is_empty() and arg_index == 0:
+		_hide_suggestions()
+		return
+
+	var cands: Array = _candidates(toks, arg_index, editing)
+	_matches = _filter(cands, editing)
+	_sel = 0
+	_render_suggestions()
+
+
+## Кандидаты для позиции arg_index текущей команды.
+func _candidates(toks: Array, arg_index: int, editing: String) -> Array:
+	if arg_index == 0:
+		return _COMMANDS.duplicate()
+	var cmd: String = String(toks[0]).to_lower()
+	match cmd:
+		"give":
+			return _players_cands() if arg_index == 1 else _asset_entries() + _spell_entries()
+		"cond", "condition":
+			return _players_cands() if arg_index == 1 else _condition_entries()
+		"spawn", "mon":
+			return _location_cands() if editing.begins_with("@") else _monster_entries()
+		"gate":
+			return _location_cands() if editing.begins_with("@") else _colors_cands()
+		"list", "ls":
+			return _category_cands() if arg_index == 1 else _entries_for(String(toks[1]))
+		_:
+			return []
+
+
+## Отфильтровать кандидатов по вводимому префиксу: сперва begins_with, потом contains.
+func _filter(cands: Array, editing: String) -> Array:
+	if editing.is_empty():
+		return cands
+	var e: String = editing.to_lower()
+	var pref: Array = []
+	var sub: Array = []
+	for c_v: Variant in cands:
+		var t: String = String((c_v as Dictionary)["text"]).to_lower()
+		if t.begins_with(e):
+			pref.append(c_v)
+		elif t.contains(e):
+			sub.append(c_v)
+	return pref + sub
+
+
+func _render_suggestions() -> void:
+	for ch: Node in _suggest_box.get_children():
+		ch.free()
+	if _matches.is_empty():
+		_hide_suggestions()
+		return
+	var shown: int = mini(_matches.size(), _SUGGEST_MAX)
+	for i: int in range(shown):
+		var m: Dictionary = _matches[i]
+		var lbl := Label.new()
+		lbl.name = "Sg%d" % i
+		var hint: String = String(m.get("hint", ""))
+		lbl.text = (
+			("▸ " if i == _sel else "  ") + String(m["text"]) + ("  — " + hint if hint else "")
+		)
+		lbl.add_theme_font_size_override("font_size", FONT_SIZE - 4)
+		var col: Color = Color(0.90, 0.78, 0.42) if i == _sel else Color(0.55, 0.52, 0.45)
+		lbl.add_theme_color_override("font_color", col)
+		_suggest_box.add_child(lbl)
+	if _matches.size() > shown:
+		var more := Label.new()
+		more.name = "More"
+		more.text = "  … ещё %d" % (_matches.size() - shown)
+		more.add_theme_font_size_override("font_size", FONT_SIZE - 4)
+		more.add_theme_color_override("font_color", Color(0.45, 0.42, 0.38))
+		_suggest_box.add_child(more)
+	_suggest_panel.visible = true
+
+
+func _move_sel(delta: int) -> void:
+	if _matches.is_empty():
+		return
+	var shown: int = mini(_matches.size(), _SUGGEST_MAX)
+	_sel = wrapi(_sel + delta, 0, shown)
+	_render_suggestions()
+
+
+## Принять выбранную подсказку: заменить текущий токен и дописать пробел.
+func _accept_current() -> void:
+	if _matches.is_empty():
+		_recompute_suggestions()  # ещё не считали (сразу Tab) — посчитать и, если есть, принять
+		if _matches.is_empty():
+			return
+	var pick: Dictionary = _matches[clampi(_sel, 0, _matches.size() - 1)]
+	var text: String = _input_line.text
+	var ends_space: bool = text.length() > 0 and text.ends_with(" ")
+	var toks: Array = Array(text.split(" ", false))
+	if ends_space or toks.is_empty():
+		toks.append(String(pick["text"]))
+	else:
+		toks[toks.size() - 1] = String(pick["text"])
+	var new_text: String = " ".join(PackedStringArray(toks)) + " "
+	_input_line.text = new_text
+	_input_line.caret_column = new_text.length()
+	_recompute_suggestions()  # показать подсказки следующего аргумента
+
+
+func _hide_suggestions() -> void:
+	_matches = []
+	_sel = 0
+	if is_instance_valid(_suggest_box):
+		for ch: Node in _suggest_box.get_children():
+			ch.free()
+	if is_instance_valid(_suggest_panel):
+		_suggest_panel.visible = false
+
+
+# Кандидаты-обёртки: приводим к общей форме {text, hint}.
+func _players_cands() -> Array:
+	var out: Array = [{"text": "me", "hint": "ты (хост)"}]
+	for p_v: Variant in _players():
+		var p: Dictionary = p_v
+		out.append({"text": String(p["name"]), "hint": String(p["investigator"])})
+	return out
+
+
+func _location_cands() -> Array:
+	var out: Array = []
+	for e_v: Variant in _location_entries():
+		var e: Dictionary = e_v
+		out.append({"text": "@" + String(e["id"]), "hint": String(e["label"])})
+	return out
+
+
+func _colors_cands() -> Array:
+	var out: Array = []
+	for c: String in _COLORS:
+		out.append({"text": c, "hint": "цвет врат"})
+	return out
+
+
+func _category_cands() -> Array:
+	var out: Array = []
+	for c: String in ["assets", "spells", "monsters", "conditions", "locations"]:
+		out.append({"text": c, "hint": "категория"})
+	return out
+
+
 # ── Debug-команды ─────────────────────────────────────────────────────────────
 # Строка ввода дёргает хост-авторитетные фасады GameState.debug_* (гейт: dev-сборка
 # + хост). Резолв id по каталогам (частичное совпадение по id или переводу имени);
@@ -226,6 +449,7 @@ func _ts() -> String:
 func _on_command_submitted(text: String) -> void:
 	_input_line.clear()
 	_input_line.grab_focus()  # держим фокус для цепочки команд
+	_hide_suggestions()
 	var line: String = text.strip_edges()
 	if line.is_empty():
 		return
@@ -268,6 +492,7 @@ func _cmd_help() -> void:
 	self.log(
 		"Игрок: me · часть имени/сыщика · номер из `who`. Карта/монстр: id или часть названия."
 	)
+	self.log("Автодополнение: набирай и Tab — принять/дописать, ↑/↓ — выбрать, Esc — скрыть.")
 
 
 func _cmd_who() -> void:
