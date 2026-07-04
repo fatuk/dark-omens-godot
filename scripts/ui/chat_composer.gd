@@ -11,6 +11,9 @@ extends CanvasLayer
 
 enum { STAGE_TEMPLATE, STAGE_NOUN }
 
+# Рамка-фон превью собираемого сообщения (nine-patch: тянется центр, ornate-углы целы).
+const _FRAME_TEX: Texture2D = preload("res://assets/message-frame.png")
+
 var _open := false
 var _stage := STAGE_TEMPLATE
 var _phrase_id := ""
@@ -45,7 +48,7 @@ func _build_fan() -> void:
 func _build_preview() -> void:
 	_preview_panel = PanelContainer.new()
 	_preview_panel.name = "PreviewPanel"
-	UIStyle.style_modal_panel(_preview_panel, 24)
+	_preview_panel.add_theme_stylebox_override("panel", _make_frame_style())
 	_preview_panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_preview_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_preview_panel.position = Vector2(0, 120)
@@ -56,6 +59,24 @@ func _build_preview() -> void:
 	_preview.custom_minimum_size = Vector2(520, 0)
 	_preview.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_preview_panel.add_child(_preview)
+
+
+# StyleBoxTexture из message-frame.png (749×300). Nine-patch: ornate-кант не тянется
+# (texture_margin), плоский центр растягивается под длину фразы. content_margin —
+# отступ текста, чтобы не лез на кант. Значения подобраны на глаз — при желании
+# правятся здесь.
+func _make_frame_style() -> StyleBoxTexture:
+	var sb := StyleBoxTexture.new()
+	sb.texture = _FRAME_TEX
+	sb.texture_margin_left = 72
+	sb.texture_margin_right = 72
+	sb.texture_margin_top = 46
+	sb.texture_margin_bottom = 46
+	sb.content_margin_left = 88
+	sb.content_margin_right = 88
+	sb.content_margin_top = 40
+	sb.content_margin_bottom = 40
+	return sb
 
 
 # ── Ввод (только C; ◄ ► / колесо / Esc обрабатывает сам веер) ─────────────────
