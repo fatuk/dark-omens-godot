@@ -53,12 +53,23 @@ func _build_preview() -> void:
 	_preview_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_preview_panel.position = Vector2(0, 120)
 	_preview_panel.visible = false
+	# Ассет рамки нарисован в @2× → строим превью в двойном размере (шрифт/ширина
+	# ×2) и ужимаем контейнер в scale 0.5. Так ornate-кант рисуется крупно = чётко,
+	# а на экране рамка выходит в задуманную половину, а не вдвое толще.
+	_preview_panel.scale = Vector2(0.5, 0.5)
+	_preview_panel.resized.connect(_recenter_preview)
 	add_child(_preview_panel)
-	_preview = UIStyle.label("…", 42, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_preview = UIStyle.label("…", 84, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	_preview.name = "Preview"
-	_preview.custom_minimum_size = Vector2(520, 0)
+	_preview.custom_minimum_size = Vector2(1040, 0)
 	_preview.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_preview_panel.add_child(_preview)
+
+
+# scale 0.5 сжимает панель к её pivot; ставим pivot по верх-центру, иначе превью
+# уедет влево. Пересчёт на каждый resized — текст слота меняет ширину панели.
+func _recenter_preview() -> void:
+	_preview_panel.pivot_offset = Vector2(_preview_panel.size.x * 0.5, 0.0)
 
 
 # StyleBoxTexture из message-frame.png (749×300). Nine-patch: ornate-кант не тянется
