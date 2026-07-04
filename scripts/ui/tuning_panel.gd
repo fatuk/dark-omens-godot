@@ -1,9 +1,10 @@
 extends CanvasLayer
 
-## Многосекционная дебаг-панель шейдеров. Ctrl+M открывает/закрывает.
+## Дев-панель живого тюнинга (шейдеры, анимация, раскладка UI). Ctrl+M откр./закр.
 ## Все слайдеры, секции, кнопка «Сбросить» строятся из массива _specs ниже —
-## чтобы добавить новый параметр шейдера достаточно дописать одну запись.
-## Изменения не сохраняются в settings.cfg — это инструмент тонкой настройки.
+## чтобы добавить новый параметр достаточно дописать одну запись + сеттер-Callable.
+## Изменения не сохраняются в settings.cfg — это инструмент тонкой настройки: найденное
+## значение запекается константой в целевой скрипт (default: ссылается на неё же).
 ##
 ## Спека параметра:
 ##   {"section": "ИМЯ"}                              — заголовок новой секции
@@ -407,7 +408,7 @@ func _ready() -> void:
 	_root.visible = false
 	UIStyle.style_panel(%Panel, 12)
 	_build_ui()
-	# Панель тюнинга шейдеров (Ctrl+M) — только dev; в релизе игрок её не открывает.
+	# Панель тюнинга (Ctrl+M) — только dev; в релизе игрок её не открывает.
 	set_process_unhandled_input(OS.is_debug_build())
 
 
@@ -423,7 +424,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _build_ui() -> void:
-	_add_title("  SHADER DEBUG  ·  Ctrl+M")
+	_add_title("  ТЮНИНГ  ·  Ctrl+M")
 	for spec: Dictionary in _build_specs():
 		if spec.has("section"):
 			_add_section(String(spec.section))
@@ -436,7 +437,7 @@ func _add_title(text: String) -> void:
 	var lbl := Label.new()
 	lbl.name = "Label"
 	lbl.text = text
-	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.add_theme_font_size_override("font_size", 26)
 	lbl.add_theme_color_override("font_color", UIColors.ACCENT)
 	_vbox.add_child(lbl)
 
@@ -444,12 +445,12 @@ func _add_title(text: String) -> void:
 func _add_section(title: String) -> void:
 	var spacer := Control.new()
 	spacer.name = "Spacer"
-	spacer.custom_minimum_size = Vector2(0, 6)
+	spacer.custom_minimum_size = Vector2(0, 12)
 	_vbox.add_child(spacer)
 	var lbl := Label.new()
 	lbl.name = "Label"
 	lbl.text = title
-	lbl.add_theme_font_size_override("font_size", 11)
+	lbl.add_theme_font_size_override("font_size", 22)
 	lbl.add_theme_color_override("font_color", UIColors.WARNING)
 	_vbox.add_child(lbl)
 
@@ -464,13 +465,13 @@ func _add_row(spec: Dictionary) -> void:
 
 	var row := HBoxContainer.new()
 	row.name = "Row"
-	row.add_theme_constant_override("separation", 6)
+	row.add_theme_constant_override("separation", 12)
 
 	var lbl := Label.new()
 	lbl.name = "Label"
 	lbl.text = String(spec.label)
-	lbl.custom_minimum_size = Vector2(86, 0)
-	lbl.add_theme_font_size_override("font_size", 11)
+	lbl.custom_minimum_size = Vector2(172, 0)
+	lbl.add_theme_font_size_override("font_size", 22)
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(lbl)
 
@@ -480,6 +481,7 @@ func _add_row(spec: Dictionary) -> void:
 	sl.max_value = max_v
 	sl.step = step
 	sl.value = init_v
+	sl.custom_minimum_size = Vector2(0, 32)  # выше трек — легче попасть/крутить
 	sl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(sl)
@@ -487,8 +489,8 @@ func _add_row(spec: Dictionary) -> void:
 	var val := Label.new()
 	val.name = "Value"
 	val.text = _fmt(init_v, step)
-	val.custom_minimum_size = Vector2(44, 0)
-	val.add_theme_font_size_override("font_size", 11)
+	val.custom_minimum_size = Vector2(88, 0)
+	val.add_theme_font_size_override("font_size", 22)
 	val.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	val.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(val)
@@ -509,7 +511,7 @@ func _add_row(spec: Dictionary) -> void:
 func _add_reset_button() -> void:
 	var spacer := Control.new()
 	spacer.name = "Spacer"
-	spacer.custom_minimum_size = Vector2(0, 6)
+	spacer.custom_minimum_size = Vector2(0, 12)
 	_vbox.add_child(spacer)
 	var btn := Button.new()
 	btn.name = "Button"

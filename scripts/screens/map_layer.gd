@@ -202,7 +202,7 @@ const MYSTERY_TEX: Texture2D = preload("res://assets/map/mystery-icon.png")
 
 
 func _ready() -> void:
-	add_to_group("map_layer")  # чтобы дебаг-панель шейдеров (Ctrl+M) нашла _chat_mat
+	add_to_group("map_layer")  # чтобы дебаг-панель тюнинга (Ctrl+M) нашла _chat_mat
 	_textures = {
 		"city": load("res://assets/map/city.png"),
 		"sea": load("res://assets/map/sea.png"),
@@ -217,7 +217,7 @@ func _ready() -> void:
 	GameState.action_announced.connect(_on_action_announced)
 
 
-## Материал «клубящегося дыма» балуна чата — для дебаг-панели шейдеров (Ctrl+M).
+## Материал «клубящегося дыма» балуна чата — для дебаг-панели тюнинга (Ctrl+M).
 func chat_smoke_material() -> ShaderMaterial:
 	return _chat_mat
 

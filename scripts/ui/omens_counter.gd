@@ -10,7 +10,7 @@ extends Control
 ## плавно подкручивается на +0.3 шага, чтобы юзер мог «подсмотреть»
 ## следующий омен. Уход мыши — возвращает на current_step.
 
-# Настройки арта круга — static, чтобы тюнить на лету в дебаг-панели шейдеров
+# Настройки арта круга — static, чтобы тюнить на лету в дебаг-панели тюнинга
 # (Ctrl+M, секция «КРУГ ЗНАМЕНИЙ») и переживать пересоздание узла.
 static var STEP_DEG: float = 45.0  # градусов между оменами на диске
 static var START_ANGLE_DEG: float = 0.0  # база поворота диска (выравнивает омен под окно)
@@ -52,7 +52,7 @@ var _base_pos_set: bool = false
 
 
 func _ready() -> void:
-	add_to_group("omens_counter")  # чтобы дебаг-панель шейдеров (Ctrl+M) нашла узел
+	add_to_group("omens_counter")  # чтобы дебаг-панель тюнинга (Ctrl+M) нашла узел
 	mouse_entered.connect(_on_hover)
 	mouse_exited.connect(_on_unhover)
 	# Первый layout-pass для корректных global_position/size
