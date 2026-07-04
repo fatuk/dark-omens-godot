@@ -1,7 +1,7 @@
 class_name GameCard
 extends Control
 
-## Единый компонент игровой карты на рамке asset-card.png — для карт товаров
+## Единый компонент игровой карты на рамке asset/card-frame.png — для карт товаров
 ## (магазин) и карт руки (веер). Рисует рамку и раскладывает контент по её зонам
 ## (стоимость / арт / заголовок / описание). Когда зоны/рамка поменяются — правка
 ## в одном месте, и обе колоды обновятся.
@@ -9,7 +9,7 @@ extends Control
 ## API: set_card({cost, title, subtitle?, desc, art? : Texture2D, art_color?, glyph?,
 ##                frame? : Texture2D})  — frame: полно-артовая рамка (карта Концентрации).
 
-const FRAME_TEX: Texture2D = preload("res://assets/cards/asset/asset-card.png")
+const FRAME_TEX: Texture2D = preload("res://assets/cards/asset/card-frame.png")
 
 ## Аспект рамки (ширина/высота). Карту задавать в этих пропорциях, иначе рамка
 ## растянется. 1768×2796.
@@ -30,7 +30,7 @@ void fragment() {
 }
 """
 
-# Зоны контента — доли рамки (x, y, w, h ∈ 0..1). Подобраны под asset-card.png.
+# Зоны контента — доли рамки (x, y, w, h ∈ 0..1). Подобраны под asset/card-frame.png.
 const Z_COST := Rect2(0.075, 0.050, 0.160, 0.100)  # центр ≈ (0.12, 0.085) — герб-компас
 const Z_ART := Rect2(0.025, 0.025, 0.950, 0.515)  # арт ПОД рамкой, 95% ширины, упёрт вверх
 const Z_TITLE := Rect2(0.110, 0.555, 0.780, 0.092)
