@@ -51,7 +51,7 @@ func _build_preview() -> void:
 	_preview_panel.add_theme_stylebox_override("panel", _make_frame_style())
 	_preview_panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_preview_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_preview_panel.position = Vector2(0, 120)
+	_preview_panel.position = Vector2(0, 160)  # отступ от верхней полосы
 	_preview_panel.visible = false
 	# Ассет рамки нарисован в @2× → строим превью в двойном размере (шрифт/ширина
 	# ×2) и ужимаем контейнер в scale 0.5. Так ornate-кант рисуется крупно = чётко,
@@ -85,8 +85,8 @@ func _make_frame_style() -> StyleBoxTexture:
 	sb.texture_margin_bottom = 46
 	sb.content_margin_left = 88
 	sb.content_margin_right = 88
-	sb.content_margin_top = 40
-	sb.content_margin_bottom = 40
+	sb.content_margin_top = 100
+	sb.content_margin_bottom = 100
 	return sb
 
 
