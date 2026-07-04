@@ -397,6 +397,70 @@ func _build_specs() -> Array:
 			"default": OmensCounter.STEP_DEG,
 			"set": _set_omen_step
 		},
+		{"section": "СТОПКА ЖЕТОНОВ"},
+		{
+			"key": "ent_size",
+			"label": "Размер",
+			"min": 0.3,
+			"max": 2.0,
+			"step": 0.05,
+			"default": MapLayer.ENTITY_SIZE_FRAC,
+			"set": _set_ent_size
+		},
+		{
+			"key": "ent_stack_y",
+			"label": "Стопка Y",
+			"min": -100.0,
+			"max": 100.0,
+			"step": 1.0,
+			"default": MapLayer.ENTITY_STACK_Y,
+			"set": _set_ent_stack_y
+		},
+		{
+			"key": "ent_stack_x0",
+			"label": "Стопка X0",
+			"min": 0.0,
+			"max": 100.0,
+			"step": 1.0,
+			"default": MapLayer.ENTITY_STACK_X0,
+			"set": _set_ent_stack_x0
+		},
+		{
+			"key": "ent_stack_dx",
+			"label": "Наслоение X",
+			"min": 0.0,
+			"max": 60.0,
+			"step": 1.0,
+			"default": MapLayer.ENTITY_STACK_DX,
+			"set": _set_ent_stack_dx
+		},
+		{
+			"key": "ent_row_gap",
+			"label": "Ряд шаг",
+			"min": 10.0,
+			"max": 100.0,
+			"step": 1.0,
+			"default": MapLayer.ENTITY_ROW_GAP,
+			"set": _set_ent_row_gap
+		},
+		{
+			"key": "ent_row_x0",
+			"label": "Ряд X0",
+			"min": 0.0,
+			"max": 120.0,
+			"step": 1.0,
+			"default": MapLayer.ENTITY_ROW_X0,
+			"set": _set_ent_row_x0
+		},
+		{
+			"key": "ent_lerp",
+			"label": "Скорость ряда",
+			"min": 1.0,
+			"max": 30.0,
+			"step": 0.5,
+			"default": MapLayer.ENTITY_HOVER_LERP,
+			"set": _set_ent_lerp
+		},
 	]
 
 
@@ -793,3 +857,33 @@ func _set_omen_angle(v: float) -> void:
 func _set_omen_step(v: float) -> void:
 	OmensCounter.STEP_DEG = v
 	_omens_reapply()
+
+
+# ── Стопка жетонов локации (MapLayer.ENTITY_* — static; _process читает их каждый
+# кадр, поэтому ребилд не нужен, достаточно присвоить) ─────────────────────────
+func _set_ent_size(v: float) -> void:
+	MapLayer.ENTITY_SIZE_FRAC = v
+
+
+func _set_ent_stack_y(v: float) -> void:
+	MapLayer.ENTITY_STACK_Y = v
+
+
+func _set_ent_stack_x0(v: float) -> void:
+	MapLayer.ENTITY_STACK_X0 = v
+
+
+func _set_ent_stack_dx(v: float) -> void:
+	MapLayer.ENTITY_STACK_DX = v
+
+
+func _set_ent_row_gap(v: float) -> void:
+	MapLayer.ENTITY_ROW_GAP = v
+
+
+func _set_ent_row_x0(v: float) -> void:
+	MapLayer.ENTITY_ROW_X0 = v
+
+
+func _set_ent_lerp(v: float) -> void:
+	MapLayer.ENTITY_HOVER_LERP = v

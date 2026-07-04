@@ -77,21 +77,23 @@ const ENTITY_TEX: Dictionary = {
 # вживую через MCP без пересборки. Имена в UPPER_CASE сохранены ради ссылок
 # в _process/set_entities.
 ## Размер иконки = размер маркера локации (как в макете).
-var ENTITY_SIZE_FRAC: float = 1.0
+## static — чтобы дебаг-панель тюнинга (Ctrl+M, «СТОПКА ЖЕТОНОВ») правила вживую и как
+## единый источник дефолта, а _process читал их каждый кадр. Единственный инстанс.
+static var ENTITY_SIZE_FRAC: float = 1.0
 ## Стопка у локации: вертикальный сдвиг точки стопки (0 — на одной горизонтали
 ## с медальоном), стартовый сдвиг колоды вправо (чтобы первый жетон idx0 чуть
 ## выступал из-за медальона, а не прятался под ним) и сдвиг наслоения вправо
 ## (экранные px). Жетоны рисуются позади медальона (z=1 < 2) — выглядывают вправо.
-var ENTITY_STACK_Y: float = 0.0
-var ENTITY_STACK_X0: float = 20.0
-var ENTITY_STACK_DX: float = 18.0
+static var ENTITY_STACK_Y: float = 0.0
+static var ENTITY_STACK_X0: float = 20.0
+static var ENTITY_STACK_DX: float = 18.0
 ## Выезд в ряд у выбранной локации: шаг между иконками + сдвиг начала ряда вправо.
 ## ROW_X0 ≈ размер маркера, чтобы первый жетон (idx0) выходил из-за медальона,
 ## а не прятался под ним.
-var ENTITY_ROW_GAP: float = 42.0
-var ENTITY_ROW_X0: float = 40.0
+static var ENTITY_ROW_GAP: float = 42.0
+static var ENTITY_ROW_X0: float = 40.0
 ## Скорость сглаживания раскрытия/сворачивания ряда.
-var ENTITY_HOVER_LERP: float = 12.0
+static var ENTITY_HOVER_LERP: float = 12.0
 
 # ── Зависимости ───────────────────────────────────────────────────────────────
 
