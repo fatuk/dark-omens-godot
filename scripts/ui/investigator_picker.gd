@@ -12,9 +12,9 @@ extends Control
 
 const _MODAL_SCENE := preload("res://scenes/ui/modal_dialog.tscn")
 
-const CHEVRON_TEX_LEFT: Texture2D = preload("res://assets/carousel/L_chevron.png")
-const CHEVRON_TEX_RIGHT: Texture2D = preload("res://assets/carousel/R_chevron.png")
-const INFO_BTN_TEX: Texture2D = preload("res://assets/info-btn.png")
+const CHEVRON_TEX_LEFT: Texture2D = preload("res://assets/ui/nav/L_chevron.png")
+const CHEVRON_TEX_RIGHT: Texture2D = preload("res://assets/ui/nav/R_chevron.png")
+const INFO_BTN_TEX: Texture2D = preload("res://assets/ui/button/info-btn.png")
 
 ## Эмитится при ЛЮБОЙ смене текущего сыщика — включая авто-восстановление из
 ## prefs при открытии picker'а. Lobby подписывается и сразу бродкастит выбор,

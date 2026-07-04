@@ -9,7 +9,7 @@ class_name UIStyle
 ## BG_MODULATE затемняет фон — компенсирует sepia из PostFx, который
 ## слегка подсвечивает тёмные пиксели. Без этого фон в игре заметно светлее
 ## референса в Photoshop (где он почти чёрный).
-const BG_TEX: Texture2D = preload("res://assets/bg-pattern.png")
+const BG_TEX: Texture2D = preload("res://assets/ui/bg-pattern.png")
 const BG_SCALE: float = 0.5
 const BG_MODULATE: Color = Color(1.0, 1.0, 1.0, 1.0)
 
@@ -113,9 +113,9 @@ static func apply_main_bg(parent: Node) -> TextureRect:
 
 ## Ассеты кнопки нарисованы крупно (226 px высоты, @4×) — выводим в четверть,
 ## чтобы получить ~56 px высоту, как у обычной UI-кнопки.
-const BTN_L_TEX: Texture2D = preload("res://assets/button/L_button.png")
-const BTN_C_TEX: Texture2D = preload("res://assets/button/C_button.png")
-const BTN_R_TEX: Texture2D = preload("res://assets/button/R_button.png")
+const BTN_L_TEX: Texture2D = preload("res://assets/ui/button/L_button.png")
+const BTN_C_TEX: Texture2D = preload("res://assets/ui/button/C_button.png")
+const BTN_R_TEX: Texture2D = preload("res://assets/ui/button/R_button.png")
 const BTN_ASSET_SCALE: float = 0.25
 
 

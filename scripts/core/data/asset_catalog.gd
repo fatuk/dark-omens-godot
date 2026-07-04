@@ -85,7 +85,7 @@ static func card_payload(a: Dictionary) -> Dictionary:
 static func card_art(id: String) -> Texture2D:
 	if id.is_empty():
 		return null
-	var path: String = "res://assets/asset-card/%s.png" % id.capitalize()
+	var path: String = "res://assets/cards/asset/%s.png" % id.capitalize()
 	return load(path) if ResourceLoader.exists(path) else null
 
 

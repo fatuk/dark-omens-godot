@@ -12,7 +12,7 @@ extends CanvasLayer
 enum { STAGE_TEMPLATE, STAGE_NOUN }
 
 # Рамка-фон превью собираемого сообщения (nine-patch: тянется центр, ornate-углы целы).
-const _FRAME_TEX: Texture2D = preload("res://assets/message-frame.png")
+const _FRAME_TEX: Texture2D = preload("res://assets/chat/message-frame.png")
 
 var _open := false
 var _stage := STAGE_TEMPLATE

@@ -10,7 +10,7 @@ extends CanvasLayer
 ## визуально уголок становится мельче (display-px), но детализация
 ## филиграни сохраняется (рендерим в полную source-разрешуху).
 
-const _FRAME_TEX: Texture2D = preload("res://assets/main-frame.png")
+const _FRAME_TEX: Texture2D = preload("res://assets/menu/main-frame.png")
 
 # Размер угла в source-пикселях PNG'а (3238×1944). Покрывает филигрань
 # уголков main-frame.png целиком — иначе декор бы растягивался по краям.

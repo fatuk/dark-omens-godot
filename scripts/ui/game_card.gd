@@ -9,7 +9,7 @@ extends Control
 ## API: set_card({cost, title, subtitle?, desc, art? : Texture2D, art_color?, glyph?,
 ##                frame? : Texture2D})  — frame: полно-артовая рамка (карта Концентрации).
 
-const FRAME_TEX: Texture2D = preload("res://assets/asset-card/asset-card.png")
+const FRAME_TEX: Texture2D = preload("res://assets/cards/asset/asset-card.png")
 
 ## Аспект рамки (ширина/высота). Карту задавать в этих пропорциях, иначе рамка
 ## растянется. 1768×2796.

@@ -11,8 +11,8 @@ extends HBoxContainer
 
 # Билеты @2× — выводим с _SCALE. PNG чуть разного размера (train 161×146,
 # ocean 152×143) — нормализуем по ВЫСОТЕ.
-const _TRAIN_TEX: Texture2D = preload("res://assets/train-ticket.png")
-const _OCEAN_TEX: Texture2D = preload("res://assets/ocean-ticket.png")
+const _TRAIN_TEX: Texture2D = preload("res://assets/tickets/train-ticket.png")
+const _OCEAN_TEX: Texture2D = preload("res://assets/tickets/ocean-ticket.png")
 
 const _SCALE: float = 0.34  # высота билета = текстура.h * _SCALE
 const _TILT_DEG: float = 7.0  # наклон второго+ билетов («брошенная стопка»)

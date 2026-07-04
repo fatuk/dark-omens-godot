@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://buxo6le3jeepc"]
 
 [ext_resource type="Script" uid="uid://iflg6egts45l" path="res://scripts/screens/login.gd" id="1_pymad"]
-[ext_resource type="Texture2D" uid="uid://vkts82xxlwl1" path="res://assets/logo.png" id="2_logo"]
+[ext_resource type="Texture2D" uid="uid://vkts82xxlwl1" path="res://assets/menu/logo.png" id="2_logo"]
 
 [node name="Login" type="Control"]
 layout_mode = 3

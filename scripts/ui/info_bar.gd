@@ -34,7 +34,7 @@ const _HUD_BAR_BG: Texture2D = preload("res://assets/player-hud/bar-bg.png")
 const _HEALTH_ICON: Texture2D = preload("res://assets/player-hud/health-icon.png")
 const _HEALTH_BAR: Texture2D = preload("res://assets/player-hud/health-bar.png")
 const _SANITY_ICON: Texture2D = preload("res://assets/player-hud/sanity-icon.png")
-const _SANITY_BAR: Texture2D = preload("res://assets/player-hud/sanity-ba.png")
+const _SANITY_BAR: Texture2D = preload("res://assets/player-hud/sanity-bar.png")
 
 # Иконки-медальоны токенов (выводятся в ряду ресурсов рядом с билетами).
 const _CLUE_ICON: Texture2D = preload("res://assets/map/clue-icon.png")
@@ -42,7 +42,7 @@ const _RESOURCE_ICON: Texture2D = preload("res://assets/map/resource-icon.png")
 const _TOKEN_ICON_H: float = 52.0  # высота медальона токена (px)
 
 # Ассеты панели атрибутов. Все @2× — выводим в half-size.
-const _ATTR_PANEL_TEX: Texture2D = preload("res://assets/virtues-panel/virues-panel.png")
+const _ATTR_PANEL_TEX: Texture2D = preload("res://assets/virtues-panel/virtues-panel.png")
 const _ATTR_ICONS: Dictionary = {
 	"strength": preload("res://assets/virtues-panel/strength.png"),
 	"lore": preload("res://assets/virtues-panel/lore.png"),

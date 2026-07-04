@@ -92,8 +92,8 @@ const DRAG_PLAY_Y_FRAC := 0.65
 const CLICK_DIST := 8.0
 
 # Текстуры стрелок переключения секций (@2× → рендерим в половину).
-const ARROW_TEX_L := "res://assets/L_arrow.png"
-const ARROW_TEX_R := "res://assets/R_arrow.png"
+const ARROW_TEX_L := "res://assets/ui/nav/L_arrow.png"
+const ARROW_TEX_R := "res://assets/ui/nav/R_arrow.png"
 # Минимальная высота области клика (запас для попадания).
 const ARROW_MIN_H := 64.0
 # Отступ шевронов от КРАЯ экрана (статично, чтобы не прыгали от ширины веера).

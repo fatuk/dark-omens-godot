@@ -6,7 +6,7 @@ extends Node2D
 # Здесь дублировать не надо: world_map двигает камеру по тем же координатам,
 # что MapLayer рисует маркеры.
 
-const _CONCENTRATION_FRAME: Texture2D = preload("res://assets/concentration-card/card-frame.png")
+const _CONCENTRATION_FRAME: Texture2D = preload("res://assets/cards/concentration/card-frame.png")
 
 const ZOOM_MIN: float = 0.5
 const ZOOM_MAX: float = 1.2

@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://djwvpqeepag3c"]
 
 [ext_resource type="Script" uid="uid://beqygmxvrjppy" path="res://scripts/screens/home.gd" id="1_home"]
-[ext_resource type="Texture2D" uid="uid://c7ruv788i1xik" path="res://assets/main-bg.png" id="2_bg"]
-[ext_resource type="Texture2D" uid="uid://vkts82xxlwl1" path="res://assets/logo.png" id="3_logo"]
+[ext_resource type="Texture2D" uid="uid://c7ruv788i1xik" path="res://assets/menu/main-bg.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://vkts82xxlwl1" path="res://assets/menu/logo.png" id="3_logo"]
 [ext_resource type="Shader" uid="uid://ccf0otuh00sff" path="res://assets/shaders/fog.gdshader" id="4_fog"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_fog"]

@@ -16,9 +16,9 @@ extends Control
 ##   set_data(inv: Dictionary) — обновить портрет/имя/занятие/цитату
 ##   set_taken(taken: bool)    — показать/скрыть оверлей «занято»
 
-const _OVERLAY_TEX: Texture2D = preload("res://assets/card-frame/card-overlay.png")
-const _FRAME_TEX: Texture2D = preload("res://assets/card-frame/card-frame.png")
-const _BADGE_TEX: Texture2D = preload("res://assets/card-frame/card-badge.png")
+const _OVERLAY_TEX: Texture2D = preload("res://assets/cards/investigator/card-overlay.png")
+const _FRAME_TEX: Texture2D = preload("res://assets/cards/investigator/card-frame.png")
+const _BADGE_TEX: Texture2D = preload("res://assets/cards/investigator/card-badge.png")
 
 # Геометрия бейджа — подобрана под текущий card-badge.png. При смене ассета
 # проверить, что текст и завитки не вылезают.

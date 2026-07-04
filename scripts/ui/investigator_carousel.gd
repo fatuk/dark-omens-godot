@@ -19,8 +19,8 @@ extends Control
 ##   index_changed(idx)  — на любой shift (включая первичный set_data)
 ##   center_clicked()    — клик по центральной карточке
 
-const ARROW_TEX_LEFT: Texture2D = preload("res://assets/L_arrow.png")
-const ARROW_TEX_RIGHT: Texture2D = preload("res://assets/R_arrow.png")
+const ARROW_TEX_LEFT: Texture2D = preload("res://assets/ui/nav/L_arrow.png")
+const ARROW_TEX_RIGHT: Texture2D = preload("res://assets/ui/nav/R_arrow.png")
 
 const VISIBLE_SLOTS := 5
 const CENTER_SLOT := 2
