@@ -14,6 +14,9 @@ enum { STAGE_TEMPLATE, STAGE_NOUN }
 # Рамка-фон превью собираемого сообщения (nine-patch: тянется центр, ornate-углы целы).
 const _FRAME_TEX: Texture2D = preload("res://assets/chat/message-frame.png")
 
+# Полно-артовая рамка карт-сообщений в веере (эмблема-облачко вшита; текст — в плашке).
+const _CARD_FRAME: Texture2D = preload("res://assets/cards/chat/card-frame.png")
+
 var _open := false
 var _stage := STAGE_TEMPLATE
 var _phrase_id := ""
@@ -155,7 +158,9 @@ func _set_template_sections() -> void:
 		var items: Array = []
 		for p_v: Variant in Messages.phrases_in(cat):
 			var pid: String = String((p_v as Dictionary).get("id", ""))
-			items.append({"kind": "chat", "id": pid, "title": _template_label(pid)})
+			items.append(
+				{"kind": "chat", "id": pid, "frame": _CARD_FRAME, "message": _template_label(pid)}
+			)
 		sections.append({"title": Messages.phrase_category_title(cat, _locale()), "items": items})
 	_fan.set_sections(sections)
 
@@ -166,7 +171,9 @@ func _set_noun_sections() -> void:
 		var items: Array = []
 		for n_v: Variant in Messages.nouns_in(cat):
 			var nid: String = String((n_v as Dictionary).get("id", ""))
-			items.append({"kind": "chat", "id": nid, "title": _noun_word(nid)})
+			items.append(
+				{"kind": "chat", "id": nid, "frame": _CARD_FRAME, "message": _noun_word(nid)}
+			)
 		sections.append({"title": Messages.category_title(cat, _locale()), "items": items})
 	_fan.set_sections(sections)
 

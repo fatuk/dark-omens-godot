@@ -35,11 +35,15 @@ const Z_COST := Rect2(0.075, 0.050, 0.160, 0.100)  # центр ≈ (0.12, 0.085
 const Z_ART := Rect2(0.025, 0.025, 0.950, 0.515)  # арт ПОД рамкой, 95% ширины, упёрт вверх
 const Z_TITLE := Rect2(0.110, 0.555, 0.780, 0.092)
 const Z_DESC := Rect2(0.120, 0.695, 0.760, 0.235)
+# Плашка карты-сообщения (chat): текст фразы по центру нижнего пергамента новой
+# рамки cards/chat/card-frame.png. Своя зона — эмблема-облачко уже вшита в рамку.
+const Z_MSG := Rect2(0.130, 0.640, 0.740, 0.270)
 
 const C_COST_TXT := UIColors.ACCENT  # янтарь — как заголовок
 const C_TITLE_TXT := UIColors.ACCENT  # янтарь на синей плашке
 const C_SUB_TXT := Color(0.62, 0.72, 0.82)  # приглушённый голубой — трейт
 const C_DESC_TXT := Color(0, 0, 0)  # чёрный — на пергаменте
+const C_MSG_TXT := Color(0.12, 0.09, 0.06)  # тёмная тушь — фраза на пергаменте карты-сообщения
 const C_ART_FILL := Color(0.10, 0.08, 0.14)  # заглушка арт-слота (закрывает белый бокс)
 const C_GLYPH := Color(0.55, 0.48, 0.35)
 
@@ -60,6 +64,7 @@ var _art: TextureRect
 var _art_fill: ColorRect
 var _glyph: Label
 var _frame: TextureRect
+var _message: Label  # карта-сообщение (chat): одна центрированная фраза в плашке
 
 
 func _init() -> void:
@@ -159,6 +164,21 @@ func _build() -> void:
 	_desc.offset_bottom = _DESC_LABEL_H
 	desc_zone.add_child(_desc)
 
+	# Карта-сообщение (chat): одна крупная центрированная фраза в плашке новой рамки.
+	# Своей арт-зоны/заголовка нет — эмблема вшита в рамку, текст ложится в Z_MSG.
+	var msg_zone := _zone("Msg", Z_MSG)
+	_message = Label.new()
+	_message.name = "MessageLabel"
+	_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_message.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_message.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_message.add_theme_font_size_override("font_size", 15)
+	_message.add_theme_color_override("font_color", C_MSG_TXT)
+	_message.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_message.visible = false
+	msg_zone.add_child(_message)
+
 	mouse_entered.connect(_on_desc_hover_start)
 	mouse_exited.connect(_on_desc_hover_end)
 	set_process(false)  # покадровый скролл включается только под курсором
@@ -167,14 +187,22 @@ func _build() -> void:
 ## Заполнить карту. Поля: cost, title, subtitle?, desc, art? (Texture2D),
 ## art_color? (Color заглушки), glyph? (символ-заглушка).
 func set_card(d: Dictionary) -> void:
+	# Карта-сообщение (chat): единственный текст — фраза по центру плашки; служебные
+	# зоны (цена/заголовок/трейт/описание) прячем, всё остальное рисует рамка.
+	var is_msg: bool = d.has("message")
+	_message.visible = is_msg
+	_message.text = String(d.get("message", ""))
+
 	# Стоимость — герб-компас; для жетонов/карт без цены поле не задаём → герб скрыт.
-	_cost.visible = d.has("cost")
+	_cost.visible = (not is_msg) and d.has("cost")
 	if _cost.visible:
 		_cost.text = str(d["cost"])
 	_title.text = String(d.get("title", ""))
+	_title.visible = not is_msg
 	_sub.text = String(d.get("subtitle", ""))
-	_sub.visible = not _sub.text.is_empty()
+	_sub.visible = (not is_msg) and not _sub.text.is_empty()
 	_desc.text = String(d.get("desc", ""))
+	_desc.visible = not is_msg
 	_on_desc_hover_end()  # новый текст — гасим скролл и возвращаем к началу
 
 	# Кастомная рамка (frame): ПОЛНО-артовая карта (арт+рамка+пергамент единым
