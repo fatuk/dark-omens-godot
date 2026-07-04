@@ -85,13 +85,13 @@ static var ENTITY_SIZE_FRAC: float = 1.0
 ## выступал из-за медальона, а не прятался под ним) и сдвиг наслоения вправо
 ## (экранные px). Жетоны рисуются позади медальона (z=1 < 2) — выглядывают вправо.
 static var ENTITY_STACK_Y: float = 0.0
-static var ENTITY_STACK_X0: float = 20.0
+static var ENTITY_STACK_X0: float = 24.0
 static var ENTITY_STACK_DX: float = 18.0
 ## Выезд в ряд у выбранной локации: шаг между иконками + сдвиг начала ряда вправо.
 ## ROW_X0 ≈ размер маркера, чтобы первый жетон (idx0) выходил из-за медальона,
 ## а не прятался под ним.
-static var ENTITY_ROW_GAP: float = 42.0
-static var ENTITY_ROW_X0: float = 40.0
+static var ENTITY_ROW_GAP: float = 44.0
+static var ENTITY_ROW_X0: float = 46.0
 ## Скорость сглаживания раскрытия/сворачивания ряда.
 static var ENTITY_HOVER_LERP: float = 12.0
 
