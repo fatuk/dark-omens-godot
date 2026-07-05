@@ -3,7 +3,8 @@ extends CanvasLayer
 ## HUD-панель основной игровой информации.
 ## Тонкий API — наружу выставлены простые сеттеры.
 
-const _SCRAMBLE_RUNES: int = 5  # рун в кадре при смене фазы/имени
+const _PHASE_RUNES: int = 4  # рун в кадре при смене фазы
+const _PLAYER_RUNES: int = 5  # рун в кадре при смене имени игрока
 
 @onready var _phase: Label = %PhaseLabel
 @onready var _player: Label = %PlayerLabel
@@ -37,14 +38,14 @@ func set_phase(text: String) -> void:
 	if text == _phase_text:
 		return
 	_phase_text = text
-	UIStyle.rune_scramble(_phase, text, _SCRAMBLE_RUNES)
+	UIStyle.rune_scramble(_phase, text, _PHASE_RUNES)
 
 
 func set_player(text: String) -> void:
 	if text == _player_text:
 		return
 	_player_text = text
-	UIStyle.rune_scramble(_player, text, _SCRAMBLE_RUNES)
+	UIStyle.rune_scramble(_player, text, _PLAYER_RUNES)
 
 
 func set_doom(filled: int) -> void:
