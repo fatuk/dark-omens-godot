@@ -22,7 +22,7 @@ const _GAP: int = 4  # иконка ↔ плашка
 # Плашка-название: nine-patch. Кант (texture_margin) не тянется, центр — да.
 const _T_MARGIN_LR: int = 90
 const _T_MARGIN_TB: int = 30
-const _T_PAD_LR: int = 44
+const _T_PAD_LR: int = 100  # больше воздуха слева/справа от текста
 const _T_PAD_T: int = 16
 const _T_PAD_B: int = 20
 
@@ -68,7 +68,7 @@ func _init(
 	title_tex: Texture2D,
 	text_key: String,
 	overlay_tex: Texture2D = null,
-	with_badge: bool = false
+	_with_badge: bool = false
 ) -> void:
 	_key = text_key
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -82,7 +82,18 @@ func _init(
 	vb.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	add_child(vb)
 
-	# ── медальон + (часы) + (бейдж) ──
+	# ── счётчик токенов НАД кнопкой (пустой у действий без счётчика — держит
+	# вертикальное выравнивание иконок в ряду) ──
+	_badge = Label.new()
+	_badge.name = "Badge"
+	_badge.add_theme_font_size_override("font_size", _BADGE_FONT)
+	_badge.add_theme_color_override("font_color", _C_BADGE)
+	_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_badge.custom_minimum_size = Vector2(0, _BADGE_FONT + 8)
+	_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vb.add_child(_badge)
+
+	# ── медальон + (часы) ──
 	var box := Control.new()
 	box.name = "IconBox"
 	box.custom_minimum_size = Vector2(_ICON_BOX, _ICON_BOX)
@@ -108,19 +119,6 @@ func _init(
 		sm.shader = sh
 		_overlay.material = sm  # угловой блюр во время проворота
 		cc.add_child(_overlay)
-	if with_badge:
-		_badge = Label.new()
-		_badge.name = "Badge"
-		_badge.add_theme_font_size_override("font_size", _BADGE_FONT)
-		_badge.add_theme_color_override("font_color", _C_BADGE)
-		_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_badge.anchor_left = 0.0
-		_badge.anchor_right = 1.0
-		_badge.anchor_top = 1.0
-		_badge.anchor_bottom = 1.0
-		_badge.offset_top = -66.0
-		_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		box.add_child(_badge)
 
 	# ── тянущаяся плашка-название ──
 	var sb := StyleBoxTexture.new()
