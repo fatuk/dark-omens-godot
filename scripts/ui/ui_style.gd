@@ -748,7 +748,11 @@ static func reconnect_overlay(parent: Control, text: String) -> ColorRect:
 ## сыщика в лобби (атрибуты) и при смене номера раунда в орбе на карте.
 const RUNE_FONT: Font = preload("res://assets/fonts/CTHUR___.TTF")
 const _SCRAMBLE_STEPS: int = 8  # сколько кадров мелькнёт
-const _SCRAMBLE_STEP_TIME: float = 0.08  # длительность одного кадра
+const _SCRAMBLE_STEP_TIME: float = 0.08  # базовая длительность одного кадра
+# ± доля к длительности кадра, СВОЯ на каждый кадр. Разбивает такт, чтобы одновременные
+# скрэмблы (напр. фаза + имя в game panel) мигали вразнобой, а не синхронно. Держим
+# max total (_STEPS × _STEP_TIME × (1+jitter)) ниже, чем тест ждёт завершения (1.2с).
+const _SCRAMBLE_JITTER: float = 0.4
 
 
 ## Запускает скрэмбл на лейбле к final_text (rune_count рун в кадре). Прерываем:
@@ -782,7 +786,9 @@ static func rune_scramble(lbl: Label, final_text: String, rune_count: int = 1) -
 				lbl.add_theme_font_override("font", RUNE_FONT)
 				lbl.text = _random_runes(rune_count)
 		)
-		tw.tween_interval(_SCRAMBLE_STEP_TIME)
+		tw.tween_interval(
+			_SCRAMBLE_STEP_TIME * randf_range(1.0 - _SCRAMBLE_JITTER, 1.0 + _SCRAMBLE_JITTER)
+		)
 	tw.tween_callback(
 		func() -> void:
 			if base_font != null:

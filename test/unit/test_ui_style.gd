@@ -13,7 +13,7 @@ func test_rune_scramble_settles_value_after_interruption() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame  # первый скрэмбл уже поставил рунный шрифт
 	UIStyle.rune_scramble(lbl, "5")  # прерываем первый
-	await get_tree().create_timer(1.0).timeout  # ждём завершения (8×0.08 + запас)
+	await get_tree().create_timer(1.2).timeout  # ждём завершения (8 кадров с джиттером + запас)
 	assert_eq(lbl.text, "5", "значение проявилось, а не залипло на рунах")
 	assert_false(lbl.has_theme_font_override("font"), "рунный шрифт снят (base был null)")
 
@@ -22,5 +22,5 @@ func test_rune_scramble_settles_value_clean_run() -> void:
 	var lbl := Label.new()
 	add_child_autofree(lbl)
 	UIStyle.rune_scramble(lbl, "7")
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.2).timeout
 	assert_eq(lbl.text, "7", "обычный скрэмбл проявляет значение")
