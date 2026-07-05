@@ -14,7 +14,7 @@ extends Control
 signal pressed
 
 const _ICON_BOX: float = 230.0  # медальон-иконка (2×)
-const _OVERLAY: Vector2 = Vector2(120, 165)  # часы внутри медальона (2×)
+const _OVERLAY: Vector2 = Vector2(96, 132)  # часы внутри медальона (2×) — с воздухом до рамки
 const _PLAQUE_FONT: int = 34
 const _BADGE_FONT: int = 40
 const _GAP: int = 4  # иконка ↔ плашка
