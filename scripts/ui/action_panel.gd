@@ -1,16 +1,19 @@
 extends CanvasLayer
 
-## Панель действий — видна только когда сейчас МОЙ ход в фазе action.
-## Четыре иконки-медальона: Отдых, Концентрация, Ресурс, Пас (виджет ActionButton).
-## Обмен вынесен в сайдбар локации; действия-состояния играются картой из веера —
-## здесь их больше нет. Бейджи под концентрацией/ресурсом — текущее кол-во у игрока.
+## Панель действий на карте. ВСЕГДА видна; кнопки активны только в мой ход фазы
+## action (иначе неактивны). Четыре иконки-медальона: Отдых, Концентрация, Ресурс,
+## Пас (виджет ActionButton). Обмен — в сайдбаре локации; действия-состояний играются
+## картой из веера. Бейджи над концентрацией/ресурсом — текущее кол-во у игрока.
+## Справа — область билетов (резерв фикс. ширины, чтобы кнопки не съезжали); когда
+## билетов нет — «Нет билетов».
 ##
 ## Всё строится в 2× (ассеты @2×) и ужимается обёрткой scale 0.5 → кант чёткий.
 
 const _A := "res://assets/action-panel/"
 const _MARGIN_R: float = 48.0  # отступ блока от правого края
 const _MARGIN_B: float = 40.0  # отступ от низа
-const _TICKETS_GAP: float = 20.0  # зазор кнопки ↔ столбец билетов
+const _TICKETS_GAP: float = 20.0  # зазор кнопки ↔ область билетов
+const _TICKETS_RESERVE: float = 150.0  # фикс. ширина области билетов (широкие ~141px — резерв, кнопки не съезжают)
 
 @onready var _root: Control = $Root
 
@@ -20,7 +23,8 @@ var _rest_ab: ActionButton
 var _conc_ab: ActionButton
 var _res_ab: ActionButton
 var _pass_ab: ActionButton
-var _tickets: TicketsRow  # вертикальная стопка билетов справа от кнопок
+var _tickets: TicketsRow  # вертикальная стопка билетов
+var _no_tickets: Label  # заглушка «Нет билетов» в зарезервированной области
 var _last_tickets: int = -1  # без лишних ребилдов стопки
 var _passing: bool = false  # идёт анимация паса — не пускаем повторный клик
 
@@ -74,8 +78,7 @@ func _build() -> void:
 	_res_ab.pressed.connect(_on_resource)
 	_pass_ab.pressed.connect(_on_pass)
 
-	# Вертикальная стопка билетов — справа от кнопок, вне scale-обёртки (у неё свой
-	# внутренний масштаб, второе ужатие сделало бы билеты крошечными).
+	# Вертикальная стопка билетов — вне scale-обёртки (у неё свой внутренний масштаб).
 	_tickets = TicketsRow.new()
 	_tickets.name = "Tickets"
 	_tickets.vertical = true
@@ -83,6 +86,20 @@ func _build() -> void:
 	_tickets.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tickets.resized.connect(_reposition)
 	_root.add_child(_tickets)
+
+	# Заглушка «Нет билетов» — в той же зарезервированной области (место не съезжает).
+	_no_tickets = Label.new()
+	_no_tickets.name = "NoTickets"
+	_no_tickets.text = "ACTION_NO_TICKETS"
+	_no_tickets.add_theme_font_size_override("font_size", 13)
+	_no_tickets.add_theme_color_override("font_color", UIColors.MUTED)
+	_no_tickets.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_no_tickets.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_no_tickets.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_no_tickets.custom_minimum_size = Vector2(_TICKETS_RESERVE, 0)
+	_no_tickets.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_no_tickets.resized.connect(_reposition)
+	_root.add_child(_no_tickets)
 
 	# Позиция блока (bottom-right) — пересчёт при смене размера содержимого/окна.
 	_col.resized.connect(_reposition)
@@ -93,20 +110,24 @@ func _tex(file: String) -> Texture2D:
 	return load(_A + file + ".png") as Texture2D
 
 
-# Раскладка bottom-right: билеты у правого края, блок кнопок слева от них.
+# Раскладка bottom-right: справа ВСЕГДА зарезервирована область билетов (билеты или
+# «Нет билетов»), блок кнопок — слева от неё (не съезжает при отсутствии билетов).
 func _reposition() -> void:
 	if not is_instance_valid(_scale) or not is_instance_valid(_col):
 		return
 	var vp: Vector2 = get_viewport().get_visible_rect().size
 	var right: float = vp.x - _MARGIN_R
-	var tickets_w: float = 0.0
+	var area_left: float = right - _TICKETS_RESERVE
 	if is_instance_valid(_tickets) and _tickets.visible and _tickets.get_child_count() > 0:
 		var ts: Vector2 = _tickets.size
-		_tickets.position = Vector2(right - ts.x, vp.y - _MARGIN_B - ts.y)
-		tickets_w = ts.x + _TICKETS_GAP
+		_tickets.position = Vector2(
+			area_left + (_TICKETS_RESERVE - ts.x) * 0.5, vp.y - _MARGIN_B - ts.y
+		)
+	if is_instance_valid(_no_tickets) and _no_tickets.visible:
+		_no_tickets.position = Vector2(area_left, vp.y - _MARGIN_B - _no_tickets.size.y)
 	var w: float = _col.size.x * _scale.scale.x
 	var h: float = _col.size.y * _scale.scale.y
-	_scale.position = Vector2(right - tickets_w - w, vp.y - _MARGIN_B - h)
+	_scale.position = Vector2(area_left - _TICKETS_GAP - w, vp.y - _MARGIN_B - h)
 
 
 func _on_pass() -> void:
@@ -124,27 +145,29 @@ func _on_resource() -> void:
 
 
 func _refresh() -> void:
-	var visible_now: bool = GameState.is_my_turn()
-	_root.visible = visible_now
-	if not visible_now:
-		return
+	# Панель ВСЕГДА видна; кнопки активны только в мой ход фазы action.
+	var my_turn: bool = GameState.is_my_turn()
 	var me: Dictionary = GameState.my_player()
 	var used: Array = me.get("actions_used", [])
-	# Концентрация: занята, если брал в раунде ИЛИ достигнут потолок.
 	_conc_ab.set_disabled(
 		(
-			used.has(GameActions.TAKE_CONCENTRATION)
+			not my_turn
+			or used.has(GameActions.TAKE_CONCENTRATION)
 			or int(me.get("concentration", 0)) >= GameState.MAX_CONCENTRATION
 		)
 	)
+	_rest_ab.set_disabled(not my_turn or used.has(GameActions.REST))
+	_res_ab.set_disabled(not my_turn)
+	_pass_ab.set_disabled(not my_turn)
 	_conc_ab.set_badge(int(me.get("concentration", 0)))
-	_rest_ab.set_disabled(used.has(GameActions.REST))
 	_res_ab.set_badge(int(me.get("resources", 0)))
-	# Билеты: ж/д + морские. Ребилд стопки лишь при смене суммарного числа.
+	# Билеты: ребилд стопки лишь при смене суммарного числа; нет билетов → заглушка.
 	var n_train: int = int(me.get("train_tickets", 0))
 	var n_ship: int = int(me.get("ship_tickets", 0))
 	if n_train + n_ship != _last_tickets:
 		_last_tickets = n_train + n_ship
 		_tickets.set_counts(n_train, n_ship)
-	_tickets.visible = n_train + n_ship > 0
+	var has_tickets: bool = n_train + n_ship > 0
+	_tickets.visible = has_tickets
+	_no_tickets.visible = not has_tickets
 	_reposition()
