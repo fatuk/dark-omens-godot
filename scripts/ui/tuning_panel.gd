@@ -227,7 +227,7 @@ func _build_specs() -> Array:
 			"key": "hand_arrow_x",
 			"label": "Стрелки X",
 			"min": 0.0,
-			"max": 300.0,
+			"max": 1000.0,
 			"step": 1.0,
 			"default": HandCarousel.ARROW_EDGE_X,
 			"set": _set_arrow_x
