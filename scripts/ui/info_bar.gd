@@ -74,9 +74,6 @@ const _COMPACT_PANEL_H: float = 178.0
 const _COMPACT_COLS_MARGIN_TOP: int = 34
 const _COMPACT_COLS_MARGIN_BOTTOM: int = 8
 
-# Цвет крупных цифр атрибутов — тёплое золото под бронзовые иконки.
-const _ATTR_VALUE_COLOR := Color("c39b6a")
-
 # Эффект «дешифровки» при смене сыщика — общий хелпер UIStyle.rune_scramble.
 # Сколько рун мелькает в одном кадре. У атрибута значение — одна цифра, хватает
 # одной руны; у баров HP/санити значение длиннее («NN / NN») — используем 2.
@@ -328,7 +325,7 @@ func _make_hud_stat_row(
 
 	# Значение прижато влево — цифры держатся вплотную к концу бара, а не
 	# улетают к правому краю строки.
-	var val := UIStyle.label("—", 13, _ATTR_VALUE_COLOR, HORIZONTAL_ALIGNMENT_LEFT)
+	var val := UIStyle.label("—", 13, UIColors.VALUE, HORIZONTAL_ALIGNMENT_LEFT)
 	val.name = "Value"
 	val.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	# Фикс. ширина — при scramble'е на месте «NN / NN» мелькает одна руна;
@@ -461,7 +458,7 @@ func _make_token(icon_tex: Texture2D, count: int) -> Control:
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hb.add_child(icon)
 
-	var lbl := UIStyle.label("×%d" % count, 20, _ATTR_VALUE_COLOR)
+	var lbl := UIStyle.label("×%d" % count, 20, UIColors.VALUE)
 	lbl.name = "Count"
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hb.add_child(lbl)
@@ -559,7 +556,7 @@ func _make_attr_box(label_key: String, field: String) -> Control:
 	val_row.custom_minimum_size.y = 36
 	col.add_child(val_row)
 
-	var val := UIStyle.label("—", 26, _ATTR_VALUE_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
+	var val := UIStyle.label("—", 26, UIColors.VALUE, HORIZONTAL_ALIGNMENT_CENTER)
 	val.name = "Num"
 	val.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	val_row.add_child(val)

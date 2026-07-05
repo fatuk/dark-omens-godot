@@ -14,7 +14,6 @@ const _MARGIN_R: float = 48.0  # отступ блока от правого к�
 const _MARGIN_B: float = 40.0  # отступ от низа
 const _TICKETS_GAP: float = 20.0  # зазор кнопки ↔ область билетов
 const _TICKETS_RESERVE: float = 150.0  # фикс. ширина области билетов (широкие ~141px — резерв, кнопки не съезжают)
-const _C_CLUE := Color("c39b6a")  # цифры улик — как цифры атрибутов
 const _CLUE_ICON := "res://assets/map/clue-icon.png"
 
 @onready var _root: Control = $Root
@@ -124,7 +123,7 @@ func _build() -> void:
 	_clue_count = Label.new()
 	_clue_count.name = "ClueCount"
 	_clue_count.add_theme_font_size_override("font_size", 18)
-	_clue_count.add_theme_color_override("font_color", _C_CLUE)
+	_clue_count.add_theme_color_override("font_color", UIColors.VALUE)
 	_clue_count.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_clue_count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_clue.add_child(_clue_count)
