@@ -173,7 +173,7 @@ func _build() -> void:
 	_message.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_message.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_message.add_theme_font_size_override("font_size", 15)
+	_message.add_theme_font_size_override("font_size", 21)
 	_message.add_theme_color_override("font_color", C_MSG_TXT)
 	_message.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_message.visible = false
