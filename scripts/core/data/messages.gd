@@ -13,11 +13,14 @@ const CATEGORY_ORDER: Array[String] = [
 ]
 
 # Порядок и заголовки категорий ШАБЛОНОВ фраз (секции веера на этапе выбора шаблона).
-const PHRASE_CATEGORY_ORDER: Array[String] = ["place", "event", "sign", "cry", "special"]
+const PHRASE_CATEGORY_ORDER: Array[String] = [
+	"place", "event", "sign", "question", "cry", "special"
+]
 const PHRASE_CATEGORY_TITLES := {
 	"place": {"en": "Place", "ru": "Место"},
 	"event": {"en": "Event", "ru": "Событие"},
 	"sign": {"en": "Sign", "ru": "Знак"},
+	"question": {"en": "Question", "ru": "Вопрос"},
 	"cry": {"en": "Cry", "ru": "Возглас"},
 	"special": {"en": "Special", "ru": "Особое"},
 }
