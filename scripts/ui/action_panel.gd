@@ -98,8 +98,8 @@ func _build() -> void:
 	_reposition()
 
 
-func _tex(name: String) -> Texture2D:
-	return load(_A + name + ".png") as Texture2D
+func _tex(file: String) -> Texture2D:
+	return load(_A + file + ".png") as Texture2D
 
 
 # Раскладка bottom-right: билеты у правого края, блок кнопок слева от них.
