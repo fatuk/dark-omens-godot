@@ -196,10 +196,9 @@ func _refresh() -> void:
 	_pass_ab.set_disabled(not my_turn)
 	_conc_ab.set_badge(int(me.get("concentration", 0)))
 	_res_ab.set_badge(int(me.get("resources", 0)))
-	# Улики — [иконка ×N] сверху области билетов (виден при > 0).
-	var clues: int = int(me.get("clues", 0))
-	_clue_count.text = "×%d" % clues
-	_clue.visible = clues > 0
+	# Улики — [иконка ×N] сверху области билетов (видны всегда, «×0» когда нет).
+	_clue_count.text = "×%d" % int(me.get("clues", 0))
+	_clue.visible = true
 	# Билеты: ребилд стопки лишь при смене суммарного числа; нет билетов → заглушка.
 	var n_train: int = int(me.get("train_tickets", 0))
 	var n_ship: int = int(me.get("ship_tickets", 0))

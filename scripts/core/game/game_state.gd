@@ -313,8 +313,8 @@ func _make_player_dict(
 		PlayerKeys.ACTIONS_LEFT: ACTIONS_PER_ROUND,
 		PlayerKeys.ACTIONS_USED: [],
 		PlayerKeys.ENCOUNTER_DONE: false,
-		PlayerKeys.TRAIN_TICKETS: 0,
-		PlayerKeys.SHIP_TICKETS: 0,
+		PlayerKeys.TRAIN_TICKETS: _starting_ticket_count(investigator, "train"),
+		PlayerKeys.SHIP_TICKETS: _starting_ticket_count(investigator, "ship"),
 		PlayerKeys.CONCENTRATION: 0,
 		PlayerKeys.HP: hp_max,
 		PlayerKeys.SANITY: sanity_max,
@@ -357,6 +357,12 @@ func _starting_token_count(investigator: String, key: String) -> int:
 		if entry is Dictionary and (entry as Dictionary).has(key):
 			n += int((entry as Dictionary)[key])
 	return n
+
+
+# Стартовые билеты сыщика: startingTickets = {"train": N, "ship": M}.
+func _starting_ticket_count(investigator: String, key: String) -> int:
+	var t: Dictionary = Investigators.get_data(investigator).get("startingTickets", {})
+	return int(t.get(key, 0))
 
 
 # Снять истощение со всех активов игрока — Refresh-шаг начала раунда. Инстансы
