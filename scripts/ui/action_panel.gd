@@ -74,7 +74,7 @@ func _build() -> void:
 	for ab: ActionButton in [_rest_ab, _conc_ab, _res_ab, _pass_ab]:
 		row.add_child(ab)
 
-	_rest_ab.pressed.connect(func() -> void: GameState.perform_action(GameActions.REST))
+	_rest_ab.pressed.connect(_on_rest)
 	_conc_ab.pressed.connect(_on_concentration)
 	_res_ab.pressed.connect(_on_resource)
 	_pass_ab.pressed.connect(_on_pass)
@@ -169,6 +169,15 @@ func _on_pass() -> void:
 	_busy = true
 	await _pass_ab.spin_overlay()  # СНАЧАЛА проворот часов, ПОТОМ действие
 	GameState.perform_action(GameActions.PASS)
+	_busy = false
+
+
+func _on_rest() -> void:
+	if _busy:
+		return
+	_busy = true
+	await _rest_ab.pop_token()  # жетон летит «в камеру», флоу ждёт; ПОТОМ действие
+	GameState.perform_action(GameActions.REST)
 	_busy = false
 
 
