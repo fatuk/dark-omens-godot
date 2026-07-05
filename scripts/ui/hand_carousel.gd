@@ -96,8 +96,10 @@ const ARROW_TEX_L := "res://assets/ui/nav/L_arrow.png"
 const ARROW_TEX_R := "res://assets/ui/nav/R_arrow.png"
 # Минимальная высота области клика (запас для попадания).
 const ARROW_MIN_H := 64.0
-# Отступ шевронов от КРАЯ экрана (статично, чтобы не прыгали от ширины веера).
-const ARROW_EDGE_X := 56.0
+# Расположение шевронов (static — правится в панели тюнинга Ctrl+M). X — отступ от
+# КРАЯ экрана (статично, чтобы не прыгали от ширины веера); Y — сдвиг от центра веера.
+static var ARROW_EDGE_X: float = 56.0
+static var ARROW_Y_OFF: float = 0.0
 # Дёрг стрелки при нажатии (как в пикере сыщиков): наружу и обратно.
 const ARROW_NUDGE_PX := 12.0
 const ARROW_NUDGE_OUT := 0.10
@@ -247,8 +249,9 @@ func _position_chrome() -> void:
 	var cy: float = _p0().y + CARD_H * 0.5  # вертикальный центр веера
 	var aw: float = _arrow_r.size.x
 	var ah: float = _arrow_r.size.y
-	_arrow_l.position = Vector2(ARROW_EDGE_X, cy - ah * 0.5)
-	_arrow_r.position = Vector2(vp.x - ARROW_EDGE_X - aw, cy - ah * 0.5)
+	var ay: float = cy - ah * 0.5 + ARROW_Y_OFF
+	_arrow_l.position = Vector2(ARROW_EDGE_X, ay)
+	_arrow_r.position = Vector2(vp.x - ARROW_EDGE_X - aw, ay)
 	_arrow_l.set_meta("rest_x", _arrow_l.position.x)  # true-rest по X для нуджа
 	_arrow_r.set_meta("rest_x", _arrow_r.position.x)
 	# Подпись секции — под колодой (нижний край карт + отступ).

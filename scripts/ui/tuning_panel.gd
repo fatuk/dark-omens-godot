@@ -223,6 +223,24 @@ func _build_specs() -> Array:
 			"default": HandCarousel.SCROLL_PITCH,
 			"set": _set_hand_sfx_pitch
 		},
+		{
+			"key": "hand_arrow_x",
+			"label": "Стрелки X",
+			"min": 0.0,
+			"max": 300.0,
+			"step": 1.0,
+			"default": HandCarousel.ARROW_EDGE_X,
+			"set": _set_arrow_x
+		},
+		{
+			"key": "hand_arrow_y",
+			"label": "Стрелки Y",
+			"min": -200.0,
+			"max": 200.0,
+			"step": 1.0,
+			"default": HandCarousel.ARROW_Y_OFF,
+			"set": _set_arrow_y
+		},
 		{"section": "ТУМАН"},
 		{
 			"key": "fog_speed",
@@ -720,9 +738,8 @@ func _set_pulse_amount(v: float) -> void:
 
 
 func _relayout_hand() -> void:
-	var h: Node = get_tree().get_first_node_in_group("hand_carousel")
-	if h != null:
-		h.call("relayout")
+	# Все вееры (рука + чат-композер) — параметры static общие, перекладываем оба.
+	get_tree().call_group("hand_carousel", "relayout")
 
 
 func _set_hand_spread(v: float) -> void:
@@ -775,6 +792,16 @@ func _set_hand_sfx_var(v: float) -> void:
 
 func _set_hand_sfx_pitch(v: float) -> void:
 	HandCarousel.SCROLL_PITCH = v
+
+
+func _set_arrow_x(v: float) -> void:
+	HandCarousel.ARROW_EDGE_X = v
+	_relayout_hand()
+
+
+func _set_arrow_y(v: float) -> void:
+	HandCarousel.ARROW_Y_OFF = v
+	_relayout_hand()
 
 
 # ── Туман (home.tscn, узел в группе "fog") ────────────────────────────────────
