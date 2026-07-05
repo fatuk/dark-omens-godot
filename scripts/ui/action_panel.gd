@@ -10,14 +10,12 @@ extends CanvasLayer
 const _A := "res://assets/action-panel/"
 const _MARGIN_R: float = 48.0  # отступ блока от правого края
 const _MARGIN_B: float = 40.0  # отступ от низа
-const _HINT_FONT: int = 26  # 2× → 13 на экране
 const _TICKETS_GAP: float = 20.0  # зазор кнопки ↔ столбец билетов
 
 @onready var _root: Control = $Root
 
 var _scale: Control
 var _col: VBoxContainer
-var _hint: Label
 var _rest_ab: ActionButton
 var _conc_ab: ActionButton
 var _res_ab: ActionButton
@@ -48,14 +46,6 @@ func _build() -> void:
 	_col.add_theme_constant_override("separation", 6)
 	_col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_scale.add_child(_col)
-
-	_hint = Label.new()
-	_hint.name = "Hint"
-	_hint.add_theme_font_size_override("font_size", _HINT_FONT)
-	_hint.add_theme_color_override("font_color", UIColors.MUTED)
-	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hint.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_col.add_child(_hint)
 
 	var row := HBoxContainer.new()
 	row.name = "Buttons"
@@ -157,11 +147,4 @@ func _refresh() -> void:
 		_last_tickets = n_train + n_ship
 		_tickets.set_counts(n_train, n_ship)
 	_tickets.visible = n_train + n_ship > 0
-	# Подсказка «Раунд N · осталось действий: M» — форматируется, через LocaleBinder.
-	LocaleBinder.bind(
-		_hint,
-		func() -> String:
-			var m: Dictionary = GameState.my_player()
-			return tr("ACTION_ROUND_FMT") % [GameState.round_num, int(m.get("actions_left", 0))]
-	)
 	_reposition()

@@ -140,6 +140,7 @@ func _init(
 	pc.add_theme_stylebox_override("panel", sb)
 	pc.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	pc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pc.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS  # мипмапы плашки
 	vb.add_child(pc)
 	_plaque_lbl = Label.new()
 	_plaque_lbl.name = "Title"
