@@ -29,7 +29,7 @@ var _no_tickets: Label  # заглушка «Нет билетов» в заре
 var _clue: HBoxContainer  # индикатор улик [иконка ×N] сверху области билетов
 var _clue_count: Label
 var _last_tickets: int = -1  # без лишних ребилдов стопки
-var _passing: bool = false  # идёт анимация паса — не пускаем повторный клик
+var _busy: bool = false  # идёт анимация действия (пас/жетон) — держим флоу, блочим клики
 
 
 func _ready() -> void:
@@ -75,9 +75,7 @@ func _build() -> void:
 		row.add_child(ab)
 
 	_rest_ab.pressed.connect(func() -> void: GameState.perform_action(GameActions.REST))
-	_conc_ab.pressed.connect(
-		func() -> void: GameState.perform_action(GameActions.TAKE_CONCENTRATION)
-	)
+	_conc_ab.pressed.connect(_on_concentration)
 	_res_ab.pressed.connect(_on_resource)
 	_pass_ab.pressed.connect(_on_pass)
 
@@ -166,17 +164,31 @@ func _reposition() -> void:
 
 
 func _on_pass() -> void:
-	if _passing:
+	if _busy:
 		return
-	_passing = true
+	_busy = true
 	await _pass_ab.spin_overlay()  # СНАЧАЛА проворот часов, ПОТОМ действие
 	GameState.perform_action(GameActions.PASS)
-	_passing = false
+	_busy = false
 
 
-# TODO: действие «получить ресурс» пока не реализовано в движке — заглушка.
+func _on_concentration() -> void:
+	if _busy:
+		return
+	_busy = true
+	await _conc_ab.pop_token()  # жетон летит «в камеру», флоу ждёт; ПОТОМ +1 к счёту
+	GameState.perform_action(GameActions.TAKE_CONCENTRATION)
+	_busy = false
+
+
+# TODO: действие «получить ресурс» пока не реализовано в движке — играем анимацию
+# жетона, но реального гейна ещё нет (проставится, когда действие появится).
 func _on_resource() -> void:
-	pass
+	if _busy:
+		return
+	_busy = true
+	await _res_ab.pop_token()
+	_busy = false
 
 
 func _refresh() -> void:

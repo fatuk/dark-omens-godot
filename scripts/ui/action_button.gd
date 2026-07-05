@@ -9,7 +9,7 @@ extends Control
 ## scale 0.5 — так кант плашки/иконки рисуется крупно = чётко.
 ##
 ## API: new(icon, title, key, overlay=null, with_badge=false) → эмитит `pressed`;
-##      set_disabled(b), set_badge(n), spin_overlay().
+##      set_disabled(b), set_badge(n), spin_overlay(), pop_token().
 
 signal pressed
 
@@ -38,6 +38,9 @@ const _DISABLED_MOD := UIColors.DISABLED
 
 const _SPIN_DUR: float = 0.5  # длительность проворота часов
 const _SPIN_BLUR: float = 0.9  # пиковый угол смаза (рад)
+
+const _POP_DUR: float = 0.5  # длительность полёта жетона «в камеру»
+const _POP_SCALE: float = 2.6  # во сколько раз вырастает летящий жетон
 
 # Угловой мотион-блюр: сэмплим текстуру по дуге вокруг центра (± blur_rad/2), даёт
 # смаз вращения. blur_rad=0 → резко. Крутим во время проворота часов при пасе.
@@ -242,3 +245,35 @@ func spin_overlay() -> void:
 			. set_ease(Tween.EASE_IN)
 		)
 	await spin.finished  # awaitable: вызывающий может дождаться конца проворота
+
+
+# Взятый жетон летит «в камеру»: копия медальона растёт от центра и растворяется.
+# Awaitable — вызывающий держит флоу игры, пока не доиграет (как spin_overlay).
+func pop_token() -> void:
+	if _icon == null or _icon.texture == null:
+		return
+	var box: Control = _icon.get_parent()  # IconBox — стартовый размер/позиция жетона
+	var tok := TextureRect.new()
+	tok.name = "TokenPop"
+	tok.texture = _icon.texture
+	tok.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tok.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tok.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	tok.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tok.size = box.size
+	tok.pivot_offset = box.size * 0.5  # рост от центра медальона
+	tok.z_index = 4096  # поверх остальной панели
+	add_child(tok)
+	tok.global_position = box.global_position
+	var tw := create_tween().set_parallel(true)
+	(
+		tw
+		. tween_property(tok, "scale", Vector2(_POP_SCALE, _POP_SCALE), _POP_DUR)
+		. set_trans(Tween.TRANS_CUBIC)
+		. set_ease(Tween.EASE_OUT)
+	)
+	tw.tween_property(tok, "modulate:a", 0.0, _POP_DUR).set_trans(Tween.TRANS_QUAD).set_ease(
+		Tween.EASE_IN
+	)
+	await tw.finished
+	tok.queue_free()
