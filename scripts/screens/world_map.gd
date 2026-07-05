@@ -570,9 +570,14 @@ func _process(delta: float) -> void:
 		_apply_bounds()
 
 
-# Открыт ли веер карт руки (тогда колесо/клики уходят ему, а не карте мира).
+# Открыт ли ЛЮБОЙ веер — руки/имущества ИЛИ чата (отдельный инстанс, монтируется
+# chat_composer). Оба в группе "hand_carousel". Если открыт — колесо/клики уходят
+# ему, а не карте мира (иначе скролл проваливается в зум карты).
 func _fan_open() -> bool:
-	return is_instance_valid(_hand_carousel) and _hand_carousel.is_open()
+	for fan: Node in get_tree().get_nodes_in_group("hand_carousel"):
+		if fan.has_method("is_open") and fan.call("is_open"):
+			return true
+	return false
 
 
 func _unhandled_input(event: InputEvent) -> void:
