@@ -35,7 +35,8 @@ void fragment() {
 			a += texture(TEXTURE, UV + vec2(float(x), float(y)) * stp).a;
 		}
 	}
-	COLOR = vec4(0.0, 0.0, 0.0, (a / 25.0) * shadow_alpha);
+	// множим на входной MODULATE — иначе тень не гаснет вместе с приглушённой панелью
+	COLOR = vec4(0.0, 0.0, 0.0, (a / 25.0) * shadow_alpha * COLOR.a);
 }
 """
 
