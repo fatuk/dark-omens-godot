@@ -19,12 +19,16 @@ const _PLAQUE_FONT: int = 34
 const _BADGE_FONT: int = 40
 const _GAP: int = 4  # иконка ↔ плашка
 
-# Плашка-название: nine-patch. Кант (texture_margin) не тянется, центр — да.
-const _T_MARGIN_LR: int = 90
-const _T_MARGIN_TB: int = 30
-const _T_PAD_LR: int = 100  # больше воздуха слева/справа от текста
-const _T_PAD_T: int = 16
-const _T_PAD_B: int = 20
+# Плашка-название: nine-patch. Кант/самоцветы (texture_margin) не тянутся, плоский
+# центр — да. Значения замерены по плашке (плоский центр X 64..349, Y 8..90): если
+# кап больше — тянет/режет ornate-конец и самоцвет (перекос).
+const _T_MARGIN_L: int = 64
+const _T_MARGIN_R: int = 61
+const _T_MARGIN_T: int = 8
+const _T_MARGIN_B: int = 10
+const _T_PAD_LR: int = 80  # воздух слева/справа от текста (текст держим от самоцветов)
+const _T_PAD_T: int = 24
+const _T_PAD_B: int = 24
 
 const _C_TEXT := Color(0.91, 0.86, 0.75)  # тёплый пергамент — текст плашки
 const _C_BADGE := Color(0.94, 0.90, 0.78)
@@ -123,10 +127,10 @@ func _init(
 	# ── тянущаяся плашка-название ──
 	var sb := StyleBoxTexture.new()
 	sb.texture = title_tex
-	sb.texture_margin_left = _T_MARGIN_LR
-	sb.texture_margin_right = _T_MARGIN_LR
-	sb.texture_margin_top = _T_MARGIN_TB
-	sb.texture_margin_bottom = _T_MARGIN_TB
+	sb.texture_margin_left = _T_MARGIN_L
+	sb.texture_margin_right = _T_MARGIN_R
+	sb.texture_margin_top = _T_MARGIN_T
+	sb.texture_margin_bottom = _T_MARGIN_B
 	sb.content_margin_left = _T_PAD_LR
 	sb.content_margin_right = _T_PAD_LR
 	sb.content_margin_top = _T_PAD_T
