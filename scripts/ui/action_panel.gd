@@ -176,6 +176,8 @@ func _on_rest() -> void:
 	if _busy:
 		return
 	_busy = true
+	# Случайный из 5 участков лечения (segments имеют приоритет над variations).
+	SfxManager.play_variation(SfxManager.SFX_REST, 5, 0.0, SfxManager.REST_SEGMENTS)
 	await _rest_ab.pop_token()  # жетон летит «в камеру», флоу ждёт; ПОТОМ действие
 	GameState.perform_action(GameActions.REST)
 	_busy = false
@@ -185,6 +187,7 @@ func _on_concentration() -> void:
 	if _busy:
 		return
 	_busy = true
+	SfxManager.play(SfxManager.SFX_CONCENTRATION_GET)
 	await _conc_ab.pop_token()  # жетон летит «в камеру», флоу ждёт; ПОТОМ +1 к счёту
 	GameState.perform_action(GameActions.TAKE_CONCENTRATION)
 	_busy = false
@@ -196,6 +199,7 @@ func _on_resource() -> void:
 	if _busy:
 		return
 	_busy = true
+	SfxManager.play(SfxManager.SFX_RESOURCE_GET)
 	await _res_ab.pop_token()
 	_busy = false
 

@@ -32,6 +32,20 @@ const SFX_OMEN_PICK_OUT: AudioStream = preload("res://assets/audio/sfx/omen-pick
 ## Бросок кубов: клаттер в начале файла + «активация» в хвосте (после тихого участка).
 ## DiceTray нарезает сегментами через play_variation: клаттер под спин, активация — на оседание.
 const SFX_DICE: AudioStream = preload("res://assets/audio/sfx/dice-roll.wav")
+## Взятие жетона концентрации / ресурса — короткий «получил».
+const SFX_CONCENTRATION_GET: AudioStream = preload("res://assets/audio/sfx/concentration-get.wav")
+const SFX_RESOURCE_GET: AudioStream = preload("res://assets/audio/sfx/resource-get.wav")
+## Отдых (лечение): один файл с 5 участками — берём случайный через play_variation.
+## Границы выверены по тишине в файле (обрыв сегмента → в паузу, без щелчка); старт
+## каждого — у самого онсета звука, конец — в тишине перед следующим.
+const SFX_REST: AudioStream = preload("res://assets/audio/sfx/rest.wav")
+const REST_SEGMENTS: Array = [
+	[0.20, 3.40],
+	[4.55, 7.90],
+	[9.30, 12.60],
+	[12.90, 16.20],
+	[17.30, 19.85],
+]
 
 const BUS_NAME := "Sfx"
 const _POOL_SIZE: int = 4
