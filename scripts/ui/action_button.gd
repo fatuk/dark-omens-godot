@@ -198,7 +198,7 @@ func _apply_mod() -> void:
 	if _disabled:
 		modulate = _DISABLED_MOD
 	elif _hover:
-		modulate = Color(1.12, 1.12, 1.12)
+		modulate = UIColors.HIGHLIGHT
 	else:
 		modulate = Color.WHITE
 

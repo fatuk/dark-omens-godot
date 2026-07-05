@@ -93,7 +93,7 @@ static var SMOKE_SPEED: float = 0.17  # скорость клубления
 static var SMOKE_SCALE: float = 1.0  # крупность космов
 static var SMOKE_INTENSITY: float = 0.55  # плотность/яркость
 static var SMOKE_TINT: Color = Color(0.25, 0.41, 0.65)  # цвет дыма (холодный синеватый)
-const C_ART_FILL := Color(0.10, 0.08, 0.14)  # заглушка арт-слота (закрывает белый бокс)
+const C_ART_FILL := UIColors.ART_BG  # заглушка арт-слота (закрывает белый бокс)
 const C_GLYPH := Color(0.55, 0.48, 0.35)
 
 # Скролл описания курсором (когда текст не влезает в зону пергамента): позиция

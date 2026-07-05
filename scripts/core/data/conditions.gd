@@ -122,7 +122,7 @@ static func card_payload(cid: String, flipped_outcome_id := "") -> Dictionary:
 		"subtitle": String(KIND_KEY.get(kind, "")),
 		"desc": desc,
 		"glyph": String(KIND_GLYPH.get(kind, "◈")),
-		"art_color": KIND_COLOR.get(kind, Color(0.10, 0.08, 0.14)),
+		"art_color": KIND_COLOR.get(kind, UIColors.ART_BG),
 		"has_action": not (def.get("action", []) as Array).is_empty(),
 	}
 

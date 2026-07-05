@@ -2,6 +2,12 @@
 ## Цвета — в UIColors. Используй UIColors.ACCENT, UIColors.DANGER и т.д.
 class_name UIStyle
 
+# ── Цвета фабрики кнопок (styling-детали, не тема; общие для style-функций) ─────
+const _BTN_BG := Color(0.12, 0.10, 0.20)  # обычный фон кнопки
+const _BTN_BG_HOVER := Color(0.20, 0.16, 0.30)  # фон при наведении
+const _HOVER_BRIGHTEN := Color(1.20, 1.18, 1.10, 1.00)  # тёплый брайтенинг (modulate hover)
+const _DISABLED_TINT := Color(0.45, 0.45, 0.48, 1.00)  # десатурация disabled
+
 # ── Фон сцены ──────────────────────────────────────────────────────────────────
 
 ## Бесшовная фоновая текстура для всех экранов. PNG в @2× (734×790),
@@ -215,8 +221,8 @@ const _PRESS_ANIM_TIME: float = 0.08
 #   • press     → анимация «нажатия» (сдвиг bg вниз с возвратом)
 static func _wire_button_hover(btn: Button, bg: Control) -> void:
 	var c_normal := Color(1.00, 1.00, 1.00, 1.00)
-	var c_hover := Color(1.20, 1.18, 1.10, 1.00)  # тёплый брайтенинг
-	var c_disabled := Color(0.45, 0.45, 0.48, 1.00)  # десатурация без прозрачности
+	var c_hover := _HOVER_BRIGHTEN  # тёплый брайтенинг
+	var c_disabled := _DISABLED_TINT  # десатурация без прозрачности
 
 	var apply_color := func() -> void:
 		if btn.disabled:
@@ -300,8 +306,8 @@ static func texture_icon_button(tex: Texture2D, scale: float = 0.5) -> TextureBu
 # для иконки modulate применяется прямо на саму кнопку.
 static func _wire_texture_button_hover(btn: BaseButton) -> void:
 	var c_normal := Color(1.00, 1.00, 1.00, 1.00)
-	var c_hover := Color(1.20, 1.18, 1.10, 1.00)  # тёплый брайтенинг
-	var c_disabled := Color(0.45, 0.45, 0.48, 1.00)
+	var c_hover := _HOVER_BRIGHTEN  # тёплый брайтенинг
+	var c_disabled := _DISABLED_TINT
 
 	var apply_color := func() -> void:
 		if btn.disabled:
@@ -322,8 +328,8 @@ static func _wire_texture_button_hover(btn: BaseButton) -> void:
 ## Применяет компактный stylebox-стиль к маленьким иконочным кнопкам
 ## (×-close, etc.) — там, где L|C|R фон не помещается.
 static func style_icon_button(btn: Button, color: Color = UIColors.DANGER) -> void:
-	btn.add_theme_stylebox_override("normal", _btn_style(Color(0.12, 0.10, 0.20), color))
-	btn.add_theme_stylebox_override("hover", _btn_style(Color(0.20, 0.16, 0.30), UIColors.ACCENT))
+	btn.add_theme_stylebox_override("normal", _btn_style(_BTN_BG, color))
+	btn.add_theme_stylebox_override("hover", _btn_style(_BTN_BG_HOVER, UIColors.ACCENT))
 	btn.add_theme_stylebox_override("pressed", _btn_style(Color(0.08, 0.06, 0.14), color))
 	btn.add_theme_stylebox_override("disabled", _btn_style(Color(0.08, 0.07, 0.12), UIColors.MUTED))
 	btn.add_theme_color_override("font_color", color)
@@ -418,7 +424,7 @@ static func style_modal_close_button(btn: Button) -> void:
 ## Применяет стили Dark Omens к существующему LineEdit.
 static func style_input(le: LineEdit) -> void:
 	var style_n := StyleBoxFlat.new()
-	style_n.bg_color = Color(0.10, 0.09, 0.18)
+	style_n.bg_color = UIColors.CONTROL
 	style_n.border_color = UIColors.BORDER
 	style_n.set_border_width_all(1)
 	style_n.set_corner_radius_all(4)
@@ -480,14 +486,14 @@ static func labeled_input(
 ## Применяет стили Dark Omens к существующему OptionButton.
 static func style_option_button(ob: OptionButton) -> void:
 	var style_n := StyleBoxFlat.new()
-	style_n.bg_color = Color(0.12, 0.10, 0.20)
+	style_n.bg_color = _BTN_BG
 	style_n.border_color = UIColors.BORDER
 	style_n.set_border_width_all(1)
 	style_n.set_corner_radius_all(5)
 	style_n.set_content_margin_all(10)
 
 	var style_h := StyleBoxFlat.new()
-	style_h.bg_color = Color(0.20, 0.16, 0.30)
+	style_h.bg_color = _BTN_BG_HOVER
 	style_h.border_color = UIColors.ACCENT
 	style_h.set_border_width_all(1)
 	style_h.set_corner_radius_all(5)

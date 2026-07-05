@@ -260,7 +260,7 @@ func _on_room_selected(room_id: String, row_btn: Button) -> void:
 			style.bg_color = Color(0.15, 0.12, 0.28)
 			style.border_color = UIColors.ACCENT
 		else:
-			style.bg_color = Color(0.10, 0.09, 0.18)
+			style.bg_color = UIColors.CONTROL
 			style.border_color = UIColors.BORDER
 		style.set_border_width_all(1)
 		style.set_corner_radius_all(4)
@@ -319,7 +319,7 @@ func _make_room_row(room: Dictionary) -> Control:
 	row.add_theme_constant_override("separation", 4)
 
 	var style_n := StyleBoxFlat.new()
-	style_n.bg_color = Color(0.10, 0.09, 0.18)
+	style_n.bg_color = UIColors.CONTROL
 	style_n.border_color = UIColors.BORDER
 	style_n.set_border_width_all(1)
 	style_n.set_corner_radius_all(4)

@@ -5,6 +5,8 @@ extends CanvasLayer
 ## (выдержать ужас), затем СИЛА (одолеть монстра). Итог — победа или нет.
 ## Раундов и отступления нет. Бой авторитетно у хоста (resolve_encounter).
 
+const _C_STEP_WILL := Color(0.4, 0.7, 0.9)  # синий — шаг Воли (ужас)
+
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
 @onready var _vbox: VBoxContainer = %VBox
@@ -211,7 +213,7 @@ func _player_col() -> VBoxContainer:
 				% [tr("COMBAT_SANITY"), int(p.get("sanity", 0)), int(p.get("sanity_max", 0))]
 			),
 			13,
-			Color(0.4, 0.7, 0.9)
+			_C_STEP_WILL
 		)
 	)
 	return col
@@ -232,7 +234,7 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 	# Шаг 1 — проверка ужаса (обычно Воля, но монстр может тестировать иной навык,
 	# напр. Влияние) — подпись по РЕАЛЬНОМУ навыку + модификатор монстра.
 	col.add_child(
-		_lbl(_step_label("COMBAT_STEP1", card.get("horror", {}), "will"), 15, Color(0.4, 0.7, 0.9))
+		_lbl(_step_label("COMBAT_STEP1", card.get("horror", {}), "will"), 15, _C_STEP_WILL)
 	)
 	_will_tray = _ensure_tray(_will_tray)
 	col.add_child(_will_tray)

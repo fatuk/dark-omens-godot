@@ -79,7 +79,7 @@ static var SCROLL_SEGMENTS: Array = [
 ]
 
 # Карта рисуется компонентом GameCard (рамка asset-card + зоны контента).
-const MOD_ACTIVE := Color(1.12, 1.12, 1.12, 1.0)
+const MOD_ACTIVE := UIColors.HIGHLIGHT
 const MOD_IDLE := Color(0.92, 0.92, 0.92, 1.0)
 const MOD_HIDDEN := Color(0.92, 0.92, 0.92, 0.0)
 const MOD_EXHAUSTED := Color(0.45, 0.45, 0.5, 1.0)  # истощённая карта — приглушена
