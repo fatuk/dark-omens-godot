@@ -196,6 +196,11 @@ func _refresh() -> void:
 	_pass_ab.set_disabled(not my_turn)
 	_conc_ab.set_badge(int(me.get("concentration", 0)))
 	_res_ab.set_badge(int(me.get("resources", 0)))
+	# Инфо-колонка (улика + билеты) гаснет вместе с кнопками, когда не мой ход.
+	var info_mod: Color = Color.WHITE if my_turn else UIColors.DISABLED
+	_clue.modulate = info_mod
+	_tickets.modulate = info_mod
+	_no_tickets.modulate = info_mod
 	# Улики — [иконка ×N] сверху области билетов (видны всегда, «×0» когда нет).
 	_clue_count.text = "×%d" % int(me.get("clues", 0))
 	_clue.visible = true

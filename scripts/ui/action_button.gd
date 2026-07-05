@@ -34,7 +34,7 @@ const _T_PAD_T: int = 24
 const _T_PAD_B: int = 24
 
 const _C_TEXT := Color(0.91, 0.86, 0.75)  # тёплый пергамент — текст плашки
-const _DISABLED_MOD := Color(0.5, 0.5, 0.5, 0.7)
+const _DISABLED_MOD := UIColors.DISABLED
 
 const _SPIN_DUR: float = 0.5  # длительность проворота часов
 const _SPIN_BLUR: float = 0.9  # пиковый угол смаза (рад)
@@ -46,6 +46,7 @@ shader_type canvas_item;
 uniform float blur_rad = 0.0;
 const int SAMPLES = 12;
 void fragment() {
+	vec4 mod_color = COLOR;  // входной MODULATE (напр. затемнение disabled) — иначе часы не гаснут
 	vec2 c = vec2(0.5);
 	vec2 d = UV - c;
 	float r = length(d);
@@ -56,7 +57,7 @@ void fragment() {
 		float a = a0 + t * blur_rad;
 		acc += texture(TEXTURE, c + r * vec2(cos(a), sin(a)));
 	}
-	COLOR = acc / float(SAMPLES);
+	COLOR = (acc / float(SAMPLES)) * mod_color;
 }
 """
 
