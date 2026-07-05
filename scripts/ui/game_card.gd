@@ -89,10 +89,10 @@ const C_MSG_TXT := Color(0.12, 0.09, 0.06)  # тёмная тушь — фраз
 
 # Параметры дыма карты-сообщения — static (дефолт + правятся в панели тюнинга Ctrl+M).
 # Сеттер панели пишет их и дёргает refresh_smoke() у живых карт (группа "smoke_card").
-static var SMOKE_SPEED: float = 0.06  # скорость клубления
-static var SMOKE_SCALE: float = 3.0  # крупность космов
+static var SMOKE_SPEED: float = 0.17  # скорость клубления
+static var SMOKE_SCALE: float = 1.0  # крупность космов
 static var SMOKE_INTENSITY: float = 0.55  # плотность/яркость
-static var SMOKE_TINT: Color = Color(0.72, 0.75, 0.78)  # цвет дыма
+static var SMOKE_TINT: Color = Color(0.25, 0.41, 0.65)  # цвет дыма (холодный синеватый)
 const C_ART_FILL := Color(0.10, 0.08, 0.14)  # заглушка арт-слота (закрывает белый бокс)
 const C_GLYPH := Color(0.55, 0.48, 0.35)
 
