@@ -117,12 +117,12 @@ func _build() -> void:
 	ci.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	ci.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	ci.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	ci.custom_minimum_size = Vector2(30, 30)
+	ci.custom_minimum_size = Vector2(52, 52)
 	ci.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_clue.add_child(ci)
 	_clue_count = Label.new()
 	_clue_count.name = "ClueCount"
-	_clue_count.add_theme_font_size_override("font_size", 18)
+	_clue_count.add_theme_font_size_override("font_size", 26)
 	_clue_count.add_theme_color_override("font_color", UIColors.VALUE)
 	_clue_count.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_clue_count.mouse_filter = Control.MOUSE_FILTER_IGNORE
