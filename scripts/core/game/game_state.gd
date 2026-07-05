@@ -320,7 +320,7 @@ func _make_player_dict(
 		PlayerKeys.SANITY: sanity_max,
 		PlayerKeys.HP_MAX: hp_max,
 		PlayerKeys.SANITY_MAX: sanity_max,
-		PlayerKeys.CLUES: 0,
+		PlayerKeys.CLUES: _starting_token_count(investigator, "clue"),
 		PlayerKeys.CONDITIONS: [],
 		PlayerKeys.CONDITIONS_FLIPPED: {},  # {cond_id: outcome_id} — перевёрнутые в расплату
 		PlayerKeys.ITEMS: _starting_items(investigator),
@@ -347,6 +347,16 @@ func _starting_items(investigator: String) -> Array:
 		if not aid.is_empty() and not AssetCatalog.by_id(aid).is_empty():
 			out.append({"id": aid, "exhausted": false})
 	return out
+
+
+# Стартовые ЖЕТОНЫ сыщика (напр. {"clue": 1}) из startingItems — суммой. Личные
+# жетоны игрока, не карты (карты берёт _starting_items).
+func _starting_token_count(investigator: String, key: String) -> int:
+	var n: int = 0
+	for entry: Variant in Investigators.get_data(investigator).get("startingItems", []):
+		if entry is Dictionary and (entry as Dictionary).has(key):
+			n += int((entry as Dictionary)[key])
+	return n
 
 
 # Снять истощение со всех активов игрока — Refresh-шаг начала раунда. Инстансы
