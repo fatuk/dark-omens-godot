@@ -30,6 +30,30 @@ const _C_TEXT := Color(0.91, 0.86, 0.75)  # тёплый пергамент — 
 const _C_BADGE := Color(0.94, 0.90, 0.78)
 const _DISABLED_MOD := Color(0.5, 0.5, 0.5, 0.7)
 
+const _SPIN_DUR: float = 0.5  # длительность проворота часов
+const _SPIN_BLUR: float = 0.9  # пиковый угол смаза (рад)
+
+# Угловой мотион-блюр: сэмплим текстуру по дуге вокруг центра (± blur_rad/2), даёт
+# смаз вращения. blur_rad=0 → резко. Крутим во время проворота часов при пасе.
+const _SPIN_BLUR_SHADER := """
+shader_type canvas_item;
+uniform float blur_rad = 0.0;
+const int SAMPLES = 12;
+void fragment() {
+	vec2 c = vec2(0.5);
+	vec2 d = UV - c;
+	float r = length(d);
+	float a0 = atan(d.y, d.x);
+	vec4 acc = vec4(0.0);
+	for (int i = 0; i < SAMPLES; i++) {
+		float t = float(i) / float(SAMPLES - 1) - 0.5;
+		float a = a0 + t * blur_rad;
+		acc += texture(TEXTURE, c + r * vec2(cos(a), sin(a)));
+	}
+	COLOR = acc / float(SAMPLES);
+}
+"""
+
 var _icon: TextureRect
 var _overlay: TextureRect
 var _badge: Label
@@ -78,6 +102,11 @@ func _init(
 		_overlay.name = "Overlay"
 		_overlay.custom_minimum_size = _OVERLAY
 		_overlay.pivot_offset = _OVERLAY * 0.5
+		var sm := ShaderMaterial.new()
+		var sh := Shader.new()
+		sh.code = _SPIN_BLUR_SHADER
+		sm.shader = sh
+		_overlay.material = sm  # угловой блюр во время проворота
 		cc.add_child(_overlay)
 	if with_badge:
 		_badge = Label.new()
@@ -172,11 +201,38 @@ func _apply_mod() -> void:
 		modulate = Color.WHITE
 
 
-# Быстрый проворот оверлея (часов) на 360° с размытием движения — для паса.
+# Быстрый проворот оверлея (часов) на 360° с угловым мотион-блюром — для паса.
+# Блюр нарастает к середине проворота и спадает к концу (пик угловой скорости).
 func spin_overlay() -> void:
 	if _overlay == null:
 		return
+	var mat := _overlay.material as ShaderMaterial
 	_overlay.rotation = 0.0
-	var tw := create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	tw.tween_property(_overlay, "rotation", TAU, 0.45)
-	tw.tween_callback(func() -> void: _overlay.rotation = 0.0)
+	if mat != null:
+		mat.set_shader_parameter("blur_rad", 0.0)
+	var spin := create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	spin.tween_property(_overlay, "rotation", TAU, _SPIN_DUR)
+	spin.tween_callback(func() -> void: _overlay.rotation = 0.0)
+	if mat == null:
+		return
+	var blur := create_tween().set_trans(Tween.TRANS_SINE)
+	(
+		blur
+		. tween_method(
+			func(v: float) -> void: mat.set_shader_parameter("blur_rad", v),
+			0.0,
+			_SPIN_BLUR,
+			_SPIN_DUR * 0.5
+		)
+		. set_ease(Tween.EASE_OUT)
+	)
+	(
+		blur
+		. tween_method(
+			func(v: float) -> void: mat.set_shader_parameter("blur_rad", v),
+			_SPIN_BLUR,
+			0.0,
+			_SPIN_DUR * 0.5
+		)
+		. set_ease(Tween.EASE_IN)
+	)
