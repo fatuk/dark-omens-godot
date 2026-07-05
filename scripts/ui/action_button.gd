@@ -215,26 +215,26 @@ func spin_overlay() -> void:
 	var spin := create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	spin.tween_property(_overlay, "rotation", TAU, _SPIN_DUR)
 	spin.tween_callback(func() -> void: _overlay.rotation = 0.0)
-	if mat == null:
-		return
-	var blur := create_tween().set_trans(Tween.TRANS_SINE)
-	(
-		blur
-		. tween_method(
-			func(v: float) -> void: mat.set_shader_parameter("blur_rad", v),
-			0.0,
-			_SPIN_BLUR,
-			_SPIN_DUR * 0.5
+	if mat != null:
+		var blur := create_tween().set_trans(Tween.TRANS_SINE)
+		(
+			blur
+			. tween_method(
+				func(v: float) -> void: mat.set_shader_parameter("blur_rad", v),
+				0.0,
+				_SPIN_BLUR,
+				_SPIN_DUR * 0.5
+			)
+			. set_ease(Tween.EASE_OUT)
 		)
-		. set_ease(Tween.EASE_OUT)
-	)
-	(
-		blur
-		. tween_method(
-			func(v: float) -> void: mat.set_shader_parameter("blur_rad", v),
-			_SPIN_BLUR,
-			0.0,
-			_SPIN_DUR * 0.5
+		(
+			blur
+			. tween_method(
+				func(v: float) -> void: mat.set_shader_parameter("blur_rad", v),
+				_SPIN_BLUR,
+				0.0,
+				_SPIN_DUR * 0.5
+			)
+			. set_ease(Tween.EASE_IN)
 		)
-		. set_ease(Tween.EASE_IN)
-	)
+	await spin.finished  # awaitable: вызывающий может дождаться конца проворота

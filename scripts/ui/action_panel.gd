@@ -24,6 +24,7 @@ var _res_ab: ActionButton
 var _pass_ab: ActionButton
 var _tickets: TicketsRow  # вертикальная стопка билетов справа от кнопок
 var _last_tickets: int = -1  # без лишних ребилдов стопки
+var _passing: bool = false  # идёт анимация паса — не пускаем повторный клик
 
 
 func _ready() -> void:
@@ -119,8 +120,12 @@ func _reposition() -> void:
 
 
 func _on_pass() -> void:
-	_pass_ab.spin_overlay()  # часы прокручиваются на 360°
+	if _passing:
+		return
+	_passing = true
+	await _pass_ab.spin_overlay()  # СНАЧАЛА проворот часов, ПОТОМ действие
 	GameState.perform_action(GameActions.PASS)
+	_passing = false
 
 
 # TODO: действие «получить ресурс» пока не реализовано в движке — заглушка.
