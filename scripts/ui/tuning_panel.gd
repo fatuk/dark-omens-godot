@@ -461,6 +461,61 @@ func _build_specs() -> Array:
 			"default": MapLayer.ENTITY_HOVER_LERP,
 			"set": _set_ent_lerp
 		},
+		{"section": "ДЫМ КАРТЫ"},
+		{
+			"key": "csmoke_speed",
+			"label": "Скорость",
+			"min": 0.0,
+			"max": 0.30,
+			"step": 0.005,
+			"default": GameCard.SMOKE_SPEED,
+			"set": _set_csmoke_speed
+		},
+		{
+			"key": "csmoke_int",
+			"label": "Плотность",
+			"min": 0.0,
+			"max": 1.5,
+			"step": 0.01,
+			"default": GameCard.SMOKE_INTENSITY,
+			"set": _set_csmoke_intensity
+		},
+		{
+			"key": "csmoke_scale",
+			"label": "Крупность",
+			"min": 1.0,
+			"max": 8.0,
+			"step": 0.1,
+			"default": GameCard.SMOKE_SCALE,
+			"set": _set_csmoke_scale
+		},
+		{
+			"key": "csmoke_r",
+			"label": "Цвет R",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": GameCard.SMOKE_TINT.r,
+			"set": _set_csmoke_r
+		},
+		{
+			"key": "csmoke_g",
+			"label": "Цвет G",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": GameCard.SMOKE_TINT.g,
+			"set": _set_csmoke_g
+		},
+		{
+			"key": "csmoke_b",
+			"label": "Цвет B",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": GameCard.SMOKE_TINT.b,
+			"set": _set_csmoke_b
+		},
 	]
 
 
@@ -887,3 +942,49 @@ func _set_ent_row_x0(v: float) -> void:
 
 func _set_ent_lerp(v: float) -> void:
 	MapLayer.ENTITY_HOVER_LERP = v
+
+
+# ── Дым карты-сообщения (GameCard.SMOKE_* — static; пушим в живые карты по группе) ──
+# Вне открытого веера карт нет — сеттер просто сохранит значение в static (применится
+# при следующем построении карт). refresh_smoke() перекладывает static → uniform.
+
+
+func _refresh_card_smoke() -> void:
+	for c in get_tree().get_nodes_in_group("smoke_card"):
+		c.call("refresh_smoke")
+
+
+func _set_csmoke_speed(v: float) -> void:
+	GameCard.SMOKE_SPEED = v
+	_refresh_card_smoke()
+
+
+func _set_csmoke_intensity(v: float) -> void:
+	GameCard.SMOKE_INTENSITY = v
+	_refresh_card_smoke()
+
+
+func _set_csmoke_scale(v: float) -> void:
+	GameCard.SMOKE_SCALE = v
+	_refresh_card_smoke()
+
+
+func _set_csmoke_r(v: float) -> void:
+	var c := GameCard.SMOKE_TINT
+	c.r = v
+	GameCard.SMOKE_TINT = c
+	_refresh_card_smoke()
+
+
+func _set_csmoke_g(v: float) -> void:
+	var c := GameCard.SMOKE_TINT
+	c.g = v
+	GameCard.SMOKE_TINT = c
+	_refresh_card_smoke()
+
+
+func _set_csmoke_b(v: float) -> void:
+	var c := GameCard.SMOKE_TINT
+	c.b = v
+	GameCard.SMOKE_TINT = c
+	_refresh_card_smoke()

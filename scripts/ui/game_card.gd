@@ -85,6 +85,13 @@ const C_TITLE_TXT := UIColors.ACCENT  # янтарь на синей плашк�
 const C_SUB_TXT := Color(0.62, 0.72, 0.82)  # приглушённый голубой — трейт
 const C_DESC_TXT := Color(0, 0, 0)  # чёрный — на пергаменте
 const C_MSG_TXT := Color(0.12, 0.09, 0.06)  # тёмная тушь — фраза на пергаменте карты-сообщения
+
+# Параметры дыма карты-сообщения — static (дефолт + правятся в панели тюнинга Ctrl+M).
+# Сеттер панели пишет их и дёргает refresh_smoke() у живых карт (группа "smoke_card").
+static var SMOKE_SPEED: float = 0.06  # скорость клубления
+static var SMOKE_SCALE: float = 3.0  # крупность космов
+static var SMOKE_INTENSITY: float = 0.55  # плотность/яркость
+static var SMOKE_TINT: Color = Color(0.72, 0.75, 0.78)  # цвет дыма
 const C_ART_FILL := Color(0.10, 0.08, 0.14)  # заглушка арт-слота (закрывает белый бокс)
 const C_GLYPH := Color(0.55, 0.48, 0.35)
 
@@ -174,6 +181,8 @@ func _build() -> void:
 	_smoke.material = smoke_mat
 	_smoke.visible = false
 	smoke_zone.add_child(_smoke)
+	add_to_group("smoke_card")  # панель тюнинга пушит сюда uniform'ы
+	refresh_smoke()
 
 	# Стоимость — в гербе сверху-слева.
 	var cost_zone := _zone("Cost", Z_COST)
@@ -283,6 +292,17 @@ func set_card(d: Dictionary) -> void:
 		_art_fill.color = d.get("art_color", C_ART_FILL)
 		_glyph.text = String(d.get("glyph", ""))
 		_glyph.visible = not _glyph.text.is_empty()
+
+
+# Переложить параметры дыма из static в материал (панель тюнинга дёргает по группе).
+func refresh_smoke() -> void:
+	var m := _smoke.material as ShaderMaterial
+	if m == null:
+		return
+	m.set_shader_parameter("speed", SMOKE_SPEED)
+	m.set_shader_parameter("scale", SMOKE_SCALE)
+	m.set_shader_parameter("intensity", SMOKE_INTENSITY)
+	m.set_shader_parameter("tint", SMOKE_TINT)
 
 
 # ── скролл описания курсором ───────────────────────────────────────────────────
