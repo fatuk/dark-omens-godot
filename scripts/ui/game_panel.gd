@@ -3,11 +3,18 @@ extends CanvasLayer
 ## HUD-панель основной игровой информации.
 ## Тонкий API — наружу выставлены простые сеттеры.
 
+const _SCRAMBLE_RUNES: int = 2  # рун в кадре при смене фазы/имени (как в инфо-панели)
+
 @onready var _phase: Label = %PhaseLabel
 @onready var _player: Label = %PlayerLabel
 @onready var _doom: Control = %DoomTrack
 @onready var _omens: Control = %OmensDial
 @onready var _info: Control = %InfoOrb
+
+# Последние значения — чтобы рунный скрэмбл шёл только на реальной смене (сеттеры
+# зовутся на каждом _refresh_game_panel, а не только когда текст изменился).
+var _phase_text: String = ""
+var _player_text: String = ""
 
 ## Клик по орбу раунда — для открытия сайдбара текущей Мистерии.
 signal round_clicked
@@ -27,11 +34,17 @@ func _on_info_gui_input(event: InputEvent) -> void:
 
 
 func set_phase(text: String) -> void:
-	_phase.text = text
+	if text == _phase_text:
+		return
+	_phase_text = text
+	UIStyle.rune_scramble(_phase, text, _SCRAMBLE_RUNES)
 
 
 func set_player(text: String) -> void:
-	_player.text = text
+	if text == _player_text:
+		return
+	_player_text = text
+	UIStyle.rune_scramble(_player, text, _SCRAMBLE_RUNES)
 
 
 func set_doom(filled: int) -> void:

@@ -127,6 +127,7 @@ var _section_idx: int = 0  # активная секция
 var _arrow_l: Control  # ◄ переключение секции влево
 var _arrow_r: Control  # ► переключение секции вправо
 var _section_title: Label  # название активной секции (сверху по центру)
+var _section_title_text: String = ""  # для guard рунного скрэмбла (только на смене)
 
 
 func _ready() -> void:
@@ -304,7 +305,15 @@ func _switch_section(d: int) -> void:
 func _update_section_chrome() -> void:
 	var has: bool = not _sections.is_empty()
 	if is_instance_valid(_section_title):
-		_section_title.text = String(_sections[_section_idx].get("title", "")) if has else ""
+		var title: String = String(_sections[_section_idx].get("title", "")) if has else ""
+		if title != _section_title_text:
+			_section_title_text = title
+			# Смена секции (◄ ►) — проявляем название через рунный скрэмбл, как номер
+			# раунда и атрибуты сыщика. Пустой заголовок / вне дерева — просто текст.
+			if title.is_empty() or not is_inside_tree():
+				_section_title.text = title
+			else:
+				UIStyle.rune_scramble(_section_title, title, 2)
 	var multi: bool = _sections.size() > 1
 	if is_instance_valid(_arrow_l):
 		_arrow_l.visible = multi
