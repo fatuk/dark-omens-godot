@@ -30,6 +30,44 @@ void fragment() {
 }
 """
 
+# Процедурный клубящийся дым (карта-сообщение). FBM-шум с domain-warp по TIME —
+# анимируется сам, без _process. Светлые космы поверх тёмного окна рамки; мягкая
+# маска гасит края, чтобы дым жил в центре и не лез на орнамент.
+const _SMOKE_SHADER := """
+shader_type canvas_item;
+uniform float speed = 0.06;
+uniform float scale = 3.0;
+uniform float intensity = 0.55;
+uniform vec3 tint : source_color = vec3(0.72, 0.75, 0.78);
+
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+float vnoise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	float a = hash(i), b = hash(i + vec2(1.0, 0.0));
+	float c = hash(i + vec2(0.0, 1.0)), d = hash(i + vec2(1.0, 1.0));
+	return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float fbm(vec2 p) {
+	float v = 0.0, a = 0.5;
+	for (int i = 0; i < 5; i++) { v += a * vnoise(p); p *= 2.0; a *= 0.5; }
+	return v;
+}
+
+void fragment() {
+	float t = TIME * speed;
+	vec2 uv = UV * scale;
+	vec2 q = vec2(fbm(uv + vec2(0.0, t)), fbm(uv + vec2(5.2, -t)));
+	float f = fbm(uv + q * 2.0 + vec2(t * 0.5, t * 0.3));
+	f = smoothstep(0.35, 0.9, f);
+	vec2 m = smoothstep(vec2(0.0), vec2(0.4), UV) * smoothstep(vec2(0.0), vec2(0.4), 1.0 - UV);
+	float alpha = f * m.x * m.y * intensity;
+	COLOR = vec4(tint, alpha);
+}
+"""
+
 # Зоны контента — доли рамки (x, y, w, h ∈ 0..1). Подобраны под asset/card-frame.png.
 const Z_COST := Rect2(0.075, 0.050, 0.160, 0.100)  # центр ≈ (0.12, 0.085) — герб-компас
 const Z_ART := Rect2(0.025, 0.025, 0.950, 0.515)  # арт ПОД рамкой, 95% ширины, упёрт вверх
@@ -38,6 +76,9 @@ const Z_DESC := Rect2(0.120, 0.695, 0.760, 0.235)
 # Плашка карты-сообщения (chat): текст фразы по центру нижнего пергамента новой
 # рамки cards/chat/card-frame.png. Своя зона — эмблема-облачко уже вшита в рамку.
 const Z_MSG := Rect2(0.130, 0.640, 0.740, 0.270)
+# Клубящийся дым карты-сообщения — во внутренней тёмной области над плашкой.
+# Затухает к краям (мягкая маска), чтобы не перекрыть орнамент-кант рамки.
+const Z_SMOKE := Rect2(0.075, 0.075, 0.850, 0.520)
 
 const C_COST_TXT := UIColors.ACCENT  # янтарь — как заголовок
 const C_TITLE_TXT := UIColors.ACCENT  # янтарь на синей плашке
@@ -65,6 +106,7 @@ var _art_fill: ColorRect
 var _glyph: Label
 var _frame: TextureRect
 var _message: Label  # карта-сообщение (chat): одна центрированная фраза в плашке
+var _smoke: ColorRect  # клубящийся дым в окне карты-сообщения (поверх рамки)
 
 
 func _init() -> void:
@@ -117,6 +159,21 @@ func _build() -> void:
 	_frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_frame)
+
+	# Дым карты-сообщения — ПОВЕРХ рамки, в тёмном окне (зона добавлена после рамки).
+	# Виден только для карт с полем message; шейдер анимируется по TIME сам.
+	var smoke_zone := _zone("Smoke", Z_SMOKE)
+	_smoke = ColorRect.new()
+	_smoke.name = "Smoke"
+	_smoke.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_smoke.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var smoke_mat := ShaderMaterial.new()
+	var smoke_sh := Shader.new()
+	smoke_sh.code = _SMOKE_SHADER
+	smoke_mat.shader = smoke_sh
+	_smoke.material = smoke_mat
+	_smoke.visible = false
+	smoke_zone.add_child(_smoke)
 
 	# Стоимость — в гербе сверху-слева.
 	var cost_zone := _zone("Cost", Z_COST)
@@ -192,6 +249,7 @@ func set_card(d: Dictionary) -> void:
 	var is_msg: bool = d.has("message")
 	_message.visible = is_msg
 	_message.text = String(d.get("message", ""))
+	_smoke.visible = is_msg  # клубящийся дым в окне только у карт-сообщений
 
 	# Стоимость — герб-компас; для жетонов/карт без цены поле не задаём → герб скрыт.
 	_cost.visible = (not is_msg) and d.has("cost")
