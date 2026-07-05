@@ -14,6 +14,8 @@ const _MARGIN_R: float = 48.0  # отступ блока от правого к�
 const _MARGIN_B: float = 40.0  # отступ от низа
 const _TICKETS_GAP: float = 20.0  # зазор кнопки ↔ область билетов
 const _TICKETS_RESERVE: float = 150.0  # фикс. ширина области билетов (широкие ~141px — резерв, кнопки не съезжают)
+const _C_CLUE := Color("c39b6a")  # цифры улик — как цифры атрибутов
+const _CLUE_ICON := "res://assets/map/clue-icon.png"
 
 @onready var _root: Control = $Root
 
@@ -25,6 +27,8 @@ var _res_ab: ActionButton
 var _pass_ab: ActionButton
 var _tickets: TicketsRow  # вертикальная стопка билетов
 var _no_tickets: Label  # заглушка «Нет билетов» в зарезервированной области
+var _clue: HBoxContainer  # индикатор улик [иконка ×N] сверху области билетов
+var _clue_count: Label
 var _last_tickets: int = -1  # без лишних ребилдов стопки
 var _passing: bool = false  # идёт анимация паса — не пускаем повторный клик
 
@@ -101,6 +105,32 @@ func _build() -> void:
 	_no_tickets.resized.connect(_reposition)
 	_root.add_child(_no_tickets)
 
+	# Индикатор улик — [иконка ×N] сверху области билетов (виден при уликах > 0).
+	_clue = HBoxContainer.new()
+	_clue.name = "Clue"
+	_clue.add_theme_constant_override("separation", 4)
+	_clue.alignment = BoxContainer.ALIGNMENT_CENTER
+	_clue.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clue.visible = false
+	var ci := TextureRect.new()
+	ci.name = "ClueIcon"
+	ci.texture = load(_CLUE_ICON)
+	ci.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	ci.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	ci.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	ci.custom_minimum_size = Vector2(30, 30)
+	ci.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clue.add_child(ci)
+	_clue_count = Label.new()
+	_clue_count.name = "ClueCount"
+	_clue_count.add_theme_font_size_override("font_size", 18)
+	_clue_count.add_theme_color_override("font_color", _C_CLUE)
+	_clue_count.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_clue_count.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clue.add_child(_clue_count)
+	_clue.resized.connect(_reposition)
+	_root.add_child(_clue)
+
 	# Позиция блока (bottom-right) — пересчёт при смене размера содержимого/окна.
 	_col.resized.connect(_reposition)
 	_reposition()
@@ -118,16 +148,20 @@ func _reposition() -> void:
 	var vp: Vector2 = get_viewport().get_visible_rect().size
 	var right: float = vp.x - _MARGIN_R
 	var area_left: float = right - _TICKETS_RESERVE
-	if is_instance_valid(_tickets) and _tickets.visible and _tickets.get_child_count() > 0:
-		var ts: Vector2 = _tickets.size
-		_tickets.position = Vector2(
-			area_left + (_TICKETS_RESERVE - ts.x) * 0.5, vp.y - _MARGIN_B - ts.y
-		)
-	if is_instance_valid(_no_tickets) and _no_tickets.visible:
-		_no_tickets.position = Vector2(area_left, vp.y - _MARGIN_B - _no_tickets.size.y)
 	var w: float = _col.size.x * _scale.scale.x
 	var h: float = _col.size.y * _scale.scale.y
-	_scale.position = Vector2(area_left - _TICKETS_GAP - w, vp.y - _MARGIN_B - h)
+	var top: float = vp.y - _MARGIN_B - h
+	var bottom: float = vp.y - _MARGIN_B
+	# Улики — сверху области, по центру.
+	if is_instance_valid(_clue) and _clue.visible:
+		_clue.position = Vector2(area_left + (_TICKETS_RESERVE - _clue.size.x) * 0.5, top)
+	# Билеты / заглушка — снизу области, по центру.
+	if is_instance_valid(_tickets) and _tickets.visible and _tickets.get_child_count() > 0:
+		var ts: Vector2 = _tickets.size
+		_tickets.position = Vector2(area_left + (_TICKETS_RESERVE - ts.x) * 0.5, bottom - ts.y)
+	if is_instance_valid(_no_tickets) and _no_tickets.visible:
+		_no_tickets.position = Vector2(area_left, bottom - _no_tickets.size.y)
+	_scale.position = Vector2(area_left - _TICKETS_GAP - w, top)
 
 
 func _on_pass() -> void:
@@ -161,6 +195,10 @@ func _refresh() -> void:
 	_pass_ab.set_disabled(not my_turn)
 	_conc_ab.set_badge(int(me.get("concentration", 0)))
 	_res_ab.set_badge(int(me.get("resources", 0)))
+	# Улики — [иконка ×N] сверху области билетов (виден при > 0).
+	var clues: int = int(me.get("clues", 0))
+	_clue_count.text = "×%d" % clues
+	_clue.visible = clues > 0
 	# Билеты: ребилд стопки лишь при смене суммарного числа; нет билетов → заглушка.
 	var n_train: int = int(me.get("train_tickets", 0))
 	var n_ship: int = int(me.get("ship_tickets", 0))

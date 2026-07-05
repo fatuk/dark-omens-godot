@@ -31,7 +31,7 @@ const _T_PAD_T: int = 24
 const _T_PAD_B: int = 24
 
 const _C_TEXT := Color(0.91, 0.86, 0.75)  # тёплый пергамент — текст плашки
-const _C_BADGE := Color(0.94, 0.90, 0.78)
+const _C_BADGE := Color("c39b6a")  # как цифры атрибутов (info_bar._ATTR_VALUE_COLOR)
 const _DISABLED_MOD := Color(0.5, 0.5, 0.5, 0.7)
 
 const _SPIN_DUR: float = 0.5  # длительность проворота часов
