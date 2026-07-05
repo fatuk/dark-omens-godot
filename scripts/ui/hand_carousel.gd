@@ -98,7 +98,7 @@ const ARROW_TEX_R := "res://assets/ui/nav/R_arrow.png"
 const ARROW_MIN_H := 64.0
 # Расположение шевронов (static — правится в панели тюнинга Ctrl+M). X — отступ от
 # КРАЯ экрана (статично, чтобы не прыгали от ширины веера); Y — сдвиг от центра веера.
-static var ARROW_EDGE_X: float = 56.0
+static var ARROW_EDGE_X: float = 394.0
 static var ARROW_Y_OFF: float = 0.0
 # Дёрг стрелки при нажатии (как в пикере сыщиков): наружу и обратно.
 const ARROW_NUDGE_PX := 12.0
