@@ -151,9 +151,11 @@ func _reposition() -> void:
 	var h: float = _col.size.y * _scale.scale.y
 	var top: float = vp.y - _MARGIN_B - h
 	var bottom: float = vp.y - _MARGIN_B
-	# Улики — сверху области, по центру.
+	# Улики — сверху области. Верх выравниваем по ВЕРХУ медальона кнопки (не по верху
+	# блока: там бейдж-строка, а иконки-медальоны на её высоту ниже).
 	if is_instance_valid(_clue) and _clue.visible:
-		_clue.position = Vector2(area_left + (_TICKETS_RESERVE - _clue.size.x) * 0.5, top)
+		var clue_top: float = top + ActionButton.ICON_TOP_2X * _scale.scale.y
+		_clue.position = Vector2(area_left + (_TICKETS_RESERVE - _clue.size.x) * 0.5, clue_top)
 	# Билеты / заглушка — снизу области, по центру.
 	if is_instance_valid(_tickets) and _tickets.visible and _tickets.get_child_count() > 0:
 		var ts: Vector2 = _tickets.size
