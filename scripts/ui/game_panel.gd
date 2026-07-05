@@ -3,7 +3,7 @@ extends CanvasLayer
 ## HUD-панель основной игровой информации.
 ## Тонкий API — наружу выставлены простые сеттеры.
 
-const _SCRAMBLE_RUNES: int = 2  # рун в кадре при смене фазы/имени (как в инфо-панели)
+const _SCRAMBLE_RUNES: int = 5  # рун в кадре при смене фазы/имени
 
 @onready var _phase: Label = %PhaseLabel
 @onready var _player: Label = %PlayerLabel
