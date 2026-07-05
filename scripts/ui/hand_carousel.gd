@@ -313,7 +313,7 @@ func _update_section_chrome() -> void:
 			if title.is_empty() or not is_inside_tree():
 				_section_title.text = title
 			else:
-				UIStyle.rune_scramble(_section_title, title, 2)
+				UIStyle.rune_scramble(_section_title, title, 4)
 	var multi: bool = _sections.size() > 1
 	if is_instance_valid(_arrow_l):
 		_arrow_l.visible = multi
