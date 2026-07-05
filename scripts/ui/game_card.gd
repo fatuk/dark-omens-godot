@@ -39,6 +39,7 @@ uniform float speed = 0.06;
 uniform float scale = 3.0;
 uniform float intensity = 0.55;
 uniform vec3 tint : source_color = vec3(0.72, 0.75, 0.78);
+uniform vec2 seed = vec2(0.0);  // свой на каждую карту: сдвиг области шума + фазы
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
@@ -57,8 +58,8 @@ float fbm(vec2 p) {
 }
 
 void fragment() {
-	float t = TIME * speed;
-	vec2 uv = UV * scale;
+	float t = TIME * speed + seed.x * 10.0;
+	vec2 uv = UV * scale + seed;
 	vec2 q = vec2(fbm(uv + vec2(0.0, t)), fbm(uv + vec2(5.2, -t)));
 	float f = fbm(uv + q * 2.0 + vec2(t * 0.5, t * 0.3));
 	f = smoothstep(0.35, 0.9, f);
@@ -169,7 +170,7 @@ func _build() -> void:
 
 	# Дым карты-сообщения — ПОВЕРХ рамки, в тёмном окне (зона добавлена после рамки).
 	# Виден только для карт с полем message; шейдер анимируется по TIME сам.
-	var smoke_zone := _zone("Smoke", Z_SMOKE)
+	var smoke_zone := _zone("SmokeZone", Z_SMOKE)
 	_smoke = ColorRect.new()
 	_smoke.name = "Smoke"
 	_smoke.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -179,6 +180,8 @@ func _build() -> void:
 	smoke_sh.code = _SMOKE_SHADER
 	smoke_mat.shader = smoke_sh
 	_smoke.material = smoke_mat
+	# Свой сид на карту — иначе у всех карт дым синхронный и одинаковый.
+	smoke_mat.set_shader_parameter("seed", Vector2(randf(), randf()) * 100.0)
 	_smoke.visible = false
 	smoke_zone.add_child(_smoke)
 	add_to_group("smoke_card")  # панель тюнинга пушит сюда uniform'ы
