@@ -1,0 +1,182 @@
+class_name ActionButton
+extends Control
+
+## Кнопка действия панели: медальон-иконка + тянущаяся плашка-название (nine-patch,
+## текст рисуется сверху — вписывается под любой перевод) + опц. бейдж-число (текущее
+## кол-во ресурса) + опц. оверлей (песочные часы паса, умеют крутиться).
+##
+## Строится в НАТУРАЛЬНОМ 2× (ассеты @2×); родитель (ActionPanel) ужимает весь блок
+## scale 0.5 — так кант плашки/иконки рисуется крупно = чётко.
+##
+## API: new(icon, title, key, overlay=null, with_badge=false) → эмитит `pressed`;
+##      set_disabled(b), set_badge(n), spin_overlay().
+
+signal pressed
+
+const _ICON_BOX: float = 230.0  # медальон-иконка (2×)
+const _OVERLAY: Vector2 = Vector2(120, 165)  # часы внутри медальона (2×)
+const _PLAQUE_FONT: int = 34
+const _BADGE_FONT: int = 40
+const _GAP: int = 4  # иконка ↔ плашка
+
+# Плашка-название: nine-patch. Кант (texture_margin) не тянется, центр — да.
+const _T_MARGIN_LR: int = 90
+const _T_MARGIN_TB: int = 30
+const _T_PAD_LR: int = 44
+const _T_PAD_T: int = 16
+const _T_PAD_B: int = 20
+
+const _C_TEXT := Color(0.91, 0.86, 0.75)  # тёплый пергамент — текст плашки
+const _C_BADGE := Color(0.94, 0.90, 0.78)
+const _DISABLED_MOD := Color(0.5, 0.5, 0.5, 0.7)
+
+var _icon: TextureRect
+var _overlay: TextureRect
+var _badge: Label
+var _plaque_lbl: Label
+var _key: String = ""
+var _disabled: bool = false
+var _hover: bool = false
+
+
+func _init(
+	icon_tex: Texture2D,
+	title_tex: Texture2D,
+	text_key: String,
+	overlay_tex: Texture2D = null,
+	with_badge: bool = false
+) -> void:
+	_key = text_key
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+
+	var vb := VBoxContainer.new()
+	vb.name = "VB"
+	vb.alignment = BoxContainer.ALIGNMENT_CENTER
+	vb.add_theme_constant_override("separation", _GAP)
+	vb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vb.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	add_child(vb)
+
+	# ── медальон + (часы) + (бейдж) ──
+	var box := Control.new()
+	box.name = "IconBox"
+	box.custom_minimum_size = Vector2(_ICON_BOX, _ICON_BOX)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vb.add_child(box)
+	_icon = _make_tex(icon_tex)
+	_icon.name = "Icon"
+	_icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	box.add_child(_icon)
+	if overlay_tex != null:
+		var cc := CenterContainer.new()
+		cc.name = "OverlayCenter"
+		cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		box.add_child(cc)
+		_overlay = _make_tex(overlay_tex)
+		_overlay.name = "Overlay"
+		_overlay.custom_minimum_size = _OVERLAY
+		_overlay.pivot_offset = _OVERLAY * 0.5
+		cc.add_child(_overlay)
+	if with_badge:
+		_badge = Label.new()
+		_badge.name = "Badge"
+		_badge.add_theme_font_size_override("font_size", _BADGE_FONT)
+		_badge.add_theme_color_override("font_color", _C_BADGE)
+		_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_badge.anchor_left = 0.0
+		_badge.anchor_right = 1.0
+		_badge.anchor_top = 1.0
+		_badge.anchor_bottom = 1.0
+		_badge.offset_top = -66.0
+		_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		box.add_child(_badge)
+
+	# ── тянущаяся плашка-название ──
+	var sb := StyleBoxTexture.new()
+	sb.texture = title_tex
+	sb.texture_margin_left = _T_MARGIN_LR
+	sb.texture_margin_right = _T_MARGIN_LR
+	sb.texture_margin_top = _T_MARGIN_TB
+	sb.texture_margin_bottom = _T_MARGIN_TB
+	sb.content_margin_left = _T_PAD_LR
+	sb.content_margin_right = _T_PAD_LR
+	sb.content_margin_top = _T_PAD_T
+	sb.content_margin_bottom = _T_PAD_B
+	var pc := PanelContainer.new()
+	pc.name = "Plaque"
+	pc.add_theme_stylebox_override("panel", sb)
+	pc.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	pc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vb.add_child(pc)
+	_plaque_lbl = Label.new()
+	_plaque_lbl.name = "Title"
+	_plaque_lbl.add_theme_font_size_override("font_size", _PLAQUE_FONT)
+	_plaque_lbl.add_theme_color_override("font_color", _C_TEXT)
+	_plaque_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_plaque_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pc.add_child(_plaque_lbl)
+
+	# Размер виджета = обёртке (VBox). Переводы меняют ширину плашки → следим.
+	vb.resized.connect(func() -> void: custom_minimum_size = vb.size)
+	mouse_entered.connect(func() -> void: _set_hover(true))
+	mouse_exited.connect(func() -> void: _set_hover(false))
+	# Перевод — через LocaleBinder (пересчитает tr() при смене локали).
+	LocaleBinder.bind(_plaque_lbl, func() -> String: return tr(_key))
+
+
+func _make_tex(t: Texture2D) -> TextureRect:
+	var r := TextureRect.new()
+	r.name = "Tex"  # вызывающий переопределяет (Icon/Overlay)
+	r.texture = t
+	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	r.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return r
+
+
+func _gui_input(event: InputEvent) -> void:
+	if _disabled:
+		return
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+			pressed.emit()
+			accept_event()
+
+
+func set_disabled(v: bool) -> void:
+	_disabled = v
+	mouse_default_cursor_shape = (Control.CURSOR_ARROW if v else Control.CURSOR_POINTING_HAND)
+	_apply_mod()
+
+
+func set_badge(n: int) -> void:
+	if _badge != null:
+		_badge.text = str(n)
+
+
+func _set_hover(v: bool) -> void:
+	_hover = v
+	_apply_mod()
+
+
+func _apply_mod() -> void:
+	if _disabled:
+		modulate = _DISABLED_MOD
+	elif _hover:
+		modulate = Color(1.12, 1.12, 1.12)
+	else:
+		modulate = Color.WHITE
+
+
+# Быстрый проворот оверлея (часов) на 360° с размытием движения — для паса.
+func spin_overlay() -> void:
+	if _overlay == null:
+		return
+	_overlay.rotation = 0.0
+	var tw := create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(_overlay, "rotation", TAU, 0.45)
+	tw.tween_callback(func() -> void: _overlay.rotation = 0.0)

@@ -1,54 +1,112 @@
 extends CanvasLayer
 
 ## Панель действий — видна только когда сейчас МОЙ ход в фазе action.
-## Кнопки: концентрация, отдых, пас (+ обмен/состояния). Покупка билетов
-## вынесена в сайдбар локации (продаётся только в городах, по типам дорог).
+## Четыре иконки-медальона: Отдых, Концентрация, Ресурс, Пас (виджет ActionButton).
+## Обмен вынесен в сайдбар локации; действия-состояния играются картой из веера —
+## здесь их больше нет. Бейджи под концентрацией/ресурсом — текущее кол-во у игрока.
+##
+## Всё строится в 2× (ассеты @2×) и ужимается обёрткой scale 0.5 → кант чёткий.
+
+const _A := "res://assets/action-panel/"
+const _MARGIN_R: float = 48.0  # отступ блока от правого края
+const _MARGIN_B: float = 40.0  # отступ от низа
+const _HINT_FONT: int = 26  # 2× → 13 на экране
 
 @onready var _root: Control = $Root
-@onready var _panel: PanelContainer = %Panel
-@onready var _concent_btn: Button = %ConcentBtn
-@onready var _rest_btn: Button = %RestBtn
-@onready var _pass_btn: Button = %PassBtn
-@onready var _hint_label: Label = %HintLabel
 
-var _cond_btns: Dictionary = {}  # cond_id → Button локального действия состояния
-var _trade_btn: Button = null  # кнопка «Обмен» (видна при со-локационном напарнике)
-var _tickets: TicketsRow = null  # ряд билетов под кнопками (общий компонент)
-var _last_tickets: int = -1  # последнее показанное число билетов (без лишних ребилдов)
+var _scale: Control
+var _col: VBoxContainer
+var _hint: Label
+var _rest_ab: ActionButton
+var _conc_ab: ActionButton
+var _res_ab: ActionButton
+var _pass_ab: ActionButton
 
 
 func _ready() -> void:
-	# Без рамки/фона — кнопки и билеты лежат прямо на полосе панели сыщика.
-	_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
-	UIStyle.style_button(_concent_btn)
-	UIStyle.style_button(_rest_btn)
-	UIStyle.style_button(_pass_btn, UIColors.WARNING)
-	_hint_label.add_theme_color_override("font_color", UIColors.MUTED)
+	_build()
+	GameState.state_changed.connect(_refresh)
+	get_viewport().size_changed.connect(_reposition)
+	_refresh()
 
-	_concent_btn.pressed.connect(
+
+func _build() -> void:
+	# Обёртка scale 0.5: содержимое строим в НАТУРАЛЬНОМ 2×, показываем в половину.
+	_scale = Control.new()
+	_scale.name = "Scale"
+	_scale.scale = Vector2(0.5, 0.5)
+	_scale.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(_scale)
+
+	_col = VBoxContainer.new()
+	_col.name = "Col"
+	_col.alignment = BoxContainer.ALIGNMENT_CENTER
+	_col.add_theme_constant_override("separation", 6)
+	_col.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_scale.add_child(_col)
+
+	_hint = Label.new()
+	_hint.name = "Hint"
+	_hint.add_theme_font_size_override("font_size", _HINT_FONT)
+	_hint.add_theme_color_override("font_color", UIColors.MUTED)
+	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_col.add_child(_hint)
+
+	var row := HBoxContainer.new()
+	row.name = "Buttons"
+	row.add_theme_constant_override("separation", 30)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_col.add_child(row)
+
+	_rest_ab = ActionButton.new(_tex("rest-icon"), _tex("rest-title"), "ACTION_REST_TITLE")
+	_conc_ab = ActionButton.new(
+		_tex("concentration-icon"), _tex("concentration-title"), "ACTION_FOCUS_TITLE", null, true
+	)
+	_res_ab = ActionButton.new(
+		_tex("resource-icon"), _tex("resource-title"), "ACTION_RESOURCE_TITLE", null, true
+	)
+	_pass_ab = ActionButton.new(
+		_tex("pass-icon"), _tex("pass-title"), "ACTION_PASS_TITLE", _tex("hourglass")
+	)
+	for ab: ActionButton in [_rest_ab, _conc_ab, _res_ab, _pass_ab]:
+		row.add_child(ab)
+
+	_rest_ab.pressed.connect(func() -> void: GameState.perform_action(GameActions.REST))
+	_conc_ab.pressed.connect(
 		func() -> void: GameState.perform_action(GameActions.TAKE_CONCENTRATION)
 	)
-	_rest_btn.pressed.connect(func() -> void: GameState.perform_action(GameActions.REST))
-	_pass_btn.pressed.connect(func() -> void: GameState.perform_action(GameActions.PASS))
+	_res_ab.pressed.connect(_on_resource)
+	_pass_ab.pressed.connect(_on_pass)
 
-	# «Обмен» — программная кнопка (как cond-кнопки). Открывает модалку обмена
-	# через группу trade_modal. Видимость/блок — в _refresh.
-	_trade_btn = Button.new()
-	_trade_btn.name = "TradeBtn"
-	_trade_btn.text = "ACTION_TRADE"
-	UIStyle.style_button(_trade_btn, UIColors.ACCENT)
-	_trade_btn.pressed.connect(_open_trade)
-	_rest_btn.get_parent().add_child(_trade_btn)
-	_rest_btn.get_parent().move_child(_trade_btn, _pass_btn.get_index())
+	# Позиция блока (bottom-right) — пересчёт при смене размера содержимого/окна.
+	_col.resized.connect(_reposition)
+	_reposition()
 
-	# Ряд билетов под кнопками (тот же компонент, что в InfoBar лобби).
-	_tickets = TicketsRow.new()
-	_tickets.name = "Tickets"
-	_tickets.visible = false
-	_rest_btn.get_parent().get_parent().add_child(_tickets)  # в VBox под ButtonsRow
 
-	GameState.state_changed.connect(_refresh)
-	_refresh()
+func _tex(name: String) -> Texture2D:
+	return load(_A + name + ".png") as Texture2D
+
+
+# Ставим ужатый блок в правый-нижний угол с отступами.
+func _reposition() -> void:
+	if not is_instance_valid(_scale) or not is_instance_valid(_col):
+		return
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var w: float = _col.size.x * _scale.scale.x
+	var h: float = _col.size.y * _scale.scale.y
+	_scale.position = Vector2(vp.x - w - _MARGIN_R, vp.y - h - _MARGIN_B)
+
+
+func _on_pass() -> void:
+	_pass_ab.spin_overlay()  # часы прокручиваются на 360°
+	GameState.perform_action(GameActions.PASS)
+
+
+# TODO: действие «получить ресурс» пока не реализовано в движке — заглушка.
+func _on_resource() -> void:
+	pass
 
 
 func _refresh() -> void:
@@ -57,92 +115,22 @@ func _refresh() -> void:
 	if not visible_now:
 		return
 	var me: Dictionary = GameState.my_player()
-	# Одно действие нельзя повторять в раунде — гасим уже использованные кнопки.
 	var used: Array = me.get("actions_used", [])
-	# Недоступна, если уже брал в этом раунде ИЛИ достигнут потолок концентрации.
-	_concent_btn.disabled = (
-		used.has(GameActions.TAKE_CONCENTRATION)
-		or int(me.get("concentration", 0)) >= GameState.MAX_CONCENTRATION
+	# Концентрация: занята, если брал в раунде ИЛИ достигнут потолок.
+	_conc_ab.set_disabled(
+		(
+			used.has(GameActions.TAKE_CONCENTRATION)
+			or int(me.get("concentration", 0)) >= GameState.MAX_CONCENTRATION
+		)
 	)
-	_rest_btn.disabled = used.has(GameActions.REST)
-	_trade_btn.visible = _has_colocated_ally()
-	_trade_btn.disabled = used.has(GameActions.TRADE)
-	_refresh_condition_actions(me, used)
-	# Билеты под кнопками: ж/д + морские. Ребилд лишь при смене суммарного числа.
-	var n_train: int = int(me.get("train_tickets", 0))
-	var n_ship: int = int(me.get("ship_tickets", 0))
-	if n_train + n_ship != _last_tickets:
-		_last_tickets = n_train + n_ship
-		_tickets.set_counts(n_train, n_ship)
-	_tickets.visible = n_train + n_ship > 0
-	# Биндим через LocaleBinder — строка форматированная (%d), при смене локали
-	# нужно перевычислить tr() с актуальным шаблоном.
+	_conc_ab.set_badge(int(me.get("concentration", 0)))
+	_rest_ab.set_disabled(used.has(GameActions.REST))
+	_res_ab.set_badge(int(me.get("resources", 0)))
+	# Подсказка «Раунд N · осталось действий: M» — форматируется, через LocaleBinder.
 	LocaleBinder.bind(
-		_hint_label,
+		_hint,
 		func() -> String:
 			var m: Dictionary = GameState.my_player()
-			return (
-				tr("ACTION_ROUND_FMT")
-				% [
-					GameState.round_num,
-					int(m.get("actions_left", 0)),
-				]
-			)
+			return tr("ACTION_ROUND_FMT") % [GameState.round_num, int(m.get("actions_left", 0))]
 	)
-
-
-# Динамические кнопки локальных действий состояний (escape, напр. Detained:
-# «Влияние → сброс»). Доступны даже при cannotAct; гасятся после использования.
-func _refresh_condition_actions(me: Dictionary, used: Array) -> void:
-	var conds: Array = me.get("conditions", [])
-	var actionable: Dictionary = {}
-	for i: int in range(conds.size()):
-		var cid: String = String(conds[i])
-		if not (Conditions.get_def(cid).get("action", []) as Array).is_empty():
-			actionable[cid] = true
-	for rid_v: Variant in _cond_btns.keys():
-		var rid: String = String(rid_v)
-		if not actionable.has(rid):
-			(_cond_btns[rid] as Node).queue_free()
-			_cond_btns.erase(rid)
-	for aid_v: Variant in actionable:
-		var aid: String = String(aid_v)
-		var btn: Button = _cond_btns.get(aid)
-		if btn == null or not is_instance_valid(btn):
-			btn = Button.new()
-			btn.name = "CondAct_" + aid
-			UIStyle.style_button(btn, UIColors.ACCENT)
-			var bound_id: String = aid
-			btn.pressed.connect(
-				func() -> void:
-					GameState.perform_action(GameActions.CONDITION_ACTION, {"condition": bound_id})
-			)
-			_rest_btn.get_parent().add_child(btn)
-			_cond_btns[aid] = btn
-		btn.text = "▸ " + tr(Conditions.name_key(aid))
-		btn.disabled = used.has(GameActions.CONDITION_ACTION)
-
-
-# Есть ли подключённый напарник на моей локации (для кнопки «Обмен»).
-func _has_colocated_ally() -> bool:
-	var me: Dictionary = GameState.my_player()
-	var my_loc: String = String(me.get("location", ""))
-	var my_id: String = String(me.get("user_id", ""))
-	for pid_v: Variant in GameState.players:
-		var p: Dictionary = GameState.players[pid_v]
-		var ok: bool = (
-			String(pid_v) != my_id
-			and bool(p.get("connected", true))
-			and String(p.get("location", "")) == my_loc
-		)
-		if ok:
-			return true
-	return false
-
-
-func _open_trade() -> void:
-	# Модалка обмена — сиблинг по имени "TradeModal" в world_map (есть в дереве с
-	# загрузки сцены, не зависит от тайминга _ready/групп).
-	var tm: Node = get_parent().get_node_or_null("TradeModal")
-	if tm != null and tm.has_method("open"):
-		tm.open()
+	_reposition()
