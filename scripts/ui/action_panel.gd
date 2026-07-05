@@ -11,6 +11,7 @@ const _A := "res://assets/action-panel/"
 const _MARGIN_R: float = 48.0  # отступ блока от правого края
 const _MARGIN_B: float = 40.0  # отступ от низа
 const _HINT_FONT: int = 26  # 2× → 13 на экране
+const _TICKETS_GAP: float = 20.0  # зазор кнопки ↔ столбец билетов
 
 @onready var _root: Control = $Root
 
@@ -21,6 +22,8 @@ var _rest_ab: ActionButton
 var _conc_ab: ActionButton
 var _res_ab: ActionButton
 var _pass_ab: ActionButton
+var _tickets: TicketsRow  # вертикальная стопка билетов справа от кнопок
+var _last_tickets: int = -1  # без лишних ребилдов стопки
 
 
 func _ready() -> void:
@@ -80,6 +83,16 @@ func _build() -> void:
 	_res_ab.pressed.connect(_on_resource)
 	_pass_ab.pressed.connect(_on_pass)
 
+	# Вертикальная стопка билетов — справа от кнопок, вне scale-обёртки (у неё свой
+	# внутренний масштаб, второе ужатие сделало бы билеты крошечными).
+	_tickets = TicketsRow.new()
+	_tickets.name = "Tickets"
+	_tickets.vertical = true
+	_tickets.visible = false
+	_tickets.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tickets.resized.connect(_reposition)
+	_root.add_child(_tickets)
+
 	# Позиция блока (bottom-right) — пересчёт при смене размера содержимого/окна.
 	_col.resized.connect(_reposition)
 	_reposition()
@@ -89,14 +102,20 @@ func _tex(name: String) -> Texture2D:
 	return load(_A + name + ".png") as Texture2D
 
 
-# Ставим ужатый блок в правый-нижний угол с отступами.
+# Раскладка bottom-right: билеты у правого края, блок кнопок слева от них.
 func _reposition() -> void:
 	if not is_instance_valid(_scale) or not is_instance_valid(_col):
 		return
 	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var right: float = vp.x - _MARGIN_R
+	var tickets_w: float = 0.0
+	if is_instance_valid(_tickets) and _tickets.visible and _tickets.get_child_count() > 0:
+		var ts: Vector2 = _tickets.size
+		_tickets.position = Vector2(right - ts.x, vp.y - _MARGIN_B - ts.y)
+		tickets_w = ts.x + _TICKETS_GAP
 	var w: float = _col.size.x * _scale.scale.x
 	var h: float = _col.size.y * _scale.scale.y
-	_scale.position = Vector2(vp.x - w - _MARGIN_R, vp.y - h - _MARGIN_B)
+	_scale.position = Vector2(right - tickets_w - w, vp.y - _MARGIN_B - h)
 
 
 func _on_pass() -> void:
@@ -126,6 +145,13 @@ func _refresh() -> void:
 	_conc_ab.set_badge(int(me.get("concentration", 0)))
 	_rest_ab.set_disabled(used.has(GameActions.REST))
 	_res_ab.set_badge(int(me.get("resources", 0)))
+	# Билеты: ж/д + морские. Ребилд стопки лишь при смене суммарного числа.
+	var n_train: int = int(me.get("train_tickets", 0))
+	var n_ship: int = int(me.get("ship_tickets", 0))
+	if n_train + n_ship != _last_tickets:
+		_last_tickets = n_train + n_ship
+		_tickets.set_counts(n_train, n_ship)
+	_tickets.visible = n_train + n_ship > 0
 	# Подсказка «Раунд N · осталось действий: M» — форматируется, через LocaleBinder.
 	LocaleBinder.bind(
 		_hint,
