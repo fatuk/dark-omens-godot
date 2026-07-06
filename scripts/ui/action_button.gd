@@ -129,7 +129,7 @@ func _init(
 		var sh := Shader.new()
 		sh.code = _SPIN_BLUR_SHADER
 		sm.shader = sh
-		_overlay.material = sm  # угловой блюр во время проворота
+		_overlay.material = sm  # угловой блюр во время проворота (textureLod → мип-0, ярко)
 		cc.add_child(_overlay)
 
 	# ── тянущаяся плашка-название ──
