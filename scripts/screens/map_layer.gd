@@ -42,7 +42,8 @@ const LABEL_FONT: int = 14  # шрифт в экранных пикселях
 const INVESTIGATOR_CARD_H_NEAR: float = 150.0
 const INVESTIGATOR_CARD_H_FAR: float = 100.0  # ≈1.5× меньше на дальнем зуме
 const INVESTIGATOR_OFFSET_Y: float = -112.0  # подъём над жетоном локации
-const INVESTIGATOR_FAN_X: float = 55.0
+const INVESTIGATOR_FAN_X: float = 60.0  # разнос ОСНОВАНИЙ карточек в веере (по X)
+const INVESTIGATOR_FAN_ANGLE: float = 0.34  # наклон карточек в веере (рад, ≈±10° у пары)
 
 ## Открытые врата: два слоя (outer/inner) на маркере локации. Оба вращаются,
 ## inner ощутимо быстрее. Размер обоих ≈ MARKER_SCREEN (заполняют кружок).
@@ -847,8 +848,16 @@ func set_investigators(list: Array) -> void:
 		var total: int = int(per_loc.get(loc_name, 1))
 		var k: int = int(placed.get(loc_name, 0))
 		placed[loc_name] = k + 1
-		var fan_x: float = (float(k) - float(total - 1) * 0.5) * INVESTIGATOR_FAN_X
-		var screen_off := Vector2(fan_x, INVESTIGATOR_OFFSET_Y)
+		# Веер: несколько сыщиков на локации расходятся. Основания слегка разнесены по X
+		# и КАЖДАЯ карточка наклонена (поворот вокруг основания, а не центра — потому
+		# смещаем центр так, чтобы основание село в общую точку). Одиночка — прямо.
+		var slot: float = float(k) - float(total - 1) * 0.5
+		var ang: float = slot * INVESTIGATOR_FAN_ANGLE
+		var half_h: float = INVESTIGATOR_CARD_H_NEAR * 0.5  # полувысота карточки в NEAR-пикселях
+		var pivot_y: float = INVESTIGATOR_OFFSET_Y + half_h  # высота основания (где сходятся)
+		var screen_off := Vector2(
+			slot * INVESTIGATOR_FAN_X + half_h * sin(ang), pivot_y - half_h * cos(ang)
+		)
 
 		var tex: Texture2D = _investigator_texture(String(entry.get("investigator", "")))
 		# base_scale переводит нативную высоту ассета (avatar-pin @2×) в полную
@@ -861,6 +870,7 @@ func set_investigators(list: Array) -> void:
 			var pin := InvestigatorPin.new()
 			pin.name = "Inv_%s_%d" % [String(entry.get("pid", "")), sign(dx)]
 			pin.z_index = 7  # пины сыщиков — поверх ВСЕХ айтемов (врата z=5)
+			pin.rotation = ang  # наклон в веере (масштаб-инвариантен; _process его не трогает)
 			pin.scale = Vector2.ONE * base_scale * inv0 * if0
 			pin.position = base + screen_off * inv0 * if0
 			add_child(pin)
