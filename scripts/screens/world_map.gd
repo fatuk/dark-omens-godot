@@ -138,6 +138,9 @@ func _exit_tree() -> void:
 func _refresh_game_panel() -> void:
 	_game_panel.set_phase(_phase_label_for(GameState.phase))
 	_game_panel.set_player(_current_player_name())
+	# Число делений трека = порог Рока Древнего (doomClock); иначе трек 12 делений
+	# показывал бы doom≥12 всегда «полным». Фолбэк 12 — пока библия не готова.
+	_game_panel.set_max_doom(int(GameState.campaign.get("doomClock", 12)))
 	_game_panel.set_doom(GameState.doom)
 	_game_panel.set_omens_step(float(GameState.omens_step))
 	_game_panel.set_info(_to_roman(GameState.round_num))
