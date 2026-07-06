@@ -17,6 +17,9 @@ class HostStub:
 func before_each() -> void:
 	_saved_nm = GameState._nm
 	GameState._nm = autofree(HostStub.new())
+	# Пул строится из ВСЕХ локаций карты — подставляем фикстуру A/B/C вместо реальной
+	# locations.json. campaign.ancientOne.clues задаёт только КОНТЕНТ (ClueCatalog).
+	GameState._locations_cache = [{"id": "A"}, {"id": "B"}, {"id": "C"}]
 	GameState.campaign = {
 		"ancientOne":
 		{
@@ -38,15 +41,16 @@ func after_each() -> void:
 	GameState.campaign = {}
 	GameState.players = {}
 	GameState.entities = {}
+	GameState._locations_cache = []  # сброс фикстуры — другие тесты грузят реальную
 	GameState._reset_clue_pool()
 
 
 # ── Пул ───────────────────────────────────────────────────────────────────────
 
 
-func test_pool_builds_from_campaign() -> void:
+func test_pool_builds_from_all_locations() -> void:
 	GameState._ensure_clue_pool()
-	assert_eq(GameState._clue_pool.size(), 3, "три улики в пуле")
+	assert_eq(GameState._clue_pool.size(), 3, "пул = все локации карты (фикстура A/B/C)")
 	assert_true(GameState._clue_pool.has("A") and GameState._clue_pool.has("C"))
 
 

@@ -136,10 +136,10 @@ var gates: Dictionary = {}
 var entities: Dictionary = {}
 
 # ── Улики Древнего: аддитивный слой идентичности (host-only, НЕ синкается) ──────
-# Пул доступных улик = ключи-локации из campaign.ancientOne.clues, ещё не на поле и
-# не на руках. _board_clue_ids: loc → [ключи улик на жетонах там]. Инвариант «доступно
-# ⇄ на поле ⇄ на руках (player.clue_ids)»: ключ улики всегда ровно в одном месте.
-# Раскладку/поиск НЕ трогает — только приклеивает идентичность. Ключ улики = локация.
+# Пул доступных улик = ВСЕ локации карты, ещё не на поле и не на руках (ключ улики =
+# локация; текст/арт — из campaign.ancientOne.clues, нет → имя локации). _board_clue_ids:
+# loc → [ключи улик на жетонах там]. Инвариант «доступно ⇄ на поле ⇄ на руках
+# (player.clue_ids)»: ключ улики всегда ровно в одном месте. Раскладку/поиск НЕ трогает.
 var _clue_pool: Array = []
 var _board_clue_ids: Dictionary = {}
 var _clue_pool_ready: bool = false
@@ -311,22 +311,18 @@ func _emit_changed() -> void:
 # поиск улик НЕ меняем — только приклеиваем идентичность.
 
 
-# Определения улик Древнего (синкаются в campaign.ancientOne.clues). [] — нет/не готово.
-func _clue_defs() -> Array:
-	return (campaign.get("ancientOne", {}) as Dictionary).get("clues", [])
-
-
-# Ленивая сборка пула из campaign (кампания приходит асинхронно). Идемпотентно.
+# Ленивая сборка пула идентичности из ВСЕХ локаций карты: каждая улика привязана к
+# локации (до 20). Есть авторский текст Древнего (campaign.ancientOne.clues) → веер
+# покажет его; нет — имя локации (ClueCatalog). Так лишних анонимных улик не бывает,
+# пока не разобраны все локации. Идемпотентно.
 func _ensure_clue_pool() -> void:
-	if _clue_pool_ready or campaign.is_empty():
+	if _clue_pool_ready:
 		return
 	_clue_pool.clear()
-	for c: Variant in _clue_defs():
-		if not (c is Dictionary):
-			continue
-		var loc: String = String((c as Dictionary).get("location", ""))
-		if not loc.is_empty() and not _clue_pool.has(loc):
-			_clue_pool.append(loc)
+	for loc: Variant in _load_locations():
+		var lid: String = String((loc as Dictionary).get("id", ""))
+		if not lid.is_empty() and not _clue_pool.has(lid):
+			_clue_pool.append(lid)
 	_clue_pool_ready = true
 
 
