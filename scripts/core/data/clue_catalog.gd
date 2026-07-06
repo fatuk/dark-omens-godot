@@ -34,12 +34,16 @@ static func card_art(loc: String) -> Texture2D:
 
 
 ## Payload карточки улики для веера/GameCard (title/description/art) по ключу-локации.
+## Нет описания (улика не заведена или поле пустое) → подставляем имя локации.
 static func card_payload(loc: String) -> Dictionary:
 	var d: Dictionary = by_location(loc)
+	var desc: String = String(d.get("description", ""))
+	if desc.strip_edges().is_empty():
+		desc = TranslationServer.translate(GameState.loc_name_key(loc))
 	var payload: Dictionary = {
 		"id": loc,
 		"title": d.get("title", ""),
-		"desc": d.get("description", ""),
+		"desc": desc,
 	}
 	var art: Texture2D = card_art(loc)
 	if art != null:

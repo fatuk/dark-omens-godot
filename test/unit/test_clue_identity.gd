@@ -147,6 +147,12 @@ func test_catalog_card_payload() -> void:
 	assert_false(p.has("art"), "файла арта нет → без art")
 
 
+func test_catalog_payload_desc_falls_back_to_location() -> void:
+	# Улики для "Z" нет → описание = имя локации (loc_name_key → "Z" вне locations.json).
+	var p: Dictionary = ClueCatalog.card_payload("Z")
+	assert_eq(String(p.get("desc", "")), "Z", "нет описания → имя локации")
+
+
 func test_catalog_deck_for_ids() -> void:
 	var deck: Array = ClueCatalog.deck_for_clue_ids(["A", "C"])
 	assert_eq(deck.size(), 2)
