@@ -413,6 +413,7 @@ func place_clue() -> void:
 	var cell: Array = _gs.entities.get(pick, [])
 	cell.append("clue")
 	_gs.entities[pick] = cell
+	_gs._claim_board_clue(pick)  # приклеить идентичность улики этой локации (если заведена)
 	GameConsole.log("[Улика] на %s" % pick)
 
 

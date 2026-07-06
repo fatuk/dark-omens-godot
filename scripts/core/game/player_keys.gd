@@ -25,6 +25,7 @@ const SANITY := "sanity"
 const HP_MAX := "hp_max"
 const SANITY_MAX := "sanity_max"
 const CLUES := "clues"
+const CLUE_IDS := "clue_ids"  # аддитивный слой идентичности улик (ключи-локации Древнего)
 const CONDITIONS := "conditions"
 const CONDITIONS_FLIPPED := "conditions_flipped"
 const ITEMS := "items"

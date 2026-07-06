@@ -964,7 +964,10 @@ func _apply_research_clue_removal(pid: String, kind: String) -> void:
 		return
 	var gained: int = int(enc.get("_clues_gained", 0))
 	if gained > 0:
-		_remove_clues_at(String(_gs.players[pid].get("location", "")), gained)
+		var loc: String = String(_gs.players[pid].get("location", ""))
+		_remove_clues_at(loc, gained)
+		# Идентичность: улика(и) с жетонов этой локации → на руки сыщику (до _broadcast_sync).
+		_gs._collect_board_clues(pid, loc, gained)
 	enc["_clues_removed"] = true
 
 

@@ -135,6 +135,15 @@ var gates: Dictionary = {}
 # показываются тем же набором иконок (world_map склеивает вид).
 var entities: Dictionary = {}
 
+# ── Улики Древнего: аддитивный слой идентичности (host-only, НЕ синкается) ──────
+# Пул доступных улик = ключи-локации из campaign.ancientOne.clues, ещё не на поле и
+# не на руках. _board_clue_ids: loc → [ключи улик на жетонах там]. Инвариант «доступно
+# ⇄ на поле ⇄ на руках (player.clue_ids)»: ключ улики всегда ровно в одном месте.
+# Раскладку/поиск НЕ трогает — только приклеивает идентичность. Ключ улики = локация.
+var _clue_pool: Array = []
+var _board_clue_ids: Dictionary = {}
+var _clue_pool_ready: bool = false
+
 # Монстры по локациям. {loc_id: [{id, health},…]} — экземпляры из
 # MonsterCatalog с текущим здоровьем (урон в бою сохраняется между встречами).
 # Визуально склеиваются с entities (по количеству).
@@ -284,6 +293,7 @@ const _SYNC_FIELDS: Array[String] = [
 func _broadcast_sync() -> void:
 	if not _is_host():
 		return
+	_reconcile_clue_identities()  # синхронизируем clue_ids игроков с числом улик до рассылки
 	var payload: Dictionary = {"action": RelayActions.SYNC, "mythos_index": _mythos.index}
 	for f: String in _SYNC_FIELDS:
 		payload[f] = get(f)
@@ -292,6 +302,114 @@ func _broadcast_sync() -> void:
 
 func _emit_changed() -> void:
 	state_changed.emit()
+
+
+# ── Улики Древнего: идентичность (host-only) ───────────────────────────────────
+# Аддитивный слой поверх числового player.clues: у каждой улики на руках есть
+# ключ-локация из campaign.ancientOne.clues (→ контент/арт для веера). Пул уникален
+# на партию: ключ улики всегда ровно в одном месте (пул / поле / руки). Раскладку и
+# поиск улик НЕ меняем — только приклеиваем идентичность.
+
+
+# Определения улик Древнего (синкаются в campaign.ancientOne.clues). [] — нет/не готово.
+func _clue_defs() -> Array:
+	return (campaign.get("ancientOne", {}) as Dictionary).get("clues", [])
+
+
+# Ленивая сборка пула из campaign (кампания приходит асинхронно). Идемпотентно.
+func _ensure_clue_pool() -> void:
+	if _clue_pool_ready or campaign.is_empty():
+		return
+	_clue_pool.clear()
+	for c: Variant in _clue_defs():
+		if not (c is Dictionary):
+			continue
+		var loc: String = String((c as Dictionary).get("location", ""))
+		if not loc.is_empty() and not _clue_pool.has(loc):
+			_clue_pool.append(loc)
+	_clue_pool_ready = true
+
+
+# Сброс пула при старте партии (перед раскладкой). Пересоберётся лениво из campaign.
+func _reset_clue_pool() -> void:
+	_clue_pool.clear()
+	_board_clue_ids.clear()
+	_clue_pool_ready = false
+
+
+# Жетон улики лёг на локацию loc → строго берём улику ЭТОЙ локации из пула (если она
+# заведена и доступна). Нет своей улики → жетон анонимный (числовая улика без контента).
+func _claim_board_clue(loc: String) -> void:
+	if not _is_host():
+		return
+	_ensure_clue_pool()
+	if not _clue_pool.has(loc):
+		return
+	_clue_pool.erase(loc)
+	var arr: Array = _board_clue_ids.get(loc, [])
+	arr.append(loc)
+	_board_clue_ids[loc] = arr
+
+
+# Исследование: до n улик с жетонов локации loc → на руки игроку (player.clue_ids).
+# Зовётся из encounter_flow ПОСЛЕ снятия жетонов, до _broadcast_sync.
+func _collect_board_clues(pid: String, loc: String, n: int) -> void:
+	if not _is_host() or not players.has(pid):
+		return
+	var board: Array = _board_clue_ids.get(loc, [])
+	var p: Dictionary = players[pid]
+	var ids: Array = p.get(PlayerKeys.CLUE_IDS, [])
+	var moved: int = 0
+	while moved < n and not board.is_empty():
+		ids.append(board.pop_back())
+		moved += 1
+	p[PlayerKeys.CLUE_IDS] = ids
+	players[pid] = p
+	if board.is_empty():
+		_board_clue_ids.erase(loc)
+	else:
+		_board_clue_ids[loc] = board
+
+
+# Сверка идентичностей с числом улик (host, каждый _broadcast_sync). Сначала вернуть
+# в пул ключи «мёртвых» жетонов, затем на каждого игрока: clue_ids < clues → добрать
+# из пула (любую оставшуюся); clue_ids > clues (трата/потеря) → вернуть излишек в пул.
+func _reconcile_clue_identities() -> void:
+	if not _is_host():
+		return
+	_ensure_clue_pool()
+	_reconcile_board_clue_ids()
+	for pid: Variant in players:
+		var p: Dictionary = players[pid]
+		var want: int = int(p.get(PlayerKeys.CLUES, 0))
+		var ids: Array = p.get(PlayerKeys.CLUE_IDS, [])
+		while ids.size() < want and not _clue_pool.is_empty():
+			ids.append(_clue_pool.pop_back())
+		while ids.size() > want:
+			var back: String = String(ids.pop_back())
+			if not _clue_pool.has(back):
+				_clue_pool.append(back)
+		p[PlayerKeys.CLUE_IDS] = ids
+		players[pid] = p
+
+
+# Вернуть в пул ключи улик, чьих жетонов уже нет на поле (сняты не исследованием —
+# напр. discardAllClues Слуха). _board_clue_ids приводим к реальному числу "clue".
+func _reconcile_board_clue_ids() -> void:
+	for loc: Variant in _board_clue_ids.keys():
+		var on_board: int = 0
+		for e: Variant in entities.get(loc, []):
+			if String(e) == "clue":
+				on_board += 1
+		var arr: Array = _board_clue_ids[loc]
+		while arr.size() > on_board:
+			var back: String = String(arr.pop_back())
+			if not _clue_pool.has(back):
+				_clue_pool.append(back)
+		if arr.is_empty():
+			_board_clue_ids.erase(loc)
+		else:
+			_board_clue_ids[loc] = arr
 
 
 # Сборка свежей записи игрока — общий шаблон для старта партии и поздних
@@ -321,6 +439,7 @@ func _make_player_dict(
 		PlayerKeys.HP_MAX: hp_max,
 		PlayerKeys.SANITY_MAX: sanity_max,
 		PlayerKeys.CLUES: _starting_token_count(investigator, "clue"),
+		PlayerKeys.CLUE_IDS: [],  # идентичности добираются из пула при сверке (_broadcast_sync)
 		PlayerKeys.CONDITIONS: [],
 		PlayerKeys.CONDITIONS_FLIPPED: {},  # {cond_id: outcome_id} — перевёрнутые в расплату
 		PlayerKeys.ITEMS: _starting_items(investigator),
@@ -432,6 +551,7 @@ func start_game(players_init: Array) -> void:
 	# библия ещё не готова) — тот же авторитет из CampaignGen. Соло-тест партии на
 	# N раскладывает поле и задаёт Наплыв как на N.
 	var setup_pc: int = int(campaign.get("playerCount", _campaign.balance_player_count()))
+	_reset_clue_pool()  # свежий пул улик Древнего перед раскладкой (соберётся лениво из campaign)
 	_board.setup_board(maxi(1, setup_pc))  # стартовая раскладка: врата+монстры, улики, Наплыв
 	_mystery.apply_mystery_on_enter()  # onEnter первой Тайны (если библия уже готова; иначе при её приходе)
 	_broadcast_sync()

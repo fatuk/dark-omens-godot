@@ -67,6 +67,9 @@ class MockGameState:
 	func _fill_shop_reserve() -> void:
 		shop_filled += 1
 
+	func _claim_board_clue(_loc: String) -> void:
+		pass  # слой идентичности улик не под тестом board_state
+
 
 func before_each() -> void:
 	_gs = autofree(MockGameState.new())
