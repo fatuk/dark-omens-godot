@@ -35,6 +35,8 @@ const SFX_DICE: AudioStream = preload("res://assets/audio/sfx/dice-roll.wav")
 ## Взятие жетона концентрации / ресурса — короткий «получил».
 const SFX_CONCENTRATION_GET: AudioStream = preload("res://assets/audio/sfx/concentration-get.wav")
 const SFX_RESOURCE_GET: AudioStream = preload("res://assets/audio/sfx/resource-get.wav")
+## Пас — проворот песочных часов.
+const SFX_PASS: AudioStream = preload("res://assets/audio/sfx/pass.wav")
 ## Отдых (лечение): один файл с 5 участками — берём случайный через play_variation.
 ## Границы выверены по тишине в файле (обрыв сегмента → в паузу, без щелчка); старт
 ## каждого — у самого онсета звука, конец — в тишине перед следующим.

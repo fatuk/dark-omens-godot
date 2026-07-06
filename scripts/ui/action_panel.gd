@@ -167,6 +167,7 @@ func _on_pass() -> void:
 	if _busy:
 		return
 	_busy = true
+	SfxManager.play(SfxManager.SFX_PASS)
 	await _pass_ab.spin_overlay()  # СНАЧАЛА проворот часов, ПОТОМ действие
 	GameState.perform_action(GameActions.PASS)
 	_busy = false
