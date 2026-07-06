@@ -47,9 +47,9 @@ const _POP_SCALE: float = 2.6  # во сколько раз вырастает �
 const _SPIN_BLUR_SHADER := """
 shader_type canvas_item;
 uniform float blur_rad = 0.0;
+uniform vec4 tint = vec4(1.0);
 const int SAMPLES = 12;
 void fragment() {
-	vec4 mod_color = COLOR;  // входной MODULATE (напр. затемнение disabled) — иначе часы не гаснут
 	vec2 c = vec2(0.5);
 	vec2 d = UV - c;
 	float r = length(d);
@@ -58,11 +58,12 @@ void fragment() {
 	for (int i = 0; i < SAMPLES; i++) {
 		float t = float(i) / float(SAMPLES - 1) - 0.5;
 		float a = a0 + t * blur_rad;
-		// textureLod форсит мип-0: обычный texture() в шейдере берёт мипмапы (фильтр
-		// ноды его не отменяет), а они гасят тонкий ажур часов (non-premult alpha).
+		// textureLod форсит мип-0: обычный texture() берёт мипмапы (гасят тонкий ажур).
 		acc += textureLod(TEXTURE, c + r * vec2(cos(a), sin(a)), 0.0);
 	}
-	COLOR = (acc / float(SAMPLES)) * mod_color;
+	// tint (НЕ COLOR!) — затемнение disabled. COLOR на входе уже = текстура; умножение
+	// на него давало texture² и гасило часы (регресс 123a84f). tint шлём из _apply_mod.
+	COLOR = (acc / float(SAMPLES)) * tint;
 }
 """
 
@@ -204,12 +205,16 @@ func _set_hover(v: bool) -> void:
 
 
 func _apply_mod() -> void:
+	var mod: Color = Color.WHITE
 	if _disabled:
-		modulate = _DISABLED_MOD
+		mod = _DISABLED_MOD
 	elif _hover:
-		modulate = UIColors.HIGHLIGHT
-	else:
-		modulate = Color.WHITE
+		mod = UIColors.HIGHLIGHT
+	modulate = mod
+	# Часы под шейдером не читают modulate (шейдер перезаписывает COLOR) — дублируем
+	# затемнение в uniform tint, чтобы гасли вместе с кнопкой.
+	if _overlay != null and _overlay.material is ShaderMaterial:
+		(_overlay.material as ShaderMaterial).set_shader_parameter("tint", mod)
 
 
 # Быстрый проворот оверлея (часов) на 360° с угловым мотион-блюром — для паса.
