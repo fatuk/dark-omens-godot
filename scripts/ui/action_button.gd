@@ -58,7 +58,9 @@ void fragment() {
 	for (int i = 0; i < SAMPLES; i++) {
 		float t = float(i) / float(SAMPLES - 1) - 0.5;
 		float a = a0 + t * blur_rad;
-		acc += texture(TEXTURE, c + r * vec2(cos(a), sin(a)));
+		// textureLod форсит мип-0: обычный texture() в шейдере берёт мипмапы (фильтр
+		// ноды его не отменяет), а они гасят тонкий ажур часов (non-premult alpha).
+		acc += textureLod(TEXTURE, c + r * vec2(cos(a), sin(a)), 0.0);
 	}
 	COLOR = (acc / float(SAMPLES)) * mod_color;
 }
@@ -123,10 +125,6 @@ func _init(
 		_overlay.name = "Overlay"
 		_overlay.custom_minimum_size = _OVERLAY
 		_overlay.pivot_offset = _OVERLAY * 0.5
-		# БЕЗ мипмапов: у тонкого ажура часов при мип-уменьшении прозрачный чёрный
-		# (RGB≈0, non-premult alpha) подмешивается в края и заметно гасит арт — на
-		# тёмном медальоне часы становились почти чёрными. LINEAR (мип-0) держит яркость.
-		_overlay.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 		var sm := ShaderMaterial.new()
 		var sh := Shader.new()
 		sh.code = _SPIN_BLUR_SHADER
