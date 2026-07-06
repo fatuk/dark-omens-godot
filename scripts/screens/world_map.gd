@@ -370,22 +370,42 @@ func _hand_tokens_section() -> Array:
 	var out: Array = []
 	for _i in range(int(me.get("concentration", 0))):
 		out.append(_token_payload("concentration"))
-	for _i in range(int(me.get("clues", 0))):
-		out.append(_token_payload("clue"))
+	# Улики: по карте на жетон. Идентичность (тайтл/описание/арт локации) — из clue_ids
+	# через ClueCatalog. Жетонов больше, чем идентичностей → лишние дженерик (без локации).
+	var clue_ids: Array = me.get("clue_ids", [])
+	for i in range(int(me.get("clues", 0))):
+		var loc: String = String(clue_ids[i]) if i < clue_ids.size() else ""
+		out.append(_clue_token_payload(loc))
 	return out
 
 
-# Payload жетона для GameCard. Улика — глиф + подпись. Концентрация — полно-артовая
-# карта (своя рамка) со СЛУЧАЙНОЙ цитатой стоика (автор/источник/текст) для разнообразия.
+# Payload карты-улики: дженерик-жетон переброса (глиф + подсказка «на куб»); при
+# наличии идентичности (loc из clue_ids) накладываем контент Древнего из ClueCatalog —
+# тайтл улики и описание (нет описания → имя локации), опц. арт вместо глифа.
+func _clue_token_payload(loc: String) -> Dictionary:
+	var p: Dictionary = {
+		"kind": "token",
+		"currency": "clue",
+		"title": tr("TOKEN_CLUE"),
+		"glyph": "◆",
+		"desc": tr("TOKEN_REROLL_HINT"),
+	}
+	if loc.is_empty():
+		return p
+	var cp: Dictionary = ClueCatalog.card_payload(loc)
+	var title: String = String(cp.get("title", ""))
+	if not title.strip_edges().is_empty():
+		p["title"] = title
+	p["desc"] = String(cp.get("desc", ""))  # описание улики или имя локации
+	if cp.has("art"):
+		p["art"] = cp["art"]
+		p.erase("glyph")  # есть арт → без глифа-заглушки
+	return p
+
+
+# Payload жетона концентрации для GameCard — полно-артовая карта (своя рамка) со
+# СЛУЧАЙНОЙ цитатой стоика (автор/источник/текст) для разнообразия.
 func _token_payload(currency: String) -> Dictionary:
-	if currency != "concentration":
-		return {
-			"kind": "token",
-			"currency": currency,
-			"title": tr("TOKEN_CLUE"),
-			"glyph": "◆",
-			"desc": tr("TOKEN_REROLL_HINT"),
-		}
 	var q: Dictionary = StoicQuotes.random()
 	return {
 		"kind": "token",
