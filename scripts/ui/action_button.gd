@@ -35,9 +35,6 @@ const _T_PAD_B: int = 24
 
 const _C_TEXT := Color(0.91, 0.86, 0.75)  # тёплый пергамент — текст плашки
 const _DISABLED_MOD := UIColors.DISABLED
-# Арт часов паса тёмный (ср. яркость ~0.22) — подсвечиваем self_modulate'ом. Множится
-# на текстуру, но всё ещё гаснет вместе с кнопкой (disabled modulate идёт сверху).
-const _OVERLAY_BRIGHTEN := Color(1.8, 1.8, 1.8)
 
 const _SPIN_DUR: float = 0.5  # длительность проворота часов
 const _SPIN_BLUR: float = 0.9  # пиковый угол смаза (рад)
@@ -126,7 +123,6 @@ func _init(
 		_overlay.name = "Overlay"
 		_overlay.custom_minimum_size = _OVERLAY
 		_overlay.pivot_offset = _OVERLAY * 0.5
-		_overlay.self_modulate = _OVERLAY_BRIGHTEN  # тёмный арт часов — поднимаем яркость
 		var sm := ShaderMaterial.new()
 		var sh := Shader.new()
 		sh.code = _SPIN_BLUR_SHADER
