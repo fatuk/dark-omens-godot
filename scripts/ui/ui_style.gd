@@ -601,6 +601,41 @@ static func modal_title(text: String, color: Color = UIColors.ACCENT) -> Label:
 	return lbl
 
 
+const _ORNATE_CHEVRON_L: Texture2D = preload("res://assets/ui/nav/L_chevron.png")
+const _ORNATE_CHEVRON_R: Texture2D = preload("res://assets/ui/nav/R_chevron.png")
+
+
+## Орнаментальный заголовок секции: декор-шеврон · подпись · шеврон (как «ВЫБЕРИТЕ
+## СЫЩИКА» в пикере). text — i18n-ключ (Label авто-переводит). Тянется по ширине,
+## подпись по центру. Переиспользуемо на любом экране/секции.
+static func ornate_title(
+	text: String, size: int = 28, color: Color = UIColors.ACCENT
+) -> HBoxContainer:
+	var hb := HBoxContainer.new()
+	hb.name = "OrnateTitle"
+	hb.alignment = BoxContainer.ALIGNMENT_CENTER
+	hb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hb.add_theme_constant_override("separation", 14)
+	hb.add_child(_ornate_chevron(_ORNATE_CHEVRON_L))
+	var lbl := label(text, size, color, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl.name = "Title"
+	hb.add_child(lbl)
+	hb.add_child(_ornate_chevron(_ORNATE_CHEVRON_R))
+	return hb
+
+
+# Декоративный шеврон сбоку от орнаментального заголовка (PNG @≈4× → скейл 0.25).
+static func _ornate_chevron(tex: Texture2D) -> TextureRect:
+	var r := TextureRect.new()
+	r.name = "Chevron"
+	r.texture = tex
+	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	r.custom_minimum_size = tex.get_size() * 0.25
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return r
+
+
 ## Шапка модалки: центрированный заголовок + крестик закрытия в правом верхнем
 ## углу (как у ModalDialog). on_close вызывается по нажатию крестика; если
 ## Callable пустой — крестик не добавляется. Добавляй первым ребёнком в VBox

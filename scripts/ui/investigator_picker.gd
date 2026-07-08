@@ -12,8 +12,6 @@ extends Control
 
 const _MODAL_SCENE := preload("res://scenes/ui/modal_dialog.tscn")
 
-const CHEVRON_TEX_LEFT: Texture2D = preload("res://assets/ui/nav/L_chevron.png")
-const CHEVRON_TEX_RIGHT: Texture2D = preload("res://assets/ui/nav/R_chevron.png")
 const INFO_BTN_TEX: Texture2D = preload("res://assets/ui/button/info-btn.png")
 
 ## Эмитится при ЛЮБОЙ смене текущего сыщика — включая авто-восстановление из
@@ -112,7 +110,9 @@ func _load_investigators() -> void:
 
 
 func _build_ui() -> void:
-	_root.add_child(_build_title())
+	var title := UIStyle.ornate_title("LOBBY_PICK_HEADER", 28, UIColors.ACCENT)
+	title.name = "TitleRow"
+	_root.add_child(title)
 	_carousel = InvestigatorCarousel.new()
 	_carousel.name = "Carousel"
 	_carousel.index_changed.connect(_on_carousel_index_changed)
@@ -163,35 +163,6 @@ func _open_player_details_modal() -> void:
 	# пока модалка висит — список устареет. Обновление через сигналы — позже.
 	_player_details_modal.set_content(PlayerDetailsContent.build(_nm))
 	_player_details_modal.open()
-
-
-func _build_title() -> Control:
-	var hb := HBoxContainer.new()
-	hb.name = "TitleRow"
-	hb.alignment = BoxContainer.ALIGNMENT_CENTER
-	hb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hb.add_theme_constant_override("separation", 14)
-	hb.add_child(_make_chevron(CHEVRON_TEX_LEFT))
-	var title := UIStyle.label(
-		"LOBBY_PICK_HEADER", 28, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
-	)
-	title.name = "Title"
-	hb.add_child(title)
-	hb.add_child(_make_chevron(CHEVRON_TEX_RIGHT))
-	return hb
-
-
-# Декоративный шеврон сбоку от заголовка. PNG нарисован в более высоком
-# разрешении (≈@4×) — как стрелки в той же папке carousel/, см. memory.
-func _make_chevron(tex: Texture2D) -> TextureRect:
-	var r := TextureRect.new()
-	r.name = "Chevron"
-	r.texture = tex
-	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	r.custom_minimum_size = tex.get_size() * 0.25
-	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return r
 
 
 # ── Инфо-блок (низ) ──────────────────────────────────────────────────────────
