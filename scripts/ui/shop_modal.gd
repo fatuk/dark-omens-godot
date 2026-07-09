@@ -56,6 +56,46 @@ const _CARD_VP_SIZE := Vector2i(380, 601)  # рендер-разрешение �
 static var PERSP_TOP: float = 0.84  # ширина дальнего (верхнего) края плоскости к ближнему
 static var PERSP_SQUASH: float = 0.23  # опускание дальнего края (укорочение стола)
 
+# Освещение и тень (имитация лампы слева-сверху). LIGHT_* — диагональный градиент
+# яркости на карте (светлее к верх-лево, темнее к низ-право). SHADOW_* — мягкая
+# падающая тень на стол, смещённая вниз-вправо. Тюнятся живьём (секция «СВЕТ»).
+static var LIGHT_HI: float = 1.15  # множитель яркости у освещённого угла
+static var LIGHT_LO: float = 0.80  # множитель у теневого угла
+static var SHADOW_OFS: float = 0.06  # смещение тени вниз-вправо (доля высоты карты)
+static var SHADOW_ALPHA: float = 0.50  # плотность тени
+const _SHADOW_GROW := 0.09  # расширение тени относительно карты (виден ореол)
+const _SHADOW_FEATHER := 0.30  # мягкость края тени (доля)
+
+# Свет карты: текстура × диагональный градиент (ярче у light_uv, темнее к дальнему
+# углу). COLOR на входе = modulate (тёплая подсветка выбранной/альфа вылета).
+const _LIGHT_SHADER := """
+shader_type canvas_item;
+uniform float hi = 1.16;
+uniform float lo = 0.72;
+uniform vec2 light_uv = vec2(0.28, 0.16);
+void fragment() {
+	vec4 tex = texture(TEXTURE, UV);
+	float d = clamp(distance(UV, light_uv) / 1.25, 0.0, 1.0);
+	tex.rgb *= mix(hi, lo, d);
+	COLOR = tex * COLOR;
+}
+"""
+
+# Мягкая тень: тёмный четырёхугольник с федером края по UV (SDF-«коробка»).
+const _SHADOW_SHADER := """
+shader_type canvas_item;
+uniform float feather = 0.26;
+uniform float darkness = 0.45;
+void fragment() {
+	vec2 q = abs(UV - vec2(0.5));
+	float d = max(q.x, q.y);
+	float a = smoothstep(0.5, 0.5 - feather, d);
+	COLOR = vec4(0.0, 0.0, 0.0, a * darkness);
+}
+"""
+
+static var _white_tex: ImageTexture  # 1×1 белая — носитель UV для шейдера тени
+
 # Состояние сессии магазина (UI-локальное; бросок/монеты — в active_check).
 var _debt_taken: bool = false
 var _selected: Dictionary = {}  # asset_id -> cost
@@ -273,6 +313,16 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	)
 	vp.add_child(card)
 
+	# Мягкая падающая тень — отдельный Polygon2D на столе (не в host: не поднимается
+	# с картой при наведении, остаётся лежать). z=-1 — под всеми картами.
+	var shadow := Polygon2D.new()
+	shadow.name = "Shadow_%d" % idx
+	shadow.texture = _shadow_texture()  # 1×1 белая — чтобы шейдер получил UV 0..1
+	shadow.uv = PackedVector2Array([Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)])
+	shadow.z_index = -1
+	shadow.material = _make_shader_material(_SHADOW_SHADER)
+	_stage.add_child(shadow)
+
 	var host := Node2D.new()
 	host.name = "PerspCard_%d" % idx
 	host.add_child(vp)
@@ -280,6 +330,7 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	poly.name = "Poly"
 	poly.texture = vp.get_texture()
 	poly.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	poly.material = _make_shader_material(_LIGHT_SHADER)  # градиент освещения
 	host.add_child(poly)
 	_stage.add_child(host)
 
@@ -298,6 +349,7 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 		"vp": vp,
 		"card": card,
 		"hit": hit,
+		"shadow": shadow,
 		"idx": idx,
 		"total": total,
 		"buying": false,
@@ -317,6 +369,25 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 			):
 				_toggle_card(aid, cost)
 	)
+
+
+# ShaderMaterial из кода шейдера (один на карту — свои uniform'ы под тюн).
+func _make_shader_material(code: String) -> ShaderMaterial:
+	var mat := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = code
+	mat.shader = sh
+	return mat
+
+
+# 1×1 белая текстура — носитель UV для шейдера тени (Polygon2D без текстуры не даёт
+# UV в шейдере). Ленивая, общая на все карты.
+func _shadow_texture() -> ImageTexture:
+	if _white_tex == null:
+		var img := Image.create(1, 1, false, Image.FORMAT_RGBA8)
+		img.fill(Color.WHITE)
+		_white_tex = ImageTexture.create_from_image(img)
+	return _white_tex
 
 
 func _has_debt() -> bool:
@@ -401,6 +472,20 @@ func _layout_stage() -> void:
 		e["rest_center"] = center
 		e["card_w"] = card_w
 		e["card_h"] = card_w / _CARD_ASPECT
+		# Свет карты — обновляем uniform'ы (живой тюн через панель).
+		var lmat: ShaderMaterial = e.poly.material
+		lmat.set_shader_parameter("hi", LIGHT_HI)
+		lmat.set_shader_parameter("lo", LIGHT_LO)
+		# Тень — тот же четырёхугольник, расширен и смещён вниз-вправо, лежит на столе.
+		var g: float = 1.0 + _SHADOW_GROW
+		var shadow: Polygon2D = e.shadow
+		shadow.polygon = PackedVector2Array(
+			[(c_tl - center) * g, (c_tr - center) * g, (c_br - center) * g, (c_bl - center) * g]
+		)
+		shadow.position = center + Vector2(SHADOW_OFS * 0.45, SHADOW_OFS) * card_hf
+		var smat: ShaderMaterial = shadow.material
+		smat.set_shader_parameter("darkness", SHADOW_ALPHA)
+		smat.set_shader_parameter("feather", _SHADOW_FEATHER)
 		# Хит-область — экранный bbox лежащей карты (наведение/клик).
 		var minx: float = minf(c_bl.x, far_l)
 		var maxx: float = maxf(c_br.x, far_r)
@@ -592,6 +677,7 @@ func _fly_out(entry: Dictionary) -> void:
 	tw.tween_property(host, "position:y", host.position.y - float(entry.card_h) * 0.8, 0.30)
 	tw.tween_property(host, "scale", Vector2.ONE * 1.4, 0.30)
 	tw.tween_property(entry.poly, "modulate:a", 0.0, 0.30)
+	tw.tween_property(entry.shadow, "modulate:a", 0.0, 0.22)  # тень гаснет с картой
 
 
 # ── Обновление UI ───────────────────────────────────────────────────────────────
