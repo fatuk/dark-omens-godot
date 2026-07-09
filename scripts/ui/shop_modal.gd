@@ -38,12 +38,12 @@ const _TRAIT_KEY := {
 # под низ — координаты сняты по shop-bg.png.
 # Тюнится живьём через TuningPanel (секция «МАГАЗИН · КАРТЫ»). static var — чтобы
 # панель могла менять и пушить в открытый магазин (группа "shop_modal" → relayout).
-static var CARD_TOP: float = 0.26  # верх карточек (доля высоты)
-static var CARD_H: float = 0.40  # высота карточки
+static var CARD_TOP: float = 0.33  # верх карточек (доля высоты)
+static var CARD_H: float = 0.30  # высота карточки
 const _CARD_ASPECT := 290.0 / 459.0  # ш/в карточки
 static var MAT_L: float = 0.12  # левый край центров карт (доля ширины)
-static var MAT_R: float = 0.85  # правый край центров карт
-static var HOVER_LIFT: float = 0.07  # подъём при наведении (доля высоты)
+static var MAT_R: float = 0.91  # правый край центров карт
+static var HOVER_LIFT: float = 0.10  # подъём при наведении (доля высоты)
 static var HOVER_SCALE: float = 1.50  # приближение к камере
 const _CARD_GAP_FRAC := 0.14  # зазор между картами (доля ширины карты)
 # Перспектива «карты лежат на ОДНОЙ плоскости-столе» (одноточечная): весь ряд
@@ -53,8 +53,8 @@ const _CARD_GAP_FRAC := 0.14  # зазор между картами (доля �
 # 1 = стоит лицом к камере. Карта рендерится в SubViewport и натягивается на
 # проективный четырёхугольник через Polygon2D.
 const _CARD_VP_SIZE := Vector2i(380, 601)  # рендер-разрешение карты (аспект 290:459)
-static var PERSP_TOP: float = 0.80  # ширина дальнего (верхнего) края плоскости к ближнему
-static var PERSP_SQUASH: float = 0.17  # опускание дальнего края (укорочение стола)
+static var PERSP_TOP: float = 0.84  # ширина дальнего (верхнего) края плоскости к ближнему
+static var PERSP_SQUASH: float = 0.23  # опускание дальнего края (укорочение стола)
 
 # Состояние сессии магазина (UI-локальное; бросок/монеты — в active_check).
 var _debt_taken: bool = false
