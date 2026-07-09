@@ -607,6 +607,16 @@ func _build_specs() -> Array:
 			"default": ShopModal.HOVER_SCALE,
 			"set": _set_shop_hover_scale
 		},
+		{"section": "МАГАЗИН · СВЕТ"},
+		{
+			"key": "shop_light_intensity",
+			"label": "Карта света",
+			"min": 0.0,
+			"max": 2.0,
+			"step": 0.05,
+			"default": ShopModal.LIGHT_INTENSITY,
+			"set": _set_shop_light_intensity
+		},
 		{"section": "МАГАЗИН · ТЕНЬ"},
 		{
 			"key": "shop_shadow_ofs",
@@ -1173,6 +1183,11 @@ func _set_shop_hover_lift(v: float) -> void:
 
 func _set_shop_hover_scale(v: float) -> void:
 	ShopModal.HOVER_SCALE = v
+	_relayout_shop()
+
+
+func _set_shop_light_intensity(v: float) -> void:
+	ShopModal.LIGHT_INTENSITY = v
 	_relayout_shop()
 
 
