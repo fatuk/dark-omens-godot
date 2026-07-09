@@ -68,8 +68,8 @@ static var LIGHT_HI: float = 1.30  # множитель яркости у ист
 static var LIGHT_LO: float = 1.12  # множитель вдали от источников (общий подъём)
 static var SHADOW_OFS: float = 0.06  # смещение тени вниз-вправо (доля высоты карты)
 static var SHADOW_ALPHA: float = 0.50  # плотность тени
-const _SHADOW_GROW := 0.09  # расширение тени относительно карты (виден ореол)
-const _SHADOW_FEATHER := 0.30  # мягкость края тени (доля)
+static var SHADOW_GROW: float = 0.09  # расширение тени относительно карты (виден ореол)
+static var SHADOW_FEATHER: float = 0.30  # мягкость края тени (доля)
 
 # Свет карты: текстура × яркость от ДВУХ источников (лампа слева light_a, свеча
 # справа light_b) — берём ближайший. Оба множителя ≥1 → только подсветка.
@@ -487,7 +487,7 @@ func _layout_stage() -> void:
 		lmat.set_shader_parameter("hi", LIGHT_HI)
 		lmat.set_shader_parameter("lo", LIGHT_LO)
 		# Тень — тот же четырёхугольник, расширен и смещён вниз-вправо, лежит на столе.
-		var g: float = 1.0 + _SHADOW_GROW
+		var g: float = 1.0 + SHADOW_GROW
 		var shadow: Polygon2D = e.shadow
 		shadow.polygon = PackedVector2Array(
 			[(c_tl - center) * g, (c_tr - center) * g, (c_br - center) * g, (c_bl - center) * g]
@@ -495,7 +495,7 @@ func _layout_stage() -> void:
 		shadow.position = center + Vector2(SHADOW_OFS * 0.45, SHADOW_OFS) * card_hf
 		var smat: ShaderMaterial = shadow.material
 		smat.set_shader_parameter("darkness", SHADOW_ALPHA)
-		smat.set_shader_parameter("feather", _SHADOW_FEATHER)
+		smat.set_shader_parameter("feather", SHADOW_FEATHER)
 		# Хит-область — экранный bbox лежащей карты (наведение/клик).
 		var minx: float = minf(c_bl.x, far_l)
 		var maxx: float = maxf(c_br.x, far_r)

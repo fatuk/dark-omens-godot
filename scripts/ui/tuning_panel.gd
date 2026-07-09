@@ -644,6 +644,24 @@ func _build_specs() -> Array:
 			"default": ShopModal.SHADOW_ALPHA,
 			"set": _set_shop_shadow_alpha
 		},
+		{
+			"key": "shop_shadow_grow",
+			"label": "Разлёт тени",
+			"min": 0.0,
+			"max": 0.3,
+			"step": 0.005,
+			"default": ShopModal.SHADOW_GROW,
+			"set": _set_shop_shadow_grow
+		},
+		{
+			"key": "shop_shadow_feather",
+			"label": "Мягкость тени",
+			"min": 0.02,
+			"max": 0.5,
+			"step": 0.01,
+			"default": ShopModal.SHADOW_FEATHER,
+			"set": _set_shop_shadow_feather
+		},
 	]
 
 
@@ -1193,4 +1211,14 @@ func _set_shop_shadow_ofs(v: float) -> void:
 
 func _set_shop_shadow_alpha(v: float) -> void:
 	ShopModal.SHADOW_ALPHA = v
+	_relayout_shop()
+
+
+func _set_shop_shadow_grow(v: float) -> void:
+	ShopModal.SHADOW_GROW = v
+	_relayout_shop()
+
+
+func _set_shop_shadow_feather(v: float) -> void:
+	ShopModal.SHADOW_FEATHER = v
 	_relayout_shop()
