@@ -534,6 +534,79 @@ func _build_specs() -> Array:
 			"default": GameCard.SMOKE_TINT.b,
 			"set": _set_csmoke_b
 		},
+		{"section": "МАГАЗИН · КАРТЫ"},
+		{
+			"key": "shop_persp_top",
+			"label": "Перспектива верх",
+			"min": 0.5,
+			"max": 1.0,
+			"step": 0.01,
+			"default": ShopModal.PERSP_TOP,
+			"set": _set_shop_persp_top
+		},
+		{
+			"key": "shop_persp_squash",
+			"label": "Перспектива сжатие",
+			"min": 0.0,
+			"max": 0.4,
+			"step": 0.01,
+			"default": ShopModal.PERSP_SQUASH,
+			"set": _set_shop_persp_squash
+		},
+		{
+			"key": "shop_card_top",
+			"label": "Верх карт",
+			"min": 0.1,
+			"max": 0.5,
+			"step": 0.005,
+			"default": ShopModal.CARD_TOP,
+			"set": _set_shop_card_top
+		},
+		{
+			"key": "shop_card_h",
+			"label": "Высота карт",
+			"min": 0.2,
+			"max": 0.6,
+			"step": 0.005,
+			"default": ShopModal.CARD_H,
+			"set": _set_shop_card_h
+		},
+		{
+			"key": "shop_mat_l",
+			"label": "Мат лево",
+			"min": 0.0,
+			"max": 0.5,
+			"step": 0.005,
+			"default": ShopModal.MAT_L,
+			"set": _set_shop_mat_l
+		},
+		{
+			"key": "shop_mat_r",
+			"label": "Мат право",
+			"min": 0.5,
+			"max": 1.0,
+			"step": 0.005,
+			"default": ShopModal.MAT_R,
+			"set": _set_shop_mat_r
+		},
+		{
+			"key": "shop_hover_lift",
+			"label": "Подъём наведения",
+			"min": 0.0,
+			"max": 0.15,
+			"step": 0.005,
+			"default": ShopModal.HOVER_LIFT,
+			"set": _set_shop_hover_lift
+		},
+		{
+			"key": "shop_hover_scale",
+			"label": "Приближение",
+			"min": 1.0,
+			"max": 1.5,
+			"step": 0.01,
+			"default": ShopModal.HOVER_SCALE,
+			"set": _set_shop_hover_scale
+		},
 	]
 
 
@@ -1015,3 +1088,52 @@ func _set_csmoke_b(v: float) -> void:
 	c.b = v
 	GameCard.SMOKE_TINT = c
 	_refresh_card_smoke()
+
+
+# ── Магазин · карты ───────────────────────────────────────────────────────────
+# Каждый сеттер меняет static var на ShopModal и просит открытый магазин
+# перераскладиться (группа "shop_modal" → relayout → _layout_stage).
+
+
+func _relayout_shop() -> void:
+	get_tree().call_group("shop_modal", "relayout")
+
+
+func _set_shop_persp_top(v: float) -> void:
+	ShopModal.PERSP_TOP = v
+	_relayout_shop()
+
+
+func _set_shop_persp_squash(v: float) -> void:
+	ShopModal.PERSP_SQUASH = v
+	_relayout_shop()
+
+
+func _set_shop_card_top(v: float) -> void:
+	ShopModal.CARD_TOP = v
+	_relayout_shop()
+
+
+func _set_shop_card_h(v: float) -> void:
+	ShopModal.CARD_H = v
+	_relayout_shop()
+
+
+func _set_shop_mat_l(v: float) -> void:
+	ShopModal.MAT_L = v
+	_relayout_shop()
+
+
+func _set_shop_mat_r(v: float) -> void:
+	ShopModal.MAT_R = v
+	_relayout_shop()
+
+
+func _set_shop_hover_lift(v: float) -> void:
+	ShopModal.HOVER_LIFT = v
+	_relayout_shop()
+
+
+func _set_shop_hover_scale(v: float) -> void:
+	ShopModal.HOVER_SCALE = v
+	_relayout_shop()

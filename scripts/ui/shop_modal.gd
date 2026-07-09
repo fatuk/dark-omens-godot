@@ -1,3 +1,4 @@
+class_name ShopModal
 extends CanvasLayer
 
 ## Магазин (Acquire Assets). Открывается из сайдбара в городе со своим сыщиком.
@@ -35,19 +36,21 @@ const _TRAIT_KEY := {
 
 # Раскладка в ДОЛЯХ прямоугольника арта (_stage). Мат-книга под карточки, прилавок
 # под низ — координаты сняты по shop-bg.png.
-const _CARD_TOP := 0.29  # верх карточек (доля высоты)
-const _CARD_H := 0.40  # высота карточки
+# Тюнится живьём через TuningPanel (секция «МАГАЗИН · КАРТЫ»). static var — чтобы
+# панель могла менять и пушить в открытый магазин (группа "shop_modal" → relayout).
+static var CARD_TOP: float = 0.29  # верх карточек (доля высоты)
+static var CARD_H: float = 0.40  # высота карточки
 const _CARD_ASPECT := 290.0 / 459.0  # ш/в карточки
-const _MAT_L := 0.15  # центры карточек равномерно между _MAT_L и _MAT_R
-const _MAT_R := 0.85
-const _HOVER_LIFT := 0.05  # подъём при наведении (доля высоты)
-const _HOVER_SCALE := 1.18  # приближение к камере
+static var MAT_L: float = 0.15  # левый край центров карт (доля ширины)
+static var MAT_R: float = 0.85  # правый край центров карт
+static var HOVER_LIFT: float = 0.05  # подъём при наведении (доля высоты)
+static var HOVER_SCALE: float = 1.18  # приближение к камере
 # Перспектива «карта лежит на столе»: карта рендерится в SubViewport и натягивается
 # на квадрат-кейстоун — верх (дальний край) уже низа, слегка укорочен. Наведение
 # выпрямляет карту к зрителю (persp 0→1). t: 0 = на столе, 1 = лицом к камере.
 const _CARD_VP_SIZE := Vector2i(380, 601)  # рендер-разрешение карты (аспект 290:459)
-const _PERSP_TOP := 0.80  # ширина верхнего (дальнего) края к нижнему
-const _PERSP_SQUASH := 0.18  # укорочение верха (перспективное сжатие)
+static var PERSP_TOP: float = 0.80  # ширина верхнего (дальнего) края к нижнему
+static var PERSP_SQUASH: float = 0.18  # укорочение верха (перспективное сжатие)
 
 # Состояние сессии магазина (UI-локальное; бросок/монеты — в active_check).
 var _debt_taken: bool = false
@@ -71,9 +74,15 @@ var _chrome: Array = []  # [{node, fx, fy, fw, fh}] — элементы, поз
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("shop_modal")  # TuningPanel пушит сюда relayout при правке static var
 	_build()
 	GameState.state_changed.connect(_refresh)
 	get_viewport().size_changed.connect(_layout_stage)
+
+
+# Вызывается TuningPanel (группа "shop_modal") после изменения тюн-параметров карт.
+func relayout() -> void:
+	_layout_stage()
 
 
 func open() -> void:
@@ -341,14 +350,14 @@ func _layout_stage() -> void:
 		node.custom_minimum_size = Vector2(e.fw * s.x, e.fh * s.y)
 		node.size = node.custom_minimum_size
 	# Карточки — размер по высоте, позиция по центру слота на мате.
-	var card_h: float = _CARD_H * s.y
+	var card_h: float = CARD_H * s.y
 	var card_w: float = card_h * _CARD_ASPECT
 	for e_v: Variant in _cards:
 		var e: Dictionary = e_v
 		var total: int = int(e.total)
 		var t: float = 0.5 if total <= 1 else float(e.idx) / float(total - 1)
-		var cx: float = lerpf(_MAT_L, _MAT_R, t) * s.x
-		var cy: float = (_CARD_TOP + _CARD_H * 0.5) * s.y  # центр карты на мате
+		var cx: float = lerpf(MAT_L, MAT_R, t) * s.x
+		var cy: float = (CARD_TOP + CARD_H * 0.5) * s.y  # центр карты на мате
 		e["rest_center"] = Vector2(cx, cy)
 		e["card_w"] = card_w
 		e["card_h"] = card_h
@@ -372,7 +381,7 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 	entry["hovering"] = on
 	var host: Node2D = entry.host
 	var rc: Vector2 = entry.get("rest_center", host.position)
-	var lift: float = _HOVER_LIFT * (float(entry.get("card_h", 1.0)) / _CARD_H)
+	var lift: float = HOVER_LIFT * (float(entry.get("card_h", 1.0)) / CARD_H)
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
 		Tween.EASE_OUT
 	)
@@ -383,7 +392,7 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 	if on:
 		host.z_index = 10  # приподнятая карта — поверх соседей
 		tw.tween_property(host, "position", rc - Vector2(0, lift), 0.16)
-		tw.tween_property(host, "scale", Vector2.ONE * _HOVER_SCALE, 0.16)
+		tw.tween_property(host, "scale", Vector2.ONE * HOVER_SCALE, 0.16)
 	else:
 		host.z_index = 0
 		tw.tween_property(host, "position", rc, 0.16)
@@ -397,8 +406,8 @@ func _apply_persp(entry: Dictionary, t: float) -> void:
 	var poly: Polygon2D = entry.poly
 	var hw: float = float(entry.get("card_w", 1.0)) * 0.5
 	var hh: float = float(entry.get("card_h", 1.0)) * 0.5
-	var top: float = lerpf(_PERSP_TOP, 1.0, t)  # ширина дальнего края
-	var sq: float = lerpf(_PERSP_SQUASH, 0.0, t) * hh * 2.0  # укорочение верха
+	var top: float = lerpf(PERSP_TOP, 1.0, t)  # ширина дальнего края
+	var sq: float = lerpf(PERSP_SQUASH, 0.0, t) * hh * 2.0  # укорочение верха
 	poly.polygon = PackedVector2Array(
 		[
 			Vector2(-hw * top, -hh + sq),
