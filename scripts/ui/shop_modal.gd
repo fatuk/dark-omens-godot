@@ -23,7 +23,7 @@ const _BG := preload("res://assets/shop/shop-bg.png")
 
 # Заглушка арт-окна для карт без файла арта — тёплая притенённая (в тон лавки),
 # чтобы пустые слоты не читались чёрными дырами. Когда арт есть — не применяется.
-const _ART_PLACEHOLDER := Color(0.17, 0.13, 0.11)
+const _ART_PLACEHOLDER := Color(0.34, 0.27, 0.21)
 
 const _TRAIT_KEY := {
 	"weapon": "TRAIT_WEAPON",
