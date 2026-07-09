@@ -21,6 +21,10 @@ extends CanvasLayer
 
 const _BG := preload("res://assets/shop/shop-bg.png")
 
+# Заглушка арт-окна для карт без файла арта — тёплая притенённая (в тон лавки),
+# чтобы пустые слоты не читались чёрными дырами. Когда арт есть — не применяется.
+const _ART_PLACEHOLDER := Color(0.17, 0.13, 0.11)
+
 const _TRAIT_KEY := {
 	"weapon": "TRAIT_WEAPON",
 	"magical": "TRAIT_MAGICAL",
@@ -308,6 +312,9 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 				"subtitle": _TRAIT_KEY.get(trait_id, trait_id.to_upper()),
 				"desc": a.get("abilityKey", ""),
 				"art": AssetCatalog.card_art(aid),
+				# Заглушка для карт без файла арта — тёплая притенённая, а не почти-чёрная
+				# навья по умолчанию (когда арт есть — этот цвет игнорируется).
+				"art_color": _ART_PLACEHOLDER,
 			}
 		)
 	)
