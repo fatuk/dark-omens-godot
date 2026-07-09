@@ -62,6 +62,7 @@ static var PERSP_TOP: float = 0.84  # ширина дальнего (верхн�
 static var PERSP_SQUASH: float = 0.23  # опускание дальнего края (укорочение стола)
 
 # Карта света (soft-light) и падающая тень. Тюнятся живьём (секции «СВЕТ»/«ТЕНЬ»).
+static var LIGHT_ENABLED: bool = true  # карта света на картах магазина (чекбокс)
 static var LIGHT_INTENSITY: float = 3.5  # сила карты света на лежащих картах
 static var SHADOW_OFS: float = 0.03  # смещение тени вниз-вправо (доля высоты карты)
 static var SHADOW_ALPHA: float = 0.63  # плотность тени
@@ -511,7 +512,8 @@ func _layout_stage() -> void:
 			host.position = center
 			host.scale = Vector2.ONE
 			_apply_persp(e, 0.0)  # лежит на столе
-			(e.poly as Polygon2D).material.set_shader_parameter("intensity", LIGHT_INTENSITY)
+			var lit: float = LIGHT_INTENSITY if LIGHT_ENABLED else 0.0
+			(e.poly as Polygon2D).material.set_shader_parameter("intensity", lit)
 
 
 # ── Наведение: подъём и приближение к камере ──────────────────────────────────
@@ -534,10 +536,11 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 	# Гасим карту света: поднятая карта — «как есть, у камеры» (без бликов/теней).
 	var lmat: ShaderMaterial = (entry.poly as Polygon2D).material
 	var i_cur: float = lmat.get_shader_parameter("intensity")
+	var i_rest: float = LIGHT_INTENSITY if LIGHT_ENABLED else 0.0
 	tw.tween_method(
 		func(v: float) -> void: lmat.set_shader_parameter("intensity", v),
 		i_cur,
-		0.0 if on else LIGHT_INTENSITY,
+		0.0 if on else i_rest,
 		0.16
 	)
 	if on:
