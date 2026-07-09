@@ -20,7 +20,6 @@ extends CanvasLayer
 ## привязана к вписанному прямоугольнику арта (_stage) — тянется под любой экран.
 
 const _BG := preload("res://assets/shop/shop-bg.png")
-const _LIGHT_MAP := preload("res://assets/shop/card-light.png")  # серая карта света (soft-light)
 
 # Заглушка арт-окна для карт без файла арта — тёплая притенённая (в тон лавки),
 # чтобы пустые слоты не читались чёрными дырами. Когда арт есть — не применяется.
@@ -61,35 +60,11 @@ const _CARD_VP_SIZE := Vector2i(380, 601)  # рендер-разрешение �
 static var PERSP_TOP: float = 0.84  # ширина дальнего (верхнего) края плоскости к ближнему
 static var PERSP_SQUASH: float = 0.23  # опускание дальнего края (укорочение стола)
 
-# Карта света (soft-light) и падающая тень. Тюнятся живьём (секции «СВЕТ»/«ТЕНЬ»).
-static var LIGHT_ENABLED: bool = true  # карта света на картах магазина (чекбокс)
-static var LIGHT_INTENSITY: float = 3.5  # сила карты света на лежащих картах
+# Падающая тень карт. SHADOW_* тюнятся живьём (секция «МАГАЗИН · СВЕТ»).
 static var SHADOW_OFS: float = 0.03  # смещение тени вниз-вправо (доля высоты карты)
 static var SHADOW_ALPHA: float = 0.63  # плотность тени
 static var SHADOW_GROW: float = 0.02  # расширение тени относительно карты (виден ореол)
 static var SHADOW_FEATHER: float = 0.05  # мягкость края тени (доля)
-
-# Свет карты: художник рисует ПЛОСКУЮ серую карту card-light.png (0.5=нейтраль,
-# светлее=блик, темнее=тень) — накладываем на текстуру карты режимом soft-light
-# по ТОЧНОЙ формуле Photoshop (тени как парабола, света через sqrt) — чтобы игра
-# совпадала с превью слоя Soft Light в фотошопе. base.a на выходе → чистые
-# скруглённые углы. intensity гасится в 0 при наведении/покупке. * COLOR = modulate.
-const _LIGHT_SHADER := """
-shader_type canvas_item;
-uniform sampler2D light_map : filter_linear;
-uniform float intensity = 1.0;
-void fragment() {
-	vec4 base = texture(TEXTURE, UV);
-	vec4 lm = texture(light_map, UV);
-	vec3 s = lm.rgb;
-	vec3 b = base.rgb;
-	vec3 lo = 2.0 * b * s + b * b * (1.0 - 2.0 * s);
-	vec3 hi = 2.0 * b * (1.0 - s) + sqrt(b) * (2.0 * s - 1.0);
-	vec3 soft = mix(lo, hi, step(vec3(0.5), s));
-	vec3 outc = mix(b, soft, lm.a * intensity);
-	COLOR = vec4(outc, base.a) * COLOR;
-}
-"""
 
 # Мягкая тень: тёмный четырёхугольник с федером края по UV (SDF-«коробка»).
 const _SHADOW_SHADER := """
@@ -345,10 +320,6 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	poly.name = "Poly"
 	poly.texture = vp.get_texture()
 	poly.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	var lmat := _make_shader_material(_LIGHT_SHADER)  # карта света (soft-light)
-	lmat.set_shader_parameter("light_map", _LIGHT_MAP)
-	lmat.set_shader_parameter("intensity", LIGHT_INTENSITY)
-	poly.material = lmat
 	host.add_child(poly)
 	_stage.add_child(host)
 
@@ -512,8 +483,6 @@ func _layout_stage() -> void:
 			host.position = center
 			host.scale = Vector2.ONE
 			_apply_persp(e, 0.0)  # лежит на столе
-			var lit: float = LIGHT_INTENSITY if LIGHT_ENABLED else 0.0
-			(e.poly as Polygon2D).material.set_shader_parameter("intensity", lit)
 
 
 # ── Наведение: подъём и приближение к камере ──────────────────────────────────
@@ -532,16 +501,6 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 	# Выпрямляем карту к зрителю (persp 0→1) + подъём и приближение.
 	tw.tween_method(
 		func(v: float) -> void: _apply_persp(entry, v), float(entry.persp), 1.0 if on else 0.0, 0.16
-	)
-	# Гасим карту света: поднятая карта — «как есть, у камеры» (без бликов/теней).
-	var lmat: ShaderMaterial = (entry.poly as Polygon2D).material
-	var i_cur: float = lmat.get_shader_parameter("intensity")
-	var i_rest: float = LIGHT_INTENSITY if LIGHT_ENABLED else 0.0
-	tw.tween_method(
-		func(v: float) -> void: lmat.set_shader_parameter("intensity", v),
-		i_cur,
-		0.0 if on else i_rest,
-		0.16
 	)
 	if on:
 		host.z_index = 10  # приподнятая карта — поверх соседей
@@ -705,8 +664,6 @@ func _fly_out(entry: Dictionary) -> void:
 	tw.tween_property(host, "scale", Vector2.ONE * 1.4, 0.30)
 	tw.tween_property(entry.poly, "modulate:a", 0.0, 0.30)
 	tw.tween_property(entry.shadow, "modulate:a", 0.0, 0.22)  # тень гаснет с картой
-	# Улетающая карта — «как есть» (гасим карту света).
-	(entry.poly as Polygon2D).material.set_shader_parameter("intensity", 0.0)
 
 
 # ── Обновление UI ───────────────────────────────────────────────────────────────

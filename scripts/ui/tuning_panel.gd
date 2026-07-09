@@ -16,8 +16,6 @@ extends CanvasLayer
 
 # Кэш: key -> {slider: HSlider, val: Label, default: float, set: Callable}.
 var _rows: Dictionary = {}
-# Кэш чекбоксов: key -> {check: CheckBox, default: bool, set: Callable}.
-var _toggles: Dictionary = {}
 
 # ── Спеки параметров ──────────────────────────────────────────────────────────
 
@@ -609,23 +607,6 @@ func _build_specs() -> Array:
 			"default": ShopModal.HOVER_SCALE,
 			"set": _set_shop_hover_scale
 		},
-		{"section": "МАГАЗИН · СВЕТ"},
-		{
-			"key": "shop_light_enabled",
-			"label": "Карта света вкл",
-			"toggle": true,
-			"default": ShopModal.LIGHT_ENABLED,
-			"set": _set_shop_light_enabled
-		},
-		{
-			"key": "shop_light_intensity",
-			"label": "Карта света",
-			"min": 0.0,
-			"max": 5.0,
-			"step": 0.05,
-			"default": ShopModal.LIGHT_INTENSITY,
-			"set": _set_shop_light_intensity
-		},
 		{"section": "МАГАЗИН · ТЕНЬ"},
 		{
 			"key": "shop_shadow_ofs",
@@ -694,8 +675,6 @@ func _build_ui() -> void:
 	for spec: Dictionary in _build_specs():
 		if spec.has("section"):
 			_add_section(String(spec.section))
-		elif spec.has("toggle"):
-			_add_toggle(spec)
 		else:
 			_add_row(spec)
 	_add_reset_button()
@@ -776,37 +755,6 @@ func _add_row(spec: Dictionary) -> void:
 	)
 
 
-# Чекбокс-строка (spec с "toggle": true, "default": bool, "set": Callable(bool)).
-func _add_toggle(spec: Dictionary) -> void:
-	var key: String = String(spec.key)
-	var init_v: bool = bool(spec.default)
-	var setter: Callable = spec.set as Callable
-
-	var row := HBoxContainer.new()
-	row.name = "Row"
-	row.add_theme_constant_override("separation", 12)
-
-	var lbl := Label.new()
-	lbl.name = "Label"
-	lbl.text = String(spec.label)
-	lbl.custom_minimum_size = Vector2(172, 0)
-	lbl.add_theme_font_size_override("font_size", 22)
-	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	row.add_child(lbl)
-
-	var cb := CheckBox.new()
-	cb.name = "Check"
-	cb.button_pressed = init_v
-	cb.add_theme_font_size_override("font_size", 22)
-	cb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(cb)
-
-	_vbox.add_child(row)
-	_toggles[key] = {"check": cb, "default": init_v, "set": setter}
-	setter.call(init_v)
-	cb.toggled.connect(func(on: bool) -> void: setter.call(on))
-
-
 func _add_reset_button() -> void:
 	var spacer := Control.new()
 	spacer.name = "Spacer"
@@ -825,9 +773,6 @@ func _on_reset() -> void:
 		var r: Dictionary = _rows[key]
 		var sl: HSlider = r.slider
 		sl.value = r.default  # триггерит value_changed → setter + val.text
-	for tkey: String in _toggles:
-		var t: Dictionary = _toggles[tkey]
-		(t.check as CheckBox).button_pressed = bool(t.default)  # триггерит toggled → setter
 
 
 func _fmt(v: float, step: float) -> String:
@@ -1228,16 +1173,6 @@ func _set_shop_hover_lift(v: float) -> void:
 
 func _set_shop_hover_scale(v: float) -> void:
 	ShopModal.HOVER_SCALE = v
-	_relayout_shop()
-
-
-func _set_shop_light_enabled(on: bool) -> void:
-	ShopModal.LIGHT_ENABLED = on
-	_relayout_shop()
-
-
-func _set_shop_light_intensity(v: float) -> void:
-	ShopModal.LIGHT_INTENSITY = v
 	_relayout_shop()
 
 
