@@ -70,18 +70,22 @@ static var SHADOW_FEATHER: float = 0.05  # мягкость края тени (�
 
 # Свет карты: художник рисует ПЛОСКУЮ серую карту card-light.png (0.5=нейтраль,
 # светлее=блик, темнее=тень) — накладываем на текстуру карты режимом soft-light
-# (Pegtop). base.a на выходе → чистые скруглённые углы. intensity гасится в 0 при
-# наведении/покупке (поднятая карта — «как есть, у камеры»). * COLOR = modulate.
+# по ТОЧНОЙ формуле Photoshop (тени как парабола, света через sqrt) — чтобы игра
+# совпадала с превью слоя Soft Light в фотошопе. base.a на выходе → чистые
+# скруглённые углы. intensity гасится в 0 при наведении/покупке. * COLOR = modulate.
 const _LIGHT_SHADER := """
 shader_type canvas_item;
 uniform sampler2D light_map : filter_linear;
 uniform float intensity = 1.0;
 void fragment() {
 	vec4 base = texture(TEXTURE, UV);
-	vec3 s = texture(light_map, UV).rgb;
-	float cover = texture(light_map, UV).a;
-	vec3 soft = (1.0 - 2.0 * s) * base.rgb * base.rgb + 2.0 * s * base.rgb;
-	vec3 outc = mix(base.rgb, soft, cover * intensity);
+	vec4 lm = texture(light_map, UV);
+	vec3 s = lm.rgb;
+	vec3 b = base.rgb;
+	vec3 lo = 2.0 * b * s + b * b * (1.0 - 2.0 * s);
+	vec3 hi = 2.0 * b * (1.0 - s) + sqrt(b) * (2.0 * s - 1.0);
+	vec3 soft = mix(lo, hi, step(vec3(0.5), s));
+	vec3 outc = mix(b, soft, lm.a * intensity);
 	COLOR = vec4(outc, base.a) * COLOR;
 }
 """
