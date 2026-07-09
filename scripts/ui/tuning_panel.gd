@@ -612,7 +612,7 @@ func _build_specs() -> Array:
 			"key": "shop_light_intensity",
 			"label": "Карта света",
 			"min": 0.0,
-			"max": 2.0,
+			"max": 5.0,
 			"step": 0.05,
 			"default": ShopModal.LIGHT_INTENSITY,
 			"set": _set_shop_light_intensity
