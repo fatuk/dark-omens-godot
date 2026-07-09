@@ -610,18 +610,18 @@ func _build_specs() -> Array:
 		{"section": "МАГАЗИН · СВЕТ"},
 		{
 			"key": "shop_light_hi",
-			"label": "Свет (ярче)",
+			"label": "Свет у лампы",
 			"min": 1.0,
-			"max": 1.5,
+			"max": 1.6,
 			"step": 0.01,
 			"default": ShopModal.LIGHT_HI,
 			"set": _set_shop_light_hi
 		},
 		{
 			"key": "shop_light_lo",
-			"label": "Тень на карте",
-			"min": 0.4,
-			"max": 1.0,
+			"label": "Свет дальний край",
+			"min": 0.7,
+			"max": 1.3,
 			"step": 0.01,
 			"default": ShopModal.LIGHT_LO,
 			"set": _set_shop_light_lo
