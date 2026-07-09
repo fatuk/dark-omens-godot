@@ -609,22 +609,31 @@ func _build_specs() -> Array:
 		},
 		{"section": "МАГАЗИН · СВЕТ"},
 		{
-			"key": "shop_light_hi",
-			"label": "Свет у лампы",
-			"min": 1.0,
-			"max": 1.6,
+			"key": "shop_light_mult",
+			"label": "Свет · множитель",
+			"min": 0.8,
+			"max": 1.5,
 			"step": 0.01,
-			"default": ShopModal.LIGHT_HI,
-			"set": _set_shop_light_hi
+			"default": ShopModal.LIGHT_MULT,
+			"set": _set_shop_light_mult
 		},
 		{
-			"key": "shop_light_lo",
-			"label": "Свет дальний край",
-			"min": 0.7,
-			"max": 1.3,
+			"key": "shop_light_ambient",
+			"label": "Свет · тёплый фон",
+			"min": 0.0,
+			"max": 0.5,
 			"step": 0.01,
-			"default": ShopModal.LIGHT_LO,
-			"set": _set_shop_light_lo
+			"default": ShopModal.LIGHT_AMBIENT,
+			"set": _set_shop_light_ambient
+		},
+		{
+			"key": "shop_light_glow",
+			"label": "Свет · блик",
+			"min": 0.0,
+			"max": 0.6,
+			"step": 0.01,
+			"default": ShopModal.LIGHT_GLOW,
+			"set": _set_shop_light_glow
 		},
 		{
 			"key": "shop_shadow_ofs",
@@ -1194,13 +1203,18 @@ func _set_shop_hover_scale(v: float) -> void:
 	_relayout_shop()
 
 
-func _set_shop_light_hi(v: float) -> void:
-	ShopModal.LIGHT_HI = v
+func _set_shop_light_mult(v: float) -> void:
+	ShopModal.LIGHT_MULT = v
 	_relayout_shop()
 
 
-func _set_shop_light_lo(v: float) -> void:
-	ShopModal.LIGHT_LO = v
+func _set_shop_light_ambient(v: float) -> void:
+	ShopModal.LIGHT_AMBIENT = v
+	_relayout_shop()
+
+
+func _set_shop_light_glow(v: float) -> void:
+	ShopModal.LIGHT_GLOW = v
 	_relayout_shop()
 
 
