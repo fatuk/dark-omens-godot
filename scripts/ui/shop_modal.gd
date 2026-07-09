@@ -62,7 +62,7 @@ static var PERSP_TOP: float = 0.84  # ширина дальнего (верхн�
 static var PERSP_SQUASH: float = 0.23  # опускание дальнего края (укорочение стола)
 
 # Карта света (soft-light) и падающая тень. Тюнятся живьём (секции «СВЕТ»/«ТЕНЬ»).
-static var LIGHT_INTENSITY: float = 1.0  # сила карты света на лежащих картах
+static var LIGHT_INTENSITY: float = 3.5  # сила карты света на лежащих картах
 static var SHADOW_OFS: float = 0.03  # смещение тени вниз-вправо (доля высоты карты)
 static var SHADOW_ALPHA: float = 0.63  # плотность тени
 static var SHADOW_GROW: float = 0.02  # расширение тени относительно карты (виден ореол)
