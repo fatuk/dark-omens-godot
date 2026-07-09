@@ -45,12 +45,15 @@ static var MAT_L: float = 0.15  # левый край центров карт (�
 static var MAT_R: float = 0.85  # правый край центров карт
 static var HOVER_LIFT: float = 0.05  # подъём при наведении (доля высоты)
 static var HOVER_SCALE: float = 1.18  # приближение к камере
-# Перспектива «карта лежит на столе»: карта рендерится в SubViewport и натягивается
-# на квадрат-кейстоун — верх (дальний край) уже низа, слегка укорочен. Наведение
-# выпрямляет карту к зрителю (persp 0→1). t: 0 = на столе, 1 = лицом к камере.
+# Перспектива «карты лежат на ОДНОЙ плоскости-столе» (одноточечная): весь ряд
+# проецируется единой гомографией flat-квадрат→трапеция, поэтому крайние карты
+# скошены к общей точке схода, а центральная почти прямая — как реальные карты на
+# книге. Наведение выпрямляет карту к зрителю (persp 0→1): 0 = лежит на столе,
+# 1 = стоит лицом к камере. Карта рендерится в SubViewport и натягивается на
+# проективный четырёхугольник через Polygon2D.
 const _CARD_VP_SIZE := Vector2i(380, 601)  # рендер-разрешение карты (аспект 290:459)
-static var PERSP_TOP: float = 0.80  # ширина верхнего (дальнего) края к нижнему
-static var PERSP_SQUASH: float = 0.18  # укорочение верха (перспективное сжатие)
+static var PERSP_TOP: float = 0.80  # ширина дальнего (верхнего) края плоскости к ближнему
+static var PERSP_SQUASH: float = 0.18  # опускание дальнего края (укорочение стола)
 
 # Состояние сессии магазина (UI-локальное; бросок/монеты — в active_check).
 var _debt_taken: bool = false
@@ -349,25 +352,53 @@ func _layout_stage() -> void:
 		node.position = Vector2(e.fx * s.x, e.fy * s.y)
 		node.custom_minimum_size = Vector2(e.fw * s.x, e.fh * s.y)
 		node.size = node.custom_minimum_size
-	# Карточки — размер по высоте, позиция по центру слота на мате.
-	var card_h: float = CARD_H * s.y
-	var card_w: float = card_h * _CARD_ASPECT
-	for e_v: Variant in _cards:
-		var e: Dictionary = e_v
-		var total: int = int(e.total)
-		var t: float = 0.5 if total <= 1 else float(e.idx) / float(total - 1)
-		var cx: float = lerpf(MAT_L, MAT_R, t) * s.x
-		var cy: float = (CARD_TOP + CARD_H * 0.5) * s.y  # центр карты на мате
-		e["rest_center"] = Vector2(cx, cy)
-		e["card_w"] = card_w
-		e["card_h"] = card_h
-		# Хит-область — прямоугольник по габаритам карты (наведение/клик).
+	# Карточки лежат на ЕДИНОЙ плоскости-столе: весь ряд проецируется одной
+	# гомографией flat→трапеция. Near-габарит (нижний край плоскости) задаёт аспект
+	# карты и размер в поднятом hover-состоянии.
+	var plane: Array = _plane_quad(s)
+	var homo: Array = _sq_to_quad(plane[0], plane[1], plane[2], plane[3])
+	var near_h: float = CARD_H * (1.0 - PERSP_SQUASH) * s.y
+	var near_w: float = near_h * _CARD_ASPECT
+	var plane_w: float = (MAT_R - MAT_L) * s.x
+	var total: int = _cards.size()
+	var card_u: float = 0.0 if plane_w <= 0.0 else near_w / plane_w
+	# Равные зазоры (N+1) — поля у краёв плоскости + промежутки между картами.
+	var gap_u: float = (1.0 - float(total) * card_u) / float(total + 1)
+	if gap_u < 0.0:  # не влезают по ширине — ужимаем карты до минимального зазора
+		card_u = 0.98 / float(total)
+		gap_u = 0.02 / float(total + 1)
+	for i in range(total):
+		var e: Dictionary = _cards[i]
+		var u0: float = gap_u * float(i + 1) + card_u * float(i)
+		var u1: float = u0 + card_u
+		# 4 угла карты в flat-пространстве плоскости → экран (одна гомография).
+		var tl: Vector2 = _h_project(homo, u0, 0.0)
+		var tr: Vector2 = _h_project(homo, u1, 0.0)
+		var br: Vector2 = _h_project(homo, u1, 1.0)
+		var bl: Vector2 = _h_project(homo, u0, 1.0)
+		var center: Vector2 = (tl + tr + br + bl) * 0.25
+		# Лежащий на столе четырёхугольник (относительно центра карты).
+		e["rest_quad"] = PackedVector2Array([tl - center, tr - center, br - center, bl - center])
+		# Прямой (лицом к камере) прямоугольник near-габарита — цель наведения.
+		var fhw: float = near_w * 0.5
+		var fhh: float = near_h * 0.5
+		e["front_quad"] = PackedVector2Array(
+			[Vector2(-fhw, -fhh), Vector2(fhw, -fhh), Vector2(fhw, fhh), Vector2(-fhw, fhh)]
+		)
+		e["rest_center"] = center
+		e["card_w"] = near_w
+		e["card_h"] = near_h
+		# Хит-область — экранный bbox лежащей карты (наведение/клик).
+		var minx: float = min(tl.x, min(tr.x, min(br.x, bl.x)))
+		var maxx: float = max(tl.x, max(tr.x, max(br.x, bl.x)))
+		var miny: float = min(tl.y, min(tr.y, min(br.y, bl.y)))
+		var maxy: float = max(tl.y, max(tr.y, max(br.y, bl.y)))
 		var hit: Control = e.hit
-		hit.size = Vector2(card_w, card_h)
-		hit.position = Vector2(cx - card_w * 0.5, cy - card_h * 0.5)
+		hit.position = Vector2(minx, miny)
+		hit.size = Vector2(maxx - minx, maxy - miny)
 		if not bool(e.get("buying", false)) and not bool(e.get("hovering", false)):
 			var host: Node2D = e.host
-			host.position = Vector2(cx, cy)
+			host.position = center
 			host.scale = Vector2.ONE
 			_apply_persp(e, 0.0)  # лежит на столе
 
@@ -399,26 +430,79 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 		tw.tween_property(host, "scale", Vector2.ONE, 0.16)
 
 
-# Натянуть текстуру карты на квадрат-кейстоун. t: 0 — лежит на столе (верх уже,
-# укорочен), 1 — выпрямлена лицом к камере. Вершины TL,TR,BR,BL (origin — центр).
+# Натянуть текстуру карты на четырёхугольник. t: 0 — лежит на столе (проекция
+# гомографией, скошена к точке схода), 1 — выпрямлена лицом к камере. Интерполяция
+# между сохранёнными rest_quad и front_quad. Вершины TL,TR,BR,BL (origin — центр).
 func _apply_persp(entry: Dictionary, t: float) -> void:
 	entry["persp"] = t
 	var poly: Polygon2D = entry.poly
-	var hw: float = float(entry.get("card_w", 1.0)) * 0.5
-	var hh: float = float(entry.get("card_h", 1.0)) * 0.5
-	var top: float = lerpf(PERSP_TOP, 1.0, t)  # ширина дальнего края
-	var sq: float = lerpf(PERSP_SQUASH, 0.0, t) * hh * 2.0  # укорочение верха
+	var rq: PackedVector2Array = entry.get("rest_quad", PackedVector2Array())
+	var fq: PackedVector2Array = entry.get("front_quad", PackedVector2Array())
+	if rq.size() != 4 or fq.size() != 4:
+		return
 	poly.polygon = PackedVector2Array(
-		[
-			Vector2(-hw * top, -hh + sq),
-			Vector2(hw * top, -hh + sq),
-			Vector2(hw, hh),
-			Vector2(-hw, hh),
-		]
+		[rq[0].lerp(fq[0], t), rq[1].lerp(fq[1], t), rq[2].lerp(fq[2], t), rq[3].lerp(fq[3], t)]
 	)
 	var vs := Vector2(_CARD_VP_SIZE)
 	poly.uv = PackedVector2Array(
 		[Vector2(0, 0), Vector2(vs.x, 0), Vector2(vs.x, vs.y), Vector2(0, vs.y)]
+	)
+
+
+# ── Гомография плоскости-стола (одноточечная перспектива на весь ряд) ──────────
+
+
+# Четырёхугольник плоскости-стола в пикселях сцены: дальний (верхний) край уже
+# ближнего в PERSP_TOP раз и опущен на PERSP_SQUASH. Порядок: дальний-левый,
+# дальний-правый, ближний-правый, ближний-левый (соответствует flat uv 00,10,11,01).
+func _plane_quad(s: Vector2) -> Array:
+	var cx: float = (MAT_L + MAT_R) * 0.5 * s.x
+	var half_w: float = (MAT_R - MAT_L) * 0.5 * s.x
+	var top_half: float = half_w * PERSP_TOP
+	var y_top: float = (CARD_TOP + PERSP_SQUASH * CARD_H) * s.y
+	var y_bot: float = (CARD_TOP + CARD_H) * s.y
+	return [
+		Vector2(cx - top_half, y_top),
+		Vector2(cx + top_half, y_top),
+		Vector2(cx + half_w, y_bot),
+		Vector2(cx - half_w, y_bot),
+	]
+
+
+# Проективное отображение единичного квадрата (u,v)∈[0,1]² в четырёхугольник
+# p0..p3 (алгоритм Heckbert square→quad). Возвращает коэффициенты [a,b,c,d,e,f,g,h].
+func _sq_to_quad(p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) -> Array:
+	var dx1: float = p1.x - p2.x
+	var dx2: float = p3.x - p2.x
+	var dx3: float = p0.x - p1.x + p2.x - p3.x
+	var dy1: float = p1.y - p2.y
+	var dy2: float = p3.y - p2.y
+	var dy3: float = p0.y - p1.y + p2.y - p3.y
+	var den: float = dx1 * dy2 - dy1 * dx2
+	if absf(den) < 0.0001:  # вырожденный — аффинный фолбэк (g=h=0)
+		return [p1.x - p0.x, p3.x - p0.x, p0.x, p1.y - p0.y, p3.y - p0.y, p0.y, 0.0, 0.0]
+	var g: float = (dx3 * dy2 - dy3 * dx2) / den
+	var h: float = (dx1 * dy3 - dy1 * dx3) / den
+	return [
+		p1.x - p0.x + g * p1.x,
+		p3.x - p0.x + h * p3.x,
+		p0.x,
+		p1.y - p0.y + g * p1.y,
+		p3.y - p0.y + h * p3.y,
+		p0.y,
+		g,
+		h,
+	]
+
+
+# Спроецировать flat-точку (u,v) через гомографию m в пиксели сцены.
+func _h_project(m: Array, u: float, v: float) -> Vector2:
+	var w: float = float(m[6]) * u + float(m[7]) * v + 1.0
+	if absf(w) < 0.0001:
+		w = 0.0001
+	return Vector2(
+		(float(m[0]) * u + float(m[1]) * v + float(m[2])) / w,
+		(float(m[3]) * u + float(m[4]) * v + float(m[5])) / w
 	)
 
 
