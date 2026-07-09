@@ -607,34 +607,7 @@ func _build_specs() -> Array:
 			"default": ShopModal.HOVER_SCALE,
 			"set": _set_shop_hover_scale
 		},
-		{"section": "МАГАЗИН · СВЕТ"},
-		{
-			"key": "shop_light_mult",
-			"label": "Свет · множитель",
-			"min": 0.8,
-			"max": 1.5,
-			"step": 0.01,
-			"default": ShopModal.LIGHT_MULT,
-			"set": _set_shop_light_mult
-		},
-		{
-			"key": "shop_light_ambient",
-			"label": "Свет · тёплый фон",
-			"min": 0.0,
-			"max": 0.5,
-			"step": 0.01,
-			"default": ShopModal.LIGHT_AMBIENT,
-			"set": _set_shop_light_ambient
-		},
-		{
-			"key": "shop_light_glow",
-			"label": "Свет · блик",
-			"min": 0.0,
-			"max": 0.6,
-			"step": 0.01,
-			"default": ShopModal.LIGHT_GLOW,
-			"set": _set_shop_light_glow
-		},
+		{"section": "МАГАЗИН · ТЕНЬ"},
 		{
 			"key": "shop_shadow_ofs",
 			"label": "Смещение тени",
@@ -1200,21 +1173,6 @@ func _set_shop_hover_lift(v: float) -> void:
 
 func _set_shop_hover_scale(v: float) -> void:
 	ShopModal.HOVER_SCALE = v
-	_relayout_shop()
-
-
-func _set_shop_light_mult(v: float) -> void:
-	ShopModal.LIGHT_MULT = v
-	_relayout_shop()
-
-
-func _set_shop_light_ambient(v: float) -> void:
-	ShopModal.LIGHT_AMBIENT = v
-	_relayout_shop()
-
-
-func _set_shop_light_glow(v: float) -> void:
-	ShopModal.LIGHT_GLOW = v
 	_relayout_shop()
 
 

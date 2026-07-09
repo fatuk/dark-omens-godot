@@ -60,52 +60,11 @@ const _CARD_VP_SIZE := Vector2i(380, 601)  # рендер-разрешение �
 static var PERSP_TOP: float = 0.84  # ширина дальнего (верхнего) края плоскости к ближнему
 static var PERSP_SQUASH: float = 0.23  # опускание дальнего края (укорочение стола)
 
-# Освещение и тень. В лавке ДВА источника: лампа слева-сверху и свеча справа.
-# Свет считается в ЭКРАННОМ пространстве (SCREEN_UV) по реальным позициям
-# источников — левые карты ловят лампу, правые свечу. Модель: общий мультипликатор
-# LIGHT_MULT (≥1) + АДДИТИВНЫЙ тёплый свет (ambient-фон для всех карт + направленный
-# glow-блик у источника) — аддитив реально «зажигает» тёмные текстуры, а не только
-# масштабирует. SHADOW_* — мягкая падающая тень вниз. Тюнятся живьём (секция «СВЕТ»).
-static var LIGHT_MULT: float = 1.04  # общий мультипликативный подъём яркости (≥1)
-static var LIGHT_AMBIENT: float = 0.32  # подъём теней (тёмная плашка тайтла и т.п.)
-static var LIGHT_GLOW: float = 0.22  # доп. подъём теней у источников света
-# Позиции источников в ДОЛЯХ арта лавки (_stage) — переводятся в экранные UV.
-const _LAMP_FRAC := Vector2(0.10, 0.17)  # лампа слева-сверху
-const _CANDLE_FRAC := Vector2(0.93, 0.37)  # свеча справа
-const _LIGHT_RADIUS := 0.55  # радиус спада блика (экранные ед., с учётом аспекта)
+# Падающая тень карт. SHADOW_* тюнятся живьём (секция «МАГАЗИН · СВЕТ»).
 static var SHADOW_OFS: float = 0.03  # смещение тени вниз-вправо (доля высоты карты)
 static var SHADOW_ALPHA: float = 0.63  # плотность тени
 static var SHADOW_GROW: float = 0.02  # расширение тени относительно карты (виден ореол)
 static var SHADOW_FEATHER: float = 0.05  # мягкость края тени (доля)
-
-# Свет карты в ЭКРАННОМ пространстве: расстояние по SCREEN_UV до ближайшего из двух
-# источников (lamp/candle) с коррекцией аспекта (иначе радиус — овал). Подъём тёплым
-# светом СИЛЬНЕЕ в тенях (∝ 1-luminance) — тёмная плашка тайтла осветляется, а
-# светлый пергамент не пересвечивается. mult — лёгкий общий множитель.
-# COLOR на входе = modulate (подсветка выбранной / альфа вылета).
-const _LIGHT_SHADER := """
-shader_type canvas_item;
-uniform float mult = 1.04;
-uniform float ambient = 0.22;
-uniform float glow = 0.20;
-uniform float radius = 0.55;
-uniform vec2 lamp = vec2(0.1, 0.17);
-uniform vec2 candle = vec2(0.93, 0.37);
-uniform float aspect = 1.777;
-uniform vec3 warm = vec3(1.0, 0.88, 0.62);
-void fragment() {
-	vec4 tex = texture(TEXTURE, UV);
-	float da = length((SCREEN_UV - lamp) * vec2(aspect, 1.0));
-	float db = length((SCREEN_UV - candle) * vec2(aspect, 1.0));
-	float near = 1.0 - clamp(min(da, db) / radius, 0.0, 1.0);
-	// Подъём СИЛЬНЕЕ в тенях (1-lum), слабее в светах — тёмная плашка тайтла
-	// осветляется, а пергамент не пересвечивается (без блоуаута).
-	float lum = dot(tex.rgb, vec3(0.299, 0.587, 0.114));
-	float lift = (ambient + near * glow) * (1.0 - lum);
-	tex.rgb = tex.rgb * mult + warm * lift;
-	COLOR = tex * COLOR;
-}
-"""
 
 # Мягкая тень: тёмный четырёхугольник с федером края по UV (SDF-«коробка»).
 const _SHADOW_SHADER := """
@@ -361,7 +320,6 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	poly.name = "Poly"
 	poly.texture = vp.get_texture()
 	poly.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	poly.material = _make_shader_material(_LIGHT_SHADER)  # градиент освещения
 	host.add_child(poly)
 	_stage.add_child(host)
 
@@ -452,11 +410,6 @@ func _layout_stage() -> void:
 	_stage.position = r.position
 	_stage.size = r.size
 	var s: Vector2 = r.size
-	# Экранные UV источников света (доли арта → экран) + аспект для шейдера карт.
-	var vpsize: Vector2 = get_viewport().get_visible_rect().size
-	var lamp_uv: Vector2 = (r.position + _LAMP_FRAC * s) / vpsize
-	var candle_uv: Vector2 = (r.position + _CANDLE_FRAC * s) / vpsize
-	var aspect: float = vpsize.x / vpsize.y if vpsize.y > 0.0 else 1.777
 	# Хром — по долям.
 	for e_v: Variant in _chrome:
 		var e: Dictionary = e_v
@@ -509,15 +462,6 @@ func _layout_stage() -> void:
 		e["rest_center"] = center
 		e["card_w"] = card_w
 		e["card_h"] = card_w / _CARD_ASPECT
-		# Свет карты — обновляем uniform'ы (живой тюн + экранные позиции источников).
-		var lmat: ShaderMaterial = e.poly.material
-		lmat.set_shader_parameter("mult", LIGHT_MULT)
-		lmat.set_shader_parameter("ambient", LIGHT_AMBIENT)
-		lmat.set_shader_parameter("glow", LIGHT_GLOW)
-		lmat.set_shader_parameter("radius", _LIGHT_RADIUS)
-		lmat.set_shader_parameter("lamp", lamp_uv)
-		lmat.set_shader_parameter("candle", candle_uv)
-		lmat.set_shader_parameter("aspect", aspect)
 		# Тень — тот же четырёхугольник, расширен и смещён вниз-вправо, лежит на столе.
 		var g: float = 1.0 + SHADOW_GROW
 		var shadow: Polygon2D = e.shadow
