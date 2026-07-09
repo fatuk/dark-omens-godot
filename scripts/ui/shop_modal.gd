@@ -73,10 +73,10 @@ static var LIGHT_GLOW: float = 0.24  # аддитивный направленн
 const _LAMP_FRAC := Vector2(0.10, 0.17)  # лампа слева-сверху
 const _CANDLE_FRAC := Vector2(0.93, 0.37)  # свеча справа
 const _LIGHT_RADIUS := 0.55  # радиус спада блика (экранные ед., с учётом аспекта)
-static var SHADOW_OFS: float = 0.06  # смещение тени вниз-вправо (доля высоты карты)
-static var SHADOW_ALPHA: float = 0.50  # плотность тени
-static var SHADOW_GROW: float = 0.09  # расширение тени относительно карты (виден ореол)
-static var SHADOW_FEATHER: float = 0.30  # мягкость края тени (доля)
+static var SHADOW_OFS: float = 0.08  # смещение тени вниз-вправо (доля высоты карты)
+static var SHADOW_ALPHA: float = 0.55  # плотность тени
+static var SHADOW_GROW: float = 0.16  # расширение тени относительно карты (виден ореол)
+static var SHADOW_FEATHER: float = 0.32  # мягкость края тени (доля)
 
 # Свет карты в ЭКРАННОМ пространстве: расстояние по SCREEN_UV до ближайшего из двух
 # источников (lamp/candle) с коррекцией аспекта (иначе радиус — овал). Яркость =
@@ -117,7 +117,8 @@ void fragment() {
 }
 """
 
-static var _white_tex: ImageTexture  # 1×1 белая — носитель UV для шейдера тени
+const _SHADOW_TEX_SIZE := 64  # размер белой текстуры-носителя UV для шейдера тени
+static var _white_tex: ImageTexture  # белая NxN — носитель UV для шейдера тени
 
 # Состояние сессии магазина (UI-локальное; бросок/монеты — в active_check).
 var _debt_taken: bool = false
@@ -340,12 +341,13 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	vp.add_child(card)
 
 	# Мягкая падающая тень — отдельный Polygon2D на столе (не в host: не поднимается
-	# с картой при наведении, остаётся лежать). z=-1 — под всеми картами.
+	# с картой при наведении, остаётся лежать). Добавляется ДО host → рисуется под
+	# картой, но над матом (z по умолчанию; z=-1 уводил бы за фон-арт).
 	var shadow := Polygon2D.new()
 	shadow.name = "Shadow_%d" % idx
-	shadow.texture = _shadow_texture()  # 1×1 белая — чтобы шейдер получил UV 0..1
-	shadow.uv = PackedVector2Array([Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)])
-	shadow.z_index = -1
+	shadow.texture = _shadow_texture()  # белая NxN — носитель UV 0..1 для шейдера
+	var st: float = float(_SHADOW_TEX_SIZE)
+	shadow.uv = PackedVector2Array([Vector2(0, 0), Vector2(st, 0), Vector2(st, st), Vector2(0, st)])
 	shadow.material = _make_shader_material(_SHADOW_SHADER)
 	_stage.add_child(shadow)
 
@@ -406,11 +408,12 @@ func _make_shader_material(code: String) -> ShaderMaterial:
 	return mat
 
 
-# 1×1 белая текстура — носитель UV для шейдера тени (Polygon2D без текстуры не даёт
-# UV в шейдере). Ленивая, общая на все карты.
+# Белая NxN текстура — носитель UV для шейдера тени. Polygon2D без текстуры не даёт
+# UV в шейдере, а с 1×1 текстурой + шейдером ничего не рисуется (баг Godot) — нужна
+# «настоящая» текстура. Ленивая, общая на все карты.
 func _shadow_texture() -> ImageTexture:
 	if _white_tex == null:
-		var img := Image.create(1, 1, false, Image.FORMAT_RGBA8)
+		var img := Image.create(_SHADOW_TEX_SIZE, _SHADOW_TEX_SIZE, false, Image.FORMAT_RGBA8)
 		img.fill(Color.WHITE)
 		_white_tex = ImageTexture.create_from_image(img)
 	return _white_tex
