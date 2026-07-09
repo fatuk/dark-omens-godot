@@ -73,10 +73,10 @@ static var LIGHT_GLOW: float = 0.24  # аддитивный направленн
 const _LAMP_FRAC := Vector2(0.10, 0.17)  # лампа слева-сверху
 const _CANDLE_FRAC := Vector2(0.93, 0.37)  # свеча справа
 const _LIGHT_RADIUS := 0.55  # радиус спада блика (экранные ед., с учётом аспекта)
-static var SHADOW_OFS: float = 0.08  # смещение тени вниз-вправо (доля высоты карты)
-static var SHADOW_ALPHA: float = 0.55  # плотность тени
-static var SHADOW_GROW: float = 0.16  # расширение тени относительно карты (виден ореол)
-static var SHADOW_FEATHER: float = 0.32  # мягкость края тени (доля)
+static var SHADOW_OFS: float = 0.03  # смещение тени вниз-вправо (доля высоты карты)
+static var SHADOW_ALPHA: float = 0.63  # плотность тени
+static var SHADOW_GROW: float = 0.02  # расширение тени относительно карты (виден ореол)
+static var SHADOW_FEATHER: float = 0.05  # мягкость края тени (доля)
 
 # Свет карты в ЭКРАННОМ пространстве: расстояние по SCREEN_UV до ближайшего из двух
 # источников (lamp/candle) с коррекцией аспекта (иначе радиус — овал). Яркость =
