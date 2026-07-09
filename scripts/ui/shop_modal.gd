@@ -66,9 +66,9 @@ static var PERSP_SQUASH: float = 0.23  # опускание дальнего к�
 # LIGHT_MULT (≥1) + АДДИТИВНЫЙ тёплый свет (ambient-фон для всех карт + направленный
 # glow-блик у источника) — аддитив реально «зажигает» тёмные текстуры, а не только
 # масштабирует. SHADOW_* — мягкая падающая тень вниз. Тюнятся живьём (секция «СВЕТ»).
-static var LIGHT_MULT: float = 1.10  # общий мультипликативный подъём яркости (≥1)
-static var LIGHT_AMBIENT: float = 0.12  # аддитивный тёплый фон (лифт тёмных текстур)
-static var LIGHT_GLOW: float = 0.24  # аддитивный направленный блик у источников
+static var LIGHT_MULT: float = 1.04  # общий мультипликативный подъём яркости (≥1)
+static var LIGHT_AMBIENT: float = 0.32  # подъём теней (тёмная плашка тайтла и т.п.)
+static var LIGHT_GLOW: float = 0.22  # доп. подъём теней у источников света
 # Позиции источников в ДОЛЯХ арта лавки (_stage) — переводятся в экранные UV.
 const _LAMP_FRAC := Vector2(0.10, 0.17)  # лампа слева-сверху
 const _CANDLE_FRAC := Vector2(0.93, 0.37)  # свеча справа
@@ -79,15 +79,15 @@ static var SHADOW_GROW: float = 0.02  # расширение тени относ
 static var SHADOW_FEATHER: float = 0.05  # мягкость края тени (доля)
 
 # Свет карты в ЭКРАННОМ пространстве: расстояние по SCREEN_UV до ближайшего из двух
-# источников (lamp/candle) с коррекцией аспекта (иначе радиус — овал). Яркость =
-# общий множитель mult + аддитивный тёплый свет (ambient + направленный glow).
-# Аддитив прибавляет цвет света к текстуре — «зажигает» тёмные пиксели, не только
-# масштабирует. COLOR на входе = modulate (подсветка выбранной / альфа вылета).
+# источников (lamp/candle) с коррекцией аспекта (иначе радиус — овал). Подъём тёплым
+# светом СИЛЬНЕЕ в тенях (∝ 1-luminance) — тёмная плашка тайтла осветляется, а
+# светлый пергамент не пересвечивается. mult — лёгкий общий множитель.
+# COLOR на входе = modulate (подсветка выбранной / альфа вылета).
 const _LIGHT_SHADER := """
 shader_type canvas_item;
-uniform float mult = 1.10;
-uniform float ambient = 0.12;
-uniform float glow = 0.24;
+uniform float mult = 1.04;
+uniform float ambient = 0.22;
+uniform float glow = 0.20;
 uniform float radius = 0.55;
 uniform vec2 lamp = vec2(0.1, 0.17);
 uniform vec2 candle = vec2(0.93, 0.37);
@@ -98,8 +98,11 @@ void fragment() {
 	float da = length((SCREEN_UV - lamp) * vec2(aspect, 1.0));
 	float db = length((SCREEN_UV - candle) * vec2(aspect, 1.0));
 	float near = 1.0 - clamp(min(da, db) / radius, 0.0, 1.0);
-	tex.rgb *= mult;
-	tex.rgb += warm * (ambient + near * glow);
+	// Подъём СИЛЬНЕЕ в тенях (1-lum), слабее в светах — тёмная плашка тайтла
+	// осветляется, а пергамент не пересвечивается (без блоуаута).
+	float lum = dot(tex.rgb, vec3(0.299, 0.587, 0.114));
+	float lift = (ambient + near * glow) * (1.0 - lum);
+	tex.rgb = tex.rgb * mult + warm * lift;
 	COLOR = tex * COLOR;
 }
 """
