@@ -256,6 +256,9 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	card.name = "Card"
 	card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Карта рендерится в SubViewport крупнее эталона веера — масштабируем шрифты в
+	# той же пропорции, чтобы текст относительно карты был как в веере.
+	card.set_font_scale(float(_CARD_VP_SIZE.x) / HandCarousel.CARD_W)
 	(
 		card
 		. set_card(

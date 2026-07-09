@@ -104,6 +104,17 @@ const _DESC_SCROLL_DEADZONE := 0.04  # доля высоты от центра, 
 const _DESC_LABEL_H := 2000.0  # заведомо большая высота лейбла (любое описание влезет)
 const _DESC_BOTTOM_PAD := 4.0  # нижний запас, чтобы последняя строка не подрезалась
 
+# Базовые размеры шрифтов (px) — откалиброваны под карту веера (HandCarousel.CARD_W
+# ≈ 186 px). Магазин рендерит карту в SubViewport крупнее эталона, поэтому масштабирует
+# их через set_font_scale(), чтобы пропорция текста к карте совпадала с веером.
+const FS_COST := 20
+const FS_TITLE := 14
+const FS_SUB := 9
+const FS_DESC := 12
+const FS_GLYPH := 40
+const FS_MSG := 21
+var _font_scale: float = 1.0
+
 var _cost: Label
 var _title: Label
 var _sub: Label
@@ -140,7 +151,7 @@ func _build() -> void:
 	_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_art.visible = false
 	art_zone.add_child(_art)
-	_glyph = _centered_label("Glyph", 40, C_GLYPH)
+	_glyph = _centered_label("Glyph", _fs(FS_GLYPH), C_GLYPH)
 	art_zone.add_child(_glyph)
 
 	# Скругляем углы арт-слоя по радиусу (один материал на заливку и текстуру);
@@ -189,7 +200,7 @@ func _build() -> void:
 
 	# Стоимость — в гербе сверху-слева.
 	var cost_zone := _zone("Cost", Z_COST)
-	_cost = _centered_label("CostLabel", 20, C_COST_TXT)
+	_cost = _centered_label("CostLabel", _fs(FS_COST), C_COST_TXT)
 	cost_zone.add_child(_cost)
 
 	# Заголовок + трейт — на синей плашке.
@@ -201,10 +212,10 @@ func _build() -> void:
 	tvb.add_theme_constant_override("separation", 0)
 	tvb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_zone.add_child(tvb)
-	_title = _centered_label("Name", 14, C_TITLE_TXT)
+	_title = _centered_label("Name", _fs(FS_TITLE), C_TITLE_TXT)
 	_title.clip_text = true
 	tvb.add_child(_title)
-	_sub = _centered_label("Subtitle", 9, C_SUB_TXT)
+	_sub = _centered_label("Subtitle", _fs(FS_SUB), C_SUB_TXT)
 	_sub.clip_text = true
 	tvb.add_child(_sub)
 
@@ -218,7 +229,7 @@ func _build() -> void:
 	_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_desc.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_desc.add_theme_font_size_override("font_size", 12)
+	_desc.add_theme_font_size_override("font_size", _fs(FS_DESC))
 	_desc.add_theme_color_override("font_color", C_DESC_TXT)
 	_desc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Ширина = зоне (anchor 0..1), верх у зоны; высота заведомо большая — текст
@@ -242,7 +253,7 @@ func _build() -> void:
 	_message.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_message.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_message.add_theme_font_size_override("font_size", 21)
+	_message.add_theme_font_size_override("font_size", _fs(FS_MSG))
 	_message.add_theme_color_override("font_color", C_MSG_TXT)
 	_message.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_message.visible = false
@@ -379,6 +390,26 @@ func _zone(zname: String, r: Rect2) -> Control:
 	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(c)
 	return c
+
+
+# Размер шрифта = база × текущий масштаб контента (округлённо).
+func _fs(base: int) -> int:
+	return int(round(float(base) * _font_scale))
+
+
+## Масштаб всех шрифтов карты (1.0 = эталон веера). Магазин рендерит карту в
+## SubViewport крупнее эталона и зовёт это после new(), чтобы пропорция текста к
+## карте совпала с веером. Переприменяет размеры к уже построенным лейблам.
+func set_font_scale(s: float) -> void:
+	if is_equal_approx(_font_scale, s):
+		return
+	_font_scale = s
+	_cost.add_theme_font_size_override("font_size", _fs(FS_COST))
+	_title.add_theme_font_size_override("font_size", _fs(FS_TITLE))
+	_sub.add_theme_font_size_override("font_size", _fs(FS_SUB))
+	_desc.add_theme_font_size_override("font_size", _fs(FS_DESC))
+	_glyph.add_theme_font_size_override("font_size", _fs(FS_GLYPH))
+	_message.add_theme_font_size_override("font_size", _fs(FS_MSG))
 
 
 func _centered_label(lname: String, font_px: int, color: Color) -> Label:
