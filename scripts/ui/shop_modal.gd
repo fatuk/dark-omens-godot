@@ -2,19 +2,23 @@ extends CanvasLayer
 
 ## Магазин (Acquire Assets). Открывается из сайдбара в городе со своим сыщиком.
 ##
+## Визуал: полноэкранный арт лавки (shop-bg.png @2×). Карточки товаров лежат на
+## красном мате-книге (перспектива — в самом арте); при наведении карточка
+## приподнимается и приближается к камере; при покупке — вылетает из витрины.
+## Низ прилавка: монеты·доступно, лоток кубов Влияния, кнопки долг/бросок/купить.
+##
 ## Поток покупки:
 ##   1. «Бросить кубы» — бросок Влияния (хост, единая проверка CheckFlow);
 ##      число успехов = монеты.
 ##   2. В любой момент «Взять долг» — вешает «Долг» и даёт +2 монеты.
-##   3. Переброс провального куба — тап по кубику: бесплатные от карт →
-##      концентрация → улика (общий механизм проверки).
-##   4. Карты руки (веер, Tab) активируются прямо здесь — это та же проверка.
-##   5. Выбор карточек кликом (сумма ≤ монет) → «Купить».
+##   3. Переброс провального куба — тап по кубику.
+##   4. Выбор карточек кликом (сумма ≤ монет) → «Купить».
 ##
 ## Бросок/перебросы/монеты — хост-авторитетны в GameState.active_check; модалка
-## лишь отражает синкнутое состояние (реактивно по state_changed).
+## лишь отражает синкнутое состояние (реактивно по state_changed). Раскладка
+## привязана к вписанному прямоугольнику арта (_stage) — тянется под любой экран.
 
-const _CARD_MIN := Vector2(290, 459)  # = размер наведённой карты веера (186·1.56 × 294·1.56)
+const _BG := preload("res://assets/shop/shop-bg.png")
 
 const _TRAIT_KEY := {
 	"weapon": "TRAIT_WEAPON",
@@ -29,28 +33,42 @@ const _TRAIT_KEY := {
 	"ally": "TRAIT_ALLY",
 }
 
+# Раскладка в ДОЛЯХ прямоугольника арта (_stage). Мат-книга под карточки, прилавок
+# под низ — координаты сняты по shop-bg.png.
+const _CARD_TOP := 0.29  # верх карточек (доля высоты)
+const _CARD_H := 0.40  # высота карточки
+const _CARD_ASPECT := 290.0 / 459.0  # ш/в карточки
+const _MAT_L := 0.15  # центры карточек равномерно между _MAT_L и _MAT_R
+const _MAT_R := 0.85
+const _HOVER_LIFT := 0.05  # подъём при наведении (доля высоты)
+const _HOVER_SCALE := 1.18  # приближение к камере
+const _TILT := 0.025  # лёгкий наклон крайних карточек (рад)
+
 # Состояние сессии магазина (UI-локальное; бросок/монеты — в active_check).
 var _debt_taken: bool = false
 var _selected: Dictionary = {}  # asset_id -> cost
-var _last_dice: Array = []  # последний показанный набор (спин только на свежем)
-var _last_nonce: int = 0  # метка последнего отрисованного переброса (CheckFlow.reroll_nonce)
-var _last_can: bool = false  # последнее состояние кликабельности (для обновления без смены кубов)
-var _last_add: bool = false  # последняя доступность +1 (addToDie) — тоже меняет кликабельность
+var _last_dice: Array = []
+var _last_nonce: int = 0
+var _last_can: bool = false
+var _last_add: bool = false
 
-# Узлы для обновления.
+# Узлы.
+var _stage: Control  # вписанный прямоугольник арта — база для долевой раскладки
 var _dice_box: HBoxContainer
-var _tray: DiceTray  # переиспользуемый лоток кубов
+var _tray: DiceTray
 var _coins_lbl: Label
 var _roll_btn: Button
 var _debt_btn: Button
 var _buy_btn: Button
-var _cards: Array = []  # [{id, cost, panel}]
+var _cards: Array = []  # [{id, cost, card, rest_pos, rest_scale, rot, hovering, buying}]
+var _chrome: Array = []  # [{node, fx, fy, fw, fh}] — элементы, позиционируемые по долям
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build()
 	GameState.state_changed.connect(_refresh)
+	get_viewport().size_changed.connect(_layout_stage)
 
 
 func open() -> void:
@@ -58,7 +76,6 @@ func open() -> void:
 
 
 func _close() -> void:
-	# Снять отложенную передачу хода и активную проверку (host_apply_shop_close).
 	GameState.shop_close()
 	queue_free()
 
@@ -66,7 +83,6 @@ func _close() -> void:
 # ── Доступ к активной проверке магазина ───────────────────────────────────────
 
 
-# Активная проверка, если она магазинная (иначе {}).
 func _check() -> Dictionary:
 	var c: Dictionary = GameState.active_check
 	return c if String(c.get("owner", "")) == "shop" else {}
@@ -76,25 +92,14 @@ func _rolled() -> bool:
 	return bool(_check().get("rolled", false))
 
 
-# Монеты = успехи броска + бонус долга (+2 только если долг ВЗЯТ в этом походе;
-# уже висящее состояние «Долг» из прошлого похода монет не даёт).
 func _coins() -> int:
 	return int(_check().get("successes", 0)) + (2 if _debt_taken else 0)
 
 
-# Остаток бесплатных перебросов от карт.
-func _free_rerolls() -> int:
-	var c: Dictionary = _check()
-	return maxi(0, int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0)))
-
-
-# Можно ли перебросить тапом: бесплатно от карт или заряжен жетон. Концентрация/
-# улика — только через розыгрыш жетона на проверку (не авто-тратой по тапу).
 func _can_reroll() -> bool:
 	return GameState.can_reroll_now()
 
 
-# Доступен ли «перебросить все провальные кубы разом» (Счастливый талисман).
 func _reroll_all_available() -> bool:
 	if not _rolled():
 		return false
@@ -106,67 +111,86 @@ func _reroll_all_available() -> bool:
 
 
 func _build() -> void:
-	var bg := ColorRect.new()
-	bg.name = "Backdrop"
-	bg.color = Color(0, 0, 0, 0.6)
+	# Полупрозрачный фон — блокирует карту под магазином.
+	var backdrop := ColorRect.new()
+	backdrop.name = "Backdrop"
+	backdrop.color = Color(0, 0, 0, 0.75)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(backdrop)
+
+	# Арт лавки — вписан по центру (KEEP_ASPECT), весь виден.
+	var bg := TextureRect.new()
+	bg.name = "ShopBg"
+	bg.texture = _BG
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	bg.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(bg)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	backdrop.add_child(bg)
 
-	var center := CenterContainer.new()
-	center.name = "Center"
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.add_child(center)
+	# Сцена — прямоугольник ровно по вписанному арту; всё позиционируем в его долях.
+	_stage = Control.new()
+	_stage.name = "Stage"
+	_stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	backdrop.add_child(_stage)
 
-	var panel := PanelContainer.new()
-	panel.name = "Panel"
-	UIStyle.style_modal_panel(panel)
-	panel.custom_minimum_size = Vector2(1120, 0)
-	center.add_child(panel)
+	# ── Шапка ──
+	var title := UIStyle.label("SHOP_TITLE", 34, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	title.name = "Title"
+	_stage.add_child(title)
+	_chrome.append({"node": title, "fx": 0.2, "fy": 0.035, "fw": 0.6, "fh": 0.06})
 
-	var vb := VBoxContainer.new()
-	vb.name = "VBox"
-	vb.add_theme_constant_override("separation", 10)
-	panel.add_child(vb)
+	var sub := UIStyle.label("SHOP_SUBTITLE", 15, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	sub.name = "Subtitle"
+	_stage.add_child(sub)
+	_chrome.append({"node": sub, "fx": 0.2, "fy": 0.10, "fw": 0.6, "fh": 0.04})
 
-	vb.add_child(UIStyle.modal_header("SHOP_TITLE", _close))
-	vb.add_child(UIStyle.label("SHOP_SUBTITLE", 14, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
-	UIStyle.separator(vb)
+	# Крестик закрытия — поверх нарисованного X в арте.
+	var close := Button.new()
+	close.name = "Close"
+	close.text = "✕"
+	close.flat = true
+	close.add_theme_font_size_override("font_size", 22)
+	close.add_theme_color_override("font_color", UIColors.MUTED)
+	close.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	close.pressed.connect(_close)
+	_stage.add_child(close)
+	_chrome.append({"node": close, "fx": 0.945, "fy": 0.02, "fw": 0.045, "fh": 0.06})
 
-	# Витрина — ряд карт по центру.
-	var cards := HBoxContainer.new()
-	cards.name = "Cards"
-	cards.alignment = BoxContainer.ALIGNMENT_CENTER
-	cards.add_theme_constant_override("separation", 14)
-	cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vb.add_child(cards)
-	for a in _offer():
-		cards.add_child(_build_asset_card(a))
+	# ── Карточки на мате ──
+	var offer: Array = _offer()
+	for i in range(offer.size()):
+		_build_asset_card(offer[i], i, offer.size())
 
-	UIStyle.separator(vb)
+	# ── Низ прилавка: монеты · доступно ──
+	_coins_lbl = UIStyle.label("", 17, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
+	_coins_lbl.name = "Coins"
+	_stage.add_child(_coins_lbl)
+	_chrome.append({"node": _coins_lbl, "fx": 0.25, "fy": 0.735, "fw": 0.5, "fh": 0.04})
 
-	# Монеты · доступно — над кубами.
-	_coins_lbl = UIStyle.label("", 16, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
-	vb.add_child(_coins_lbl)
-
-	# Кубы Влияния — по центру (переиспользуемый лоток).
+	# Кубы Влияния — в ряду слотов на прилавке.
 	_dice_box = HBoxContainer.new()
 	_dice_box.name = "DiceBox"
 	_dice_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	_dice_box.add_theme_constant_override("separation", 6)
-	_dice_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vb.add_child(_dice_box)
+	_dice_box.add_theme_constant_override("separation", 10)
+	_dice_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stage.add_child(_dice_box)
+	_chrome.append({"node": _dice_box, "fx": 0.3, "fy": 0.785, "fw": 0.4, "fh": 0.09})
 
-	# Ряд кнопок: долг · бросок · купить.
+	# ── Кнопки: долг · бросок · купить ──
 	var btns := HBoxContainer.new()
 	btns.name = "Buttons"
-	btns.add_theme_constant_override("separation", 16)
-	vb.add_child(btns)
+	btns.add_theme_constant_override("separation", 24)
+	btns.alignment = BoxContainer.ALIGNMENT_CENTER
+	_stage.add_child(btns)
+	_chrome.append({"node": btns, "fx": 0.08, "fy": 0.905, "fw": 0.84, "fh": 0.06})
 
 	_debt_btn = UIStyle.button("SHOP_TAKE_DEBT", UIColors.WARNING)
 	_debt_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_debt_btn.pressed.connect(_on_take_debt)
-	_debt_btn.visible = not _has_debt()  # уже есть «Долг» → не предлагаем ещё
+	_debt_btn.visible = not _has_debt()
 	btns.add_child(_debt_btn)
 
 	_roll_btn = UIStyle.button("SHOP_ROLL", UIColors.ACCENT)
@@ -179,9 +203,8 @@ func _build() -> void:
 	_buy_btn.pressed.connect(_on_buy)
 	btns.add_child(_buy_btn)
 
-	# Закрытие — только крестиком в шапке.
-	UIStyle.scale_modal_text(panel)  # текст модалок крупнее (×1.5)
 	visible = false
+	_layout_stage()
 	_refresh()
 
 
@@ -197,15 +220,14 @@ func _offer() -> Array:
 	return out
 
 
-func _build_asset_card(a: Dictionary) -> Control:
+func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	var aid: String = String(a.get("id", ""))
 	var cost: int = int(a.get("cost", 0))
 	var traits: Array = a.get("traits", [])
 	var trait_id: String = String(traits[-1]) if not traits.is_empty() else "item"
 
 	var card := GameCard.new()
-	card.name = "Card"
-	card.custom_minimum_size = _CARD_MIN
+	card.name = "Card_%d" % idx
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	(
@@ -216,9 +238,29 @@ func _build_asset_card(a: Dictionary) -> Control:
 				"title": a.get("nameKey", ""),
 				"subtitle": _TRAIT_KEY.get(trait_id, trait_id.to_upper()),
 				"desc": a.get("abilityKey", ""),
+				"art": AssetCatalog.card_art(aid),
 			}
 		)
 	)
+	# Лёгкий наклон крайних карточек — «лежат на мате веером».
+	var slot: float = float(idx) - float(total - 1) * 0.5
+	var rot: float = slot * _TILT
+	card.rotation = rot
+	_stage.add_child(card)
+
+	var entry := {
+		"id": aid,
+		"cost": cost,
+		"card": card,
+		"idx": idx,
+		"total": total,
+		"rot": rot,
+		"buying": false
+	}
+	_cards.append(entry)
+
+	card.mouse_entered.connect(func() -> void: _hover_card(entry, true))
+	card.mouse_exited.connect(func() -> void: _hover_card(entry, false))
 	card.gui_input.connect(
 		func(ev: InputEvent) -> void:
 			if (
@@ -229,12 +271,87 @@ func _build_asset_card(a: Dictionary) -> Control:
 				_toggle_card(aid, cost)
 	)
 
-	_cards.append({"id": aid, "cost": cost, "panel": card})
-	return card
-
 
 func _has_debt() -> bool:
 	return (GameState.my_player().get("conditions", []) as Array).has("debt")
+
+
+# ── Раскладка по вписанному арту ──────────────────────────────────────────────
+
+
+# Вписанный по центру прямоугольник арта (KEEP_ASPECT) внутри вьюпорта.
+func _fitted_rect() -> Rect2:
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var ta: float = _BG.get_size().x / _BG.get_size().y
+	var va: float = vp.x / vp.y
+	var w: float
+	var h: float
+	if va > ta:  # экран шире арта → вписываем по высоте
+		h = vp.y
+		w = h * ta
+	else:
+		w = vp.x
+		h = w / ta
+	return Rect2((vp - Vector2(w, h)) * 0.5, Vector2(w, h))
+
+
+func _layout_stage() -> void:
+	if not is_instance_valid(_stage):
+		return
+	var r: Rect2 = _fitted_rect()
+	_stage.position = r.position
+	_stage.size = r.size
+	var s: Vector2 = r.size
+	# Хром — по долям.
+	for e_v: Variant in _chrome:
+		var e: Dictionary = e_v
+		var node: Control = e.node
+		node.position = Vector2(e.fx * s.x, e.fy * s.y)
+		node.custom_minimum_size = Vector2(e.fw * s.x, e.fh * s.y)
+		node.size = node.custom_minimum_size
+	# Карточки — размер по высоте, позиция по центру слота на мате.
+	var card_h: float = _CARD_H * s.y
+	var card_w: float = card_h * _CARD_ASPECT
+	for e_v: Variant in _cards:
+		var e: Dictionary = e_v
+		var card: Control = e.card
+		var total: int = int(e.total)
+		var t: float = 0.5 if total <= 1 else float(e.idx) / float(total - 1)
+		var cx: float = lerpf(_MAT_L, _MAT_R, t) * s.x
+		var rest := Vector2(cx - card_w * 0.5, _CARD_TOP * s.y)
+		card.size = Vector2(card_w, card_h)
+		card.custom_minimum_size = card.size
+		card.pivot_offset = card.size * 0.5
+		e["rest_pos"] = rest
+		e["card_h"] = card_h
+		if not bool(e.get("buying", false)) and not bool(e.get("hovering", false)):
+			card.position = rest
+			card.scale = Vector2.ONE
+
+
+# ── Наведение: подъём и приближение к камере ──────────────────────────────────
+
+
+func _hover_card(entry: Dictionary, on: bool) -> void:
+	if bool(entry.get("buying", false)):
+		return
+	entry["hovering"] = on
+	var card: Control = entry.card
+	var rest: Vector2 = entry.get("rest_pos", card.position)
+	var lift: float = _HOVER_LIFT * (entry.get("card_h", card.size.y) / _CARD_H)
+	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
+		Tween.EASE_OUT
+	)
+	if on:
+		card.z_index = 10  # приподнятая карта — поверх соседей
+		tw.tween_property(card, "position", rest - Vector2(0, lift), 0.14)
+		tw.tween_property(card, "scale", Vector2.ONE * _HOVER_SCALE, 0.14)
+		tw.tween_property(card, "rotation", 0.0, 0.14)  # выпрямляем к зрителю
+	else:
+		card.z_index = 0
+		tw.tween_property(card, "position", rest, 0.14)
+		tw.tween_property(card, "scale", Vector2.ONE, 0.14)
+		tw.tween_property(card, "rotation", float(entry.rot), 0.14)
 
 
 # ── Кубы (переиспользуемый лоток, рендер из active_check) ──────────────────────
@@ -256,30 +373,28 @@ func _render_dice() -> void:
 	if not _rolled():
 		if not _last_dice.is_empty():
 			_last_dice = []
-		_tray.show_pending(_influence_pool())  # рубашки до броска
+		_tray.show_pending(_influence_pool())
 		return
 	var dice: Array = _check().get("dice", [])
 	var can: bool = _can_reroll()
-	var add: bool = GameState.can_add_die_now()  # заряжен +1 → кубы < 6 кликабельны
+	var add: bool = GameState.can_add_die_now()
 	var nonce: int = int(_check().get("reroll_nonce", 0))
 	if dice != _last_dice:
 		var prev: Array = _last_dice
 		var diff: int = _single_diff(prev, dice)
 		_last_dice = dice.duplicate()
 		if prev.is_empty():
-			_tray.play_roll(dice, can, add)  # свежий бросок — спин
+			_tray.play_roll(dice, can, add)
 		elif diff >= 0:
-			_tray.reroll_die(diff, int(dice[diff]), can, add)  # переброс одного — крутится он
+			_tray.reroll_die(diff, int(dice[diff]), can, add)
 		elif prev.size() == dice.size():
-			_tray.play_roll(dice, can, add)  # несколько изменилось (reroll-all) — спин всех
+			_tray.play_roll(dice, can, add)
 		else:
-			_tray.show_roll(dice, can, add)  # размер изменился (докинули кубы) — статикой
+			_tray.show_roll(dice, can, add)
 		_last_can = can
 		_last_add = add
 		_last_nonce = nonce
 	elif nonce != _last_nonce:
-		# Переброс в ТО ЖЕ значение: массив не изменился, но nonce вырос — крутим
-		# затронутый куб, иначе клик «съеденный» (фокус ушёл, куб не дёрнулся).
 		var ri: int = int(_check().get("reroll_index", -1))
 		if ri >= 0 and ri < dice.size():
 			_tray.reroll_die(ri, int(dice[ri]), can, add)
@@ -287,14 +402,11 @@ func _render_dice() -> void:
 		_last_add = add
 		_last_nonce = nonce
 	elif can != _last_can or add != _last_add:
-		# Кубы те же, но кликабельность изменилась (активировали карту-переброс/+1
-		# после броска) — обновляем лоток статикой, иначе кубик не нажать.
 		_tray.show_roll(dice, can, add)
 		_last_can = can
 		_last_add = add
 
 
-# Индекс единственного отличия наборов (-1 если 0 или >1 отличий / разные размеры).
 func _single_diff(a: Array, b: Array) -> int:
 	if a.size() != b.size():
 		return -1
@@ -307,7 +419,6 @@ func _single_diff(a: Array, b: Array) -> int:
 	return idx
 
 
-# Пул d6 Влияния до броска (для рубашек): навык + модификаторы + доп.кубы карт.
 func _influence_pool() -> int:
 	var me: Dictionary = GameState.my_player()
 	var inv: Dictionary = Investigators.get_data(String(me.get("investigator", "")))
@@ -322,12 +433,11 @@ func _influence_pool() -> int:
 
 func _on_roll() -> void:
 	if _rolled():
-		# Повторное нажатие после броска = «перебросить все кубы» (Талисман).
 		if _reroll_all_available():
-			GameState.reroll_all_dice()  # хост перебросит провальные и пришлёт синком
+			GameState.reroll_all_dice()
 		return
-	_roll_btn.disabled = true  # хост катит и пришлёт active_check синком
-	GameState.shop_begin()  # бросок = действие acquire_assets + старт+бросок проверки
+	_roll_btn.disabled = true
+	GameState.shop_begin()
 
 
 func _on_take_debt() -> void:
@@ -335,21 +445,20 @@ func _on_take_debt() -> void:
 		return
 	_debt_taken = true
 	_debt_btn.disabled = true
-	GameState.shop_take_debt()  # вешает «Долг» (без дублей), +2 монеты
+	GameState.shop_take_debt()
 	_refresh()
 
 
-# Клик по кубу — переброс: заряженным жетоном (concentration/clue) или авто-приоритетом.
 func _on_die_clicked(index: int) -> void:
 	if not _can_reroll():
 		return
-	GameState.reroll_die(index)  # хост перебросит и пришлёт active_check синком
+	GameState.reroll_die(index)
 
 
 func _toggle_card(aid: String, cost: int) -> void:
 	if _selected.has(aid):
 		_selected.erase(aid)
-	elif cost <= _coins() - _spent():  # по карману?
+	elif cost <= _coins() - _spent():
 		_selected[aid] = cost
 	_refresh()
 
@@ -357,8 +466,25 @@ func _toggle_card(aid: String, cost: int) -> void:
 func _on_buy() -> void:
 	if _selected.is_empty():
 		return
-	GameState.shop_grant(_selected.keys())  # действие уже потрачено на броске
+	# Купленные карточки вылетают из витрины, затем грант и закрытие.
+	for e_v: Variant in _cards:
+		var e: Dictionary = e_v
+		if _selected.has(e.id):
+			_fly_out(e)
+	GameState.shop_grant(_selected.keys())
+	await get_tree().create_timer(0.32).timeout
 	_close()
+
+
+# Карта уходит из витрины: рывок к камере вверх + растворение.
+func _fly_out(entry: Dictionary) -> void:
+	entry["buying"] = true
+	var card: Control = entry.card
+	card.z_index = 20
+	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	tw.tween_property(card, "position:y", card.position.y - card.size.y * 0.7, 0.30)
+	tw.tween_property(card, "scale", Vector2.ONE * 1.35, 0.30)
+	tw.tween_property(card, "modulate:a", 0.0, 0.30)
 
 
 # ── Обновление UI ───────────────────────────────────────────────────────────────
@@ -380,7 +506,6 @@ func _refresh() -> void:
 			"%s: %d   ·   %s: %d" % [tr("SHOP_COINS"), coins, tr("SHOP_REMAINING"), remaining]
 		)
 	if is_instance_valid(_roll_btn):
-		# После броска кнопка превращается в «Перебросить кубы», пока доступен reroll-all.
 		if _rolled() and _reroll_all_available():
 			_roll_btn.text = "ENCOUNTER_REROLL_ALL"
 			_roll_btn.disabled = false
@@ -391,13 +516,16 @@ func _refresh() -> void:
 		_debt_btn.visible = not _has_debt()
 	if is_instance_valid(_buy_btn):
 		_buy_btn.disabled = _selected.is_empty()
-	for e in _cards:
-		var panel: Control = e.panel
+	for e_v: Variant in _cards:
+		var e: Dictionary = e_v
+		if bool(e.get("buying", false)):
+			continue
+		var card: Control = e.card
 		var sel: bool = _selected.has(e.id)
 		var affordable: bool = sel or int(e.cost) <= remaining
 		if sel:
-			panel.modulate = Color(1.25, 1.18, 0.85)  # выбрано — тёплая подсветка
+			card.modulate = Color(1.25, 1.18, 0.85)
 		elif affordable:
-			panel.modulate = Color(1, 1, 1)
+			card.modulate = Color(1, 1, 1)
 		else:
-			panel.modulate = Color(0.5, 0.5, 0.5)  # не по карману — тускло
+			card.modulate = Color(0.5, 0.5, 0.5)
