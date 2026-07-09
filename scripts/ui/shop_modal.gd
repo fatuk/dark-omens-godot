@@ -42,7 +42,12 @@ const _MAT_L := 0.15  # центры карточек равномерно ме�
 const _MAT_R := 0.85
 const _HOVER_LIFT := 0.05  # подъём при наведении (доля высоты)
 const _HOVER_SCALE := 1.18  # приближение к камере
-const _TILT := 0.025  # лёгкий наклон крайних карточек (рад)
+# Перспектива «карта лежит на столе»: карта рендерится в SubViewport и натягивается
+# на квадрат-кейстоун — верх (дальний край) уже низа, слегка укорочен. Наведение
+# выпрямляет карту к зрителю (persp 0→1). t: 0 = на столе, 1 = лицом к камере.
+const _CARD_VP_SIZE := Vector2i(380, 601)  # рендер-разрешение карты (аспект 290:459)
+const _PERSP_TOP := 0.80  # ширина верхнего (дальнего) края к нижнему
+const _PERSP_SQUASH := 0.18  # укорочение верха (перспективное сжатие)
 
 # Состояние сессии магазина (UI-локальное; бросок/монеты — в active_check).
 var _debt_taken: bool = false
@@ -226,10 +231,18 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	var traits: Array = a.get("traits", [])
 	var trait_id: String = String(traits[-1]) if not traits.is_empty() else "item"
 
+	# GameCard рендерится в SubViewport (нативный размер), затем натягивается на
+	# квадрат-кейстоун (перспектива стола) через Polygon2D.
+	var vp := SubViewport.new()
+	vp.name = "CardVP"
+	vp.size = _CARD_VP_SIZE
+	vp.transparent_bg = true
+	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	vp.disable_3d = true
 	var card := GameCard.new()
-	card.name = "Card_%d" % idx
-	card.mouse_filter = Control.MOUSE_FILTER_STOP
-	card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	card.name = "Card"
+	card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	(
 		card
 		. set_card(
@@ -242,26 +255,44 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 			}
 		)
 	)
-	# Лёгкий наклон крайних карточек — «лежат на мате веером».
-	var slot: float = float(idx) - float(total - 1) * 0.5
-	var rot: float = slot * _TILT
-	card.rotation = rot
-	_stage.add_child(card)
+	vp.add_child(card)
+
+	var host := Node2D.new()
+	host.name = "PerspCard_%d" % idx
+	host.add_child(vp)
+	var poly := Polygon2D.new()
+	poly.name = "Poly"
+	poly.texture = vp.get_texture()
+	poly.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	host.add_child(poly)
+	_stage.add_child(host)
+
+	# Хит-тест — прозрачный Control поверх области карты (наведение/клик).
+	var hit := Control.new()
+	hit.name = "Hit_%d" % idx
+	hit.mouse_filter = Control.MOUSE_FILTER_STOP
+	hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_stage.add_child(hit)
 
 	var entry := {
 		"id": aid,
 		"cost": cost,
+		"host": host,
+		"poly": poly,
+		"vp": vp,
 		"card": card,
+		"hit": hit,
 		"idx": idx,
 		"total": total,
-		"rot": rot,
-		"buying": false
+		"buying": false,
+		"hovering": false,
+		"persp": 0.0,
 	}
 	_cards.append(entry)
 
-	card.mouse_entered.connect(func() -> void: _hover_card(entry, true))
-	card.mouse_exited.connect(func() -> void: _hover_card(entry, false))
-	card.gui_input.connect(
+	hit.mouse_entered.connect(func() -> void: _hover_card(entry, true))
+	hit.mouse_exited.connect(func() -> void: _hover_card(entry, false))
+	hit.gui_input.connect(
 		func(ev: InputEvent) -> void:
 			if (
 				ev is InputEventMouseButton
@@ -314,19 +345,22 @@ func _layout_stage() -> void:
 	var card_w: float = card_h * _CARD_ASPECT
 	for e_v: Variant in _cards:
 		var e: Dictionary = e_v
-		var card: Control = e.card
 		var total: int = int(e.total)
 		var t: float = 0.5 if total <= 1 else float(e.idx) / float(total - 1)
 		var cx: float = lerpf(_MAT_L, _MAT_R, t) * s.x
-		var rest := Vector2(cx - card_w * 0.5, _CARD_TOP * s.y)
-		card.size = Vector2(card_w, card_h)
-		card.custom_minimum_size = card.size
-		card.pivot_offset = card.size * 0.5
-		e["rest_pos"] = rest
+		var cy: float = (_CARD_TOP + _CARD_H * 0.5) * s.y  # центр карты на мате
+		e["rest_center"] = Vector2(cx, cy)
+		e["card_w"] = card_w
 		e["card_h"] = card_h
+		# Хит-область — прямоугольник по габаритам карты (наведение/клик).
+		var hit: Control = e.hit
+		hit.size = Vector2(card_w, card_h)
+		hit.position = Vector2(cx - card_w * 0.5, cy - card_h * 0.5)
 		if not bool(e.get("buying", false)) and not bool(e.get("hovering", false)):
-			card.position = rest
-			card.scale = Vector2.ONE
+			var host: Node2D = e.host
+			host.position = Vector2(cx, cy)
+			host.scale = Vector2.ONE
+			_apply_persp(e, 0.0)  # лежит на столе
 
 
 # ── Наведение: подъём и приближение к камере ──────────────────────────────────
@@ -336,22 +370,47 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 	if bool(entry.get("buying", false)):
 		return
 	entry["hovering"] = on
-	var card: Control = entry.card
-	var rest: Vector2 = entry.get("rest_pos", card.position)
-	var lift: float = _HOVER_LIFT * (entry.get("card_h", card.size.y) / _CARD_H)
+	var host: Node2D = entry.host
+	var rc: Vector2 = entry.get("rest_center", host.position)
+	var lift: float = _HOVER_LIFT * (float(entry.get("card_h", 1.0)) / _CARD_H)
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
 		Tween.EASE_OUT
 	)
+	# Выпрямляем карту к зрителю (persp 0→1) + подъём и приближение.
+	tw.tween_method(
+		func(v: float) -> void: _apply_persp(entry, v), float(entry.persp), 1.0 if on else 0.0, 0.16
+	)
 	if on:
-		card.z_index = 10  # приподнятая карта — поверх соседей
-		tw.tween_property(card, "position", rest - Vector2(0, lift), 0.14)
-		tw.tween_property(card, "scale", Vector2.ONE * _HOVER_SCALE, 0.14)
-		tw.tween_property(card, "rotation", 0.0, 0.14)  # выпрямляем к зрителю
+		host.z_index = 10  # приподнятая карта — поверх соседей
+		tw.tween_property(host, "position", rc - Vector2(0, lift), 0.16)
+		tw.tween_property(host, "scale", Vector2.ONE * _HOVER_SCALE, 0.16)
 	else:
-		card.z_index = 0
-		tw.tween_property(card, "position", rest, 0.14)
-		tw.tween_property(card, "scale", Vector2.ONE, 0.14)
-		tw.tween_property(card, "rotation", float(entry.rot), 0.14)
+		host.z_index = 0
+		tw.tween_property(host, "position", rc, 0.16)
+		tw.tween_property(host, "scale", Vector2.ONE, 0.16)
+
+
+# Натянуть текстуру карты на квадрат-кейстоун. t: 0 — лежит на столе (верх уже,
+# укорочен), 1 — выпрямлена лицом к камере. Вершины TL,TR,BR,BL (origin — центр).
+func _apply_persp(entry: Dictionary, t: float) -> void:
+	entry["persp"] = t
+	var poly: Polygon2D = entry.poly
+	var hw: float = float(entry.get("card_w", 1.0)) * 0.5
+	var hh: float = float(entry.get("card_h", 1.0)) * 0.5
+	var top: float = lerpf(_PERSP_TOP, 1.0, t)  # ширина дальнего края
+	var sq: float = lerpf(_PERSP_SQUASH, 0.0, t) * hh * 2.0  # укорочение верха
+	poly.polygon = PackedVector2Array(
+		[
+			Vector2(-hw * top, -hh + sq),
+			Vector2(hw * top, -hh + sq),
+			Vector2(hw, hh),
+			Vector2(-hw, hh),
+		]
+	)
+	var vs := Vector2(_CARD_VP_SIZE)
+	poly.uv = PackedVector2Array(
+		[Vector2(0, 0), Vector2(vs.x, 0), Vector2(vs.x, vs.y), Vector2(0, vs.y)]
+	)
 
 
 # ── Кубы (переиспользуемый лоток, рендер из active_check) ──────────────────────
@@ -476,15 +535,16 @@ func _on_buy() -> void:
 	_close()
 
 
-# Карта уходит из витрины: рывок к камере вверх + растворение.
+# Карта уходит из витрины: выпрямляется, рывок к камере вверх + растворение.
 func _fly_out(entry: Dictionary) -> void:
 	entry["buying"] = true
-	var card: Control = entry.card
-	card.z_index = 20
+	var host: Node2D = entry.host
+	host.z_index = 20
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tw.tween_property(card, "position:y", card.position.y - card.size.y * 0.7, 0.30)
-	tw.tween_property(card, "scale", Vector2.ONE * 1.35, 0.30)
-	tw.tween_property(card, "modulate:a", 0.0, 0.30)
+	tw.tween_method(func(v: float) -> void: _apply_persp(entry, v), float(entry.persp), 1.0, 0.30)
+	tw.tween_property(host, "position:y", host.position.y - float(entry.card_h) * 0.8, 0.30)
+	tw.tween_property(host, "scale", Vector2.ONE * 1.4, 0.30)
+	tw.tween_property(entry.poly, "modulate:a", 0.0, 0.30)
 
 
 # ── Обновление UI ───────────────────────────────────────────────────────────────
@@ -516,16 +576,11 @@ func _refresh() -> void:
 		_debt_btn.visible = not _has_debt()
 	if is_instance_valid(_buy_btn):
 		_buy_btn.disabled = _selected.is_empty()
+	# Недоступные НЕ затемняем (доступность покажем иначе позже). Лишь лёгкая
+	# тёплая подсветка выбранной карты.
 	for e_v: Variant in _cards:
 		var e: Dictionary = e_v
 		if bool(e.get("buying", false)):
 			continue
-		var card: Control = e.card
-		var sel: bool = _selected.has(e.id)
-		var affordable: bool = sel or int(e.cost) <= remaining
-		if sel:
-			card.modulate = Color(1.25, 1.18, 0.85)
-		elif affordable:
-			card.modulate = Color(1, 1, 1)
-		else:
-			card.modulate = Color(0.5, 0.5, 0.5)
+		var poly: Polygon2D = e.poly
+		poly.modulate = Color(1.2, 1.14, 0.9) if _selected.has(e.id) else Color.WHITE
