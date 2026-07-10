@@ -259,7 +259,7 @@ func _build() -> void:
 	_coins_lbl = UIStyle.label("", 17, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
 	_coins_lbl.name = "Coins"
 	_stage.add_child(_coins_lbl)
-	_chrome.append({"node": _coins_lbl, "fx": 0.25, "fy": 0.735, "fw": 0.5, "fh": 0.04})
+	_chrome.append({"node": _coins_lbl, "fx": 0.25, "fy": 0.635, "fw": 0.5, "fh": 0.04})
 
 	# Кубы Влияния — в ряду слотов на прилавке.
 	_dice_box = HBoxContainer.new()
