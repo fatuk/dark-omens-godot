@@ -534,125 +534,135 @@ func _build_specs() -> Array:
 			"default": GameCard.SMOKE_TINT.b,
 			"set": _set_csmoke_b
 		},
-		{"section": "МАГАЗИН · КАРТЫ"},
+		{"section": "МАГАЗИН · КАМЕРА"},
 		{
-			"key": "shop_persp_top",
-			"label": "Перспектива верх",
-			"min": 0.5,
-			"max": 1.0,
-			"step": 0.01,
-			"default": ShopModal.PERSP_TOP,
-			"set": _set_shop_persp_top
+			"key": "shop_cam_dist",
+			"label": "Камера · Z",
+			"min": 2.0,
+			"max": 10.0,
+			"step": 0.1,
+			"default": ShopModal.CAM_DIST,
+			"set": _set_shop_cam_dist
 		},
 		{
-			"key": "shop_persp_squash",
-			"label": "Перспектива сжатие",
+			"key": "shop_cam_height",
+			"label": "Камера · высота",
 			"min": 0.0,
-			"max": 0.4,
-			"step": 0.01,
-			"default": ShopModal.PERSP_SQUASH,
-			"set": _set_shop_persp_squash
+			"max": 6.0,
+			"step": 0.1,
+			"default": ShopModal.CAM_HEIGHT,
+			"set": _set_shop_cam_height
 		},
 		{
-			"key": "shop_card_top",
-			"label": "Верх карт",
-			"min": 0.1,
-			"max": 0.5,
-			"step": 0.005,
-			"default": ShopModal.CARD_TOP,
-			"set": _set_shop_card_top
+			"key": "shop_cam_pitch",
+			"label": "Камера · наклон",
+			"min": -60.0,
+			"max": 0.0,
+			"step": 1.0,
+			"default": ShopModal.CAM_PITCH,
+			"set": _set_shop_cam_pitch
 		},
 		{
-			"key": "shop_card_h",
-			"label": "Высота карт",
-			"min": 0.2,
-			"max": 0.6,
-			"step": 0.005,
-			"default": ShopModal.CARD_H,
-			"set": _set_shop_card_h
+			"key": "shop_cam_fov",
+			"label": "Камера · FOV",
+			"min": 15.0,
+			"max": 60.0,
+			"step": 1.0,
+			"default": ShopModal.CAM_FOV,
+			"set": _set_shop_cam_fov
 		},
+		{"section": "МАГАЗИН · РЯД"},
 		{
-			"key": "shop_mat_l",
-			"label": "Мат лево",
+			"key": "shop_card_tilt",
+			"label": "Наклон карт",
 			"min": 0.0,
-			"max": 0.5,
-			"step": 0.005,
-			"default": ShopModal.MAT_L,
-			"set": _set_shop_mat_l
+			"max": 80.0,
+			"step": 1.0,
+			"default": ShopModal.CARD_TILT,
+			"set": _set_shop_card_tilt
 		},
 		{
-			"key": "shop_mat_r",
-			"label": "Мат право",
-			"min": 0.5,
-			"max": 1.0,
-			"step": 0.005,
-			"default": ShopModal.MAT_R,
-			"set": _set_shop_mat_r
+			"key": "shop_row_gap",
+			"label": "Шаг ряда",
+			"min": 0.6,
+			"max": 2.5,
+			"step": 0.02,
+			"default": ShopModal.ROW_GAP,
+			"set": _set_shop_row_gap
 		},
 		{
-			"key": "shop_hover_lift",
-			"label": "Подъём наведения",
+			"key": "shop_row_y",
+			"label": "Ряд · Y",
+			"min": -2.0,
+			"max": 2.0,
+			"step": 0.05,
+			"default": ShopModal.ROW_Y,
+			"set": _set_shop_row_y
+		},
+		{
+			"key": "shop_row_z",
+			"label": "Ряд · Z",
+			"min": -3.0,
+			"max": 3.0,
+			"step": 0.05,
+			"default": ShopModal.ROW_Z,
+			"set": _set_shop_row_z
+		},
+		{
+			"key": "shop_hover_up",
+			"label": "Наведение · вверх",
 			"min": 0.0,
-			"max": 0.15,
-			"step": 0.005,
-			"default": ShopModal.HOVER_LIFT,
-			"set": _set_shop_hover_lift
+			"max": 2.0,
+			"step": 0.05,
+			"default": ShopModal.HOVER_UP,
+			"set": _set_shop_hover_up
+		},
+		{
+			"key": "shop_hover_fwd",
+			"label": "Наведение · к камере",
+			"min": 0.0,
+			"max": 3.0,
+			"step": 0.05,
+			"default": ShopModal.HOVER_FWD,
+			"set": _set_shop_hover_fwd
 		},
 		{
 			"key": "shop_hover_scale",
-			"label": "Приближение",
+			"label": "Наведение · масштаб",
 			"min": 1.0,
-			"max": 1.5,
+			"max": 2.0,
 			"step": 0.01,
 			"default": ShopModal.HOVER_SCALE,
 			"set": _set_shop_hover_scale
 		},
 		{"section": "МАГАЗИН · СВЕТ"},
 		{
-			"key": "shop_light_intensity",
-			"label": "Сила света",
+			"key": "shop_ambient",
+			"label": "Окружающий",
 			"min": 0.0,
-			"max": 5.0,
+			"max": 2.0,
 			"step": 0.05,
-			"default": ShopModal.LIGHT_INTENSITY,
-			"set": _set_shop_light_intensity
+			"default": ShopModal.AMBIENT,
+			"set": _set_shop_ambient
+		},
+		{
+			"key": "shop_lamp_energy",
+			"label": "Лампа",
+			"min": 0.0,
+			"max": 8.0,
+			"step": 0.1,
+			"default": ShopModal.LAMP_ENERGY,
+			"set": _set_shop_lamp_energy
 		},
 		{"section": "МАГАЗИН · ТЕНЬ"},
-		{
-			"key": "shop_shadow_ofs",
-			"label": "Смещение тени",
-			"min": 0.0,
-			"max": 0.2,
-			"step": 0.005,
-			"default": ShopModal.SHADOW_OFS,
-			"set": _set_shop_shadow_ofs
-		},
 		{
 			"key": "shop_shadow_alpha",
 			"label": "Плотность тени",
 			"min": 0.0,
-			"max": 0.8,
-			"step": 0.01,
+			"max": 1.0,
+			"step": 0.02,
 			"default": ShopModal.SHADOW_ALPHA,
 			"set": _set_shop_shadow_alpha
-		},
-		{
-			"key": "shop_shadow_grow",
-			"label": "Разлёт тени",
-			"min": 0.0,
-			"max": 0.3,
-			"step": 0.005,
-			"default": ShopModal.SHADOW_GROW,
-			"set": _set_shop_shadow_grow
-		},
-		{
-			"key": "shop_shadow_feather",
-			"label": "Мягкость тени",
-			"min": 0.02,
-			"max": 0.5,
-			"step": 0.01,
-			"default": ShopModal.SHADOW_FEATHER,
-			"set": _set_shop_shadow_feather
 		},
 	]
 
@@ -1146,38 +1156,53 @@ func _relayout_shop() -> void:
 	get_tree().call_group("shop_modal", "relayout")
 
 
-func _set_shop_persp_top(v: float) -> void:
-	ShopModal.PERSP_TOP = v
+func _set_shop_cam_dist(v: float) -> void:
+	ShopModal.CAM_DIST = v
 	_relayout_shop()
 
 
-func _set_shop_persp_squash(v: float) -> void:
-	ShopModal.PERSP_SQUASH = v
+func _set_shop_cam_height(v: float) -> void:
+	ShopModal.CAM_HEIGHT = v
 	_relayout_shop()
 
 
-func _set_shop_card_top(v: float) -> void:
-	ShopModal.CARD_TOP = v
+func _set_shop_cam_pitch(v: float) -> void:
+	ShopModal.CAM_PITCH = v
 	_relayout_shop()
 
 
-func _set_shop_card_h(v: float) -> void:
-	ShopModal.CARD_H = v
+func _set_shop_cam_fov(v: float) -> void:
+	ShopModal.CAM_FOV = v
 	_relayout_shop()
 
 
-func _set_shop_mat_l(v: float) -> void:
-	ShopModal.MAT_L = v
+func _set_shop_card_tilt(v: float) -> void:
+	ShopModal.CARD_TILT = v
 	_relayout_shop()
 
 
-func _set_shop_mat_r(v: float) -> void:
-	ShopModal.MAT_R = v
+func _set_shop_row_gap(v: float) -> void:
+	ShopModal.ROW_GAP = v
 	_relayout_shop()
 
 
-func _set_shop_hover_lift(v: float) -> void:
-	ShopModal.HOVER_LIFT = v
+func _set_shop_row_y(v: float) -> void:
+	ShopModal.ROW_Y = v
+	_relayout_shop()
+
+
+func _set_shop_row_z(v: float) -> void:
+	ShopModal.ROW_Z = v
+	_relayout_shop()
+
+
+func _set_shop_hover_up(v: float) -> void:
+	ShopModal.HOVER_UP = v
+	_relayout_shop()
+
+
+func _set_shop_hover_fwd(v: float) -> void:
+	ShopModal.HOVER_FWD = v
 	_relayout_shop()
 
 
@@ -1186,26 +1211,16 @@ func _set_shop_hover_scale(v: float) -> void:
 	_relayout_shop()
 
 
-func _set_shop_light_intensity(v: float) -> void:
-	ShopModal.LIGHT_INTENSITY = v
+func _set_shop_ambient(v: float) -> void:
+	ShopModal.AMBIENT = v
 	_relayout_shop()
 
 
-func _set_shop_shadow_ofs(v: float) -> void:
-	ShopModal.SHADOW_OFS = v
+func _set_shop_lamp_energy(v: float) -> void:
+	ShopModal.LAMP_ENERGY = v
 	_relayout_shop()
 
 
 func _set_shop_shadow_alpha(v: float) -> void:
 	ShopModal.SHADOW_ALPHA = v
-	_relayout_shop()
-
-
-func _set_shop_shadow_grow(v: float) -> void:
-	ShopModal.SHADOW_GROW = v
-	_relayout_shop()
-
-
-func _set_shop_shadow_feather(v: float) -> void:
-	ShopModal.SHADOW_FEATHER = v
 	_relayout_shop()

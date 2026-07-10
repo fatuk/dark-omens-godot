@@ -20,7 +20,6 @@ extends CanvasLayer
 ## привязана к вписанному прямоугольнику арта (_stage) — тянется под любой экран.
 
 const _BG := preload("res://assets/shop/shop-bg.png")
-const _LIGHT_MAP := preload("res://assets/shop/card-light.png")  # серая карта света
 
 # Заглушка арт-окна для карт без файла арта — тёплая притенённая (в тон лавки),
 # чтобы пустые слоты не читались чёрными дырами. Когда арт есть — не применяется.
@@ -39,75 +38,44 @@ const _TRAIT_KEY := {
 	"ally": "TRAIT_ALLY",
 }
 
-# Раскладка в ДОЛЯХ прямоугольника арта (_stage). Мат-книга под карточки, прилавок
-# под низ — координаты сняты по shop-bg.png.
-# Тюнится живьём через TuningPanel (секция «МАГАЗИН · КАРТЫ»). static var — чтобы
-# панель могла менять и пушить в открытый магазин (группа "shop_modal" → relayout).
-static var CARD_TOP: float = 0.33  # верх карточек (доля высоты)
-static var CARD_H: float = 0.30  # высота карточки
-const _CARD_ASPECT := 290.0 / 459.0  # ш/в карточки
-static var MAT_L: float = 0.12  # левый край центров карт (доля ширины)
-static var MAT_R: float = 0.91  # правый край центров карт
-static var HOVER_LIFT: float = 0.10  # подъём при наведении (доля высоты)
-static var HOVER_SCALE: float = 1.50  # приближение к камере
-const _CARD_GAP_FRAC := 0.14  # зазор между картами (доля ширины карты)
-# Перспектива «карты лежат на ОДНОЙ плоскости-столе» (одноточечная): весь ряд
-# проецируется единой гомографией flat-квадрат→трапеция, поэтому крайние карты
-# скошены к общей точке схода, а центральная почти прямая — как реальные карты на
-# книге. Наведение выпрямляет карту к зрителю (persp 0→1): 0 = лежит на столе,
-# 1 = стоит лицом к камере. Карта рендерится в SubViewport и натягивается на
-# проективный четырёхугольник через Polygon2D.
-const _CARD_VP_SIZE := Vector2i(380, 601)  # рендер-разрешение карты (аспект 290:459)
-static var PERSP_TOP: float = 0.84  # ширина дальнего (верхнего) края плоскости к ближнему
-static var PERSP_SQUASH: float = 0.23  # опускание дальнего края (укорочение стола)
+# Карты рендерятся в НАСТОЯЩЕЙ 3D-сцене (Camera3D + QuadMesh на наклонной плоскости-
+# столе), 3D SubViewport кладётся поверх арта лавки. Перспектива — реальная камерой,
+# свет — реальным OmniLight3D (тёплая лампа): подсвечивает, а не темнит. Всё тюнится
+# живьём (секции «МАГАЗИН · 3D / СВЕТ / ТЕНЬ»).
+const _CARD_ASPECT := 290.0 / 459.0  # ш/в карты
+const _CARD_TEX_SIZE := Vector2i(512, 810)  # разрешение UI-рендера карты (аспект 290:459)
+const _CARD_QUAD := Vector2(1.0, 459.0 / 290.0)  # размер 3D-квада (мир. ед.), h>w
+const _WORLD_VP_SIZE := Vector2i(1264, 711)  # 3D-вьюпорт, аспект shop-bg (2528:1422)
 
-# Карта света. Серый card-light.png накладывается soft-light'ом (0.5=нейтраль,
-# светлее=блик, темнее=тень). LIGHT_INTENSITY усиливает ТОЛЬКО осветление; тени
-# остаются мягкими (soft-light сам даёт небольшие, не усиливаем) → нет чёрного
-# провала на большой интенсивности. Тюнится живьём (секция «МАГАЗИН · СВЕТ»).
-static var LIGHT_INTENSITY: float = 1.5  # сила осветления бликов
+# Камера над столом, смотрит вниз под углом.
+static var CAM_DIST: float = 5.6  # Z камеры (отдаление)
+static var CAM_HEIGHT: float = 2.3  # Y камеры (высота над центром ряда)
+static var CAM_PITCH: float = -26.0  # наклон камеры вниз, град
+static var CAM_FOV: float = 30.0
 
-# Photoshop soft-light: тени параболой (s<0.5), блики через sqrt (s≥0.5). Дельту
-# осветления множим на intensity, дельту затемнения оставляем как есть (мягкую).
-# base.a на выходе → чистые скруглённые углы. * COLOR = modulate.
-const _LIGHT_SHADER := """
-shader_type canvas_item;
-uniform sampler2D light_map : filter_linear;
-uniform float intensity = 1.5;
-void fragment() {
-	vec4 base = texture(TEXTURE, UV);
-	vec3 b = base.rgb;
-	vec3 s = texture(light_map, UV).rgb;
-	vec3 lo = 2.0 * b * s + b * b * (1.0 - 2.0 * s);
-	vec3 hi = 2.0 * b * (1.0 - s) + sqrt(b) * (2.0 * s - 1.0);
-	vec3 soft = mix(lo, hi, step(vec3(0.5), s));
-	vec3 delta = soft - b;
-	vec3 outc = b + max(delta, vec3(0.0)) * intensity + min(delta, vec3(0.0));
-	COLOR = vec4(outc, base.a) * COLOR;
-}
-"""
+# Ряд карт: лежат на столе (наклон назад CARD_TILT), в ряд по X.
+static var CARD_TILT: float = 52.0  # наклон карт назад, град (0 = стоят к камере)
+static var ROW_GAP: float = 1.20  # расстояние между центрами карт (мир. ед.)
+static var ROW_Y: float = -0.2  # сдвиг ряда по высоте
+static var ROW_Z: float = 0.0  # сдвиг ряда по глубине
 
-# Падающая тень карт. SHADOW_* тюнятся живьём (секция «МАГАЗИН · СВЕТ»).
-static var SHADOW_OFS: float = 0.03  # смещение тени вниз-вправо (доля высоты карты)
-static var SHADOW_ALPHA: float = 0.63  # плотность тени
-static var SHADOW_GROW: float = 0.02  # расширение тени относительно карты (виден ореол)
-static var SHADOW_FEATHER: float = 0.05  # мягкость края тени (доля)
+# Наведение: карта поднимается, приближается и поворачивается лицом к камере.
+static var HOVER_UP: float = 0.30  # подъём по Y
+static var HOVER_FWD: float = 0.30  # к камере (по Z)
+static var HOVER_SCALE: float = 1.06
 
-# Мягкая тень: тёмный четырёхугольник с федером края по UV (SDF-«коробка»).
-const _SHADOW_SHADER := """
-shader_type canvas_item;
-uniform float feather = 0.26;
-uniform float darkness = 0.45;
-void fragment() {
-	vec2 q = abs(UV - vec2(0.5));
-	float d = max(q.x, q.y);
-	float a = smoothstep(0.5, 0.5 - feather, d);
-	COLOR = vec4(0.0, 0.0, 0.0, a * darkness);
-}
-"""
+# Свет: окружающий (базовая яркость ≈ сырой арт) + тёплая лампа слева-сверху.
+static var AMBIENT: float = 1.0  # окружающий свет (1.0 = карта в своих цветах)
+static var LAMP_ENERGY: float = 2.2  # яркость лампы
+const _LAMP_POS := Vector3(-3.5, 3.5, 3.0)  # позиция лампы
+const _LAMP_COLOR := Color(1.0, 0.82, 0.55)  # тёплый свет лампы
+const _AMBIENT_COLOR := Color(1.0, 0.97, 0.92)  # чуть тёплый окружающий
 
-const _SHADOW_TEX_SIZE := 64  # размер белой текстуры-носителя UV для шейдера тени
-static var _white_tex: ImageTexture  # белая NxN — носитель UV для шейдера тени
+# Тень под картой — дочерний квад чуть больше, тёмный полупрозрачный, сдвинут.
+static var SHADOW_ALPHA: float = 0.5
+const _SHADOW_QUAD_SCALE := 1.12
+const _SHADOW_OFFSET := Vector3(0.04, -0.05, -0.02)  # локально: вниз-вправо, за картой
+static var _shadow_tex: ImageTexture  # мягкая радиальная тень (ленивая, общая)
 
 # Состояние сессии магазина (UI-локальное; бросок/монеты — в active_check).
 var _debt_taken: bool = false
@@ -119,13 +87,16 @@ var _last_add: bool = false
 
 # Узлы.
 var _stage: Control  # вписанный прямоугольник арта — база для долевой раскладки
+var _world_vp: SubViewport  # 3D-сцена карт (камера + меши), кладётся на арт лавки
+var _camera: Camera3D
+var _lamp: OmniLight3D
 var _dice_box: HBoxContainer
 var _tray: DiceTray
 var _coins_lbl: Label
 var _roll_btn: Button
 var _debt_btn: Button
 var _buy_btn: Button
-var _cards: Array = []  # [{id, cost, card, rest_pos, rest_scale, rot, hovering, buying}]
+var _cards: Array = []  # [{id, cost, card, vp, mesh, mat, hit, slot, total, hovering, buying}]
 var _chrome: Array = []  # [{node, fx, fy, fw, fh}] — элементы, позиционируемые по долям
 
 
@@ -206,6 +177,9 @@ func _build() -> void:
 	_stage.name = "Stage"
 	_stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	backdrop.add_child(_stage)
+
+	# 3D-сцена карт (камера + свет), кладётся поверх мата — до хрома и хит-контролов.
+	_build_3d_scene()
 
 	# ── Шапка ──
 	var title := UIStyle.label("SHOP_TITLE", 34, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
@@ -291,17 +265,79 @@ func _offer() -> Array:
 	return out
 
 
+# ── 3D-сцена: камера, свет, окружение ─────────────────────────────────────────
+
+
+func _build_3d_scene() -> void:
+	# SubViewportContainer стрейтчит 3D-сцену на размер _stage (вписанный арт).
+	var spvc := SubViewportContainer.new()
+	spvc.name = "WorldVPContainer"
+	spvc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	spvc.stretch = true
+	spvc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stage.add_child(spvc)
+
+	_world_vp = SubViewport.new()
+	_world_vp.name = "WorldVP"
+	_world_vp.size = _WORLD_VP_SIZE
+	_world_vp.transparent_bg = true
+	_world_vp.msaa_3d = Viewport.MSAA_4X  # сглаживание краёв квадов
+	_world_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	spvc.add_child(_world_vp)
+
+	_camera = Camera3D.new()
+	_camera.name = "Camera"
+	_camera.projection = Camera3D.PROJECTION_PERSPECTIVE
+	_camera.environment = _make_environment()
+	_world_vp.add_child(_camera)
+
+	# Тёплая лампа слева-сверху — реальный свет: подсвечивает карты, не темнит.
+	_lamp = OmniLight3D.new()
+	_lamp.name = "Lamp"
+	_lamp.position = _LAMP_POS
+	_lamp.light_color = _LAMP_COLOR
+	_lamp.omni_range = 30.0
+	_world_vp.add_child(_lamp)
+
+	_apply_camera_light()
+
+
+# Окружение только ради ambient-света (без неба/фона — vp прозрачный).
+func _make_environment() -> Environment:
+	var env := Environment.new()
+	env.background_mode = Environment.BG_CLEAR_COLOR
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = _AMBIENT_COLOR
+	env.ambient_light_energy = AMBIENT
+	return env
+
+
+# Камера/свет из тюн-параметров (вызывается в раскладке для живого тюна).
+func _apply_camera_light() -> void:
+	if not is_instance_valid(_camera):
+		return
+	_camera.position = Vector3(0.0, CAM_HEIGHT, CAM_DIST)
+	_camera.rotation = Vector3(deg_to_rad(CAM_PITCH), 0.0, 0.0)
+	_camera.fov = CAM_FOV
+	if _camera.environment:
+		_camera.environment.ambient_light_energy = AMBIENT
+	if is_instance_valid(_lamp):
+		_lamp.light_energy = LAMP_ENERGY
+
+
+# ── Карта: UI-SubViewport → 3D-quad ───────────────────────────────────────────
+
+
 func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	var aid: String = String(a.get("id", ""))
 	var cost: int = int(a.get("cost", 0))
 	var traits: Array = a.get("traits", [])
 	var trait_id: String = String(traits[-1]) if not traits.is_empty() else "item"
 
-	# GameCard рендерится в SubViewport (нативный размер), затем натягивается на
-	# квадрат-кейстоун (перспектива стола) через Polygon2D.
+	# UI карты рендерится в SubViewport (off-screen), его текстура = albedo 3D-квада.
 	var vp := SubViewport.new()
-	vp.name = "CardVP"
-	vp.size = _CARD_VP_SIZE
+	vp.name = "CardVP_%d" % idx
+	vp.size = _CARD_TEX_SIZE
 	vp.transparent_bg = true
 	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	vp.disable_3d = true
@@ -309,9 +345,7 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	card.name = "Card"
 	card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# Карта рендерится в SubViewport крупнее эталона веера — масштабируем шрифты в
-	# той же пропорции, чтобы текст относительно карты был как в веере.
-	card.set_font_scale(float(_CARD_VP_SIZE.x) / HandCarousel.CARD_W)
+	card.set_font_scale(float(_CARD_TEX_SIZE.x) / HandCarousel.CARD_W)
 	(
 		card
 		. set_card(
@@ -321,40 +355,29 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 				"subtitle": _TRAIT_KEY.get(trait_id, trait_id.to_upper()),
 				"desc": a.get("abilityKey", ""),
 				"art": AssetCatalog.card_art(aid),
-				# Заглушка для карт без файла арта — тёплая притенённая, а не почти-чёрная
-				# навья по умолчанию (когда арт есть — этот цвет игнорируется).
 				"art_color": _ART_PLACEHOLDER,
 			}
 		)
 	)
 	vp.add_child(card)
+	add_child(vp)  # off-screen SubViewport (текстуру берёт материал квада)
 
-	# Мягкая падающая тень — отдельный Polygon2D на столе (не в host: не поднимается
-	# с картой при наведении, остаётся лежать). Добавляется ДО host → рисуется под
-	# картой, но над матом (z по умолчанию; z=-1 уводил бы за фон-арт).
-	var shadow := Polygon2D.new()
-	shadow.name = "Shadow_%d" % idx
-	shadow.texture = _shadow_texture()  # белая NxN — носитель UV 0..1 для шейдера
-	var st: float = float(_SHADOW_TEX_SIZE)
-	shadow.uv = PackedVector2Array([Vector2(0, 0), Vector2(st, 0), Vector2(st, st), Vector2(0, st)])
-	shadow.material = _make_shader_material(_SHADOW_SHADER)
-	_stage.add_child(shadow)
+	# 3D-меш карты: QuadMesh, SHADED-материал (реагирует на свет), albedo = текстура.
+	var quad := QuadMesh.new()
+	quad.size = _CARD_QUAD
+	var mat := StandardMaterial3D.new()
+	mat.albedo_texture = vp.get_texture()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	var mesh := MeshInstance3D.new()
+	mesh.name = "CardMesh_%d" % idx
+	mesh.mesh = quad
+	mesh.material_override = mat
+	mesh.add_child(_make_shadow_mesh())
+	_world_vp.add_child(mesh)
 
-	var host := Node2D.new()
-	host.name = "PerspCard_%d" % idx
-	host.add_child(vp)
-	var poly := Polygon2D.new()
-	poly.name = "Poly"
-	poly.texture = vp.get_texture()
-	poly.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	var lmat := _make_shader_material(_LIGHT_SHADER)  # карта света (осветление + мягкие тени)
-	lmat.set_shader_parameter("light_map", _LIGHT_MAP)
-	lmat.set_shader_parameter("intensity", LIGHT_INTENSITY)
-	poly.material = lmat
-	host.add_child(poly)
-	_stage.add_child(host)
-
-	# Хит-тест — прозрачный Control поверх области карты (наведение/клик).
+	# Хит-контрол (2D) — позиция/размер считаются проекцией 3D-квада в _process.
 	var hit := Control.new()
 	hit.name = "Hit_%d" % idx
 	hit.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -364,17 +387,15 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	var entry := {
 		"id": aid,
 		"cost": cost,
-		"host": host,
-		"poly": poly,
-		"vp": vp,
 		"card": card,
+		"vp": vp,
+		"mesh": mesh,
+		"mat": mat,
 		"hit": hit,
-		"shadow": shadow,
-		"idx": idx,
+		"slot": idx,
 		"total": total,
 		"buying": false,
 		"hovering": false,
-		"persp": 0.0,
 	}
 	_cards.append(entry)
 
@@ -391,24 +412,43 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	)
 
 
-# ShaderMaterial из кода шейдера (один на карту — свои uniform'ы под тюн).
-func _make_shader_material(code: String) -> ShaderMaterial:
-	var mat := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = code
-	mat.shader = sh
-	return mat
+# Дочерний quad-тень: чуть больше карты, тёмный полупрозрачный, сдвинут за/вниз.
+# Как ребёнок меша наследует его трансформ при наведении/вылете.
+func _make_shadow_mesh() -> MeshInstance3D:
+	var quad := QuadMesh.new()
+	quad.size = _CARD_QUAD * _SHADOW_QUAD_SCALE
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.albedo_texture = _shadow_texture()
+	mat.albedo_color = Color(0, 0, 0, SHADOW_ALPHA)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var sh := MeshInstance3D.new()
+	sh.name = "CardShadow"
+	sh.mesh = quad
+	sh.material_override = mat
+	sh.position = _SHADOW_OFFSET
+	return sh
 
 
-# Белая NxN текстура — носитель UV для шейдера тени. Polygon2D без текстуры не даёт
-# UV в шейдере, а с 1×1 текстурой + шейдером ничего не рисуется (баг Godot) — нужна
-# «настоящая» текстура. Ленивая, общая на все карты.
+func _shadow_mat(mesh: MeshInstance3D) -> StandardMaterial3D:
+	var sh := mesh.get_node_or_null("CardShadow") as MeshInstance3D
+	return (sh.material_override as StandardMaterial3D) if sh else null
+
+
+# Мягкая радиальная тень: чёрный с альфа-спадом от центра. Ленивая, общая.
 func _shadow_texture() -> ImageTexture:
-	if _white_tex == null:
-		var img := Image.create(_SHADOW_TEX_SIZE, _SHADOW_TEX_SIZE, false, Image.FORMAT_RGBA8)
-		img.fill(Color.WHITE)
-		_white_tex = ImageTexture.create_from_image(img)
-	return _white_tex
+	if _shadow_tex == null:
+		var n := 128
+		var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
+		var c := (n - 1) * 0.5
+		for y in range(n):
+			for x in range(n):
+				var d: float = Vector2(x - c, y - c).length() / c
+				var a: float = clampf(1.0 - d, 0.0, 1.0)
+				img.set_pixel(x, y, Color(0.0, 0.0, 0.0, a * a))
+		_shadow_tex = ImageTexture.create_from_image(img)
+	return _shadow_tex
 
 
 func _has_debt() -> bool:
@@ -448,120 +488,83 @@ func _layout_stage() -> void:
 		node.position = Vector2(e.fx * s.x, e.fy * s.y)
 		node.custom_minimum_size = Vector2(e.fw * s.x, e.fh * s.y)
 		node.size = node.custom_minimum_size
-	# Карты лежат на уходящем столе — ОДНОТОЧЕЧНАЯ перспектива всего ряда. Ближний
-	# (нижний) край карт выкладывается по горизонтали, дальний (верхний) край сужается
-	# к общей точке схода vp_x (в PERSP_TOP раз) и приподнят на укороченную высоту
-	# (перспективное укорочение длины). Все вертикали ряда сходятся в одну точку над
-	# центром → крайние карты скошены, центральная почти прямая.
+	# 3D-раскладка ряда карт: по X с шагом ROW_GAP, наклон назад CARD_TILT. Камера/свет
+	# — из тюн-параметров. Хит-контролы двигаются за проекцией мешей в _process.
+	_apply_camera_light()
 	var total: int = _cards.size()
-	var vp_x: float = (MAT_L + MAT_R) * 0.5 * s.x  # горизонт. позиция точки схода
-	var near_span: float = (MAT_R - MAT_L) * s.x  # ширина ближнего края ряда
-	var foreshorten: float = clampf(1.0 - PERSP_SQUASH, 0.3, 1.0)  # доля длины на экране
-	# Ширина карты: min(горизонтальная укладка N карт, вертикальный бюджет CARD_H).
-	var card_w_fit: float = 0.0
-	if total > 0:
-		card_w_fit = near_span / (float(total) + float(total + 1) * _CARD_GAP_FRAC)
-	var card_w_v: float = CARD_H * s.y * _CARD_ASPECT / foreshorten
-	var card_w: float = minf(card_w_fit, card_w_v)
-	var card_hf: float = foreshorten * card_w / _CARD_ASPECT  # экранная высота (укороч.)
-	var gap: float = _CARD_GAP_FRAC * card_w
-	var row_w: float = float(total) * card_w + float(maxi(total - 1, 0)) * gap
-	var start_x: float = vp_x - row_w * 0.5
-	var y_near: float = (CARD_TOP + CARD_H) * s.y  # низ карт (ближний край)
-	var y_far: float = y_near - card_hf  # верх карт (дальний край)
+	var row_w: float = float(maxi(total - 1, 0)) * ROW_GAP
 	for i in range(total):
 		var e: Dictionary = _cards[i]
-		var near_l: float = start_x + float(i) * (card_w + gap)
-		var near_r: float = near_l + card_w
-		# Дальний край сужается к точке схода vp_x в PERSP_TOP раз.
-		var far_l: float = vp_x + (near_l - vp_x) * PERSP_TOP
-		var far_r: float = vp_x + (near_r - vp_x) * PERSP_TOP
-		var c_tl := Vector2(far_l, y_far)
-		var c_tr := Vector2(far_r, y_far)
-		var c_br := Vector2(near_r, y_near)
-		var c_bl := Vector2(near_l, y_near)
-		var center: Vector2 = (c_tl + c_tr + c_br + c_bl) * 0.25
-		e["rest_quad"] = PackedVector2Array(
-			[c_tl - center, c_tr - center, c_br - center, c_bl - center]
-		)
-		# Прямой (лицом к камере) прямоугольник полной длины — цель наведения.
-		var fhw: float = card_w * 0.5
-		var fhh: float = card_w / _CARD_ASPECT * 0.5
-		e["front_quad"] = PackedVector2Array(
-			[Vector2(-fhw, -fhh), Vector2(fhw, -fhh), Vector2(fhw, fhh), Vector2(-fhw, fhh)]
-		)
-		e["rest_center"] = center
-		e["card_w"] = card_w
-		e["card_h"] = card_w / _CARD_ASPECT
-		# Тень — тот же четырёхугольник, расширен и смещён вниз-вправо, лежит на столе.
-		var g: float = 1.0 + SHADOW_GROW
-		var shadow: Polygon2D = e.shadow
-		shadow.polygon = PackedVector2Array(
-			[(c_tl - center) * g, (c_tr - center) * g, (c_br - center) * g, (c_bl - center) * g]
-		)
-		shadow.position = center + Vector2(SHADOW_OFS * 0.45, SHADOW_OFS) * card_hf
-		var smat: ShaderMaterial = shadow.material
-		smat.set_shader_parameter("darkness", SHADOW_ALPHA)
-		smat.set_shader_parameter("feather", SHADOW_FEATHER)
-		# Сила карты света (живой тюн).
-		(e.poly as Polygon2D).material.set_shader_parameter("intensity", LIGHT_INTENSITY)
-		# Хит-область — экранный bbox лежащей карты (наведение/клик).
-		var minx: float = minf(c_bl.x, far_l)
-		var maxx: float = maxf(c_br.x, far_r)
-		var hit: Control = e.hit
-		hit.position = Vector2(minx, y_far)
-		hit.size = Vector2(maxx - minx, y_near - y_far)
+		var pos := Vector3(float(i) * ROW_GAP - row_w * 0.5, ROW_Y, ROW_Z)
+		e["rest_pos"] = pos
+		var mesh: MeshInstance3D = e.mesh
 		if not bool(e.get("buying", false)) and not bool(e.get("hovering", false)):
-			var host: Node2D = e.host
-			host.position = center
-			host.scale = Vector2.ONE
-			_apply_persp(e, 0.0)  # лежит на столе
+			mesh.position = pos
+			mesh.rotation = Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0)
+			mesh.scale = Vector3.ONE
+		var smat := _shadow_mat(mesh)
+		if smat:
+			smat.albedo_color = Color(0.0, 0.0, 0.0, SHADOW_ALPHA)
+		_update_hit_rect(e)
 
 
-# ── Наведение: подъём и приближение к камере ──────────────────────────────────
+# Хит-контрол под проекцией 3D-квада карты (экранный bbox 4 углов → _stage-координаты).
+func _update_hit_rect(e: Dictionary) -> void:
+	if not is_instance_valid(_camera) or not is_instance_valid(_stage):
+		return
+	var mesh: MeshInstance3D = e.mesh
+	var hw: float = _CARD_QUAD.x * 0.5
+	var hh: float = _CARD_QUAD.y * 0.5
+	var xf: Transform3D = mesh.global_transform
+	var pts := [
+		xf * Vector3(-hw, hh, 0.0),
+		xf * Vector3(hw, hh, 0.0),
+		xf * Vector3(hw, -hh, 0.0),
+		xf * Vector3(-hw, -hh, 0.0),
+	]
+	var mn := Vector2(INF, INF)
+	var mx := Vector2(-INF, -INF)
+	for p_v: Variant in pts:
+		var sp: Vector2 = _camera.unproject_position(p_v)
+		mn = Vector2(minf(mn.x, sp.x), minf(mn.y, sp.y))
+		mx = Vector2(maxf(mx.x, sp.x), maxf(mx.y, sp.y))
+	var sc: Vector2 = _stage.size / Vector2(_WORLD_VP_SIZE)
+	var hit: Control = e.hit
+	hit.position = mn * sc
+	hit.size = (mx - mn) * sc
+
+
+# Хит-контролы следуют за анимируемыми (наведение/вылет) картами покадрово.
+func _process(_delta: float) -> void:
+	for e_v: Variant in _cards:
+		_update_hit_rect(e_v)
+
+
+# ── Наведение: подъём, приближение и поворот к камере ─────────────────────────
 
 
 func _hover_card(entry: Dictionary, on: bool) -> void:
 	if bool(entry.get("buying", false)):
 		return
 	entry["hovering"] = on
-	var host: Node2D = entry.host
-	var rc: Vector2 = entry.get("rest_center", host.position)
-	var lift: float = HOVER_LIFT * (float(entry.get("card_h", 1.0)) / CARD_H)
+	var mesh: MeshInstance3D = entry.mesh
+	var rest_pos: Vector3 = entry.get("rest_pos", mesh.position)
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
 		Tween.EASE_OUT
 	)
-	# Выпрямляем карту к зрителю (persp 0→1) + подъём и приближение.
-	tw.tween_method(
-		func(v: float) -> void: _apply_persp(entry, v), float(entry.persp), 1.0 if on else 0.0, 0.16
-	)
 	if on:
-		host.z_index = 10  # приподнятая карта — поверх соседей
-		tw.tween_property(host, "position", rc - Vector2(0, lift), 0.16)
-		tw.tween_property(host, "scale", Vector2.ONE * HOVER_SCALE, 0.16)
+		tw.tween_property(mesh, "position", rest_pos + Vector3(0.0, HOVER_UP, HOVER_FWD), 0.18)
+		tw.tween_property(mesh, "rotation", _face_rotation(), 0.18)
+		tw.tween_property(mesh, "scale", Vector3.ONE * HOVER_SCALE, 0.18)
 	else:
-		host.z_index = 0
-		tw.tween_property(host, "position", rc, 0.16)
-		tw.tween_property(host, "scale", Vector2.ONE, 0.16)
+		tw.tween_property(mesh, "position", rest_pos, 0.18)
+		tw.tween_property(mesh, "rotation", Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0), 0.18)
+		tw.tween_property(mesh, "scale", Vector3.ONE, 0.18)
 
 
-# Натянуть текстуру карты на четырёхугольник. t: 0 — лежит на столе (проекция
-# гомографией, скошена к точке схода), 1 — выпрямлена лицом к камере. Интерполяция
-# между сохранёнными rest_quad и front_quad. Вершины TL,TR,BR,BL (origin — центр).
-func _apply_persp(entry: Dictionary, t: float) -> void:
-	entry["persp"] = t
-	var poly: Polygon2D = entry.poly
-	var rq: PackedVector2Array = entry.get("rest_quad", PackedVector2Array())
-	var fq: PackedVector2Array = entry.get("front_quad", PackedVector2Array())
-	if rq.size() != 4 or fq.size() != 4:
-		return
-	poly.polygon = PackedVector2Array(
-		[rq[0].lerp(fq[0], t), rq[1].lerp(fq[1], t), rq[2].lerp(fq[2], t), rq[3].lerp(fq[3], t)]
-	)
-	var vs := Vector2(_CARD_VP_SIZE)
-	poly.uv = PackedVector2Array(
-		[Vector2(0, 0), Vector2(vs.x, 0), Vector2(vs.x, vs.y), Vector2(0, vs.y)]
-	)
+# Поворот «лицом к камере» — перпендикулярно взгляду (компенсируем pitch камеры).
+func _face_rotation() -> Vector3:
+	return Vector3(deg_to_rad(CAM_PITCH), 0.0, 0.0)
 
 
 # ── Кубы (переиспользуемый лоток, рендер из active_check) ──────────────────────
@@ -686,17 +689,20 @@ func _on_buy() -> void:
 	_close()
 
 
-# Карта уходит из витрины: выпрямляется, рывок к камере вверх + растворение.
+# Карта уходит из витрины: рывок к камере вверх + растворение.
 func _fly_out(entry: Dictionary) -> void:
 	entry["buying"] = true
-	var host: Node2D = entry.host
-	host.z_index = 20
+	var mesh: MeshInstance3D = entry.mesh
+	var mat: StandardMaterial3D = entry.mat
+	var rest_pos: Vector3 = entry.get("rest_pos", mesh.position)
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tw.tween_method(func(v: float) -> void: _apply_persp(entry, v), float(entry.persp), 1.0, 0.30)
-	tw.tween_property(host, "position:y", host.position.y - float(entry.card_h) * 0.8, 0.30)
-	tw.tween_property(host, "scale", Vector2.ONE * 1.4, 0.30)
-	tw.tween_property(entry.poly, "modulate:a", 0.0, 0.30)
-	tw.tween_property(entry.shadow, "modulate:a", 0.0, 0.22)  # тень гаснет с картой
+	tw.tween_property(mesh, "position", rest_pos + Vector3(0.0, 1.6, 2.8), 0.30)
+	tw.tween_property(mesh, "rotation", _face_rotation(), 0.30)
+	tw.tween_property(mesh, "scale", Vector3.ONE * 1.4, 0.30)
+	tw.tween_property(mat, "albedo_color:a", 0.0, 0.30)
+	var smat := _shadow_mat(mesh)
+	if smat:
+		tw.tween_property(smat, "albedo_color:a", 0.0, 0.22)  # тень гаснет с картой
 
 
 # ── Обновление UI ───────────────────────────────────────────────────────────────
@@ -729,10 +735,10 @@ func _refresh() -> void:
 	if is_instance_valid(_buy_btn):
 		_buy_btn.disabled = _selected.is_empty()
 	# Недоступные НЕ затемняем (доступность покажем иначе позже). Лишь лёгкая
-	# тёплая подсветка выбранной карты.
+	# тёплая подсветка выбранной карты (тинт albedo материала).
 	for e_v: Variant in _cards:
 		var e: Dictionary = e_v
 		if bool(e.get("buying", false)):
 			continue
-		var poly: Polygon2D = e.poly
-		poly.modulate = Color(1.2, 1.14, 0.9) if _selected.has(e.id) else Color.WHITE
+		var mat: StandardMaterial3D = e.mat
+		mat.albedo_color = Color(1.2, 1.14, 0.9) if _selected.has(e.id) else Color.WHITE
