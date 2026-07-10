@@ -764,6 +764,15 @@ func _build_specs() -> Array:
 			"set": _set_shop_shadow_scale
 		},
 		{
+			"key": "shop_shadow_width",
+			"label": "Ширина тени",
+			"min": 0.5,
+			"max": 2.0,
+			"step": 0.01,
+			"default": ShopModal.SHADOW_WIDTH,
+			"set": _set_shop_shadow_width
+		},
+		{
 			"key": "shop_shadow_x",
 			"label": "Тень · X",
 			"min": -0.5,
@@ -1404,6 +1413,11 @@ func _set_shop_shadow_alpha(v: float) -> void:
 
 func _set_shop_shadow_scale(v: float) -> void:
 	ShopModal.SHADOW_SCALE = v
+	_relayout_shop()
+
+
+func _set_shop_shadow_width(v: float) -> void:
+	ShopModal.SHADOW_WIDTH = v
 	_relayout_shop()
 
 

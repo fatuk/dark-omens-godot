@@ -84,7 +84,8 @@ static var AMBIENT_B: float = 0.92  # окружающий тон (B)
 # вправо, выглядывает из-под нижнего края. Не дочерний: при наведении карта
 # поднимается, тень остаётся на месте. Сдвиг маленький → не «нимб» по всем краям.
 static var SHADOW_ALPHA: float = 0.6
-static var SHADOW_SCALE: float = 1.03  # размер тени относительно карты
+static var SHADOW_SCALE: float = 1.03  # общий размер тени относительно карты
+static var SHADOW_WIDTH: float = 1.0  # доп. множитель ширины тени
 static var SHADOW_X: float = 0.15  # сдвиг вправо (X)
 static var SHADOW_Y: float = -0.28  # сдвиг вниз (Y)
 static var SHADOW_Z: float = -0.05  # чуть за карту (Z)
@@ -432,9 +433,14 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 
 # Квад-тень: лежит плашмя на столе, тёмный полупрозрачный. Позиция/наклон —
 # в раскладке (_layout_stage) относительно основания карты.
+# Размер квада тени: общий множитель SHADOW_SCALE, ширина — доп. SHADOW_WIDTH.
+func _shadow_size() -> Vector2:
+	return Vector2(_CARD_QUAD.x * SHADOW_SCALE * SHADOW_WIDTH, _CARD_QUAD.y * SHADOW_SCALE)
+
+
 func _make_shadow_mesh(idx: int) -> MeshInstance3D:
 	var quad := QuadMesh.new()
-	quad.size = _CARD_QUAD * SHADOW_SCALE
+	quad.size = _shadow_size()
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.albedo_texture = _shadow_texture()
@@ -539,7 +545,7 @@ func _layout_stage() -> void:
 		# Всегда в покое: при наведении карта поднимается над тенью. Покупаемую не трогаем.
 		var sh: MeshInstance3D = e.get("shadow")
 		if sh and not bool(e.get("buying", false)):
-			(sh.mesh as QuadMesh).size = _CARD_QUAD * SHADOW_SCALE
+			(sh.mesh as QuadMesh).size = _shadow_size()
 			sh.position = pos + Vector3(SHADOW_X, SHADOW_Y, SHADOW_Z)
 			sh.rotation = Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0)
 			var smat := sh.material_override as StandardMaterial3D
