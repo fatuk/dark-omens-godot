@@ -646,10 +646,10 @@ func _build_specs() -> Array:
 		},
 		{
 			"key": "shop_hover_light",
-			"label": "Наведение · свет",
-			"min": 0.0,
-			"max": 1.0,
-			"step": 0.01,
+			"label": "Наведение · яркость",
+			"min": 1.0,
+			"max": 3.0,
+			"step": 0.02,
 			"default": ShopModal.HOVER_LIGHT,
 			"set": _set_shop_hover_light
 		},

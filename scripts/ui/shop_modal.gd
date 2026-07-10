@@ -91,7 +91,7 @@ static var ROW_Z: float = 0.0  # сдвиг ряда по глубине
 static var HOVER_UP: float = 0.30  # подъём по Y
 static var HOVER_FWD: float = 0.30  # к камере (по Z)
 static var HOVER_SCALE: float = 1.40
-static var HOVER_LIGHT: float = 0.15  # белая подсветка карты на ховере (эмиссия)
+static var HOVER_LIGHT: float = 1.5  # яркость карты на ховере (множитель albedo, >1)
 
 # Свет: окружающий (базовая яркость ≈ сырой арт) + две тёплые лампы (слева = фонарь,
 # справа = свеча). RANGE/ATTEN каждой лампы задают градиент распространения света
@@ -472,12 +472,6 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	# Белая подсветка при наведении — эмиссия текстурой карты (не заливает прозрачные
-	# края, следует силуэту). Энергия 0 в покое, тви́нится вверх на ховере.
-	mat.emission_enabled = true
-	mat.emission = Color.WHITE
-	mat.emission_texture = vp.get_texture()
-	mat.emission_energy_multiplier = 0.0
 	var mesh := MeshInstance3D.new()
 	mesh.name = "CardMesh_%d" % idx
 	mesh.mesh = quad
@@ -702,12 +696,12 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 		tw.tween_property(mesh, "position", rest_pos + Vector3(0.0, HOVER_UP, HOVER_FWD), 0.18)
 		tw.tween_property(mesh, "rotation", _face_rotation(), 0.18)
 		tw.tween_property(mesh, "scale", Vector3.ONE * HOVER_SCALE, 0.18)
-		tw.tween_property(mat, "emission_energy_multiplier", HOVER_LIGHT, 0.18)
 	else:
 		tw.tween_property(mesh, "position", rest_pos, 0.18)
 		tw.tween_property(mesh, "rotation", Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0), 0.18)
 		tw.tween_property(mesh, "scale", Vector3.ONE, 0.18)
-		tw.tween_property(mat, "emission_energy_multiplier", 0.0, 0.18)
+	# Яркость (множитель albedo) — тви́ним отдельно, учитывая тинт выбора.
+	tw.tween_property(mat, "albedo_color", _card_albedo(entry), 0.18)
 
 
 # Звук шуршания карты при наведении — тот же файл/вариации, что у веера
@@ -901,11 +895,21 @@ func _refresh() -> void:
 		_debt_btn.visible = not _has_debt()
 	if is_instance_valid(_buy_btn):
 		_buy_btn.disabled = _selected.is_empty()
-	# Недоступные НЕ затемняем (доступность покажем иначе позже). Лишь лёгкая
-	# тёплая подсветка выбранной карты (тинт albedo материала).
+	# Недоступные НЕ затемняем (доступность покажем иначе позже). Тёплый тинт выбора +
+	# яркость наведения — в _card_albedo (общий источник, чтобы не конфликтовали).
 	for e_v: Variant in _cards:
 		var e: Dictionary = e_v
 		if bool(e.get("buying", false)):
 			continue
 		var mat: StandardMaterial3D = e.mat
-		mat.albedo_color = Color(1.2, 1.14, 0.9) if _selected.has(e.id) else Color.WHITE
+		mat.albedo_color = _card_albedo(e)
+
+
+# Цвет-множитель albedo карты: тёплый тинт если выбрана, иначе белый; на наведении
+# домножаем на HOVER_LIGHT (>1) — карта ярче и КОНТРАСТНЕЕ (множитель растит разницу
+# светлых/тёмных, в отличие от аддитивной заливки, которая гасит контраст).
+func _card_albedo(entry: Dictionary) -> Color:
+	var base := Color(1.2, 1.14, 0.9) if _selected.has(entry.id) else Color.WHITE
+	if bool(entry.get("hovering", false)):
+		base = Color(base.r * HOVER_LIGHT, base.g * HOVER_LIGHT, base.b * HOVER_LIGHT, base.a)
+	return base
