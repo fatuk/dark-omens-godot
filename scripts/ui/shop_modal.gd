@@ -227,16 +227,16 @@ func _build() -> void:
 	# 3D-сцена карт (камера + свет), кладётся поверх мата — до хрома и хит-контролов.
 	_build_3d_scene()
 
-	# ── Шапка ──
-	var title := UIStyle.label("SHOP_TITLE", 34, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	# ── Шапка ── орнаментальный заголовок (шеврон · МАГАЗИН · шеврон) + подпись.
+	var title := UIStyle.ornate_title("SHOP_TITLE", 34, UIColors.ACCENT)
 	title.name = "Title"
 	_stage.add_child(title)
-	_chrome.append({"node": title, "fx": 0.2, "fy": 0.035, "fw": 0.6, "fh": 0.06})
+	_chrome.append({"node": title, "fx": 0.2, "fy": 0.045, "fw": 0.6, "fh": 0.06})
 
 	var sub := UIStyle.label("SHOP_SUBTITLE", 15, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	sub.name = "Subtitle"
 	_stage.add_child(sub)
-	_chrome.append({"node": sub, "fx": 0.2, "fy": 0.10, "fw": 0.6, "fh": 0.04})
+	_chrome.append({"node": sub, "fx": 0.2, "fy": 0.115, "fw": 0.6, "fh": 0.04})
 
 	# Крестик закрытия — поверх нарисованного X в арте.
 	var close := Button.new()
