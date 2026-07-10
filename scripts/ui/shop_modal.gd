@@ -20,6 +20,7 @@ extends CanvasLayer
 ## привязана к вписанному прямоугольнику арта (_stage) — тянется под любой экран.
 
 const _BG := preload("res://assets/shop/shop-bg.png")
+const _LIGHT_MAP := preload("res://assets/shop/card-light.png")  # серая карта света
 
 # Заглушка арт-окна для карт без файла арта — тёплая притенённая (в тон лавки),
 # чтобы пустые слоты не читались чёрными дырами. Когда арт есть — не применяется.
@@ -59,6 +60,32 @@ const _CARD_GAP_FRAC := 0.14  # зазор между картами (доля �
 const _CARD_VP_SIZE := Vector2i(380, 601)  # рендер-разрешение карты (аспект 290:459)
 static var PERSP_TOP: float = 0.84  # ширина дальнего (верхнего) края плоскости к ближнему
 static var PERSP_SQUASH: float = 0.23  # опускание дальнего края (укорочение стола)
+
+# Карта света. Серый card-light.png накладывается soft-light'ом (0.5=нейтраль,
+# светлее=блик, темнее=тень). LIGHT_INTENSITY усиливает ТОЛЬКО осветление; тени
+# остаются мягкими (soft-light сам даёт небольшие, не усиливаем) → нет чёрного
+# провала на большой интенсивности. Тюнится живьём (секция «МАГАЗИН · СВЕТ»).
+static var LIGHT_INTENSITY: float = 1.5  # сила осветления бликов
+
+# Photoshop soft-light: тени параболой (s<0.5), блики через sqrt (s≥0.5). Дельту
+# осветления множим на intensity, дельту затемнения оставляем как есть (мягкую).
+# base.a на выходе → чистые скруглённые углы. * COLOR = modulate.
+const _LIGHT_SHADER := """
+shader_type canvas_item;
+uniform sampler2D light_map : filter_linear;
+uniform float intensity = 1.5;
+void fragment() {
+	vec4 base = texture(TEXTURE, UV);
+	vec3 b = base.rgb;
+	vec3 s = texture(light_map, UV).rgb;
+	vec3 lo = 2.0 * b * s + b * b * (1.0 - 2.0 * s);
+	vec3 hi = 2.0 * b * (1.0 - s) + sqrt(b) * (2.0 * s - 1.0);
+	vec3 soft = mix(lo, hi, step(vec3(0.5), s));
+	vec3 delta = soft - b;
+	vec3 outc = b + max(delta, vec3(0.0)) * intensity + min(delta, vec3(0.0));
+	COLOR = vec4(outc, base.a) * COLOR;
+}
+"""
 
 # Падающая тень карт. SHADOW_* тюнятся живьём (секция «МАГАЗИН · СВЕТ»).
 static var SHADOW_OFS: float = 0.03  # смещение тени вниз-вправо (доля высоты карты)
@@ -320,6 +347,10 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	poly.name = "Poly"
 	poly.texture = vp.get_texture()
 	poly.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	var lmat := _make_shader_material(_LIGHT_SHADER)  # карта света (осветление + мягкие тени)
+	lmat.set_shader_parameter("light_map", _LIGHT_MAP)
+	lmat.set_shader_parameter("intensity", LIGHT_INTENSITY)
+	poly.material = lmat
 	host.add_child(poly)
 	_stage.add_child(host)
 
@@ -472,6 +503,8 @@ func _layout_stage() -> void:
 		var smat: ShaderMaterial = shadow.material
 		smat.set_shader_parameter("darkness", SHADOW_ALPHA)
 		smat.set_shader_parameter("feather", SHADOW_FEATHER)
+		# Сила карты света (живой тюн).
+		(e.poly as Polygon2D).material.set_shader_parameter("intensity", LIGHT_INTENSITY)
 		# Хит-область — экранный bbox лежащей карты (наведение/клик).
 		var minx: float = minf(c_bl.x, far_l)
 		var maxx: float = maxf(c_br.x, far_r)
