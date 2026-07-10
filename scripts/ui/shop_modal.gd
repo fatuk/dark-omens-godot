@@ -20,6 +20,32 @@ extends CanvasLayer
 ## привязана к вписанному прямоугольнику арта (_stage) — тянется под любой экран.
 
 const _BG := preload("res://assets/shop/shop-bg.png")
+const _FLAME_SHADER := preload("res://assets/shaders/flame_glow.gdshader")
+
+# Живые огни поверх нарисованных (лампа слева, свеча справа): доля центра/размера
+# в _stage + параметры мерцания. Тёплый additive-глоу, пляшет через flame_glow.
+const _FLAMES := [
+	{
+		"cx": 0.074,
+		"cy": 0.178,
+		"w": 0.058,
+		"h": 0.135,
+		"intensity": 0.85,
+		"speed": 6.5,
+		"seed": 0.0,
+		"color": Color(1.0, 0.68, 0.34),
+	},
+	{
+		"cx": 0.894,
+		"cy": 0.312,
+		"w": 0.034,
+		"h": 0.075,
+		"intensity": 0.7,
+		"speed": 9.0,
+		"seed": 17.0,
+		"color": Color(1.0, 0.72, 0.4),
+	},
+]
 
 # Заглушка арт-окна для карт без файла арта — тёплая притенённая (в тон лавки),
 # чтобы пустые слоты не читались чёрными дырами. Когда арт есть — не применяется.
@@ -112,6 +138,7 @@ var _debt_btn: Button
 var _buy_btn: Button
 var _cards: Array = []  # [{id, cost, card, vp, mesh, mat, hit, slot, total, hovering, buying}]
 var _chrome: Array = []  # [{node, fx, fy, fw, fh}] — элементы, позиционируемые по долям
+var _flame_nodes: Array = []  # [{node, cx, cy, w, h}] — огни-глоу, позиция по центру-долям
 
 
 func _ready() -> void:
@@ -191,6 +218,9 @@ func _build() -> void:
 	_stage.name = "Stage"
 	_stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	backdrop.add_child(_stage)
+
+	# Живые огни (лампа/свеча) — под 3D-картами, поверх статичного арта.
+	_build_flames()
 
 	# 3D-сцена карт (камера + свет), кладётся поверх мата — до хрома и хит-контролов.
 	_build_3d_scene()
@@ -277,6 +307,29 @@ func _offer() -> Array:
 	if out.is_empty():
 		out = AssetCatalog.shop_offer(4)
 	return out
+
+
+# ── Живые огни (лампа/свеча) ──────────────────────────────────────────────────
+
+
+# Мерцающий тёплый глоу поверх нарисованных огоньков. Каждый — ColorRect с
+# additive-шейдером flame_glow; позиция/размер по долям _stage (в раскладке).
+func _build_flames() -> void:
+	for f_v: Variant in _FLAMES:
+		var f: Dictionary = f_v
+		var mat := ShaderMaterial.new()
+		mat.shader = _FLAME_SHADER
+		mat.set_shader_parameter("glow_color", f.color)
+		mat.set_shader_parameter("intensity", f.intensity)
+		mat.set_shader_parameter("flicker_speed", f.speed)
+		mat.set_shader_parameter("seed", f.seed)
+		var rect := ColorRect.new()
+		rect.name = "Flame"
+		rect.color = Color.WHITE  # шейдер сам считает цвет
+		rect.material = mat
+		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_stage.add_child(rect)
+		_flame_nodes.append({"node": rect, "cx": f.cx, "cy": f.cy, "w": f.w, "h": f.h})
 
 
 # ── 3D-сцена: камера, свет, окружение ─────────────────────────────────────────
@@ -522,6 +575,13 @@ func _layout_stage() -> void:
 		node.position = Vector2(e.fx * s.x, e.fy * s.y)
 		node.custom_minimum_size = Vector2(e.fw * s.x, e.fh * s.y)
 		node.size = node.custom_minimum_size
+	# Огни — по центру-долям (glow-квадрат центрируется на нарисованном огоньке).
+	for e_v: Variant in _flame_nodes:
+		var e: Dictionary = e_v
+		var node: Control = e.node
+		var sz := Vector2(e.w * s.x, e.h * s.y)
+		node.size = sz
+		node.position = Vector2(e.cx * s.x, e.cy * s.y) - sz * 0.5
 	# 3D-раскладка ряда карт: по X с шагом ROW_GAP, наклон назад CARD_TILT. Камера/свет
 	# — из тюн-параметров. Хит-контролы — проекция покоящихся мешей (см. _update_hit_rect).
 	# 3D-вьюпорт держим ровно в размер сцены: аспект рендера = аспект показа (иначе
