@@ -79,12 +79,14 @@ static var AMBIENT_R: float = 1.0  # окружающий тон (R)
 static var AMBIENT_G: float = 0.97  # окружающий тон (G)
 static var AMBIENT_B: float = 0.92  # окружающий тон (B)
 
-# Тень под картой — дочерний квад чуть больше, тёмный полупрозрачный, сдвинут.
-static var SHADOW_ALPHA: float = 0.5
-static var SHADOW_SCALE: float = 1.12  # размер тени относительно карты
-static var SHADOW_X: float = 0.04  # сдвиг тени (X, локально)
-static var SHADOW_Y: float = -0.05  # сдвиг тени (Y, вниз)
-static var SHADOW_Z: float = -0.02  # сдвиг тени (Z, за картой)
+# Тень под картой — отдельный квад-«drop shadow»: параллелен карте, сдвинут вниз-
+# вправо, выглядывает из-под нижнего края. Не дочерний: при наведении карта
+# поднимается, тень остаётся на месте. Сдвиг маленький → не «нимб» по всем краям.
+static var SHADOW_ALPHA: float = 0.55
+static var SHADOW_SCALE: float = 1.02  # размер тени относительно карты
+static var SHADOW_X: float = 0.05  # сдвиг вправо (X)
+static var SHADOW_Y: float = -0.16  # сдвиг вниз (Y)
+static var SHADOW_Z: float = -0.05  # чуть за карту (Z)
 static var _shadow_tex: ImageTexture  # мягкая радиальная тень (ленивая, общая)
 
 # Состояние сессии магазина (UI-локальное; бросок/монеты — в active_check).
@@ -385,10 +387,13 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	mesh.name = "CardMesh_%d" % idx
 	mesh.mesh = quad
 	mesh.material_override = mat
-	mesh.add_child(_make_shadow_mesh())
 	_world_vp.add_child(mesh)
 
-	# Хит-контрол (2D) — позиция/размер считаются проекцией 3D-квада в _process.
+	# Тень — отдельный меш на столе (не ребёнок карты), кладётся под карту в раскладке.
+	var shadow := _make_shadow_mesh(idx)
+	_world_vp.add_child(shadow)
+
+	# Хит-контрол (2D) — позиция/размер считаются проекцией покоящейся карты в раскладке.
 	var hit := Control.new()
 	hit.name = "Hit_%d" % idx
 	hit.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -402,6 +407,7 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 		"vp": vp,
 		"mesh": mesh,
 		"mat": mat,
+		"shadow": shadow,
 		"hit": hit,
 		"slot": idx,
 		"total": total,
@@ -423,9 +429,9 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	)
 
 
-# Дочерний quad-тень: чуть больше карты, тёмный полупрозрачный, сдвинут за/вниз.
-# Как ребёнок меша наследует его трансформ при наведении/вылете.
-func _make_shadow_mesh() -> MeshInstance3D:
+# Квад-тень: лежит плашмя на столе, тёмный полупрозрачный. Позиция/наклон —
+# в раскладке (_layout_stage) относительно основания карты.
+func _make_shadow_mesh(idx: int) -> MeshInstance3D:
 	var quad := QuadMesh.new()
 	quad.size = _CARD_QUAD * SHADOW_SCALE
 	var mat := StandardMaterial3D.new()
@@ -435,19 +441,14 @@ func _make_shadow_mesh() -> MeshInstance3D:
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	var sh := MeshInstance3D.new()
-	sh.name = "CardShadow"
+	sh.name = "CardShadow_%d" % idx
 	sh.mesh = quad
 	sh.material_override = mat
-	sh.position = Vector3(SHADOW_X, SHADOW_Y, SHADOW_Z)
 	return sh
 
 
-func _shadow_node(mesh: MeshInstance3D) -> MeshInstance3D:
-	return mesh.get_node_or_null("CardShadow") as MeshInstance3D
-
-
-func _shadow_mat(mesh: MeshInstance3D) -> StandardMaterial3D:
-	var sh := _shadow_node(mesh)
+func _shadow_mat(entry: Dictionary) -> StandardMaterial3D:
+	var sh: MeshInstance3D = entry.get("shadow")
 	return (sh.material_override as StandardMaterial3D) if sh else null
 
 
@@ -521,10 +522,14 @@ func _layout_stage() -> void:
 			mesh.position = pos
 			mesh.rotation = Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0)
 			mesh.scale = Vector3.ONE
-		var sh := _shadow_node(mesh)
-		if sh:
+		# Тень: drop-shadow — параллельна карте (тот же наклон), сдвинута вниз-вправо,
+		# так выглядывает из-под нижнего края (плоская тень при пологой камере не видна).
+		# Всегда в покое: при наведении карта поднимается над тенью. Покупаемую не трогаем.
+		var sh: MeshInstance3D = e.get("shadow")
+		if sh and not bool(e.get("buying", false)):
 			(sh.mesh as QuadMesh).size = _CARD_QUAD * SHADOW_SCALE
-			sh.position = Vector3(SHADOW_X, SHADOW_Y, SHADOW_Z)
+			sh.position = pos + Vector3(SHADOW_X, SHADOW_Y, SHADOW_Z)
+			sh.rotation = Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0)
 			var smat := sh.material_override as StandardMaterial3D
 			if smat:
 				smat.albedo_color = Color(0.0, 0.0, 0.0, SHADOW_ALPHA)
@@ -720,7 +725,7 @@ func _fly_out(entry: Dictionary) -> void:
 	tw.tween_property(mesh, "rotation", _face_rotation(), 0.30)
 	tw.tween_property(mesh, "scale", Vector3.ONE * 1.4, 0.30)
 	tw.tween_property(mat, "albedo_color:a", 0.0, 0.30)
-	var smat := _shadow_mat(mesh)
+	var smat := _shadow_mat(entry)
 	if smat:
 		tw.tween_property(smat, "albedo_color:a", 0.0, 0.22)  # тень гаснет с картой
 
