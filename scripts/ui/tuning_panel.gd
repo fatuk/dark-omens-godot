@@ -644,28 +644,37 @@ func _build_specs() -> Array:
 			"default": ShopModal.HOVER_SCALE,
 			"set": _set_shop_hover_scale
 		},
-		{"section": "МАГАЗИН · СВЕТ"},
-		{
-			"key": "shop_ambient",
-			"label": "Окружающий",
-			"min": 0.0,
-			"max": 2.0,
-			"step": 0.05,
-			"default": ShopModal.AMBIENT,
-			"set": _set_shop_ambient
-		},
+		{"section": "МАГАЗИН · СВЕТ Л (фонарь)"},
 		{
 			"key": "shop_lamp_energy",
-			"label": "Лампа",
+			"label": "Л · яркость",
 			"min": 0.0,
-			"max": 8.0,
+			"max": 16.0,
 			"step": 0.1,
 			"default": ShopModal.LAMP_ENERGY,
 			"set": _set_shop_lamp_energy
 		},
 		{
+			"key": "shop_lamp_range",
+			"label": "Л · дальность",
+			"min": 1.0,
+			"max": 60.0,
+			"step": 0.5,
+			"default": ShopModal.LAMP_RANGE,
+			"set": _set_shop_lamp_range
+		},
+		{
+			"key": "shop_lamp_atten",
+			"label": "Л · спад (градиент)",
+			"min": 0.1,
+			"max": 8.0,
+			"step": 0.05,
+			"default": ShopModal.LAMP_ATTEN,
+			"set": _set_shop_lamp_atten
+		},
+		{
 			"key": "shop_lamp_x",
-			"label": "Лампа · X",
+			"label": "Л · X",
 			"min": -8.0,
 			"max": 8.0,
 			"step": 0.1,
@@ -674,7 +683,7 @@ func _build_specs() -> Array:
 		},
 		{
 			"key": "shop_lamp_y",
-			"label": "Лампа · Y",
+			"label": "Л · Y",
 			"min": 0.0,
 			"max": 8.0,
 			"step": 0.1,
@@ -683,7 +692,7 @@ func _build_specs() -> Array:
 		},
 		{
 			"key": "shop_lamp_z",
-			"label": "Лампа · Z",
+			"label": "Л · Z",
 			"min": -4.0,
 			"max": 8.0,
 			"step": 0.1,
@@ -692,7 +701,7 @@ func _build_specs() -> Array:
 		},
 		{
 			"key": "shop_lamp_r",
-			"label": "Лампа · R",
+			"label": "Л · R",
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
@@ -701,7 +710,7 @@ func _build_specs() -> Array:
 		},
 		{
 			"key": "shop_lamp_g",
-			"label": "Лампа · G",
+			"label": "Л · G",
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
@@ -710,12 +719,104 @@ func _build_specs() -> Array:
 		},
 		{
 			"key": "shop_lamp_b",
-			"label": "Лампа · B",
+			"label": "Л · B",
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
 			"default": ShopModal.LAMP_B,
 			"set": _set_shop_lamp_b
+		},
+		{"section": "МАГАЗИН · СВЕТ П (свеча)"},
+		{
+			"key": "shop_lamp2_energy",
+			"label": "П · яркость",
+			"min": 0.0,
+			"max": 16.0,
+			"step": 0.1,
+			"default": ShopModal.LAMP2_ENERGY,
+			"set": _set_shop_lamp2_energy
+		},
+		{
+			"key": "shop_lamp2_range",
+			"label": "П · дальность",
+			"min": 1.0,
+			"max": 60.0,
+			"step": 0.5,
+			"default": ShopModal.LAMP2_RANGE,
+			"set": _set_shop_lamp2_range
+		},
+		{
+			"key": "shop_lamp2_atten",
+			"label": "П · спад (градиент)",
+			"min": 0.1,
+			"max": 8.0,
+			"step": 0.05,
+			"default": ShopModal.LAMP2_ATTEN,
+			"set": _set_shop_lamp2_atten
+		},
+		{
+			"key": "shop_lamp2_x",
+			"label": "П · X",
+			"min": -8.0,
+			"max": 8.0,
+			"step": 0.1,
+			"default": ShopModal.LAMP2_X,
+			"set": _set_shop_lamp2_x
+		},
+		{
+			"key": "shop_lamp2_y",
+			"label": "П · Y",
+			"min": 0.0,
+			"max": 8.0,
+			"step": 0.1,
+			"default": ShopModal.LAMP2_Y,
+			"set": _set_shop_lamp2_y
+		},
+		{
+			"key": "shop_lamp2_z",
+			"label": "П · Z",
+			"min": -4.0,
+			"max": 8.0,
+			"step": 0.1,
+			"default": ShopModal.LAMP2_Z,
+			"set": _set_shop_lamp2_z
+		},
+		{
+			"key": "shop_lamp2_r",
+			"label": "П · R",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": ShopModal.LAMP2_R,
+			"set": _set_shop_lamp2_r
+		},
+		{
+			"key": "shop_lamp2_g",
+			"label": "П · G",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": ShopModal.LAMP2_G,
+			"set": _set_shop_lamp2_g
+		},
+		{
+			"key": "shop_lamp2_b",
+			"label": "П · B",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": ShopModal.LAMP2_B,
+			"set": _set_shop_lamp2_b
+		},
+		{"section": "МАГАЗИН · СВЕТ ОКРУЖ."},
+		{
+			"key": "shop_ambient",
+			"label": "Окружающий",
+			"min": 0.0,
+			"max": 2.0,
+			"step": 0.05,
+			"default": ShopModal.AMBIENT,
+			"set": _set_shop_ambient
 		},
 		{
 			"key": "shop_amb_r",
@@ -1388,6 +1489,61 @@ func _set_shop_lamp_g(v: float) -> void:
 
 func _set_shop_lamp_b(v: float) -> void:
 	ShopModal.LAMP_B = v
+	_relayout_shop()
+
+
+func _set_shop_lamp_range(v: float) -> void:
+	ShopModal.LAMP_RANGE = v
+	_relayout_shop()
+
+
+func _set_shop_lamp_atten(v: float) -> void:
+	ShopModal.LAMP_ATTEN = v
+	_relayout_shop()
+
+
+func _set_shop_lamp2_energy(v: float) -> void:
+	ShopModal.LAMP2_ENERGY = v
+	_relayout_shop()
+
+
+func _set_shop_lamp2_x(v: float) -> void:
+	ShopModal.LAMP2_X = v
+	_relayout_shop()
+
+
+func _set_shop_lamp2_y(v: float) -> void:
+	ShopModal.LAMP2_Y = v
+	_relayout_shop()
+
+
+func _set_shop_lamp2_z(v: float) -> void:
+	ShopModal.LAMP2_Z = v
+	_relayout_shop()
+
+
+func _set_shop_lamp2_r(v: float) -> void:
+	ShopModal.LAMP2_R = v
+	_relayout_shop()
+
+
+func _set_shop_lamp2_g(v: float) -> void:
+	ShopModal.LAMP2_G = v
+	_relayout_shop()
+
+
+func _set_shop_lamp2_b(v: float) -> void:
+	ShopModal.LAMP2_B = v
+	_relayout_shop()
+
+
+func _set_shop_lamp2_range(v: float) -> void:
+	ShopModal.LAMP2_RANGE = v
+	_relayout_shop()
+
+
+func _set_shop_lamp2_atten(v: float) -> void:
+	ShopModal.LAMP2_ATTEN = v
 	_relayout_shop()
 
 

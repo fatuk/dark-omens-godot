@@ -92,16 +92,30 @@ static var HOVER_UP: float = 0.30  # подъём по Y
 static var HOVER_FWD: float = 0.30  # к камере (по Z)
 static var HOVER_SCALE: float = 1.40
 
-# Свет: окружающий (базовая яркость ≈ сырой арт) + тёплая лампа слева-сверху.
-# Позиция/цвет лампы и тон окружающего — покомпонентно (тюнятся слайдерами).
+# Свет: окружающий (базовая яркость ≈ сырой арт) + две тёплые лампы (слева = фонарь,
+# справа = свеча). RANGE/ATTEN каждой лампы задают градиент распространения света
+# по ряду карт (range — дальнобойность, atten — крутизна спада). Тюнятся слайдерами.
 static var AMBIENT: float = 0.0  # окружающий свет (1.0 = карта в своих цветах)
-static var LAMP_ENERGY: float = 8.0  # яркость лампы
-static var LAMP_X: float = -6.4  # позиция лампы (X)
-static var LAMP_Y: float = 3.9  # позиция лампы (Y)
-static var LAMP_Z: float = 5.5  # позиция лампы (Z)
-static var LAMP_R: float = 1.0  # цвет лампы (R) — тёплый
-static var LAMP_G: float = 0.82  # цвет лампы (G)
-static var LAMP_B: float = 0.55  # цвет лампы (B)
+# Левая лампа (фонарь).
+static var LAMP_ENERGY: float = 8.0  # яркость
+static var LAMP_X: float = -6.4  # позиция (X)
+static var LAMP_Y: float = 3.9  # позиция (Y)
+static var LAMP_Z: float = 5.5  # позиция (Z)
+static var LAMP_R: float = 1.0  # цвет (R) — тёплый
+static var LAMP_G: float = 0.82  # цвет (G)
+static var LAMP_B: float = 0.55  # цвет (B)
+static var LAMP_RANGE: float = 30.0  # дальнобойность (радиус света)
+static var LAMP_ATTEN: float = 1.0  # крутизна спада (градиент): >1 — резче гаснет
+# Правая лампа (свеча).
+static var LAMP2_ENERGY: float = 4.0  # яркость
+static var LAMP2_X: float = 6.4  # позиция (X)
+static var LAMP2_Y: float = 3.9  # позиция (Y)
+static var LAMP2_Z: float = 5.5  # позиция (Z)
+static var LAMP2_R: float = 1.0  # цвет (R) — тёплый
+static var LAMP2_G: float = 0.74  # цвет (G)
+static var LAMP2_B: float = 0.42  # цвет (B)
+static var LAMP2_RANGE: float = 30.0  # дальнобойность
+static var LAMP2_ATTEN: float = 1.0  # крутизна спада
 static var AMBIENT_R: float = 1.0  # окружающий тон (R)
 static var AMBIENT_G: float = 0.97  # окружающий тон (G)
 static var AMBIENT_B: float = 0.92  # окружающий тон (B)
@@ -129,7 +143,8 @@ var _last_add: bool = false
 var _stage: Control  # вписанный прямоугольник арта — база для долевой раскладки
 var _world_vp: SubViewport  # 3D-сцена карт (камера + меши), кладётся на арт лавки
 var _camera: Camera3D
-var _lamp: OmniLight3D
+var _lamp: OmniLight3D  # левая лампа (фонарь)
+var _lamp2: OmniLight3D  # правая лампа (свеча)
 var _dice_box: HBoxContainer
 var _tray: DiceTray
 var _coins_lbl: Label
@@ -366,11 +381,13 @@ func _build_3d_scene() -> void:
 	_camera.environment = _make_environment()
 	_world_vp.add_child(_camera)
 
-	# Тёплая лампа слева-сверху — реальный свет: подсвечивает карты, не темнит.
+	# Две тёплые лампы — реальный свет: подсвечивают карты, не темнят.
 	_lamp = OmniLight3D.new()
-	_lamp.name = "Lamp"
-	_lamp.omni_range = 30.0
+	_lamp.name = "LampLeft"
 	_world_vp.add_child(_lamp)
+	_lamp2 = OmniLight3D.new()
+	_lamp2.name = "LampRight"
+	_world_vp.add_child(_lamp2)
 
 	_apply_camera_light()
 
@@ -399,6 +416,14 @@ func _apply_camera_light() -> void:
 		_lamp.position = Vector3(LAMP_X, LAMP_Y, LAMP_Z)
 		_lamp.light_color = Color(LAMP_R, LAMP_G, LAMP_B)
 		_lamp.light_energy = LAMP_ENERGY
+		_lamp.omni_range = LAMP_RANGE
+		_lamp.omni_attenuation = LAMP_ATTEN
+	if is_instance_valid(_lamp2):
+		_lamp2.position = Vector3(LAMP2_X, LAMP2_Y, LAMP2_Z)
+		_lamp2.light_color = Color(LAMP2_R, LAMP2_G, LAMP2_B)
+		_lamp2.light_energy = LAMP2_ENERGY
+		_lamp2.omni_range = LAMP2_RANGE
+		_lamp2.omni_attenuation = LAMP2_ATTEN
 
 
 # ── Карта: UI-SubViewport → 3D-quad ───────────────────────────────────────────
