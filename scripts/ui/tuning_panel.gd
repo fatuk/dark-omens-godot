@@ -536,6 +536,15 @@ func _build_specs() -> Array:
 		},
 		{"section": "МАГАЗИН · КАМЕРА"},
 		{
+			"key": "shop_cam_x",
+			"label": "Камера · X",
+			"min": -4.0,
+			"max": 4.0,
+			"step": 0.05,
+			"default": ShopModal.CAM_X,
+			"set": _set_shop_cam_x
+		},
+		{
 			"key": "shop_cam_dist",
 			"label": "Камера · Z",
 			"min": 2.0,
@@ -1271,6 +1280,11 @@ func _set_csmoke_b(v: float) -> void:
 
 func _relayout_shop() -> void:
 	get_tree().call_group("shop_modal", "relayout")
+
+
+func _set_shop_cam_x(v: float) -> void:
+	ShopModal.CAM_X = v
+	_relayout_shop()
 
 
 func _set_shop_cam_dist(v: float) -> void:

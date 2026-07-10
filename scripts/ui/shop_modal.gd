@@ -49,6 +49,7 @@ const _WORLD_VP_SIZE := Vector2i(1264, 711)  # стартовый размер 3
 # переустанавливается ровно в размер сцены — аспект рендера = аспект показа)
 
 # Камера над столом, смотрит вниз под углом.
+static var CAM_X: float = 0.0  # X камеры (сдвиг влево-вправо)
 static var CAM_DIST: float = 4.9  # Z камеры (отдаление)
 static var CAM_HEIGHT: float = 2.0  # Y камеры (высота над центром ряда)
 static var CAM_PITCH: float = -26.0  # наклон камеры вниз, град
@@ -326,7 +327,7 @@ func _make_environment() -> Environment:
 func _apply_camera_light() -> void:
 	if not is_instance_valid(_camera):
 		return
-	_camera.position = Vector3(0.0, CAM_HEIGHT, CAM_DIST)
+	_camera.position = Vector3(CAM_X, CAM_HEIGHT, CAM_DIST)
 	_camera.rotation = Vector3(deg_to_rad(CAM_PITCH), 0.0, 0.0)
 	_camera.fov = CAM_FOV
 	if _camera.environment:
