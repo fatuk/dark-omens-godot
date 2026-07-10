@@ -91,7 +91,7 @@ static var ROW_Z: float = 0.0  # сдвиг ряда по глубине
 static var HOVER_UP: float = 0.30  # подъём по Y
 static var HOVER_FWD: float = 0.30  # к камере (по Z)
 static var HOVER_SCALE: float = 1.40
-static var HOVER_LIGHT: float = 1.5  # яркость карты на ховере (множитель albedo, >1)
+static var HOVER_LIGHT: float = 1.0  # яркость карты на ховере (множитель, 1.0 = как в арте)
 
 # Свет: окружающий (базовая яркость ≈ сырой арт) + две тёплые лампы (слева = фонарь,
 # справа = свеча). RANGE/ATTEN каждой лампы задают градиент распространения света
@@ -700,7 +700,8 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 		tw.tween_property(mesh, "position", rest_pos, 0.18)
 		tw.tween_property(mesh, "rotation", Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0), 0.18)
 		tw.tween_property(mesh, "scale", Vector3.ONE, 0.18)
-	# Яркость (множитель albedo) — тви́ним отдельно, учитывая тинт выбора.
+	# На ховере карта — UNSHADED (без тёплых ламп) → оригинальный цвет ассета.
+	_apply_card_shade(entry)
 	tw.tween_property(mat, "albedo_color", _card_albedo(entry), 0.18)
 
 
@@ -901,15 +902,25 @@ func _refresh() -> void:
 		var e: Dictionary = e_v
 		if bool(e.get("buying", false)):
 			continue
-		var mat: StandardMaterial3D = e.mat
-		mat.albedo_color = _card_albedo(e)
+		_apply_card_shade(e)
+		(e.mat as StandardMaterial3D).albedo_color = _card_albedo(e)
 
 
-# Цвет-множитель albedo карты: тёплый тинт если выбрана, иначе белый; на наведении
-# домножаем на HOVER_LIGHT (>1) — карта ярче и КОНТРАСТНЕЕ (множитель растит разницу
-# светлых/тёмных, в отличие от аддитивной заливки, которая гасит контраст).
+# Цвет-множитель albedo карты. На ховере — нейтральный HOVER_LIGHT (карта UNSHADED,
+# показываем оригинальный цвет арта без тёплого тинта). В покое — тёплый тинт если
+# выбрана, иначе белый (материал SHADED, свет ламп даёт интеграцию со сценой).
 func _card_albedo(entry: Dictionary) -> Color:
-	var base := Color(1.2, 1.14, 0.9) if _selected.has(entry.id) else Color.WHITE
 	if bool(entry.get("hovering", false)):
-		base = Color(base.r * HOVER_LIGHT, base.g * HOVER_LIGHT, base.b * HOVER_LIGHT, base.a)
-	return base
+		return Color(HOVER_LIGHT, HOVER_LIGHT, HOVER_LIGHT, 1.0)
+	return Color(1.2, 1.14, 0.9) if _selected.has(entry.id) else Color.WHITE
+
+
+# Режим шейдинга карты: на ховере UNSHADED (оригинальный цвет, игнор ламп),
+# в покое SHADED (тёплый свет ламп → карта вписана в сцену).
+func _apply_card_shade(entry: Dictionary) -> void:
+	var mat: StandardMaterial3D = entry.mat
+	mat.shading_mode = (
+		BaseMaterial3D.SHADING_MODE_UNSHADED
+		if bool(entry.get("hovering", false))
+		else BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	)

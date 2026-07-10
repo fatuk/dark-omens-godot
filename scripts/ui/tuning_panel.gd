@@ -647,8 +647,8 @@ func _build_specs() -> Array:
 		{
 			"key": "shop_hover_light",
 			"label": "Наведение · яркость",
-			"min": 1.0,
-			"max": 3.0,
+			"min": 0.6,
+			"max": 2.0,
 			"step": 0.02,
 			"default": ShopModal.HOVER_LIGHT,
 			"set": _set_shop_hover_light
