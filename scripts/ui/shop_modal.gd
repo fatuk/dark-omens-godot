@@ -49,7 +49,7 @@ const _WORLD_VP_SIZE := Vector2i(1264, 711)  # стартовый размер 3
 # переустанавливается ровно в размер сцены — аспект рендера = аспект показа)
 
 # Камера над столом, смотрит вниз под углом.
-static var CAM_X: float = 0.0  # X камеры (сдвиг влево-вправо)
+static var CAM_X: float = -0.1  # X камеры (сдвиг влево-вправо)
 static var CAM_DIST: float = 4.9  # Z камеры (отдаление)
 static var CAM_HEIGHT: float = 2.0  # Y камеры (высота над центром ряда)
 static var CAM_PITCH: float = -26.0  # наклон камеры вниз, град
@@ -68,11 +68,11 @@ static var HOVER_SCALE: float = 1.40
 
 # Свет: окружающий (базовая яркость ≈ сырой арт) + тёплая лампа слева-сверху.
 # Позиция/цвет лампы и тон окружающего — покомпонентно (тюнятся слайдерами).
-static var AMBIENT: float = 1.0  # окружающий свет (1.0 = карта в своих цветах)
-static var LAMP_ENERGY: float = 2.2  # яркость лампы
-static var LAMP_X: float = -3.5  # позиция лампы (X)
-static var LAMP_Y: float = 3.5  # позиция лампы (Y)
-static var LAMP_Z: float = 3.0  # позиция лампы (Z)
+static var AMBIENT: float = 0.0  # окружающий свет (1.0 = карта в своих цветах)
+static var LAMP_ENERGY: float = 8.0  # яркость лампы
+static var LAMP_X: float = -6.4  # позиция лампы (X)
+static var LAMP_Y: float = 3.9  # позиция лампы (Y)
+static var LAMP_Z: float = 5.5  # позиция лампы (Z)
 static var LAMP_R: float = 1.0  # цвет лампы (R) — тёплый
 static var LAMP_G: float = 0.82  # цвет лампы (G)
 static var LAMP_B: float = 0.55  # цвет лампы (B)
@@ -83,12 +83,12 @@ static var AMBIENT_B: float = 0.92  # окружающий тон (B)
 # Тень под картой — отдельный квад-«drop shadow»: параллелен карте, сдвинут вниз-
 # вправо, выглядывает из-под нижнего края. Не дочерний: при наведении карта
 # поднимается, тень остаётся на месте. Сдвиг маленький → не «нимб» по всем краям.
-static var SHADOW_ALPHA: float = 0.6
-static var SHADOW_SCALE: float = 1.03  # общий размер тени относительно карты
-static var SHADOW_WIDTH: float = 1.0  # доп. множитель ширины тени
-static var SHADOW_X: float = 0.15  # сдвиг вправо (X)
-static var SHADOW_Y: float = -0.28  # сдвиг вниз (Y)
-static var SHADOW_Z: float = -0.05  # чуть за карту (Z)
+static var SHADOW_ALPHA: float = 0.56
+static var SHADOW_SCALE: float = 1.14  # общий размер тени относительно карты
+static var SHADOW_WIDTH: float = 1.27  # доп. множитель ширины тени
+static var SHADOW_X: float = 0.0  # сдвиг вправо (X)
+static var SHADOW_Y: float = -0.17  # сдвиг вниз (Y)
+static var SHADOW_Z: float = -0.15  # чуть за карту (Z)
 static var _shadow_tex: ImageTexture  # мягкая радиальная тень (ленивая, общая)
 
 # Состояние сессии магазина (UI-локальное; бросок/монеты — в active_check).
