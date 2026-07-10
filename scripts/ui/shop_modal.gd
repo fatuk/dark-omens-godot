@@ -65,16 +65,25 @@ static var HOVER_FWD: float = 0.30  # к камере (по Z)
 static var HOVER_SCALE: float = 1.06
 
 # Свет: окружающий (базовая яркость ≈ сырой арт) + тёплая лампа слева-сверху.
+# Позиция/цвет лампы и тон окружающего — покомпонентно (тюнятся слайдерами).
 static var AMBIENT: float = 1.0  # окружающий свет (1.0 = карта в своих цветах)
 static var LAMP_ENERGY: float = 2.2  # яркость лампы
-const _LAMP_POS := Vector3(-3.5, 3.5, 3.0)  # позиция лампы
-const _LAMP_COLOR := Color(1.0, 0.82, 0.55)  # тёплый свет лампы
-const _AMBIENT_COLOR := Color(1.0, 0.97, 0.92)  # чуть тёплый окружающий
+static var LAMP_X: float = -3.5  # позиция лампы (X)
+static var LAMP_Y: float = 3.5  # позиция лампы (Y)
+static var LAMP_Z: float = 3.0  # позиция лампы (Z)
+static var LAMP_R: float = 1.0  # цвет лампы (R) — тёплый
+static var LAMP_G: float = 0.82  # цвет лампы (G)
+static var LAMP_B: float = 0.55  # цвет лампы (B)
+static var AMBIENT_R: float = 1.0  # окружающий тон (R)
+static var AMBIENT_G: float = 0.97  # окружающий тон (G)
+static var AMBIENT_B: float = 0.92  # окружающий тон (B)
 
 # Тень под картой — дочерний квад чуть больше, тёмный полупрозрачный, сдвинут.
 static var SHADOW_ALPHA: float = 0.5
-const _SHADOW_QUAD_SCALE := 1.12
-const _SHADOW_OFFSET := Vector3(0.04, -0.05, -0.02)  # локально: вниз-вправо, за картой
+static var SHADOW_SCALE: float = 1.12  # размер тени относительно карты
+static var SHADOW_X: float = 0.04  # сдвиг тени (X, локально)
+static var SHADOW_Y: float = -0.05  # сдвиг тени (Y, вниз)
+static var SHADOW_Z: float = -0.02  # сдвиг тени (Z, за картой)
 static var _shadow_tex: ImageTexture  # мягкая радиальная тень (ленивая, общая)
 
 # Состояние сессии магазина (UI-локальное; бросок/монеты — в active_check).
@@ -294,8 +303,6 @@ func _build_3d_scene() -> void:
 	# Тёплая лампа слева-сверху — реальный свет: подсвечивает карты, не темнит.
 	_lamp = OmniLight3D.new()
 	_lamp.name = "Lamp"
-	_lamp.position = _LAMP_POS
-	_lamp.light_color = _LAMP_COLOR
 	_lamp.omni_range = 30.0
 	_world_vp.add_child(_lamp)
 
@@ -307,7 +314,7 @@ func _make_environment() -> Environment:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_CLEAR_COLOR
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = _AMBIENT_COLOR
+	env.ambient_light_color = Color(AMBIENT_R, AMBIENT_G, AMBIENT_B)
 	env.ambient_light_energy = AMBIENT
 	return env
 
@@ -320,8 +327,11 @@ func _apply_camera_light() -> void:
 	_camera.rotation = Vector3(deg_to_rad(CAM_PITCH), 0.0, 0.0)
 	_camera.fov = CAM_FOV
 	if _camera.environment:
+		_camera.environment.ambient_light_color = Color(AMBIENT_R, AMBIENT_G, AMBIENT_B)
 		_camera.environment.ambient_light_energy = AMBIENT
 	if is_instance_valid(_lamp):
+		_lamp.position = Vector3(LAMP_X, LAMP_Y, LAMP_Z)
+		_lamp.light_color = Color(LAMP_R, LAMP_G, LAMP_B)
 		_lamp.light_energy = LAMP_ENERGY
 
 
@@ -416,7 +426,7 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 # Как ребёнок меша наследует его трансформ при наведении/вылете.
 func _make_shadow_mesh() -> MeshInstance3D:
 	var quad := QuadMesh.new()
-	quad.size = _CARD_QUAD * _SHADOW_QUAD_SCALE
+	quad.size = _CARD_QUAD * SHADOW_SCALE
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.albedo_texture = _shadow_texture()
@@ -427,12 +437,16 @@ func _make_shadow_mesh() -> MeshInstance3D:
 	sh.name = "CardShadow"
 	sh.mesh = quad
 	sh.material_override = mat
-	sh.position = _SHADOW_OFFSET
+	sh.position = Vector3(SHADOW_X, SHADOW_Y, SHADOW_Z)
 	return sh
 
 
+func _shadow_node(mesh: MeshInstance3D) -> MeshInstance3D:
+	return mesh.get_node_or_null("CardShadow") as MeshInstance3D
+
+
 func _shadow_mat(mesh: MeshInstance3D) -> StandardMaterial3D:
-	var sh := mesh.get_node_or_null("CardShadow") as MeshInstance3D
+	var sh := _shadow_node(mesh)
 	return (sh.material_override as StandardMaterial3D) if sh else null
 
 
@@ -502,9 +516,13 @@ func _layout_stage() -> void:
 			mesh.position = pos
 			mesh.rotation = Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0)
 			mesh.scale = Vector3.ONE
-		var smat := _shadow_mat(mesh)
-		if smat:
-			smat.albedo_color = Color(0.0, 0.0, 0.0, SHADOW_ALPHA)
+		var sh := _shadow_node(mesh)
+		if sh:
+			(sh.mesh as QuadMesh).size = _CARD_QUAD * SHADOW_SCALE
+			sh.position = Vector3(SHADOW_X, SHADOW_Y, SHADOW_Z)
+			var smat := sh.material_override as StandardMaterial3D
+			if smat:
+				smat.albedo_color = Color(0.0, 0.0, 0.0, SHADOW_ALPHA)
 		_update_hit_rect(e)
 
 

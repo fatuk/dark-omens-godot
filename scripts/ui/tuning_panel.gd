@@ -654,6 +654,87 @@ func _build_specs() -> Array:
 			"default": ShopModal.LAMP_ENERGY,
 			"set": _set_shop_lamp_energy
 		},
+		{
+			"key": "shop_lamp_x",
+			"label": "Лампа · X",
+			"min": -8.0,
+			"max": 8.0,
+			"step": 0.1,
+			"default": ShopModal.LAMP_X,
+			"set": _set_shop_lamp_x
+		},
+		{
+			"key": "shop_lamp_y",
+			"label": "Лампа · Y",
+			"min": 0.0,
+			"max": 8.0,
+			"step": 0.1,
+			"default": ShopModal.LAMP_Y,
+			"set": _set_shop_lamp_y
+		},
+		{
+			"key": "shop_lamp_z",
+			"label": "Лампа · Z",
+			"min": -4.0,
+			"max": 8.0,
+			"step": 0.1,
+			"default": ShopModal.LAMP_Z,
+			"set": _set_shop_lamp_z
+		},
+		{
+			"key": "shop_lamp_r",
+			"label": "Лампа · R",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": ShopModal.LAMP_R,
+			"set": _set_shop_lamp_r
+		},
+		{
+			"key": "shop_lamp_g",
+			"label": "Лампа · G",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": ShopModal.LAMP_G,
+			"set": _set_shop_lamp_g
+		},
+		{
+			"key": "shop_lamp_b",
+			"label": "Лампа · B",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": ShopModal.LAMP_B,
+			"set": _set_shop_lamp_b
+		},
+		{
+			"key": "shop_amb_r",
+			"label": "Окруж. · R",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": ShopModal.AMBIENT_R,
+			"set": _set_shop_amb_r
+		},
+		{
+			"key": "shop_amb_g",
+			"label": "Окруж. · G",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": ShopModal.AMBIENT_G,
+			"set": _set_shop_amb_g
+		},
+		{
+			"key": "shop_amb_b",
+			"label": "Окруж. · B",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": ShopModal.AMBIENT_B,
+			"set": _set_shop_amb_b
+		},
 		{"section": "МАГАЗИН · ТЕНЬ"},
 		{
 			"key": "shop_shadow_alpha",
@@ -663,6 +744,42 @@ func _build_specs() -> Array:
 			"step": 0.02,
 			"default": ShopModal.SHADOW_ALPHA,
 			"set": _set_shop_shadow_alpha
+		},
+		{
+			"key": "shop_shadow_scale",
+			"label": "Размер тени",
+			"min": 0.8,
+			"max": 1.8,
+			"step": 0.01,
+			"default": ShopModal.SHADOW_SCALE,
+			"set": _set_shop_shadow_scale
+		},
+		{
+			"key": "shop_shadow_x",
+			"label": "Тень · X",
+			"min": -0.5,
+			"max": 0.5,
+			"step": 0.01,
+			"default": ShopModal.SHADOW_X,
+			"set": _set_shop_shadow_x
+		},
+		{
+			"key": "shop_shadow_y",
+			"label": "Тень · Y",
+			"min": -0.5,
+			"max": 0.5,
+			"step": 0.01,
+			"default": ShopModal.SHADOW_Y,
+			"set": _set_shop_shadow_y
+		},
+		{
+			"key": "shop_shadow_z",
+			"label": "Тень · Z",
+			"min": -0.5,
+			"max": 0.5,
+			"step": 0.01,
+			"default": ShopModal.SHADOW_Z,
+			"set": _set_shop_shadow_z
 		},
 	]
 
@@ -1221,6 +1338,71 @@ func _set_shop_lamp_energy(v: float) -> void:
 	_relayout_shop()
 
 
+func _set_shop_lamp_x(v: float) -> void:
+	ShopModal.LAMP_X = v
+	_relayout_shop()
+
+
+func _set_shop_lamp_y(v: float) -> void:
+	ShopModal.LAMP_Y = v
+	_relayout_shop()
+
+
+func _set_shop_lamp_z(v: float) -> void:
+	ShopModal.LAMP_Z = v
+	_relayout_shop()
+
+
+func _set_shop_lamp_r(v: float) -> void:
+	ShopModal.LAMP_R = v
+	_relayout_shop()
+
+
+func _set_shop_lamp_g(v: float) -> void:
+	ShopModal.LAMP_G = v
+	_relayout_shop()
+
+
+func _set_shop_lamp_b(v: float) -> void:
+	ShopModal.LAMP_B = v
+	_relayout_shop()
+
+
+func _set_shop_amb_r(v: float) -> void:
+	ShopModal.AMBIENT_R = v
+	_relayout_shop()
+
+
+func _set_shop_amb_g(v: float) -> void:
+	ShopModal.AMBIENT_G = v
+	_relayout_shop()
+
+
+func _set_shop_amb_b(v: float) -> void:
+	ShopModal.AMBIENT_B = v
+	_relayout_shop()
+
+
 func _set_shop_shadow_alpha(v: float) -> void:
 	ShopModal.SHADOW_ALPHA = v
+	_relayout_shop()
+
+
+func _set_shop_shadow_scale(v: float) -> void:
+	ShopModal.SHADOW_SCALE = v
+	_relayout_shop()
+
+
+func _set_shop_shadow_x(v: float) -> void:
+	ShopModal.SHADOW_X = v
+	_relayout_shop()
+
+
+func _set_shop_shadow_y(v: float) -> void:
+	ShopModal.SHADOW_Y = v
+	_relayout_shop()
+
+
+func _set_shop_shadow_z(v: float) -> void:
+	ShopModal.SHADOW_Z = v
 	_relayout_shop()
