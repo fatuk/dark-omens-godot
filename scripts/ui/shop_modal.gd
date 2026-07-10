@@ -82,10 +82,10 @@ static var AMBIENT_B: float = 0.92  # окружающий тон (B)
 # Тень под картой — отдельный квад-«drop shadow»: параллелен карте, сдвинут вниз-
 # вправо, выглядывает из-под нижнего края. Не дочерний: при наведении карта
 # поднимается, тень остаётся на месте. Сдвиг маленький → не «нимб» по всем краям.
-static var SHADOW_ALPHA: float = 0.55
-static var SHADOW_SCALE: float = 1.02  # размер тени относительно карты
-static var SHADOW_X: float = 0.05  # сдвиг вправо (X)
-static var SHADOW_Y: float = -0.16  # сдвиг вниз (Y)
+static var SHADOW_ALPHA: float = 0.6
+static var SHADOW_SCALE: float = 1.03  # размер тени относительно карты
+static var SHADOW_X: float = 0.15  # сдвиг вправо (X)
+static var SHADOW_Y: float = -0.28  # сдвиг вниз (Y)
 static var SHADOW_Z: float = -0.05  # чуть за карту (Z)
 static var _shadow_tex: ImageTexture  # мягкая радиальная тень (ленивая, общая)
 
@@ -452,16 +452,27 @@ func _shadow_mat(entry: Dictionary) -> StandardMaterial3D:
 	return (sh.material_override as StandardMaterial3D) if sh else null
 
 
-# Мягкая радиальная тень: чёрный с альфа-спадом от центра. Ленивая, общая.
+# Тень в форме карты: мягкий скруглённый прямоугольник аспекта карты (чёрный
+# с растушёванным краем), чтобы силуэт тени повторял карту, а не был пятном.
+# Ленивая, общая. Текстура в аспекте _CARD_QUAD → на квад ложится без искажения.
 func _shadow_texture() -> ImageTexture:
 	if _shadow_tex == null:
-		var n := 128
-		var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
-		var c := (n - 1) * 0.5
-		for y in range(n):
-			for x in range(n):
-				var d: float = Vector2(x - c, y - c).length() / c
-				var a: float = clampf(1.0 - d, 0.0, 1.0)
+		var w := 192
+		var h := int(round(192.0 * _CARD_QUAD.y / _CARD_QUAD.x))
+		var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+		var feather: float = float(w) * 0.16  # мягкость края
+		var radius: float = float(w) * 0.14  # скругление углов
+		var hx: float = w * 0.5
+		var hy: float = h * 0.5
+		var bx: float = hx - feather - radius  # внутр. полупрямоугольник
+		var by: float = hy - feather - radius
+		for y in range(h):
+			for x in range(w):
+				var qx: float = absf(x + 0.5 - hx) - bx
+				var qy: float = absf(y + 0.5 - hy) - by
+				# SDF скруглённого прямоугольника: <=0 внутри, растёт наружу
+				var d: float = Vector2(maxf(qx, 0.0), maxf(qy, 0.0)).length() - radius
+				var a: float = clampf(1.0 - d / feather, 0.0, 1.0)
 				img.set_pixel(x, y, Color(0.0, 0.0, 0.0, a * a))
 		_shadow_tex = ImageTexture.create_from_image(img)
 	return _shadow_tex
