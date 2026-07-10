@@ -91,6 +91,7 @@ static var ROW_Z: float = 0.0  # сдвиг ряда по глубине
 static var HOVER_UP: float = 0.30  # подъём по Y
 static var HOVER_FWD: float = 0.30  # к камере (по Z)
 static var HOVER_SCALE: float = 1.40
+static var HOVER_LIGHT: float = 0.15  # белая подсветка карты на ховере (эмиссия)
 
 # Свет: окружающий (базовая яркость ≈ сырой арт) + две тёплые лампы (слева = фонарь,
 # справа = свеча). RANGE/ATTEN каждой лампы задают градиент распространения света
@@ -471,6 +472,12 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	# Белая подсветка при наведении — эмиссия текстурой карты (не заливает прозрачные
+	# края, следует силуэту). Энергия 0 в покое, тви́нится вверх на ховере.
+	mat.emission_enabled = true
+	mat.emission = Color.WHITE
+	mat.emission_texture = vp.get_texture()
+	mat.emission_energy_multiplier = 0.0
 	var mesh := MeshInstance3D.new()
 	mesh.name = "CardMesh_%d" % idx
 	mesh.mesh = quad
@@ -690,14 +697,17 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
 		Tween.EASE_OUT
 	)
+	var mat: StandardMaterial3D = entry.mat
 	if on:
 		tw.tween_property(mesh, "position", rest_pos + Vector3(0.0, HOVER_UP, HOVER_FWD), 0.18)
 		tw.tween_property(mesh, "rotation", _face_rotation(), 0.18)
 		tw.tween_property(mesh, "scale", Vector3.ONE * HOVER_SCALE, 0.18)
+		tw.tween_property(mat, "emission_energy_multiplier", HOVER_LIGHT, 0.18)
 	else:
 		tw.tween_property(mesh, "position", rest_pos, 0.18)
 		tw.tween_property(mesh, "rotation", Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0), 0.18)
 		tw.tween_property(mesh, "scale", Vector3.ONE, 0.18)
+		tw.tween_property(mat, "emission_energy_multiplier", 0.0, 0.18)
 
 
 # Звук шуршания карты при наведении — тот же файл/вариации, что у веера

@@ -644,6 +644,15 @@ func _build_specs() -> Array:
 			"default": ShopModal.HOVER_SCALE,
 			"set": _set_shop_hover_scale
 		},
+		{
+			"key": "shop_hover_light",
+			"label": "Наведение · свет",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": ShopModal.HOVER_LIGHT,
+			"set": _set_shop_hover_light
+		},
 		{"section": "МАГАЗИН · СВЕТ Л (фонарь)"},
 		{
 			"key": "shop_lamp_energy",
@@ -1450,6 +1459,10 @@ func _set_shop_hover_fwd(v: float) -> void:
 func _set_shop_hover_scale(v: float) -> void:
 	ShopModal.HOVER_SCALE = v
 	_relayout_shop()
+
+
+func _set_shop_hover_light(v: float) -> void:
+	ShopModal.HOVER_LIGHT = v  # применяется на следующем наведении
 
 
 func _set_shop_ambient(v: float) -> void:
