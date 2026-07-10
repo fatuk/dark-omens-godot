@@ -526,14 +526,17 @@ func _layout_stage() -> void:
 		_update_hit_rect(e)
 
 
-# Хит-контрол под проекцией 3D-квада карты (экранный bbox 4 углов → _stage-координаты).
+# Хит-контрол = проекция ПОКОЯЩЕЙСЯ карты (её слота на столе), а НЕ анимируемого
+# меша. Иначе поднятая карта (масштаб/сдвиг к камере) растит хитбокс и он налезает
+# на соседей — курсор отрывается от карты. Слот фиксирован → наведение однозначно.
 func _update_hit_rect(e: Dictionary) -> void:
 	if not is_instance_valid(_camera) or not is_instance_valid(_stage):
 		return
 	var mesh: MeshInstance3D = e.mesh
+	var rest_pos: Vector3 = e.get("rest_pos", mesh.position)
+	var xf := Transform3D(Basis.from_euler(Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0)), rest_pos)
 	var hw: float = _CARD_QUAD.x * 0.5
 	var hh: float = _CARD_QUAD.y * 0.5
-	var xf: Transform3D = mesh.global_transform
 	var pts := [
 		xf * Vector3(-hw, hh, 0.0),
 		xf * Vector3(hw, hh, 0.0),
@@ -550,12 +553,6 @@ func _update_hit_rect(e: Dictionary) -> void:
 	var hit: Control = e.hit
 	hit.position = mn * sc
 	hit.size = (mx - mn) * sc
-
-
-# Хит-контролы следуют за анимируемыми (наведение/вылет) картами покадрово.
-func _process(_delta: float) -> void:
-	for e_v: Variant in _cards:
-		_update_hit_rect(e_v)
 
 
 # ── Наведение: подъём, приближение и поворот к камере ─────────────────────────
