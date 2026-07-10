@@ -16,6 +16,11 @@ extends RefCounted
 const REST_HEAL_HP: int = 1
 const REST_HEAL_SANITY: int = 1
 
+# Пауза перед передачей хода после последнего действия (сек). Даёт действию «вес»
+# и оставляет окно под будущие эффекты — ни одно действие не крутит цикл мгновенно.
+# В тестах _gs — мок вне дерева сцены, пауза пропускается (поведение синхронное).
+static var TURN_DELAY: float = 1.0
+
 var _gs: Node
 
 
@@ -201,7 +206,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 		and not bool(p.get("casting", false))
 		and not bool(p.get("condition_acting", false))
 	):
-		advance_action_turn()
+		_advance_turn_delayed()
 
 	_gs._broadcast_sync()
 	_gs._emit_changed()
@@ -236,7 +241,7 @@ func host_apply_cast_trigger_spells(pid: String, indices: Array) -> bool:
 	var p: Dictionary = _gs.players.get(pid, {})
 	p.erase("spell_prompt")
 	if int(p.get("actions_left", 0)) == 0 and not bool(p.get("shopping", false)):
-		advance_action_turn()
+		_advance_turn_delayed()
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
@@ -379,7 +384,7 @@ func release_cast_turn(pid: String) -> void:
 	var was_casting: bool = bool(p.get("casting", false))
 	p["casting"] = false
 	if was_casting and int(p.get("actions_left", 0)) == 0:
-		advance_action_turn()
+		_advance_turn_delayed()
 
 
 ## Хост: локальное действие состояния завершено — снимаем удержание хода condition_acting
@@ -392,7 +397,7 @@ func release_condition_turn(pid: String) -> void:
 	var was_acting: bool = bool(p.get("condition_acting", false))
 	p["condition_acting"] = false
 	if was_acting and int(p.get("actions_left", 0)) == 0:
-		advance_action_turn()
+		_advance_turn_delayed()
 
 
 ## Хост: магазин закрыт. Снимаем флаг shopping и, если действий не осталось,
@@ -408,7 +413,7 @@ func host_apply_shop_close(pid: String) -> bool:
 	var was_shopping: bool = bool(p.get("shopping", false))
 	p["shopping"] = false
 	if was_shopping and int(p.get("actions_left", 0)) == 0:
-		advance_action_turn()
+		_advance_turn_delayed()
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
@@ -526,6 +531,20 @@ func advance_action_turn() -> void:
 	_gs.current_idx += 1
 	if not skip_disconnected():
 		enter_encounter()
+
+
+## Передать ход с паузой TURN_DELAY: клиенты успевают «доиграть» действие/эффект,
+## только потом ход уходит. В тестах (_gs вне дерева) — сразу, без паузы, а
+## бродкаст делает вызывающий (как раньше). В игре — ждём таймер, затем сами
+## бродкастим уже сменившийся ход (вызывающий бродкастнул состояние до паузы).
+func _advance_turn_delayed() -> void:
+	if TURN_DELAY > 0.0 and _gs.is_inside_tree():
+		await _gs.get_tree().create_timer(TURN_DELAY).timeout
+		advance_action_turn()
+		_gs._broadcast_sync()
+		_gs._emit_changed()
+	else:
+		advance_action_turn()
 
 
 ## Войти в фазу encounter с первого подключённого игрока. Сбрасывает
