@@ -95,28 +95,28 @@ static var HOVER_SCALE: float = 1.40
 # Свет: окружающий (базовая яркость ≈ сырой арт) + две тёплые лампы (слева = фонарь,
 # справа = свеча). RANGE/ATTEN каждой лампы задают градиент распространения света
 # по ряду карт (range — дальнобойность, atten — крутизна спада). Тюнятся слайдерами.
-static var AMBIENT: float = 0.0  # окружающий свет (1.0 = карта в своих цветах)
+static var AMBIENT: float = 0.1  # окружающий свет (1.0 = карта в своих цветах)
 # Левая лампа (фонарь).
-static var LAMP_ENERGY: float = 8.0  # яркость
+static var LAMP_ENERGY: float = 14.8  # яркость
 static var LAMP_X: float = -6.4  # позиция (X)
 static var LAMP_Y: float = 3.9  # позиция (Y)
 static var LAMP_Z: float = 5.5  # позиция (Z)
 static var LAMP_R: float = 1.0  # цвет (R) — тёплый
 static var LAMP_G: float = 0.82  # цвет (G)
 static var LAMP_B: float = 0.55  # цвет (B)
-static var LAMP_RANGE: float = 30.0  # дальнобойность (радиус света)
+static var LAMP_RANGE: float = 11.0  # дальнобойность (радиус света)
 static var LAMP_ATTEN: float = 1.0  # крутизна спада (градиент): >1 — резче гаснет
 # Правая лампа (свеча).
-static var LAMP2_ENERGY: float = 4.0  # яркость
+static var LAMP2_ENERGY: float = 5.2  # яркость
 static var LAMP2_X: float = 6.4  # позиция (X)
 static var LAMP2_Y: float = 3.9  # позиция (Y)
 static var LAMP2_Z: float = 5.5  # позиция (Z)
 static var LAMP2_R: float = 1.0  # цвет (R) — тёплый
 static var LAMP2_G: float = 0.74  # цвет (G)
 static var LAMP2_B: float = 0.42  # цвет (B)
-static var LAMP2_RANGE: float = 30.0  # дальнобойность
+static var LAMP2_RANGE: float = 16.5  # дальнобойность
 static var LAMP2_ATTEN: float = 1.0  # крутизна спада
-static var AMBIENT_R: float = 1.0  # окружающий тон (R)
+static var AMBIENT_R: float = 0.99  # окружающий тон (R)
 static var AMBIENT_G: float = 0.97  # окружающий тон (G)
 static var AMBIENT_B: float = 0.92  # окружающий тон (B)
 
