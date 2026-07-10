@@ -139,6 +139,8 @@ var _buy_btn: Button
 var _cards: Array = []  # [{id, cost, card, vp, mesh, mat, hit, slot, total, hovering, buying}]
 var _chrome: Array = []  # [{node, fx, fy, fw, fh}] — элементы, позиционируемые по долям
 var _flame_nodes: Array = []  # [{node, cx, cy, w, h}] — огни-глоу, позиция по центру-долям
+var _hover_sfx: AudioStream = null  # звук шуршания при наведении (ленивый)
+var _hover_sfx_tried: bool = false
 
 
 func _ready() -> void:
@@ -650,6 +652,8 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 	if bool(entry.get("buying", false)):
 		return
 	entry["hovering"] = on
+	if on:
+		_play_hover_sfx()  # шуршание карты — как в веере
 	var mesh: MeshInstance3D = entry.mesh
 	var rest_pos: Vector3 = entry.get("rest_pos", mesh.position)
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
@@ -663,6 +667,23 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 		tw.tween_property(mesh, "position", rest_pos, 0.18)
 		tw.tween_property(mesh, "rotation", Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0), 0.18)
 		tw.tween_property(mesh, "scale", Vector3.ONE, 0.18)
+
+
+# Звук шуршания карты при наведении — тот же файл/вариации, что у веера
+# (HandCarousel), чтобы совпадал по звучанию и тюнился в одном месте. Ленивая
+# загрузка: пока файла нет — молчит.
+func _play_hover_sfx() -> void:
+	if not _hover_sfx_tried:
+		_hover_sfx_tried = true
+		if ResourceLoader.exists(HandCarousel.SCROLL_SFX_PATH):
+			_hover_sfx = load(HandCarousel.SCROLL_SFX_PATH)
+	if _hover_sfx != null:
+		SfxManager.play_variation(
+			_hover_sfx,
+			HandCarousel.SCROLL_VARIATIONS,
+			HandCarousel.SCROLL_PITCH,
+			HandCarousel.SCROLL_SEGMENTS
+		)
 
 
 # Поворот «лицом к камере» — перпендикулярно взгляду (компенсируем pitch камеры).
