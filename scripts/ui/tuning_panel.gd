@@ -644,24 +644,6 @@ func _build_specs() -> Array:
 			"default": ShopModal.HOVER_SCALE,
 			"set": _set_shop_hover_scale
 		},
-		{
-			"key": "shop_hover_light",
-			"label": "Наведение · яркость",
-			"min": 0.6,
-			"max": 2.0,
-			"step": 0.02,
-			"default": ShopModal.HOVER_LIGHT,
-			"set": _set_shop_hover_light
-		},
-		{
-			"key": "shop_hover_yellow",
-			"label": "Наведение · желтизна",
-			"min": 0.0,
-			"max": 1.0,
-			"step": 0.01,
-			"default": ShopModal.HOVER_YELLOW,
-			"set": _set_shop_hover_yellow
-		},
 		{"section": "МАГАЗИН · СВЕТ Л (фонарь)"},
 		{
 			"key": "shop_lamp_energy",
@@ -1467,15 +1449,6 @@ func _set_shop_hover_fwd(v: float) -> void:
 
 func _set_shop_hover_scale(v: float) -> void:
 	ShopModal.HOVER_SCALE = v
-	_relayout_shop()
-
-
-func _set_shop_hover_light(v: float) -> void:
-	ShopModal.HOVER_LIGHT = v  # применяется на следующем наведении
-
-
-func _set_shop_hover_yellow(v: float) -> void:
-	ShopModal.HOVER_YELLOW = v  # применяется на наведённой карте (relayout переложит)
 	_relayout_shop()
 
 

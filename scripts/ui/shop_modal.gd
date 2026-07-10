@@ -87,13 +87,11 @@ static var ROW_GAP: float = 1.24  # расстояние между центра
 static var ROW_Y: float = -0.2  # сдвиг ряда по высоте
 static var ROW_Z: float = 0.0  # сдвиг ряда по глубине
 
-# Наведение: карта поднимается, приближается и поворачивается лицом к камере.
+# Наведение: карта поднимается, приближается и поворачивается лицом к камере
+# (освещение то же, что у лежащих — SHADED тёплыми лампами; материал не меняем).
 static var HOVER_UP: float = 0.30  # подъём по Y
 static var HOVER_FWD: float = 0.30  # к камере (по Z)
 static var HOVER_SCALE: float = 1.40
-static var HOVER_LIGHT: float = 1.0  # яркость карты на ховере (множитель, 1.0 = как в арте)
-static var HOVER_YELLOW: float = 0.0  # желтизна наведённой карты (0 = нейтр., 1 = тёплый жёлтый)
-const _YELLOW_TINT := Color(1.0, 0.9, 0.58)  # цель тинта при желтизне=1
 
 # Свет: окружающий (базовая яркость ≈ сырой арт) + две тёплые лампы (слева = фонарь,
 # справа = свеча). RANGE/ATTEN каждой лампы задают градиент распространения света
@@ -636,10 +634,6 @@ func _layout_stage() -> void:
 			mesh.position = pos
 			mesh.rotation = Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0)
 			mesh.scale = Vector3.ONE
-		# Материал (шейдинг + тинт/желтизна) — чтобы правки на панели применялись живьём.
-		if not bool(e.get("buying", false)):
-			_apply_card_shade(e)
-			(e.mat as StandardMaterial3D).albedo_color = _card_albedo(e)
 		# Тень: drop-shadow — параллельна карте (тот же наклон), сдвинута вниз-вправо,
 		# так выглядывает из-под нижнего края (плоская тень при пологой камере не видна).
 		# Всегда в покое: при наведении карта поднимается над тенью. Покупаемую не трогаем.
@@ -697,7 +691,6 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
 		Tween.EASE_OUT
 	)
-	var mat: StandardMaterial3D = entry.mat
 	if on:
 		tw.tween_property(mesh, "position", rest_pos + Vector3(0.0, HOVER_UP, HOVER_FWD), 0.18)
 		tw.tween_property(mesh, "rotation", _face_rotation(), 0.18)
@@ -706,9 +699,6 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 		tw.tween_property(mesh, "position", rest_pos, 0.18)
 		tw.tween_property(mesh, "rotation", Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0), 0.18)
 		tw.tween_property(mesh, "scale", Vector3.ONE, 0.18)
-	# На ховере карта — UNSHADED (без тёплых ламп) → оригинальный цвет ассета.
-	_apply_card_shade(entry)
-	tw.tween_property(mat, "albedo_color", _card_albedo(entry), 0.18)
 
 
 # Звук шуршания карты при наведении — тот же файл/вариации, что у веера
@@ -908,27 +898,10 @@ func _refresh() -> void:
 		var e: Dictionary = e_v
 		if bool(e.get("buying", false)):
 			continue
-		_apply_card_shade(e)
 		(e.mat as StandardMaterial3D).albedo_color = _card_albedo(e)
 
 
-# Цвет-множитель albedo карты. На ховере — нейтральный HOVER_LIGHT (карта UNSHADED,
-# показываем оригинальный цвет арта без тёплого тинта). В покое — тёплый тинт если
-# выбрана, иначе белый (материал SHADED, свет ламп даёт интеграцию со сценой).
+# Цвет-множитель albedo карты: тёплый тинт если выбрана, иначе белый. Освещение —
+# тёплые лампы (SHADED), одинаково для лежащих и наведённых карт.
 func _card_albedo(entry: Dictionary) -> Color:
-	if bool(entry.get("hovering", false)):
-		# Наведённая карта: яркость + опциональная желтизна (тянем к тёплому жёлтому).
-		var b := Color(HOVER_LIGHT, HOVER_LIGHT, HOVER_LIGHT, 1.0)
-		return b * Color.WHITE.lerp(_YELLOW_TINT, HOVER_YELLOW)
 	return Color(1.2, 1.14, 0.9) if _selected.has(entry.id) else Color.WHITE
-
-
-# Режим шейдинга карты: на ховере UNSHADED (оригинальный цвет, игнор ламп),
-# в покое SHADED (тёплый свет ламп → карта вписана в сцену).
-func _apply_card_shade(entry: Dictionary) -> void:
-	var mat: StandardMaterial3D = entry.mat
-	mat.shading_mode = (
-		BaseMaterial3D.SHADING_MODE_UNSHADED
-		if bool(entry.get("hovering", false))
-		else BaseMaterial3D.SHADING_MODE_PER_PIXEL
-	)
