@@ -45,7 +45,8 @@ const _TRAIT_KEY := {
 const _CARD_ASPECT := 290.0 / 459.0  # ш/в карты
 const _CARD_TEX_SIZE := Vector2i(512, 810)  # разрешение UI-рендера карты (аспект 290:459)
 const _CARD_QUAD := Vector2(1.0, 459.0 / 290.0)  # размер 3D-квада (мир. ед.), h>w
-const _WORLD_VP_SIZE := Vector2i(1264, 711)  # 3D-вьюпорт, аспект shop-bg (2528:1422)
+const _WORLD_VP_SIZE := Vector2i(1264, 711)  # стартовый размер 3D-вьюпорта (в раскладке
+# переустанавливается ровно в размер сцены — аспект рендера = аспект показа)
 
 # Камера над столом, смотрит вниз под углом.
 static var CAM_DIST: float = 4.9  # Z камеры (отдаление)
@@ -503,7 +504,11 @@ func _layout_stage() -> void:
 		node.custom_minimum_size = Vector2(e.fw * s.x, e.fh * s.y)
 		node.size = node.custom_minimum_size
 	# 3D-раскладка ряда карт: по X с шагом ROW_GAP, наклон назад CARD_TILT. Камера/свет
-	# — из тюн-параметров. Хит-контролы двигаются за проекцией мешей в _process.
+	# — из тюн-параметров. Хит-контролы — проекция покоящихся мешей (см. _update_hit_rect).
+	# 3D-вьюпорт держим ровно в размер сцены: аспект рендера = аспект показа (иначе
+	# SubViewportContainer растягивает картинку и проекция для хитбоксов «плывёт»).
+	if is_instance_valid(_world_vp):
+		_world_vp.size = Vector2i(maxi(1, int(round(s.x))), maxi(1, int(round(s.y))))
 	_apply_camera_light()
 	var total: int = _cards.size()
 	var row_w: float = float(maxi(total - 1, 0)) * ROW_GAP
@@ -549,7 +554,7 @@ func _update_hit_rect(e: Dictionary) -> void:
 		var sp: Vector2 = _camera.unproject_position(p_v)
 		mn = Vector2(minf(mn.x, sp.x), minf(mn.y, sp.y))
 		mx = Vector2(maxf(mx.x, sp.x), maxf(mx.y, sp.y))
-	var sc: Vector2 = _stage.size / Vector2(_WORLD_VP_SIZE)
+	var sc: Vector2 = _stage.size / Vector2(_world_vp.size)
 	var hit: Control = e.hit
 	hit.position = mn * sc
 	hit.size = (mx - mn) * sc
