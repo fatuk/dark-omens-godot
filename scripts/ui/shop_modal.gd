@@ -276,7 +276,7 @@ func _build() -> void:
 	btns.add_theme_constant_override("separation", 24)
 	btns.alignment = BoxContainer.ALIGNMENT_CENTER
 	_stage.add_child(btns)
-	_chrome.append({"node": btns, "fx": 0.08, "fy": 0.905, "fw": 0.84, "fh": 0.06})
+	_chrome.append({"node": btns, "fx": 0.206, "fy": 0.905, "fw": 0.588, "fh": 0.06})
 
 	# vertical SHRINK_CENTER: кнопки держат натуральную высоту текстуры и не тянутся
 	# по высоте контейнера — иначе орнаментальная рамка растягивается и её нижний
