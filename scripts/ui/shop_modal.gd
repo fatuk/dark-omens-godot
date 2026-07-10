@@ -236,7 +236,7 @@ func _build() -> void:
 	var sub := UIStyle.label("SHOP_SUBTITLE", 15, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	sub.name = "Subtitle"
 	_stage.add_child(sub)
-	_chrome.append({"node": sub, "fx": 0.2, "fy": 0.115, "fw": 0.6, "fh": 0.04})
+	_chrome.append({"node": sub, "fx": 0.2, "fy": 0.100, "fw": 0.6, "fh": 0.04})
 
 	# Крестик закрытия — поверх нарисованного X в арте.
 	var close := Button.new()
@@ -259,7 +259,7 @@ func _build() -> void:
 	_coins_lbl = UIStyle.label("", 17, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
 	_coins_lbl.name = "Coins"
 	_stage.add_child(_coins_lbl)
-	_chrome.append({"node": _coins_lbl, "fx": 0.25, "fy": 0.635, "fw": 0.5, "fh": 0.04})
+	_chrome.append({"node": _coins_lbl, "fx": 0.25, "fy": 0.715, "fw": 0.5, "fh": 0.04})
 
 	# Кубы Влияния — в ряду слотов на прилавке.
 	_dice_box = HBoxContainer.new()
@@ -268,7 +268,7 @@ func _build() -> void:
 	_dice_box.add_theme_constant_override("separation", 10)
 	_dice_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_stage.add_child(_dice_box)
-	_chrome.append({"node": _dice_box, "fx": 0.3, "fy": 0.785, "fw": 0.4, "fh": 0.09})
+	_chrome.append({"node": _dice_box, "fx": 0.3, "fy": 0.735, "fw": 0.4, "fh": 0.09})
 
 	# ── Кнопки: долг · бросок · купить ──
 	var btns := HBoxContainer.new()
@@ -278,19 +278,25 @@ func _build() -> void:
 	_stage.add_child(btns)
 	_chrome.append({"node": btns, "fx": 0.08, "fy": 0.905, "fw": 0.84, "fh": 0.06})
 
+	# vertical SHRINK_CENTER: кнопки держат натуральную высоту текстуры и не тянутся
+	# по высоте контейнера — иначе орнаментальная рамка растягивается и её нижний
+	# бордюр «отрывается» тонкой линией под кнопкой.
 	_debt_btn = UIStyle.button("SHOP_TAKE_DEBT", UIColors.WARNING)
 	_debt_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_debt_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_debt_btn.pressed.connect(_on_take_debt)
 	_debt_btn.visible = not _has_debt()
 	btns.add_child(_debt_btn)
 
 	_roll_btn = UIStyle.button("SHOP_ROLL", UIColors.ACCENT)
 	_roll_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_roll_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_roll_btn.pressed.connect(_on_roll)
 	btns.add_child(_roll_btn)
 
 	_buy_btn = UIStyle.button("SHOP_BUY", UIColors.ACCENT)
 	_buy_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_buy_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_buy_btn.pressed.connect(_on_buy)
 	btns.add_child(_buy_btn)
 
