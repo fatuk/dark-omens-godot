@@ -48,21 +48,21 @@ const _CARD_QUAD := Vector2(1.0, 459.0 / 290.0)  # размер 3D-квада (�
 const _WORLD_VP_SIZE := Vector2i(1264, 711)  # 3D-вьюпорт, аспект shop-bg (2528:1422)
 
 # Камера над столом, смотрит вниз под углом.
-static var CAM_DIST: float = 5.6  # Z камеры (отдаление)
-static var CAM_HEIGHT: float = 2.3  # Y камеры (высота над центром ряда)
+static var CAM_DIST: float = 4.9  # Z камеры (отдаление)
+static var CAM_HEIGHT: float = 2.0  # Y камеры (высота над центром ряда)
 static var CAM_PITCH: float = -26.0  # наклон камеры вниз, град
-static var CAM_FOV: float = 30.0
+static var CAM_FOV: float = 48.0
 
 # Ряд карт: лежат на столе (наклон назад CARD_TILT), в ряд по X.
-static var CARD_TILT: float = 52.0  # наклон карт назад, град (0 = стоят к камере)
-static var ROW_GAP: float = 1.20  # расстояние между центрами карт (мир. ед.)
+static var CARD_TILT: float = 59.0  # наклон карт назад, град (0 = стоят к камере)
+static var ROW_GAP: float = 1.24  # расстояние между центрами карт (мир. ед.)
 static var ROW_Y: float = -0.2  # сдвиг ряда по высоте
 static var ROW_Z: float = 0.0  # сдвиг ряда по глубине
 
 # Наведение: карта поднимается, приближается и поворачивается лицом к камере.
 static var HOVER_UP: float = 0.30  # подъём по Y
 static var HOVER_FWD: float = 0.30  # к камере (по Z)
-static var HOVER_SCALE: float = 1.06
+static var HOVER_SCALE: float = 1.40
 
 # Свет: окружающий (базовая яркость ≈ сырой арт) + тёплая лампа слева-сверху.
 # Позиция/цвет лампы и тон окружающего — покомпонентно (тюнятся слайдерами).
