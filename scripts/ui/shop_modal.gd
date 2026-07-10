@@ -92,6 +92,8 @@ static var HOVER_UP: float = 0.30  # подъём по Y
 static var HOVER_FWD: float = 0.30  # к камере (по Z)
 static var HOVER_SCALE: float = 1.40
 static var HOVER_LIGHT: float = 1.0  # яркость карты на ховере (множитель, 1.0 = как в арте)
+static var HOVER_YELLOW: float = 0.0  # желтизна наведённой карты (0 = нейтр., 1 = тёплый жёлтый)
+const _YELLOW_TINT := Color(1.0, 0.9, 0.58)  # цель тинта при желтизне=1
 
 # Свет: окружающий (базовая яркость ≈ сырой арт) + две тёплые лампы (слева = фонарь,
 # справа = свеча). RANGE/ATTEN каждой лампы задают градиент распространения света
@@ -634,6 +636,10 @@ func _layout_stage() -> void:
 			mesh.position = pos
 			mesh.rotation = Vector3(deg_to_rad(-CARD_TILT), 0.0, 0.0)
 			mesh.scale = Vector3.ONE
+		# Материал (шейдинг + тинт/желтизна) — чтобы правки на панели применялись живьём.
+		if not bool(e.get("buying", false)):
+			_apply_card_shade(e)
+			(e.mat as StandardMaterial3D).albedo_color = _card_albedo(e)
 		# Тень: drop-shadow — параллельна карте (тот же наклон), сдвинута вниз-вправо,
 		# так выглядывает из-под нижнего края (плоская тень при пологой камере не видна).
 		# Всегда в покое: при наведении карта поднимается над тенью. Покупаемую не трогаем.
@@ -911,7 +917,9 @@ func _refresh() -> void:
 # выбрана, иначе белый (материал SHADED, свет ламп даёт интеграцию со сценой).
 func _card_albedo(entry: Dictionary) -> Color:
 	if bool(entry.get("hovering", false)):
-		return Color(HOVER_LIGHT, HOVER_LIGHT, HOVER_LIGHT, 1.0)
+		# Наведённая карта: яркость + опциональная желтизна (тянем к тёплому жёлтому).
+		var b := Color(HOVER_LIGHT, HOVER_LIGHT, HOVER_LIGHT, 1.0)
+		return b * Color.WHITE.lerp(_YELLOW_TINT, HOVER_YELLOW)
 	return Color(1.2, 1.14, 0.9) if _selected.has(entry.id) else Color.WHITE
 
 
