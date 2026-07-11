@@ -24,16 +24,20 @@ const ANIM_TIME: float = 0.22
 const FRAME_ASPECT: float = 1638.0 / 4506.0
 # Панель шире базовой вписанной по высоте на этот коэффициент (больше места под текст).
 const WIDTH_FACTOR: float = 1.25
+# Заголовок локации: базовый размер шрифта и минимум при авто-подгонке под ширину
+# (длинные названия ужимаем, чтобы влезали между шевронами — см. _fit_title).
+const TITLE_SIZE: int = 33
+const TITLE_SIZE_MIN: int = 15
 # Небольшой отступ панели от краёв экрана (сверху/снизу/справа) — доля высоты экрана.
-const EDGE_GAP_FACTOR: float = 0.01
+const EDGE_GAP_FACTOR: float = 0.005
 
 # Тень под панелью (мягкий drop-shadow за рамкой). Параметры вынесены в тюнинг
 # (Ctrl+M → «САЙДБАР · ТЕНЬ»); найденные значения запекаются сюда.
-static var SHADOW_ALPHA: float = 0.5  # плотность (альфа) тени
+static var SHADOW_ALPHA: float = 0.26  # плотность (альфа) тени
 static var SHADOW_SIZE: float = 48.0  # размытие/растекание тени, px
-static var SHADOW_GROW: float = 8.0  # расширение силуэта тени за габарит панели, px
-static var SHADOW_OFFSET_X: float = -6.0  # сдвиг тени по X (влево — от края экрана)
-static var SHADOW_OFFSET_Y: float = 12.0  # сдвиг тени по Y (вниз)
+static var SHADOW_GROW: float = 10.0  # расширение силуэта тени за габарит панели, px
+static var SHADOW_OFFSET_X: float = 1.0  # сдвиг тени по X (влево — от края экрана)
+static var SHADOW_OFFSET_Y: float = 8.0  # сдвиг тени по Y (вниз)
 # Ширина панели считается от высоты панели (см. _relayout); дефолт — фолбэк.
 var _panel_width: float = 392.0 * WIDTH_FACTOR
 # Текущий отступ от краёв в пикселях (считается в _relayout).
@@ -103,9 +107,10 @@ func _relayout() -> void:
 	if is_instance_valid(_margin):
 		_margin.add_theme_constant_override("margin_left", int(_panel_width * 0.085))
 		_margin.add_theme_constant_override("margin_right", int(_panel_width * 0.085))
-		_margin.add_theme_constant_override("margin_top", int(panel_h * 0.05))
+		_margin.add_theme_constant_override("margin_top", int(panel_h * 0.025))
 		_margin.add_theme_constant_override("margin_bottom", int(panel_h * 0.035))
 	apply_shadow()
+	_fit_title()
 	_apply_offsets(not _is_open)
 
 
@@ -160,7 +165,7 @@ func _build_header() -> void:
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_vbox.add_child(header)
 
-	var title_row := UIStyle.ornate_title("", 33, UIColors.ACCENT)
+	var title_row := UIStyle.ornate_title("", TITLE_SIZE, UIColors.ACCENT)
 	title_row.name = "TitleRow"
 	title_row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	title_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -168,11 +173,39 @@ func _build_header() -> void:
 	_title_lbl = title_row.get_node("Title")
 
 
+# Ужимает шрифт заголовка так, чтобы название влезало между шевронами по ширине
+# панели (длинные вроде «К северо-востоку от Гавайев» иначе вылезали за рамку).
+func _fit_title() -> void:
+	if not is_instance_valid(_title_lbl):
+		return
+	var text: String = tr(_title_lbl.text)  # меряем переведённую строку, не ключ
+	if text.is_empty():
+		return
+	var reserved: float = 0.0  # ширина шевронов + разделители в орнаментном заголовке
+	var row := _title_lbl.get_parent() as HBoxContainer
+	if row != null:
+		for c: Node in row.get_children():
+			if c is TextureRect:
+				reserved += (c as TextureRect).custom_minimum_size.x
+		reserved += (
+			float(row.get_theme_constant("separation")) * float(maxi(0, row.get_child_count() - 1))
+		)
+	var avail: float = _panel_width - 2.0 * (_panel_width * 0.085) - reserved
+	var font: Font = _title_lbl.get_theme_font("font")
+	var size: int = TITLE_SIZE
+	if font != null and avail > 0.0:
+		var w: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, TITLE_SIZE).x
+		if w > avail:
+			size = clampi(int(floor(TITLE_SIZE * avail / w)), TITLE_SIZE_MIN, TITLE_SIZE)
+	_title_lbl.add_theme_font_size_override("font_size", size)
+
+
 # Подпись под заголовком: тип · реальный прообраз (мелко, приглушённо).
 func _build_caption() -> void:
 	_caption = Label.new()
 	_caption.name = "Caption"
 	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART  # длинный прообраз — в 2 строки
 	_caption.add_theme_font_size_override("font_size", 18)
 	_caption.add_theme_color_override("font_color", UIColors.MUTED)
 	_vbox.add_child(_caption)
@@ -315,6 +348,7 @@ func show_location(data: Dictionary) -> void:
 	# name/realWorldLocation/description/type — translation keys (Label.tr при рендере).
 	_loc_id = String(data.get("id", ""))
 	_title_lbl.text = String(data.get("name", ""))
+	_fit_title()  # длинное название ужимаем под ширину панели
 	_caption.text = _caption_text(data)
 	_image.texture = _location_art(_loc_id)
 	_description.text = String(data.get("description", ""))
