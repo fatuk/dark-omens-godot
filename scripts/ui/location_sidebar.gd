@@ -18,7 +18,8 @@ signal closed
 signal shop_requested
 signal trade_requested
 
-const ANIM_TIME: float = 0.22
+const ANIM_TIME: float = 0.22  # длительность выезда (открытие)
+const ANIM_TIME_CLOSE: float = 0.32  # закрытие чуть медленнее открытия
 # Открытие/закрытие — один slide-файл, различаем высотой: открытие ярче/выше,
 # закрытие ниже (нисходящее). Небольшой джиттер — чтобы повторы не были одинаковы.
 const SLIDE_PITCH_OPEN: float = 1.08
@@ -383,8 +384,8 @@ func _transition_to_new() -> void:
 		_tween.kill()
 	_play_slide_sfx(true)  # это «спрятать» — звук закрытия
 	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	_tween.tween_property(_panel, "offset_left", 0.0, ANIM_TIME)
-	_tween.tween_property(_panel, "offset_right", _panel_width, ANIM_TIME)
+	_tween.tween_property(_panel, "offset_left", 0.0, ANIM_TIME_CLOSE)
+	_tween.tween_property(_panel, "offset_right", _panel_width, ANIM_TIME_CLOSE)
 	_tween.finished.connect(_on_transition_hidden, CONNECT_ONE_SHOT)
 
 
@@ -636,8 +637,9 @@ func _animate(hide_panel: bool) -> void:
 	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	var off_left: float = 0.0 if hide_panel else -_panel_width - _edge_gap
 	var off_right: float = _panel_width if hide_panel else -_edge_gap
-	_tween.tween_property(_panel, "offset_left", off_left, ANIM_TIME)
-	_tween.tween_property(_panel, "offset_right", off_right, ANIM_TIME)
+	var dur: float = ANIM_TIME_CLOSE if hide_panel else ANIM_TIME
+	_tween.tween_property(_panel, "offset_left", off_left, dur)
+	_tween.tween_property(_panel, "offset_right", off_right, dur)
 
 
 func _apply_offsets(hide_panel: bool) -> void:
