@@ -382,7 +382,8 @@ func _apply_location(data: Dictionary) -> void:
 func _transition_to_new() -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
-	_play_slide_sfx(true)  # это «спрятать» — звук закрытия
+	# Звук закрытия здесь НЕ играем — это не закрытие, а смена локации. Прозвучит
+	# только звук открытия, когда панель выедет обратно с новой инфой.
 	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_tween.tween_property(_panel, "offset_left", 0.0, ANIM_TIME_CLOSE)
 	_tween.tween_property(_panel, "offset_right", _panel_width, ANIM_TIME_CLOSE)
