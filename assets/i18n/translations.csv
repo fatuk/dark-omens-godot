@@ -746,6 +746,8 @@ ENCOUNTER_FALLBACK_SUCCESS,Вы сохраняете самообладание.
 ENCOUNTER_FALLBACK_FAILURE,Дурное предчувствие ещё долго не отпускает.,An ill feeling clings to you for a long while.
 
 SIDEBAR_TRAVEL_HERE,Переместиться сюда,Travel here
+SIDEBAR_TRAVEL,Переместиться,Travel
+SIDEBAR_TRADE,Обмен,Trade
 
 INV_PANEL_CLUES,Улики,Clues
 INV_PANEL_TICKETS,Билеты,Tickets

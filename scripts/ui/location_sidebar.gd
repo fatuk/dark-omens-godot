@@ -1,132 +1,201 @@
 extends CanvasLayer
 
-## Боковая панель справа с инфой о выбранной локации.
-## Открывается через show_location(data), закрывается close_panel() или
-## кнопкой ✕. При смене локации с открытым сайдбаром просто обновляет контент
-## без re-анимации.
+## Боковая панель справа с инфой о выбранной локации (орнаментальная рамка).
+## Открывается show_location(data), закрывается close_panel() / крестиком.
+##
+## Раскладка: рамка-арт (sidebar-bg.png) → орнаментальный заголовок с шевронами →
+## окно-картинка локации (assets/locations/<id>.png, как арт ассетов) → действия
+## (Переместиться / Обмен, плюс контекстные Магазин / Билеты) → описание → список
+## объектов на локации (монстры/улики/слухи).
 ##
 ## Сигналы:
-##   closed              — пользователь закрыл крестиком (карта снимет подсветку)
-##   neighbor_selected   — клик по соседу в списке (карта переключится туда)
+##   closed          — пользователь закрыл крестиком (карта снимет подсветку)
+##   shop_requested  — клик «Магазин» (открыть модалку магазина)
+##   trade_requested — клик «Обмен» (открыть модалку обмена)
 
 signal closed
-signal neighbor_selected(loc_name: String)
-signal shop_requested  # клик по кнопке «Магазин» (открыть модалку магазина)
+signal shop_requested
+signal trade_requested
 
 const PANEL_WIDTH: float = 360.0
 const ANIM_TIME: float = 0.22
 
-# Цвета и подписи типов связей (соответствуют MapLayer.COLOR_*).
+# Картинка локации: по конвенции имени файла assets/locations/<id>.png (как арт
+# ассетов по id). Нет файла → пустое окно-заглушка.
+const LOCATION_ART_DIR: String = "res://assets/locations/"
+
+# Цвета типов дорог — для кнопок покупки билетов (соответствуют MapLayer.COLOR_*).
 const CONN_COLORS: Dictionary = {
 	"ship": Color(0.275, 0.510, 0.706),
 	"train": Color(0.627, 0.322, 0.176),
-	"uncharted": Color(1.000, 0.843, 0.000),
-}
-# Ключи переводов для типов связей — резолвятся через tr() при отрисовке.
-const CONN_TR_KEYS: Dictionary = {
-	"ship": "CONN_SHIP",
-	"train": "CONN_TRAIN",
-	"uncharted": "CONN_UNCHARTED",
 }
 
-@onready var _panel: PanelContainer = %Panel
-@onready var _title: Label = %Title
-@onready var _subtitle: Label = %Subtitle
-@onready var _type_label: Label = %TypeLabel
-@onready var _description: Label = %Description
-@onready var _close_btn: Button = %CloseBtn
-@onready var _neighbors_hdr: Label = %NeighborsHeader
-@onready var _neighbors: VBoxContainer = %NeighborsList
-@onready var _travel_btn: Button = %TravelBtn
+@onready var _panel: Control = %Panel
+@onready var _vbox: VBoxContainer = %VBox
 
 var _is_open: bool = false
 var _tween: Tween = null
 var _loc_id: String = ""  # id показанной сейчас локации (для GameState.travel)
 
-# Блок «айтемы на локации» — создаётся программно (динамический контент).
+# Узлы контента (строятся программно в _ready).
+var _title_lbl: Label = null
+var _caption: Label = null
+var _image: TextureRect = null
+var _description: Label = null
+var _travel_btn: Button = null
+var _trade_btn: Button = null
+var _shop_btn: Button = null
+var _buy_train_btn: Button = null
+var _buy_ship_btn: Button = null
 var _items_sep: HSeparator = null
 var _items_hdr: Label = null
 var _items_list: VBoxContainer = null
 
-# Кнопка «Магазин» — создаётся программно, видна только в городе со своим сыщиком.
-var _shop_btn: Button = null
-
-# Кнопки покупки билетов (ж/д / корабль) — видны в моём городе по типам дорог.
-var _buy_train_btn: Button = null
-var _buy_ship_btn: Button = null
-
 
 func _ready() -> void:
-	UIStyle.style_panel(_panel, 18)
-	_style_close_button()
-	_title.add_theme_color_override("font_color", UIColors.ACCENT)
-	_subtitle.add_theme_color_override("font_color", UIColors.MUTED)
-	_type_label.add_theme_color_override("font_color", UIColors.WARNING)
-	_description.add_theme_color_override("font_color", UIColors.TEXT)
-	_neighbors_hdr.add_theme_color_override("font_color", UIColors.MUTED)
-	_close_btn.pressed.connect(_on_close_pressed)
-	UIStyle.style_button(_travel_btn)
-	_travel_btn.pressed.connect(_on_travel_pressed)
-	_build_shop_button()
-	_build_buy_ticket_buttons()
-	GameState.state_changed.connect(_refresh_travel)
-	GameState.state_changed.connect(_refresh_shop)
-	GameState.state_changed.connect(_refresh_tickets)
+	_build_ui()
+	GameState.state_changed.connect(_refresh_actions)
 	GameState.state_changed.connect(_refresh_items)
-	_build_items_section()
 	_apply_offsets(true)
-	_neighbors_hdr.text = "SIDEBAR_NEIGHBORS"  # Godot auto-translate при рендере
 
 
-# Кнопка «Магазин» — сразу после кнопки перемещения.
-func _build_shop_button() -> void:
-	var vbox: Node = _neighbors.get_parent()  # Panel/Margin/VBox
-	_shop_btn = Button.new()
-	_shop_btn.name = "ShopBtn"
-	_shop_btn.text = "SIDEBAR_BTN_SHOP"  # Godot переведёт по ключу
+# ── Сборка UI ─────────────────────────────────────────────────────────────────
+
+
+func _build_ui() -> void:
+	_build_header()
+	_build_caption()
+	_build_image_box()
+	_build_actions()
+	_build_content()
+
+
+# Орнаментальный заголовок (шеврон · имя · шеврон) + крестик поверх правого угла.
+func _build_header() -> void:
+	var header := Control.new()
+	header.name = "Header"
+	header.custom_minimum_size = Vector2(0, 40)
+	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_vbox.add_child(header)
+
+	var title_row := UIStyle.ornate_title("", 22, UIColors.ACCENT)
+	title_row.name = "TitleRow"
+	title_row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	title_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	header.add_child(title_row)
+	_title_lbl = title_row.get_node("Title")
+
+	var close := Button.new()
+	close.name = "CloseBtn"
+	close.custom_minimum_size = Vector2(30, 30)
+	close.text = "×"
+	close.add_theme_font_size_override("font_size", 18)
+	close.anchor_left = 1.0
+	close.anchor_right = 1.0
+	close.offset_left = -30.0
+	close.offset_top = 2.0
+	close.offset_right = 0.0
+	close.offset_bottom = 32.0
+	UIStyle.style_icon_button(close, UIColors.DANGER)
+	close.pressed.connect(_on_close_pressed)
+	header.add_child(close)
+
+
+# Подпись под заголовком: тип · реальный прообраз (мелко, приглушённо).
+func _build_caption() -> void:
+	_caption = Label.new()
+	_caption.name = "Caption"
+	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_caption.add_theme_font_size_override("font_size", 12)
+	_caption.add_theme_color_override("font_color", UIColors.MUTED)
+	_vbox.add_child(_caption)
+
+
+# Окно-картинка локации: нейтральная тёмная рамка + TextureRect (cover). Пусто,
+# если файла нет — как заглушка на макете.
+func _build_image_box() -> void:
+	var box := PanelContainer.new()
+	box.name = "ImageBox"
+	box.custom_minimum_size = Vector2(0, 200)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.06, 0.06, 0.05, 0.85)
+	sb.set_border_width_all(1)
+	sb.border_color = Color(UIColors.BORDER, 0.6)
+	sb.set_corner_radius_all(4)
+	box.add_theme_stylebox_override("panel", sb)
+	_image = TextureRect.new()
+	_image.name = "Image"
+	_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_image.clip_contents = true
+	box.add_child(_image)
+	_vbox.add_child(box)
+
+
+# Ряд действий: Переместиться | Обмен, плюс контекстные Магазин и Билеты (стопкой).
+func _build_actions() -> void:
+	var row := HBoxContainer.new()
+	row.name = "Actions"
+	row.add_theme_constant_override("separation", 8)
+	_vbox.add_child(row)
+
+	_travel_btn = UIStyle.button("SIDEBAR_TRAVEL")
+	_travel_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_travel_btn.visible = false
+	_travel_btn.pressed.connect(_on_travel_pressed)
+	row.add_child(_travel_btn)
+
+	_trade_btn = UIStyle.button("SIDEBAR_TRADE")
+	_trade_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_trade_btn.visible = false
+	_trade_btn.pressed.connect(func() -> void: trade_requested.emit())
+	row.add_child(_trade_btn)
+
+	_shop_btn = UIStyle.button("SIDEBAR_BTN_SHOP", UIColors.ACCENT)
 	_shop_btn.visible = false
-	UIStyle.style_button(_shop_btn, UIColors.ACCENT)
 	_shop_btn.pressed.connect(func() -> void: shop_requested.emit())
-	vbox.add_child(_shop_btn)
-	vbox.move_child(_shop_btn, _travel_btn.get_index() + 1)
+	_vbox.add_child(_shop_btn)
+
+	_buy_train_btn = _make_buy_ticket_btn("SIDEBAR_BTN_TICKET_TRAIN", "train")
+	_buy_ship_btn = _make_buy_ticket_btn("SIDEBAR_BTN_TICKET_SHIP", "ship")
+	_vbox.add_child(_buy_train_btn)
+	_vbox.add_child(_buy_ship_btn)
 
 
-# Кнопки покупки билетов — сразу после кнопки магазина. Видимость/тип задаёт
-# _refresh_tickets (can_buy_ticket + available_ticket_types).
-func _build_buy_ticket_buttons() -> void:
-	var vbox: Node = _neighbors.get_parent()
-	_buy_train_btn = _make_buy_ticket_btn("SIDEBAR_BTN_TICKET_TRAIN", "train", CONN_COLORS["train"])
-	_buy_ship_btn = _make_buy_ticket_btn("SIDEBAR_BTN_TICKET_SHIP", "ship", CONN_COLORS["ship"])
-	vbox.add_child(_buy_train_btn)
-	vbox.add_child(_buy_ship_btn)
-	vbox.move_child(_buy_train_btn, _shop_btn.get_index() + 1)
-	vbox.move_child(_buy_ship_btn, _shop_btn.get_index() + 2)
-
-
-func _make_buy_ticket_btn(label_key: String, ticket_type: String, color: Color) -> Button:
-	var btn := Button.new()
+func _make_buy_ticket_btn(label_key: String, ticket_type: String) -> Button:
+	var btn := UIStyle.button(label_key, CONN_COLORS[ticket_type])
 	btn.name = "BuyTicket_" + ticket_type
-	btn.text = label_key  # Godot переведёт по ключу
 	btn.visible = false
-	UIStyle.style_button(btn, color)
 	btn.pressed.connect(func() -> void: GameState.buy_ticket(ticket_type))
 	return btn
 
 
-## Кнопки покупки билетов: видны, если в городе можно купить (мой ход/локация/
-## действие) и есть дорога нужного типа.
-func _refresh_tickets() -> void:
-	if not (is_instance_valid(_buy_train_btn) and is_instance_valid(_buy_ship_btn)):
-		return
-	var can: bool = GameState.can_buy_ticket(_loc_id)
-	var avail: Array = GameState.available_ticket_types(_loc_id)
-	_buy_train_btn.visible = can and avail.has("train")
-	_buy_ship_btn.visible = can and avail.has("ship")
+# Описание + список объектов на локации в прокручиваемой области (тянется вниз).
+func _build_content() -> void:
+	var sep := HSeparator.new()
+	sep.name = "Sep"
+	_vbox.add_child(sep)
 
+	var scroll := ScrollContainer.new()
+	scroll.name = "Scroll"
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_vbox.add_child(scroll)
 
-# Создаёт секцию «айтемы на локации» в VBox сразу после кнопок билетов.
-func _build_items_section() -> void:
-	var vbox: Node = _neighbors.get_parent()  # Panel/Margin/VBox
+	var content := VBoxContainer.new()
+	content.name = "Content"
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation", 8)
+	scroll.add_child(content)
+
+	_description = Label.new()
+	_description.name = "Description"
+	_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_description.add_theme_font_size_override("font_size", 14)
+	_description.add_theme_color_override("font_color", UIColors.TEXT)
+	content.add_child(_description)
+
 	_items_sep = HSeparator.new()
 	_items_sep.name = "ItemsSeparator"
 	_items_hdr = Label.new()
@@ -137,38 +206,23 @@ func _build_items_section() -> void:
 	_items_list = VBoxContainer.new()
 	_items_list.name = "ItemsList"
 	_items_list.add_theme_constant_override("separation", 6)
-	vbox.add_child(_items_sep)
-	vbox.add_child(_items_hdr)
-	vbox.add_child(_items_list)
-	var at: int = _buy_ship_btn.get_index() + 1
-	vbox.move_child(_items_sep, at)
-	vbox.move_child(_items_hdr, at + 1)
-	vbox.move_child(_items_list, at + 2)
-
-
-## Кнопка магазина видна только в городе, где стоит мой сыщик.
-func _refresh_shop() -> void:
-	if is_instance_valid(_shop_btn):
-		_shop_btn.visible = GameState.can_shop(_loc_id)
+	content.add_child(_items_sep)
+	content.add_child(_items_hdr)
+	content.add_child(_items_list)
 
 
 # ── Public ────────────────────────────────────────────────────────────────────
 
 
 func show_location(data: Dictionary) -> void:
-	# name/realWorldLocation/description/type — translation keys.
-	# Присваивание в Label.text оставляет ключ; Godot вызывает tr() при рендере
-	# и сам обновит при смене локали.
-	_title.text = String(data.get("name", ""))  # игровое имя (LOC_*_NAME)
-	_subtitle.text = String(data.get("realWorldLocation", ""))  # реальный прообраз
-	_type_label.text = _type_label_for(String(data.get("type", "city")))
-	_description.text = String(data.get("description", ""))
-	_populate_neighbors(data.get("connections", []))
+	# name/realWorldLocation/description/type — translation keys (Label.tr при рендере).
 	_loc_id = String(data.get("id", ""))
+	_title_lbl.text = String(data.get("name", ""))
+	_caption.text = _caption_text(data)
+	_image.texture = _location_art(_loc_id)
+	_description.text = String(data.get("description", ""))
 	_populate_items(_loc_id)
-	_refresh_travel()
-	_refresh_shop()
-	_refresh_tickets()
+	_refresh_actions()
 	if not _is_open:
 		_is_open = true
 		_animate(false)
@@ -179,8 +233,6 @@ func close_panel() -> void:
 		return
 	_is_open = false
 	_loc_id = ""
-	_refresh_travel()
-	_refresh_tickets()
 	_animate(true)
 	closed.emit()
 
@@ -189,12 +241,37 @@ func is_open() -> bool:
 	return _is_open
 
 
-# ── Перемещение ──────────────────────────────────────────────────────────────
+# ── Картинка локации ──────────────────────────────────────────────────────────
 
 
-## Показывает кнопку «Переместиться сюда», если игрок может туда пойти сейчас.
-func _refresh_travel() -> void:
+# Арт локации по конвенции имени файла: assets/locations/<id>.png (как арт ассетов
+# по id). Нет файла → null (окно-заглушка).
+func _location_art(loc_id: String) -> Texture2D:
+	if loc_id.is_empty():
+		return null
+	var path: String = "%s%s.png" % [LOCATION_ART_DIR, loc_id]
+	return load(path) if ResourceLoader.exists(path) else null
+
+
+func _caption_text(data: Dictionary) -> String:
+	var t: String = tr(_type_label_for(String(data.get("type", "city"))))
+	var real: String = String(data.get("realWorldLocation", ""))
+	return "%s · %s" % [t, tr(real)] if not real.is_empty() else t
+
+
+# ── Действия (перемещение / обмен / магазин / билеты) ─────────────────────────
+
+
+func _refresh_actions() -> void:
+	if not is_instance_valid(_travel_btn):
+		return
 	_travel_btn.visible = not _loc_id.is_empty() and GameState.can_travel_to(_loc_id)
+	_trade_btn.visible = _can_trade()
+	_shop_btn.visible = GameState.can_shop(_loc_id)
+	var can_ticket: bool = GameState.can_buy_ticket(_loc_id)
+	var avail: Array = GameState.available_ticket_types(_loc_id)
+	_buy_train_btn.visible = can_ticket and avail.has("train")
+	_buy_ship_btn.visible = can_ticket and avail.has("ship")
 
 
 func _on_travel_pressed() -> void:
@@ -202,7 +279,32 @@ func _on_travel_pressed() -> void:
 		GameState.travel(_loc_id)
 
 
-# ── Айтемы на локации ──────────────────────────────────────────────────────────
+# Можно ли обменяться здесь: мой ход, моя локация, есть действие, обмен ещё не делал
+# в раунде и есть со-локационный подключённый напарник (иначе меняться не с кем).
+func _can_trade() -> bool:
+	if _loc_id.is_empty() or not GameState.is_my_turn():
+		return false
+	var me: Dictionary = GameState.my_player()
+	if int(me.get("actions_left", 0)) <= 0:
+		return false
+	if (me.get("actions_used", []) as Array).has(GameActions.TRADE):
+		return false
+	if String(me.get("location", "")) != _loc_id:
+		return false
+	var my_id: String = String(me.get("user_id", ""))
+	for pid_v: Variant in GameState.players:
+		var pid: String = String(pid_v)
+		var p: Dictionary = GameState.players[pid]
+		if (
+			pid != my_id
+			and bool(p.get("connected", true))
+			and String(p.get("location", "")) == _loc_id
+		):
+			return true
+	return false
+
+
+# ── Объекты на локации (монстры/улики/слухи) ──────────────────────────────────
 
 
 ## При смене стейта (спаун монстров/улик) — перерисовать список, если открыт.
@@ -211,7 +313,7 @@ func _refresh_items() -> void:
 		_populate_items(_loc_id)
 
 
-## Список айтемов локации, сгруппированный: Монстры (со статами) → Улики → Слухи.
+## Список объектов локации: Монстры (со статами) → Улики → Слухи.
 func _populate_items(loc_id: String) -> void:
 	if not is_instance_valid(_items_list):
 		return
@@ -341,57 +443,6 @@ func _resist_text(r: Variant) -> String:
 	return ", ".join(parts)
 
 
-# ── Соседи ───────────────────────────────────────────────────────────────────
-
-
-func _populate_neighbors(conns: Array) -> void:
-	for child in _neighbors.get_children():
-		child.queue_free()
-
-	if conns.is_empty():
-		var none := Label.new()
-		none.name = "Empty"
-		none.text = "SIDEBAR_NO_NEIGHBORS"
-		none.add_theme_color_override("font_color", UIColors.MUTED)
-		none.add_theme_font_size_override("font_size", 13)
-		_neighbors.add_child(none)
-		return
-
-	for i: int in range(conns.size()):
-		var c: Dictionary = conns[i]
-		var to_id: String = String(c.get("to", ""))
-		var to_name: String = String(c.get("name", to_id))  # translation key, fallback на id
-		var ctype: String = String(c.get("type", "ship"))
-		_neighbors.add_child(_make_neighbor_row(to_id, to_name, ctype))
-
-
-func _make_neighbor_row(to_id: String, to_name: String, ctype: String) -> Button:
-	var btn := Button.new()
-	btn.name = "Button"
-	# to_name — translation key (LOC_*_NAME), Godot переводит автоматически.
-	btn.text = to_name
-	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	# List item, не «обычная» кнопка — оставляем компактный stylebox-стиль.
-	UIStyle.style_icon_button(btn, CONN_COLORS.get(ctype, UIColors.BORDER))
-	btn.add_theme_font_size_override("font_size", 13)
-	# Подпись «морем/поездом/путь» в правом углу — храним ключ, Godot переведёт.
-	var hint := Label.new()
-	hint.name = "Hint"
-	hint.text = String(CONN_TR_KEYS.get(ctype, ctype))
-	hint.add_theme_font_size_override("font_size", 11)
-	hint.add_theme_color_override("font_color", CONN_COLORS.get(ctype, UIColors.MUTED))
-	hint.set_anchors_and_offsets_preset(Control.PRESET_RIGHT_WIDE)
-	hint.offset_left = -90.0
-	hint.offset_right = -10.0
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	btn.add_child(hint)
-	btn.pressed.connect(func() -> void: neighbor_selected.emit(to_id))
-	return btn
-
-
 # ── Внутренние ───────────────────────────────────────────────────────────────
 
 
@@ -418,11 +469,6 @@ func _apply_offsets(hide_panel: bool) -> void:
 	else:
 		_panel.offset_left = -PANEL_WIDTH
 		_panel.offset_right = 0.0
-
-
-func _style_close_button() -> void:
-	UIStyle.style_icon_button(_close_btn, UIColors.DANGER)
-	_close_btn.add_theme_font_size_override("font_size", 18)
 
 
 func _type_label_for(t: String) -> String:

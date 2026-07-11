@@ -120,10 +120,10 @@ func _ready() -> void:
 
 	# Сайдбар закрылся — снимаем подсветку с карты
 	_sidebar.closed.connect(func() -> void: _map_layer.set_selected(""))
-	# Клик по соседу в списке — открываем его как если бы кликнули по карте
-	_sidebar.neighbor_selected.connect(_on_neighbor_selected)
 	# Кнопка «Магазин» в сайдбаре — открыть модалку магазина.
 	_sidebar.shop_requested.connect(_on_shop_requested)
+	# Кнопка «Обмен» в сайдбаре — открыть модалку обмена.
+	_sidebar.trade_requested.connect(_on_trade_requested)
 	# Клик по орбу раунда — открыть/закрыть сайдбар текущей Мистерии.
 	_game_panel.round_clicked.connect(_on_round_clicked)
 	# Смена языка не требует здесь обработки: данные локаций/сыщиков содержат
@@ -723,12 +723,17 @@ func _on_shop_requested() -> void:
 	modal.open()
 
 
-func _on_neighbor_selected(loc_name: String) -> void:
-	var data: Dictionary = _map_layer.get_location(loc_name)
-	if data.is_empty():
+const _TRADE_MODAL := preload("res://scenes/ui/trade_modal.tscn")
+
+
+func _on_trade_requested() -> void:
+	# Не плодим дубликаты, если уже открыт. open() сам no-op, если менять не с кем.
+	if has_node("TradeModal"):
 		return
-	_sidebar.show_location(data)
-	_map_layer.set_selected(loc_name)
+	var modal := _TRADE_MODAL.instantiate()
+	modal.name = "TradeModal"
+	add_child(modal)
+	modal.open()
 
 
 func _on_round_clicked() -> void:
