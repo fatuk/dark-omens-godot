@@ -23,6 +23,8 @@ const ANIM_TIME: float = 0.22
 # Картинка локации: по конвенции имени файла assets/locations/<id>.png (как арт
 # ассетов по id). Нет файла → пустое окно-заглушка.
 const LOCATION_ART_DIR: String = "res://assets/locations/"
+# Орнаментальная рамка окна-картинки (прозрачный центр — рисуем поверх картинки).
+const _IMAGE_FRAME := preload("res://assets/location-sidebar/image-frame.png")
 
 # Цвета типов дорог — для кнопок покупки билетов (соответствуют MapLayer.COLOR_*).
 const CONN_COLORS: Dictionary = {
@@ -111,24 +113,41 @@ func _build_caption() -> void:
 	_vbox.add_child(_caption)
 
 
-# Окно-картинка локации: нейтральная тёмная рамка + TextureRect (cover). Пусто,
-# если файла нет — как заглушка на макете.
+# Окно-картинка локации: тёмная подложка + картинка (cover) + орнаментальная рамка
+# поверх (image-frame.png, прозрачный центр). Пусто, если файла нет — заглушка.
 func _build_image_box() -> void:
-	var box := PanelContainer.new()
+	var box := Control.new()
 	box.name = "ImageBox"
 	box.custom_minimum_size = Vector2(0, 200)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.06, 0.06, 0.05, 0.85)
-	sb.set_border_width_all(1)
-	sb.border_color = Color(UIColors.BORDER, 0.6)
-	sb.set_corner_radius_all(4)
-	box.add_theme_stylebox_override("panel", sb)
+
+	var bg := ColorRect.new()
+	bg.name = "Bg"
+	bg.color = Color(0.06, 0.06, 0.05, 0.85)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(bg)
+
 	_image = TextureRect.new()
 	_image.name = "Image"
+	_image.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	_image.clip_contents = true
+	_image.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(_image)
+
+	var frame := NinePatchRect.new()
+	frame.name = "Frame"
+	frame.texture = _IMAGE_FRAME
+	frame.draw_center = false
+	frame.patch_margin_left = 40
+	frame.patch_margin_top = 40
+	frame.patch_margin_right = 40
+	frame.patch_margin_bottom = 40
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(frame)
+
 	_vbox.add_child(box)
 
 
