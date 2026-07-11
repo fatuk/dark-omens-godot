@@ -103,12 +103,13 @@ func _place_close_button() -> void:
 	if not is_instance_valid(_close_btn):
 		return
 	var sz: float = clampf(_panel_width * 0.085, 26.0, 40.0)
-	var inset: float = _panel_width * 0.065
+	# Центр кнопки — прямо на угловом орнаменте рамки (узел ~6% ширины от угла).
+	var c: float = _panel_width * 0.058
 	_close_btn.custom_minimum_size = Vector2(sz, sz)
-	_close_btn.offset_left = -inset - sz
-	_close_btn.offset_right = -inset
-	_close_btn.offset_top = inset
-	_close_btn.offset_bottom = inset + sz
+	_close_btn.offset_left = -(c + sz * 0.5)
+	_close_btn.offset_right = -(c - sz * 0.5)
+	_close_btn.offset_top = c - sz * 0.5
+	_close_btn.offset_bottom = c + sz * 0.5
 
 
 # ── Сборка UI ─────────────────────────────────────────────────────────────────
