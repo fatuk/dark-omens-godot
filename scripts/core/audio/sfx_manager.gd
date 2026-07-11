@@ -108,14 +108,16 @@ func _setup_var_buses() -> void:
 ## Проиграть SFX. Берёт следующий плеер из пула — даже если предыдущий ещё играет,
 ## новый звук стартует поверх (овелап). filtered=true — играть через шину-вариацию
 ## со случайным центром band-pass (оживляет частые повторы: клики, карусель).
-func play(stream: AudioStream, filtered: bool = false) -> void:
+## pitch — множитель высоты (1.0 = как в файле); разной высотой различаем варианты
+## одного звука (например, открытие/закрытие сайдбара из одного slide-файла).
+func play(stream: AudioStream, filtered: bool = false, pitch: float = 1.0) -> void:
 	if stream == null:
 		return
 	var i: int = _next
 	_next = (_next + 1) % _POOL_SIZE
 	var p: AudioStreamPlayer = _pool[i]
-	# Сбрасываем питч — пул переиспользуется.
-	p.pitch_scale = 1.0
+	# Питч задаём явно — пул переиспользуется (иначе утечёт значение прошлого).
+	p.pitch_scale = pitch
 	if filtered and i < _var_filters.size():
 		(_var_filters[i] as AudioEffectBandPassFilter).cutoff_hz = (
 			FILTER_CENTER_HZ + randf_range(-FILTER_JITTER_HZ, FILTER_JITTER_HZ)

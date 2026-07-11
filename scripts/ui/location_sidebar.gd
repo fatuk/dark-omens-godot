@@ -19,6 +19,11 @@ signal shop_requested
 signal trade_requested
 
 const ANIM_TIME: float = 0.22
+# Открытие/закрытие — один slide-файл, различаем высотой: открытие ярче/выше,
+# закрытие ниже (нисходящее). Небольшой джиттер — чтобы повторы не были одинаковы.
+const SLIDE_PITCH_OPEN: float = 1.08
+const SLIDE_PITCH_CLOSE: float = 0.82
+const SLIDE_PITCH_JITTER: float = 0.03
 # Аспект рамки-ассета (sidebar-bg.png 1638×4506). Панель вписываем в высоту экрана
 # по этому аспекту → рамка целиком видна, без искажений, углы/бордюр пропорциональны.
 const FRAME_ASPECT: float = 1638.0 / 4506.0
@@ -376,7 +381,7 @@ func _apply_location(data: Dictionary) -> void:
 func _transition_to_new() -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
-	SfxManager.play(SfxManager.SFX_SIDEBAR_SLIDE)
+	_play_slide_sfx(true)  # это «спрятать» — звук закрытия
 	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_tween.tween_property(_panel, "offset_left", 0.0, ANIM_TIME)
 	_tween.tween_property(_panel, "offset_right", _panel_width, ANIM_TIME)
@@ -616,11 +621,18 @@ func _on_close_pressed() -> void:
 	close_panel()
 
 
+# Слайд-звук с разной высотой для открытия и закрытия (+лёгкий джиттер).
+func _play_slide_sfx(closing: bool) -> void:
+	var base: float = SLIDE_PITCH_CLOSE if closing else SLIDE_PITCH_OPEN
+	var pitch: float = base + randf_range(-SLIDE_PITCH_JITTER, SLIDE_PITCH_JITTER)
+	SfxManager.play(SfxManager.SFX_SIDEBAR_SLIDE, false, pitch)
+
+
 func _animate(hide_panel: bool) -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
-	# Звук слайда синхронен с tween'ом — один и тот же эффект в обе стороны.
-	SfxManager.play(SfxManager.SFX_SIDEBAR_SLIDE)
+	# Звук слайда синхронен с tween'ом; закрытие ниже открытия по высоте.
+	_play_slide_sfx(hide_panel)
 	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	var off_left: float = 0.0 if hide_panel else -_panel_width - _edge_gap
 	var off_right: float = _panel_width if hide_panel else -_edge_gap
