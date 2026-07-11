@@ -1414,6 +1414,7 @@ ASSET_WIRELESS_REPORT_ABILITY,"When you gain this card, immediately give any num
 ASSET_WITCH_DOCTOR_NAME,Witch Doctor,Witch Doctor
 ASSET_WITCH_DOCTOR_ABILITY,Investigators on your space may recover 1 additional Health or discard a Cursed Condition when performing a Rest action.,Investigators on your space may recover 1 additional Health or discard a Cursed Condition when performing a Rest action.
 SIDEBAR_BTN_SHOP,Магазин,Shop
+SIDEBAR_BTN_CLOSE,Закрыть,Close
 SIDEBAR_BTN_TICKET_TRAIN,Купить ж/д билет,Buy train ticket
 SIDEBAR_BTN_TICKET_SHIP,Купить билет на корабль,Buy ship ticket
 BTN_CANCEL_BIG,ОТМЕНИТЬ,CANCEL

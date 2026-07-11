@@ -25,7 +25,7 @@ const FRAME_ASPECT: float = 1638.0 / 4506.0
 # Панель шире базовой вписанной по высоте на этот коэффициент (больше места под текст).
 const WIDTH_FACTOR: float = 1.25
 # Небольшой отступ панели от краёв экрана (сверху/снизу/справа) — доля высоты экрана.
-const EDGE_GAP_FACTOR: float = 0.02
+const EDGE_GAP_FACTOR: float = 0.01
 
 # Тень под панелью (мягкий drop-shadow за рамкой). Параметры вынесены в тюнинг
 # (Ctrl+M → «САЙДБАР · ТЕНЬ»); найденные значения запекаются сюда.
@@ -105,23 +105,8 @@ func _relayout() -> void:
 		_margin.add_theme_constant_override("margin_right", int(_panel_width * 0.085))
 		_margin.add_theme_constant_override("margin_top", int(panel_h * 0.05))
 		_margin.add_theme_constant_override("margin_bottom", int(panel_h * 0.035))
-	_place_close_button()
 	apply_shadow()
 	_apply_offsets(not _is_open)
-
-
-# Крестик в правом верхнем углу рамки — размер и отступы пропорциональны ширине
-# панели (углы рамки масштабируются вместе с ней).
-func _place_close_button() -> void:
-	if not is_instance_valid(_close_btn):
-		return
-	var sz: float = clampf(_panel_width * 0.085, 26.0, 40.0)
-	# Прижимаем крестик прямо в правый верхний угол сайдбара, без отступов.
-	_close_btn.custom_minimum_size = Vector2(sz, sz)
-	_close_btn.offset_left = -sz
-	_close_btn.offset_right = 0.0
-	_close_btn.offset_top = 0.0
-	_close_btn.offset_bottom = sz
 
 
 # ── Сборка UI ─────────────────────────────────────────────────────────────────
@@ -134,7 +119,6 @@ func _build_ui() -> void:
 	_build_image_box()
 	_build_actions()
 	_build_content()
-	_build_close_button()  # поверх всего, в правом верхнем углу рамки
 
 
 # Мягкая тень за рамкой (Panel со StyleBoxFlat-тенью, позади Frame).
@@ -175,20 +159,6 @@ func _build_header() -> void:
 	title_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	header.add_child(title_row)
 	_title_lbl = title_row.get_node("Title")
-
-
-# Крестик закрытия — прямой ребёнок панели, в правом верхнем углу орнаментной
-# рамки (поверх контента). Позиционируется в _relayout по _panel_width.
-func _build_close_button() -> void:
-	_close_btn = Button.new()
-	_close_btn.name = "CloseBtn"
-	UIStyle.style_modal_close_button(_close_btn)
-	_close_btn.anchor_left = 1.0
-	_close_btn.anchor_right = 1.0
-	_close_btn.anchor_top = 0.0
-	_close_btn.anchor_bottom = 0.0
-	_close_btn.pressed.connect(_on_close_pressed)
-	_panel.add_child(_close_btn)
 
 
 # Подпись под заголовком: тип · реальный прообраз (мелко, приглушённо).
@@ -257,10 +227,24 @@ func _build_actions() -> void:
 	_trade_btn.pressed.connect(func() -> void: trade_requested.emit())
 	row.add_child(_trade_btn)
 
+	# Ряд «Магазин | Закрыть»: магазин контекстный (скрыт вне города), кнопка
+	# закрытия — всегда. Когда магазина нет, Закрыть занимает весь ряд.
+	var shop_row := HBoxContainer.new()
+	shop_row.name = "ShopRow"
+	shop_row.add_theme_constant_override("separation", 8)
+	_vbox.add_child(shop_row)
+
 	_shop_btn = UIStyle.button("SIDEBAR_BTN_SHOP", UIColors.ACCENT)
+	_shop_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_shop_btn.visible = false
 	_shop_btn.pressed.connect(func() -> void: shop_requested.emit())
-	_vbox.add_child(_shop_btn)
+	shop_row.add_child(_shop_btn)
+
+	_close_btn = UIStyle.button("SIDEBAR_BTN_CLOSE")
+	_close_btn.name = "CloseBtn"
+	_close_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_close_btn.pressed.connect(_on_close_pressed)
+	shop_row.add_child(_close_btn)
 
 	_buy_train_btn = _make_buy_ticket_btn("SIDEBAR_BTN_TICKET_TRAIN", "train")
 	_buy_ship_btn = _make_buy_ticket_btn("SIDEBAR_BTN_TICKET_SHIP", "ship")
