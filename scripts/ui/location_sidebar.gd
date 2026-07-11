@@ -5,7 +5,7 @@ extends CanvasLayer
 ## Открывается show_location(data), закрывается close_panel() / крестиком.
 ##
 ## Раскладка: рамка-арт (sidebar-bg.png) → орнаментальный заголовок с шевронами →
-## окно-картинка локации (assets/locations/<id>.png, как арт ассетов) → действия
+## окно-картинка локации (assets/location-sidebar/<id>.png) → действия
 ## (Переместиться / Обмен, плюс контекстные Магазин / Билеты) → описание → список
 ## объектов на локации (монстры/улики/слухи).
 ##
@@ -19,7 +19,7 @@ signal shop_requested
 signal trade_requested
 
 const ANIM_TIME: float = 0.22  # длительность выезда (открытие)
-const ANIM_TIME_CLOSE: float = 0.32  # закрытие чуть медленнее открытия
+const ANIM_TIME_CLOSE: float = 0.1  # закрытие чуть медленнее открытия
 # Открытие/закрытие — один slide-файл, различаем высотой: открытие ярче/выше,
 # закрытие ниже (нисходящее). Небольшой джиттер — чтобы повторы не были одинаковы.
 const SLIDE_PITCH_OPEN: float = 1.08
@@ -49,9 +49,9 @@ var _panel_width: float = 392.0 * WIDTH_FACTOR
 # Текущий отступ от краёв в пикселях (считается в _relayout).
 var _edge_gap: float = 0.0
 
-# Картинка локации: по конвенции имени файла assets/locations/<id>.png (как арт
-# ассетов по id). Нет файла → пустое окно-заглушка.
-const LOCATION_ART_DIR: String = "res://assets/locations/"
+# Картинка локации: по конвенции имени файла assets/location-sidebar/<id>.png
+# (id как есть — «Arkham» → Arkham.png, «1» → 1.png). Нет файла → пустое окно.
+const LOCATION_ART_DIR: String = "res://assets/location-sidebar/"
 # Орнаментальная рамка окна-картинки (прозрачный центр — рисуем поверх картинки).
 const _IMAGE_FRAME := preload("res://assets/location-sidebar/image-frame.png")
 
