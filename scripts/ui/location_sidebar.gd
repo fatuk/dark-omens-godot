@@ -64,6 +64,7 @@ var _shadow: Panel = null  # мягкая тень за рамкой (строи
 var _is_open: bool = false
 var _tween: Tween = null
 var _loc_id: String = ""  # id показанной сейчас локации (для GameState.travel)
+var _pending_data: Dictionary = {}  # инфа локации, ждущая показа после «спрятать»
 
 # Узлы контента (строятся программно в _ready).
 var _title_lbl: Label = null
@@ -345,7 +346,22 @@ func _build_content() -> void:
 
 
 func show_location(data: Dictionary) -> void:
-	# name/realWorldLocation/description/type — translation keys (Label.tr при рендере).
+	var new_id: String = String(data.get("id", ""))
+	# Выбрали другую локацию при открытой панели — сначала прячем, потом
+	# открываем заново с новой инфой (плавная пересборка вместо подмены на месте).
+	if _is_open and not _loc_id.is_empty() and new_id != _loc_id:
+		_pending_data = data
+		_transition_to_new()
+		return
+	_apply_location(data)
+	if not _is_open:
+		_is_open = true
+		_animate(false)
+
+
+# Заполняет контент панели данными локации (name/realWorldLocation/description/
+# type — translation-ключи, Label переводит при рендере).
+func _apply_location(data: Dictionary) -> void:
 	_loc_id = String(data.get("id", ""))
 	_title_lbl.text = String(data.get("name", ""))
 	_fit_title()  # длинное название ужимаем под ширину панели
@@ -354,9 +370,25 @@ func show_location(data: Dictionary) -> void:
 	_description.text = String(data.get("description", ""))
 	_populate_items(_loc_id)
 	_refresh_actions()
-	if not _is_open:
-		_is_open = true
-		_animate(false)
+
+
+# Прячет панель, по завершении — подставляет _pending_data и открывает снова.
+func _transition_to_new() -> void:
+	if _tween and _tween.is_valid():
+		_tween.kill()
+	SfxManager.play(SfxManager.SFX_SIDEBAR_SLIDE)
+	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_tween.tween_property(_panel, "offset_left", 0.0, ANIM_TIME)
+	_tween.tween_property(_panel, "offset_right", _panel_width, ANIM_TIME)
+	_tween.finished.connect(_on_transition_hidden, CONNECT_ONE_SHOT)
+
+
+func _on_transition_hidden() -> void:
+	if _pending_data.is_empty():
+		return
+	_apply_location(_pending_data)
+	_pending_data = {}
+	_animate(false)  # открыть заново с новой инфой
 
 
 func close_panel() -> void:
