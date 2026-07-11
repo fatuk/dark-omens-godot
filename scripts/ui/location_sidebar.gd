@@ -49,6 +49,7 @@ var _loc_id: String = ""  # id показанной сейчас локации 
 # Узлы контента (строятся программно в _ready).
 var _title_lbl: Label = null
 var _caption: Label = null
+var _close_btn: Button = null
 var _image: TextureRect = null
 var _description: Label = null
 var _travel_btn: Button = null
@@ -82,7 +83,22 @@ func _relayout() -> void:
 		_margin.add_theme_constant_override("margin_right", int(_panel_width * 0.085))
 		_margin.add_theme_constant_override("margin_top", int(vp.y * 0.05))
 		_margin.add_theme_constant_override("margin_bottom", int(vp.y * 0.035))
+	_place_close_button()
 	_apply_offsets(not _is_open)
+
+
+# Крестик в правом верхнем углу рамки — размер и отступы пропорциональны ширине
+# панели (углы рамки масштабируются вместе с ней).
+func _place_close_button() -> void:
+	if not is_instance_valid(_close_btn):
+		return
+	var sz: float = clampf(_panel_width * 0.085, 26.0, 40.0)
+	var inset: float = _panel_width * 0.065
+	_close_btn.custom_minimum_size = Vector2(sz, sz)
+	_close_btn.offset_left = -inset - sz
+	_close_btn.offset_right = -inset
+	_close_btn.offset_top = inset
+	_close_btn.offset_bottom = inset + sz
 
 
 # ── Сборка UI ─────────────────────────────────────────────────────────────────
@@ -94,6 +110,7 @@ func _build_ui() -> void:
 	_build_image_box()
 	_build_actions()
 	_build_content()
+	_build_close_button()  # поверх всего, в правом верхнем углу рамки
 
 
 # Орнаментальный заголовок (шеврон · имя · шеврон) + крестик поверх правого угла.
@@ -104,25 +121,26 @@ func _build_header() -> void:
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_vbox.add_child(header)
 
-	var title_row := UIStyle.ornate_title("", 22, UIColors.ACCENT)
+	var title_row := UIStyle.ornate_title("", 33, UIColors.ACCENT)
 	title_row.name = "TitleRow"
 	title_row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	title_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	header.add_child(title_row)
 	_title_lbl = title_row.get_node("Title")
 
-	var close := Button.new()
-	close.name = "CloseBtn"
-	close.custom_minimum_size = Vector2(32, 32)
-	UIStyle.style_modal_close_button(close)
-	close.anchor_left = 1.0
-	close.anchor_right = 1.0
-	close.offset_left = -32.0
-	close.offset_top = 0.0
-	close.offset_right = 0.0
-	close.offset_bottom = 32.0
-	close.pressed.connect(_on_close_pressed)
-	header.add_child(close)
+
+# Крестик закрытия — прямой ребёнок панели, в правом верхнем углу орнаментной
+# рамки (поверх контента). Позиционируется в _relayout по _panel_width.
+func _build_close_button() -> void:
+	_close_btn = Button.new()
+	_close_btn.name = "CloseBtn"
+	UIStyle.style_modal_close_button(_close_btn)
+	_close_btn.anchor_left = 1.0
+	_close_btn.anchor_right = 1.0
+	_close_btn.anchor_top = 0.0
+	_close_btn.anchor_bottom = 0.0
+	_close_btn.pressed.connect(_on_close_pressed)
+	_panel.add_child(_close_btn)
 
 
 # Подпись под заголовком: тип · реальный прообраз (мелко, приглушённо).
@@ -130,7 +148,7 @@ func _build_caption() -> void:
 	_caption = Label.new()
 	_caption.name = "Caption"
 	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_caption.add_theme_font_size_override("font_size", 12)
+	_caption.add_theme_font_size_override("font_size", 18)
 	_caption.add_theme_color_override("font_color", UIColors.MUTED)
 	_vbox.add_child(_caption)
 
@@ -232,7 +250,7 @@ func _build_content() -> void:
 	_description.name = "Description"
 	_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_description.add_theme_font_size_override("font_size", 28)
+	_description.add_theme_font_size_override("font_size", 19)
 	_description.add_theme_color_override("font_color", UIColors.TEXT)
 	content.add_child(_description)
 
