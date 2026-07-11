@@ -33,6 +33,7 @@ const CONN_COLORS: Dictionary = {
 }
 
 @onready var _panel: Control = %Panel
+@onready var _frame: NinePatchRect = %Frame
 @onready var _vbox: VBoxContainer = %VBox
 
 var _is_open: bool = false
@@ -58,7 +59,17 @@ func _ready() -> void:
 	_build_ui()
 	GameState.state_changed.connect(_refresh_actions)
 	GameState.state_changed.connect(_refresh_items)
+	# Рамка-фон нарисована @2× — рендерим её в scale 0.5 (иначе орнамент вдвое
+	# крупнее). Узел растянут на 2× панели, поэтому после scale покрывает её ровно.
+	_panel.resized.connect(_fit_frame)
+	_fit_frame()
 	_apply_offsets(true)
+
+
+# Держим рамку под размер панели с учётом её scale 0.5 (size = 2× панели → рендер 1×).
+func _fit_frame() -> void:
+	if is_instance_valid(_frame) and is_instance_valid(_panel):
+		_frame.size = _panel.size * 2.0
 
 
 # ── Сборка UI ─────────────────────────────────────────────────────────────────
@@ -136,6 +147,7 @@ func _build_image_box() -> void:
 	_image.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(_image)
 
+	# Рамка окна тоже @2× → scale 0.5. Растягиваем на 2× бокса при его ресайзе.
 	var frame := NinePatchRect.new()
 	frame.name = "Frame"
 	frame.texture = _IMAGE_FRAME
@@ -144,9 +156,10 @@ func _build_image_box() -> void:
 	frame.patch_margin_top = 40
 	frame.patch_margin_right = 40
 	frame.patch_margin_bottom = 40
-	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	frame.scale = Vector2(0.5, 0.5)
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(frame)
+	box.resized.connect(func() -> void: frame.size = box.size * 2.0)
 
 	_vbox.add_child(box)
 
