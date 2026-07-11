@@ -284,7 +284,9 @@ func _build() -> void:
 	_dice_box.add_theme_constant_override("separation", 10)
 	_dice_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_stage.add_child(_dice_box)
-	_chrome.append({"node": _dice_box, "fx": 0.3, "fy": 0.735, "fw": 0.4, "fh": 0.09})
+	# Широкий контейнер (центр на 0.5) — чтобы ряд кубов центрировался при любом их
+	# числе; узкий бокс раньше переполнялся на 5 кубах и уезжал вбок.
+	_chrome.append({"node": _dice_box, "fx": 0.05, "fy": 0.735, "fw": 0.9, "fh": 0.09})
 
 	# ── Кнопки: долг · бросок · купить ──
 	var btns := HBoxContainer.new()
