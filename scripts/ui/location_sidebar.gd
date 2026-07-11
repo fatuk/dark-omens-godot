@@ -23,8 +23,12 @@ const ANIM_TIME: float = 0.22
 const FRAME_ASPECT: float = 1638.0 / 4506.0
 # Панель шире базовой вписанной по высоте на этот коэффициент (больше места под текст).
 const WIDTH_FACTOR: float = 1.25
-# Ширина панели считается от высоты экрана (см. _relayout); дефолт — фолбэк.
+# Небольшой отступ панели от краёв экрана (сверху/снизу/справа) — доля высоты экрана.
+const EDGE_GAP_FACTOR: float = 0.02
+# Ширина панели считается от высоты панели (см. _relayout); дефолт — фолбэк.
 var _panel_width: float = 392.0 * WIDTH_FACTOR
+# Текущий отступ от краёв в пикселях (считается в _relayout).
+var _edge_gap: float = 0.0
 
 # Картинка локации: по конвенции имени файла assets/locations/<id>.png (как арт
 # ассетов по id). Нет файла → пустое окно-заглушка.
@@ -77,12 +81,18 @@ func _relayout() -> void:
 	if not is_instance_valid(_panel):
 		return
 	var vp: Vector2 = get_viewport().get_visible_rect().size
-	_panel_width = vp.y * FRAME_ASPECT * WIDTH_FACTOR
+	_edge_gap = vp.y * EDGE_GAP_FACTOR
+	# Панель отступает от верха/низа на _edge_gap → высота меньше; ширину рамки
+	# считаем от высоты ПАНЕЛИ, чтобы рамка осталась без искажений.
+	var panel_h: float = vp.y - 2.0 * _edge_gap
+	_panel_width = panel_h * FRAME_ASPECT * WIDTH_FACTOR
+	_panel.offset_top = _edge_gap
+	_panel.offset_bottom = -_edge_gap
 	if is_instance_valid(_margin):
 		_margin.add_theme_constant_override("margin_left", int(_panel_width * 0.085))
 		_margin.add_theme_constant_override("margin_right", int(_panel_width * 0.085))
-		_margin.add_theme_constant_override("margin_top", int(vp.y * 0.05))
-		_margin.add_theme_constant_override("margin_bottom", int(vp.y * 0.035))
+		_margin.add_theme_constant_override("margin_top", int(panel_h * 0.05))
+		_margin.add_theme_constant_override("margin_bottom", int(panel_h * 0.035))
 	_place_close_button()
 	_apply_offsets(not _is_open)
 
@@ -517,8 +527,8 @@ func _animate(hide_panel: bool) -> void:
 	# Звук слайда синхронен с tween'ом — один и тот же эффект в обе стороны.
 	SfxManager.play(SfxManager.SFX_SIDEBAR_SLIDE)
 	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	var off_left: float = 0.0 if hide_panel else -_panel_width
-	var off_right: float = _panel_width if hide_panel else 0.0
+	var off_left: float = 0.0 if hide_panel else -_panel_width - _edge_gap
+	var off_right: float = _panel_width if hide_panel else -_edge_gap
 	_tween.tween_property(_panel, "offset_left", off_left, ANIM_TIME)
 	_tween.tween_property(_panel, "offset_right", off_right, ANIM_TIME)
 
@@ -528,8 +538,8 @@ func _apply_offsets(hide_panel: bool) -> void:
 		_panel.offset_left = 0.0
 		_panel.offset_right = _panel_width
 	else:
-		_panel.offset_left = -_panel_width
-		_panel.offset_right = 0.0
+		_panel.offset_left = -_panel_width - _edge_gap
+		_panel.offset_right = -_edge_gap
 
 
 func _type_label_for(t: String) -> String:
