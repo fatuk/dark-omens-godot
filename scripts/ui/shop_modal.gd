@@ -271,7 +271,7 @@ func _build() -> void:
 	for i in range(offer.size()):
 		_build_asset_card(offer[i], i, offer.size())
 
-	# ── Низ прилавка: монеты · доступно ──
+	# ── Низ прилавка: монеты ──
 	_coins_lbl = UIStyle.label("", 17, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
 	_coins_lbl.name = "Coins"
 	_stage.add_child(_coins_lbl)
@@ -876,11 +876,8 @@ func _spent() -> int:
 func _refresh() -> void:
 	_render_dice()
 	var coins: int = _coins()
-	var remaining: int = coins - _spent()
 	if is_instance_valid(_coins_lbl):
-		_coins_lbl.text = (
-			"%s: %d   ·   %s: %d" % [tr("SHOP_COINS"), coins, tr("SHOP_REMAINING"), remaining]
-		)
+		_coins_lbl.text = "%s: %d" % [tr("SHOP_COINS"), coins]
 	if is_instance_valid(_roll_btn):
 		if _rolled() and _reroll_all_available():
 			_roll_btn.text = "ENCOUNTER_REROLL_ALL"
