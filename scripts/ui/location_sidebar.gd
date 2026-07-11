@@ -113,16 +113,14 @@ func _build_header() -> void:
 
 	var close := Button.new()
 	close.name = "CloseBtn"
-	close.custom_minimum_size = Vector2(30, 30)
-	close.text = "×"
-	close.add_theme_font_size_override("font_size", 18)
+	close.custom_minimum_size = Vector2(32, 32)
+	UIStyle.style_modal_close_button(close)
 	close.anchor_left = 1.0
 	close.anchor_right = 1.0
-	close.offset_left = -30.0
-	close.offset_top = 2.0
+	close.offset_left = -32.0
+	close.offset_top = 0.0
 	close.offset_right = 0.0
 	close.offset_bottom = 32.0
-	UIStyle.style_icon_button(close, UIColors.DANGER)
 	close.pressed.connect(_on_close_pressed)
 	header.add_child(close)
 
