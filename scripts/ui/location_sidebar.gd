@@ -76,6 +76,7 @@ var _pending_data: Dictionary = {}  # инфа локации, ждущая по
 var _title_lbl: Label = null
 var _caption: Label = null
 var _close_btn: Button = null
+var _image_box: Control = null
 var _image: TextureRect = null
 var _description: Label = null
 var _travel_btn: Button = null
@@ -111,11 +112,16 @@ func _relayout() -> void:
 	_panel_width = panel_h * FRAME_ASPECT * WIDTH_FACTOR
 	_panel.offset_top = _edge_gap
 	_panel.offset_bottom = -_edge_gap
+	var margin_h: int = int(_panel_width * 0.085)
 	if is_instance_valid(_margin):
-		_margin.add_theme_constant_override("margin_left", int(_panel_width * 0.085))
-		_margin.add_theme_constant_override("margin_right", int(_panel_width * 0.085))
+		_margin.add_theme_constant_override("margin_left", margin_h)
+		_margin.add_theme_constant_override("margin_right", margin_h)
 		_margin.add_theme_constant_override("margin_top", int(panel_h * 0.025))
 		_margin.add_theme_constant_override("margin_bottom", int(panel_h * 0.035))
+	if is_instance_valid(_image_box):
+		# Окно-картинка держит пропорцию 3:2 (высота = ширина контента × 2/3).
+		var content_w: float = _panel_width - 2.0 * float(margin_h)
+		_image_box.custom_minimum_size = Vector2(0, content_w * 2.0 / 3.0)
 	apply_shadow()
 	_fit_title()
 	_apply_offsets(not _is_open)
@@ -223,7 +229,8 @@ func _build_caption() -> void:
 func _build_image_box() -> void:
 	var box := Control.new()
 	box.name = "ImageBox"
-	box.custom_minimum_size = Vector2(0, 200)
+	box.custom_minimum_size = Vector2(0, 200)  # высота уточняется в _relayout (3:2)
+	_image_box = box
 
 	var bg := ColorRect.new()
 	bg.name = "Bg"
