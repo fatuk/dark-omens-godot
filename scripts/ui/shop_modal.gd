@@ -732,7 +732,7 @@ func _ensure_tray() -> void:
 	_tray = DiceTray.new()
 	_tray.name = "DiceTray"
 	# Шире расставляем кубы именно в магазине (у общего лотка separation=8).
-	_tray.add_theme_constant_override("separation", 40)
+	_tray.add_theme_constant_override("separation", 28)
 	_tray.die_selected.connect(_on_die_clicked)
 	_dice_box.add_child(_tray)
 
