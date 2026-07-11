@@ -21,8 +21,10 @@ const ANIM_TIME: float = 0.22
 # Аспект рамки-ассета (sidebar-bg.png 1638×4506). Панель вписываем в высоту экрана
 # по этому аспекту → рамка целиком видна, без искажений, углы/бордюр пропорциональны.
 const FRAME_ASPECT: float = 1638.0 / 4506.0
+# Панель шире базовой вписанной по высоте на этот коэффициент (больше места под текст).
+const WIDTH_FACTOR: float = 1.25
 # Ширина панели считается от высоты экрана (см. _relayout); дефолт — фолбэк.
-var _panel_width: float = 392.0
+var _panel_width: float = 392.0 * WIDTH_FACTOR
 
 # Картинка локации: по конвенции имени файла assets/locations/<id>.png (как арт
 # ассетов по id). Нет файла → пустое окно-заглушка.
@@ -74,7 +76,7 @@ func _relayout() -> void:
 	if not is_instance_valid(_panel):
 		return
 	var vp: Vector2 = get_viewport().get_visible_rect().size
-	_panel_width = vp.y * FRAME_ASPECT
+	_panel_width = vp.y * FRAME_ASPECT * WIDTH_FACTOR
 	if is_instance_valid(_margin):
 		_margin.add_theme_constant_override("margin_left", int(_panel_width * 0.085))
 		_margin.add_theme_constant_override("margin_right", int(_panel_width * 0.085))
@@ -232,7 +234,7 @@ func _build_content() -> void:
 	_description.name = "Description"
 	_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_description.add_theme_font_size_override("font_size", 14)
+	_description.add_theme_font_size_override("font_size", 28)
 	_description.add_theme_color_override("font_color", UIColors.TEXT)
 	content.add_child(_description)
 
@@ -293,10 +295,13 @@ func _location_art(loc_id: String) -> Texture2D:
 	return load(path) if ResourceLoader.exists(path) else null
 
 
+# Подпись под заголовком — реальное название точки на карте (realWorldLocation).
+# Если его нет — показываем тип локации как фолбэк.
 func _caption_text(data: Dictionary) -> String:
-	var t: String = tr(_type_label_for(String(data.get("type", "city"))))
 	var real: String = String(data.get("realWorldLocation", ""))
-	return "%s · %s" % [t, tr(real)] if not real.is_empty() else t
+	if not real.is_empty():
+		return tr(real)
+	return tr(_type_label_for(String(data.get("type", "city"))))
 
 
 # ── Действия (перемещение / обмен / магазин / билеты) ─────────────────────────
