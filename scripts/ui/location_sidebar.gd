@@ -17,8 +17,12 @@ signal closed
 signal shop_requested
 signal trade_requested
 
-const PANEL_WIDTH: float = 360.0
 const ANIM_TIME: float = 0.22
+# Аспект рамки-ассета (sidebar-bg.png 1638×4506). Панель вписываем в высоту экрана
+# по этому аспекту → рамка целиком видна, без искажений, углы/бордюр пропорциональны.
+const FRAME_ASPECT: float = 1638.0 / 4506.0
+# Ширина панели считается от высоты экрана (см. _relayout); дефолт — фолбэк.
+var _panel_width: float = 392.0
 
 # Картинка локации: по конвенции имени файла assets/locations/<id>.png (как арт
 # ассетов по id). Нет файла → пустое окно-заглушка.
@@ -33,7 +37,7 @@ const CONN_COLORS: Dictionary = {
 }
 
 @onready var _panel: Control = %Panel
-@onready var _frame: NinePatchRect = %Frame
+@onready var _margin: MarginContainer = %Margin
 @onready var _vbox: VBoxContainer = %VBox
 
 var _is_open: bool = false
@@ -59,17 +63,24 @@ func _ready() -> void:
 	_build_ui()
 	GameState.state_changed.connect(_refresh_actions)
 	GameState.state_changed.connect(_refresh_items)
-	# Рамка-фон нарисована @2× — рендерим её в scale 0.5 (иначе орнамент вдвое
-	# крупнее). Узел растянут на 2× панели, поэтому после scale покрывает её ровно.
-	_panel.resized.connect(_fit_frame)
-	_fit_frame()
-	_apply_offsets(true)
+	get_viewport().size_changed.connect(_relayout)
+	_relayout()
 
 
-# Держим рамку под размер панели с учётом её scale 0.5 (size = 2× панели → рендер 1×).
-func _fit_frame() -> void:
-	if is_instance_valid(_frame) and is_instance_valid(_panel):
-		_frame.size = _panel.size * 2.0
+# Ширина панели = высота экрана × аспект рамки (рамка вписана в высоту без искажений).
+# Отступы контента — доли размера (рамка не искажена → доли корректны). Рамка-
+# TextureRect сама заполняет панель (аспект панели = аспект рамки → без растяжения).
+func _relayout() -> void:
+	if not is_instance_valid(_panel):
+		return
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	_panel_width = vp.y * FRAME_ASPECT
+	if is_instance_valid(_margin):
+		_margin.add_theme_constant_override("margin_left", int(_panel_width * 0.085))
+		_margin.add_theme_constant_override("margin_right", int(_panel_width * 0.085))
+		_margin.add_theme_constant_override("margin_top", int(vp.y * 0.05))
+		_margin.add_theme_constant_override("margin_bottom", int(vp.y * 0.035))
+	_apply_offsets(not _is_open)
 
 
 # ── Сборка UI ─────────────────────────────────────────────────────────────────
@@ -147,19 +158,16 @@ func _build_image_box() -> void:
 	_image.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(_image)
 
-	# Рамка окна тоже @2× → scale 0.5. Растягиваем на 2× бокса при его ресайзе.
-	var frame := NinePatchRect.new()
+	# Рамка окна (image-frame.png, прозрачный центр) заполняет бокс целиком —
+	# TextureRect растягивает всю рамку под размер окна (бордюр тонкий, пропорц.).
+	var frame := TextureRect.new()
 	frame.name = "Frame"
 	frame.texture = _IMAGE_FRAME
-	frame.draw_center = false
-	frame.patch_margin_left = 40
-	frame.patch_margin_top = 40
-	frame.patch_margin_right = 40
-	frame.patch_margin_bottom = 40
-	frame.scale = Vector2(0.5, 0.5)
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	frame.stretch_mode = TextureRect.STRETCH_SCALE
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(frame)
-	box.resized.connect(func() -> void: frame.size = box.size * 2.0)
 
 	_vbox.add_child(box)
 
@@ -488,8 +496,8 @@ func _animate(hide_panel: bool) -> void:
 	# Звук слайда синхронен с tween'ом — один и тот же эффект в обе стороны.
 	SfxManager.play(SfxManager.SFX_SIDEBAR_SLIDE)
 	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	var off_left: float = 0.0 if hide_panel else -PANEL_WIDTH
-	var off_right: float = PANEL_WIDTH if hide_panel else 0.0
+	var off_left: float = 0.0 if hide_panel else -_panel_width
+	var off_right: float = _panel_width if hide_panel else 0.0
 	_tween.tween_property(_panel, "offset_left", off_left, ANIM_TIME)
 	_tween.tween_property(_panel, "offset_right", off_right, ANIM_TIME)
 
@@ -497,9 +505,9 @@ func _animate(hide_panel: bool) -> void:
 func _apply_offsets(hide_panel: bool) -> void:
 	if hide_panel:
 		_panel.offset_left = 0.0
-		_panel.offset_right = PANEL_WIDTH
+		_panel.offset_right = _panel_width
 	else:
-		_panel.offset_left = -PANEL_WIDTH
+		_panel.offset_left = -_panel_width
 		_panel.offset_right = 0.0
 
 
