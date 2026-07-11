@@ -154,6 +154,11 @@ var _debt_btn: Button
 var _buy_btn: Button
 var _cards: Array = []  # [{id, cost, card, vp, mesh, mat, hit, slot, total, hovering, buying}]
 var _chrome: Array = []  # [{node, fx, fy, fw, fh}] — элементы, позиционируемые по долям
+
+# Ряд кубов не в _chrome: его ширина зависит от числа кубов, поэтому центрируем
+# по фактическому контенту (см. _center_dice_row). Вертикаль — по долям сцены.
+const DICE_FY: float = 0.735
+const DICE_FH: float = 0.09
 var _flame_nodes: Array = []  # [{node, cx, cy, w, h}] — огни-глоу, позиция по центру-долям
 var _hover_sfx: AudioStream = null  # звук шуршания при наведении (ленивый)
 var _hover_sfx_tried: bool = false
@@ -284,9 +289,8 @@ func _build() -> void:
 	_dice_box.add_theme_constant_override("separation", 10)
 	_dice_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_stage.add_child(_dice_box)
-	# Широкий контейнер (центр на 0.5) — чтобы ряд кубов центрировался при любом их
-	# числе; узкий бокс раньше переполнялся на 5 кубах и уезжал вбок.
-	_chrome.append({"node": _dice_box, "fx": 0.05, "fy": 0.735, "fw": 0.9, "fh": 0.09})
+	# В _chrome НЕ кладём: ширина ряда зависит от числа кубов — центрируем отдельно
+	# по контенту (_center_dice_row), иначе при переполнении бокса ряд уезжает вбок.
 
 	# ── Кнопки: долг · бросок · купить ──
 	var btns := HBoxContainer.new()
@@ -611,6 +615,7 @@ func _layout_stage() -> void:
 		node.position = Vector2(e.fx * s.x, e.fy * s.y)
 		node.custom_minimum_size = Vector2(e.fw * s.x, e.fh * s.y)
 		node.size = node.custom_minimum_size
+	_center_dice_row()  # ряд кубов — по центру сцены, по фактической ширине контента
 	# Огни — по центру-долям (glow-квадрат центрируется на нарисованном огоньке).
 	for e_v: Variant in _flame_nodes:
 		var e: Dictionary = e_v
@@ -739,6 +744,18 @@ func _ensure_tray() -> void:
 	_dice_box.add_child(_tray)
 
 
+# Центрирует ряд кубов по горизонтали на середине сцены, исходя из фактической
+# ширины контента (число кубов может меняться) — не зависит от фикс. долей.
+func _center_dice_row() -> void:
+	if not is_instance_valid(_dice_box) or not is_instance_valid(_stage):
+		return
+	var s: Vector2 = _stage.size
+	_dice_box.custom_minimum_size = Vector2(0.0, DICE_FH * s.y)  # ширину — по контенту
+	var dw: float = _dice_box.get_combined_minimum_size().x
+	_dice_box.size = Vector2(dw, DICE_FH * s.y)
+	_dice_box.position = Vector2(s.x * 0.5 - dw * 0.5, DICE_FY * s.y)
+
+
 func _render_dice() -> void:
 	if not is_instance_valid(_dice_box):
 		return
@@ -747,6 +764,7 @@ func _render_dice() -> void:
 		if not _last_dice.is_empty():
 			_last_dice = []
 		_tray.show_pending(_influence_pool())
+		_center_dice_row()  # число кубов могло измениться — перецентрировать ряд
 		return
 	var dice: Array = _check().get("dice", [])
 	var can: bool = _can_reroll()
@@ -778,6 +796,7 @@ func _render_dice() -> void:
 		_tray.show_roll(dice, can, add)
 		_last_can = can
 		_last_add = add
+	_center_dice_row()  # число кубов могло измениться — перецентрировать ряд
 
 
 func _single_diff(a: Array, b: Array) -> int:
