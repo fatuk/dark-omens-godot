@@ -31,7 +31,7 @@ const EDGE_GAP_FACTOR: float = 0.01
 # (Ctrl+M → «САЙДБАР · ТЕНЬ»); найденные значения запекаются сюда.
 static var SHADOW_ALPHA: float = 0.5  # плотность (альфа) тени
 static var SHADOW_SIZE: float = 48.0  # размытие/растекание тени, px
-static var SHADOW_GROW: float = 0.0  # расширение силуэта тени за габарит панели, px
+static var SHADOW_GROW: float = 8.0  # расширение силуэта тени за габарит панели, px
 static var SHADOW_OFFSET_X: float = -6.0  # сдвиг тени по X (влево — от края экрана)
 static var SHADOW_OFFSET_Y: float = 12.0  # сдвиг тени по Y (вниз)
 # Ширина панели считается от высоты панели (см. _relayout); дефолт — фолбэк.
@@ -132,15 +132,22 @@ func _build_shadow() -> void:
 
 
 ## Пересобирает StyleBox тени из статик-параметров (тюнинг дёргает по группе).
+## Тень — сплошной тёмный скруглённый прямоугольник (заливка есть в середине,
+## а не только по контуру), позади рамки. Сдвиг/расширение задаём ректом самого
+## узла, чтобы заливка ехала целиком; shadow_size даёт лишь мягкое размытие краёв.
 func apply_shadow() -> void:
 	if not is_instance_valid(_shadow):
 		return
+	_shadow.offset_left = SHADOW_OFFSET_X - SHADOW_GROW
+	_shadow.offset_top = SHADOW_OFFSET_Y - SHADOW_GROW
+	_shadow.offset_right = SHADOW_OFFSET_X + SHADOW_GROW
+	_shadow.offset_bottom = SHADOW_OFFSET_Y + SHADOW_GROW
+	var col := Color(0.0, 0.0, 0.0, SHADOW_ALPHA)
 	var sb := StyleBoxFlat.new()
-	sb.draw_center = false  # рисуем только тень, без заливки
-	sb.shadow_color = Color(0.0, 0.0, 0.0, SHADOW_ALPHA)
+	sb.draw_center = true  # заливка силуэта (не полый контур!)
+	sb.bg_color = col
+	sb.shadow_color = col
 	sb.shadow_size = int(round(SHADOW_SIZE))
-	sb.shadow_offset = Vector2(SHADOW_OFFSET_X, SHADOW_OFFSET_Y)
-	sb.set_expand_margin_all(SHADOW_GROW)
 	sb.set_corner_radius_all(int(round(_panel_width * 0.06)))
 	_shadow.add_theme_stylebox_override("panel", sb)
 
