@@ -900,6 +900,52 @@ func _build_specs() -> Array:
 			"default": ShopModal.SHADOW_Z,
 			"set": _set_shop_shadow_z
 		},
+		{"section": "САЙДБАР · ТЕНЬ"},
+		{
+			"key": "sb_shadow_alpha",
+			"label": "Плотность",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.02,
+			"default": LocationSidebar.SHADOW_ALPHA,
+			"set": _set_sb_shadow_alpha
+		},
+		{
+			"key": "sb_shadow_size",
+			"label": "Размытие",
+			"min": 0.0,
+			"max": 140.0,
+			"step": 1.0,
+			"default": LocationSidebar.SHADOW_SIZE,
+			"set": _set_sb_shadow_size
+		},
+		{
+			"key": "sb_shadow_grow",
+			"label": "Расширение",
+			"min": 0.0,
+			"max": 60.0,
+			"step": 1.0,
+			"default": LocationSidebar.SHADOW_GROW,
+			"set": _set_sb_shadow_grow
+		},
+		{
+			"key": "sb_shadow_x",
+			"label": "Сдвиг X",
+			"min": -60.0,
+			"max": 60.0,
+			"step": 1.0,
+			"default": LocationSidebar.SHADOW_OFFSET_X,
+			"set": _set_sb_shadow_x
+		},
+		{
+			"key": "sb_shadow_y",
+			"label": "Сдвиг Y",
+			"min": -60.0,
+			"max": 60.0,
+			"step": 1.0,
+			"default": LocationSidebar.SHADOW_OFFSET_Y,
+			"set": _set_sb_shadow_y
+		},
 	]
 
 
@@ -1590,3 +1636,36 @@ func _set_shop_shadow_y(v: float) -> void:
 func _set_shop_shadow_z(v: float) -> void:
 	ShopModal.SHADOW_Z = v
 	_relayout_shop()
+
+
+# ── Тень сайдбара локации (LocationSidebar.SHADOW_* — static; живой сайдбар в
+# группе "location_sidebar" перерисовывает StyleBox по apply_shadow) ──────────
+
+
+func _reapply_sidebar_shadow() -> void:
+	get_tree().call_group("location_sidebar", "apply_shadow")
+
+
+func _set_sb_shadow_alpha(v: float) -> void:
+	LocationSidebar.SHADOW_ALPHA = v
+	_reapply_sidebar_shadow()
+
+
+func _set_sb_shadow_size(v: float) -> void:
+	LocationSidebar.SHADOW_SIZE = v
+	_reapply_sidebar_shadow()
+
+
+func _set_sb_shadow_grow(v: float) -> void:
+	LocationSidebar.SHADOW_GROW = v
+	_reapply_sidebar_shadow()
+
+
+func _set_sb_shadow_x(v: float) -> void:
+	LocationSidebar.SHADOW_OFFSET_X = v
+	_reapply_sidebar_shadow()
+
+
+func _set_sb_shadow_y(v: float) -> void:
+	LocationSidebar.SHADOW_OFFSET_Y = v
+	_reapply_sidebar_shadow()

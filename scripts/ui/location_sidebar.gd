@@ -1,3 +1,4 @@
+class_name LocationSidebar
 extends CanvasLayer
 
 ## Боковая панель справа с инфой о выбранной локации (орнаментальная рамка).
@@ -25,6 +26,14 @@ const FRAME_ASPECT: float = 1638.0 / 4506.0
 const WIDTH_FACTOR: float = 1.25
 # Небольшой отступ панели от краёв экрана (сверху/снизу/справа) — доля высоты экрана.
 const EDGE_GAP_FACTOR: float = 0.02
+
+# Тень под панелью (мягкий drop-shadow за рамкой). Параметры вынесены в тюнинг
+# (Ctrl+M → «САЙДБАР · ТЕНЬ»); найденные значения запекаются сюда.
+static var SHADOW_ALPHA: float = 0.5  # плотность (альфа) тени
+static var SHADOW_SIZE: float = 48.0  # размытие/растекание тени, px
+static var SHADOW_GROW: float = 0.0  # расширение силуэта тени за габарит панели, px
+static var SHADOW_OFFSET_X: float = -6.0  # сдвиг тени по X (влево — от края экрана)
+static var SHADOW_OFFSET_Y: float = 12.0  # сдвиг тени по Y (вниз)
 # Ширина панели считается от высоты панели (см. _relayout); дефолт — фолбэк.
 var _panel_width: float = 392.0 * WIDTH_FACTOR
 # Текущий отступ от краёв в пикселях (считается в _relayout).
@@ -45,6 +54,8 @@ const CONN_COLORS: Dictionary = {
 @onready var _panel: Control = %Panel
 @onready var _margin: MarginContainer = %Margin
 @onready var _vbox: VBoxContainer = %VBox
+
+var _shadow: Panel = null  # мягкая тень за рамкой (строится в _build_ui)
 
 var _is_open: bool = false
 var _tween: Tween = null
@@ -67,6 +78,7 @@ var _items_list: VBoxContainer = null
 
 
 func _ready() -> void:
+	add_to_group("location_sidebar")  # тюнинг тени дёргает группу (call_group)
 	_build_ui()
 	GameState.state_changed.connect(_refresh_actions)
 	GameState.state_changed.connect(_refresh_items)
@@ -94,6 +106,7 @@ func _relayout() -> void:
 		_margin.add_theme_constant_override("margin_top", int(panel_h * 0.05))
 		_margin.add_theme_constant_override("margin_bottom", int(panel_h * 0.035))
 	_place_close_button()
+	apply_shadow()
 	_apply_offsets(not _is_open)
 
 
@@ -103,25 +116,49 @@ func _place_close_button() -> void:
 	if not is_instance_valid(_close_btn):
 		return
 	var sz: float = clampf(_panel_width * 0.085, 26.0, 40.0)
-	# Центр кнопки — прямо на угловом орнаменте рамки (узел ~6% ширины от угла).
-	var c: float = _panel_width * 0.058
+	# Прижимаем крестик прямо в правый верхний угол сайдбара, без отступов.
 	_close_btn.custom_minimum_size = Vector2(sz, sz)
-	_close_btn.offset_left = -(c + sz * 0.5)
-	_close_btn.offset_right = -(c - sz * 0.5)
-	_close_btn.offset_top = c - sz * 0.5
-	_close_btn.offset_bottom = c + sz * 0.5
+	_close_btn.offset_left = -sz
+	_close_btn.offset_right = 0.0
+	_close_btn.offset_top = 0.0
+	_close_btn.offset_bottom = sz
 
 
 # ── Сборка UI ─────────────────────────────────────────────────────────────────
 
 
 func _build_ui() -> void:
+	_build_shadow()
 	_build_header()
 	_build_caption()
 	_build_image_box()
 	_build_actions()
 	_build_content()
 	_build_close_button()  # поверх всего, в правом верхнем углу рамки
+
+
+# Мягкая тень за рамкой (Panel со StyleBoxFlat-тенью, позади Frame).
+func _build_shadow() -> void:
+	_shadow = Panel.new()
+	_shadow.name = "Shadow"
+	_shadow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_panel.add_child(_shadow)
+	_panel.move_child(_shadow, 0)  # за рамку (первым ребёнком панели)
+
+
+## Пересобирает StyleBox тени из статик-параметров (тюнинг дёргает по группе).
+func apply_shadow() -> void:
+	if not is_instance_valid(_shadow):
+		return
+	var sb := StyleBoxFlat.new()
+	sb.draw_center = false  # рисуем только тень, без заливки
+	sb.shadow_color = Color(0.0, 0.0, 0.0, SHADOW_ALPHA)
+	sb.shadow_size = int(round(SHADOW_SIZE))
+	sb.shadow_offset = Vector2(SHADOW_OFFSET_X, SHADOW_OFFSET_Y)
+	sb.set_expand_margin_all(SHADOW_GROW)
+	sb.set_corner_radius_all(int(round(_panel_width * 0.06)))
+	_shadow.add_theme_stylebox_override("panel", sb)
 
 
 # Орнаментальный заголовок (шеврон · имя · шеврон) + крестик поверх правого угла.
