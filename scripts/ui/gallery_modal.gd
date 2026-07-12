@@ -27,9 +27,11 @@ const LAMP_OFF: Vector2 = Vector2(1407.0, 122.0)
 # При наезде лампа поднимается на LAMP_RISE×(zoom−1) экранных px — чтобы не наползать
 # на крест рамы, который на глубине 0.28 уходит вверх сильнее лампы.
 const LAMP_RISE: float = 90.0
-# Крепление лампы (lamp-mount.png 64×38): сидит на кресте рамы и двигается С РАМОЙ
-# (глубина 0.28, БЕЗ подъёма) — сама лампа поднимается, а крепление остаётся на месте.
+# Крепление лампы (lamp-mount.png 64×38): на глубине рамы (0.28), на кресте. При
+# наезде тоже поднимается (MOUNT_RISE) — чуть меньше, чем нужно, чтобы почти зайти
+# за лампу (мелкий остаточный зазор, крепление уходит под лампу).
 const MOUNT_OFF: Vector2 = Vector2(1641.0, 178.0)
+const MOUNT_RISE: float = 40.0
 
 # Стенд с описанием и область парчмента под текст (в канве).
 # Стенд опущен так, чтобы низ доходил до низа канвы (= низ экрана при cover-фите).
@@ -82,6 +84,7 @@ var _root: Control = null
 var _layers: Array = []  # [{node, off, size, depth}]
 var _painting: TextureRect = null
 var _lamp: TextureRect = null  # лампа — доп. подъём при наезде (см. _apply_layout)
+var _mount: TextureRect = null  # крепление лампы — свой подъём при наезде
 var _plate_text: Label = null  # живёт внутри _text_vp (рендерится в текстуру)
 var _text_vp: SubViewport = null  # плоский рендер описания
 var _text_mesh: MeshInstance2D = null  # варп текста на трапецию парчмента
@@ -227,7 +230,7 @@ func _build() -> void:
 	)
 
 	_add_layer("Frame", "frame.png", Vector2(981, 190), 0.28)
-	_add_layer("LampMount", "lamp-mount.png", MOUNT_OFF, 0.28)  # крепление — с рамой, без подъёма
+	_mount = _add_layer("LampMount", "lamp-mount.png", MOUNT_OFF, 0.28)  # крепление на кресте
 	# Лампа на стене (глубина 0.0), но при наезде поднимается (LAMP_RISE), чтобы не
 	# наползать на крест рамы (та на глубине 0.28 и уходит вверх сильнее).
 	_lamp = _add_layer("Lamp", "lamp.png", LAMP_OFF, 0.0)
@@ -383,9 +386,13 @@ func _apply_layout() -> void:
 		var node: Control = l.node
 		node.scale = Vector2(s, s)
 		node.position = center + (Vector2(l.off) - _focus) * s
-	# Лампа при наезде поднимается, чтобы не наползать на крест рамы.
+	# Лампа при наезде поднимается, чтобы не наползать на крест рамы; крепление тоже
+	# поднимается (чуть сильнее), чтобы почти зайти за лампу.
+	var zk: float = maxf(0.0, _zoom - 1.0)
 	if is_instance_valid(_lamp):
-		_lamp.position.y -= LAMP_RISE * maxf(0.0, _zoom - 1.0)
+		_lamp.position.y -= LAMP_RISE * zk
+	if is_instance_valid(_mount):
+		_mount.position.y -= MOUNT_RISE * zk
 	# Перспективный текст-меш (вершины в канве) — тот же аффинный сдвиг камеры,
 	# что и у слоя стенда (PLATE_DEPTH); трапеция сохраняется, keystone — в UV.
 	if is_instance_valid(_text_mesh):
