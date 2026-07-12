@@ -410,19 +410,24 @@ func _build_title() -> void:
 
 
 # Задаёт название и подгоняет ширину таблички под него; на макс. ширине — ужимает шрифт.
-func _set_title(name: String) -> void:
+func _set_title(loc_name: String) -> void:
 	if not is_instance_valid(_name_lbl):
 		return
-	var disp: String = tr(name)
+	var disp: String = tr(loc_name)
 	var font: Font = _name_lbl.get_theme_font("font")
 	var fs: int = NAME_FONT_SIZE
 	if font != null:
 		var inner_max: float = TITLE_MAX_W - 2.0 * TITLE_PAD
-		while fs > NAME_FONT_MIN and font.get_string_size(disp, 0, -1, fs).x > inner_max:
+		while (
+			fs > NAME_FONT_MIN
+			and font.get_string_size(disp, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > inner_max
+		):
 			fs -= 1
 	_name_lbl.add_theme_font_size_override("font_size", fs)
-	_name_lbl.text = name
-	var tw: float = font.get_string_size(disp, 0, -1, fs).x if font != null else 0.0
+	_name_lbl.text = loc_name
+	var tw: float = (
+		font.get_string_size(disp, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x if font != null else 0.0
+	)
 	var w: float = clampf(tw + 2.0 * TITLE_PAD, TITLE_MIN_W, TITLE_MAX_W)
 	var sz := Vector2(w, TITLE_HEIGHT)
 	_title_ctrl.size = sz

@@ -31,7 +31,7 @@ static func build(nm: Node) -> Control:
 	hdr.name = "PlayersHeader"
 	vb.add_child(hdr)
 
-	var host_id: String = nm.host_id if "host_id" in nm else ""
+	var host_id: String = nm.host_id() if nm.has_method("host_id") else ""
 	for pid: String in nm.players.keys():
 		var row := _make_row(pid, nm.players[pid], host_id)
 		row.name = "Player_%s" % pid
