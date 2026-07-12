@@ -6,7 +6,7 @@ extends CanvasLayer
 ##
 ## Раскладка: рамка-арт (sidebar-bg.png) → орнаментальный заголовок с шевронами →
 ## окно-картинка локации (assets/location-sidebar/<id>.png) → действия
-## (Переместиться / Обмен, плюс контекстные Магазин / Билеты) → описание → список
+## (Переместиться / Обмен, плюс контекстные Магазин / Билеты) → список
 ## объектов на локации (монстры/улики/слухи).
 ##
 ## Сигналы:
@@ -80,7 +80,6 @@ var _caption: Label = null
 var _close_btn: Button = null
 var _image_box: Control = null
 var _image: TextureRect = null
-var _description: Label = null
 var _travel_btn: Button = null
 var _trade_btn: Button = null
 var _shop_btn: Button = null
@@ -337,14 +336,6 @@ func _build_content() -> void:
 	content.add_theme_constant_override("separation", 8)
 	scroll.add_child(content)
 
-	_description = Label.new()
-	_description.name = "Description"
-	_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_description.add_theme_font_size_override("font_size", 19)
-	_description.add_theme_color_override("font_color", UIColors.TEXT)
-	content.add_child(_description)
-
 	_items_sep = HSeparator.new()
 	_items_sep.name = "ItemsSeparator"
 	_items_hdr = Label.new()
@@ -386,7 +377,6 @@ func _apply_location(data: Dictionary) -> void:
 	_fit_title()  # длинное название ужимаем под ширину панели
 	_caption.text = _caption_text(data)
 	_image.texture = _location_art(_loc_id)
-	_description.text = String(data.get("description", ""))
 	_populate_items(_loc_id)
 	_refresh_actions()
 
