@@ -27,7 +27,32 @@ const PAINTING_DEPTH: float = 0.28  # как у рамы — двигаются 
 const PLATE_OFF: Vector2 = Vector2(537.0, 1135.0)
 const PLATE_SIZE: Vector2 = Vector2(2270.0, 691.0)
 const PLATE_DEPTH: float = 0.85
-const PLATE_TEXT_RECT: Rect2 = Rect2(1200.0, 1285.0, 950.0, 320.0)
+const PLATE_TEXT_RECT: Rect2 = Rect2(1080.0, 1240.0, 1200.0, 320.0)  # для фокуса камеры на стенде
+
+# Читаемая область парчмента — трапеция (перспектива наклонённого стенда) в канве.
+# Верх уже/дальше, низ шире/ближе → текст ложится на поверхность с keystone-искажением.
+const TEXT_QUAD_TL: Vector2 = Vector2(1080.0, 1240.0)
+const TEXT_QUAD_TR: Vector2 = Vector2(2220.0, 1240.0)
+const TEXT_QUAD_BR: Vector2 = Vector2(2280.0, 1560.0)
+const TEXT_QUAD_BL: Vector2 = Vector2(1020.0, 1560.0)
+const TEXT_VP_SIZE: Vector2i = Vector2i(1200, 760)  # плоский холст текста (до варпа на трапецию)
+
+# Перспективно-корректный сэмпл текстуры текста: UV делим на вес q (в COLOR.r),
+# интерполированный аффинно — даёт keystone (верх ужат сильнее низа).
+const _PERSPECTIVE_SHADER: String = """
+shader_type canvas_item;
+render_mode blend_mix;
+uniform sampler2D tex : filter_linear;
+void fragment() {
+	float q = COLOR.r;
+	vec2 uv = UV / q;
+	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+		COLOR = vec4(0.0);
+	} else {
+		COLOR = texture(tex, uv);
+	}
+}
+"""
 # Картуш рамы (табличка снизу по центру) — куда пишем название локации.
 const NAME_RECT: Rect2 = Rect2(1426.0, 979.0, 449.0, 121.0)
 
@@ -43,7 +68,9 @@ const OVERSCAN: float = 1.0
 var _root: Control = null
 var _layers: Array = []  # [{node, off, size, depth}]
 var _painting: TextureRect = null
-var _plate_text: Label = null
+var _plate_text: Label = null  # живёт внутри _text_vp (рендерится в текстуру)
+var _text_vp: SubViewport = null  # плоский рендер описания
+var _text_mesh: MeshInstance2D = null  # варп текста на трапецию парчмента
 var _name_lbl: Label = null
 
 var _focus: Vector2 = CANVAS * 0.5
@@ -201,25 +228,7 @@ func _build() -> void:
 	_add_layer("Statue", "statue.png", Vector2(20, 75), 0.55)
 	_add_layer("Plate", "plate.png", PLATE_OFF, PLATE_DEPTH)
 
-	# Описание — на парчменте стенда (движется вместе со стендом, та же глубина).
-	_plate_text = Label.new()
-	_plate_text.name = "PlateText"
-	_plate_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_plate_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_plate_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_plate_text.add_theme_font_size_override("font_size", 36)
-	_plate_text.add_theme_color_override("font_color", Color(0.16, 0.11, 0.06))
-	_plate_text.size = PLATE_TEXT_RECT.size
-	_plate_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_root.add_child(_plate_text)
-	_layers.append(
-		{
-			"node": _plate_text,
-			"off": PLATE_TEXT_RECT.position,
-			"size": PLATE_TEXT_RECT.size,
-			"depth": PLATE_DEPTH
-		}
-	)
+	_build_text_plate()
 
 	# Крестик закрытия — в экранных координатах (не слой, не параллаксит).
 	var close_btn := Button.new()
@@ -236,17 +245,75 @@ func _build() -> void:
 	_root.add_child(close_btn)
 
 
+# Описание рисуем плоско в SubViewport, затем варпим на трапецию парчмента
+# перспективным мешем (текст ложится на наклонённую поверхность стенда).
+func _build_text_plate() -> void:
+	_text_vp = SubViewport.new()
+	_text_vp.name = "TextViewport"
+	_text_vp.size = TEXT_VP_SIZE
+	_text_vp.transparent_bg = true
+	_text_vp.disable_3d = true
+	_text_vp.gui_disable_input = true
+	_text_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	add_child(_text_vp)  # рендерится офскрин (не как Control-слой)
+
+	_plate_text = Label.new()
+	_plate_text.name = "PlateText"
+	_plate_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_plate_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_plate_text.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	_plate_text.add_theme_font_size_override("font_size", 46)
+	_plate_text.add_theme_color_override("font_color", Color(0.16, 0.11, 0.06))
+	_plate_text.position = Vector2(70, 40)
+	_plate_text.size = Vector2(TEXT_VP_SIZE.x - 140, TEXT_VP_SIZE.y - 80)
+	_text_vp.add_child(_plate_text)
+
+	_text_mesh = MeshInstance2D.new()
+	_text_mesh.name = "PlateTextMesh"
+	_text_mesh.mesh = _make_perspective_mesh()
+	var sh := Shader.new()
+	sh.code = _PERSPECTIVE_SHADER
+	var mat := ShaderMaterial.new()
+	mat.shader = sh
+	mat.set_shader_parameter("tex", _text_vp.get_texture())
+	_text_mesh.material = mat
+	_root.add_child(_text_mesh)  # поверх слоя Plate (добавлен раньше)
+
+
+# Меш-трапеция парчмента с перспективно-корректными UV (вес q в COLOR.r).
+func _make_perspective_mesh() -> ArrayMesh:
+	var qt: float = (TEXT_QUAD_TR.x - TEXT_QUAD_TL.x) / (TEXT_QUAD_BR.x - TEXT_QUAD_BL.x)
+	var qb: float = 1.0
+	var verts := PackedVector2Array([TEXT_QUAD_TL, TEXT_QUAD_TR, TEXT_QUAD_BR, TEXT_QUAD_BL])
+	var uvs := PackedVector2Array(
+		[Vector2(0, 0) * qt, Vector2(1, 0) * qt, Vector2(1, 1) * qb, Vector2(0, 1) * qb]
+	)
+	var cols := PackedColorArray(
+		[Color(qt, qt, qt, 1), Color(qt, qt, qt, 1), Color(qb, qb, qb, 1), Color(qb, qb, qb, 1)]
+	)
+	var idx := PackedInt32Array([0, 1, 2, 0, 2, 3])
+	var arr: Array = []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = verts
+	arr[Mesh.ARRAY_TEX_UV] = uvs
+	arr[Mesh.ARRAY_COLOR] = cols
+	arr[Mesh.ARRAY_INDEX] = idx
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	return mesh
+
+
 func _add_layer(node_name: String, file: String, off: Vector2, depth: float) -> void:
 	var tex: Texture2D = load(GALLERY_DIR + file)
-	var tr := TextureRect.new()
-	tr.name = node_name
-	tr.texture = tex
-	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	tr.stretch_mode = TextureRect.STRETCH_SCALE
-	tr.size = tex.get_size()
-	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_root.add_child(tr)
-	_layers.append({"node": tr, "off": off, "size": tex.get_size(), "depth": depth})
+	var rect := TextureRect.new()
+	rect.name = node_name
+	rect.texture = tex
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	rect.stretch_mode = TextureRect.STRETCH_SCALE
+	rect.size = tex.get_size()
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(rect)
+	_layers.append({"node": rect, "off": off, "size": tex.get_size(), "depth": depth})
 
 
 # ── Камера / параллакс ────────────────────────────────────────────────────────
@@ -278,6 +345,12 @@ func _apply_layout() -> void:
 		var node: Control = l.node
 		node.scale = Vector2(s, s)
 		node.position = center + (Vector2(l.off) - _focus) * s
+	# Перспективный текст-меш (вершины в канве) — тот же аффинный сдвиг камеры,
+	# что и у слоя стенда (PLATE_DEPTH); трапеция сохраняется, keystone — в UV.
+	if is_instance_valid(_text_mesh):
+		var st: float = base * (1.0 + (_zoom - 1.0) * lerpf(FAR_STR, NEAR_STR, PLATE_DEPTH))
+		_text_mesh.scale = Vector2(st, st)
+		_text_mesh.position = center - _focus * st
 
 
 # Клик по зоне (картина / стенд) → наезд на неё; повторный клик по той же зоне
