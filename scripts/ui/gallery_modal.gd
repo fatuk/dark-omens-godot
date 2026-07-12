@@ -26,16 +26,20 @@ const PAINTING_DEPTH: float = 0.28  # как у рамы — двигаются 
 const PLATE_OFF: Vector2 = Vector2(537.0, 1135.0)
 const PLATE_SIZE: Vector2 = Vector2(2270.0, 691.0)
 const PLATE_DEPTH: float = 0.85
-const PLATE_TEXT_RECT: Rect2 = Rect2(1047.0, 1275.0, 1250.0, 360.0)
+const PLATE_TEXT_RECT: Rect2 = Rect2(1200.0, 1285.0, 950.0, 320.0)
 # Картуш рамы (табличка снизу по центру) — куда пишем название локации.
 const NAME_RECT: Rect2 = Rect2(1426.0, 979.0, 449.0, 121.0)
 
 # Параллакс/камера.
 const ZOOM_IDLE: float = 1.0
 const ZOOM_FOCUS: float = 1.7  # наезд к картине/стенду
-const FAR_STR: float = 0.3  # насколько зумится дальний слой (0 — стоит на месте)
+# Дальний слой должен зумиться достаточно, чтобы при наезде не оголялись края
+# (иначе видно тёмный фон = «потолок/пол»). Выше — меньше параллакс, но полное покрытие.
+const FAR_STR: float = 0.5  # насколько зумится дальний слой
 const NEAR_STR: float = 1.15  # насколько зумится ближний слой (> дальнего → параллакс)
 const CAM_LERP: float = 7.0  # скорость доводки камеры к цели
+# Канва рисуется крупнее cover-фита — сцена больше и края (потолок/пол) уходят за экран.
+const OVERSCAN: float = 1.12
 
 var _root: Control = null
 var _layers: Array = []  # [{node, off, size, depth}]
@@ -107,7 +111,7 @@ func open(data: Dictionary) -> void:
 
 # Зум, при котором картина на экране ≈ размер конца летящей картинки (vp.x*0.55).
 func _intro_zoom(vp: Vector2) -> float:
-	var base: float = maxf(vp.x / CANVAS.x, vp.y / CANVAS.y)
+	var base: float = _base_scale(vp)
 	var want: float = (vp.x * 0.55) / maxf(1.0, PAINTING_SIZE.x * base)  # нужный zoomfac
 	var k: float = lerpf(FAR_STR, NEAR_STR, PAINTING_DEPTH)
 	return 1.0 + (want - 1.0) / k
@@ -156,7 +160,7 @@ func _build() -> void:
 
 	var backdrop := ColorRect.new()
 	backdrop.name = "Backdrop"
-	backdrop.color = Color(0.02, 0.02, 0.03, 1.0)
+	backdrop.color = Color(0.05, 0.04, 0.035, 1.0)  # тёплый тёмный — сливается с тенями зала
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(backdrop)
@@ -202,9 +206,9 @@ func _build() -> void:
 	_plate_text = Label.new()
 	_plate_text.name = "PlateText"
 	_plate_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_plate_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_plate_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_plate_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_plate_text.add_theme_font_size_override("font_size", 26)
+	_plate_text.add_theme_font_size_override("font_size", 36)
 	_plate_text.add_theme_color_override("font_color", Color(0.16, 0.11, 0.06))
 	_plate_text.size = PLATE_TEXT_RECT.size
 	_plate_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -260,9 +264,14 @@ func _process(delta: float) -> void:
 
 # Масштаб слоя = базовый cover-фит × зум с учётом глубины. Позиция такова, что
 # точка focus в канве всегда оказывается в центре экрана (наезд «к точке»).
+# Базовый масштаб канвы: cover-фит × OVERSCAN (крупнее экрана, края за кадром).
+func _base_scale(vp: Vector2) -> float:
+	return maxf(vp.x / CANVAS.x, vp.y / CANVAS.y) * OVERSCAN
+
+
 func _apply_layout() -> void:
 	var vp: Vector2 = get_viewport().get_visible_rect().size
-	var base: float = maxf(vp.x / CANVAS.x, vp.y / CANVAS.y)  # cover
+	var base: float = _base_scale(vp)
 	var center: Vector2 = vp * 0.5
 	for l_v: Variant in _layers:
 		var l: Dictionary = l_v
@@ -283,7 +292,7 @@ func _on_root_input(event: InputEvent) -> void:
 	if not (mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT):
 		return
 	var vp: Vector2 = get_viewport().get_visible_rect().size
-	var base: float = maxf(vp.x / CANVAS.x, vp.y / CANVAS.y)
+	var base: float = _base_scale(vp)
 	var center: Vector2 = vp * 0.5
 	var m: Vector2 = mb.position
 	var hit: String = ""
