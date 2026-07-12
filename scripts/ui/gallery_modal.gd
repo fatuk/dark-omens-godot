@@ -75,7 +75,8 @@ void fragment() {
 const NAME_FONT_SIZE: int = 46
 const NAME_FONT_MIN: int = 26  # если даже на макс. ширине не влезает — ужимаем шрифт
 const TITLE_CENTER: Vector2 = Vector2(1673.5, 1090.0)  # центр таблички в канве
-const TITLE_HEIGHT: float = 150.0
+const TITLE_HEIGHT: float = 186.0  # натуральная высота (не сжимаем по вертикали)
+const TITLE_TEXT_FRAC: float = 79.0 / 186.0  # центр парчмента по высоте (текст выше центра)
 const TITLE_MIN_W: float = 470.0  # ширина под короткие названия (≈натуральная)
 const TITLE_MAX_W: float = 1180.0  # дальше не растягиваем — ужимаем шрифт
 const TITLE_PAD: float = 120.0  # отступ текста от края рамки (под орнамент углов)
@@ -427,8 +428,9 @@ func _set_title(name: String) -> void:
 	_title_ctrl.size = sz
 	_title_np.position = Vector2.ZERO
 	_title_np.size = sz
-	_name_lbl.position = Vector2.ZERO
+	# Текст центрируем по ПАРЧМЕНТУ (он выше геометрического центра плашки).
 	_name_lbl.size = sz
+	_name_lbl.position = Vector2(0.0, (TITLE_TEXT_FRAC - 0.5) * TITLE_HEIGHT)
 	_title_layer["off"] = TITLE_CENTER - sz * 0.5  # центрируем табличку в TITLE_CENTER
 	_title_layer["size"] = sz
 
