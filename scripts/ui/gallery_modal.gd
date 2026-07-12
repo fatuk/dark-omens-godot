@@ -27,6 +27,8 @@ const LAMP_OFF: Vector2 = Vector2(1407.0, 122.0)
 # При наезде лампа поднимается на LAMP_RISE×(zoom−1) экранных px — чтобы не наползать
 # на крест рамы, который на глубине 0.28 уходит вверх сильнее лампы.
 const LAMP_RISE: float = 90.0
+# При наезде лампа дополнительно чуть увеличивается (масштаб вокруг центра).
+const LAMP_GROW: float = 0.18
 # Крепление лампы (lamp-mount.png 64×38): на глубине рамы (0.28), на кресте. При
 # наезде тоже поднимается (MOUNT_RISE) — чуть меньше, чем нужно, чтобы почти зайти
 # за лампу (мелкий остаточный зазор, крепление уходит под лампу).
@@ -386,10 +388,15 @@ func _apply_layout() -> void:
 		var node: Control = l.node
 		node.scale = Vector2(s, s)
 		node.position = center + (Vector2(l.off) - _focus) * s
-	# Лампа при наезде поднимается, чтобы не наползать на крест рамы; крепление тоже
-	# поднимается (чуть сильнее), чтобы почти зайти за лампу.
+	# Лампа при наезде поднимается (чтобы не наползать на крест) и чуть растёт (вокруг
+	# центра); крепление тоже поднимается — чтобы почти зайти за лампу.
 	var zk: float = maxf(0.0, _zoom - 1.0)
 	if is_instance_valid(_lamp):
+		var s0: float = _lamp.scale.x
+		var center_scr: Vector2 = _lamp.position + _lamp.size * 0.5 * s0
+		var grown: float = s0 * (1.0 + LAMP_GROW * zk)
+		_lamp.scale = Vector2(grown, grown)
+		_lamp.position = center_scr - _lamp.size * 0.5 * grown
 		_lamp.position.y -= LAMP_RISE * zk
 	if is_instance_valid(_mount):
 		_mount.position.y -= MOUNT_RISE * zk
