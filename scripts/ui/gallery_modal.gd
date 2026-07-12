@@ -54,6 +54,11 @@ var _intro: bool = false
 var _intro_start_zoom: float = 1.0
 var _intro_start_focus: Vector2 = CANVAS * 0.5
 
+# Закрытие — обратное интро: камера наезжает обратно на картину и гаснет.
+var _closing: bool = false
+var _close_start_zoom: float = 1.0
+var _close_start_focus: Vector2 = CANVAS * 0.5
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -115,8 +120,26 @@ func _intro_progress(t: float) -> void:
 
 
 func close() -> void:
+	if _closing:
+		return
+	_closing = true  # _process замирает — камерой рулит твин
 	closed.emit()
-	queue_free()
+	_close_start_zoom = _zoom
+	_close_start_focus = _focus
+	var tw := create_tween().set_parallel(true)
+	tw.tween_method(_close_progress, 0.0, 1.0, 0.35).set_trans(Tween.TRANS_CUBIC).set_ease(
+		Tween.EASE_IN
+	)
+	tw.tween_property(_root, "modulate:a", 0.0, 0.35)
+	tw.chain().tween_callback(queue_free)
+
+
+# Прогресс закрытия 0..1: наезд обратно на картину + затухание (обратное интро).
+func _close_progress(t: float) -> void:
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	_zoom = lerpf(_close_start_zoom, _intro_zoom(vp), t)
+	_focus = _close_start_focus.lerp(PAINTING_OFF + PAINTING_SIZE * 0.5, t)
+	_apply_layout()
 
 
 # ── Сборка слоёв ──────────────────────────────────────────────────────────────
@@ -225,8 +248,8 @@ func _add_layer(node_name: String, file: String, off: Vector2, depth: float) -> 
 
 
 func _process(delta: float) -> void:
-	if not visible or _intro:
-		return  # во время интро камерой рулит твин (ховер отключён)
+	if not visible or _intro or _closing:
+		return  # во время интро/закрытия камерой рулит твин (ховер отключён)
 	_update_hover()
 	var t: float = minf(1.0, CAM_LERP * delta)
 	_zoom = lerpf(_zoom, _zoom_target, t)
