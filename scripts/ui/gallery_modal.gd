@@ -18,25 +18,25 @@ const LOCATION_ART_DIR: String = "res://assets/location-sidebar/"
 
 # Окно картины: арт слегка ЗАХОДИТ под кромку рамы (у frame.png мягкий feather-край),
 # чтобы не оставалось зазора/просвета стены. Габарит больше прозрачной дыры на ~30px.
-const PAINTING_OFF: Vector2 = Vector2(1124.0, 288.0)
+const PAINTING_OFF: Vector2 = Vector2(1124.0, 328.0)
 const PAINTING_SIZE: Vector2 = Vector2(1099.0, 727.0)
 const PAINTING_DEPTH: float = 0.28  # как у рамы — двигаются в связке
 # Лампа-подсветка над картиной (lamp.png 533×107): рисуется поверх картины/рамы,
 # но параллаксит как СТЕНА (глубина 0.0) — настенный светильник, часть зала.
-const LAMP_OFF: Vector2 = Vector2(1407.0, 60.0)
+const LAMP_OFF: Vector2 = Vector2(1407.0, 100.0)
 
 # Стенд с описанием и область парчмента под текст (в канве).
 # Стенд опущен так, чтобы низ доходил до низа канвы (= низ экрана при cover-фите).
-const PLATE_OFF: Vector2 = Vector2(537.0, 1135.0)
+const PLATE_OFF: Vector2 = Vector2(537.0, 1175.0)
 const PLATE_SIZE: Vector2 = Vector2(2270.0, 691.0)
 const PLATE_DEPTH: float = 0.85
 # Читаемая область парчмента — трапеция (перспектива наклонённого стенда) в канве.
 # Верх уже/дальше, низ шире/ближе → текст ложится на поверхность с keystone-искажением.
 # Углы/шрифт/поля вынесены в тюнинг (Ctrl+M → «ГАЛЕРЕЯ · ТЕКСТ»); значения запекаются.
-static var TEXT_QUAD_TL: Vector2 = Vector2(1080.0, 1175.0)
-static var TEXT_QUAD_TR: Vector2 = Vector2(2220.0, 1170.0)
-static var TEXT_QUAD_BR: Vector2 = Vector2(2280.0, 1645.0)
-static var TEXT_QUAD_BL: Vector2 = Vector2(1005.0, 1635.0)
+static var TEXT_QUAD_TL: Vector2 = Vector2(1080.0, 1215.0)
+static var TEXT_QUAD_TR: Vector2 = Vector2(2220.0, 1210.0)
+static var TEXT_QUAD_BR: Vector2 = Vector2(2280.0, 1685.0)
+static var TEXT_QUAD_BL: Vector2 = Vector2(1005.0, 1675.0)
 static var TEXT_FONT_SIZE: float = 46.0  # размер шрифта описания (в px SubViewport)
 static var TEXT_MARGIN: Vector2 = Vector2(70.0, 40.0)  # поля текста внутри SubViewport
 const TEXT_VP_SIZE: Vector2i = Vector2i(1200, 760)  # плоский холст текста (до варпа на трапецию)
@@ -58,7 +58,7 @@ void fragment() {
 }
 """
 # Картуш рамы (табличка снизу по центру) — куда пишем название локации.
-const NAME_RECT: Rect2 = Rect2(1426.0, 979.0, 449.0, 121.0)
+const NAME_RECT: Rect2 = Rect2(1426.0, 1019.0, 449.0, 121.0)
 
 # Параллакс/камера.
 const ZOOM_IDLE: float = 1.0
@@ -216,7 +216,7 @@ func _build() -> void:
 		{"node": _painting, "off": PAINTING_OFF, "size": PAINTING_SIZE, "depth": PAINTING_DEPTH}
 	)
 
-	_add_layer("Frame", "frame.png", Vector2(981, 150), 0.28)
+	_add_layer("Frame", "frame.png", Vector2(981, 190), 0.28)
 	_add_layer("Lamp", "lamp.png", LAMP_OFF, 0.0)  # на стене (глубина стены), рисуется поверх
 
 	# Название локации — в картуше рамы (маленькая табличка снизу по центру рамы).
