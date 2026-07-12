@@ -27,14 +27,15 @@ const PAINTING_DEPTH: float = 0.28  # как у рамы — двигаются 
 const PLATE_OFF: Vector2 = Vector2(537.0, 1135.0)
 const PLATE_SIZE: Vector2 = Vector2(2270.0, 691.0)
 const PLATE_DEPTH: float = 0.85
-const PLATE_TEXT_RECT: Rect2 = Rect2(1080.0, 1240.0, 1200.0, 320.0)  # для фокуса камеры на стенде
-
 # Читаемая область парчмента — трапеция (перспектива наклонённого стенда) в канве.
 # Верх уже/дальше, низ шире/ближе → текст ложится на поверхность с keystone-искажением.
-const TEXT_QUAD_TL: Vector2 = Vector2(1080.0, 1213.0)
-const TEXT_QUAD_TR: Vector2 = Vector2(2220.0, 1213.0)
-const TEXT_QUAD_BR: Vector2 = Vector2(2280.0, 1598.0)
-const TEXT_QUAD_BL: Vector2 = Vector2(1020.0, 1598.0)
+# Углы/шрифт/поля вынесены в тюнинг (Ctrl+M → «ГАЛЕРЕЯ · ТЕКСТ»); значения запекаются.
+static var TEXT_QUAD_TL: Vector2 = Vector2(1080.0, 1213.0)
+static var TEXT_QUAD_TR: Vector2 = Vector2(2220.0, 1213.0)
+static var TEXT_QUAD_BR: Vector2 = Vector2(2280.0, 1598.0)
+static var TEXT_QUAD_BL: Vector2 = Vector2(1020.0, 1598.0)
+static var TEXT_FONT_SIZE: float = 46.0  # размер шрифта описания (в px SubViewport)
+static var TEXT_MARGIN: Vector2 = Vector2(70.0, 40.0)  # поля текста внутри SubViewport
 const TEXT_VP_SIZE: Vector2i = Vector2i(1200, 760)  # плоский холст текста (до варпа на трапецию)
 
 # Перспективно-корректный сэмпл текстуры текста: UV делим на вес q (в COLOR.r),
@@ -93,6 +94,7 @@ var _close_start_focus: Vector2 = CANVAS * 0.5
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("gallery_modal")  # тюнинг текста стенда дёргает группу
 	_build()
 	set_process(true)
 
@@ -262,10 +264,10 @@ func _build_text_plate() -> void:
 	_plate_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_plate_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_plate_text.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	_plate_text.add_theme_font_size_override("font_size", 46)
+	_plate_text.add_theme_font_size_override("font_size", int(TEXT_FONT_SIZE))
 	_plate_text.add_theme_color_override("font_color", Color(0.16, 0.11, 0.06))
-	_plate_text.position = Vector2(70, 40)
-	_plate_text.size = Vector2(TEXT_VP_SIZE.x - 140, TEXT_VP_SIZE.y - 80)
+	_plate_text.position = TEXT_MARGIN
+	_plate_text.size = Vector2(TEXT_VP_SIZE) - TEXT_MARGIN * 2.0
 	_text_vp.add_child(_plate_text)
 
 	_text_mesh = MeshInstance2D.new()
@@ -301,6 +303,22 @@ func _make_perspective_mesh() -> ArrayMesh:
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
 	return mesh
+
+
+## Пересобирает текст-меш и лейбл из статик-параметров (тюнинг дёргает по группе).
+func apply_text_tuning() -> void:
+	if not is_instance_valid(_text_mesh) or not is_instance_valid(_plate_text):
+		return
+	_text_mesh.mesh = _make_perspective_mesh()
+	_plate_text.add_theme_font_size_override("font_size", int(TEXT_FONT_SIZE))
+	_plate_text.position = TEXT_MARGIN
+	_plate_text.size = Vector2(TEXT_VP_SIZE) - TEXT_MARGIN * 2.0
+	_apply_layout()
+
+
+# Центр читаемой трапеции (для наводки камеры на стенд).
+func _text_center() -> Vector2:
+	return (TEXT_QUAD_TL + TEXT_QUAD_TR + TEXT_QUAD_BR + TEXT_QUAD_BL) * 0.25
 
 
 func _add_layer(node_name: String, file: String, off: Vector2, depth: float) -> void:
@@ -382,7 +400,7 @@ func _on_root_input(event: InputEvent) -> void:
 		_zoom_target = ZOOM_FOCUS
 	else:
 		_focused = hit
-		_focus_target = PLATE_TEXT_RECT.position + PLATE_TEXT_RECT.size * 0.5
+		_focus_target = _text_center()
 		_zoom_target = ZOOM_FOCUS
 
 

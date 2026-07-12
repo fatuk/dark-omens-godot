@@ -946,6 +946,106 @@ func _build_specs() -> Array:
 			"default": LocationSidebar.SHADOW_OFFSET_Y,
 			"set": _set_sb_shadow_y
 		},
+		{"section": "ГАЛЕРЕЯ · ТЕКСТ (углы трапеции)"},
+		{
+			"key": "gal_tl_x",
+			"label": "Верх-лев X",
+			"min": 800.0,
+			"max": 2600.0,
+			"step": 5.0,
+			"default": GalleryModal.TEXT_QUAD_TL.x,
+			"set": _set_gal_tl_x
+		},
+		{
+			"key": "gal_tl_y",
+			"label": "Верх-лев Y",
+			"min": 1100.0,
+			"max": 1700.0,
+			"step": 5.0,
+			"default": GalleryModal.TEXT_QUAD_TL.y,
+			"set": _set_gal_tl_y
+		},
+		{
+			"key": "gal_tr_x",
+			"label": "Верх-прав X",
+			"min": 800.0,
+			"max": 2600.0,
+			"step": 5.0,
+			"default": GalleryModal.TEXT_QUAD_TR.x,
+			"set": _set_gal_tr_x
+		},
+		{
+			"key": "gal_tr_y",
+			"label": "Верх-прав Y",
+			"min": 1100.0,
+			"max": 1700.0,
+			"step": 5.0,
+			"default": GalleryModal.TEXT_QUAD_TR.y,
+			"set": _set_gal_tr_y
+		},
+		{
+			"key": "gal_br_x",
+			"label": "Низ-прав X",
+			"min": 800.0,
+			"max": 2600.0,
+			"step": 5.0,
+			"default": GalleryModal.TEXT_QUAD_BR.x,
+			"set": _set_gal_br_x
+		},
+		{
+			"key": "gal_br_y",
+			"label": "Низ-прав Y",
+			"min": 1100.0,
+			"max": 1700.0,
+			"step": 5.0,
+			"default": GalleryModal.TEXT_QUAD_BR.y,
+			"set": _set_gal_br_y
+		},
+		{
+			"key": "gal_bl_x",
+			"label": "Низ-лев X",
+			"min": 800.0,
+			"max": 2600.0,
+			"step": 5.0,
+			"default": GalleryModal.TEXT_QUAD_BL.x,
+			"set": _set_gal_bl_x
+		},
+		{
+			"key": "gal_bl_y",
+			"label": "Низ-лев Y",
+			"min": 1100.0,
+			"max": 1700.0,
+			"step": 5.0,
+			"default": GalleryModal.TEXT_QUAD_BL.y,
+			"set": _set_gal_bl_y
+		},
+		{
+			"key": "gal_font",
+			"label": "Шрифт",
+			"min": 20.0,
+			"max": 80.0,
+			"step": 1.0,
+			"default": GalleryModal.TEXT_FONT_SIZE,
+			"set": _set_gal_font
+		},
+		{
+			"key": "gal_mx",
+			"label": "Поле X",
+			"min": 0.0,
+			"max": 250.0,
+			"step": 5.0,
+			"default": GalleryModal.TEXT_MARGIN.x,
+			"set": _set_gal_mx
+		},
+		{
+			"key": "gal_my",
+			"label": "Поле Y",
+			"min": 0.0,
+			"max": 250.0,
+			"step": 5.0,
+			"default": GalleryModal.TEXT_MARGIN.y,
+			"set": _set_gal_my
+		},
 	]
 
 
@@ -1669,3 +1769,66 @@ func _set_sb_shadow_x(v: float) -> void:
 func _set_sb_shadow_y(v: float) -> void:
 	LocationSidebar.SHADOW_OFFSET_Y = v
 	_reapply_sidebar_shadow()
+
+
+# ── Текст-стенд галереи (GalleryModal.TEXT_* — static; живой инстанс в группе
+# "gallery_modal" пересобирает меш/лейбл по apply_text_tuning) ─────────────────
+
+
+func _reapply_gallery_text() -> void:
+	get_tree().call_group("gallery_modal", "apply_text_tuning")
+
+
+func _set_gal_tl_x(v: float) -> void:
+	GalleryModal.TEXT_QUAD_TL = Vector2(v, GalleryModal.TEXT_QUAD_TL.y)
+	_reapply_gallery_text()
+
+
+func _set_gal_tl_y(v: float) -> void:
+	GalleryModal.TEXT_QUAD_TL = Vector2(GalleryModal.TEXT_QUAD_TL.x, v)
+	_reapply_gallery_text()
+
+
+func _set_gal_tr_x(v: float) -> void:
+	GalleryModal.TEXT_QUAD_TR = Vector2(v, GalleryModal.TEXT_QUAD_TR.y)
+	_reapply_gallery_text()
+
+
+func _set_gal_tr_y(v: float) -> void:
+	GalleryModal.TEXT_QUAD_TR = Vector2(GalleryModal.TEXT_QUAD_TR.x, v)
+	_reapply_gallery_text()
+
+
+func _set_gal_br_x(v: float) -> void:
+	GalleryModal.TEXT_QUAD_BR = Vector2(v, GalleryModal.TEXT_QUAD_BR.y)
+	_reapply_gallery_text()
+
+
+func _set_gal_br_y(v: float) -> void:
+	GalleryModal.TEXT_QUAD_BR = Vector2(GalleryModal.TEXT_QUAD_BR.x, v)
+	_reapply_gallery_text()
+
+
+func _set_gal_bl_x(v: float) -> void:
+	GalleryModal.TEXT_QUAD_BL = Vector2(v, GalleryModal.TEXT_QUAD_BL.y)
+	_reapply_gallery_text()
+
+
+func _set_gal_bl_y(v: float) -> void:
+	GalleryModal.TEXT_QUAD_BL = Vector2(GalleryModal.TEXT_QUAD_BL.x, v)
+	_reapply_gallery_text()
+
+
+func _set_gal_font(v: float) -> void:
+	GalleryModal.TEXT_FONT_SIZE = v
+	_reapply_gallery_text()
+
+
+func _set_gal_mx(v: float) -> void:
+	GalleryModal.TEXT_MARGIN = Vector2(v, GalleryModal.TEXT_MARGIN.y)
+	_reapply_gallery_text()
+
+
+func _set_gal_my(v: float) -> void:
+	GalleryModal.TEXT_MARGIN = Vector2(GalleryModal.TEXT_MARGIN.x, v)
+	_reapply_gallery_text()
