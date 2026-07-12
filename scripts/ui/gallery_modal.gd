@@ -193,7 +193,7 @@ func _build() -> void:
 		{"node": _name_lbl, "off": NAME_RECT.position, "size": NAME_RECT.size, "depth": 0.28}
 	)
 
-	_add_layer("Statue", "statue.png", Vector2(80, 75), 0.55)
+	_add_layer("Statue", "statue.png", Vector2(20, 75), 0.55)
 	_add_layer("Plate", "plate.png", PLATE_OFF, PLATE_DEPTH)
 
 	# Описание — на парчменте стенда (движется вместе со стендом, та же глубина).
