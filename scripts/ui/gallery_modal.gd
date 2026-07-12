@@ -21,6 +21,8 @@ const LOCATION_ART_DIR: String = "res://assets/location-sidebar/"
 const PAINTING_OFF: Vector2 = Vector2(1124.0, 288.0)
 const PAINTING_SIZE: Vector2 = Vector2(1099.0, 727.0)
 const PAINTING_DEPTH: float = 0.28  # как у рамы — двигаются в связке
+# Лампа-подсветка над картиной (lamp.png 533×107): поверх картины/рамы, та же глубина.
+const LAMP_OFF: Vector2 = Vector2(1407.0, 60.0)
 
 # Стенд с описанием и область парчмента под текст (в канве).
 # Стенд опущен так, чтобы низ доходил до низа канвы (= низ экрана при cover-фите).
@@ -214,6 +216,7 @@ func _build() -> void:
 	)
 
 	_add_layer("Frame", "frame.png", Vector2(981, 150), 0.28)
+	_add_layer("Lamp", "lamp.png", LAMP_OFF, 0.28)  # подсветка поверх картины/рамы
 
 	# Название локации — в картуше рамы (маленькая табличка снизу по центру рамы).
 	_name_lbl = Label.new()
