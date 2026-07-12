@@ -33,6 +33,9 @@ const LAMP_RISE: float = 90.0
 const PLATE_OFF: Vector2 = Vector2(537.0, 1175.0)
 const PLATE_SIZE: Vector2 = Vector2(2270.0, 691.0)
 const PLATE_DEPTH: float = 0.85
+# При наезде на стенд фокусируемся ВЫШЕ центра текста на столько px канвы — тогда
+# сам стенд оказывается ниже на экране (точка фокуса уходит в центр экрана).
+const PLATE_FOCUS_UP: float = 260.0
 # Читаемая область парчмента — трапеция (перспектива наклонённого стенда) в канве.
 # Верх уже/дальше, низ шире/ближе → текст ложится на поверхность с keystone-искажением.
 # Углы/шрифт/поля вынесены в тюнинг (Ctrl+M → «ГАЛЕРЕЯ · ТЕКСТ»); значения запекаются.
@@ -416,7 +419,7 @@ func _on_root_input(event: InputEvent) -> void:
 		_zoom_target = ZOOM_FOCUS
 	else:
 		_focused = hit
-		_focus_target = _text_center()
+		_focus_target = _text_center() - Vector2(0.0, PLATE_FOCUS_UP)  # стенд ниже на экране
 		_zoom_target = ZOOM_FOCUS
 
 
