@@ -71,8 +71,16 @@ void fragment() {
 	}
 }
 """
-# Картуш рамы (табличка снизу по центру) — куда пишем название локации.
-const NAME_RECT: Rect2 = Rect2(1426.0, 1019.0, 449.0, 121.0)
+# Табличка названия (title-frame.png) — отдельная рамка-нейнпатч, тянется под длину.
+const NAME_FONT_SIZE: int = 46
+const NAME_FONT_MIN: int = 26  # если даже на макс. ширине не влезает — ужимаем шрифт
+const TITLE_CENTER: Vector2 = Vector2(1673.5, 1090.0)  # центр таблички в канве
+const TITLE_HEIGHT: float = 150.0
+const TITLE_MIN_W: float = 470.0  # ширина под короткие названия (≈натуральная)
+const TITLE_MAX_W: float = 1180.0  # дальше не растягиваем — ужимаем шрифт
+const TITLE_PAD: float = 120.0  # отступ текста от края рамки (под орнамент углов)
+# Поля нейнпатча (несжимаемые орнаментные углы title-frame.png 478×186).
+const TITLE_PATCH: Rect2 = Rect2(100.0, 55.0, 100.0, 55.0)  # left, top, right, bottom
 
 # Параллакс/камера.
 const ZOOM_IDLE: float = 1.0
@@ -92,6 +100,9 @@ var _plate_text: Label = null  # живёт внутри _text_vp (рендер�
 var _text_vp: SubViewport = null  # плоский рендер описания
 var _text_mesh: MeshInstance2D = null  # варп текста на трапецию парчмента
 var _name_lbl: Label = null
+var _title_ctrl: Control = null  # табличка названия (рамка+текст), тянется под длину
+var _title_np: NinePatchRect = null
+var _title_layer: Dictionary = {}  # запись слоя таблички (обновляем off/размер в _set_title)
 
 var _focus: Vector2 = CANVAS * 0.5
 var _zoom: float = ZOOM_IDLE
@@ -129,7 +140,7 @@ func open(data: Dictionary) -> void:
 	_painting.texture = _location_art(loc_id)
 	_plate_text.text = String(data.get("description", ""))
 	_fit_description_font()  # длинное описание ужимаем, чтобы влезло на парчмент
-	_name_lbl.text = String(data.get("name", ""))
+	_set_title(String(data.get("name", "")))  # табличка названия тянется под длину
 
 	# Старт — наезд на картину (её экранный размер ≈ конец летящей картинки), фокус
 	# на её центре. Дальше камера отъезжает к общему плану → плавное перетекание.
@@ -254,19 +265,7 @@ func _build() -> void:
 	# наползать на крест рамы (та на глубине 0.28 и уходит вверх сильнее).
 	_lamp = _add_layer("Lamp", "lamp.png", LAMP_OFF, 0.0)
 
-	# Название локации — в картуше рамы (маленькая табличка снизу по центру рамы).
-	_name_lbl = Label.new()
-	_name_lbl.name = "NameLabel"
-	_name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_name_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_name_lbl.add_theme_font_size_override("font_size", 46)
-	_name_lbl.add_theme_color_override("font_color", Color(0.20, 0.15, 0.08))
-	_name_lbl.size = NAME_RECT.size
-	_name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_root.add_child(_name_lbl)
-	_layers.append(
-		{"node": _name_lbl, "off": NAME_RECT.position, "size": NAME_RECT.size, "depth": 0.28}
-	)
+	_build_title()  # табличка названия (нейнпатч + текст), под картиной
 
 	_add_layer("Statue", "statue.png", Vector2(20, 75), 0.55)
 	_add_layer("Plate", "plate.png", PLATE_OFF, PLATE_DEPTH)
@@ -377,6 +376,61 @@ func _fit_description_font() -> void:
 				break
 			size -= 1
 	_plate_text.add_theme_font_size_override("font_size", size)
+
+
+# Табличка названия: нейнпатч-рамка (углы несжимаемы, серединка тянется) + текст.
+# Ширина подгоняется под название в _set_title.
+func _build_title() -> void:
+	_title_ctrl = Control.new()
+	_title_ctrl.name = "Title"
+	_title_ctrl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(_title_ctrl)
+
+	_title_np = NinePatchRect.new()
+	_title_np.name = "TitleFrame"
+	_title_np.texture = load(GALLERY_DIR + "title-frame.png")
+	_title_np.patch_margin_left = int(TITLE_PATCH.position.x)
+	_title_np.patch_margin_top = int(TITLE_PATCH.position.y)
+	_title_np.patch_margin_right = int(TITLE_PATCH.size.x)
+	_title_np.patch_margin_bottom = int(TITLE_PATCH.size.y)
+	_title_np.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_title_ctrl.add_child(_title_np)
+
+	_name_lbl = Label.new()
+	_name_lbl.name = "NameLabel"
+	_name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_name_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_name_lbl.add_theme_color_override("font_color", Color(0.20, 0.15, 0.08))
+	_name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_title_ctrl.add_child(_name_lbl)
+
+	_title_layer = {"node": _title_ctrl, "off": Vector2.ZERO, "size": Vector2.ZERO, "depth": 0.28}
+	_layers.append(_title_layer)
+
+
+# Задаёт название и подгоняет ширину таблички под него; на макс. ширине — ужимает шрифт.
+func _set_title(name: String) -> void:
+	if not is_instance_valid(_name_lbl):
+		return
+	var disp: String = tr(name)
+	var font: Font = _name_lbl.get_theme_font("font")
+	var fs: int = NAME_FONT_SIZE
+	if font != null:
+		var inner_max: float = TITLE_MAX_W - 2.0 * TITLE_PAD
+		while fs > NAME_FONT_MIN and font.get_string_size(disp, 0, -1, fs).x > inner_max:
+			fs -= 1
+	_name_lbl.add_theme_font_size_override("font_size", fs)
+	_name_lbl.text = name
+	var tw: float = font.get_string_size(disp, 0, -1, fs).x if font != null else 0.0
+	var w: float = clampf(tw + 2.0 * TITLE_PAD, TITLE_MIN_W, TITLE_MAX_W)
+	var sz := Vector2(w, TITLE_HEIGHT)
+	_title_ctrl.size = sz
+	_title_np.position = Vector2.ZERO
+	_title_np.size = sz
+	_name_lbl.position = Vector2.ZERO
+	_name_lbl.size = sz
+	_title_layer["off"] = TITLE_CENTER - sz * 0.5  # центрируем табличку в TITLE_CENTER
+	_title_layer["size"] = sz
 
 
 # Центр читаемой трапеции (для наводки камеры на стенд).
