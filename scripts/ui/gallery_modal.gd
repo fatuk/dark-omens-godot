@@ -22,10 +22,11 @@ const PAINTING_SIZE: Vector2 = Vector2(1039.0, 667.0)
 const PAINTING_DEPTH: float = 0.28  # как у рамы — двигаются в связке
 
 # Стенд с описанием и область парчмента под текст (в канве).
-const PLATE_OFF: Vector2 = Vector2(537.0, 1080.0)
+# Стенд опущен так, чтобы низ доходил до низа канвы (= низ экрана при cover-фите).
+const PLATE_OFF: Vector2 = Vector2(537.0, 1135.0)
 const PLATE_SIZE: Vector2 = Vector2(2270.0, 691.0)
 const PLATE_DEPTH: float = 0.85
-const PLATE_TEXT_RECT: Rect2 = Rect2(1047.0, 1220.0, 1250.0, 360.0)
+const PLATE_TEXT_RECT: Rect2 = Rect2(1047.0, 1275.0, 1250.0, 360.0)
 # Картуш рамы (табличка снизу по центру) — куда пишем название локации.
 const NAME_RECT: Rect2 = Rect2(1426.0, 979.0, 449.0, 121.0)
 
@@ -95,6 +96,8 @@ func _build() -> void:
 	_root.add_child(backdrop)
 
 	# Порядок = z-порядок (дальше → раньше рисуется).
+	# Пол — самым первым, ПОД стеной: низ стены (плинтус) перекрывает верх пола.
+	_add_layer("Floor", "floor.png", Vector2(0, 1612), 0.7)
 	_add_layer("GalleryBg", "gallery-bg.png", Vector2(0, 0), 0.0)
 
 	# Картина локации — между стеной и рамой (рама с прозрачным центром поверх).
@@ -127,7 +130,6 @@ func _build() -> void:
 	)
 
 	_add_layer("Statue", "statue.png", Vector2(80, 75), 0.55)
-	_add_layer("Floor", "floor.png", Vector2(0, 1612), 0.7)
 	_add_layer("Plate", "plate.png", PLATE_OFF, PLATE_DEPTH)
 
 	# Описание — на парчменте стенда (движется вместе со стендом, та же глубина).
