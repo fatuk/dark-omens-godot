@@ -31,10 +31,10 @@ const PLATE_TEXT_RECT: Rect2 = Rect2(1080.0, 1240.0, 1200.0, 320.0)  # для ф
 
 # Читаемая область парчмента — трапеция (перспектива наклонённого стенда) в канве.
 # Верх уже/дальше, низ шире/ближе → текст ложится на поверхность с keystone-искажением.
-const TEXT_QUAD_TL: Vector2 = Vector2(1080.0, 1240.0)
-const TEXT_QUAD_TR: Vector2 = Vector2(2220.0, 1240.0)
-const TEXT_QUAD_BR: Vector2 = Vector2(2280.0, 1560.0)
-const TEXT_QUAD_BL: Vector2 = Vector2(1020.0, 1560.0)
+const TEXT_QUAD_TL: Vector2 = Vector2(1080.0, 1213.0)
+const TEXT_QUAD_TR: Vector2 = Vector2(2220.0, 1213.0)
+const TEXT_QUAD_BR: Vector2 = Vector2(2280.0, 1598.0)
+const TEXT_QUAD_BL: Vector2 = Vector2(1020.0, 1598.0)
 const TEXT_VP_SIZE: Vector2i = Vector2i(1200, 760)  # плоский холст текста (до варпа на трапецию)
 
 # Перспективно-корректный сэмпл текстуры текста: UV делим на вес q (в COLOR.r),
