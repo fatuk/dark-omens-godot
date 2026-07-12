@@ -642,71 +642,7 @@ func _on_image_input(event: InputEvent) -> void:
 		var mb := event as InputEventMouseButton
 		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
 			if _location_art(_loc_id) != null and not _data.is_empty():
-				# Сначала картинка вылетает и растворяется, ПОТОМ открываем галерею.
-				var data: Dictionary = _data
-				_play_fly(false, func() -> void: gallery_requested.emit(data))
-
-
-## Возврат картинки в сайдбар при закрытии галереи (её зовёт карта по сигналу
-## closed галереи, когда та уже растворилась). Ничего не открывает — просто анимация.
-func play_gallery_return() -> void:
-	_play_fly(true)
-
-
-# Летящая копия картинки локации между окном сайдбара и центром экрана.
-# reverse=false — открытие: из сайдбара разрастается в центр и растворяется.
-# reverse=true  — закрытие: из центра (крупная, прозрачная) слетается обратно в
-# окно сайдбара, проявляясь. on_done — колбэк по завершении.
-func _play_fly(reverse: bool, on_done: Callable = Callable()) -> void:
-	var tex: Texture2D = _image.texture
-	if tex == null:
-		if on_done.is_valid():
-			on_done.call()
-		return
-	var src: Rect2 = _image.get_global_rect()
-	var vp: Vector2 = get_viewport().get_visible_rect().size
-	var big_scale: float = (vp.x * 0.55) / maxf(1.0, src.size.x)
-	var big_pos: Vector2 = vp * 0.5 - src.size * 0.5  # центр (pivot) в центре экрана
-
-	var overlay := CanvasLayer.new()
-	overlay.name = "GalleryTransition"
-	overlay.layer = 100  # поверх всего, включая галерею (layer 80)
-	add_child(overlay)
-
-	var fly := TextureRect.new()
-	fly.name = "FlyImage"
-	fly.texture = tex
-	fly.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	fly.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	fly.clip_contents = true
-	fly.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	fly.size = src.size
-	fly.pivot_offset = src.size * 0.5  # масштаб вокруг центра
-	if reverse:  # старт: крупная в центре, прозрачная
-		fly.position = big_pos
-		fly.scale = Vector2(big_scale, big_scale)
-		fly.modulate.a = 0.0
-	else:  # старт: в окне сайдбара, непрозрачная
-		fly.position = src.position
-		fly.scale = Vector2.ONE
-		fly.modulate.a = 1.0
-	overlay.add_child(fly)
-
-	var end_pos: Vector2 = src.position if reverse else big_pos
-	var end_scale: float = 1.0 if reverse else big_scale
-	var end_alpha: float = 1.0 if reverse else 0.0
-	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
-		Tween.EASE_OUT
-	)
-	tw.tween_property(fly, "position", end_pos, 0.45)
-	tw.tween_property(fly, "scale", Vector2(end_scale, end_scale), 0.45)
-	tw.tween_property(fly, "modulate:a", end_alpha, 0.45)
-	tw.chain().tween_callback(
-		func() -> void:
-			overlay.queue_free()
-			if on_done.is_valid():
-				on_done.call()
-	)
+				gallery_requested.emit(_data)  # галерея сама проявляется с масштабом
 
 
 # Слайд-звук с разной высотой для открытия и закрытия (+лёгкий джиттер).
