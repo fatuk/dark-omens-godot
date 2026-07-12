@@ -16,9 +16,10 @@ const CANVAS: Vector2 = Vector2(3344.0, 1826.0)
 const GALLERY_DIR: String = "res://assets/gallery/"
 const LOCATION_ART_DIR: String = "res://assets/location-sidebar/"
 
-# Окно картины (прозрачная дыра в frame.png) — куда вписываем арт локации.
-const PAINTING_OFF: Vector2 = Vector2(1154.0, 318.0)
-const PAINTING_SIZE: Vector2 = Vector2(1039.0, 667.0)
+# Окно картины: арт слегка ЗАХОДИТ под кромку рамы (у frame.png мягкий feather-край),
+# чтобы не оставалось зазора/просвета стены. Габарит больше прозрачной дыры на ~30px.
+const PAINTING_OFF: Vector2 = Vector2(1124.0, 288.0)
+const PAINTING_SIZE: Vector2 = Vector2(1099.0, 727.0)
 const PAINTING_DEPTH: float = 0.28  # как у рамы — двигаются в связке
 
 # Стенд с описанием и область парчмента под текст (в канве).
@@ -33,13 +34,11 @@ const NAME_RECT: Rect2 = Rect2(1426.0, 979.0, 449.0, 121.0)
 # Параллакс/камера.
 const ZOOM_IDLE: float = 1.0
 const ZOOM_FOCUS: float = 1.7  # наезд к картине/стенду
-# Дальний слой должен зумиться достаточно, чтобы при наезде не оголялись края
-# (иначе видно тёмный фон = «потолок/пол»). Выше — меньше параллакс, но полное покрытие.
-const FAR_STR: float = 0.5  # насколько зумится дальний слой
+const FAR_STR: float = 0.3  # насколько зумится дальний слой (0 — стоит на месте)
 const NEAR_STR: float = 1.15  # насколько зумится ближний слой (> дальнего → параллакс)
 const CAM_LERP: float = 7.0  # скорость доводки камеры к цели
-# Канва рисуется крупнее cover-фита — сцена больше и края (потолок/пол) уходят за экран.
-const OVERSCAN: float = 1.12
+# Базовый масштаб канвы (cover-фит); 1.0 — края (потолок/пол) видны как есть.
+const OVERSCAN: float = 1.0
 
 var _root: Control = null
 var _layers: Array = []  # [{node, off, size, depth}]
@@ -160,7 +159,7 @@ func _build() -> void:
 
 	var backdrop := ColorRect.new()
 	backdrop.name = "Backdrop"
-	backdrop.color = Color(0.05, 0.04, 0.035, 1.0)  # тёплый тёмный — сливается с тенями зала
+	backdrop.color = Color(0.02, 0.02, 0.03, 1.0)
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(backdrop)
