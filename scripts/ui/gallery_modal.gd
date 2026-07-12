@@ -33,7 +33,7 @@ const LAMP_GROW: float = 0.18
 # наезде тоже поднимается (MOUNT_RISE) — чуть меньше, чем нужно, чтобы почти зайти
 # за лампу (мелкий остаточный зазор, крепление уходит под лампу).
 const MOUNT_OFF: Vector2 = Vector2(1641.0, 178.0)
-const MOUNT_RISE: float = 40.0
+const MOUNT_RISE: float = 30.0
 
 # Стенд с описанием и область парчмента под текст (в канве).
 # Стенд опущен так, чтобы низ доходил до низа канвы (= низ экрана при cover-фите).
@@ -109,6 +109,8 @@ var _closing: bool = false
 var _close_start_zoom: float = 1.0
 var _close_start_focus: Vector2 = CANVAS * 0.5
 
+var _prev_msaa: int = Viewport.MSAA_DISABLED  # вернём MSAA вьюпорта при закрытии
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -139,6 +141,9 @@ func open(data: Dictionary) -> void:
 	_intro = true
 	_apply_layout()
 	visible = true
+	# MSAA 2D на время галереи — сглаживает края текст-меша и геометрии при зуме.
+	_prev_msaa = get_viewport().msaa_2d
+	get_viewport().msaa_2d = Viewport.MSAA_4X
 
 	# Галерея открывается уже ПОСЛЕ того, как картинка вылетела и растворилась
 	# (стык на картине): проявляемся с наезда на картину и отъезжаем к общему плану.
@@ -187,6 +192,13 @@ func _finish_close() -> void:
 	queue_free()
 
 
+func _exit_tree() -> void:
+	# Возвращаем MSAA вьюпорта, каким он был до галереи (на случай любого закрытия).
+	var vp := get_viewport()
+	if vp != null:
+		vp.msaa_2d = _prev_msaa as Viewport.MSAA
+
+
 # Прогресс закрытия 0..1: наезд обратно на картину + затухание (обратное интро).
 func _close_progress(t: float) -> void:
 	var vp: Vector2 = get_viewport().get_visible_rect().size
@@ -203,6 +215,9 @@ func _build() -> void:
 	_root.name = "Root"
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_STOP  # ловим ввод, карта под нами не реагирует
+	# Мипмапы: слои — крупные PNG, на общем плане рисуются уменьшенными; без мипмап
+	# мелкая позолота «шумит»/алиасит при зуме. Дети наследуют фильтр от Root.
+	_root.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_root.gui_input.connect(_on_root_input)  # клик по зонам → наезд/отъезд камеры
 	add_child(_root)
 
@@ -365,9 +380,17 @@ func _add_layer(node_name: String, file: String, off: Vector2, depth: float) -> 
 func _process(delta: float) -> void:
 	if not visible or _intro or _closing:
 		return  # во время интро/закрытия камерой рулит твин
+	# Уже на месте — НЕ пересчитываем раскладку (иначе субпиксельный дребезг «качает»
+	# ассеты, пока экспоненциальный lerp асимптотически ползёт к цели).
+	if is_equal_approx(_zoom, _zoom_target) and _focus.is_equal_approx(_focus_target):
+		return
 	var t: float = minf(1.0, CAM_LERP * delta)
 	_zoom = lerpf(_zoom, _zoom_target, t)
 	_focus = _focus.lerp(_focus_target, t)
+	# Близко к цели — защёлкиваем точно, чтобы движение завершилось, а не болталось.
+	if absf(_zoom - _zoom_target) < 0.002 and _focus.distance_to(_focus_target) < 0.5:
+		_zoom = _zoom_target
+		_focus = _focus_target
 	_apply_layout()
 
 
