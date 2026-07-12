@@ -17,6 +17,7 @@ extends CanvasLayer
 signal closed
 signal shop_requested
 signal trade_requested
+signal gallery_requested(loc_data: Dictionary)  # клик по картинке локации
 
 const ANIM_TIME: float = 0.22  # длительность выезда (открытие)
 const ANIM_TIME_CLOSE: float = 0.1  # закрытие чуть медленнее открытия
@@ -70,6 +71,7 @@ var _shadow: Panel = null  # мягкая тень за рамкой (строи
 var _is_open: bool = false
 var _tween: Tween = null
 var _loc_id: String = ""  # id показанной сейчас локации (для GameState.travel)
+var _data: Dictionary = {}  # полная карточка показанной локации (для галереи)
 var _pending_data: Dictionary = {}  # инфа локации, ждущая показа после «спрятать»
 
 # Узлы контента (строятся программно в _ready).
@@ -245,7 +247,10 @@ func _build_image_box() -> void:
 	_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	_image.clip_contents = true
-	_image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Клик по картинке → открыть галерею локации (только если есть арт).
+	_image.mouse_filter = Control.MOUSE_FILTER_STOP
+	_image.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_image.gui_input.connect(_on_image_input)
 	box.add_child(_image)
 
 	# Рамка окна (image-frame.png, прозрачный центр) заполняет бокс целиком —
@@ -375,6 +380,7 @@ func show_location(data: Dictionary) -> void:
 # Заполняет контент панели данными локации (name/realWorldLocation/description/
 # type — translation-ключи, Label переводит при рендере).
 func _apply_location(data: Dictionary) -> void:
+	_data = data
 	_loc_id = String(data.get("id", ""))
 	_title_lbl.text = String(data.get("name", ""))
 	_fit_title()  # длинное название ужимаем под ширину панели
@@ -628,6 +634,15 @@ func _resist_text(r: Variant) -> String:
 
 func _on_close_pressed() -> void:
 	close_panel()
+
+
+# Клик по картинке локации → открыть галерею (только если для локации есть арт).
+func _on_image_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+			if _location_art(_loc_id) != null and not _data.is_empty():
+				gallery_requested.emit(_data)
 
 
 # Слайд-звук с разной высотой для открытия и закрытия (+лёгкий джиттер).

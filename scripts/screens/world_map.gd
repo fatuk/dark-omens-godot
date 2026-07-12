@@ -124,6 +124,8 @@ func _ready() -> void:
 	_sidebar.shop_requested.connect(_on_shop_requested)
 	# Кнопка «Обмен» в сайдбаре — открыть модалку обмена.
 	_sidebar.trade_requested.connect(_on_trade_requested)
+	# Клик по картинке локации в сайдбаре — открыть полноэкранную галерею.
+	_sidebar.gallery_requested.connect(_on_gallery_requested)
 	# Клик по орбу раунда — открыть/закрыть сайдбар текущей Мистерии.
 	_game_panel.round_clicked.connect(_on_round_clicked)
 	# Смена языка не требует здесь обработки: данные локаций/сыщиков содержат
@@ -734,6 +736,18 @@ func _on_trade_requested() -> void:
 	modal.name = "TradeModal"
 	add_child(modal)
 	modal.open()
+
+
+const _GALLERY_MODAL := preload("res://scenes/ui/gallery_modal.tscn")
+
+
+func _on_gallery_requested(loc_data: Dictionary) -> void:
+	if has_node("GalleryModal"):
+		return
+	var modal := _GALLERY_MODAL.instantiate()
+	modal.name = "GalleryModal"
+	add_child(modal)
+	modal.open(loc_data)
 
 
 func _on_round_clicked() -> void:
