@@ -122,17 +122,13 @@ func open(data: Dictionary) -> void:
 	_apply_layout()
 	visible = true
 
-	# Небольшая задержка — чтобы галерея проявилась, когда летящая картинка уже
-	# крупная в центре (стык на картине). Затем fade-in + отъезд камеры.
+	# Галерея открывается уже ПОСЛЕ того, как картинка вылетела и растворилась
+	# (стык на картине): проявляемся с наезда на картину и отъезжаем к общему плану.
 	_root.modulate.a = 0.0
 	var tw := create_tween().set_parallel(true)
-	tw.tween_property(_root, "modulate:a", 1.0, 0.3).set_delay(0.18)
-	(
-		tw
-		. tween_method(_intro_progress, 0.0, 1.0, 0.75)
-		. set_trans(Tween.TRANS_CUBIC)
-		. set_ease(Tween.EASE_OUT)
-		. set_delay(0.18)
+	tw.tween_property(_root, "modulate:a", 1.0, 0.3)
+	tw.tween_method(_intro_progress, 0.0, 1.0, 0.75).set_trans(Tween.TRANS_CUBIC).set_ease(
+		Tween.EASE_OUT
 	)
 	tw.chain().tween_callback(func() -> void: _intro = false)
 
@@ -156,7 +152,6 @@ func close() -> void:
 	if _closing:
 		return
 	_closing = true  # _process замирает — камерой рулит твин
-	closed.emit()
 	_close_start_zoom = _zoom
 	_close_start_focus = _focus
 	var tw := create_tween().set_parallel(true)
@@ -164,7 +159,14 @@ func close() -> void:
 		Tween.EASE_IN
 	)
 	tw.tween_property(_root, "modulate:a", 0.0, 0.35)
-	tw.chain().tween_callback(queue_free)
+	# Сигнал closed — ПОСЛЕ растворения (карта затем вернёт картинку в сайдбар),
+	# затем удаляемся.
+	tw.chain().tween_callback(_finish_close)
+
+
+func _finish_close() -> void:
+	closed.emit()
+	queue_free()
 
 
 # Прогресс закрытия 0..1: наезд обратно на картину + затухание (обратное интро).

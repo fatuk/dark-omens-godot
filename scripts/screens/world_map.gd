@@ -747,6 +747,8 @@ func _on_gallery_requested(loc_data: Dictionary) -> void:
 	var modal := _GALLERY_MODAL.instantiate()
 	modal.name = "GalleryModal"
 	add_child(modal)
+	# Галерея растворилась при закрытии → вернуть картинку обратно в сайдбар.
+	modal.closed.connect(_sidebar.play_gallery_return)
 	modal.open(loc_data)
 
 
