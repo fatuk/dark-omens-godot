@@ -50,8 +50,9 @@ static var TEXT_QUAD_TL: Vector2 = Vector2(1080.0, 1215.0)
 static var TEXT_QUAD_TR: Vector2 = Vector2(2220.0, 1210.0)
 static var TEXT_QUAD_BR: Vector2 = Vector2(2280.0, 1685.0)
 static var TEXT_QUAD_BL: Vector2 = Vector2(1005.0, 1675.0)
-static var TEXT_FONT_SIZE: float = 46.0  # размер шрифта описания (в px SubViewport)
+static var TEXT_FONT_SIZE: float = 46.0  # базовый (макс) размер шрифта описания
 static var TEXT_MARGIN: Vector2 = Vector2(70.0, 40.0)  # поля текста внутри SubViewport
+const TEXT_FONT_MIN: int = 22  # ниже не ужимаем (длинный текст авто-подгоняется)
 const TEXT_VP_SIZE: Vector2i = Vector2i(1200, 760)  # плоский холст текста (до варпа на трапецию)
 
 # Перспективно-корректный сэмпл текстуры текста: UV делим на вес q (в COLOR.r),
@@ -127,6 +128,7 @@ func open(data: Dictionary) -> void:
 	var loc_id: String = String(data.get("id", ""))
 	_painting.texture = _location_art(loc_id)
 	_plate_text.text = String(data.get("description", ""))
+	_fit_description_font()  # длинное описание ужимаем, чтобы влезло на парчмент
 	_name_lbl.text = String(data.get("name", ""))
 
 	# Старт — наезд на картину (её экранный размер ≈ конец летящей картинки), фокус
@@ -349,10 +351,32 @@ func apply_text_tuning() -> void:
 	if not is_instance_valid(_text_mesh) or not is_instance_valid(_plate_text):
 		return
 	_text_mesh.mesh = _make_perspective_mesh()
-	_plate_text.add_theme_font_size_override("font_size", int(TEXT_FONT_SIZE))
 	_plate_text.position = TEXT_MARGIN
 	_plate_text.size = Vector2(TEXT_VP_SIZE) - TEXT_MARGIN * 2.0
+	_fit_description_font()  # шрифт — по вписыванию (учитывает новые поля)
 	_apply_layout()
+
+
+# Авто-подгонка шрифта описания: от TEXT_FONT_SIZE вниз, пока перенесённый текст
+# не влезет по высоте в область лейбла (текст разной длины → всегда помещается).
+func _fit_description_font() -> void:
+	if not is_instance_valid(_plate_text):
+		return
+	var text: String = tr(_plate_text.text)  # меряем переведённую строку, не ключ
+	var font: Font = _plate_text.get_theme_font("font")
+	var avail: Vector2 = _plate_text.size
+	# Цель — с запасом снизу (перспектива поджимает нижние строки к краю парчмента).
+	var target_h: float = avail.y * 0.86
+	var size: int = int(TEXT_FONT_SIZE)
+	if font != null and not text.is_empty() and avail.x > 0.0:
+		while size > TEXT_FONT_MIN:
+			var h: float = (
+				font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, avail.x, size).y
+			)
+			if h <= target_h:
+				break
+			size -= 1
+	_plate_text.add_theme_font_size_override("font_size", size)
 
 
 # Центр читаемой трапеции (для наводки камеры на стенд).
