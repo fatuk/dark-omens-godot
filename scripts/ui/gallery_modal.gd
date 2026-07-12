@@ -30,10 +30,10 @@ const PLATE_DEPTH: float = 0.85
 # Читаемая область парчмента — трапеция (перспектива наклонённого стенда) в канве.
 # Верх уже/дальше, низ шире/ближе → текст ложится на поверхность с keystone-искажением.
 # Углы/шрифт/поля вынесены в тюнинг (Ctrl+M → «ГАЛЕРЕЯ · ТЕКСТ»); значения запекаются.
-static var TEXT_QUAD_TL: Vector2 = Vector2(1080.0, 1213.0)
-static var TEXT_QUAD_TR: Vector2 = Vector2(2220.0, 1213.0)
-static var TEXT_QUAD_BR: Vector2 = Vector2(2280.0, 1598.0)
-static var TEXT_QUAD_BL: Vector2 = Vector2(1020.0, 1598.0)
+static var TEXT_QUAD_TL: Vector2 = Vector2(1080.0, 1175.0)
+static var TEXT_QUAD_TR: Vector2 = Vector2(2220.0, 1170.0)
+static var TEXT_QUAD_BR: Vector2 = Vector2(2280.0, 1645.0)
+static var TEXT_QUAD_BL: Vector2 = Vector2(1005.0, 1635.0)
 static var TEXT_FONT_SIZE: float = 46.0  # размер шрифта описания (в px SubViewport)
 static var TEXT_MARGIN: Vector2 = Vector2(70.0, 40.0)  # поля текста внутри SubViewport
 const TEXT_VP_SIZE: Vector2i = Vector2i(1200, 760)  # плоский холст текста (до варпа на трапецию)
