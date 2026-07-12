@@ -642,7 +642,44 @@ func _on_image_input(event: InputEvent) -> void:
 		var mb := event as InputEventMouseButton
 		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
 			if _location_art(_loc_id) != null and not _data.is_empty():
+				_play_zoom_dissolve()  # переход-морфинг картинки в галерею
 				gallery_requested.emit(_data)
+
+
+# Летящая копия картинки: из окна сайдбара разрастается в центр экрана и
+# растворяется — логичный переход к модалке галереи (та проявляется под ней).
+func _play_zoom_dissolve() -> void:
+	var tex: Texture2D = _image.texture
+	if tex == null:
+		return
+	var src: Rect2 = _image.get_global_rect()
+	var overlay := CanvasLayer.new()
+	overlay.name = "GalleryTransition"
+	overlay.layer = 100  # поверх всего, включая галерею (layer 80)
+	add_child(overlay)
+
+	var fly := TextureRect.new()
+	fly.name = "FlyImage"
+	fly.texture = tex
+	fly.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	fly.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	fly.clip_contents = true
+	fly.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fly.position = src.position
+	fly.size = src.size
+	fly.pivot_offset = src.size * 0.5  # масштаб вокруг центра
+	overlay.add_child(fly)
+
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var target_scale: float = (vp.x * 0.55) / maxf(1.0, src.size.x)
+	var target_pos: Vector2 = vp * 0.5 - src.size * 0.5  # центр (pivot) → центр экрана
+	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
+		Tween.EASE_OUT
+	)
+	tw.tween_property(fly, "position", target_pos, 0.45)
+	tw.tween_property(fly, "scale", Vector2(target_scale, target_scale), 0.45)
+	tw.tween_property(fly, "modulate:a", 0.0, 0.45)
+	tw.chain().tween_callback(overlay.queue_free)
 
 
 # Слайд-звук с разной высотой для открытия и закрытия (+лёгкий джиттер).

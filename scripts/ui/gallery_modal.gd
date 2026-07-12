@@ -71,6 +71,9 @@ func open(data: Dictionary) -> void:
 	_zoom_target = _zoom
 	_apply_layout()
 	visible = true
+	# Проявление под летящей картинкой сайдбара — плавный переход, а не рывок.
+	_root.modulate.a = 0.0
+	create_tween().tween_property(_root, "modulate:a", 1.0, 0.35)
 
 
 func close() -> void:
