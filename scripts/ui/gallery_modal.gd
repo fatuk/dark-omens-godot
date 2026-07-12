@@ -48,6 +48,12 @@ var _zoom: float = ZOOM_IDLE
 var _focus_target: Vector2 = CANVAS * 0.5
 var _zoom_target: float = ZOOM_IDLE
 
+# Интро: галерея открывается наезженной на картину (совпадает с концом летящей
+# картинки сайдбара) и отъезжает к общему плану. Пока идёт — ховер отключён.
+var _intro: bool = false
+var _intro_start_zoom: float = 1.0
+var _intro_start_focus: Vector2 = CANVAS * 0.5
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -64,16 +70,48 @@ func open(data: Dictionary) -> void:
 	_painting.texture = _location_art(loc_id)
 	_plate_text.text = String(data.get("description", ""))
 	_name_lbl.text = String(data.get("name", ""))
-	# Стартуем с общего плана и мгновенно раскладываем (без «прыжка» на первом кадре).
-	_focus = CANVAS * 0.5
-	_zoom = ZOOM_IDLE
-	_focus_target = _focus
-	_zoom_target = _zoom
+
+	# Старт — наезд на картину (её экранный размер ≈ конец летящей картинки), фокус
+	# на её центре. Дальше камера отъезжает к общему плану → плавное перетекание.
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	_intro_start_zoom = _intro_zoom(vp)
+	_intro_start_focus = PAINTING_OFF + PAINTING_SIZE * 0.5
+	_zoom = _intro_start_zoom
+	_focus = _intro_start_focus
+	_zoom_target = ZOOM_IDLE  # после интро _process продолжит с общего плана
+	_focus_target = CANVAS * 0.5
+	_intro = true
 	_apply_layout()
 	visible = true
-	# Проявление под летящей картинкой сайдбара — плавный переход, а не рывок.
+
+	# Небольшая задержка — чтобы галерея проявилась, когда летящая картинка уже
+	# крупная в центре (стык на картине). Затем fade-in + отъезд камеры.
 	_root.modulate.a = 0.0
-	create_tween().tween_property(_root, "modulate:a", 1.0, 0.35)
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(_root, "modulate:a", 1.0, 0.3).set_delay(0.18)
+	(
+		tw
+		. tween_method(_intro_progress, 0.0, 1.0, 0.75)
+		. set_trans(Tween.TRANS_CUBIC)
+		. set_ease(Tween.EASE_OUT)
+		. set_delay(0.18)
+	)
+	tw.chain().tween_callback(func() -> void: _intro = false)
+
+
+# Зум, при котором картина на экране ≈ размер конца летящей картинки (vp.x*0.55).
+func _intro_zoom(vp: Vector2) -> float:
+	var base: float = maxf(vp.x / CANVAS.x, vp.y / CANVAS.y)
+	var want: float = (vp.x * 0.55) / maxf(1.0, PAINTING_SIZE.x * base)  # нужный zoomfac
+	var k: float = lerpf(FAR_STR, NEAR_STR, PAINTING_DEPTH)
+	return 1.0 + (want - 1.0) / k
+
+
+# Прогресс интро 0..1: интерполируем зум/фокус от наезда к общему плану.
+func _intro_progress(t: float) -> void:
+	_zoom = lerpf(_intro_start_zoom, ZOOM_IDLE, t)
+	_focus = _intro_start_focus.lerp(CANVAS * 0.5, t)
+	_apply_layout()
 
 
 func close() -> void:
@@ -187,8 +225,8 @@ func _add_layer(node_name: String, file: String, off: Vector2, depth: float) -> 
 
 
 func _process(delta: float) -> void:
-	if not visible:
-		return
+	if not visible or _intro:
+		return  # во время интро камерой рулит твин (ховер отключён)
 	_update_hover()
 	var t: float = minf(1.0, CAM_LERP * delta)
 	_zoom = lerpf(_zoom, _zoom_target, t)
