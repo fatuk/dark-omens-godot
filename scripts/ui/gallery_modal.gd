@@ -204,7 +204,7 @@ func _build() -> void:
 	_plate_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_plate_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_plate_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_plate_text.add_theme_font_size_override("font_size", 21)
+	_plate_text.add_theme_font_size_override("font_size", 26)
 	_plate_text.add_theme_color_override("font_color", Color(0.16, 0.11, 0.06))
 	_plate_text.size = PLATE_TEXT_RECT.size
 	_plate_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
