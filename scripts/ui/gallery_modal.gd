@@ -24,6 +24,9 @@ const PAINTING_DEPTH: float = 0.28  # как у рамы — двигаются 
 # Лампа-подсветка над картиной (lamp.png 533×107): рисуется поверх картины/рамы,
 # но параллаксит как СТЕНА (глубина 0.0) — настенный светильник, часть зала.
 const LAMP_OFF: Vector2 = Vector2(1407.0, 122.0)
+# При наезде лампа поднимается на LAMP_RISE×(zoom−1) экранных px — чтобы не наползать
+# на крест рамы, который на глубине 0.28 уходит вверх сильнее лампы.
+const LAMP_RISE: float = 90.0
 
 # Стенд с описанием и область парчмента под текст (в канве).
 # Стенд опущен так, чтобы низ доходил до низа канвы (= низ экрана при cover-фите).
@@ -72,6 +75,7 @@ const OVERSCAN: float = 1.0
 var _root: Control = null
 var _layers: Array = []  # [{node, off, size, depth}]
 var _painting: TextureRect = null
+var _lamp: TextureRect = null  # лампа — доп. подъём при наезде (см. _apply_layout)
 var _plate_text: Label = null  # живёт внутри _text_vp (рендерится в текстуру)
 var _text_vp: SubViewport = null  # плоский рендер описания
 var _text_mesh: MeshInstance2D = null  # варп текста на трапецию парчмента
@@ -217,7 +221,9 @@ func _build() -> void:
 	)
 
 	_add_layer("Frame", "frame.png", Vector2(981, 190), 0.28)
-	_add_layer("Lamp", "lamp.png", LAMP_OFF, 0.0)  # на стене (глубина стены), рисуется поверх
+	# Лампа на стене (глубина 0.0), но при наезде поднимается (LAMP_RISE), чтобы не
+	# наползать на крест рамы (та на глубине 0.28 и уходит вверх сильнее).
+	_lamp = _add_layer("Lamp", "lamp.png", LAMP_OFF, 0.0)
 
 	# Название локации — в картуше рамы (маленькая табличка снизу по центру рамы).
 	_name_lbl = Label.new()
@@ -327,7 +333,7 @@ func _text_center() -> Vector2:
 	return (TEXT_QUAD_TL + TEXT_QUAD_TR + TEXT_QUAD_BR + TEXT_QUAD_BL) * 0.25
 
 
-func _add_layer(node_name: String, file: String, off: Vector2, depth: float) -> void:
+func _add_layer(node_name: String, file: String, off: Vector2, depth: float) -> TextureRect:
 	var tex: Texture2D = load(GALLERY_DIR + file)
 	var rect := TextureRect.new()
 	rect.name = node_name
@@ -338,6 +344,7 @@ func _add_layer(node_name: String, file: String, off: Vector2, depth: float) -> 
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(rect)
 	_layers.append({"node": rect, "off": off, "size": tex.get_size(), "depth": depth})
+	return rect
 
 
 # ── Камера / параллакс ────────────────────────────────────────────────────────
@@ -369,6 +376,9 @@ func _apply_layout() -> void:
 		var node: Control = l.node
 		node.scale = Vector2(s, s)
 		node.position = center + (Vector2(l.off) - _focus) * s
+	# Лампа при наезде поднимается, чтобы не наползать на крест рамы.
+	if is_instance_valid(_lamp):
+		_lamp.position.y -= LAMP_RISE * maxf(0.0, _zoom - 1.0)
 	# Перспективный текст-меш (вершины в канве) — тот же аффинный сдвиг камеры,
 	# что и у слоя стенда (PLATE_DEPTH); трапеция сохраняется, keystone — в UV.
 	if is_instance_valid(_text_mesh):
