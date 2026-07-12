@@ -2,8 +2,8 @@ class_name GalleryModal
 extends CanvasLayer
 
 ## Полноэкранная «галерея» локации: слои-ассеты (assets/gallery) как в 2D-игре с
-## параллаксом. Виртуальная камера (focus + zoom) наезжает к картине при наведении
-## на неё и к стенду с описанием — при наведении на стенд; иначе общий план.
+## параллаксом. Виртуальная камера (focus + zoom) наезжает к картине по клику на неё
+## и к стенду с описанием — по клику на стенд; повторный клик / клик мимо — общий план.
 ##
 ## Параллакс: ближние слои (пол/стенд) масштабируются/сдвигаются сильнее дальних
 ## (стена) — эффект «шага вглубь» без реального 3D. Открывается open(data) поверх
@@ -47,6 +47,7 @@ var _focus: Vector2 = CANVAS * 0.5
 var _zoom: float = ZOOM_IDLE
 var _focus_target: Vector2 = CANVAS * 0.5
 var _zoom_target: float = ZOOM_IDLE
+var _focused: String = ""  # "", "painting" или "plate" — на что наведён клик-зум
 
 # Интро: галерея открывается наезженной на картину (совпадает с концом летящей
 # картинки сайдбара) и отъезжает к общему плану. Пока идёт — ховер отключён.
@@ -150,6 +151,7 @@ func _build() -> void:
 	_root.name = "Root"
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_STOP  # ловим ввод, карта под нами не реагирует
+	_root.gui_input.connect(_on_root_input)  # клик по зонам → наезд/отъезд камеры
 	add_child(_root)
 
 	var backdrop := ColorRect.new()
@@ -202,7 +204,7 @@ func _build() -> void:
 	_plate_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_plate_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_plate_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_plate_text.add_theme_font_size_override("font_size", 52)
+	_plate_text.add_theme_font_size_override("font_size", 21)
 	_plate_text.add_theme_color_override("font_color", Color(0.16, 0.11, 0.06))
 	_plate_text.size = PLATE_TEXT_RECT.size
 	_plate_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -249,8 +251,7 @@ func _add_layer(node_name: String, file: String, off: Vector2, depth: float) -> 
 
 func _process(delta: float) -> void:
 	if not visible or _intro or _closing:
-		return  # во время интро/закрытия камерой рулит твин (ховер отключён)
-	_update_hover()
+		return  # во время интро/закрытия камерой рулит твин
 	var t: float = minf(1.0, CAM_LERP * delta)
 	_zoom = lerpf(_zoom, _zoom_target, t)
 	_focus = _focus.lerp(_focus_target, t)
@@ -271,21 +272,37 @@ func _apply_layout() -> void:
 		node.position = center + (Vector2(l.off) - _focus) * s
 
 
-# Зона (картина / стенд) под курсором → цель камеры. Ничего — общий план.
-func _update_hover() -> void:
+# Клик по зоне (картина / стенд) → наезд на неё; повторный клик по той же зоне
+# или клик мимо — отъезд к общему плану.
+func _on_root_input(event: InputEvent) -> void:
+	if _intro or _closing:
+		return
+	if not (event is InputEventMouseButton):
+		return
+	var mb := event as InputEventMouseButton
+	if not (mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT):
+		return
 	var vp: Vector2 = get_viewport().get_visible_rect().size
 	var base: float = maxf(vp.x / CANVAS.x, vp.y / CANVAS.y)
 	var center: Vector2 = vp * 0.5
-	var m: Vector2 = _root.get_global_mouse_position()
+	var m: Vector2 = mb.position
+	var hit: String = ""
 	if _zone_rect(PAINTING_OFF, PAINTING_SIZE, PAINTING_DEPTH, base, center).has_point(m):
-		_focus_target = PAINTING_OFF + PAINTING_SIZE * 0.5
-		_zoom_target = ZOOM_FOCUS
+		hit = "painting"
 	elif _zone_rect(PLATE_OFF, PLATE_SIZE, PLATE_DEPTH, base, center).has_point(m):
-		_focus_target = PLATE_TEXT_RECT.position + PLATE_TEXT_RECT.size * 0.5
-		_zoom_target = ZOOM_FOCUS
-	else:
+		hit = "plate"
+	if hit.is_empty() or hit == _focused:
+		_focused = ""
 		_focus_target = CANVAS * 0.5
 		_zoom_target = ZOOM_IDLE
+	elif hit == "painting":
+		_focused = hit
+		_focus_target = PAINTING_OFF + PAINTING_SIZE * 0.5
+		_zoom_target = ZOOM_FOCUS
+	else:
+		_focused = hit
+		_focus_target = PLATE_TEXT_RECT.position + PLATE_TEXT_RECT.size * 0.5
+		_zoom_target = ZOOM_FOCUS
 
 
 func _zone_rect(off: Vector2, size: Vector2, depth: float, base: float, center: Vector2) -> Rect2:
