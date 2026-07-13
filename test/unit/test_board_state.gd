@@ -135,6 +135,16 @@ func test_open_gate_explicit_places_gate_and_spawns_monster() -> void:
 	assert_eq((_gs.monsters["gA"] as Array).size(), 1, "новые врата → 1 монстр")
 
 
+func test_open_gate_explicit_non_gatespace_uses_green_fallback() -> void:
+	# «Открыть Врата в этой локации» (openGate where:self/<id>) кладёт врата на ЛЮБУЮ
+	# клетку, даже не гейт-спейс (напр. Точка Немо) — цвет из gateColor, иначе green.
+	_gs.monster_bag = ["cultist"]
+	_gs.locations = [{"id": "nemo"}]  # без gateColor
+	_board.open_gate("nemo")
+	assert_eq(String(_gs.gates.get("nemo", "")), "green", "врата на не-гейт-спейсе, фолбэк green")
+	assert_eq((_gs.monsters["nemo"] as Array).size(), 1, "новые врата → 1 монстр")
+
+
 func test_open_gate_non_host_is_noop() -> void:
 	_gs.host = false
 	_board.open_gate("gA", "red")

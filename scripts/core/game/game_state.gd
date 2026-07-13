@@ -1717,8 +1717,17 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 				_board.resolve_omen_doom()
 			GameConsole.log("[Эффект] омен +%d" % maxi(1, n))
 		"openGate":
+			# where: "self" — врата в локации активного/якорного сыщика (встреча/forEach);
+			# "<locId>" — в конкретной локации; пусто — движок сам берёт гейт-спейс (как было).
+			var gate_where: String = String(node.get("where", ""))
+			var gate_loc: String = ""
+			if gate_where == "self":
+				var apid: String = String(node.get("_anchor_pid", _current_pid()))
+				gate_loc = String((players.get(apid, {}) as Dictionary).get("location", ""))
+			elif not gate_where.is_empty():
+				gate_loc = gate_where
 			for _i: int in n:
-				_board.open_gate()
+				_board.open_gate(gate_loc)
 		"closeGate":
 			_board.close_gate_at_active_player()
 		"spawnMonster":
