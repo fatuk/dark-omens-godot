@@ -133,6 +133,9 @@ static func _render_param(p: Dictionary, node: Dictionary) -> String:
 				return _t(Conditions.name_key(String(val)))
 			"skill":
 				return _skill_name(String(val))
+	# Числа из JSON приходят float'ами (relay-карты) — целые рендерим без «.0».
+	if val is float and val == floor(val):
+		return str(int(val))
 	return str(val)
 
 

@@ -846,7 +846,7 @@ VERB_LOSE_FOCUS,−{amount} концентрации,−{amount} Focus
 VERB_GAIN_IMPROVEMENT,перманентное улучшение навыка,permanent skill improvement
 VERB_ADVANCE_DOOM,рок +{amount},Doom +{amount}
 VERB_RETREAT_DOOM,рок −{amount},Doom −{amount}
-VERB_ADVANCE_OMEN,знамение дальше на {steps},advance Omen by {steps}
+VERB_ADVANCE_OMEN,знамение дальше на {amount},advance Omen by {amount}
 VERB_OPEN_GATE,открыть врата ×{count},open {count} Gate(s)
 VERB_CLOSE_GATE,закрыть врата,close a Gate
 VERB_SPAWN_MONSTER,монстры ×{count},spawn {count} Monster(s)

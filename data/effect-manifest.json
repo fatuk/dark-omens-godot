@@ -404,19 +404,12 @@
       "kind": "board",
       "params": [
         {
-          "name": "direction",
-          "type": {
-            "t": "ref",
-            "of": "omenDirection"
-          },
-          "required": false
-        },
-        {
-          "name": "steps",
+          "name": "amount",
           "type": {
             "t": "int",
             "min": 1
-          }
+          },
+          "default": 1
         }
       ],
       "targets": null,
