@@ -158,6 +158,26 @@ func test_subprogram_choice_branch_b_hits_neighbor() -> void:
 	assert_eq(_gs.mythos_decision, {}, "выбор очищен")
 
 
+# ── Player-verb без target = глобальный миф на всех сыщиков ────────────────────
+
+
+func test_target_less_player_verb_hits_each() -> void:
+	_setup_players(["p1", "p2"])
+	# gainCondition без target раньше уходил в board-ветку (dummy-dict) и терялся —
+	# теперь трактуется как target:"each" и ложится на всех подключённых сыщиков.
+	await _mythos._apply_effects([{"do": "gainCondition", "condition": "darkPact"}])
+	assert_true((_gs.players["p1"]["conditions"] as Array).has("darkPact"), "p1 получил состояние")
+	assert_true((_gs.players["p2"]["conditions"] as Array).has("darkPact"), "p2 получил состояние")
+
+
+func test_target_less_player_verb_skips_disconnected() -> void:
+	_setup_players(["p1", "p2"])
+	_gs.players["p2"]["connected"] = false
+	await _mythos._apply_effects([{"do": "gainCondition", "condition": "darkPact"}])
+	assert_true((_gs.players["p1"]["conditions"] as Array).has("darkPact"), "p1 получил состояние")
+	assert_false((_gs.players["p2"]["conditions"] as Array).has("darkPact"), "отключённый p2 — нет")
+
+
 func test_subprogram_choice_branch_a_targets_self() -> void:
 	_setup_players(["p1", "p2"])
 	var sub: Array = [

@@ -178,6 +178,12 @@ func _apply_effects(effects: Array) -> void:
 		if verb == "resolveReckoning":
 			await _gs._reckoning.run_reckoning(String(eff.get("scope", "")))
 			continue
+		# Player-verb без target трактуем как target:"each" (миф — глобальное событие
+		# на всех сыщиков). Иначе он уходил в board-ветку с dummy-dict и молча терялся
+		# (gainCondition/heal/loseHealth и т.п. — состояние не доходило до сыщиков).
+		if not eff.has("target") and _EffectRunner.is_player_verb(verb):
+			eff = eff.duplicate()
+			eff["target"] = "each"
 		if eff.has("target"):
 			# Цель разбирает TargetResolver (lead/each/eachOn*/neighbor/chosen). Раньше
 			# здесь был безусловный проход по ВСЕМ игрокам — любой target деградировал
