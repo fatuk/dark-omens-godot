@@ -68,6 +68,46 @@ func test_interactive_choice_decision_index_clamped() -> void:
 	assert_eq(int(p["sanity"]), 3, "индекс за границей → последняя ветка")
 
 
+func test_choose_condition_pauses_with_options() -> void:
+	var p: Dictionary = {"conditions": ["poisoned", "madness"]}
+	var res: Dictionary = EffectRunner.run(
+		[{"do": "loseCondition", "choose": true}], p, {}, {"interactive": true}
+	)
+	assert_eq(
+		((res["pending"] as Dictionary).get("options", []) as Array).size(), 2, "ветка на состояние"
+	)
+	assert_eq((p["conditions"] as Array).size(), 2, "пока ничего не снято (пауза)")
+
+
+func test_choose_condition_removes_selected() -> void:
+	var p: Dictionary = {"conditions": ["poisoned", "madness"]}
+	EffectRunner.run(
+		[{"do": "loseCondition", "choose": true}],
+		p,
+		{},
+		{"interactive": true, "decisions": {"0": 1}}
+	)
+	assert_false((p["conditions"] as Array).has("madness"), "снято выбранное (ветка 1)")
+	assert_true((p["conditions"] as Array).has("poisoned"), "другое осталось")
+
+
+func test_choose_condition_single_removes_directly() -> void:
+	var p: Dictionary = {"conditions": ["poisoned"]}
+	var res: Dictionary = EffectRunner.run(
+		[{"do": "loseCondition", "choose": true}], p, {}, {"interactive": true}
+	)
+	assert_eq((res["pending"] as Dictionary).size(), 0, "одно состояние — без выбора")
+	assert_false((p["conditions"] as Array).has("poisoned"), "снято сразу")
+
+
+func test_choose_condition_none_noop() -> void:
+	var p: Dictionary = {"conditions": []}
+	var res: Dictionary = EffectRunner.run(
+		[{"do": "loseCondition", "choose": true}], p, {}, {"interactive": true}
+	)
+	assert_eq((res["pending"] as Dictionary).size(), 0, "нечего снимать — без паузы")
+
+
 func test_interactive_choice_pause_halts_following_nodes() -> void:
 	var p: Dictionary = _player()
 	var res: Dictionary = EffectRunner.run(

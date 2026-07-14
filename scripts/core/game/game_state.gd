@@ -1742,8 +1742,20 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 		"closeGate":
 			_board.close_gate_at_active_player()
 		"spawnMonster":
+			# where: "self" — монстр в локации активного/якорного сыщика (встреча «появляется
+			# монстр»); "<locId>" — в конкретной; пусто — из случайных врат (как было).
+			var mon_where: String = String(node.get("where", ""))
+			var mon_loc: String = ""
+			if mon_where == "self":
+				var apid: String = String(node.get("_anchor_pid", _current_pid()))
+				mon_loc = String((players.get(apid, {}) as Dictionary).get("location", ""))
+			elif not mon_where.is_empty():
+				mon_loc = mon_where
 			for _i: int in n:
-				_board.spawn_monster_from_gate()
+				if mon_where.is_empty():
+					_board.spawn_monster_from_gate()
+				elif not mon_loc.is_empty():
+					_board.spawn_monster_at(mon_loc)
 		"placeClue":
 			for _i: int in n:
 				_board.place_clue()

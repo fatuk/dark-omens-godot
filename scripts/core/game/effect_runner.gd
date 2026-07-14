@@ -435,6 +435,21 @@ static func _run_action(
 		return
 	var target: String = String(node.get("target", ""))
 	var interactive: bool = bool(flow.get("interactive", false))
+	# loseCondition {choose:true}: интерактивно снять ОДНО из состояний сыщика —
+	# разворачиваем в choice из веток loseCondition{condition:X} по его состояниям.
+	# Дальше работает штатная choice-машинерия (пауза/решение/описатель веток).
+	if verb == "loseCondition" and bool(node.get("choose", false)) and interactive:
+		var held: Array = player.get("conditions", [])
+		if (held as Array).is_empty():
+			return  # нечего снимать — эффект пропадает
+		if (held as Array).size() == 1:
+			_apply_player_verb("loseCondition", {"condition": String(held[0])}, player, logs)
+			return
+		var copts: Array = []
+		for c_v: Variant in held:
+			copts.append({"do": "loseCondition", "condition": String(c_v)})
+		_run_choice({"choice": copts}, player, logs, board, ctx, flow, path)
+		return
 	# (1) Игровой verb к ПЕРЕДАННОМУ игроку: самонаправленный, либо легаси-режим
 	#     (мифос/хуки сами разворачивают target по игрокам и зовут run без flow —
 	#     тогда применяем к тому игроку, что передали).

@@ -125,7 +125,13 @@
             "t": "ref",
             "of": "condition"
           },
-          "required": true
+          "required": false
+        },
+        {
+          "name": "choose",
+          "type": {
+            "t": "bool"
+          }
         }
       ],
       "targets": "players",
@@ -495,6 +501,12 @@
         },
         {
           "name": "trait",
+          "type": {
+            "t": "str"
+          }
+        },
+        {
+          "name": "where",
           "type": {
             "t": "str"
           }

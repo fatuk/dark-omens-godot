@@ -145,6 +145,13 @@ func test_open_gate_explicit_non_gatespace_uses_green_fallback() -> void:
 	assert_eq((_gs.monsters["nemo"] as Array).size(), 1, "новые врата → 1 монстр")
 
 
+func test_spawn_monster_at_places_at_location() -> void:
+	# spawnMonster {where:self/<id>} → монстр в конкретной локации (без врат).
+	_gs.monster_bag = ["cultist"]
+	_board.spawn_monster_at("loc")
+	assert_eq((_gs.monsters["loc"] as Array).size(), 1, "монстр появился в указанной локации")
+
+
 func test_open_gate_non_host_is_noop() -> void:
 	_gs.host = false
 	_board.open_gate("gA", "red")
