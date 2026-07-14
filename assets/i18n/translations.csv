@@ -397,6 +397,10 @@ ACTION_TICKET,🎫 Билет,🎫 Ticket
 ACTION_REST,💤 Отдых,💤 Rest
 ACTION_REST_TITLE,Отдых,Rest
 ACTION_FOCUS_TITLE,Концентрация,Focus
+ACTION_REST_RES_PROMPT,"Потратить ресурсы на лечение? Каждый жетон — +1 здоровью или рассудку.","Spend resources to heal? Each token is +1 to health or sanity."
+ACTION_REST_RES_HP,Здоровье,Health
+ACTION_REST_RES_SAN,Рассудок,Sanity
+ACTION_REST_RES_CONFIRM,Отдохнуть,Rest
 ACTION_RESOURCE_TITLE,Ресурс,Resource
 ACTION_PASS_TITLE,Пас,Pass
 ACTION_NO_TICKETS,Нет билетов,No tickets

@@ -317,6 +317,31 @@ func test_rest_heals_hp_and_sanity() -> void:
 	assert_eq(int(_gs.players["p"]["sanity"]), 4, "+1 рассудка")
 
 
+func test_rest_resources_heal_hp_and_sanity() -> void:
+	# База +1 каждому (3→4), затем по ресурсу в hp и рассудок (4→5). Оба списаны.
+	_solo({"resources": 2})
+	_pc.host_apply_action("p", "rest", {"res_hp": 1, "res_san": 1})
+	assert_eq(int(_gs.players["p"]["hp"]), 5, "база +1 и ресурс +1")
+	assert_eq(int(_gs.players["p"]["sanity"]), 5, "база +1 и ресурс +1")
+	assert_eq(int(_gs.players["p"]["resources"]), 0, "оба ресурса списаны")
+
+
+func test_rest_resources_clamped_by_headroom() -> void:
+	# hp достигает максимума базовым лечением (6→7) → ресурс на hp не тратится.
+	_solo({"resources": 2, "hp": 6})
+	_pc.host_apply_action("p", "rest", {"res_hp": 2, "res_san": 0})
+	assert_eq(int(_gs.players["p"]["hp"]), 7, "hp не выше максимума")
+	assert_eq(int(_gs.players["p"]["resources"]), 2, "ресурсы не списаны — некуда лечить")
+
+
+func test_rest_resources_suppressed_by_cannot_recover() -> void:
+	_solo({"resources": 1})
+	_gs._cond.constraints = {"cannotRecover": ["health"]}
+	_pc.host_apply_action("p", "rest", {"res_hp": 1, "res_san": 0})
+	assert_eq(int(_gs.players["p"]["hp"]), 3, "cannotRecover — ресурс на hp не действует")
+	assert_eq(int(_gs.players["p"]["resources"]), 1, "ресурс не списан")
+
+
 func test_rest_respects_cannot_recover_health() -> void:
 	_solo()
 	_gs._cond.constraints = {"cannotRecover": ["health"]}

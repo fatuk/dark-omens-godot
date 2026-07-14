@@ -31,6 +31,26 @@ func _init(gs: Node) -> void:
 # ── Действия игрока ──────────────────────────────────────────────────────────
 
 
+## Доп. лечение отдыха за ресурсы. res_hp/res_san — заявка игрока; применяем в
+## пределах resources, свободного места (max − текущее) и cannotRecover-подавления.
+## Списываем ровно применённое (нереализованная заявка ресурс не тратит).
+func _rest_resources(p: Dictionary, rec: Array, res_hp: int, res_san: int) -> void:
+	var avail: int = int(p.get("resources", 0))
+	var used: int = 0
+	if not rec.has("health"):
+		var hp_add: int = clampi(res_hp, 0, mini(avail - used, int(p["hp_max"]) - int(p["hp"])))
+		p["hp"] = int(p["hp"]) + hp_add
+		used += hp_add
+	if not rec.has("sanity"):
+		var san_add: int = clampi(
+			res_san, 0, mini(avail - used, int(p["sanity_max"]) - int(p["sanity"]))
+		)
+		p["sanity"] = int(p["sanity"]) + san_add
+		used += san_add
+	if used > 0:
+		p["resources"] = avail - used
+
+
 ## Хост: валидирует и применяет действие игрока. Возвращает true при успехе.
 ## Зовётся из GameState.perform_action (для своего действия) и из relay-router
 ## на game_action (для чужого).
@@ -128,6 +148,9 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				p["hp"] = mini(int(p["hp_max"]), int(p["hp"]) + REST_HEAL_HP)
 			if not rec.has("sanity"):
 				p["sanity"] = mini(int(p["sanity_max"]), int(p["sanity"]) + REST_HEAL_SANITY)
+			# Трата ресурсов на доп. лечение (payload res_hp/res_san): каждый ресурс —
+			# +1 к здоровью ИЛИ рассудку; списываем ровно применённое (см. _rest_resources).
+			_rest_resources(p, rec, int(payload.get("res_hp", 0)), int(payload.get("res_san", 0)))
 			# onRest-заклинания НЕ кастуем автоматически — выставляем промпт выбора
 			# (Healing Words и пр. опциональны). Если промпт выставлен, держим ход до
 			# резолва (как магазин): передача — в host_apply_cast_trigger_spells.

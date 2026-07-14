@@ -10,6 +10,7 @@ extends CanvasLayer
 ## Всё строится в 2× (ассеты @2×) и ужимается обёрткой scale 0.5 → кант чёткий.
 
 const _A := "res://assets/action-panel/"
+const _REST_MODAL := preload("res://scenes/ui/modal_dialog.tscn")
 const _MARGIN_R: float = 48.0  # отступ блока от правого края
 const _MARGIN_B: float = 40.0  # отступ от низа
 const _TICKETS_GAP: float = 20.0  # зазор кнопки ↔ область билетов
@@ -176,12 +177,120 @@ func _on_pass() -> void:
 func _on_rest() -> void:
 	if _busy:
 		return
+	var me: Dictionary = GameState.my_player()
+	var res: int = int(me.get("resources", 0))
+	var hp_room: int = _rest_room(me, "hp", "hp_max")
+	var san_room: int = _rest_room(me, "sanity", "sanity_max")
+	# Есть ресурсы и место сверх базового отдыха → спросить распределение; иначе — сразу.
+	if res > 0 and (hp_room > 0 or san_room > 0):
+		_show_rest_alloc(res, hp_room, san_room)
+	else:
+		await _do_rest({})
+
+
+# Свободное место стата ПОСЛЕ базового лечения отдыха (+1, с потолком) — сколько
+# ещё можно долечить ресурсами.
+func _rest_room(me: Dictionary, cur_key: String, max_key: String) -> int:
+	var after_base: int = mini(int(me.get(max_key, 0)), int(me.get(cur_key, 0)) + 1)
+	return int(me.get(max_key, 0)) - after_base
+
+
+func _do_rest(payload: Dictionary) -> void:
+	if _busy:
+		return
 	_busy = true
 	# Случайный из 5 участков лечения (segments имеют приоритет над variations).
 	SfxManager.play_variation(SfxManager.SFX_REST, 5, 0.0, SfxManager.REST_SEGMENTS)
 	await _rest_ab.pop_token()  # жетон летит «в камеру», флоу ждёт; ПОТОМ действие
-	GameState.perform_action(GameActions.REST)
+	GameState.perform_action(GameActions.REST, payload)
 	_busy = false
+
+
+# Модалка распределения ресурсов при отдыхе: +1 здоровью/рассудку за жетон, в пределах
+# запаса и свободного места. Подтверждение → отдых с payload; закрытие (ESC/фон) — отмена.
+func _show_rest_alloc(res: int, hp_room: int, san_room: int) -> void:
+	var modal: ModalDialog = _REST_MODAL.instantiate()
+	add_child(modal)
+	modal.set_title(tr("ACTION_REST_TITLE"))
+	var box := VBoxContainer.new()
+	box.name = "RestAlloc"
+	box.add_theme_constant_override("separation", 12)
+	var hint := UIStyle.label("ACTION_REST_RES_PROMPT", 15)
+	hint.name = "Hint"
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size.x = 360
+	box.add_child(hint)
+
+	var state := {"hp": 0, "san": 0}
+	var rows := {}  # key → {count, plus, minus}
+	var upd_ref := {"fn": Callable()}
+	if hp_room > 0:
+		rows["hp"] = _alloc_row(box, "ACTION_REST_RES_HP", state, "hp", upd_ref)
+	if san_room > 0:
+		rows["san"] = _alloc_row(box, "ACTION_REST_RES_SAN", state, "san", upd_ref)
+	var upd := func() -> void:
+		var total: int = int(state["hp"]) + int(state["san"])
+		for k_v: Variant in rows:
+			var k: String = k_v
+			var r: Dictionary = rows[k]
+			(r["count"] as Label).text = str(state[k])
+			var room: int = hp_room if k == "hp" else san_room
+			(r["plus"] as Button).disabled = int(state[k]) >= room or total >= res
+			(r["minus"] as Button).disabled = int(state[k]) <= 0
+	upd_ref["fn"] = upd
+	upd.call()
+
+	var confirm := UIStyle.button("ACTION_REST_RES_CONFIRM", UIColors.ACCENT)
+	confirm.name = "Confirm"
+	var confirmed := {"v": false}
+	confirm.pressed.connect(
+		func() -> void:
+			confirmed["v"] = true
+			modal.close()
+	)
+	box.add_child(confirm)
+	modal.set_content(box)
+	modal.closed.connect(
+		func() -> void:
+			if confirmed["v"]:
+				_do_rest({"res_hp": int(state["hp"]), "res_san": int(state["san"])})
+	)
+	modal.open()
+
+
+# Строка-степпер «метка [−] N [+]» для распределения ресурса. Мутирует state[key],
+# зовёт upd_ref.fn после каждого изменения (пересчёт меток и доступности кнопок).
+func _alloc_row(
+	box: VBoxContainer, label_key: String, state: Dictionary, key: String, upd_ref: Dictionary
+) -> Dictionary:
+	var row := HBoxContainer.new()
+	row.name = "Row_%s" % key
+	row.add_theme_constant_override("separation", 10)
+	var lbl := UIStyle.label(label_key, 15)
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(lbl)
+	var minus := UIStyle.button("−")
+	minus.name = "Minus"
+	var count := UIStyle.label("0", 17, UIColors.VALUE, HORIZONTAL_ALIGNMENT_CENTER)
+	count.name = "Count"
+	count.custom_minimum_size.x = 32
+	var plus := UIStyle.button("+")
+	plus.name = "Plus"
+	minus.pressed.connect(
+		func() -> void:
+			state[key] = maxi(0, int(state[key]) - 1)
+			(upd_ref["fn"] as Callable).call()
+	)
+	plus.pressed.connect(
+		func() -> void:
+			state[key] = int(state[key]) + 1
+			(upd_ref["fn"] as Callable).call()
+	)
+	row.add_child(minus)
+	row.add_child(count)
+	row.add_child(plus)
+	box.add_child(row)
+	return {"count": count, "plus": plus, "minus": minus}
 
 
 func _on_concentration() -> void:
