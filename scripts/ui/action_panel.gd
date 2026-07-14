@@ -194,14 +194,13 @@ func _on_concentration() -> void:
 	_busy = false
 
 
-# TODO: действие «получить ресурс» пока не реализовано в движке — играем анимацию
-# жетона, но реального гейна ещё нет (проставится, когда действие появится).
 func _on_resource() -> void:
 	if _busy:
 		return
 	_busy = true
 	SfxManager.play(SfxManager.SFX_RESOURCE_GET)
-	await _res_ab.pop_token()
+	await _res_ab.pop_token()  # жетон летит «в камеру», флоу ждёт; ПОТОМ +1 к счёту
+	GameState.perform_action(GameActions.TAKE_RESOURCE)
 	_busy = false
 
 
@@ -218,7 +217,13 @@ func _refresh() -> void:
 		)
 	)
 	_rest_ab.set_disabled(not my_turn or used.has(GameActions.REST))
-	_res_ab.set_disabled(not my_turn)
+	_res_ab.set_disabled(
+		(
+			not my_turn
+			or used.has(GameActions.TAKE_RESOURCE)
+			or int(me.get("resources", 0)) >= GameState.MAX_RESOURCES
+		)
+	)
 	_pass_ab.set_disabled(not my_turn)
 	_conc_ab.set_badge(int(me.get("concentration", 0)))
 	_res_ab.set_badge(int(me.get("resources", 0)))

@@ -23,6 +23,7 @@ signal action_announced(pid: String, action_id: String, params: Dictionary)  # �
 const ACTIONS_PER_ROUND := 2
 const MAX_TICKETS := 2  # потолок билетов на руках (ж/д + корабль суммарно), как в EH
 const MAX_CONCENTRATION := 2  # потолок жетонов концентрации у сыщика
+const MAX_RESOURCES := 2  # потолок жетонов-ресурсов у сыщика
 
 # ── Глобальный стейт ──────────────────────────────────────────────────────────
 var round_num: int = 0
@@ -430,6 +431,7 @@ func _make_player_dict(
 		PlayerKeys.TRAIN_TICKETS: _starting_ticket_count(investigator, "train"),
 		PlayerKeys.SHIP_TICKETS: _starting_ticket_count(investigator, "ship"),
 		PlayerKeys.CONCENTRATION: 0,
+		PlayerKeys.RESOURCES: 0,
 		PlayerKeys.HP: hp_max,
 		PlayerKeys.SANITY: sanity_max,
 		PlayerKeys.HP_MAX: hp_max,

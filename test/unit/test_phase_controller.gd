@@ -94,6 +94,7 @@ class MockGameState:
 	const ACTIONS_PER_ROUND := 2
 	const MAX_TICKETS := 2
 	const MAX_CONCENTRATION := 2
+	const MAX_RESOURCES := 2
 	var phase: String = "action"
 	var players: Dictionary = {}
 	var turn_order: Array = []
@@ -291,6 +292,21 @@ func test_take_concentration_rejected_at_cap() -> void:
 	var actions: int = int(_gs.players["p"]["actions_left"])
 	assert_false(_pc.host_apply_action("p", "take_concentration"), "нельзя больше 2 концентрации")
 	assert_eq(int(_gs.players["p"]["concentration"]), 2, "не выросла")
+	assert_eq(int(_gs.players["p"]["actions_left"]), actions, "действие не потрачено")
+
+
+func test_take_resource_increments() -> void:
+	_solo()
+	assert_true(_pc.host_apply_action("p", "take_resource"))
+	assert_eq(int(_gs.players["p"]["resources"]), 1)
+
+
+func test_take_resource_rejected_at_cap() -> void:
+	# Потолок 2 (MAX_RESOURCES): на максимуме действие не тратится.
+	_solo({"resources": 2})
+	var actions: int = int(_gs.players["p"]["actions_left"])
+	assert_false(_pc.host_apply_action("p", "take_resource"), "нельзя больше 2 ресурсов")
+	assert_eq(int(_gs.players["p"]["resources"]), 2, "не выросла")
 	assert_eq(int(_gs.players["p"]["actions_left"]), actions, "действие не потрачено")
 
 

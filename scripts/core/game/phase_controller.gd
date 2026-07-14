@@ -106,6 +106,18 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				return false
 			p["concentration"] = int(p.get("concentration", 0)) + 1
 			p["actions_left"] = int(p["actions_left"]) - 1
+		GameActions.TAKE_RESOURCE:
+			# Потолок ресурсов — как у концентрации; при максимуме действие не тратим.
+			if int(p.get("resources", 0)) >= _gs.MAX_RESOURCES:
+				GameConsole.warn(
+					(
+						"[Game] %s — нельзя держать больше %d ресурсов"
+						% [_gs._name_of(pid), _gs.MAX_RESOURCES]
+					)
+				)
+				return false
+			p["resources"] = int(p.get("resources", 0)) + 1
+			p["actions_left"] = int(p["actions_left"]) - 1
 		GameActions.REST:
 			# whileHeld cannotRecover + triggered on:rest (Hypothermia: не лечит здоровье
 			# + бросок 4-6 сбросить). fire_triggered исполняет dieRoll/сброс и возвращает
@@ -226,7 +238,9 @@ func _announce_action_feed(pid: String, action_type: String, payload: Dictionary
 			_gs.announce_action(
 				pid, GameActions.CONDITION_ACTION, {"condition": Conditions.name_key(cid)}
 			)
-		GameActions.BUY_TICKET, GameActions.TAKE_CONCENTRATION, GameActions.REST, GameActions.TRADE, GameActions.ACQUIRE_ASSETS, GameActions.CAST_SPELL:
+		GameActions.BUY_TICKET, GameActions.TAKE_CONCENTRATION, GameActions.TAKE_RESOURCE:
+			_gs.announce_action(pid, action_type)
+		GameActions.REST, GameActions.TRADE, GameActions.ACQUIRE_ASSETS, GameActions.CAST_SPELL:
 			_gs.announce_action(pid, action_type)
 		# GameActions.PASS — не анонсируем
 
