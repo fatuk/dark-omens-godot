@@ -1442,6 +1442,7 @@ TRAIT_SERVICE,Услуга,Service
 TRAIT_ALLY,Союзник,Ally
 SHOP_ROLL,Бросить кубы,Roll dice
 SHOP_TAKE_DEBT,Взять долг (+2),Take debt (+2)
+SHOP_SPEND_RESOURCE,Потратить ресурс (+1),Spend resource (+1)
 SHOP_BUY,Купить,Buy
 SHOP_COINS,Монеты,Coins
 SHOP_REMAINING,Доступно,Available

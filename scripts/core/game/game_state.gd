@@ -1191,6 +1191,15 @@ func shop_take_debt() -> void:
 		_nm.relay_all({"action": RelayActions.SHOP_DEBT, "pid": my_pid})
 
 
+## Потратить ресурс в магазине — +1 монета (успех). Только если ресурс есть.
+func shop_spend_resource() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_phase.host_apply_shop_spend_resource(my_pid)
+	else:
+		_nm.relay_all({"action": RelayActions.SHOP_SPEND_RESOURCE, "pid": my_pid})
+
+
 ## Переброс куба магазина (die_index) — через общий механизм проверки (бесплатные
 ## от карт → концентрация → улика). Хост авторитетно правит active_check.
 func shop_reroll(die_index: int, currency: String = "") -> void:

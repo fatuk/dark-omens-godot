@@ -356,6 +356,7 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 	var coins: int = int(_gs.active_check.get("successes", 0))
 	if (p.get("conditions", []) as Array).has("debt"):
 		coins += 2
+	coins += int(_gs.active_check.get("shop_resource_coins", 0))  # потраченные ресурсы = монеты
 	# Каждый товар обязан лежать на витрине (shop_reserve), суммарная стоимость —
 	# укладываться в монеты. Иначе баг/чит клиента выдал бы бесплатные или чужие карты.
 	var reserve: Array = _gs.shop_reserve
@@ -451,6 +452,31 @@ func host_apply_shop_debt(pid: String) -> bool:
 	conds.append("debt")
 	p["conditions"] = conds
 	GameConsole.log("[Магазин] %s взял Долг" % _gs._name_of(pid))
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
+## Хост: игрок тратит ресурс в магазине — −1 ресурс, +1 монета (успех) в этой
+## сессии магазина. Копится в active_check.shop_resource_coins (синкается; учитывается
+## host_apply_shop_grant при валидации покупки, как бонус долга). Только пока магазин
+## открыт (active_check.owner == "shop") и у сыщика есть ресурс.
+func host_apply_shop_spend_resource(pid: String) -> bool:
+	if not _gs.players.has(pid):
+		return false
+	# Только активный покупатель (владелец shop-проверки) тратит свой ресурс.
+	if String(_gs.active_check.get("owner", "")) != "shop":
+		return false
+	if String(_gs.active_check.get("pid", "")) != pid:
+		return false
+	var p: Dictionary = _gs.players[pid]
+	if int(p.get("resources", 0)) <= 0:
+		return false
+	p["resources"] = int(p.get("resources", 0)) - 1
+	_gs.active_check["shop_resource_coins"] = (
+		int(_gs.active_check.get("shop_resource_coins", 0)) + 1
+	)
+	GameConsole.log("[Магазин] %s потратил ресурс (+1 монета)" % _gs._name_of(pid))
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true

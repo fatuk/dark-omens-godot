@@ -554,6 +554,28 @@ func test_shop_debt_adds_condition() -> void:
 	assert_true((_gs.players["p"]["conditions"] as Array).has("debt"))
 
 
+func test_shop_spend_resource_adds_coin_and_deducts() -> void:
+	_solo({"location": "arkham", "resources": 2})
+	_gs.loc_types = {"arkham": "city"}
+	_gs.active_check = {"owner": "shop", "pid": "p"}
+	assert_true(_pc.host_apply_shop_spend_resource("p"))
+	assert_eq(int(_gs.players["p"]["resources"]), 1, "ресурс списан")
+	assert_eq(int(_gs.active_check.get("shop_resource_coins", 0)), 1, "монета добавлена")
+
+
+func test_shop_spend_resource_rejected_without_resources() -> void:
+	_solo({"location": "arkham", "resources": 0})
+	_gs.active_check = {"owner": "shop", "pid": "p"}
+	assert_false(_pc.host_apply_shop_spend_resource("p"), "нет ресурсов — отказ")
+
+
+func test_shop_spend_resource_rejected_when_not_shopper() -> void:
+	_solo({"resources": 2})
+	_gs.active_check = {"owner": "shop", "pid": "other"}
+	assert_false(_pc.host_apply_shop_spend_resource("p"), "не активный покупатель — отказ")
+	assert_eq(int(_gs.players["p"]["resources"]), 2, "ресурс не тронут")
+
+
 func test_shop_debt_rejected_out_of_turn() -> void:
 	_gs.turn_order = ["p", "p2"]
 	_gs.current_idx = 1  # ход p2

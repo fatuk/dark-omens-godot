@@ -151,6 +151,7 @@ var _tray: DiceTray
 var _coins_lbl: Label
 var _roll_btn: Button
 var _debt_btn: Button
+var _res_btn: Button  # «потратить ресурс» — +1 монета
 var _buy_btn: Button
 var _cards: Array = []  # [{id, cost, card, vp, mesh, mat, hit, slot, total, hovering, buying}]
 var _chrome: Array = []  # [{node, fx, fy, fw, fh}] — элементы, позиционируемые по долям
@@ -199,7 +200,11 @@ func _rolled() -> bool:
 
 
 func _coins() -> int:
-	return int(_check().get("successes", 0)) + (2 if _debt_taken else 0)
+	return (
+		int(_check().get("successes", 0))
+		+ (2 if _debt_taken else 0)
+		+ int(_check().get("shop_resource_coins", 0))
+	)  # потраченные ресурсы = монеты
 
 
 func _can_reroll() -> bool:
@@ -309,6 +314,13 @@ func _build() -> void:
 	_debt_btn.pressed.connect(_on_take_debt)
 	_debt_btn.visible = not _has_debt()
 	btns.add_child(_debt_btn)
+
+	_res_btn = UIStyle.button("SHOP_SPEND_RESOURCE", UIColors.WARNING)
+	_res_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_res_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_res_btn.pressed.connect(_on_spend_resource)
+	_res_btn.visible = int(GameState.my_player().get("resources", 0)) > 0
+	btns.add_child(_res_btn)
 
 	_roll_btn = UIStyle.button("SHOP_ROLL", UIColors.ACCENT)
 	_roll_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -841,6 +853,15 @@ func _on_take_debt() -> void:
 	_refresh()
 
 
+# Потратить ресурс: −1 ресурс у сыщика, +1 монета в этой сессии (host-авторитетно
+# через active_check.shop_resource_coins; счётчик монет обновится по синку).
+func _on_spend_resource() -> void:
+	if int(GameState.my_player().get("resources", 0)) <= 0:
+		return
+	GameState.shop_spend_resource()
+	_refresh()
+
+
 func _on_die_clicked(index: int) -> void:
 	if not _can_reroll():
 		return
@@ -908,6 +929,8 @@ func _refresh() -> void:
 			_roll_btn.disabled = _rolled()
 	if is_instance_valid(_debt_btn):
 		_debt_btn.visible = not _has_debt()
+	if is_instance_valid(_res_btn):
+		_res_btn.visible = int(GameState.my_player().get("resources", 0)) > 0
 	if is_instance_valid(_buy_btn):
 		_buy_btn.disabled = _selected.is_empty()
 	# Недоступные НЕ затемняем (доступность покажем иначе позже). Тёплый тинт выбора +
