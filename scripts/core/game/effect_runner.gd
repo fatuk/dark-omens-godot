@@ -29,6 +29,8 @@ const _PLAYER_VERBS := [
 	"loseAllPossessions",
 	"gainFocus",
 	"loseFocus",
+	"gainResource",
+	"loseResource",
 	"improveSkill",
 	"impairSkill",
 	"becomeDelayed",
@@ -562,6 +564,13 @@ static func _apply_player_verb(
 		"loseFocus":
 			player["concentration"] = maxi(0, int(player.get("concentration", 0)) - n)
 			logs.append("−%d сосредоточения" % n)
+		"gainResource":
+			# Потолок ресурсов (GameState.MAX_RESOURCES) — как и action «получить».
+			player["resources"] = mini(GameState.MAX_RESOURCES, int(player.get("resources", 0)) + n)
+			logs.append("+%d ресурса" % n)
+		"loseResource":
+			player["resources"] = maxi(0, int(player.get("resources", 0)) - n)
+			logs.append("−%d ресурса" % n)
 		"extraAction":
 			# Доп. действие(я) в этот ход (актив/событие/заклинание «выполни ещё
 			# действие»). Слой хода читает actions_left; пока > 0 — игрок действует.

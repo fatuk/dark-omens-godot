@@ -847,6 +847,8 @@ VERB_MOVE,переместиться,move
 VERB_BECOME_DELAYED,становится Задержан,becomes Delayed
 VERB_GAIN_FOCUS,+{amount} концентрации,+{amount} Focus
 VERB_LOSE_FOCUS,−{amount} концентрации,−{amount} Focus
+VERB_GAIN_RESOURCE,+{amount} ресурса,+{amount} Resource
+VERB_LOSE_RESOURCE,−{amount} ресурса,−{amount} Resource
 VERB_GAIN_IMPROVEMENT,перманентное улучшение навыка,permanent skill improvement
 VERB_ADVANCE_DOOM,рок +{amount},Doom +{amount}
 VERB_RETREAT_DOOM,рок −{amount},Doom −{amount}

@@ -383,6 +383,38 @@
       "repeatable": true,
       "describeKey": "VERB_LOSE_FOCUS"
     },
+    "gainResource": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "repeatable": true,
+      "describeKey": "VERB_GAIN_RESOURCE"
+    },
+    "loseResource": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "repeatable": true,
+      "describeKey": "VERB_LOSE_RESOURCE"
+    },
     "advanceDoom": {
       "kind": "board",
       "params": [

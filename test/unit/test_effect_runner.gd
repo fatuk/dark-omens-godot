@@ -110,6 +110,16 @@ func test_focus_gain_and_loss_clamp() -> void:
 	assert_eq(int(p["concentration"]), 0, "сосредоточение не ниже 0")
 
 
+func test_resource_gain_and_loss_clamp() -> void:
+	var p: Dictionary = _player()
+	EffectRunner.run([{"do": "gainResource", "amount": 1}], p)
+	assert_eq(int(p["resources"]), 1)
+	EffectRunner.run([{"do": "gainResource", "amount": 5}], p)
+	assert_eq(int(p["resources"]), GameState.MAX_RESOURCES, "ресурс не выше потолка")
+	EffectRunner.run([{"do": "loseResource", "amount": 9}], p)
+	assert_eq(int(p["resources"]), 0, "ресурс не ниже 0")
+
+
 func test_improve_and_impair_skill_accumulate() -> void:
 	var p: Dictionary = _player()
 	EffectRunner.run([{"do": "improveSkill", "skill": "lore", "amount": 2}], p)
