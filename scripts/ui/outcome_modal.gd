@@ -81,7 +81,11 @@ func _refresh() -> void:
 	else:
 		_title.text = "OUTCOME_DEFEAT_TITLE"
 		_title.add_theme_color_override("font_color", UIColors.DANGER)
-		_body.text = "OUTCOME_DEFEAT_BODY"
+		# Текст пробуждения Древнего из библии (CMS ancientOne.awakening). Пусто
+		# (нет карточки/поля) → общий фолбэк OUTCOME_DEFEAT_BODY.
+		var ao: Dictionary = GameState.campaign.get("ancientOne", {})
+		var awakening: String = String(ao.get("awakening", "")).strip_edges()
+		_body.text = awakening if not awakening.is_empty() else tr("OUTCOME_DEFEAT_BODY")
 	SfxManager.play(SfxManager.SFX_MYTHOS_START)  # тревожный аккорд финала
 	_backdrop.visible = true
 
