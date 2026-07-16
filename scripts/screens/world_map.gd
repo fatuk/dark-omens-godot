@@ -108,6 +108,7 @@ func _ready() -> void:
 	GameState.state_changed.connect(_refresh_campaign_gate)
 	_build_campaign_gate()
 	_build_outcome_modal()
+	_build_turn_banner()
 	_build_check_roll_modal()
 	_build_reckoning_wait_overlay()
 	_build_chat_composer()
@@ -192,6 +193,12 @@ func _build_outcome_modal() -> void:
 	var om: CanvasLayer = load("res://scripts/ui/outcome_modal.gd").new()
 	om.name = "OutcomeModal"
 	add_child(om)
+
+
+func _build_turn_banner() -> void:
+	var tb: CanvasLayer = load("res://scripts/ui/turn_banner.gd").new()
+	tb.name = "TurnBanner"
+	add_child(tb)
 
 
 # Общая модалка видимой проверки test-узла (действия состояний, вложенные test и пр.).

@@ -33,6 +33,7 @@ var resolution_idx: int = 3  # 1920×1080 по умолчанию
 var fullscreen: bool = false
 var music_volume: float = 0.5  # 0..1, читается Music/SfxManager на _ready
 var sfx_volume: float = 0.5
+var turn_notify: bool = true  # баннер «Ваш ход», когда игра ждёт моего ввода
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -129,6 +130,7 @@ func save() -> void:
 	cfg.set_value("display", "resolution", "%dx%d" % [r.x, r.y])
 	cfg.set_value("audio", "music", MusicManager.volume)
 	cfg.set_value("audio", "sfx", SfxManager.volume)
+	cfg.set_value("game", "turn_notify", turn_notify)
 	music_volume = MusicManager.volume
 	sfx_volume = SfxManager.volume
 	cfg.save(SETTINGS_FILE)
@@ -152,3 +154,4 @@ func _load() -> void:
 			break
 	music_volume = float(cfg.get_value("audio", "music", 0.5))
 	sfx_volume = float(cfg.get_value("audio", "sfx", 0.5))
+	turn_notify = bool(cfg.get_value("game", "turn_notify", true))

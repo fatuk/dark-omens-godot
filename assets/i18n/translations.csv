@@ -7,6 +7,8 @@ SETTINGS_TITLE,НАСТРОЙКИ,Settings
 SETTINGS_LANGUAGE,Язык,Language
 SETTINGS_FULLSCREEN,Полный экран,Fullscreen
 SETTINGS_FX_OLD_FILM,Эффект старой плёнки,Old film effect
+SETTINGS_TURN_NOTIFY,Баннер «Ваш ход»,«Your turn» banner
+TURN_BANNER_YOURS,Ваш ход,Your turn
 SETTINGS_RESOLUTION,Разрешение,Resolution
 SETTINGS_SERVER,Сервер,Server
 SETTINGS_VOLUME_MUSIC,Музыка,Music
