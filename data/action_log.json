@@ -43,6 +43,10 @@
 	{"id": "afflicted",          "en": "Afflicted — {condition}.",        "ru": "Поражён… {condition}."},
 	{"id": "got_clue",           "en": "A clue uncovered.",               "ru": "Улика найдена."},
 	{"id": "got_focus",          "en": "A surge of focus.",               "ru": "Прилив сосредоточения."},
-	{"id": "got_resource",       "en": "Supplies secured.",               "ru": "Раздобыл ресурс."}
+	{"id": "got_resource",       "en": "Supplies secured.",               "ru": "Раздобыл ресурс."},
+	{"id": "cured",              "en": "Freed of an affliction — {condition}.", "ru": "Избавлен от недуга… {condition}."},
+	{"id": "spent_clue",         "en": "Spends a clue. −{amount}.",       "ru": "Тратит улику. −{amount}."},
+	{"id": "spent_focus",        "en": "Spends focus. −{amount}.",        "ru": "Тратит сосредоточение. −{amount}."},
+	{"id": "spent_resource",     "en": "Spends a resource. −{amount}.",   "ru": "Тратит ресурс. −{amount}."}
   ]
 }

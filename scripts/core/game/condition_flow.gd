@@ -70,8 +70,10 @@ func reckon_condition(
 	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
 	var ctx: Dictionary = {"skills": inv.get("skills", {})}
 	if not interactive:
+		var recon_before: Dictionary = (p as Dictionary).duplicate(true)
 		var res: Dictionary = _EffectRunner.run(program, p, ctx, flow)
 		_apply_reckon_output(pid, cid, def, ctx, res, flow)
+		ActionFeed.announce_deltas(_gs, pid, recon_before, _gs.players.get(pid, {}))  # лента Расплаты
 		return
 	await _reckon_condition_interactive(pid, cid, def, program, ctx)
 
@@ -84,6 +86,7 @@ func _reckon_condition_interactive(
 ) -> void:
 	var decisions: Dictionary = {}
 	var rolls: Dictionary = {}
+	var recon_before: Dictionary = (_gs.players.get(pid, {}) as Dictionary).duplicate(true)
 	while true:
 		if not _gs.players.has(pid):
 			return
@@ -127,6 +130,7 @@ func _reckon_condition_interactive(
 			GameConsole.warn("[Расплата] выбор в onReckoning состояния не поддержан — пропуск")
 		_gs.players[pid] = dup  # коммит мутаций сыщика
 		_apply_reckon_output(pid, cid, def, ctx, res, {})
+		ActionFeed.announce_deltas(_gs, pid, recon_before, _gs.players.get(pid, {}))  # лента Расплаты
 		return
 
 

@@ -84,3 +84,21 @@ func test_delta_events_heal_and_tokens() -> void:
 func test_delta_events_no_change_is_empty() -> void:
 	var s: Dictionary = {"hp": 5, "sanity": 5, "conditions": ["poisoned"], "clues": 2}
 	assert_eq(ActionFeed.delta_events(s, s).size(), 0, "нет изменений — нет событий")
+
+
+func test_delta_events_cured_and_spent() -> void:
+	var before: Dictionary = {"conditions": ["poisoned"], "clues": 2, "resources": 1}
+	var after: Dictionary = {"conditions": [], "clues": 1, "resources": 0}
+	var ids: Array = []
+	for e_v: Variant in ActionFeed.delta_events(before, after):
+		ids.append(String((e_v as Dictionary)["id"]))
+	assert_true(ids.has("cured"), "снятие состояния")
+	assert_true(ids.has("spent_clue"), "трата улики")
+	assert_true(ids.has("spent_resource"), "трата ресурса")
+
+
+func test_render_cured_and_spent_ids() -> void:
+	assert_eq(ActionLog.render("spent_clue", {"amount": "1"}, "ru"), "Тратит улику. −1.")
+	assert_true(
+		ActionLog.render("cured", {"condition": "COND_POISONED_NAME"}, "en").begins_with("Freed")
+	)

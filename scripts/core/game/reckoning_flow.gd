@@ -244,7 +244,9 @@ func _reckon_asset(pid: String, aid: String) -> void:
 		return
 	var p: Dictionary = _gs.players.get(pid, {})
 	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
+	var before_r: Dictionary = (p as Dictionary).duplicate(true)
 	var res: Dictionary = _EffectRunner.run(prog, p, {"skills": inv.get("skills", {})})
+	ActionFeed.announce_deltas(_gs, pid, before_r, p)  # лента Расплаты (актив)
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[Расплата актив %s] %s · %s" % [aid, _gs._name_of(pid), String(l_v)])
 	for node_v: Variant in res.get("board", []):

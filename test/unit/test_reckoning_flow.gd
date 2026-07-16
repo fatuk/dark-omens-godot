@@ -60,6 +60,9 @@ class MockGS:
 	func _emit_changed() -> void:
 		pass
 
+	func announce_action(_pid: String, _id: String, _params: Dictionary = {}) -> void:
+		pass
+
 	# Зеркало GameState._apply_board_effect (минимум для теста): адресные — через
 	# TargetResolver; advanceDoom — в счётчик doom.
 	func _apply_board_effect(node: Dictionary) -> void:

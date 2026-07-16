@@ -78,6 +78,9 @@ class MockGameState:
 	func _emit_changed() -> void:
 		pass
 
+	func announce_action(_pid: String, _id: String, _params: Dictionary = {}) -> void:
+		pass
+
 
 func before_each() -> void:
 	_gs = autofree(MockGameState.new())

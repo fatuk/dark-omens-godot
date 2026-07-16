@@ -24,17 +24,27 @@ static func delta_events(before: Dictionary, after: Dictionary) -> Array:
 	elif san_d > 0:
 		out.append({"id": "sanity_healed", "params": {"amount": str(san_d)}})
 	var before_c: Array = before.get("conditions", [])
-	for c_v: Variant in after.get("conditions", []):
-		if not before_c.has(c_v):
+	var after_c: Array = after.get("conditions", [])
+	for c_v: Variant in after_c:
+		if not before_c.has(c_v):  # новое состояние
 			out.append(
 				{"id": "afflicted", "params": {"condition": Conditions.name_key(String(c_v))}}
 			)
-	if int(after.get("clues", 0)) > int(before.get("clues", 0)):
-		out.append({"id": "got_clue", "params": {}})
-	if int(after.get("concentration", 0)) > int(before.get("concentration", 0)):
-		out.append({"id": "got_focus", "params": {}})
-	if int(after.get("resources", 0)) > int(before.get("resources", 0)):
-		out.append({"id": "got_resource", "params": {}})
+	for c_v: Variant in before_c:
+		if not after_c.has(c_v):  # снятое состояние
+			out.append({"id": "cured", "params": {"condition": Conditions.name_key(String(c_v))}})
+	# Жетоны: прирост = got_*, трата = spent_* (с числом).
+	for tok_v: Variant in [
+		["clues", "got_clue", "spent_clue"],
+		["concentration", "got_focus", "spent_focus"],
+		["resources", "got_resource", "spent_resource"],
+	]:
+		var tok: Array = tok_v
+		var d: int = int(after.get(tok[0], 0)) - int(before.get(tok[0], 0))
+		if d > 0:
+			out.append({"id": String(tok[1]), "params": {}})
+		elif d < 0:
+			out.append({"id": String(tok[2]), "params": {"amount": str(-d)}})
 	return out
 
 
