@@ -196,7 +196,9 @@ func _apply_effects(effects: Array) -> void:
 					continue  # lead/chosen резолвер не фильтрует отключённых — страхуем
 				if _gs._cond.player_has_constraint(uid, "immuneToEffects"):
 					continue  # whileHeld immuneToEffects (Lost in Time)
+				var before: Dictionary = (_gs.players[uid] as Dictionary).duplicate(true)
 				var res: Dictionary = _EffectRunner.run([eff], _gs.players[uid])
+				ActionFeed.announce_deltas(_gs, uid, before, _gs.players[uid])  # лента исходов мифа
 				for log_msg in res.get("logs", []):
 					GameConsole.log("[Mythos→%s] %s" % [_gs._name_of(uid), String(log_msg)])
 		else:
@@ -283,6 +285,7 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 	# (chosenInvestigator). Стабилен на время прохода сыщика (сброс — на завершении).
 	var choices: Array = _gs._board.monster_choices()
 	var others: Array = _other_pids(pid)
+	var sub_before: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)  # для ленты исходов
 	while true:
 		var dup: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
 		var flow: Dictionary = {
@@ -300,6 +303,7 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 		var pending: Dictionary = res.get("pending", {})
 		if pending.is_empty():
 			_gs.players[pid] = dup  # коммит мутаций самого сыщика
+			ActionFeed.announce_deltas(_gs, pid, sub_before, dup)  # лента исходов мифа (forEach)
 			for node_v: Variant in res.get("board", []):
 				var bnode: Dictionary = node_v
 				bnode["_anchor_pid"] = pid  # относительные цели — от этого сыщика

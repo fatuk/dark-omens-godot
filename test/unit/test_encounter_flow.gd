@@ -78,6 +78,9 @@ class MockGS:
 	func _emit_changed() -> void:
 		pass
 
+	func announce_action(_pid: String, _id: String, _params: Dictionary = {}) -> void:
+		pass
+
 
 func _combat_ctx(tough: int, focus: int) -> EncounterFlow:
 	var gs: MockGS = autofree(MockGS.new())

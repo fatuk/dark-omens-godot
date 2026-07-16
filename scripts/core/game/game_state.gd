@@ -1019,6 +1019,11 @@ func announce_action(pid: String, action_id: String, params: Dictionary = {}) ->
 	action_announced.emit(pid, action_id, params)  # своё — рисуем локально (реле его не вернёт)
 
 
+# Лента исходов эффектов (урон/лечение/состояния/жетоны) вынесена в ActionFeed
+# (static), чтобы не раздувать публичный API GameState. Flow зовут её напрямую:
+# ActionFeed.announce_deltas(self, pid, before, after).
+
+
 ## Активный игрок подтвердил выбор триггер-заклинаний (item-индексы) в промпте
 ## pending_spell_cast (напр. при отдыхе): хост кастует только выбранные и чистит
 ## промпт. Пустой список — «ничего не кастить» (промпт всё равно закрывается).

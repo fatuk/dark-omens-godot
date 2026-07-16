@@ -59,6 +59,9 @@ class MockGS:
 	func _emit_changed() -> void:
 		pass
 
+	func announce_action(_pid: String, _id: String, _params: Dictionary = {}) -> void:
+		pass
+
 	# Зеркало GameState._apply_board_effect: адресные эффекты — через TargetResolver.
 	func _apply_board_effect(node: Dictionary) -> void:
 		if _target.is_targeted_effect(node):

@@ -34,6 +34,15 @@
 	{"id": "research",           "en": "Searches for clues.",             "ru": "Ищет улики."},
 	{"id": "mystery",            "en": "Pries at the Mystery.",           "ru": "Подступает к Тайне."},
 	{"id": "eldritch",           "en": "Reads the omens here.",           "ru": "Читает знамения места."},
-	{"id": "encounter",          "en": "Faces the unknown.",              "ru": "Встречает неизвестное."}
+	{"id": "encounter",          "en": "Faces the unknown.",              "ru": "Встречает неизвестное."},
+
+	{"id": "hurt",               "en": "Wounded. −{amount}.",             "ru": "Ранен. −{amount}."},
+	{"id": "healed",             "en": "Wounds close. +{amount}.",        "ru": "Раны затягиваются. +{amount}."},
+	{"id": "sanity_hit",         "en": "Sanity reels. −{amount}.",        "ru": "Рассудок дрогнул. −{amount}."},
+	{"id": "sanity_healed",      "en": "The mind clears. +{amount}.",     "ru": "Мысли прояснились. +{amount}."},
+	{"id": "afflicted",          "en": "Afflicted — {condition}.",        "ru": "Поражён… {condition}."},
+	{"id": "got_clue",           "en": "A clue uncovered.",               "ru": "Улика найдена."},
+	{"id": "got_focus",          "en": "A surge of focus.",               "ru": "Прилив сосредоточения."},
+	{"id": "got_resource",       "en": "Supplies secured.",               "ru": "Раздобыл ресурс."}
   ]
 }

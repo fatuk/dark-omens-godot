@@ -605,6 +605,10 @@ func _commit_outcome(pid: String) -> void:
 		_commit_rumor(pid)
 		return
 	var passed: bool = bool(_gs.active_check.get("passed", false))
+	# Снимок состояния сыщика ДО эффектов — diff после коммита в ленту исходов
+	# (урон/лечение/состояния/жетоны). На интерактивной паузе _run_effect_slot
+	# ничего не мутирует (dup-изоляция) → diff считаем на завершающем проходе.
+	var before: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
 	if kind == "gate" or kind == "mystery":
 		var branches: Dictionary = enc.get("branches", {})
 		var node: Dictionary = branches.get(String(enc.get("branch", "success")), {})
@@ -617,6 +621,7 @@ func _commit_outcome(pid: String) -> void:
 			return  # ждём выбор игрока
 		# Исследование: забранная улика исчезает с локации (один раз, после слота).
 		_apply_research_clue_removal(pid, kind)
+	ActionFeed.announce_deltas(_gs, pid, before, _gs.players[pid])
 	enc["committed"] = true
 	_gs._check.clear()  # проверка завершена — снять active_check
 
@@ -626,6 +631,7 @@ func _commit_outcome(pid: String) -> void:
 func _commit_combat(pid: String) -> void:
 	var enc: Dictionary = _gs.current_encounter
 	var p: Dictionary = _gs.players[pid]
+	var before_combat: Dictionary = (p as Dictionary).duplicate(true)
 	var sl: int = int(enc.get("sanity_loss", 0))
 	if sl > 0:
 		p["sanity"] = maxi(0, int(p.get("sanity", 0)) - sl)
@@ -639,6 +645,7 @@ func _commit_combat(pid: String) -> void:
 	var hp_loss: int = int(r.get("hp_loss", 0))
 	if hp_loss > 0:
 		p["hp"] = maxi(0, int(p.get("hp", 0)) - hp_loss)
+	ActionFeed.announce_deltas(_gs, pid, before_combat, p)  # лента: урон/рассудок от боя
 	var loc: String = String(p.get("location", ""))
 	if bool(r.get("won", false)):
 		_remove_monster_instance(loc, 0)
