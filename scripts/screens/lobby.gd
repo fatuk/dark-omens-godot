@@ -169,12 +169,19 @@ func _recompute_taken() -> void:
 	_picker.sync_taken(taken)
 
 
-# Хост: разрешать «Начать», когда выбрал сыщика и подтвердил.
+# Хост: разрешать «Начать», когда сам выбрал+подтвердил И все подключённые игроки
+# готовы. Иначе невыбравший попал бы в игру с пустым сыщиком (см. _build_players_init).
 func _refresh_start_button() -> void:
 	if not _nm.is_host() or not is_instance_valid(_picker):
 		return
 	var selected: String = _picker.get_selected()
-	_picker.set_start_enabled(not selected.is_empty() and _was_ready)
+	var can_start: bool = not selected.is_empty() and _was_ready
+	if can_start:
+		for pid: String in _nm.players:
+			if pid != _nm.my_id and not bool(_nm.players[pid].get("ready", false)):
+				can_start = false
+				break
+	_picker.set_start_enabled(can_start)
 
 
 # ── Обработчики сигналов NetworkManager ───────────────────────────────────────
@@ -245,6 +252,7 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 			_nm.set_lobby_not_ready(pid)  # перевыбор сыщика снимает готовность
 			_nm.set_lobby_investigator(pid, inv)
 			_recompute_taken()
+			_refresh_start_button()  # чья-то готовность спала → пересчёт «Начать»
 		RelayActions.SET_READY:
 			var pid: String = data.get("player_id", "")
 			var inv_name: String = data.get("investigator", "")
@@ -319,6 +327,12 @@ func _on_start_pressed() -> void:
 	var selected: String = _picker.get_selected()
 	if selected.is_empty():
 		return
+	# Страховка от гонки (клик в момент, когда кто-то снял готовность): все
+	# подключённые игроки должны быть готовы — иначе попали бы в игру без сыщика.
+	for pid: String in _nm.players:
+		if pid != _nm.my_id and not bool(_nm.players[pid].get("ready", false)):
+			GameConsole.warn("[Лобби] нельзя начать: не все игроки готовы")
+			return
 	_nm.set_lobby_investigator(_nm.my_id, selected)
 	GameConsole.log("Игра началась! Игроков: %d" % _nm.players.size())
 	_clear_ready_state()
