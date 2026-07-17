@@ -150,6 +150,12 @@ func set_lobby_ready(pid: String, investigator: String = "") -> void:
 		players[pid]["investigator"] = investigator
 
 
+## Лобби: снять готовность (перевыбор сыщика до старта). См. set_lobby_ready.
+func set_lobby_not_ready(pid: String) -> void:
+	if players.has(pid):
+		players[pid]["ready"] = false
+
+
 func is_connected_to_relay() -> bool:
 	return _transport().is_open()
 

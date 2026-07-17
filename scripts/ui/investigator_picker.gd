@@ -231,6 +231,14 @@ func lock_confirm() -> void:
 	_confirm_btn.text = "LOBBY_BTN_READY_DONE"
 
 
+# Перевыбор сыщика после «Готов» — снова разблокируем кнопку (сброс готовности).
+func unlock_confirm() -> void:
+	if not is_instance_valid(_confirm_btn):
+		return
+	_confirm_btn.disabled = false
+	_confirm_btn.text = "PICKER_CONFIRM"
+
+
 # Хост: включить/выключить кнопку «Начать игру».
 func set_start_enabled(enabled: bool) -> void:
 	if not is_instance_valid(_start_btn):

@@ -140,6 +140,14 @@ func _check_auto_ready() -> void:
 
 
 func _on_selection_changed(inv_name: String) -> void:
+	# Перевыбор сыщика после «Готов» сбрасывает готовность: кнопка снова активна,
+	# статус снимается у нас и (через broadcast picking) у остальных.
+	if _was_ready:
+		_was_ready = false
+		_clear_ready_state()
+		_nm.set_lobby_not_ready(_nm.my_id)
+		if is_instance_valid(_picker):
+			_picker.unlock_confirm()
 	# Локальное состояние + броадкаст: остальные игроки сразу видят
 	# нашего сыщика как занятого, не дожидаясь нажатия «Готов».
 	_nm.set_lobby_investigator(_nm.my_id, inv_name)
@@ -234,6 +242,7 @@ func _on_relay_received(_from_id: String, data: Dictionary) -> void:
 		"picking":
 			var pid: String = data.get("player_id", "")
 			var inv: String = data.get("investigator", "")
+			_nm.set_lobby_not_ready(pid)  # перевыбор сыщика снимает готовность
 			_nm.set_lobby_investigator(pid, inv)
 			_recompute_taken()
 		RelayActions.SET_READY:
