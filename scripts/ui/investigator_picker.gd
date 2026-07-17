@@ -259,8 +259,12 @@ func _on_carousel_index_changed(idx: int) -> void:
 
 
 func _on_confirm_pressed() -> void:
-	confirm_pressed.emit()
+	# Селекцию эмитим ПЕРЕД confirm: иначе selection_changed прилетал бы уже с
+	# выставленным _was_ready и лобби тут же сбрасывало бы готовность (перевыбор),
+	# и «Подтвердить» не срабатывало. Порядок: сначала зафиксировать сыщика — потом
+	# отметить «Готов».
 	_emit_selection()
+	confirm_pressed.emit()
 
 
 func _emit_selection() -> void:
