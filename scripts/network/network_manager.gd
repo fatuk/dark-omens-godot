@@ -54,6 +54,9 @@ var _outbox: Array = []
 func _ready() -> void:
 	# Должен обрабатывать сетевые события, даже когда дерево на паузе
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Закрытие окна не закрываем сразу — сначала шлём leave_room (см. _notification /
+	# leave_and_quit), иначе обрыв сокета уводит хоста в 12с grace вместо промоушена.
+	get_tree().set_auto_accept_quit(false)
 	var t := _transport()
 	t.ws_opened.connect(_on_ws_open)
 	t.ws_closed.connect(_on_ws_closed)
@@ -108,6 +111,24 @@ func leave_room() -> void:
 	if not room_id.is_empty():
 		_send({"type": "leave_room"})
 	_clear_room_state()
+
+
+# Закрытие окна (крестик / Alt+F4) — как намеренный выход: leave_and_quit.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		leave_and_quit()
+
+
+## Намеренный выход из приложения (кнопка «Выход» / закрытие окна): шлём leave_room,
+## чтобы relay промоутил нового хоста СРАЗУ (без 12с grace транзиентного обрыва),
+## даём сокету флашнуться (transport поллит и на паузе — PROCESS_MODE_ALWAYS), затем
+## закрываем. process_always-таймер тикает даже при get_tree().paused.
+func leave_and_quit() -> void:
+	if not room_id.is_empty():
+		_send({"type": "leave_room"})
+		_clear_room_state()
+		await get_tree().create_timer(0.25, true).timeout
+	get_tree().quit()
 
 
 func delete_room() -> void:
