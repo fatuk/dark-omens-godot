@@ -162,6 +162,20 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			if not can_travel(pid, dest):
 				GameConsole.warn("[Game] %s — недопустимое перемещение" % _gs._name_of(pid))
 				return false
+			# Стоимость и путь по планировщику: базовый хоп бесплатен, доп. хопы
+			# оплачены билетами (train/ship). Списываем ровно израсходованное.
+			var here_travel: String = String(p.get("location", ""))
+			var plan: Dictionary = TravelPlanner.cost_to(
+				_gs._load_locations(),
+				here_travel,
+				dest,
+				int(p.get("train_tickets", 0)),
+				int(p.get("ship_tickets", 0))
+			)
+			p["train_tickets"] = int(p.get("train_tickets", 0)) - int(plan.get("train", 0))
+			p["ship_tickets"] = int(p.get("ship_tickets", 0)) - int(plan.get("ship", 0))
+			# Путь (сегменты) — для посегментной анимации на клиентах.
+			p[PlayerKeys.TRAVEL_PATH] = plan.get("path", [here_travel, dest])
 			p["location"] = dest
 			p["actions_left"] = int(p["actions_left"]) - 1
 		GameActions.TRADE:
@@ -675,23 +689,19 @@ func can_travel(pid: String, dest: String) -> bool:
 		return false
 	if _gs._cond.player_has_constraint(pid, "cannotMove"):
 		return false  # whileHeld cannotMove (Detained / Lost in Time)
-	var here: String = String(_gs.players[pid].get("location", ""))
+	var p: Dictionary = _gs.players[pid]
+	var here: String = String(p.get("location", ""))
 	if dest == here:
 		return false
-	var conns: Array = _location_connections(here)
-	for i in range(conns.size()):
-		var c: Dictionary = conns[i]
-		if String(c.get("to", "")) == dest:
-			return true
-	return false
-
-
-# Список связей локации из locations.json. Матчим по id (стабильный slug),
-# а не по name — name теперь translation key (LOC_*_NAME), не уникальный.
-func _location_connections(loc_id: String) -> Array:
-	var locations: Array = _gs._load_locations()
-	for i in range(locations.size()):
-		var loc: Dictionary = locations[i]
-		if String(loc.get("id", "")) == loc_id:
-			return loc.get("connections", [])
-	return []
+	# Достижим базовым ходом (1 хоп) ИЛИ доп. хопами, оплаченными билетами на руках.
+	return not (
+		TravelPlanner
+		. cost_to(
+			_gs._load_locations(),
+			here,
+			dest,
+			int(p.get("train_tickets", 0)),
+			int(p.get("ship_tickets", 0))
+		)
+		. is_empty()
+	)

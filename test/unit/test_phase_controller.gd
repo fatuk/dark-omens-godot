@@ -384,6 +384,38 @@ func test_travel_rejected_when_not_connected() -> void:
 	assert_false(_pc.host_apply_action("p", "travel", {"to": "Z"}), "Z недостижима")
 
 
+# Цепочка A =train= B =train= C для проверки траты билетов на доп. хопы.
+func _chain_abc() -> void:
+	_gs.locations = [
+		{"id": "A", "connections": [{"to": "B", "type": "train"}]},
+		{"id": "B", "connections": [{"to": "A", "type": "train"}, {"to": "C", "type": "train"}]},
+		{"id": "C", "connections": [{"to": "B", "type": "train"}]},
+	]
+
+
+func test_travel_multi_hop_spends_ticket() -> void:
+	_solo({"location": "A", "train_tickets": 1, "ship_tickets": 0})
+	_chain_abc()
+	assert_true(_pc.host_apply_action("p", "travel", {"to": "C"}), "C достижим за 1 ж/д")
+	assert_eq(String(_gs.players["p"]["location"]), "C")
+	assert_eq(int(_gs.players["p"]["train_tickets"]), 0, "ж/д-билет списан")
+	assert_eq(_gs.players["p"]["travel_path"], ["A", "B", "C"], "путь сохранён для анимации")
+
+
+func test_travel_two_hops_rejected_without_ticket() -> void:
+	_solo({"location": "A", "train_tickets": 0})
+	_chain_abc()
+	assert_false(_pc.host_apply_action("p", "travel", {"to": "C"}), "без билета 2-й хоп нельзя")
+	assert_eq(String(_gs.players["p"]["location"]), "A", "остался на месте")
+
+
+func test_travel_base_hop_keeps_tickets() -> void:
+	_solo({"location": "A", "train_tickets": 1})
+	_chain_abc()
+	assert_true(_pc.host_apply_action("p", "travel", {"to": "B"}), "соседний B — базовый хоп")
+	assert_eq(int(_gs.players["p"]["train_tickets"]), 1, "базовый хоп билет не тратит")
+
+
 # ── Обмен (trade) ─────────────────────────────────────────────────────────────
 
 

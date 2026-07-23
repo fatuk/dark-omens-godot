@@ -441,7 +441,13 @@ func _caption_text(data: Dictionary) -> String:
 func _refresh_actions() -> void:
 	if not is_instance_valid(_travel_btn):
 		return
-	_travel_btn.visible = not _loc_id.is_empty() and GameState.can_travel_to(_loc_id)
+	var travel_cost: Dictionary = {} if _loc_id.is_empty() else GameState.travel_cost_to(_loc_id)
+	_travel_btn.visible = not travel_cost.is_empty()
+	# Метка кнопки несёт стоимость в билетах: базовый хоп — просто «Переместиться»,
+	# доп. хопы — «Переместиться (ж/д ×N, корабль ×M)».
+	if _travel_btn.visible:
+		var cs: String = _travel_cost_str(travel_cost)
+		_travel_btn.text = tr("SIDEBAR_TRAVEL") if cs.is_empty() else tr("SIDEBAR_TRAVEL_COST") % cs
 	_trade_btn.visible = _can_trade()
 	_shop_btn.visible = GameState.can_shop(_loc_id)
 	var can_ticket: bool = GameState.can_buy_ticket(_loc_id)
@@ -453,6 +459,19 @@ func _refresh_actions() -> void:
 func _on_travel_pressed() -> void:
 	if not _loc_id.is_empty():
 		GameState.travel(_loc_id)
+
+
+# Стоимость плана в билетах → строка «ж/д ×N, корабль ×M» (только ненулевые).
+# Пусто, если билеты не тратятся (базовый ход).
+func _travel_cost_str(cost: Dictionary) -> String:
+	var parts: PackedStringArray = []
+	var t: int = int(cost.get("train", 0))
+	var s: int = int(cost.get("ship", 0))
+	if t > 0:
+		parts.append(tr("TICKET_COST_TRAIN") % t)
+	if s > 0:
+		parts.append(tr("TICKET_COST_SHIP") % s)
+	return ", ".join(parts)
 
 
 # Можно ли обменяться здесь: мой ход, моя локация, есть действие, обмен ещё не делал

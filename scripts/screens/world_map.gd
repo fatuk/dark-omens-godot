@@ -167,7 +167,10 @@ func _refresh_investigators() -> void:
 		list.append({"pid": pid, "investigator": inv, "location": loc})
 		var prev: String = String(_inv_locs.get(pid, ""))
 		if _inv_seen and not prev.is_empty() and prev != loc:
-			moves.append({"pid": pid, "inv": inv, "from": prev, "to": loc})
+			# Многохоповое перемещение (билеты): путь сегментов из состояния игрока.
+			moves.append(
+				{"pid": pid, "inv": inv, "from": prev, "to": loc, "path": p.get("travel_path", [])}
+			)
 		_inv_locs[pid] = loc
 
 	# Первый рефреш или нет перемещений — просто расставляем пины.
@@ -185,11 +188,29 @@ func _animate_moves(moves: Array, list: Array) -> void:
 	for i: int in range(moves.size()):
 		var m: Dictionary = moves[i]
 		_map_layer.hide_investigator(String(m.pid))
-		var ctype: String = _map_layer.edge_ctype(String(m.from), String(m.to))
-		await _map_layer.play_travel(String(m.inv), String(m.from), String(m.to), ctype)
+		# Посегментно: билетный маршрут проходит через промежуточные локации.
+		for seg: Array in _travel_segments(m):
+			var a: String = seg[0]
+			var b: String = seg[1]
+			await _map_layer.play_travel(String(m.inv), a, b, _map_layer.edge_ctype(a, b))
 	_travelling = false
 	_map_layer.set_investigators(list)
 	_apply_bounds()
+
+
+# Сегменты перемещения [[a,b], …]. Берём из travel_path игрока, если он валиден
+# (≥2 узла, концы совпадают с from/to); иначе — один прямой сегмент from→to
+# (телепорты/эффекты без пути).
+func _travel_segments(m: Dictionary) -> Array:
+	var path: Array = m.get("path", [])
+	var from: String = String(m.from)
+	var to: String = String(m.to)
+	if path.size() >= 2 and String(path[0]) == from and String(path[-1]) == to:
+		var segs: Array = []
+		for i in range(path.size() - 1):
+			segs.append([String(path[i]), String(path[i + 1])])
+		return segs
+	return [[from, to]]
 
 
 func _build_outcome_modal() -> void:

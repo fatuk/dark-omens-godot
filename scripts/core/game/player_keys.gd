@@ -13,6 +13,7 @@ const USER_ID := "user_id"
 const NAME := "name"
 const INVESTIGATOR := "investigator"
 const LOCATION := "location"
+const TRAVEL_PATH := "travel_path"  # сегменты последнего перемещения (для анимации)
 const CONNECTED := "connected"
 const ACTIONS_LEFT := "actions_left"
 const ACTIONS_USED := "actions_used"

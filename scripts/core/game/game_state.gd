@@ -454,6 +454,7 @@ func _make_player_dict(
 		PlayerKeys.NAME: pname,
 		PlayerKeys.INVESTIGATOR: investigator,
 		PlayerKeys.LOCATION: location,
+		PlayerKeys.TRAVEL_PATH: [],
 		PlayerKeys.CONNECTED: true,
 		PlayerKeys.ACTIONS_LEFT: ACTIONS_PER_ROUND,
 		PlayerKeys.ACTIONS_USED: [],
@@ -1136,6 +1137,21 @@ func can_travel_to(dest: String) -> bool:
 	if used.has(GameActions.TRAVEL):
 		return false
 	return _phase.can_travel(_nm.my_user_id, dest)
+
+
+## Стоимость перемещения локального игрока в dest: {train, ship, path} либо {},
+## если недостижим / не мой ход. Для сайдбара — показать маршрут и «потратить …».
+func travel_cost_to(dest: String) -> Dictionary:
+	if not can_travel_to(dest):
+		return {}
+	var me: Dictionary = my_player()
+	return TravelPlanner.cost_to(
+		_load_locations(),
+		String(me.get("location", "")),
+		dest,
+		int(me.get("train_tickets", 0)),
+		int(me.get("ship_tickets", 0))
+	)
 
 
 # ── Магазин (фасады) ──────────────────────────────────────────────────────────
