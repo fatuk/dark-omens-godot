@@ -107,6 +107,7 @@ func _ready() -> void:
 	GameState.state_changed.connect(_refresh_gates)
 	GameState.state_changed.connect(_refresh_entities)
 	GameState.state_changed.connect(_refresh_campaign_gate)
+	GameState.state_changed.connect(_refresh_reachable)
 	_build_campaign_gate()
 	_build_outcome_modal()
 	_build_turn_banner()
@@ -211,6 +212,29 @@ func _travel_segments(m: Dictionary) -> Array:
 			segs.append([String(path[i]), String(path[i + 1])])
 		return segs
 	return [[from, to]]
+
+
+# Подсветка на карте локаций, до которых локальному игроку НУЖЕН билет — только
+# в его ход в фазе action, пока есть действие и travel ещё не использован. Иначе
+# снимаем. Базовые соседи (бесплатный ход) не красятся — см. set_ticket_reach.
+func _refresh_reachable() -> void:
+	if not is_instance_valid(_map_layer):
+		return
+	var me: Dictionary = GameState.my_player()
+	var can: bool = (
+		GameState.is_my_turn()
+		and GameState.phase == Phases.ACTION
+		and int(me.get("actions_left", 0)) > 0
+		and not (me.get("actions_used", []) as Array).has(GameActions.TRAVEL)
+	)
+	if can:
+		_map_layer.set_ticket_reach(
+			String(me.get("location", "")),
+			int(me.get("train_tickets", 0)),
+			int(me.get("ship_tickets", 0))
+		)
+	else:
+		_map_layer.set_ticket_reach("", 0, 0)
 
 
 func _build_outcome_modal() -> void:

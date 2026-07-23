@@ -34,6 +34,7 @@ const SELECTION_Y_OFFSET: float = 2.0
 const LABEL_SCREEN_Y_FAR: float = 33.0
 const LABEL_SCREEN_Y_NEAR: float = 50.0
 const LABEL_FONT: int = 14  # шрифт в экранных пикселях
+const _LABEL_BG_DEFAULT: Color = Color(0.05, 0.05, 0.08, 0.82)  # плашка имени по умолчанию
 ## Фото-карточка сыщика (avatar-pin): целевая экранная высота, подъём над
 ## локацией (низ карточки у точки локации), горизонтальный разнос при веере.
 ## Высота лерпится по зуму (как маркер): на дальнем зуме ≈1.5× меньше, на
@@ -114,6 +115,7 @@ var _edges: Array = []
 var _markers: Array = []  # [{sprite, label, indicator, pos, loc_name}]
 var _textures: Dictionary = {}
 var _selected_name: String = ""
+var _reach: Dictionary = {}  # loc_id -> Color: локации, до которых нужен билет (плашка красится)
 
 # Кэш для _process: раскладка маркеров/карточек зум-инвариантна между кадрами —
 # пересчитываем её только при смене зума ИЛИ перестройке/смене выбора (_layout_dirty).
@@ -437,13 +439,7 @@ func _spawn_markers() -> void:
 			lbl.text = String(loc.get("name", loc_name))
 			lbl.add_theme_font_size_override("font_size", LABEL_FONT)
 			lbl.add_theme_color_override("font_color", Color.WHITE)
-			var bg := StyleBoxFlat.new()
-			bg.bg_color = Color(0.05, 0.05, 0.08, 0.82)
-			bg.set_corner_radius_all(6)
-			bg.set_content_margin_all(4)
-			bg.content_margin_left = 10.0
-			bg.content_margin_right = 10.0
-			lbl.add_theme_stylebox_override("normal", bg)
+			lbl.add_theme_stylebox_override("normal", _make_label_bg(_LABEL_BG_DEFAULT))
 			lbl.z_index = 2  # подпись читаема поверх колоды сущностей
 			add_child(lbl)
 
@@ -801,6 +797,47 @@ func set_selected(loc_name: String) -> void:
 		ind.visible = on
 		if on:
 			ind.scale = Vector2.ONE * inv * marker_factor  # сразу нужный размер до первого _process
+
+
+# Плашка-имя локации: StyleBox с заданным цветом фона (форма/отступы общие).
+func _make_label_bg(col: Color) -> StyleBoxFlat:
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = col
+	bg.set_corner_radius_all(6)
+	bg.set_content_margin_all(4)
+	bg.content_margin_left = 10.0
+	bg.content_margin_right = 10.0
+	return bg
+
+
+## Подсветить локации, до которых НУЖЕН билет из origin при данных билетах на руках:
+## плашка имени красится в цвет типа связи (train/ship). Базовые соседи (доступны
+## бесплатным ходом) не красятся. Пустой origin / нет билетов — снять подсветку.
+## Считает достижимость тем же TravelPlanner, что хост (граф из _locs).
+func set_ticket_reach(origin: String, train: int, ship: int) -> void:
+	var colors: Dictionary = {}
+	if not origin.is_empty() and (train > 0 or ship > 0):
+		var arr: Array = []
+		for lid: String in _locs:
+			arr.append({"id": lid, "connections": _locs[lid]["connections"]})
+		var plan: Dictionary = TravelPlanner.plan(arr, origin, train, ship)
+		for dest: String in plan:
+			var c: Dictionary = plan[dest]
+			var ct: int = int(c["train"])
+			var cs: int = int(c["ship"])
+			if ct > 0 or cs > 0:  # только цели, требующие билета (базовые не красим)
+				colors[dest] = _conn_color("train" if ct >= cs else "ship")
+	if colors == _reach:
+		return
+	_reach = colors
+	for i: int in range(_markers.size()):
+		var m: Dictionary = _markers[i]
+		var lb: Label = m.label as Label
+		if not is_instance_valid(lb):
+			continue
+		lb.add_theme_stylebox_override(
+			"normal", _make_label_bg(colors.get(String(m.loc_name), _LABEL_BG_DEFAULT))
+		)
 
 
 # ── Маркеры сыщиков ───────────────────────────────────────────────────────────
