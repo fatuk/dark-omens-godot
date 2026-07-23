@@ -377,8 +377,8 @@ func _card_applicable_now(pcard: Dictionary) -> bool:
 func _hand_tokens_section() -> Array:
 	var me: Dictionary = GameState.my_player()
 	var out: Array = []
-	for _i in range(int(me.get("concentration", 0))):
-		out.append(_token_payload("concentration"))
+	for i in range(int(me.get("concentration", 0))):
+		out.append(_token_payload("concentration", i))
 	# Улики: по карте на жетон. Идентичность (тайтл/описание/арт локации) — из clue_ids
 	# через ClueCatalog. Жетонов больше, чем идентичностей → лишние дженерик (без локации).
 	var clue_ids: Array = me.get("clue_ids", [])
@@ -412,10 +412,13 @@ func _clue_token_payload(loc: String) -> Dictionary:
 	return p
 
 
-# Payload жетона концентрации для GameCard — полно-артовая карта (своя рамка) со
-# СЛУЧАЙНОЙ цитатой стоика (автор/источник/текст) для разнообразия.
-func _token_payload(currency: String) -> Dictionary:
-	var q: Dictionary = StoicQuotes.random()
+# Payload жетона концентрации для GameCard — полно-артовая карта (своя рамка) с
+# цитатой стоика (автор/источник/текст). Цитата ПРИВЯЗАНА к слоту жетона
+# (детерминированно по user_id+slot), а не случайна на каждый рендер — иначе
+# «сама менялась» на каждом синке состояния.
+func _token_payload(currency: String, slot: int) -> Dictionary:
+	var seed_i: int = String(GameState.my_player().get("user_id", "")).hash() + slot
+	var q: Dictionary = StoicQuotes.at(seed_i)
 	return {
 		"kind": "token",
 		"currency": currency,

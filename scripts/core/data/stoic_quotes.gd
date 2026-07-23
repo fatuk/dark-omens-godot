@@ -23,6 +23,15 @@ static func random() -> Dictionary:
 	return localized(_list[randi() % _list.size()])
 
 
+## Цитата по индексу (детерминированно) — чтобы привязать её к конкретному жетону/
+## слоту и не ре-рандомить на каждом рендере. index может быть любым (берём по модулю).
+static func at(index: int) -> Dictionary:
+	_ensure_loaded()
+	if _list.is_empty():
+		return {}
+	return localized(_list[absi(index) % _list.size()])
+
+
 ## Локализованный вид записи цитаты: автор/источник/текст по локали (ru → *_ru/ru,
 ## иначе английские поля). source «Размышления / Meditations …» → половина по локали.
 static func localized(q: Dictionary) -> Dictionary:
