@@ -801,7 +801,8 @@ FORM_ANCIENT_ONE,Древний,Ancient One
 MYTHOS_TITLE_FALLBACK,Миф,Mythos
 MYTHOS_EFFECTS_HEADER,Эффекты:,Effects:
 MYTHOS_NO_EFFECTS,(нет эффектов),(no effects)
-MYTHOS_BTN_NEXT,Дальше,Next
+MYTHOS_BTN_NEXT,Прочитал,Read
+MYTHOS_BTN_WAITING,Ждём остальных (%d/%d),Waiting for others (%d/%d)
 MYTHOS_EFF_COMBINATOR,(комбинатор),(combinator)
 MYTHOS_EFF_TEXT_FALLBACK,(эффект),(effect)
 MYTHOS_EFF_ADVANCE_DOOM,Часы doom: +%d,Doom track: +%d

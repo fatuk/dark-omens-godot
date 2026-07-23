@@ -89,24 +89,44 @@ func _refresh() -> void:
 	_root.visible = show_modal
 	if not show_modal:
 		_last_card_key = ""
-		_next_btn.disabled = false
 		return
 	var card: Dictionary = GameState.current_mythos
 	# Уникальный ключ карты — её name (мифос-карты от LLM без id; смена имени
 	# = смена карты, что и нужно для решения «пересобирать или нет»).
 	var card_key: String = String(card.get("name", ""))
-	if card_key == _last_card_key:
-		return  # ничего не сменилось — UI уже правильный
-	_last_card_key = card_key
-	_next_btn.disabled = false
-	SfxManager.play(SfxManager.SFX_MYTHOS_START)  # звук появления карты мифа
+	if card_key != _last_card_key:
+		_last_card_key = card_key
+		SfxManager.play(SfxManager.SFX_MYTHOS_START)  # звук появления карты мифа
+		_title_lbl.text = String(card.get("name", tr("MYTHOS_TITLE_FALLBACK")))
+		_flavor_lbl.text = String(card.get("flavorText", ""))
+		_flavor_lbl.visible = not _flavor_lbl.text.is_empty()
+		_text_lbl.text = String(card.get("text", ""))
+		_text_lbl.visible = not _text_lbl.text.is_empty()
+		_render_effects(card.get("onDraw", []))
+	# Состояние кнопки обновляем на КАЖДЫЙ синк (отметки других игроков меняются
+	# без смены карты) — иначе прогресс «X/N» замирал бы.
+	_update_next_btn()
 
-	_title_lbl.text = String(card.get("name", tr("MYTHOS_TITLE_FALLBACK")))
-	_flavor_lbl.text = String(card.get("flavorText", ""))
-	_flavor_lbl.visible = not _flavor_lbl.text.is_empty()
-	_text_lbl.text = String(card.get("text", ""))
-	_text_lbl.visible = not _text_lbl.text.is_empty()
-	_render_effects(card.get("onDraw", []))
+
+# Кнопка «Прочитал»: пока я не отметился — активна. После — заблокирована и
+# показывает прогресс «Ждём остальных (X/N)». Миф резолвится, когда прочитали все.
+func _update_next_btn() -> void:
+	var me: String = String(GameState.my_player().get("user_id", ""))
+	var read: Array = GameState.mythos_read
+	var i_read: bool = read.has(me)
+	_next_btn.disabled = i_read
+	if i_read:
+		_next_btn.text = tr("MYTHOS_BTN_WAITING") % [read.size(), _connected_count()]
+	else:
+		_next_btn.text = tr("MYTHOS_BTN_NEXT")
+
+
+func _connected_count() -> int:
+	var n: int = 0
+	for uid_v: Variant in GameState.players:
+		if bool(GameState.players[uid_v].get("connected", true)):
+			n += 1
+	return n
 
 
 func _render_effects(effects: Array) -> void:

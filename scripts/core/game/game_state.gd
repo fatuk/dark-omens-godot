@@ -126,6 +126,11 @@ var mythos_in_play: Array = []
 # тот клиент, у кого pid==мой; хост ждёт ответ через сигнал mythos_decided.
 var mythos_decision: Dictionary = {}
 
+# Кто из сыщиков уже нажал «Прочитал» на текущей карте мифа (список user_id).
+# Карта резолвится (эффекты + новый раунд) только когда отметились ВСЕ подключённые —
+# иначе один игрок закрывал бы миф всем. Сбрасывается при вытяжке новой карты.
+var mythos_read: Array = []
+
 # Открытые врата по локациям. {loc_id: "red"|"green"|"blue"}.
 # Меняется через _apply_board_effect("openGate"). MapLayer.set_gates рендерит
 # их визуально на маркерах с вращающейся анимацией.
@@ -273,6 +278,7 @@ const _SYNC_FIELDS: Array[String] = [
 	"current_mythos",
 	"mythos_in_play",
 	"mythos_decision",
+	"mythos_read",
 	"gates",
 	"entities",
 	"monsters",
@@ -1386,6 +1392,10 @@ func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -
 		mythos_decision["picked"] = 0
 		mythos_decided.emit(0)
 
+	# Если ждали «Прочитал» этого сыщика на открытой карте мифа, а остальные уже
+	# отметились — резолвим карту (иначе миф зависнет в ожидании ушедшего).
+	_mythos.on_player_left()
+
 	# Если отвалился сыщик, чьей видимой проверки ждёт корутина (Расплата или
 	# mythos-driver test) — будим её «провалом». Сама парковка после пробуждения
 	# видит connected=false и мгновенно дренирует остаток карт, не зависая.
@@ -1898,6 +1908,7 @@ func reset_pregame() -> void:
 	current_mythos = {}
 	mythos_in_play = []
 	mythos_decision = {}
+	mythos_read = []
 	_mythos.deck = []
 	_mythos.index = 0
 	gates = {}

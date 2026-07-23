@@ -224,8 +224,8 @@ func _act_reroll_all(d: Dictionary) -> void:
 	_check.reroll_all(String(d.get("pid", "")))
 
 
-func _act_resolve_mythos(_d: Dictionary) -> void:
-	_mythos.resolve()
+func _act_resolve_mythos(d: Dictionary) -> void:
+	_mythos.mark_read(String(d.get("pid", "")))
 
 
 func _act_mythos_decide(d: Dictionary) -> void:

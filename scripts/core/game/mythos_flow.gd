@@ -46,13 +46,58 @@ func enter_phase() -> void:
 	_gs._emit_changed()
 
 
-## Любой игрок подтверждает «Дальше» в модалке мифа. Не-хост релеит хосту,
-## хост применяет эффекты и стартует новый раунд.
+## Игрок нажал «Прочитал» в модалке мифа — отмечаем ЕГО. Не-хост шлёт хосту свой
+## user_id, хост копит отметки; карта резолвится только когда отметились все
+## подключённые (mark_read). Раньше любой игрок закрывал миф всем.
 func resolve() -> void:
 	if _gs._is_host():
+		mark_read(_gs._nm.my_user_id)
+	else:
+		_gs._nm.relay_all({"action": RelayActions.RESOLVE_MYTHOS, "pid": _gs._nm.my_user_id})
+
+
+## Хост: отметить сыщика pid прочитавшим текущую карту мифа. Когда отметились ВСЕ
+## подключённые — очищаем отметки и применяем эффекты (_apply_resolve). Вызывается
+## из resolve() (сам хост) и из relay-роутера (не-хост прислал свой pid).
+func mark_read(pid: String) -> void:
+	if not _gs._is_host():
+		return
+	if _gs.phase != Phases.MYTHOS or _gs.current_mythos.is_empty():
+		return
+	if pid.is_empty() or not _gs.players.has(pid):
+		return
+	if not _gs.mythos_read.has(pid):
+		_gs.mythos_read.append(pid)
+	if _all_read():
+		_gs.mythos_read = []
 		_apply_resolve()
 	else:
-		_gs._nm.relay_all({"action": RelayActions.RESOLVE_MYTHOS})
+		_gs._broadcast_sync()  # обновляем прогресс «X/N» в модалках остальных
+		_gs._emit_changed()
+
+
+## Хост: сыщик отключился. Если карта мифа открыта и ждали именно его «Прочитал»,
+## а все оставшиеся подключённые уже отметились — резолвим (иначе миф зависнет,
+## ожидая ответа от того, кого уже нет).
+func on_player_left() -> void:
+	if not _gs._is_host():
+		return
+	if _gs.phase != Phases.MYTHOS or _gs.current_mythos.is_empty():
+		return
+	if _all_read():
+		_gs.mythos_read = []
+		_apply_resolve()
+
+
+# Все подключённые сыщики отметились прочитавшими текущую карту.
+func _all_read() -> bool:
+	for uid_v: Variant in _gs.players:
+		var uid: String = String(uid_v)
+		if not bool(_gs.players[uid].get("connected", true)):
+			continue
+		if not _gs.mythos_read.has(uid):
+			return false
+	return true
 
 
 # ── Host-only: вытяжка ───────────────────────────────────────────────────────
@@ -60,6 +105,7 @@ func resolve() -> void:
 
 # Хост: вытянуть следующую карту из deck в current_mythos.
 func _draw_card() -> void:
+	_gs.mythos_read = []  # новая карта — никто ещё не прочитал
 	# Колода Мифов пройдена до конца — время Древнего вышло: поражение партии.
 	# Отличаем настоящее исчерпание (deck не пуст, дошли до конца) от сбоя
 	# загрузки (deck пуст при index==0 — карта-заглушка, не финал).
