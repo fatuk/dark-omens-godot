@@ -413,12 +413,14 @@ func _clue_token_payload(loc: String) -> Dictionary:
 
 
 # Payload жетона концентрации для GameCard — полно-артовая карта (своя рамка) с
-# цитатой стоика (автор/источник/текст). Цитата ПРИВЯЗАНА к слоту жетона
-# (детерминированно по user_id+slot), а не случайна на каждый рендер — иначе
-# «сама менялась» на каждом синке состояния.
+# цитатой стоика (автор/источник/текст). Индекс цитаты хранится на жетоне
+# (player.concentration_quotes[slot], назначается хостом при выдаче) — цитата
+# привязана к выданному жетону и переживает синки/трату соседних. Фолбэк slot —
+# если реконсиляция ещё не прошла.
 func _token_payload(currency: String, slot: int) -> Dictionary:
-	var seed_i: int = String(GameState.my_player().get("user_id", "")).hash() + slot
-	var q: Dictionary = StoicQuotes.at(seed_i)
+	var quotes: Array = GameState.my_player().get("concentration_quotes", [])
+	var idx: int = int(quotes[slot]) if slot < quotes.size() else slot
+	var q: Dictionary = StoicQuotes.at(idx)
 	return {
 		"kind": "token",
 		"currency": currency,

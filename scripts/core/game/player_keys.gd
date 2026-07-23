@@ -20,6 +20,7 @@ const ENCOUNTER_DONE := "encounter_done"
 const TRAIN_TICKETS := "train_tickets"
 const SHIP_TICKETS := "ship_tickets"
 const CONCENTRATION := "concentration"
+const CONCENTRATION_QUOTES := "concentration_quotes"  # индексы цитат стоиков, по жетону
 const RESOURCES := "resources"  # токен-ресурс: +1 хил при отдыхе / +1 успех в магазине
 const HP := "hp"
 const SANITY := "sanity"

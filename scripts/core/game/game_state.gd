@@ -295,6 +295,7 @@ func _broadcast_sync() -> void:
 	if not _is_host():
 		return
 	_reconcile_clue_identities()  # синхронизируем clue_ids игроков с числом улик до рассылки
+	_reconcile_focus_quotes()  # цитаты жетонов концентрации привязаны к жетонам
 	var payload: Dictionary = {"action": RelayActions.SYNC, "mythos_index": _mythos.index}
 	for f: String in _SYNC_FIELDS:
 		payload[f] = get(f)
@@ -371,6 +372,24 @@ func _collect_board_clues(pid: String, loc: String, n: int) -> void:
 # Сверка идентичностей с числом улик (host, каждый _broadcast_sync). Сначала вернуть
 # в пул ключи «мёртвых» жетонов, затем на каждого игрока: clue_ids < clues → добрать
 # из пула (любую оставшуюся); clue_ids > clues (трата/потеря) → вернуть излишек в пул.
+## Привязка цитат стоиков к жетонам концентрации: длина concentration_quotes = числу
+## жетонов. Новый жетон → своя цитата (случайный индекс, назначается ОДИН раз); снятый
+## — с конца. Так цитата не ре-рандомится на рендере и переживает трату соседних.
+func _reconcile_focus_quotes() -> void:
+	if not _is_host():
+		return
+	for pid: Variant in players:
+		var p: Dictionary = players[pid]
+		var want: int = int(p.get(PlayerKeys.CONCENTRATION, 0))
+		var q: Array = p.get(PlayerKeys.CONCENTRATION_QUOTES, [])
+		while q.size() < want:
+			q.append(randi())
+		while q.size() > want:
+			q.pop_back()
+		p[PlayerKeys.CONCENTRATION_QUOTES] = q
+		players[pid] = p
+
+
 func _reconcile_clue_identities() -> void:
 	if not _is_host():
 		return
@@ -431,6 +450,7 @@ func _make_player_dict(
 		PlayerKeys.TRAIN_TICKETS: _starting_ticket_count(investigator, "train"),
 		PlayerKeys.SHIP_TICKETS: _starting_ticket_count(investigator, "ship"),
 		PlayerKeys.CONCENTRATION: 0,
+		PlayerKeys.CONCENTRATION_QUOTES: [],
 		PlayerKeys.RESOURCES: 0,
 		PlayerKeys.HP: hp_max,
 		PlayerKeys.SANITY: sanity_max,
