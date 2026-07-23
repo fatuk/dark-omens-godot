@@ -131,6 +131,10 @@ var mythos_decision: Dictionary = {}
 # иначе один игрок закрывал бы миф всем. Сбрасывается при вытяжке новой карты.
 var mythos_read: Array = []
 
+# Последний вытянутый миф (полная карта) — для функции «перечитать». Живёт после
+# резолва current_mythos; перетирается следующей картой; сбрасывается в reset().
+var last_mythos: Dictionary = {}
+
 # Открытые врата по локациям. {loc_id: "red"|"green"|"blue"}.
 # Меняется через _apply_board_effect("openGate"). MapLayer.set_gates рендерит
 # их визуально на маркерах с вращающейся анимацией.
@@ -279,6 +283,7 @@ const _SYNC_FIELDS: Array[String] = [
 	"mythos_in_play",
 	"mythos_decision",
 	"mythos_read",
+	"last_mythos",
 	"gates",
 	"entities",
 	"monsters",
@@ -1909,6 +1914,7 @@ func reset_pregame() -> void:
 	mythos_in_play = []
 	mythos_decision = {}
 	mythos_read = []
+	last_mythos = {}
 	_mythos.deck = []
 	_mythos.index = 0
 	gates = {}

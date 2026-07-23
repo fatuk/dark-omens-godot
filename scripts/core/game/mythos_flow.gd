@@ -126,8 +126,10 @@ func _draw_card() -> void:
 			"onDraw": [],
 		}
 		GameConsole.warn("[Mythos] Колода недоступна — карта-заглушка")
+		_gs.last_mythos = _gs.current_mythos  # доступна на «перечитать»
 		return
 	_gs.current_mythos = deck[index]
+	_gs.last_mythos = _gs.current_mythos  # доступна на «перечитать» после резолва
 	index += 1
 	GameConsole.log("[Mythos] вытянута карта: %s" % String(_gs.current_mythos.get("name", "?")))
 

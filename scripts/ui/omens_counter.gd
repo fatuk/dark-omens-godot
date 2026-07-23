@@ -42,6 +42,9 @@ const OMEN_MOVE_TIME: float = 0.3  # фолбэк длительности сд�
 		SfxManager.play(SfxManager.SFX_OMEN_MOVE)
 		_animate_to(v, _stream_len(SfxManager.SFX_OMEN_MOVE, OMEN_MOVE_TIME))
 
+## Клик по компасу — «перечитать последний миф» (компас = трек мифов).
+signal clicked
+
 @onready var _circle: TextureRect = %Circle
 
 var _tween: Tween = null
@@ -53,8 +56,10 @@ var _base_pos_set: bool = false
 
 func _ready() -> void:
 	add_to_group("omens_counter")  # чтобы дебаг-панель тюнинга (Ctrl+M) нашла узел
+	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	mouse_entered.connect(_on_hover)
 	mouse_exited.connect(_on_unhover)
+	gui_input.connect(_on_gui_input)
 	# Первый layout-pass для корректных global_position/size
 	await get_tree().process_frame
 	_base_pos = position
@@ -73,6 +78,13 @@ func _process(_delta: float) -> void:
 		_circle.position = _circle_base_pos + Vector2(DIAL_OFFSET_X, DIAL_OFFSET_Y)
 	# Позиция компонента могла смениться (сдвиг/resize) — пересчитать центр маски.
 	_update_mask_center()
+
+
+func _on_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+			clicked.emit()
 
 
 func _on_hover() -> void:

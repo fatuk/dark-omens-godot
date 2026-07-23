@@ -23,6 +23,11 @@ var _next_btn: Button
 # если карта не сменилась.
 var _last_card_key: String = ""
 
+# Режим «перечитать»: показываем GameState.last_mythos (последний вытянутый миф)
+# только для чтения — без гейта «Прочитал», с кнопкой «Закрыть». Живая карта
+# (фаза Мифов) всегда важнее и перебивает просмотр.
+var _review: bool = false
+
 
 func _ready() -> void:
 	UIStyle.style_modal_panel(_panel)
@@ -82,30 +87,48 @@ func _build() -> void:
 # ── Отрисовка по стейту ───────────────────────────────────────────────────────
 
 
-func _refresh() -> void:
-	var show_modal: bool = (
-		GameState.phase == Phases.MYTHOS and not GameState.current_mythos.is_empty()
-	)
-	_root.visible = show_modal
-	if not show_modal:
-		_last_card_key = ""
+# Открыть последний вытянутый миф в режиме «перечитать» (только чтение).
+# Нет last_mythos — тихо ничего не делаем. Живая карта Мифов перебьёт просмотр.
+func open_review() -> void:
+	if (GameState.last_mythos as Dictionary).is_empty():
 		return
-	var card: Dictionary = GameState.current_mythos
-	# Уникальный ключ карты — её name (мифос-карты от LLM без id; смена имени
-	# = смена карты, что и нужно для решения «пересобирать или нет»).
+	_review = true
+	_refresh()
+
+
+func _refresh() -> void:
+	# Живая карта Мифов важнее просмотра — она требует действия («Прочитал»).
+	var live: bool = GameState.phase == Phases.MYTHOS and not GameState.current_mythos.is_empty()
+	if live:
+		_review = false
+		_show_card(GameState.current_mythos)
+		_update_next_btn()
+		return
+	if _review and not (GameState.last_mythos as Dictionary).is_empty():
+		_show_card(GameState.last_mythos)
+		_next_btn.disabled = false
+		_next_btn.text = tr("MYTHOS_BTN_CLOSE")
+		return
+	# Показывать нечего.
+	_root.visible = false
+	_last_card_key = ""
+
+
+# Отрисовать карту (живую или на перечитку). Пересобираем UI только на смене
+# карты (ключ = name); первый показ проигрывает звук появления.
+func _show_card(card: Dictionary) -> void:
+	_root.visible = true
 	var card_key: String = String(card.get("name", ""))
-	if card_key != _last_card_key:
-		_last_card_key = card_key
-		SfxManager.play(SfxManager.SFX_MYTHOS_START)  # звук появления карты мифа
-		_title_lbl.text = String(card.get("name", tr("MYTHOS_TITLE_FALLBACK")))
-		_flavor_lbl.text = String(card.get("flavorText", ""))
-		_flavor_lbl.visible = not _flavor_lbl.text.is_empty()
-		_text_lbl.text = String(card.get("text", ""))
-		_text_lbl.visible = not _text_lbl.text.is_empty()
-		_render_effects(card.get("onDraw", []))
-	# Состояние кнопки обновляем на КАЖДЫЙ синк (отметки других игроков меняются
-	# без смены карты) — иначе прогресс «X/N» замирал бы.
-	_update_next_btn()
+	if card_key == _last_card_key:
+		return
+	_last_card_key = card_key
+	SfxManager.play(SfxManager.SFX_MYTHOS_START)  # звук появления карты мифа
+	_title_lbl.text = String(card.get("name", tr("MYTHOS_TITLE_FALLBACK")))
+	_flavor_lbl.text = String(card.get("flavorText", ""))
+	_flavor_lbl.visible = not _flavor_lbl.text.is_empty()
+	_text_lbl.text = String(card.get("text", ""))
+	_text_lbl.visible = not _text_lbl.text.is_empty()
+	_render_effects(card.get("onDraw", []))
 
 
 # Кнопка «Прочитал»: пока я не отметился — активна. После — заблокирована и
@@ -157,5 +180,9 @@ func _render_effects(effects: Array) -> void:
 
 
 func _on_next() -> void:
+	if _review:
+		_review = false  # закрыть просмотр
+		_refresh()
+		return
 	_next_btn.disabled = true  # защита от двойного клика / двойного relay
 	GameState.resolve_mythos()

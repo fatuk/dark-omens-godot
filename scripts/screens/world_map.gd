@@ -64,6 +64,7 @@ var _travelling: bool = false  # идёт анимация перемещени�
 @onready var _game_panel: CanvasLayer = $GamePanel
 @onready var _sidebar: CanvasLayer = $LocationSidebar
 @onready var _mystery: CanvasLayer = $MysterySidebar
+@onready var _mythos_modal: CanvasLayer = $MythosModal
 
 var _map_layer: MapLayer
 
@@ -129,6 +130,8 @@ func _ready() -> void:
 	_sidebar.gallery_requested.connect(_on_gallery_requested)
 	# Клик по орбу раунда — открыть/закрыть сайдбар текущей Мистерии.
 	_game_panel.round_clicked.connect(_on_round_clicked)
+	# Клик по компасу знамений — перечитать последний вытянутый миф.
+	_game_panel.mythos_review_requested.connect(_mythos_modal.open_review)
 	# Смена языка не требует здесь обработки: данные локаций/сыщиков содержат
 	# translation keys, лейблы Godot переводит автоматически при смене локали.
 

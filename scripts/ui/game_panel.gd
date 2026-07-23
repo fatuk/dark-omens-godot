@@ -9,7 +9,7 @@ const _PLAYER_RUNES: int = 5  # рун в кадре при смене имен�
 @onready var _phase: Label = %PhaseLabel
 @onready var _player: Label = %PlayerLabel
 @onready var _doom: Control = %DoomTrack
-@onready var _omens: Control = %OmensDial
+@onready var _omens: OmensCounter = %OmensDial
 @onready var _info: Control = %InfoOrb
 
 # Последние значения — чтобы рунный скрэмбл шёл только на реальной смене (сеттеры
@@ -20,11 +20,15 @@ var _player_text: String = ""
 ## Клик по орбу раунда — для открытия сайдбара текущей Мистерии.
 signal round_clicked
 
+## Клик по компасу знамений — «перечитать последний миф».
+signal mythos_review_requested
+
 
 func _ready() -> void:
 	_info.mouse_filter = Control.MOUSE_FILTER_STOP
 	_info.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_info.gui_input.connect(_on_info_gui_input)
+	_omens.clicked.connect(func() -> void: mythos_review_requested.emit())
 
 
 func _on_info_gui_input(event: InputEvent) -> void:
