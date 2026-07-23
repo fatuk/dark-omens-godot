@@ -1,11 +1,12 @@
 class_name TravelPlanner
 extends RefCounted
 
-## Планировщик перемещения с билетами. Базовый ход бесплатен (ОДИН раз, по связи
-## любого типа), каждый следующий хоп оплачивается билетом типа связи: train →
-## ж/д-билет, ship → морской. `uncharted` билетом оплатить нельзя — только базовым
-## ходом. Возвращает минимально-билетную стоимость и путь до каждой достижимой
-## локации (в пределах билетов на руках).
+## Планировщик перемещения с билетами. Базовый ход — ПЕРВЫЙ хоп: любой сосед
+## origin бесплатно, по связи любого типа (в т.ч. `uncharted`-тропа). Дальше —
+## только по train/ship за билет соответствующего типа. `uncharted` дальше первого
+## хода непроходим: тропу можно пройти лишь базовым ходом с текущей клетки, её
+## нельзя «дотянуть» билетами. Возвращает минимально-билетную стоимость и путь до
+## каждой достижимой локации (в пределах билетов на руках).
 ##
 ## Чистая функция от (граф, старт, билеты) — один и тот же результат на клиенте
 ## (показ стоимости/маршрута) и на хосте (валидация и списание). Граф крошечный,
@@ -21,59 +22,40 @@ const TICKET_FOR := {"train": "train_tickets", "ship": "ship_tickets"}
 static func plan(locations: Array, origin: String, held_train: int, held_ship: int) -> Dictionary:
 	var adj: Dictionary = _adjacency(locations)
 	var result: Dictionary = {}
-	# Состояние поиска: узел + израсходовано (база/поезд/корабль). Раскрываем по
-	# возрастанию суммы потраченных билетов — первый заход в узел даёт минимум.
-	var best_state: Dictionary = {}  # "node|base|t|s" -> min total (защита от циклов состояний)
-	var frontier: Array = [
-		{"node": origin, "base": false, "t": 0, "s": 0, "path": [origin], "total": 0}
-	]
+	# hop1 — базовый ход: все соседи origin бесплатно, ЛЮБОЙ тип связи.
+	var frontier: Array = []
+	for e_v: Variant in adj.get(origin, []):
+		var to0: String = String((e_v as Dictionary).get("to", ""))
+		if to0.is_empty() or to0 == origin:
+			continue
+		frontier.append({"node": to0, "t": 0, "s": 0, "path": [origin, to0], "total": 0})
+	# hop2+ — только train/ship за билет. Раскрываем по возрастанию суммы билетов
+	# (pop-min), поэтому первый заход в узел — минимальный, его и фиксируем.
 	while not frontier.is_empty():
 		var bi: int = 0
 		for i in range(frontier.size()):
 			if int(frontier[i]["total"]) < int(frontier[bi]["total"]):
 				bi = i
 		var cur: Dictionary = frontier.pop_at(bi)
-		var skey: String = (
-			"%s|%d|%d|%d" % [cur["node"], int(cur["base"]), int(cur["t"]), int(cur["s"])]
-		)
-		if best_state.has(skey) and int(best_state[skey]) <= int(cur["total"]):
-			continue
-		best_state[skey] = int(cur["total"])
-		# Записываем минимальную стоимость достижения узла (origin пропускаем).
 		var node: String = String(cur["node"])
-		if node != origin:
-			if not result.has(node) or int(cur["total"]) < _total(result[node]):
-				result[node] = {
-					"train": int(cur["t"]),
-					"ship": int(cur["s"]),
-					"path": (cur["path"] as Array).duplicate()
-				}
-		# Раскрываем соседей.
-		for e_v: Variant in adj.get(node, []):
-			var e: Dictionary = e_v
+		if result.has(node):
+			continue  # уже зафиксирован с не большей стоимостью — не раскрываем повторно
+		result[node] = {
+			"train": int(cur["t"]),
+			"ship": int(cur["s"]),
+			"path": (cur["path"] as Array).duplicate()
+		}
+		for e_v2: Variant in adj.get(node, []):
+			var e: Dictionary = e_v2
 			var to: String = String(e.get("to", ""))
 			var ty: String = String(e.get("type", ""))
-			if (cur["path"] as Array).has(to):
+			if to.is_empty() or (cur["path"] as Array).has(to):
 				continue  # без циклов по пути
 			var next_path: Array = (cur["path"] as Array) + [to]
-			# База: один бесплатный ход по связи ЛЮБОГО типа.
-			if not bool(cur["base"]):
-				frontier.append(
-					{
-						"node": to,
-						"base": true,
-						"t": int(cur["t"]),
-						"s": int(cur["s"]),
-						"path": next_path,
-						"total": int(cur["total"])
-					}
-				)
-			# Билет: следующий хоп по train/ship, если билет есть в запасе.
 			if ty == "train" and int(cur["t"]) < held_train:
 				frontier.append(
 					{
 						"node": to,
-						"base": bool(cur["base"]),
 						"t": int(cur["t"]) + 1,
 						"s": int(cur["s"]),
 						"path": next_path,
@@ -84,7 +66,6 @@ static func plan(locations: Array, origin: String, held_train: int, held_ship: i
 				frontier.append(
 					{
 						"node": to,
-						"base": bool(cur["base"]),
 						"t": int(cur["t"]),
 						"s": int(cur["s"]) + 1,
 						"path": next_path,
