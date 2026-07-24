@@ -68,20 +68,6 @@ MAIN_PLAY,Играть,Play
 MAIN_SETTINGS,Настройки,Settings
 MAIN_QUIT,Выйти,Quit
 
-SHADER_DEBUG_TITLE,SHADER DEBUG  ·  Ctrl+M,SHADER DEBUG  ·  Ctrl+M
-SHADER_POST_FX,POST FX,POST FX
-SHADER_SELECTION,ВЫДЕЛЕНИЕ ЛОКАЦИИ,Selection
-SHADER_SEPIA,Сепия,Sepia
-SHADER_RADIUS,Радиус,Radius
-SHADER_THICKNESS,Толщина,Thickness
-SHADER_HALO_INNER,Halo внутр.,Halo inner
-SHADER_HALO_OUTER,Halo внеш.,Halo outer
-SHADER_HALO_STRENGTH,Сила halo,Halo strength
-SHADER_HALO_FALLOFF,Спад halo,Halo falloff
-SHADER_OFFSET_X,Сдвиг X,Offset X
-SHADER_OFFSET_Y,Сдвиг Y,Offset Y
-SHADER_PULSE_SPEED,Пульс скор.,Pulse speed
-SHADER_PULSE_AMOUNT,Пульс размах,Pulse amount
 
 INV_EZRA_GILMAN_NAME,Эзра Гилман,Ezra Gilman
 INV_EZRA_GILMAN_OCC,Моряк,The Sailor
