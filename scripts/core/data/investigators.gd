@@ -4,9 +4,9 @@ class_name Investigators
 ## ключи translations.csv), кэш заполняется один раз и не инвалидируется.
 ##
 ## Использование:
-##   Investigators.display_name("Silas Marsh")  → "INV_SILAS_MARSH_NAME" (ключ)
-##   # При присвоении в label.text Godot сам вызовет tr() и покажет «Сайлас Марш»
-##   Investigators.get_data("Silas Marsh")     → весь словарь сыщика
+##   Investigators.display_name("Ezra Gilman")  → "INV_EZRA_GILMAN_NAME" (ключ)
+##   # При присвоении в label.text Godot сам вызовет tr() и покажет «Эзра Гилман»
+##   Investigators.get_data("Ezra Gilman")     → весь словарь сыщика
 
 const DATA_PATH := "res://data/investigators.json"
 

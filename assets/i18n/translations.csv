@@ -83,171 +83,171 @@ SHADER_OFFSET_Y,Сдвиг Y,Offset Y
 SHADER_PULSE_SPEED,Пульс скор.,Pulse speed
 SHADER_PULSE_AMOUNT,Пульс размах,Pulse amount
 
-INV_SILAS_MARSH_NAME,Сайлас Марш,Silas Marsh
-INV_SILAS_MARSH_OCC,Моряк,The Sailor
-INV_SILAS_MARSH_QUOTE,"«Оставьте свои страхи на причале, парни. Я не повезу этот груз. Ветер крепчает — поднять все паруса!»","«Leave your fears on the docks, lads. I'll not carry that cargo. The wind is up! Full sail!»"
-INV_MONTEREY_JACK_NAME,Монтерей Джек,Monterey Jack
-INV_MONTEREY_JACK_OCC,Археолог,The Archaeologist
-INV_MONTEREY_JACK_QUOTE,«Ради такого сокровища я готов рискнуть парой отравленных дротиков.»,"«To find a treasure like that, I'll risk a few poison darts.»"
-INV_DARRELL_SIMMONS_NAME,Даррелл Симмонс,Darrell Simmons
-INV_DARRELL_SIMMONS_OCC,Фотограф,The Photographer
-INV_DARRELL_SIMMONS_QUOTE,"«Правда темнее, чем кто-либо из нас способен представить.»",«The truth is darker than any of us know.»
-INV_TRISH_SCARBOROUGH_NAME,Триш Скарборо,Trish Scarborough
-INV_TRISH_SCARBOROUGH_OCC,Шпионка,The Spy
-INV_TRISH_SCARBOROUGH_QUOTE,«Мы лжём постоянно. Но истина существует. Просто нужно уметь людей расшифровывать.»,«We lie all the time. But the truth is in there. You just have to know how to decode people.»
-INV_ZOEY_SAMARAS_NAME,Зои Самарас,Zoey Samaras
-INV_ZOEY_SAMARAS_OCC,Шеф-повар,The Chef
-INV_ZOEY_SAMARAS_QUOTE,«Господь сказал своё слово. Я исполню Его волю без колебаний.»,«God has spoken. I will do His work without hesitation.»
-INV_JACQUELINE_FINE_NAME,Жаклин Файн,Jacqueline Fine
-INV_JACQUELINE_FINE_OCC,Ясновидящая,The Psychic
-INV_JACQUELINE_FINE_QUOTE,«Видения — это предостережение. Будущее можно переписать.»,«The visions are a warning. The future can be rewritten.»
-INV_DEXTER_DRAKE_NAME,Декстер Дрейк,Dexter Drake
-INV_DEXTER_DRAKE_OCC,Маг,The Magician
-INV_DEXTER_DRAKE_QUOTE,"«Не бойтесь. Я всю свою жизнь только и делал, что невозможное.»",«Do not be afraid. I have spent my entire life doing the impossible.»
-INV_DIANA_STANLEY_NAME,Диана Стэнли,Diana Stanley
-INV_DIANA_STANLEY_OCC,Раскаявшаяся культистка,The Redeemed Cultist
-INV_DIANA_STANLEY_QUOTE,"«Ложа не столь невинна, какой притворяется. Я усвоила, что ничто не таково, каким кажется, — включая меня саму.»","«The Lodge is not as innocent as they pretend. I have learned that nothing is ever as it seems, myself included.»"
-INV_AMANDA_SHARPE_NAME,Аманда Шарп,Amanda Sharpe
-INV_AMANDA_SHARPE_OCC,Студентка,The Student
-INV_AMANDA_SHARPE_QUOTE,«Истина разума усмиряет даже самые дикие заблуждения. Я не сделаюсь жертвой подобного безумия.»,«The truth of reason tempers even the wildest delusions. I will not fall prey to such madness.»
-INV_GLORIA_GOLDBERG_NAME,Глория Голдберг,Gloria Goldberg
-INV_GLORIA_GOLDBERG_OCC,Писательница,The Author
-INV_GLORIA_GOLDBERG_QUOTE,«Никогда не недооценивайте силу написанного слова.»,«Never underestimate the power of the written word.»
-INV_KATE_WINTHROP_NAME,Кейт Уинтроп,Kate Winthrop
-INV_KATE_WINTHROP_OCC,Учёная,The Scientist
-INV_KATE_WINTHROP_QUOTE,"«Профессор Янг учила меня, что всё проще, чем кажется. Связь обнаружится, если её искать.»",«Professor Young taught me that everything is simpler than it seems. The connection is there if you look for it.»
-INV_MINH_THI_PHAN_NAME,Минь Тхи Фан,Minh Thi Phan
-INV_MINH_THI_PHAN_OCC,Секретарь,The Secretary
-INV_MINH_THI_PHAN_QUOTE,«Можете положиться на меня — я проведу вас сквозь неведомое.»,«You can depend on me to guide you through the unknown.»
-INV_RITA_YOUNG_NAME,Рита Янг,Rita Young
-INV_RITA_YOUNG_OCC,Спортсменка,The Athlete
-INV_RITA_YOUNG_QUOTE,"«Имеешь ко мне счёт? Прекрасно. Мне не нужно твоё разрешение, чтобы оставить тебя глотать пыль.»",«You got a bone to pick? Fine by me. I don't need your permission to leave you in the dust.»
-INV_JOE_DIAMOND_NAME,Джо Даймонд,Joe Diamond
-INV_JOE_DIAMOND_OCC,Частный детектив,The Private Eye
-INV_JOE_DIAMOND_QUOTE,"«Меня наняли на работу. Злые боги или нет, я намерен её закончить.»","«I was hired for a job. Evil gods or no, I aim to finish it.»"
-INV_WILLIAM_YORICK_NAME,Уильям Йорик,William Yorick
-INV_WILLIAM_YORICK_OCC,Могильщик,The Gravedigger
-INV_WILLIAM_YORICK_QUOTE,"«Хоть это и безумие, но в нём есть система.»","«Though this be madness, yet there is method in't.»"
-INV_AGATHA_CRANE_NAME,Агата Крейн,Agatha Crane
-INV_AGATHA_CRANE_OCC,Парапсихолог,The Parapsychologist
-INV_AGATHA_CRANE_QUOTE,"«Доказательство, как говорится, познаётся в деле.»","«The proof, as they say, is in the pudding.»"
-INV_DANIELA_REYES_NAME,Даниэла Рейес,Daniela Reyes
-INV_DANIELA_REYES_OCC,Механик,The Mechanic
-INV_DANIELA_REYES_QUOTE,"«Расслабься, крутыш. Я разберусь. А ты постой вон там и сделай красивое лицо.»","«Relax, tough guy. I'll handle this. You stand over there and look pretty.»"
-INV_ASHCAN_PETE_NAME,«Помоечник» Пит,"""Ashcan"" Pete"
-INV_ASHCAN_PETE_OCC,Бродяга,The Drifter
-INV_ASHCAN_PETE_QUOTE,"«Где-то там, может, и опасности водятся, да некоторым душам просто нужно бродить.»","«There may be dangers out there, but some souls just have to roam.»"
-INV_MICHAEL_MCGLEN_NAME,Майкл Макглен,Michael McGlen
-INV_MICHAEL_MCGLEN_OCC,Гангстер,The Gangster
-INV_MICHAEL_MCGLEN_QUOTE,"«Плевать, бог это или нет. Кто мне поперёк дороги — тот пожалеет.»","«Don't care if it's a god. If it crosses me, it's gonna regret it.»"
-INV_TOMMY_MULDOON_NAME,Томми Малдун,Tommy Muldoon
-INV_TOMMY_MULDOON_OCC,Полицейский-новобранец,The Rookie Cop
-INV_TOMMY_MULDOON_QUOTE,«Я принёс присягу следить за исполнением закона. Этим я и занят.»,«I took an oath to enforce the law. That's what I'm doing.»
-INV_SEFINA_ROUSSEAU_NAME,Сефина Руссо,Sefina Rousseau
-INV_SEFINA_ROUSSEAU_OCC,Художница,The Painter
-INV_SEFINA_ROUSSEAU_QUOTE,"«Искусство — окно в реальность, нам не ведомую.»",«Art is a window into a reality beyond our knowing.»
-INV_HARVEY_WALTERS_NAME,Харви Уолтерс,Harvey Walters
-INV_HARVEY_WALTERS_OCC,Профессор,The Professor
-INV_HARVEY_WALTERS_QUOTE,«У меня есть опыт обращения с подобными кошмарами.»,«I have experience dealing with these sorts of horrors.»
-INV_MARIE_LAMBEAU_NAME,Мари Ламбо,Marie Lambeau
-INV_MARIE_LAMBEAU_OCC,Артистка,The Entertainer
-INV_MARIE_LAMBEAU_QUOTE,"«Я певала, когда grand-mère варила зелья и плела заговоры.»",«I used to sing as grand-mère made potions and charms.»
-INV_GEORGE_BARNABY_NAME,Джордж Барнаби,George Barnaby
-INV_GEORGE_BARNABY_OCC,Адвокат,The Lawyer
-INV_GEORGE_BARNABY_QUOTE,«Я верю в высший закон. Я верю в истинное правосудие.»,«I believe in a higher law. I believe in true justice.»
-INV_WENDY_ADAMS_NAME,Венди Адамс,Wendy Adams
-INV_WENDY_ADAMS_OCC,Беспризорница,The Urchin
-INV_WENDY_ADAMS_QUOTE,«Мелочи важны. Взрослые этого не видят.»,«The little things are important. Grown-ups don't see that.»
-INV_LOLA_HAYES_NAME,Лола Хейс,Lola Hayes
-INV_LOLA_HAYES_OCC,Актриса,The Actress
-INV_LOLA_HAYES_QUOTE,«Я переиграла столько ролей. Безумие — закономерно.»,«I've played so many roles. Madness is to be expected.»
-INV_REX_MURPHY_NAME,Рекс Мёрфи,Rex Murphy
-INV_REX_MURPHY_OCC,Репортёр,The Reporter
-INV_REX_MURPHY_QUOTE,"«Источники сообщают, что миру конец. Как раз моё везение.»",«My sources tell me that the world is ending. Just my luck.»
-INV_LILY_CHEN_NAME,Лили Чен,Lily Chen
-INV_LILY_CHEN_OCC,Мастер боевых искусств,The Martial Artist
-INV_LILY_CHEN_QUOTE,«Я готовилась противостоять этому злу всю свою жизнь. Моя сосредоточенность должна быть безупречной.»,«I have been preparing to confront this evil for my entire life. My focus must be absolute.»
-INV_BOB_JENKINS_NAME,Боб Дженкинс,Bob Jenkins
-INV_BOB_JENKINS_OCC,Коммивояжёр,The Salesman
-INV_BOB_JENKINS_QUOTE,«Реальность — лишь предмет переговоров.»,«Reality is just a matter of negotiation.»
-INV_JIM_CULVER_NAME,Джим Калвер,Jim Culver
-INV_JIM_CULVER_OCC,Музыкант,The Musician
-INV_JIM_CULVER_QUOTE,"«Покойнички совсем шалеют, когда я берусь за свой рожок.»",«Dead folks get downright rambunctious when I play my horn.»
-INV_JENNY_BARNES_NAME,Дженни Барнс,Jenny Barnes
-INV_JENNY_BARNES_OCC,Дилетантка,The Dilettante
-INV_JENNY_BARNES_QUOTE,"«Мою сестру забрали. Я заплачу любую сумму, чтобы её спасти.»",«My sister was taken. I will pay any amount to save her.»
-INV_URSULA_DOWNS_NAME,Урсула Даунс,Ursula Downs
-INV_URSULA_DOWNS_OCC,Путешественница,The Explorer
-INV_URSULA_DOWNS_QUOTE,"«Открытие — дело нелёгкое, но это единственный путь, что стоит труда.»","«Discovery isn't easy, but it's the only worthwhile path.»"
-INV_WILSON_RICHARDS_NAME,Уилсон Ричардс,Wilson Richards
-INV_WILSON_RICHARDS_OCC,Мастер на все руки,The Handyman
-INV_WILSON_RICHARDS_QUOTE,"«Нет ничего, чего не починили бы хороший план да упорный труд.»",«It's nothing a good plan and some hard work can't fix.»
-INV_LUKE_ROBINSON_NAME,Люк Робинсон,Luke Robinson
-INV_LUKE_ROBINSON_OCC,Сновидец,The Dreamer
-INV_LUKE_ROBINSON_QUOTE,«Ключ к Странам снов лежит внутри каждого из нас.»,«The key to the Dreamlands lies within us all.»
-INV_LEO_ANDERSON_NAME,Лео Андерсон,Leo Anderson
-INV_LEO_ANDERSON_OCC,Глава экспедиции,The Expedition Leader
-INV_LEO_ANDERSON_QUOTE,«Не останавливайся. Помрёшь в своё свободное время.»,«Keep moving. You can die on your own time.»
-INV_PRESTON_FAIRMONT_NAME,Престон Фэрмонт,Preston Fairmont
-INV_PRESTON_FAIRMONT_OCC,Миллионер,The Millionaire
-INV_PRESTON_FAIRMONT_QUOTE,"«Мои деньги, моё наследие, моя забота. Позвольте мне разобраться по-своему.»","«My money, my legacy, my problem. Let me handle it in my own way.»"
-INV_NORMAN_WITHERS_NAME,Норман Уизерс,Norman Withers
-INV_NORMAN_WITHERS_OCC,Астроном,The Astronomer
-INV_NORMAN_WITHERS_QUOTE,"«Пусть зовут меня сумасбродом! Со звёздами что-то происходит, и это не игра моего воображения.»","«Let them call me a crackpot! Something is happening to the stars, and I am not imagining it.»"
-INV_FATHER_MATEO_NAME,Отец Матео,Father Mateo
-INV_FATHER_MATEO_OCC,Священник,The Priest
-INV_FATHER_MATEO_QUOTE,"«Тебе довольно заглянуть в собственное сердце, чтобы найти доказательство божественного.»",«You need only look in your heart to find proof of the divine.»
-INV_CHARLIE_KANE_NAME,Чарли Кейн,Charlie Kane
-INV_CHARLIE_KANE_OCC,Политик,The Politician
-INV_CHARLIE_KANE_QUOTE,«Это можно устроить. Вопрос лишь в приемлемых условиях.»,«It can be arranged. It's just a matter of acceptable terms.»
-INV_AKACHI_ONYELE_NAME,Акачи Оньеле,Akachi Onyele
-INV_AKACHI_ONYELE_OCC,Шаманка,The Shaman
-INV_AKACHI_ONYELE_QUOTE,"«Я отправлюсь в земли, лежащие за пределом. Я их не боюсь.»",«I will journey to the lands beyond. I do not fear them.»
-INV_MARK_HARRIGAN_NAME,Марк Харриган,Mark Harrigan
-INV_MARK_HARRIGAN_OCC,Солдат,The Soldier
-INV_MARK_HARRIGAN_QUOTE,"«Я выхожу за эту дверь, и я забираю эту книгу. Кто хочет меня остановить — милости прошу попробовать.»","«I'm walking out that door, and I'm taking this book. Anyone who wants to stop me is welcome to try.»"
-INV_CALVIN_WRIGHT_NAME,Кэлвин Райт,Calvin Wright
-INV_CALVIN_WRIGHT_OCC,Одержимый,The Haunted
-INV_CALVIN_WRIGHT_QUOTE,"«Я могу удержать эту тьму внутри себя. Я знаю, что могу.»",«I can contain this darkness within me. I know I can.»
-INV_MANDY_THOMPSON_NAME,Мэнди Томпсон,Mandy Thompson
-INV_MANDY_THOMPSON_OCC,Исследовательница,The Researcher
-INV_MANDY_THOMPSON_QUOTE,«Я найду способ положить конец этому ужасу. Я не прекращу поиски.»,«I will find a way to end this horror. I will not stop searching.»
-INV_DAISY_WALKER_NAME,Дейзи Уокер,Daisy Walker
-INV_DAISY_WALKER_OCC,Библиотекарь,The Librarian
-INV_DAISY_WALKER_QUOTE,"«Я знаю о книгах настолько могущественных, что они способны переписать реальность.»","«I know of books so powerful, they can rewrite reality.»"
-INV_ROLAND_BANKS_NAME,Роланд Бэнкс,Roland Banks
-INV_ROLAND_BANKS_OCC,Федерал,The Fed
-INV_ROLAND_BANKS_QUOTE,"«Всё по букве закона, до последней запятой.»","«Every 'i' dotted, every 't' crossed.»"
-INV_HANK_SAMSON_NAME,Хэнк Сэмсон,Hank Samson
-INV_HANK_SAMSON_OCC,Батрак,The Farmhand
-INV_HANK_SAMSON_QUOTE,"«У людей беда. Не надо быть гением, чтоб помочь.»",«Folks are in trouble. I don't gotta be a genius to help out.»
-INV_SKIDS_O_TOOLE_NAME,«Скользкий» О'Тул,"""Skids"" O'Toole"
-INV_SKIDS_O_TOOLE_OCC,Бывший заключённый,The Ex-Convict
-INV_SKIDS_O_TOOLE_QUOTE,"«Я не для того вышел из тюряги, чтоб смотреть, как мир катится в тартарары.»",«I didn't get out of the joint just to watch the world end.»
-INV_CAROLYN_FERN_NAME,Кэролин Ферн,Carolyn Fern
-INV_CAROLYN_FERN_OCC,Психолог,The Psychologist
-INV_CAROLYN_FERN_QUOTE,"«Безумцы заслуживают покоя разума, а не гибели духа.»","«The mad deserve peace of mind, not death of the spirit.»"
-INV_VINCENT_LEE_NAME,Винсент Ли,Vincent Lee
-INV_VINCENT_LEE_OCC,Врач,The Doctor
-INV_VINCENT_LEE_QUOTE,"«Я найду ответы, даже если это меня убьёт.»","«I will find the answers, even if it kills me.»"
-INV_AGNES_BAKER_NAME,Агнес Бейкер,Agnes Baker
-INV_AGNES_BAKER_OCC,Официантка,The Waitress
-INV_AGNES_BAKER_QUOTE,«Я помню иную жизнь — жизнь чародейства и завоеваний.»,"«I remember another life, one of sorcery and conquest.»"
-INV_FINN_EDWARDS_NAME,Финн Эдвардс,Finn Edwards
-INV_FINN_EDWARDS_OCC,Бутлегер,The Bootlegger
-INV_FINN_EDWARDS_QUOTE,"«Никогда не теряй из виду ни выход, ни товар.»",«Never lose track of the exit or the merchandise.»
-INV_PATRICE_HATHAWAY_NAME,Патрис Хэтэуэй,Patrice Hathaway
-INV_PATRICE_HATHAWAY_OCC,Скрипачка,The Violinist
-INV_PATRICE_HATHAWAY_QUOTE,"«Когда я играю на скрипке, музыка отзывается в иных мирах.»","«When I play the violin, the music echoes in other worlds.»"
-INV_CARSON_SINCLAIR_NAME,Карсон Синклер,Carson Sinclair
-INV_CARSON_SINCLAIR_OCC,Дворецкий,The Butler
-INV_CARSON_SINCLAIR_QUOTE,«Подумайте о детях.»,«Think of the children.»
-INV_TONY_MORGAN_NAME,Тони Морган,Tony Morgan
-INV_TONY_MORGAN_OCC,Охотник за головами,The Bounty Hunter
-INV_TONY_MORGAN_QUOTE,"«Когда я отыщу эту тварь, я её поймаю или прикончу раз и навсегда.»","«When I find the beast, I'll trap it or put it down for good.»"
-INV_SISTER_MARY_NAME,Сестра Мэри,Sister Mary
-INV_SISTER_MARY_OCC,Монахиня,The Nun
-INV_SISTER_MARY_QUOTE,«Господь хранит мой путь. Я облачена в броню веры.»,«The Lord watches over my path. I am armored in faith.»
+INV_EZRA_GILMAN_NAME,Эзра Гилман,Ezra Gilman
+INV_EZRA_GILMAN_OCC,Моряк,The Sailor
+INV_EZRA_GILMAN_QUOTE,"«Оставьте свои страхи на причале, парни. Я не повезу этот груз. Ветер крепчает — поднять все паруса!»","«Leave your fears on the docks, lads. I'll not carry that cargo. The wind is up! Full sail!»"
+INV_COLBY_BANKS_NAME,Колби Бэнкс,Colby Banks
+INV_COLBY_BANKS_OCC,Археолог,The Archaeologist
+INV_COLBY_BANKS_QUOTE,«Ради такого сокровища я готов рискнуть парой отравленных дротиков.»,"«To find a treasure like that, I'll risk a few poison darts.»"
+INV_HAROLD_PERKINS_NAME,Гарольд Перкинс,Harold Perkins
+INV_HAROLD_PERKINS_OCC,Фотограф,The Photographer
+INV_HAROLD_PERKINS_QUOTE,"«Правда темнее, чем кто-либо из нас способен представить.»",«The truth is darker than any of us know.»
+INV_NADIA_BLACKWOOD_NAME,Надя Блэквуд,Nadia Blackwood
+INV_NADIA_BLACKWOOD_OCC,Шпионка,The Spy
+INV_NADIA_BLACKWOOD_QUOTE,«Мы лжём постоянно. Но истина существует. Просто нужно уметь людей расшифровывать.»,«We lie all the time. But the truth is in there. You just have to know how to decode people.»
+INV_ELENA_KOSTAS_NAME,Элена Костас,Elena Kostas
+INV_ELENA_KOSTAS_OCC,Шеф-повар,The Chef
+INV_ELENA_KOSTAS_QUOTE,«Господь сказал своё слово. Я исполню Его волю без колебаний.»,«God has spoken. I will do His work without hesitation.»
+INV_VIVIENNE_MARCHETTI_NAME,Вивьен Маркетти,Vivienne Marchetti
+INV_VIVIENNE_MARCHETTI_OCC,Ясновидящая,The Psychic
+INV_VIVIENNE_MARCHETTI_QUOTE,«Видения — это предостережение. Будущее можно переписать.»,«The visions are a warning. The future can be rewritten.»
+INV_MAXWELL_THORNE_NAME,Максвелл Торн,Maxwell Thorne
+INV_MAXWELL_THORNE_OCC,Маг,The Magician
+INV_MAXWELL_THORNE_QUOTE,"«Не бойтесь. Я всю свою жизнь только и делал, что невозможное.»",«Do not be afraid. I have spent my entire life doing the impossible.»
+INV_CLARA_ASHBY_NAME,Клара Эшби,Clara Ashby
+INV_CLARA_ASHBY_OCC,Раскаявшаяся культистка,The Redeemed Cultist
+INV_CLARA_ASHBY_QUOTE,"«Ложа не столь невинна, какой притворяется. Я усвоила, что ничто не таково, каким кажется, — включая меня саму.»","«The Lodge is not as innocent as they pretend. I have learned that nothing is ever as it seems, myself included.»"
+INV_NORA_QUINN_NAME,Нора Куинн,Nora Quinn
+INV_NORA_QUINN_OCC,Студентка,The Student
+INV_NORA_QUINN_QUOTE,«Истина разума усмиряет даже самые дикие заблуждения. Я не сделаюсь жертвой подобного безумия.»,«The truth of reason tempers even the wildest delusions. I will not fall prey to such madness.»
+INV_RUTH_ADLER_NAME,Рут Адлер,Ruth Adler
+INV_RUTH_ADLER_OCC,Писательница,The Author
+INV_RUTH_ADLER_QUOTE,«Никогда не недооценивайте силу написанного слова.»,«Never underestimate the power of the written word.»
+INV_ADA_FAIRFAX_NAME,Ада Фэрфакс,Ada Fairfax
+INV_ADA_FAIRFAX_OCC,Учёная,The Scientist
+INV_ADA_FAIRFAX_QUOTE,"«Профессор Янг учила меня, что всё проще, чем кажется. Связь обнаружится, если её искать.»",«Professor Young taught me that everything is simpler than it seems. The connection is there if you look for it.»
+INV_MAI_NGUYEN_NAME,Май Нгуен,Mai Nguyen
+INV_MAI_NGUYEN_OCC,Секретарь,The Secretary
+INV_MAI_NGUYEN_QUOTE,«Можете положиться на меня — я проведу вас сквозь неведомое.»,«You can depend on me to guide you through the unknown.»
+INV_BETTY_CROSS_NAME,Бетти Кросс,Betty Cross
+INV_BETTY_CROSS_OCC,Спортсменка,The Athlete
+INV_BETTY_CROSS_QUOTE,"«Имеешь ко мне счёт? Прекрасно. Мне не нужно твоё разрешение, чтобы оставить тебя глотать пыль.»",«You got a bone to pick? Fine by me. I don't need your permission to leave you in the dust.»
+INV_NICK_STONE_NAME,Ник Стоун,Nick Stone
+INV_NICK_STONE_OCC,Частный детектив,The Private Eye
+INV_NICK_STONE_QUOTE,"«Меня наняли на работу. Злые боги или нет, я намерен её закончить.»","«I was hired for a job. Evil gods or no, I aim to finish it.»"
+INV_SILAS_GRAVES_NAME,Сайлас Грейвз,Silas Graves
+INV_SILAS_GRAVES_OCC,Могильщик,The Gravedigger
+INV_SILAS_GRAVES_QUOTE,"«Хоть это и безумие, но в нём есть система.»","«Though this be madness, yet there is method in't.»"
+INV_CORDELIA_FROST_NAME,Корделия Фрост,Cordelia Frost
+INV_CORDELIA_FROST_OCC,Парапсихолог,The Parapsychologist
+INV_CORDELIA_FROST_QUOTE,"«Доказательство, как говорится, познаётся в деле.»","«The proof, as they say, is in the pudding.»"
+INV_ROSA_DELGADO_NAME,Роза Дельгадо,Rosa Delgado
+INV_ROSA_DELGADO_OCC,Механик,The Mechanic
+INV_ROSA_DELGADO_QUOTE,"«Расслабься, крутыш. Я разберусь. А ты постой вон там и сделай красивое лицо.»","«Relax, tough guy. I'll handle this. You stand over there and look pretty.»"
+INV_HOBO_CAL_NAME,Бродяга Кэл,Hobo Cal
+INV_HOBO_CAL_OCC,Бродяга,The Drifter
+INV_HOBO_CAL_QUOTE,"«Где-то там, может, и опасности водятся, да некоторым душам просто нужно бродить.»","«There may be dangers out there, but some souls just have to roam.»"
+INV_FRANK_DONNELLY_NAME,Фрэнк Доннелли,Frank Donnelly
+INV_FRANK_DONNELLY_OCC,Гангстер,The Gangster
+INV_FRANK_DONNELLY_QUOTE,"«Плевать, бог это или нет. Кто мне поперёк дороги — тот пожалеет.»","«Don't care if it's a god. If it crosses me, it's gonna regret it.»"
+INV_DANNY_KILROY_NAME,Дэнни Килрой,Danny Kilroy
+INV_DANNY_KILROY_OCC,Полицейский-новобранец,The Rookie Cop
+INV_DANNY_KILROY_QUOTE,«Я принёс присягу следить за исполнением закона. Этим я и занят.»,«I took an oath to enforce the law. That's what I'm doing.»
+INV_TAVITA_LEBEAU_NAME,Тавита Лебо,Tavita Lebeau
+INV_TAVITA_LEBEAU_OCC,Художница,The Painter
+INV_TAVITA_LEBEAU_QUOTE,"«Искусство — окно в реальность, нам не ведомую.»",«Art is a window into a reality beyond our knowing.»
+INV_ALFRED_BRAMWELL_NAME,Альфред Брэмвелл,Alfred Bramwell
+INV_ALFRED_BRAMWELL_OCC,Профессор,The Professor
+INV_ALFRED_BRAMWELL_QUOTE,«У меня есть опыт обращения с подобными кошмарами.»,«I have experience dealing with these sorts of horrors.»
+INV_CELESTE_DUBOIS_NAME,Селеста Дюбуа,Celeste Dubois
+INV_CELESTE_DUBOIS_OCC,Артистка,The Entertainer
+INV_CELESTE_DUBOIS_QUOTE,"«Я певала, когда grand-mère варила зелья и плела заговоры.»",«I used to sing as grand-mère made potions and charms.»
+INV_ARTHUR_PENNINGTON_NAME,Артур Пеннингтон,Arthur Pennington
+INV_ARTHUR_PENNINGTON_OCC,Адвокат,The Lawyer
+INV_ARTHUR_PENNINGTON_QUOTE,«Я верю в высший закон. Я верю в истинное правосудие.»,«I believe in a higher law. I believe in true justice.»
+INV_NELLIE_FOX_NAME,Нелли Фокс,Nellie Fox
+INV_NELLIE_FOX_OCC,Беспризорница,The Urchin
+INV_NELLIE_FOX_QUOTE,«Мелочи важны. Взрослые этого не видят.»,«The little things are important. Grown-ups don't see that.»
+INV_GRETA_STERLING_NAME,Грета Стерлинг,Greta Sterling
+INV_GRETA_STERLING_OCC,Актриса,The Actress
+INV_GRETA_STERLING_QUOTE,«Я переиграла столько ролей. Безумие — закономерно.»,«I've played so many roles. Madness is to be expected.»
+INV_NICK_RYAN_NAME,Ник Райан,Nick Ryan
+INV_NICK_RYAN_OCC,Репортёр,The Reporter
+INV_NICK_RYAN_QUOTE,"«Источники сообщают, что миру конец. Как раз моё везение.»",«My sources tell me that the world is ending. Just my luck.»
+INV_MEI_LIN_NAME,Мэй Линь,Mei Lin
+INV_MEI_LIN_OCC,Мастер боевых искусств,The Martial Artist
+INV_MEI_LIN_QUOTE,«Я готовилась противостоять этому злу всю свою жизнь. Моя сосредоточенность должна быть безупречной.»,«I have been preparing to confront this evil for my entire life. My focus must be absolute.»
+INV_AL_DOBBS_NAME,Эл Доббс,Al Dobbs
+INV_AL_DOBBS_OCC,Коммивояжёр,The Salesman
+INV_AL_DOBBS_QUOTE,«Реальность — лишь предмет переговоров.»,«Reality is just a matter of negotiation.»
+INV_MILES_BARROW_NAME,Майлз Барроу,Miles Barrow
+INV_MILES_BARROW_OCC,Музыкант,The Musician
+INV_MILES_BARROW_QUOTE,"«Покойнички совсем шалеют, когда я берусь за свой рожок.»",«Dead folks get downright rambunctious when I play my horn.»
+INV_DAPHNE_VALE_NAME,Дафна Вейл,Daphne Vale
+INV_DAPHNE_VALE_OCC,Дилетантка,The Dilettante
+INV_DAPHNE_VALE_QUOTE,"«Мою сестру забрали. Я заплачу любую сумму, чтобы её спасти.»",«My sister was taken. I will pay any amount to save her.»
+INV_BEATRIX_KINGSLEY_NAME,Беатрикс Кингсли,Beatrix Kingsley
+INV_BEATRIX_KINGSLEY_OCC,Путешественница,The Explorer
+INV_BEATRIX_KINGSLEY_QUOTE,"«Открытие — дело нелёгкое, но это единственный путь, что стоит труда.»","«Discovery isn't easy, but it's the only worthwhile path.»"
+INV_WALTER_BRIGGS_NAME,Уолтер Бриггз,Walter Briggs
+INV_WALTER_BRIGGS_OCC,Мастер на все руки,The Handyman
+INV_WALTER_BRIGGS_QUOTE,"«Нет ничего, чего не починили бы хороший план да упорный труд.»",«It's nothing a good plan and some hard work can't fix.»
+INV_CASEY_MERCER_NAME,Кейси Мерсер,Casey Mercer
+INV_CASEY_MERCER_OCC,Сновидец,The Dreamer
+INV_CASEY_MERCER_QUOTE,«Ключ к Странам снов лежит внутри каждого из нас.»,«The key to the Dreamlands lies within us all.»
+INV_GORDON_PIKE_NAME,Гордон Пайк,Gordon Pike
+INV_GORDON_PIKE_OCC,Глава экспедиции,The Expedition Leader
+INV_GORDON_PIKE_QUOTE,«Не останавливайся. Помрёшь в своё свободное время.»,«Keep moving. You can die on your own time.»
+INV_CHESTER_HOLLOWAY_NAME,Честер Холлоуэй,Chester Holloway
+INV_CHESTER_HOLLOWAY_OCC,Миллионер,The Millionaire
+INV_CHESTER_HOLLOWAY_QUOTE,"«Мои деньги, моё наследие, моя забота. Позвольте мне разобраться по-своему.»","«My money, my legacy, my problem. Let me handle it in my own way.»"
+INV_CLIVE_ASHTON_NAME,Клайв Эштон,Clive Ashton
+INV_CLIVE_ASHTON_OCC,Астроном,The Astronomer
+INV_CLIVE_ASHTON_QUOTE,"«Пусть зовут меня сумасбродом! Со звёздами что-то происходит, и это не игра моего воображения.»","«Let them call me a crackpot! Something is happening to the stars, and I am not imagining it.»"
+INV_FATHER_IGNATIUS_NAME,Отец Игнатий,Father Ignatius
+INV_FATHER_IGNATIUS_OCC,Священник,The Priest
+INV_FATHER_IGNATIUS_QUOTE,"«Тебе довольно заглянуть в собственное сердце, чтобы найти доказательство божественного.»",«You need only look in your heart to find proof of the divine.»
+INV_FRANK_DELANEY_NAME,Фрэнк Дилейни,Frank Delaney
+INV_FRANK_DELANEY_OCC,Политик,The Politician
+INV_FRANK_DELANEY_QUOTE,«Это можно устроить. Вопрос лишь в приемлемых условиях.»,«It can be arranged. It's just a matter of acceptable terms.»
+INV_NGOZI_EZE_NAME,Нгози Эзе,Ngozi Eze
+INV_NGOZI_EZE_OCC,Шаманка,The Shaman
+INV_NGOZI_EZE_QUOTE,"«Я отправлюсь в земли, лежащие за пределом. Я их не боюсь.»",«I will journey to the lands beyond. I do not fear them.»
+INV_FRANK_DALTON_NAME,Фрэнк Далтон,Frank Dalton
+INV_FRANK_DALTON_OCC,Солдат,The Soldier
+INV_FRANK_DALTON_QUOTE,"«Я выхожу за эту дверь, и я забираю эту книгу. Кто хочет меня остановить — милости прошу попробовать.»","«I'm walking out that door, and I'm taking this book. Anyone who wants to stop me is welcome to try.»"
+INV_MARCUS_BELL_NAME,Маркус Белл,Marcus Bell
+INV_MARCUS_BELL_OCC,Одержимый,The Haunted
+INV_MARCUS_BELL_QUOTE,"«Я могу удержать эту тьму внутри себя. Я знаю, что могу.»",«I can contain this darkness within me. I know I can.»
+INV_NORA_WHITBY_NAME,Нора Уитби,Nora Whitby
+INV_NORA_WHITBY_OCC,Исследовательница,The Researcher
+INV_NORA_WHITBY_QUOTE,«Я найду способ положить конец этому ужасу. Я не прекращу поиски.»,«I will find a way to end this horror. I will not stop searching.»
+INV_IRIS_BELLAMY_NAME,Айрис Беллами,Iris Bellamy
+INV_IRIS_BELLAMY_OCC,Библиотекарь,The Librarian
+INV_IRIS_BELLAMY_QUOTE,"«Я знаю о книгах настолько могущественных, что они способны переписать реальность.»","«I know of books so powerful, they can rewrite reality.»"
+INV_DALE_CORWIN_NAME,Дейл Корвин,Dale Corwin
+INV_DALE_CORWIN_OCC,Федерал,The Fed
+INV_DALE_CORWIN_QUOTE,"«Всё по букве закона, до последней запятой.»","«Every 'i' dotted, every 't' crossed.»"
+INV_BUCK_TANNER_NAME,Бак Таннер,Buck Tanner
+INV_BUCK_TANNER_OCC,Батрак,The Farmhand
+INV_BUCK_TANNER_QUOTE,"«У людей беда. Не надо быть гением, чтоб помочь.»",«Folks are in trouble. I don't gotta be a genius to help out.»
+INV_SLY_BRACKEN_NAME,Слай Брэкен,Sly Bracken
+INV_SLY_BRACKEN_OCC,Бывший заключённый,The Ex-Convict
+INV_SLY_BRACKEN_QUOTE,"«Я не для того вышел из тюряги, чтоб смотреть, как мир катится в тартарары.»",«I didn't get out of the joint just to watch the world end.»
+INV_EVELYN_HART_NAME,Эвелин Харт,Evelyn Hart
+INV_EVELYN_HART_OCC,Психолог,The Psychologist
+INV_EVELYN_HART_QUOTE,"«Безумцы заслуживают покоя разума, а не гибели духа.»","«The mad deserve peace of mind, not death of the spirit.»"
+INV_HENRY_WU_NAME,Генри Ву,Henry Wu
+INV_HENRY_WU_OCC,Врач,The Doctor
+INV_HENRY_WU_QUOTE,"«Я найду ответы, даже если это меня убьёт.»","«I will find the answers, even if it kills me.»"
+INV_ESTHER_RAVEL_NAME,Эстер Равель,Esther Ravel
+INV_ESTHER_RAVEL_OCC,Официантка,The Waitress
+INV_ESTHER_RAVEL_QUOTE,«Я помню иную жизнь — жизнь чародейства и завоеваний.»,"«I remember another life, one of sorcery and conquest.»"
+INV_RORY_KELL_NAME,Рори Келл,Rory Kell
+INV_RORY_KELL_OCC,Бутлегер,The Bootlegger
+INV_RORY_KELL_QUOTE,"«Никогда не теряй из виду ни выход, ни товар.»",«Never lose track of the exit or the merchandise.»
+INV_SIMONE_ARDENT_NAME,Симона Ардент,Simone Ardent
+INV_SIMONE_ARDENT_OCC,Скрипачка,The Violinist
+INV_SIMONE_ARDENT_QUOTE,"«Когда я играю на скрипке, музыка отзывается в иных мирах.»","«When I play the violin, the music echoes in other worlds.»"
+INV_PERCIVAL_STANE_NAME,Персиваль Стейн,Percival Stane
+INV_PERCIVAL_STANE_OCC,Дворецкий,The Butler
+INV_PERCIVAL_STANE_QUOTE,«Подумайте о детях.»,«Think of the children.»
+INV_VINCE_CUTTER_NAME,Винс Каттер,Vince Cutter
+INV_VINCE_CUTTER_OCC,Охотник за головами,The Bounty Hunter
+INV_VINCE_CUTTER_QUOTE,"«Когда я отыщу эту тварь, я её поймаю или прикончу раз и навсегда.»","«When I find the beast, I'll trap it or put it down for good.»"
+INV_SISTER_CECILIA_NAME,Сестра Сесилия,Sister Cecilia
+INV_SISTER_CECILIA_OCC,Монахиня,The Nun
+INV_SISTER_CECILIA_QUOTE,«Господь хранит мой путь. Я облачена в броню веры.»,«The Lord watches over my path. I am armored in faith.»
 INV_SET_CORE,Базовая игра,Core
 INV_SET_UNDER_THE_PYRAMIDS,Под пирамидами,Under the Pyramids
 INV_SET_THE_DREAMLANDS,Страны снов,The Dreamlands

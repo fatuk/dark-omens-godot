@@ -1,12 +1,12 @@
 [
   {
-	"name": "Silas Marsh",
+	"name": "Ezra Gilman",
 	"startingItems": [{"asset": "fishing_net"}],
-	"displayName": "INV_SILAS_MARSH_NAME",
-	"occupation": "INV_SILAS_MARSH_OCC",
+	"displayName": "INV_EZRA_GILMAN_NAME",
+	"occupation": "INV_EZRA_GILMAN_OCC",
 	"startingLocation": "Sydney",
 	"set": "INV_SET_CORE",
-	"quote": "INV_SILAS_MARSH_QUOTE",
+	"quote": "INV_EZRA_GILMAN_QUOTE",
 	"role": [
       "INV_ROLE_ALL_ROUNDER"
 	],
@@ -21,13 +21,13 @@
 	}
   },
   {
-	"name": "Monterey Jack",
+	"name": "Colby Banks",
 	"startingItems": [{"asset": "bull_whip"}],
-	"displayName": "INV_MONTEREY_JACK_NAME",
-	"occupation": "INV_MONTEREY_JACK_OCC",
+	"displayName": "INV_COLBY_BANKS_NAME",
+	"occupation": "INV_COLBY_BANKS_OCC",
 	"startingLocation": "The Pyramids",
 	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_MONTEREY_JACK_QUOTE",
+	"quote": "INV_COLBY_BANKS_QUOTE",
 	"role": [
       "INV_ROLE_EXPEDITION"
 	],
@@ -42,13 +42,13 @@
 	}
   },
   {
-	"name": "Darrell Simmons",
+	"name": "Harold Perkins",
 	"startingItems": [{"asset": "camera"}, {"asset": "seek_the_truth"}],
-	"displayName": "INV_DARRELL_SIMMONS_NAME",
-	"occupation": "INV_DARRELL_SIMMONS_OCC",
+	"displayName": "INV_HAROLD_PERKINS_NAME",
+	"occupation": "INV_HAROLD_PERKINS_OCC",
 	"startingLocation": "20",
 	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_DARRELL_SIMMONS_QUOTE",
+	"quote": "INV_HAROLD_PERKINS_QUOTE",
 	"role": [
       "INV_ROLE_RESEARCH"
 	],
@@ -63,13 +63,13 @@
 	}
   },
   {
-	"name": "Trish Scarborough",
+	"name": "Nadia Blackwood",
 	"startingItems": [{"asset": "45_automatic"}],
-	"displayName": "INV_TRISH_SCARBOROUGH_NAME",
-	"occupation": "INV_TRISH_SCARBOROUGH_OCC",
+	"displayName": "INV_NADIA_BLACKWOOD_NAME",
+	"occupation": "INV_NADIA_BLACKWOOD_OCC",
 	"startingLocation": "16",
 	"set": "INV_SET_CORE",
-	"quote": "INV_TRISH_SCARBOROUGH_QUOTE",
+	"quote": "INV_NADIA_BLACKWOOD_QUOTE",
 	"role": [
       "INV_ROLE_RESEARCH"
 	],
@@ -84,13 +84,13 @@
 	}
   },
   {
-	"name": "Zoey Samaras",
+	"name": "Elena Kostas",
 	"startingItems": [{"asset": "holy_cross"}],
-	"displayName": "INV_ZOEY_SAMARAS_NAME",
-	"occupation": "INV_ZOEY_SAMARAS_OCC",
+	"displayName": "INV_ELENA_KOSTAS_NAME",
+	"occupation": "INV_ELENA_KOSTAS_OCC",
 	"startingLocation": "Rome",
 	"set": "INV_SET_STRANGE_REMNANTS",
-	"quote": "INV_ZOEY_SAMARAS_QUOTE",
+	"quote": "INV_ELENA_KOSTAS_QUOTE",
 	"role": [
       "INV_ROLE_COMBAT"
 	],
@@ -105,13 +105,13 @@
 	}
   },
   {
-	"name": "Jacqueline Fine",
+	"name": "Vivienne Marchetti",
 	"startingItems": [{"clue": 1}],
-	"displayName": "INV_JACQUELINE_FINE_NAME",
-	"occupation": "INV_JACQUELINE_FINE_OCC",
+	"displayName": "INV_VIVIENNE_MARCHETTI_NAME",
+	"occupation": "INV_VIVIENNE_MARCHETTI_OCC",
 	"startingLocation": "5",
 	"set": "INV_SET_CORE",
-	"quote": "INV_JACQUELINE_FINE_QUOTE",
+	"quote": "INV_VIVIENNE_MARCHETTI_QUOTE",
 	"role": [
 	  "INV_ROLE_SUPPORT",
       "INV_ROLE_RESEARCH"
@@ -127,13 +127,13 @@
 	}
   },
   {
-	"name": "Dexter Drake",
+	"name": "Maxwell Thorne",
 	"startingItems": [{"asset": "arcane_assistant"}, {"spell": "binding"}],
-	"displayName": "INV_DEXTER_DRAKE_NAME",
-	"occupation": "INV_DEXTER_DRAKE_OCC",
+	"displayName": "INV_MAXWELL_THORNE_NAME",
+	"occupation": "INV_MAXWELL_THORNE_OCC",
 	"startingLocation": "Tokyo",
 	"set": "INV_SET_SIGNS_OF_CARCOSA",
-	"quote": "INV_DEXTER_DRAKE_QUOTE",
+	"quote": "INV_MAXWELL_THORNE_QUOTE",
 	"role": [
       "INV_ROLE_MAGIC"
 	],
@@ -148,13 +148,13 @@
 	}
   },
   {
-	"name": "Diana Stanley",
+	"name": "Clara Ashby",
 	"startingItems": [{"asset": "arcane_manuscripts"}, {"spell": "wither"}],
-	"displayName": "INV_DIANA_STANLEY_NAME",
-	"occupation": "INV_DIANA_STANLEY_OCC",
+	"displayName": "INV_CLARA_ASHBY_NAME",
+	"occupation": "INV_CLARA_ASHBY_OCC",
 	"startingLocation": "7",
 	"set": "INV_SET_CORE",
-	"quote": "INV_DIANA_STANLEY_QUOTE",
+	"quote": "INV_CLARA_ASHBY_QUOTE",
 	"role": [
 	  "INV_ROLE_MAGIC",
       "INV_ROLE_COMBAT"
@@ -170,13 +170,13 @@
 	}
   },
   {
-	"name": "Amanda Sharpe",
+	"name": "Nora Quinn",
 	"startingItems": [],
-	"displayName": "INV_AMANDA_SHARPE_NAME",
-	"occupation": "INV_AMANDA_SHARPE_OCC",
+	"displayName": "INV_NORA_QUINN_NAME",
+	"occupation": "INV_NORA_QUINN_OCC",
 	"startingLocation": "Istanbul",
 	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_AMANDA_SHARPE_QUOTE",
+	"quote": "INV_NORA_QUINN_QUOTE",
 	"role": [
       "INV_ROLE_RESEARCH"
 	],
@@ -191,13 +191,13 @@
 	}
   },
   {
-	"name": "Gloria Goldberg",
+	"name": "Ruth Adler",
 	"startingItems": [],
-	"displayName": "INV_GLORIA_GOLDBERG_NAME",
-	"occupation": "INV_GLORIA_GOLDBERG_OCC",
+	"displayName": "INV_RUTH_ADLER_NAME",
+	"occupation": "INV_RUTH_ADLER_OCC",
 	"startingLocation": "Arkham",
 	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_GLORIA_GOLDBERG_QUOTE",
+	"quote": "INV_RUTH_ADLER_QUOTE",
 	"role": [
 	  "INV_ROLE_SUPPORT",
       "INV_ROLE_RESEARCH"
@@ -213,13 +213,13 @@
 	}
   },
   {
-	"name": "Kate Winthrop",
+	"name": "Ada Fairfax",
 	"startingItems": [{"clue": 1}],
-	"displayName": "INV_KATE_WINTHROP_NAME",
-	"occupation": "INV_KATE_WINTHROP_OCC",
+	"displayName": "INV_ADA_FAIRFAX_NAME",
+	"occupation": "INV_ADA_FAIRFAX_OCC",
 	"startingLocation": "Buenos Aires",
 	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_KATE_WINTHROP_QUOTE",
+	"quote": "INV_ADA_FAIRFAX_QUOTE",
 	"role": [
 	  "INV_ROLE_RESEARCH",
       "INV_ROLE_GATE_CLOSER"
@@ -235,13 +235,13 @@
 	}
   },
   {
-	"name": "Minh Thi Phan",
+	"name": "Mai Nguyen",
 	"startingItems": [{"clue": 1}],
-	"displayName": "INV_MINH_THI_PHAN_NAME",
-	"occupation": "INV_MINH_THI_PHAN_OCC",
+	"displayName": "INV_MAI_NGUYEN_NAME",
+	"occupation": "INV_MAI_NGUYEN_OCC",
 	"startingLocation": "Tokyo",
 	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_MINH_THI_PHAN_QUOTE",
+	"quote": "INV_MAI_NGUYEN_QUOTE",
 	"role": [
       "INV_ROLE_SUPPORT"
 	],
@@ -256,13 +256,13 @@
 	}
   },
   {
-	"name": "Rita Young",
+	"name": "Betty Cross",
 	"startingItems": [{"clue": 1}],
-	"displayName": "INV_RITA_YOUNG_NAME",
-	"occupation": "INV_RITA_YOUNG_OCC",
+	"displayName": "INV_BETTY_CROSS_NAME",
+	"occupation": "INV_BETTY_CROSS_OCC",
 	"startingLocation": "Shanghai",
 	"set": "INV_SET_CITIES_IN_RUIN",
-	"quote": "INV_RITA_YOUNG_QUOTE",
+	"quote": "INV_BETTY_CROSS_QUOTE",
 	"role": [
       "INV_ROLE_COMBAT"
 	],
@@ -277,13 +277,13 @@
 	}
   },
   {
-	"name": "Joe Diamond",
+	"name": "Nick Stone",
 	"startingItems": [{"asset": "32_colt_pocket"}],
-	"displayName": "INV_JOE_DIAMOND_NAME",
-	"occupation": "INV_JOE_DIAMOND_OCC",
+	"displayName": "INV_NICK_STONE_NAME",
+	"occupation": "INV_NICK_STONE_OCC",
 	"startingLocation": "San Francisco",
 	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_JOE_DIAMOND_QUOTE",
+	"quote": "INV_NICK_STONE_QUOTE",
 	"role": [
       "INV_ROLE_RESEARCH"
 	],
@@ -298,13 +298,13 @@
 	}
   },
   {
-	"name": "William Yorick",
+	"name": "Silas Graves",
 	"startingItems": [{"asset": "alchemical_concoction"}],
-	"displayName": "INV_WILLIAM_YORICK_NAME",
-	"occupation": "INV_WILLIAM_YORICK_OCC",
+	"displayName": "INV_SILAS_GRAVES_NAME",
+	"occupation": "INV_SILAS_GRAVES_OCC",
 	"startingLocation": "Sydney",
 	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_WILLIAM_YORICK_QUOTE",
+	"quote": "INV_SILAS_GRAVES_QUOTE",
 	"role": [
       "INV_ROLE_COMBAT"
 	],
@@ -319,13 +319,13 @@
 	}
   },
   {
-	"name": "Agatha Crane",
+	"name": "Cordelia Frost",
 	"startingItems": [{"spell": "call_the_storm"}],
-	"displayName": "INV_AGATHA_CRANE_NAME",
-	"occupation": "INV_AGATHA_CRANE_OCC",
+	"displayName": "INV_CORDELIA_FROST_NAME",
+	"occupation": "INV_CORDELIA_FROST_OCC",
 	"startingLocation": "Tokyo",
 	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_AGATHA_CRANE_QUOTE",
+	"quote": "INV_CORDELIA_FROST_QUOTE",
 	"role": [
 	  "INV_ROLE_MAGIC",
       "INV_ROLE_RESEARCH"
@@ -341,13 +341,13 @@
 	}
   },
   {
-	"name": "Daniela Reyes",
+	"name": "Rosa Delgado",
 	"startingItems": [{"clue": 1}, {"resource": 1}],
-	"displayName": "INV_DANIELA_REYES_NAME",
-	"occupation": "INV_DANIELA_REYES_OCC",
+	"displayName": "INV_ROSA_DELGADO_NAME",
+	"occupation": "INV_ROSA_DELGADO_OCC",
 	"startingLocation": "San Francisco",
 	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_DANIELA_REYES_QUOTE",
+	"quote": "INV_ROSA_DELGADO_QUOTE",
 	"role": [
       "INV_ROLE_ALL_ROUNDER"
 	],
@@ -362,13 +362,13 @@
 	}
   },
   {
-	"name": "Ashcan Pete",
+	"name": "Hobo Cal",
 	"startingItems": [{"clue": 1}],
-	"displayName": "INV_ASHCAN_PETE_NAME",
-	"occupation": "INV_ASHCAN_PETE_OCC",
+	"displayName": "INV_HOBO_CAL_NAME",
+	"occupation": "INV_HOBO_CAL_OCC",
 	"startingLocation": "14",
 	"set": "INV_SET_CITIES_IN_RUIN",
-	"quote": "INV_ASHCAN_PETE_QUOTE",
+	"quote": "INV_HOBO_CAL_QUOTE",
 	"role": [
       "INV_ROLE_ALL_ROUNDER"
 	],
@@ -383,13 +383,13 @@
 	}
   },
   {
-	"name": "Michael McGlen",
+	"name": "Frank Donnelly",
 	"startingItems": [{"asset": "tommy_gun"}],
-	"displayName": "INV_MICHAEL_MCGLEN_NAME",
-	"occupation": "INV_MICHAEL_MCGLEN_OCC",
+	"displayName": "INV_FRANK_DONNELLY_NAME",
+	"occupation": "INV_FRANK_DONNELLY_OCC",
 	"startingLocation": "London",
 	"set": "INV_SET_SIGNS_OF_CARCOSA",
-	"quote": "INV_MICHAEL_MCGLEN_QUOTE",
+	"quote": "INV_FRANK_DONNELLY_QUOTE",
 	"role": [
       "INV_ROLE_COMBAT"
 	],
@@ -404,13 +404,13 @@
 	}
   },
   {
-	"name": "Tommy Muldoon",
+	"name": "Danny Kilroy",
 	"startingItems": [{"asset": "carbine_rifle"}],
-	"displayName": "INV_TOMMY_MULDOON_NAME",
-	"occupation": "INV_TOMMY_MULDOON_OCC",
+	"displayName": "INV_DANNY_KILROY_NAME",
+	"occupation": "INV_DANNY_KILROY_OCC",
 	"startingLocation": "1",
 	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_TOMMY_MULDOON_QUOTE",
+	"quote": "INV_DANNY_KILROY_QUOTE",
 	"role": [
       "INV_ROLE_COMBAT"
 	],
@@ -425,13 +425,13 @@
 	}
   },
   {
-	"name": "Sefina Rousseau",
+	"name": "Tavita Lebeau",
 	"startingItems": [{"clue": 1}, {"asset": "treasured_memento"}],
-	"displayName": "INV_SEFINA_ROUSSEAU_NAME",
-	"occupation": "INV_SEFINA_ROUSSEAU_OCC",
+	"displayName": "INV_TAVITA_LEBEAU_NAME",
+	"occupation": "INV_TAVITA_LEBEAU_OCC",
 	"startingLocation": "Sydney",
 	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_SEFINA_ROUSSEAU_QUOTE",
+	"quote": "INV_TAVITA_LEBEAU_QUOTE",
 	"role": [
       "INV_ROLE_RESEARCH"
 	],
@@ -446,13 +446,13 @@
 	}
   },
   {
-	"name": "Harvey Walters",
+	"name": "Alfred Bramwell",
 	"startingItems": [{"asset": "ancient_tome"}],
-	"displayName": "INV_HARVEY_WALTERS_NAME",
-	"occupation": "INV_HARVEY_WALTERS_OCC",
+	"displayName": "INV_ALFRED_BRAMWELL_NAME",
+	"occupation": "INV_ALFRED_BRAMWELL_OCC",
 	"startingLocation": "Arkham",
 	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_HARVEY_WALTERS_QUOTE",
+	"quote": "INV_ALFRED_BRAMWELL_QUOTE",
 	"role": [
       "INV_ROLE_SUPPORT"
 	],
@@ -467,13 +467,13 @@
 	}
   },
   {
-	"name": "Marie Lambeau",
+	"name": "Celeste Dubois",
 	"startingItems": [{"asset": "ritual_dagger"}, {"spell": "voice_of_ra"}],
-	"displayName": "INV_MARIE_LAMBEAU_NAME",
-	"occupation": "INV_MARIE_LAMBEAU_OCC",
+	"displayName": "INV_CELESTE_DUBOIS_NAME",
+	"occupation": "INV_CELESTE_DUBOIS_OCC",
 	"startingLocation": "20",
 	"set": "INV_SET_STRANGE_REMNANTS",
-	"quote": "INV_MARIE_LAMBEAU_QUOTE",
+	"quote": "INV_CELESTE_DUBOIS_QUOTE",
 	"role": [
       "INV_ROLE_MAGIC"
 	],
@@ -488,13 +488,13 @@
 	}
   },
   {
-	"name": "George Barnaby",
+	"name": "Arthur Pennington",
 	"startingItems": [{"asset": "investment"}, {"asset": "pocket_watch"}],
-	"displayName": "INV_GEORGE_BARNABY_NAME",
-	"occupation": "INV_GEORGE_BARNABY_OCC",
+	"displayName": "INV_ARTHUR_PENNINGTON_NAME",
+	"occupation": "INV_ARTHUR_PENNINGTON_OCC",
 	"startingLocation": "17",
 	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_GEORGE_BARNABY_QUOTE",
+	"quote": "INV_ARTHUR_PENNINGTON_QUOTE",
 	"role": [
       "INV_ROLE_SUPPORT"
 	],
@@ -509,13 +509,13 @@
 	}
   },
   {
-	"name": "Wendy Adams",
+	"name": "Nellie Fox",
 	"startingItems": [{"clue": 1}],
-	"displayName": "INV_WENDY_ADAMS_NAME",
-	"occupation": "INV_WENDY_ADAMS_OCC",
+	"displayName": "INV_NELLIE_FOX_NAME",
+	"occupation": "INV_NELLIE_FOX_OCC",
 	"startingLocation": "16",
 	"set": "INV_SET_SIGNS_OF_CARCOSA",
-	"quote": "INV_WENDY_ADAMS_QUOTE",
+	"quote": "INV_NELLIE_FOX_QUOTE",
 	"role": [
       "INV_ROLE_RESEARCH"
 	],
@@ -530,13 +530,13 @@
 	}
   },
   {
-	"name": "Lola Hayes",
+	"name": "Greta Sterling",
 	"startingItems": [{"asset": "18_derringer"}],
-	"displayName": "INV_LOLA_HAYES_NAME",
-	"occupation": "INV_LOLA_HAYES_OCC",
+	"displayName": "INV_GRETA_STERLING_NAME",
+	"occupation": "INV_GRETA_STERLING_OCC",
 	"startingLocation": "Tokyo",
 	"set": "INV_SET_CORE",
-	"quote": "INV_LOLA_HAYES_QUOTE",
+	"quote": "INV_GRETA_STERLING_QUOTE",
 	"role": [
       "INV_ROLE_ALL_ROUNDER"
 	],
@@ -551,13 +551,13 @@
 	}
   },
   {
-	"name": "Rex Murphy",
+	"name": "Nick Ryan",
 	"startingItems": [{"asset": "lucky_talisman"}],
-	"displayName": "INV_REX_MURPHY_NAME",
-	"occupation": "INV_REX_MURPHY_OCC",
+	"displayName": "INV_NICK_RYAN_NAME",
+	"occupation": "INV_NICK_RYAN_OCC",
 	"startingLocation": "1",
 	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_REX_MURPHY_QUOTE",
+	"quote": "INV_NICK_RYAN_QUOTE",
 	"role": [
       "INV_ROLE_ALL_ROUNDER"
 	],
@@ -572,13 +572,13 @@
 	}
   },
   {
-	"name": "Lily Chen",
+	"name": "Mei Lin",
 	"startingItems": [{"asset": "lucky_rabbits_foot"}, {"asset": "protective_amulet"}],
-	"displayName": "INV_LILY_CHEN_NAME",
-	"occupation": "INV_LILY_CHEN_OCC",
+	"displayName": "INV_MEI_LIN_NAME",
+	"occupation": "INV_MEI_LIN_OCC",
 	"startingLocation": "Shanghai",
 	"set": "INV_SET_CORE",
-	"quote": "INV_LILY_CHEN_QUOTE",
+	"quote": "INV_MEI_LIN_QUOTE",
 	"role": [
       "INV_ROLE_COMBAT"
 	],
@@ -593,13 +593,13 @@
 	}
   },
   {
-	"name": "Bob Jenkins",
+	"name": "Al Dobbs",
 	"startingItems": [{"clue": 1}, {"asset": "winchester_rifle"}],
-	"displayName": "INV_BOB_JENKINS_NAME",
-	"occupation": "INV_BOB_JENKINS_OCC",
+	"displayName": "INV_AL_DOBBS_NAME",
+	"occupation": "INV_AL_DOBBS_OCC",
 	"startingLocation": "London",
 	"set": "INV_SET_CITIES_IN_RUIN",
-	"quote": "INV_BOB_JENKINS_QUOTE",
+	"quote": "INV_AL_DOBBS_QUOTE",
 	"role": [
       "INV_ROLE_SUPPORT"
 	],
@@ -614,13 +614,13 @@
 	}
   },
   {
-	"name": "Jim Culver",
+	"name": "Miles Barrow",
 	"startingItems": [{"clue": 1}, {"spell": "shriveling"}],
-	"displayName": "INV_JIM_CULVER_NAME",
-	"occupation": "INV_JIM_CULVER_OCC",
+	"displayName": "INV_MILES_BARROW_NAME",
+	"occupation": "INV_MILES_BARROW_OCC",
 	"startingLocation": "6",
 	"set": "INV_SET_CORE",
-	"quote": "INV_JIM_CULVER_QUOTE",
+	"quote": "INV_MILES_BARROW_QUOTE",
 	"role": [
 	  "INV_ROLE_MAGIC",
       "INV_ROLE_SUPPORT"
@@ -636,14 +636,14 @@
 	}
   },
   {
-	"name": "Jenny Barnes",
+	"name": "Daphne Vale",
 	"startingTickets": {"ship": 1},
 	"startingItems": [{"asset": "25_automatic"}, {"asset": "fine_jewelry"}],
-	"displayName": "INV_JENNY_BARNES_NAME",
-	"occupation": "INV_JENNY_BARNES_OCC",
+	"displayName": "INV_DAPHNE_VALE_NAME",
+	"occupation": "INV_DAPHNE_VALE_OCC",
 	"startingLocation": "8",
 	"set": "INV_SET_SIGNS_OF_CARCOSA",
-	"quote": "INV_JENNY_BARNES_QUOTE",
+	"quote": "INV_DAPHNE_VALE_QUOTE",
 	"role": [
       "INV_ROLE_SUPPORT"
 	],
@@ -658,13 +658,13 @@
 	}
   },
   {
-	"name": "Ursula Downs",
+	"name": "Beatrix Kingsley",
 	"startingItems": [{"asset": "mineralogy_research"}],
-	"displayName": "INV_URSULA_DOWNS_NAME",
-	"occupation": "INV_URSULA_DOWNS_OCC",
+	"displayName": "INV_BEATRIX_KINGSLEY_NAME",
+	"occupation": "INV_BEATRIX_KINGSLEY_OCC",
 	"startingLocation": "The Heart of Africa",
 	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_URSULA_DOWNS_QUOTE",
+	"quote": "INV_BEATRIX_KINGSLEY_QUOTE",
 	"role": [
       "INV_ROLE_EXPEDITION"
 	],
@@ -679,13 +679,13 @@
 	}
   },
   {
-	"name": "Wilson Richards",
+	"name": "Walter Briggs",
 	"startingItems": [{"asset": "blunderbuss"}],
-	"displayName": "INV_WILSON_RICHARDS_NAME",
-	"occupation": "INV_WILSON_RICHARDS_OCC",
+	"displayName": "INV_WALTER_BRIGGS_NAME",
+	"occupation": "INV_WALTER_BRIGGS_OCC",
 	"startingLocation": "Arkham",
 	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_WILSON_RICHARDS_QUOTE",
+	"quote": "INV_WALTER_BRIGGS_QUOTE",
 	"role": [
       "INV_ROLE_COMBAT"
 	],
@@ -700,13 +700,13 @@
 	}
   },
   {
-	"name": "Luke Robinson",
+	"name": "Casey Mercer",
 	"startingItems": [{"clue": 1}, {"asset": "dream_box"}],
-	"displayName": "INV_LUKE_ROBINSON_NAME",
-	"occupation": "INV_LUKE_ROBINSON_OCC",
+	"displayName": "INV_CASEY_MERCER_NAME",
+	"occupation": "INV_CASEY_MERCER_OCC",
 	"startingLocation": "Arkham",
 	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_LUKE_ROBINSON_QUOTE",
+	"quote": "INV_CASEY_MERCER_QUOTE",
 	"role": [
       "INV_ROLE_GATE_CLOSER"
 	],
@@ -721,13 +721,13 @@
 	}
   },
   {
-	"name": "Leo Anderson",
+	"name": "Gordon Pike",
 	"startingItems": [{"asset": "hired_muscle"}],
-	"displayName": "INV_LEO_ANDERSON_NAME",
-	"occupation": "INV_LEO_ANDERSON_OCC",
+	"displayName": "INV_GORDON_PIKE_NAME",
+	"occupation": "INV_GORDON_PIKE_OCC",
 	"startingLocation": "Buenos Aires",
 	"set": "INV_SET_CORE",
-	"quote": "INV_LEO_ANDERSON_QUOTE",
+	"quote": "INV_GORDON_PIKE_QUOTE",
 	"role": [
       "INV_ROLE_EXPEDITION"
 	],
@@ -742,13 +742,13 @@
 	}
   },
   {
-	"name": "Preston Fairmont",
+	"name": "Chester Holloway",
 	"startingItems": [{"asset": "fine_clothes"}],
-	"displayName": "INV_PRESTON_FAIRMONT_NAME",
-	"occupation": "INV_PRESTON_FAIRMONT_OCC",
+	"displayName": "INV_CHESTER_HOLLOWAY_NAME",
+	"occupation": "INV_CHESTER_HOLLOWAY_OCC",
 	"startingLocation": "Istanbul",
 	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_PRESTON_FAIRMONT_QUOTE",
+	"quote": "INV_CHESTER_HOLLOWAY_QUOTE",
 	"role": [
       "INV_ROLE_SUPPORT"
 	],
@@ -763,13 +763,13 @@
 	}
   },
   {
-	"name": "Norman Withers",
+	"name": "Clive Ashton",
 	"startingItems": [{"spell": "feed_the_mind"}],
-	"displayName": "INV_NORMAN_WITHERS_NAME",
-	"occupation": "INV_NORMAN_WITHERS_OCC",
+	"displayName": "INV_CLIVE_ASHTON_NAME",
+	"occupation": "INV_CLIVE_ASHTON_OCC",
 	"startingLocation": "Arkham",
 	"set": "INV_SET_CORE",
-	"quote": "INV_NORMAN_WITHERS_QUOTE",
+	"quote": "INV_CLIVE_ASHTON_QUOTE",
 	"role": [
       "INV_ROLE_MAGIC"
 	],
@@ -784,13 +784,13 @@
 	}
   },
   {
-	"name": "Father Mateo",
+	"name": "Father Ignatius",
 	"startingItems": [{"asset": "king_james_bible"}],
-	"displayName": "INV_FATHER_MATEO_NAME",
-	"occupation": "INV_FATHER_MATEO_OCC",
+	"displayName": "INV_FATHER_IGNATIUS_NAME",
+	"occupation": "INV_FATHER_IGNATIUS_OCC",
 	"startingLocation": "Rome",
 	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_FATHER_MATEO_QUOTE",
+	"quote": "INV_FATHER_IGNATIUS_QUOTE",
 	"role": [
 	  "INV_ROLE_GATE_CLOSER",
       "INV_ROLE_SUPPORT"
@@ -806,13 +806,13 @@
 	}
   },
   {
-	"name": "Charlie Kane",
+	"name": "Frank Delaney",
 	"startingItems": [{"asset": "personal_assistant"}],
-	"displayName": "INV_CHARLIE_KANE_NAME",
-	"occupation": "INV_CHARLIE_KANE_OCC",
+	"displayName": "INV_FRANK_DELANEY_NAME",
+	"occupation": "INV_FRANK_DELANEY_OCC",
 	"startingLocation": "San Francisco",
 	"set": "INV_SET_CORE",
-	"quote": "INV_CHARLIE_KANE_QUOTE",
+	"quote": "INV_FRANK_DELANEY_QUOTE",
 	"role": [
       "INV_ROLE_SUPPORT"
 	],
@@ -827,13 +827,13 @@
 	}
   },
   {
-	"name": "Akachi Onyele",
+	"name": "Ngozi Eze",
 	"startingItems": [{"clue": 1}],
-	"displayName": "INV_AKACHI_ONYELE_NAME",
-	"occupation": "INV_AKACHI_ONYELE_OCC",
+	"displayName": "INV_NGOZI_EZE_NAME",
+	"occupation": "INV_NGOZI_EZE_OCC",
 	"startingLocation": "15",
 	"set": "INV_SET_CORE",
-	"quote": "INV_AKACHI_ONYELE_QUOTE",
+	"quote": "INV_NGOZI_EZE_QUOTE",
 	"role": [
       "INV_ROLE_GATE_CLOSER"
 	],
@@ -848,13 +848,13 @@
 	}
   },
   {
-	"name": "Mark Harrigan",
+	"name": "Frank Dalton",
 	"startingItems": [{"asset": "38_revolver"}, {"asset": "kerosene"}],
-	"displayName": "INV_MARK_HARRIGAN_NAME",
-	"occupation": "INV_MARK_HARRIGAN_OCC",
+	"displayName": "INV_FRANK_DALTON_NAME",
+	"occupation": "INV_FRANK_DALTON_OCC",
 	"startingLocation": "14",
 	"set": "INV_SET_CORE",
-	"quote": "INV_MARK_HARRIGAN_QUOTE",
+	"quote": "INV_FRANK_DALTON_QUOTE",
 	"role": [
       "INV_ROLE_COMBAT"
 	],
@@ -869,13 +869,13 @@
 	}
   },
   {
-	"name": "Calvin Wright",
+	"name": "Marcus Bell",
 	"startingItems": [{"resource": 1}, {"clue": 1}, {"asset": "spirit_dagger"}],
-	"displayName": "INV_CALVIN_WRIGHT_NAME",
-	"occupation": "INV_CALVIN_WRIGHT_OCC",
+	"displayName": "INV_MARCUS_BELL_NAME",
+	"occupation": "INV_MARCUS_BELL_OCC",
 	"startingLocation": "Buenos Aires",
 	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_CALVIN_WRIGHT_QUOTE",
+	"quote": "INV_MARCUS_BELL_QUOTE",
 	"role": [
       "INV_ROLE_ALL_ROUNDER"
 	],
@@ -890,13 +890,13 @@
 	}
   },
   {
-	"name": "Mandy Thompson",
+	"name": "Nora Whitby",
 	"startingItems": [{"asset": "magnifying_glass"}],
-	"displayName": "INV_MANDY_THOMPSON_NAME",
-	"occupation": "INV_MANDY_THOMPSON_OCC",
+	"displayName": "INV_NORA_WHITBY_NAME",
+	"occupation": "INV_NORA_WHITBY_OCC",
 	"startingLocation": "Shanghai",
 	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_MANDY_THOMPSON_QUOTE",
+	"quote": "INV_NORA_WHITBY_QUOTE",
 	"role": [
       "INV_ROLE_RESEARCH"
 	],
@@ -911,13 +911,13 @@
 	}
   },
   {
-	"name": "Daisy Walker",
+	"name": "Iris Bellamy",
 	"startingItems": [{"spell": "arcane_insight"}],
-	"displayName": "INV_DAISY_WALKER_NAME",
-	"occupation": "INV_DAISY_WALKER_OCC",
+	"displayName": "INV_IRIS_BELLAMY_NAME",
+	"occupation": "INV_IRIS_BELLAMY_OCC",
 	"startingLocation": "Istanbul",
 	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_DAISY_WALKER_QUOTE",
+	"quote": "INV_IRIS_BELLAMY_QUOTE",
 	"role": [
       "INV_ROLE_MAGIC"
 	],
@@ -932,13 +932,13 @@
 	}
   },
   {
-	"name": "Roland Banks",
+	"name": "Dale Corwin",
 	"startingItems": [{"asset": "mauser_c96"}],
-	"displayName": "INV_ROLAND_BANKS_NAME",
-	"occupation": "INV_ROLAND_BANKS_OCC",
+	"displayName": "INV_DALE_CORWIN_NAME",
+	"occupation": "INV_DALE_CORWIN_OCC",
 	"startingLocation": "San Francisco",
 	"set": "INV_SET_CITIES_IN_RUIN",
-	"quote": "INV_ROLAND_BANKS_QUOTE",
+	"quote": "INV_DALE_CORWIN_QUOTE",
 	"role": [
 	  "INV_ROLE_RESEARCH",
       "INV_ROLE_SUPPORT"
@@ -954,13 +954,13 @@
 	}
   },
   {
-	"name": "Hank Samson",
+	"name": "Buck Tanner",
 	"startingItems": [{"asset": "sledgehammer"}],
-	"displayName": "INV_HANK_SAMSON_NAME",
-	"occupation": "INV_HANK_SAMSON_OCC",
+	"displayName": "INV_BUCK_TANNER_NAME",
+	"occupation": "INV_BUCK_TANNER_OCC",
 	"startingLocation": "6",
 	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_HANK_SAMSON_QUOTE",
+	"quote": "INV_BUCK_TANNER_QUOTE",
 	"role": [
       "INV_ROLE_COMBAT"
 	],
@@ -975,13 +975,13 @@
 	}
   },
   {
-	"name": "Skids O'Toole",
+	"name": "Sly Bracken",
 	"startingItems": [{"asset": "axe"}],
-	"displayName": "INV_SKIDS_O_TOOLE_NAME",
-	"occupation": "INV_SKIDS_O_TOOLE_OCC",
+	"displayName": "INV_SLY_BRACKEN_NAME",
+	"occupation": "INV_SLY_BRACKEN_OCC",
 	"startingLocation": "Buenos Aires",
 	"set": "INV_SET_STRANGE_REMNANTS",
-	"quote": "INV_SKIDS_O_TOOLE_QUOTE",
+	"quote": "INV_SLY_BRACKEN_QUOTE",
 	"role": [
       "INV_ROLE_COMBAT"
 	],
@@ -996,13 +996,13 @@
 	}
   },
   {
-	"name": "Carolyn Fern",
+	"name": "Evelyn Hart",
 	"startingItems": [{"asset": "dream_diary"}],
-	"displayName": "INV_CAROLYN_FERN_NAME",
-	"occupation": "INV_CAROLYN_FERN_OCC",
+	"displayName": "INV_EVELYN_HART_NAME",
+	"occupation": "INV_EVELYN_HART_OCC",
 	"startingLocation": "Rome",
 	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_CAROLYN_FERN_QUOTE",
+	"quote": "INV_EVELYN_HART_QUOTE",
 	"role": [
       "INV_ROLE_SUPPORT"
 	],
@@ -1017,13 +1017,13 @@
 	}
   },
   {
-	"name": "Vincent Lee",
+	"name": "Henry Wu",
 	"startingItems": [{"asset": "bandages"}],
-	"displayName": "INV_VINCENT_LEE_NAME",
-	"occupation": "INV_VINCENT_LEE_OCC",
+	"displayName": "INV_HENRY_WU_NAME",
+	"occupation": "INV_HENRY_WU_OCC",
 	"startingLocation": "17",
 	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_VINCENT_LEE_QUOTE",
+	"quote": "INV_HENRY_WU_QUOTE",
 	"role": [
       "INV_ROLE_SUPPORT"
 	],
@@ -1038,13 +1038,13 @@
 	}
   },
   {
-	"name": "Agnes Baker",
+	"name": "Esther Ravel",
 	"startingItems": [{"asset": "profane_tome"}, {"spell": "storm_of_spirits"}],
-	"displayName": "INV_AGNES_BAKER_NAME",
-	"occupation": "INV_AGNES_BAKER_OCC",
+	"displayName": "INV_ESTHER_RAVEL_NAME",
+	"occupation": "INV_ESTHER_RAVEL_OCC",
 	"startingLocation": "London",
 	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_AGNES_BAKER_QUOTE",
+	"quote": "INV_ESTHER_RAVEL_QUOTE",
 	"role": [
       "INV_ROLE_MAGIC"
 	],
@@ -1059,13 +1059,13 @@
 	}
   },
   {
-	"name": "Finn Edwards",
+	"name": "Rory Kell",
 	"startingItems": [{"asset": "cat_burglar"}, {"asset": "whiskey"}],
-	"displayName": "INV_FINN_EDWARDS_NAME",
-	"occupation": "INV_FINN_EDWARDS_OCC",
+	"displayName": "INV_RORY_KELL_NAME",
+	"occupation": "INV_RORY_KELL_OCC",
 	"startingLocation": "5",
 	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_FINN_EDWARDS_QUOTE",
+	"quote": "INV_RORY_KELL_QUOTE",
 	"role": [
       "INV_ROLE_ALL_ROUNDER"
 	],
@@ -1080,13 +1080,13 @@
 	}
   },
   {
-	"name": "Patrice Hathaway",
+	"name": "Simone Ardent",
 	"startingItems": [{"clue": 1}, {"spell": "banishment"}],
-	"displayName": "INV_PATRICE_HATHAWAY_NAME",
-	"occupation": "INV_PATRICE_HATHAWAY_OCC",
+	"displayName": "INV_SIMONE_ARDENT_NAME",
+	"occupation": "INV_SIMONE_ARDENT_OCC",
 	"startingLocation": "Sydney",
 	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_PATRICE_HATHAWAY_QUOTE",
+	"quote": "INV_SIMONE_ARDENT_QUOTE",
 	"role": [
       "INV_ROLE_GATE_CLOSER"
 	],
@@ -1101,13 +1101,13 @@
 	}
   },
   {
-	"name": "Carson Sinclair",
+	"name": "Percival Stane",
 	"startingItems": [{"clue": 1}, {"asset": "lucky_cigarette_case"}],
-	"displayName": "INV_CARSON_SINCLAIR_NAME",
-	"occupation": "INV_CARSON_SINCLAIR_OCC",
+	"displayName": "INV_PERCIVAL_STANE_NAME",
+	"occupation": "INV_PERCIVAL_STANE_OCC",
 	"startingLocation": "London",
 	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_CARSON_SINCLAIR_QUOTE",
+	"quote": "INV_PERCIVAL_STANE_QUOTE",
 	"role": [
 	  "INV_ROLE_ALL_ROUNDER",
       "INV_ROLE_SUPPORT"
@@ -1123,13 +1123,13 @@
 	}
   },
   {
-	"name": "Tony Morgan",
+	"name": "Vince Cutter",
 	"startingItems": [{"asset": "handcuffs"}],
-	"displayName": "INV_TONY_MORGAN_NAME",
-	"occupation": "INV_TONY_MORGAN_OCC",
+	"displayName": "INV_VINCE_CUTTER_NAME",
+	"occupation": "INV_VINCE_CUTTER_OCC",
 	"startingLocation": "7",
 	"set": "INV_SET_STRANGE_REMNANTS",
-	"quote": "INV_TONY_MORGAN_QUOTE",
+	"quote": "INV_VINCE_CUTTER_QUOTE",
 	"role": [
       "INV_ROLE_RESEARCH"
 	],
@@ -1144,14 +1144,14 @@
 	}
   },
   {
-	"name": "Sister Mary",
+	"name": "Sister Cecilia",
 	"startingTickets": {"ship": 1},
 	"startingItems": [{"clue": 1}, {"asset": "holy_water"}],
-	"displayName": "INV_SISTER_MARY_NAME",
-	"occupation": "INV_SISTER_MARY_OCC",
+	"displayName": "INV_SISTER_CECILIA_NAME",
+	"occupation": "INV_SISTER_CECILIA_OCC",
 	"startingLocation": "15",
 	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_SISTER_MARY_QUOTE",
+	"quote": "INV_SISTER_CECILIA_QUOTE",
 	"role": [
       "INV_ROLE_SUPPORT"
 	],
