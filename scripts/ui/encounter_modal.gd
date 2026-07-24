@@ -35,6 +35,14 @@ var _pending_n: int = -1  # сколько рубашек показано до 
 # решения перебросить/принять. true → игрок «принял» (раскрыл) текущий провал.
 var _revealed: bool = false
 
+# Полноэкранная подложка встречи по типу локации. Пока все встречи — на городском
+# фоне; sea/wilderness добавим позже (положить ассеты + ветки в _bg_texture).
+const _BG_CITY: Texture2D = preload("res://assets/encounter/city.png")
+# Резной баннер-плашка под строкой проверки (9-patch: концы не растягиваются).
+const _CHECK_PLATE: Texture2D = preload("res://assets/encounter/check-title.png")
+
+var _bg: TextureRect  # подложка, создаётся в _build_background
+
 # Навык → ключ перевода для подписи проверки.
 const _SKILL_KEYS := {
 	"lore": "SKILL_LORE",
@@ -46,12 +54,12 @@ const _SKILL_KEYS := {
 
 
 func _ready() -> void:
-	UIStyle.style_modal_panel(_panel)
+	_build_background()  # полноэкранная подложка встречи + прозрачная панель контента
 	UIStyle.style_button(_roll_btn)
 	UIStyle.style_button(_finish_btn)
 	_title.add_theme_color_override("font_color", UIColors.ACCENT)
 	_main_text.add_theme_color_override("font_color", UIColors.TEXT)
-	_check.add_theme_color_override("font_color", UIColors.MUTED)
+	_style_check_plate()  # строка проверки — на резном баннере
 	_dice.add_theme_color_override("font_color", UIColors.MUTED)
 
 	# Контейнер ряда кубиков — над строкой _dice (успехи/концентрация).
@@ -77,6 +85,66 @@ func _ready() -> void:
 
 	GameState.state_changed.connect(_refresh)
 	_refresh()
+
+
+# Полноэкранная подложка встречи (арт с запечённой рамкой/пропами) + прозрачная
+# панель: контент лежит прямо на арте, без отдельной рамки-модалки.
+func _build_background() -> void:
+	_bg = TextureRect.new()
+	_bg.name = "Bg"
+	_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED  # заполнить экран без искажений
+	_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bg.texture = _BG_CITY
+	_root.add_child(_bg)
+	_root.move_child(_bg, 0)  # позади затемнения и контента
+	# Затемнение больше не нужно (арт сам тёмный) — оставляем узел лишь как ловушку
+	# кликов (mouse STOP), делаем прозрачным.
+	var backdrop: ColorRect = _root.get_node_or_null("Backdrop")
+	if backdrop != null:
+		backdrop.color = Color(0, 0, 0, 0.0)
+	# Панель без фона/рамки — только внутренние отступы; ширина шире под колонку текста.
+	var empty := StyleBoxEmpty.new()
+	empty.content_margin_left = 44
+	empty.content_margin_right = 44
+	empty.content_margin_top = 28
+	empty.content_margin_bottom = 28
+	_panel.add_theme_stylebox_override("panel", empty)
+	_panel.custom_minimum_size = Vector2(880, 0)
+
+
+# Строка проверки на резном баннере check-title.png (9-patch: декоративные концы
+# не растягиваются, тянется только середина). Значения — под текущий арт, тюнятся.
+func _style_check_plate() -> void:
+	var sb := StyleBoxTexture.new()
+	sb.texture = _CHECK_PLATE
+	sb.texture_margin_left = 110
+	sb.texture_margin_right = 110
+	sb.texture_margin_top = 22
+	sb.texture_margin_bottom = 22
+	sb.content_margin_left = 130
+	sb.content_margin_right = 130
+	sb.content_margin_top = 12
+	sb.content_margin_bottom = 14
+	_check.add_theme_stylebox_override("normal", sb)
+	_check.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_check.add_theme_color_override("font_color", UIColors.TEXT)
+
+
+# Подложка по типу локации активной встречи. Пока все типы → город.
+func _apply_background() -> void:
+	if _bg == null:
+		return
+	var loc: String = String(GameState.my_player().get("location", ""))
+	var tex: Texture2D = _bg_texture(GameState.location_type(loc))
+	if _bg.texture != tex:
+		_bg.texture = tex
+
+
+# Арт фона по типу локации. sea/wilderness появятся позже — добавить ветки и ассеты.
+func _bg_texture(_loc_type: String) -> Texture2D:
+	return _BG_CITY
 
 
 # Активная проверка встречи (единая, CheckFlow), если она относится к встрече.
@@ -118,6 +186,7 @@ func _refresh() -> void:
 	_root.visible = mine
 	if not mine:
 		return
+	_apply_background()  # подложка по типу локации встречи
 	var card: Dictionary = GameState.current_encounter
 	# Бой — отдельная боевая модалка; это окно скрываем.
 	if String(card.get("kind", "")) == "combat":
