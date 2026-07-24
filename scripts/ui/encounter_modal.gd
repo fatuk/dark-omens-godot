@@ -35,13 +35,22 @@ var _pending_n: int = -1  # сколько рубашек показано до 
 # решения перебросить/принять. true → игрок «принял» (раскрыл) текущий провал.
 var _revealed: bool = false
 
-# Полноэкранная подложка встречи по типу локации. Пока все встречи — на городском
-# фоне; sea/wilderness добавим позже (положить ассеты + ветки в _bg_texture).
+# Арт-подложка карточки встречи по типу локации (рамка/пропы запечены в ассет).
+# Пока все встречи — на городском; sea/wilderness добавим позже (см. _bg_texture).
 const _BG_CITY: Texture2D = preload("res://assets/encounter/city.png")
 # Резной баннер-плашка под строкой проверки (9-patch: концы не растягиваются).
 const _CHECK_PLATE: Texture2D = preload("res://assets/encounter/check-title.png")
 
-var _bg: TextureRect  # подложка, создаётся в _build_background
+# Карточка встречи — центрированная, ~70% ширины экрана, аспект арта 3:2 (2048/3072).
+# Контент — во внутренних отступах (доли от размера карточки), в нижней «тёмной» зоне
+# арта под сценой; поэтому верхний отступ большой.
+const _CARD_WIDTH_FRAC: float = 0.70
+const _CARD_ASPECT: float = 2048.0 / 3072.0
+const _PAD_X_FRAC: float = 0.09  # боковые отступы (доля ширины карточки)
+const _PAD_TOP_FRAC: float = 0.40  # сдвиг контента под сцену (доля высоты)
+const _PAD_BOTTOM_FRAC: float = 0.07
+
+var _card_sb: StyleBoxTexture  # арт-фон карточки (меняем текстуру по типу локации)
 
 # Навык → ключ перевода для подписи проверки.
 const _SKILL_KEYS := {
@@ -87,31 +96,30 @@ func _ready() -> void:
 	_refresh()
 
 
-# Полноэкранная подложка встречи (арт с запечённой рамкой/пропами) + прозрачная
-# панель: контент лежит прямо на арте, без отдельной рамки-модалки.
+# Фон карточки = арт city.png (StyleBoxTexture): контент лежит прямо на арте,
+# рамка/пропы запечены в ассет. Размер и отступы — в _resize_card (пропорционально
+# экрану). Затемнение вокруг даёт узел Backdrop (в сцене).
 func _build_background() -> void:
-	_bg = TextureRect.new()
-	_bg.name = "Bg"
-	_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED  # заполнить экран без искажений
-	_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_bg.texture = _BG_CITY
-	_root.add_child(_bg)
-	_root.move_child(_bg, 0)  # позади затемнения и контента
-	# Затемнение больше не нужно (арт сам тёмный) — оставляем узел лишь как ловушку
-	# кликов (mouse STOP), делаем прозрачным.
-	var backdrop: ColorRect = _root.get_node_or_null("Backdrop")
-	if backdrop != null:
-		backdrop.color = Color(0, 0, 0, 0.0)
-	# Панель без фона/рамки — только внутренние отступы; ширина шире под колонку текста.
-	var empty := StyleBoxEmpty.new()
-	empty.content_margin_left = 44
-	empty.content_margin_right = 44
-	empty.content_margin_top = 28
-	empty.content_margin_bottom = 28
-	_panel.add_theme_stylebox_override("panel", empty)
-	_panel.custom_minimum_size = Vector2(880, 0)
+	_card_sb = StyleBoxTexture.new()
+	_card_sb.texture = _BG_CITY
+	_panel.add_theme_stylebox_override("panel", _card_sb)
+	get_viewport().size_changed.connect(_resize_card)
+	_resize_card()
+
+
+# Карточка ~70% ширины экрана, аспект арта 3:2; отступы — доли от её размера, чтобы
+# контент лёг в нижнюю «тёмную» зону арта. Пересчитывается при ресайзе окна.
+func _resize_card() -> void:
+	if _card_sb == null:
+		return
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var w: float = vp.x * _CARD_WIDTH_FRAC
+	var h: float = w * _CARD_ASPECT
+	_panel.custom_minimum_size = Vector2(w, h)
+	_card_sb.content_margin_left = w * _PAD_X_FRAC
+	_card_sb.content_margin_right = w * _PAD_X_FRAC
+	_card_sb.content_margin_top = h * _PAD_TOP_FRAC
+	_card_sb.content_margin_bottom = h * _PAD_BOTTOM_FRAC
 
 
 # Строка проверки на резном баннере check-title.png (9-patch: декоративные концы
@@ -132,14 +140,14 @@ func _style_check_plate() -> void:
 	_check.add_theme_color_override("font_color", UIColors.TEXT)
 
 
-# Подложка по типу локации активной встречи. Пока все типы → город.
+# Арт карточки по типу локации активной встречи. Пока все типы → город.
 func _apply_background() -> void:
-	if _bg == null:
+	if _card_sb == null:
 		return
 	var loc: String = String(GameState.my_player().get("location", ""))
 	var tex: Texture2D = _bg_texture(GameState.location_type(loc))
-	if _bg.texture != tex:
-		_bg.texture = tex
+	if _card_sb.texture != tex:
+		_card_sb.texture = tex
 
 
 # Арт фона по типу локации. sea/wilderness появятся позже — добавить ветки и ассеты.
