@@ -13,7 +13,7 @@ extends CanvasLayer
 
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
-@onready var _title: Label = %Title
+var _title: Label  # заголовок с шевронами (ставится в _ready вместо плоского %Title)
 @onready var _main_text: Label = %MainText
 @onready var _check: Label = %Check
 @onready var _roll_btn: Button = %RollBtn
@@ -44,11 +44,12 @@ const _CHECK_PLATE: Texture2D = preload("res://assets/encounter/check-title.png"
 # Карточка встречи — центрированная, ~70% ширины экрана, аспект арта 3:2 (2048/3072).
 # Контент — во внутренних отступах (доли от размера карточки), в нижней «тёмной» зоне
 # арта под сценой; поэтому верхний отступ большой.
-const _CARD_WIDTH_FRAC: float = 0.70
+const _CARD_WIDTH_FRAC: float = 0.85
 const _CARD_ASPECT: float = 2048.0 / 3072.0
 const _PAD_X_FRAC: float = 0.09  # боковые отступы (доля ширины карточки)
 const _PAD_TOP_FRAC: float = 0.40  # сдвиг контента под сцену (доля высоты)
 const _PAD_BOTTOM_FRAC: float = 0.07
+const _BTN_MIN_WIDTH: float = 380.0  # кнопки — фикс. ширина (центр), не на всю карточку
 
 var _card_sb: StyleBoxTexture  # арт-фон карточки (меняем текстуру по типу локации)
 
@@ -63,10 +64,14 @@ const _SKILL_KEYS := {
 
 
 func _ready() -> void:
-	_build_background()  # полноэкранная подложка встречи + прозрачная панель контента
+	_build_background()  # арт-подложка карточки + прозрачная панель контента
+	_title = _install_ornate_title()  # заголовок с орнаментальными шевронами
 	UIStyle.style_button(_roll_btn)
 	UIStyle.style_button(_finish_btn)
-	_title.add_theme_color_override("font_color", UIColors.ACCENT)
+	# Кнопки не тянем на всю ширину карточки — центрируем на естественной ширине.
+	for b: Button in [_roll_btn, _finish_btn]:
+		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		b.custom_minimum_size.x = _BTN_MIN_WIDTH
 	_main_text.add_theme_color_override("font_color", UIColors.TEXT)
 	_style_check_plate()  # строка проверки — на резном баннере
 	_dice.add_theme_color_override("font_color", UIColors.MUTED)
@@ -96,6 +101,19 @@ func _ready() -> void:
 	_refresh()
 
 
+# Заменяет плоский %Title орнаментальным заголовком (шеврон · имя · шеврон).
+# Возвращает внутренний Label — в него пишем текст встречи (_title.text = …).
+func _install_ornate_title() -> Label:
+	var placeholder: Label = %Title
+	var ot: HBoxContainer = UIStyle.ornate_title("", 22, UIColors.ACCENT)
+	var vbox: Node = placeholder.get_parent()
+	var at: int = placeholder.get_index()
+	vbox.add_child(ot)
+	vbox.move_child(ot, at)
+	placeholder.queue_free()
+	return ot.get_node("Title") as Label
+
+
 # Фон карточки = арт city.png (StyleBoxTexture): контент лежит прямо на арте,
 # рамка/пропы запечены в ассет. Размер и отступы — в _resize_card (пропорционально
 # экрану). Затемнение вокруг даёт узел Backdrop (в сцене).
@@ -115,6 +133,12 @@ func _resize_card() -> void:
 	var vp: Vector2 = get_viewport().get_visible_rect().size
 	var w: float = vp.x * _CARD_WIDTH_FRAC
 	var h: float = w * _CARD_ASPECT
+	# Кэп по высоте: при 3:2 карточка 85% ширины выше экрана на 16:9 — ужимаем,
+	# сохраняя аспект, чтобы всегда влезала.
+	var max_h: float = vp.y * 0.96
+	if h > max_h:
+		h = max_h
+		w = h / _CARD_ASPECT
 	_panel.custom_minimum_size = Vector2(w, h)
 	_card_sb.content_margin_left = w * _PAD_X_FRAC
 	_card_sb.content_margin_right = w * _PAD_X_FRAC
