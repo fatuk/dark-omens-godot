@@ -122,22 +122,24 @@ func _resize_card() -> void:
 	_card_sb.content_margin_bottom = h * _PAD_BOTTOM_FRAC
 
 
-# Строка проверки на резном баннере check-title.png (9-patch: декоративные концы
-# не растягиваются, тянется только середина). Значения — под текущий арт, тюнятся.
+# Строка проверки на резном баннере check-title.png. Плашка — ФИКСИРОВАННОГО
+# размера (оригинал @2× → 0.5), центрирована, НЕ тянется ни по ширине, ни по высоте:
+# лейбл ужат до размера ассета (SHRINK_CENTER + custom_minimum_size), StyleBoxTexture
+# рисует текстуру ровно в этот размер (=½ натурального → без искажений). Текст —
+# по центру, боковые отступы уводят его с резных концов.
 func _style_check_plate() -> void:
 	var sb := StyleBoxTexture.new()
 	sb.texture = _CHECK_PLATE
-	sb.texture_margin_left = 110
-	sb.texture_margin_right = 110
-	sb.texture_margin_top = 22
-	sb.texture_margin_bottom = 22
-	sb.content_margin_left = 130
-	sb.content_margin_right = 130
-	sb.content_margin_top = 12
-	sb.content_margin_bottom = 14
+	sb.content_margin_left = 90
+	sb.content_margin_right = 90
+	sb.content_margin_top = 4
+	sb.content_margin_bottom = 6
 	_check.add_theme_stylebox_override("normal", sb)
 	_check.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_check.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_check.add_theme_color_override("font_color", UIColors.TEXT)
+	_check.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_check.custom_minimum_size = _CHECK_PLATE.get_size() * 0.5
 
 
 # Арт карточки по типу локации активной встречи. Пока все типы → город.
