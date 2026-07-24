@@ -44,7 +44,7 @@ const _CHECK_PLATE: Texture2D = preload("res://assets/encounter/check-title.png"
 # Карточка встречи — центрированная, ~70% ширины экрана, аспект арта 3:2 (2048/3072).
 # Контент — во внутренних отступах (доли от размера карточки), в нижней «тёмной» зоне
 # арта под сценой; поэтому верхний отступ большой.
-const _CARD_WIDTH_FRAC: float = 0.85
+const _CARD_WIDTH_FRAC: float = 0.75
 const _CARD_ASPECT: float = 2048.0 / 3072.0
 const _PAD_X_FRAC: float = 0.09  # боковые отступы (доля ширины карточки)
 const _PAD_TOP_FRAC: float = 0.40  # сдвиг контента под сцену (доля высоты)
@@ -92,6 +92,19 @@ func _ready() -> void:
 	vbox.add_child(_choice_holder)
 	vbox.move_child(_choice_holder, _roll_btn.get_index())
 	_choice_holder.visible = false
+
+	# Исход (успех/провал) — сразу ПОД основным текстом как продолжение, но своим
+	# цветом (зелёный/красный): переносим _outcome вплотную к _main_text.
+	vbox.move_child(_outcome, _main_text.get_index() + 1)
+	# Распорка после текста+исхода: растягивается по вертикали и прижимает нижнюю
+	# группу (проверка · кубы · кнопка) к низу карточки, чтобы текст исхода рос вверх
+	# и не двигал их.
+	var spacer := Control.new()
+	spacer.name = "BottomSpacer"
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(spacer)
+	vbox.move_child(spacer, _outcome.get_index() + 1)
 
 	_roll_btn.pressed.connect(_on_roll_pressed)
 	_finish_btn.pressed.connect(_on_finish_pressed)
@@ -340,6 +353,8 @@ func _show_outcome(card: Dictionary) -> void:
 	var hide_fail: bool = (
 		not passed and not _revealed and (_rerolls_available() or _reroll_all_available())
 	)
+	# Исход — продолжением под основным текстом (см. раскладку в _ready), но своим
+	# цветом: зелёный успех / красный провал.
 	if hide_fail:
 		_outcome.visible = false
 	else:
@@ -383,6 +398,7 @@ func _show_gate(card: Dictionary) -> void:
 	var hide_fail: bool = (
 		not passed and not _revealed and (_rerolls_available() or _reroll_all_available())
 	)
+	# Исход — продолжением под основным текстом узла, своим цветом (как _show_outcome).
 	if hide_fail:
 		_outcome.visible = false
 	else:
