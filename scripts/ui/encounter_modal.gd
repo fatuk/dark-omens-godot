@@ -48,7 +48,7 @@ const _CHECK_PLATE: Texture2D = preload("res://assets/encounter/check-title.png"
 const _CARD_WIDTH_FRAC: float = 0.75
 const _CARD_ASPECT: float = 2048.0 / 3072.0
 const _PAD_X_FRAC: float = 0.09  # боковые отступы (доля ширины карточки)
-const _PAD_TOP_FRAC: float = 0.40  # сдвиг контента под сцену (доля высоты)
+const _PAD_TOP_FRAC: float = 0.05  # верхний инсет (текст всплывает сюда при нехватке места)
 const _PAD_BOTTOM_FRAC: float = 0.07
 const _BTN_MIN_WIDTH: float = 380.0  # кнопки — фикс. ширина (центр), не на всю карточку
 
@@ -94,25 +94,18 @@ func _ready() -> void:
 	vbox.move_child(_choice_holder, _roll_btn.get_index())
 	_choice_holder.visible = false
 
-	# Текстовая зона (заголовок · основной текст · исход): растягивается по вертикали
-	# (EXPAND_FILL) и КЛИПАЕТ переполнение. Так карточка фикс-высоты, а нижняя группа
-	# (проверка · кубы · кнопка) всегда прижата к низу и видна: дописанный при исходе
-	# текст растёт/клипается ВНУТРИ зоны и кубы/кнопку не двигает.
-	var text_box := VBoxContainer.new()
-	text_box.name = "TextBox"
-	text_box.add_theme_constant_override("separation", 14)
-	text_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	text_box.clip_contents = true
-	text_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(text_box)
-	vbox.move_child(text_box, 0)  # текстовая зона — сверху, над нижней группой
-	var ornate: Node = _title.get_parent()  # HBox орнаментального заголовка
-	ornate.reparent(text_box, false)
-	_main_text.reparent(text_box, false)
-	_outcome.reparent(text_box, false)
-	text_box.move_child(ornate, 0)
-	text_box.move_child(_main_text, 1)
-	text_box.move_child(_outcome, 2)
+	# Исход (успех/провал) — сразу ПОД основным текстом (продолжением), своим цветом.
+	vbox.move_child(_outcome, _main_text.get_index() + 1)
+	# Верхняя распорка (EXPAND): блок «текст + нижняя группа» прижат к НИЗУ карточки.
+	# Нижняя группа (проверка · кубы · кнопка) стоит у низа НЕПОДВИЖНО; при длинном
+	# тексте распорка сжимается и ТЕКСТ поднимается вверх (заходя на верхний арт), а не
+	# толкает кубы/кнопку вниз. Переполнение сверху клипается (_panel.clip_contents).
+	var top_spacer := Control.new()
+	top_spacer.name = "TopSpacer"
+	top_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(top_spacer)
+	vbox.move_child(top_spacer, 0)  # распорка — самой первой, над всем контентом
 
 	_roll_btn.pressed.connect(_on_roll_pressed)
 	_finish_btn.pressed.connect(_on_finish_pressed)
