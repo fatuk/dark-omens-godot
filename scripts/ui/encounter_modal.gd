@@ -36,6 +36,12 @@ var _pending_n: int = -1  # сколько рубашек показано до 
 # решения перебросить/принять. true → игрок «принял» (раскрыл) текущий провал.
 var _revealed: bool = false
 
+# Анимации: карточка «выплывает» при показе; текст исхода плавно проявляется.
+var _was_shown: bool = false  # окно уже показано в этой встрече (интро — на первом показе)
+var _outcome_shown: bool = false  # исход уже проявлен (фейд — только на появлении)
+var _intro_tween: Tween = null
+var _outcome_tween: Tween = null
+
 # Арт-подложка карточки встречи по типу локации (рамка/пропы запечены в ассет).
 # Пока все встречи — на городском; sea/wilderness добавим позже (см. _bg_texture).
 const _BG_CITY: Texture2D = preload("res://assets/encounter/city.png")
@@ -162,10 +168,38 @@ func _resize_card() -> void:
 		h = max_h
 		w = h / _CARD_ASPECT
 	_panel.custom_minimum_size = Vector2(w, h)
+	_panel.pivot_offset = Vector2(w, h) * 0.5  # масштаб интро — от центра карточки
 	_vbox.offset_left = w * _PAD_X_FRAC
 	_vbox.offset_right = -w * _PAD_X_FRAC
 	_vbox.offset_top = h * _PAD_TOP_FRAC
 	_vbox.offset_bottom = -h * _PAD_BOTTOM_FRAC
+
+
+# Появление окна встречи: весь модал плавно проявляется (вкл. затемнение), а арт-
+# карточка мягко подрастает из ~0.95 — «выплывает».
+func _play_intro() -> void:
+	if _intro_tween != null and _intro_tween.is_valid():
+		_intro_tween.kill()
+	_panel.pivot_offset = _panel.custom_minimum_size * 0.5
+	_root.modulate.a = 0.0
+	_panel.scale = Vector2(0.95, 0.95)
+	_intro_tween = create_tween().set_parallel(true)
+	_intro_tween.tween_property(_root, "modulate:a", 1.0, 0.22)
+	(
+		_intro_tween
+		. tween_property(_panel, "scale", Vector2.ONE, 0.32)
+		. set_trans(Tween.TRANS_CUBIC)
+		. set_ease(Tween.EASE_OUT)
+	)
+
+
+# Плавное проявление текста исхода (успех/провал) при его добавлении.
+func _play_outcome_in() -> void:
+	if _outcome_tween != null and _outcome_tween.is_valid():
+		_outcome_tween.kill()
+	_outcome.modulate.a = 0.0
+	_outcome_tween = create_tween()
+	_outcome_tween.tween_property(_outcome, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE)
 
 
 # Строка проверки на резном баннере check-title.png. Плашка — ФИКСИРОВАННОГО
@@ -234,20 +268,26 @@ func _set_reroll_all_btn() -> void:
 
 func _refresh() -> void:
 	var mine: bool = GameState.is_my_encounter_turn()
+	# Не мой ход / встреча кончилась — сброс, чтобы следующая встреча снова «выплыла».
+	if not mine:
+		_root.visible = false
+		_was_shown = false
+		return
 	# Пока активный игрок выбирает тип встречи — окно встречи скрыто
-	# (его место занимает модалка выбора).
-	if mine and not (GameState.encounter_choices as Array).is_empty():
+	# (его место занимает модалка выбора). Флаг показа НЕ сбрасываем — это та же встреча.
+	if not (GameState.encounter_choices as Array).is_empty():
 		_root.visible = false
 		return
-	_root.visible = mine
-	if not mine:
-		return
-	_apply_background()  # подложка по типу локации встречи
 	var card: Dictionary = GameState.current_encounter
-	# Бой — отдельная боевая модалка; это окно скрываем.
+	# Бой — отдельная боевая модалка; это окно скрываем (та же встреча — флаг держим).
 	if String(card.get("kind", "")) == "combat":
 		_root.visible = false
 		return
+	_root.visible = true
+	if not _was_shown:  # первый показ этой встречи — карточка «выплывает»
+		_play_intro()
+		_was_shown = true
+	_apply_background()  # подложка по типу локации встречи
 	# Интерактивный выбор ветки эффектов (choice) — поверх любого состояния:
 	# коммит встал на паузу и ждёт решения активного игрока.
 	if not (card.get("pending_choice", {}) as Dictionary).is_empty():
@@ -272,6 +312,7 @@ func _show_loading() -> void:
 	_main_text.text = "ENCOUNTER_GENERATING"
 	for node: Control in [_check, _roll_btn, _dice, _outcome, _finish_btn]:
 		node.visible = false
+	_outcome_shown = false  # исход ещё не показан — сброс фейд-флага
 	_hide_dice()
 
 
@@ -346,6 +387,7 @@ func _show_card(card: Dictionary) -> void:
 	_roll_btn.visible = true
 	_roll_btn.disabled = false
 	_outcome.visible = false
+	_outcome_shown = false  # исход ещё не показан — сброс фейд-флага
 	_finish_btn.visible = false
 	_show_dice_pending(_check_pool(card.get("test", {})))  # рубашки до броска
 
@@ -363,15 +405,19 @@ func _show_outcome(card: Dictionary) -> void:
 		not passed and not _revealed and (_rerolls_available() or _reroll_all_available())
 	)
 	# Исход — продолжением под основным текстом (см. раскладку в _ready), но своим
-	# цветом: зелёный успех / красный провал.
+	# цветом: зелёный успех / красный провал. Появление — плавным фейдом.
 	if hide_fail:
 		_outcome.visible = false
+		_outcome_shown = false
 	else:
 		_outcome.text = _outcome_text(card, passed)
 		_outcome.add_theme_color_override(
 			"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
 		)
 		_outcome.visible = true
+		if not _outcome_shown:
+			_play_outcome_in()
+			_outcome_shown = true
 	_set_reroll_all_btn()  # кнопка броска → «Перебросить кубы», пока доступен reroll-all
 	_finish_btn.text = "ENCOUNTER_ACCEPT" if hide_fail else "BTN_FINISH_BIG"
 	_finish_btn.visible = true
@@ -396,6 +442,7 @@ func _show_gate(card: Dictionary) -> void:
 		_roll_btn.visible = true
 		_roll_btn.disabled = false
 		_outcome.visible = false
+		_outcome_shown = false  # исход ещё не показан — сброс фейд-флага
 		_finish_btn.visible = false
 		_show_dice_pending(_check_pool(node.get("test", {})))  # рубашки до броска
 		return
@@ -410,12 +457,16 @@ func _show_gate(card: Dictionary) -> void:
 	# Исход — продолжением под основным текстом узла, своим цветом (как _show_outcome).
 	if hide_fail:
 		_outcome.visible = false
+		_outcome_shown = false
 	else:
 		_outcome.text = _outcome_text(node, passed)
 		_outcome.add_theme_color_override(
 			"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
 		)
 		_outcome.visible = true
+		if not _outcome_shown:
+			_play_outcome_in()
+			_outcome_shown = true
 	_set_reroll_all_btn()  # кнопка броска → «Перебросить кубы», пока доступен reroll-all
 	# После первой проверки (stage 0) всегда «Дальше» (обе ветви ведут ко второй
 	# проверке); после второй (stage 1) — «Завершить».
