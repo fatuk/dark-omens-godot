@@ -12,7 +12,8 @@ extends CanvasLayer
 ## (GameState.resolve_encounter); окно лишь показывает синкнутый результат.
 
 @onready var _root: Control = $Root
-@onready var _panel: PanelContainer = %Panel
+@onready var _panel: Control = %Panel  # карточка ФИКС-размера (не растёт под контент)
+@onready var _vbox: VBoxContainer = %VBox
 var _title: Label  # заголовок с шевронами (ставится в _ready вместо плоского %Title)
 @onready var _main_text: Label = %MainText
 @onready var _check: Label = %Check
@@ -51,7 +52,7 @@ const _PAD_TOP_FRAC: float = 0.40  # сдвиг контента под сцен
 const _PAD_BOTTOM_FRAC: float = 0.07
 const _BTN_MIN_WIDTH: float = 380.0  # кнопки — фикс. ширина (центр), не на всю карточку
 
-var _card_sb: StyleBoxTexture  # арт-фон карточки (меняем текстуру по типу локации)
+var _bg: TextureRect  # арт-фон карточки (меняем текстуру по типу локации)
 
 # Навык → ключ перевода для подписи проверки.
 const _SKILL_KEYS := {
@@ -93,18 +94,25 @@ func _ready() -> void:
 	vbox.move_child(_choice_holder, _roll_btn.get_index())
 	_choice_holder.visible = false
 
-	# Исход (успех/провал) — сразу ПОД основным текстом как продолжение, но своим
-	# цветом (зелёный/красный): переносим _outcome вплотную к _main_text.
-	vbox.move_child(_outcome, _main_text.get_index() + 1)
-	# Распорка после текста+исхода: растягивается по вертикали и прижимает нижнюю
-	# группу (проверка · кубы · кнопка) к низу карточки, чтобы текст исхода рос вверх
-	# и не двигал их.
-	var spacer := Control.new()
-	spacer.name = "BottomSpacer"
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(spacer)
-	vbox.move_child(spacer, _outcome.get_index() + 1)
+	# Текстовая зона (заголовок · основной текст · исход): растягивается по вертикали
+	# (EXPAND_FILL) и КЛИПАЕТ переполнение. Так карточка фикс-высоты, а нижняя группа
+	# (проверка · кубы · кнопка) всегда прижата к низу и видна: дописанный при исходе
+	# текст растёт/клипается ВНУТРИ зоны и кубы/кнопку не двигает.
+	var text_box := VBoxContainer.new()
+	text_box.name = "TextBox"
+	text_box.add_theme_constant_override("separation", 14)
+	text_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	text_box.clip_contents = true
+	text_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(text_box)
+	vbox.move_child(text_box, 0)  # текстовая зона — сверху, над нижней группой
+	var ornate: Node = _title.get_parent()  # HBox орнаментального заголовка
+	ornate.reparent(text_box, false)
+	_main_text.reparent(text_box, false)
+	_outcome.reparent(text_box, false)
+	text_box.move_child(ornate, 0)
+	text_box.move_child(_main_text, 1)
+	text_box.move_child(_outcome, 2)
 
 	_roll_btn.pressed.connect(_on_roll_pressed)
 	_finish_btn.pressed.connect(_on_finish_pressed)
@@ -127,36 +135,44 @@ func _install_ornate_title() -> Label:
 	return ot.get_node("Title") as Label
 
 
-# Фон карточки = арт city.png (StyleBoxTexture): контент лежит прямо на арте,
-# рамка/пропы запечены в ассет. Размер и отступы — в _resize_card (пропорционально
-# экрану). Затемнение вокруг даёт узел Backdrop (в сцене).
+# Фон карточки = арт city.png (TextureRect позади контента): рамка/пропы запечены в
+# ассет. Карточка (_panel, обычный Control) — ФИКС-размера, поэтому контент её высоту
+# не меняет (лишнее клипается). VBox с контентом — по якорям full-rect с отступами
+# (в _resize_card). Затемнение вокруг даёт узел Backdrop (в сцене).
 func _build_background() -> void:
-	_card_sb = StyleBoxTexture.new()
-	_card_sb.texture = _BG_CITY
-	_panel.add_theme_stylebox_override("panel", _card_sb)
+	_bg = TextureRect.new()
+	_bg.name = "Bg"
+	_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED  # карточка 3:2 = аспект арта
+	_bg.texture = _BG_CITY
+	_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_panel.add_child(_bg)
+	_panel.move_child(_bg, 0)  # позади VBox с контентом
 	get_viewport().size_changed.connect(_resize_card)
 	_resize_card()
 
 
-# Карточка ~70% ширины экрана, аспект арта 3:2; отступы — доли от её размера, чтобы
-# контент лёг в нижнюю «тёмную» зону арта. Пересчитывается при ресайзе окна.
+# Карточка _CARD_WIDTH_FRAC ширины экрана, аспект арта 3:2 — ФИКС-размер (не растёт
+# под контент). Отступы контента = доли от карточки → offsets VBox (якоря full-rect),
+# чтобы контент лёг в нижнюю «тёмную» зону арта. Пересчёт при ресайзе окна.
 func _resize_card() -> void:
-	if _card_sb == null:
+	if _panel == null:
 		return
 	var vp: Vector2 = get_viewport().get_visible_rect().size
 	var w: float = vp.x * _CARD_WIDTH_FRAC
 	var h: float = w * _CARD_ASPECT
-	# Кэп по высоте: при 3:2 карточка 85% ширины выше экрана на 16:9 — ужимаем,
-	# сохраняя аспект, чтобы всегда влезала.
+	# Кэп по высоте: при 3:2 широкая карточка выше экрана на 16:9 — ужимаем, сохраняя
+	# аспект, чтобы всегда влезала.
 	var max_h: float = vp.y * 0.96
 	if h > max_h:
 		h = max_h
 		w = h / _CARD_ASPECT
 	_panel.custom_minimum_size = Vector2(w, h)
-	_card_sb.content_margin_left = w * _PAD_X_FRAC
-	_card_sb.content_margin_right = w * _PAD_X_FRAC
-	_card_sb.content_margin_top = h * _PAD_TOP_FRAC
-	_card_sb.content_margin_bottom = h * _PAD_BOTTOM_FRAC
+	_vbox.offset_left = w * _PAD_X_FRAC
+	_vbox.offset_right = -w * _PAD_X_FRAC
+	_vbox.offset_top = h * _PAD_TOP_FRAC
+	_vbox.offset_bottom = -h * _PAD_BOTTOM_FRAC
 
 
 # Строка проверки на резном баннере check-title.png. Плашка — ФИКСИРОВАННОГО
@@ -181,12 +197,12 @@ func _style_check_plate() -> void:
 
 # Арт карточки по типу локации активной встречи. Пока все типы → город.
 func _apply_background() -> void:
-	if _card_sb == null:
+	if _bg == null:
 		return
 	var loc: String = String(GameState.my_player().get("location", ""))
 	var tex: Texture2D = _bg_texture(GameState.location_type(loc))
-	if _card_sb.texture != tex:
-		_card_sb.texture = tex
+	if _bg.texture != tex:
+		_bg.texture = tex
 
 
 # Арт фона по типу локации. sea/wilderness появятся позже — добавить ветки и ассеты.
