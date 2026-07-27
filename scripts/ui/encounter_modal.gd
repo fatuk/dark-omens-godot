@@ -523,8 +523,9 @@ func _on_roll_pressed() -> void:
 
 
 func _on_die_clicked(index: int) -> void:
-	# Тапом — только бесплатно или заряженным жетоном; после «принятия» — нет.
-	if _revealed or not GameState.can_reroll_now():
+	# После «принятия» встречи кубы не трогаем. Иначе делегируем reroll_die: он сам
+	# приоритезирует +1 (addToDie) над перебросом — гард can_reroll_now() глушил «+1».
+	if _revealed:
 		return
 	GameState.reroll_die(index)
 

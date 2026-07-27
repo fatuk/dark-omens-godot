@@ -863,8 +863,9 @@ func _on_spend_resource() -> void:
 
 
 func _on_die_clicked(index: int) -> void:
-	if not _can_reroll():
-		return
+	# reroll_die сам решает: заряжен +1 (addToDie) → кладёт его на куб; иначе
+	# перебрасывает (с внутренней валидацией валюты). Гард _can_reroll() глушил
+	# клик «+1», когда переброса нет — из-за этого «+1 к значению» не применялся.
 	GameState.reroll_die(index)
 
 
