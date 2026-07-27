@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3jncfcnhvias"
-path="res://.godot/imported/card-light.png-bc9fc2a40bff3f5b6b6ce293a20bcb91.ctex"
+uid="uid://cfl11k10j10mx"
+path="res://.godot/imported/San Francisco.png-2088d971b5be0bcf7db518852cba89a9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/shop/card-light.png"
-dest_files=["res://.godot/imported/card-light.png-bc9fc2a40bff3f5b6b6ce293a20bcb91.ctex"]
+source_file="res://assets/location-sidebar/San Francisco.png"
+dest_files=["res://.godot/imported/San Francisco.png-2088d971b5be0bcf7db518852cba89a9.ctex"]
 
 [params]
 
