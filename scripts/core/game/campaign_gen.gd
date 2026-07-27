@@ -237,7 +237,6 @@ func _summary(full: Dictionary, ancient_id: String = "") -> Dictionary:
 		"id": String(full.get("id", "")),
 		"doomClock": int(full.get("doomClock", 0)),
 		"ancientOne": _stamp_ancient_id(full.get("ancientOne", {}), ancient_id),
-		"theme": full.get("theme", []),
 		"mysteries": mysteries,
 		# Локации с авторской site-встречей — на них предлагаем выбор «общая/локационная».
 		"siteEncounterLocations": full.get("siteEncounterLocations", []),
