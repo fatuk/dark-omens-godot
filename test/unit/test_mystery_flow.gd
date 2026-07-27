@@ -347,3 +347,33 @@ func test_check_defeat_below_clock() -> void:
 	_gs.doom = 9
 	_m.check_defeat()
 	assert_eq(_gs.outcome, "", "doom ниже clock → партия продолжается")
+
+
+func test_check_defeat_clamps_overshoot() -> void:
+	# Дум перешагнул doomClock (напр. дум от омена сразу +3) — поражение + кламп к clock.
+	_gs.campaign = {"doomClock": 15}
+	_gs.doom = 18
+	_gs.outcome = ""
+	_m.check_defeat()
+	assert_eq(_gs.outcome, "defeat", "перешаг тоже даёт поражение")
+	assert_eq(_gs.doom, 15, "дум склампен к doomClock — трек не переполняется")
+
+
+func test_check_defeat_idempotent_reclamps() -> void:
+	_gs.campaign = {"doomClock": 15}
+	_gs.doom = 20
+	_gs.outcome = ""
+	_m.check_defeat()
+	assert_eq(_gs.doom, 15)
+	_gs.doom = 17  # ещё прибавка после поражения (напр. следующий шаг омена)
+	_m.check_defeat()
+	assert_eq(_gs.doom, 15, "повторный вызов снова клампит")
+
+
+func test_check_defeat_noop_without_clock() -> void:
+	_gs.campaign = {}  # нет doomClock (0)
+	_gs.doom = 99
+	_gs.outcome = ""
+	_m.check_defeat()
+	assert_eq(_gs.outcome, "", "без doomClock проверка не срабатывает")
+	assert_eq(_gs.doom, 99, "дум не клампится без clock")

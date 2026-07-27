@@ -28,6 +28,9 @@ class StubMystery:
 	func try_mystery_hook(event: String, ctx: Dictionary, pid: String) -> void:
 		hooks.append({"event": event, "ctx": ctx, "pid": pid})
 
+	func check_defeat() -> void:
+		pass  # проверку/кламп дума тестируем отдельно (test_mystery_flow)
+
 
 # Мок GameState: BoardState мутирует синкаемый стейт через эти поля/методы.
 class MockGameState:

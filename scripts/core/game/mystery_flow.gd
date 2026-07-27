@@ -233,11 +233,15 @@ func _solve_active_mystery() -> void:
 		apply_mystery_on_enter()  # активировалась следующая Тайна
 
 
-# Doom достиг doomClock → партия проиграла. Хук на advanceDoom.
+# Doom достиг doomClock → партия проиграла (Древний пробуждается). Зовётся после
+# КАЖДОГО прироста дума: эффекты advanceDoom/setDoom (_apply_board_verb) и дум от
+# омена (board_state.resolve_omen_doom). Клампит дум к doomClock — чтобы трек не
+# переполнялся при перешаге, — и один раз выставляет outcome.
 func check_defeat() -> void:
-	if not _gs.outcome.is_empty():
-		return
 	var clock: int = int(_gs.campaign.get("doomClock", 0))
-	if clock > 0 and _gs.doom >= clock:
+	if clock <= 0 or _gs.doom < clock:
+		return
+	_gs.doom = clock  # дум не превышает Часы Рока (кламп для трека и повторных прибавок)
+	if _gs.outcome.is_empty():
 		_gs.outcome = "defeat"
 		GameConsole.log("[Финал] doom достиг %d — Древний пробуждается" % clock)

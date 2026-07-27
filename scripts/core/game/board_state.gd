@@ -51,6 +51,7 @@ func resolve_omen_doom() -> int:
 	if matched > 0:
 		_gs.doom += matched
 		GameConsole.log("[Омен] цвет %s · врат: %d · doom +%d" % [color, matched, matched])
+		_gs._mystery.check_defeat()  # дум от омена тоже проверяет поражение + кламп
 	return matched
 
 
