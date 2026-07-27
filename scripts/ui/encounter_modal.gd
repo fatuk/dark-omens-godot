@@ -58,6 +58,7 @@ const _PAD_X_FRAC: float = 0.09  # боковые отступы (доля ши�
 const _PAD_TOP_FRAC: float = 0.05  # верхний инсет (текст всплывает сюда при нехватке места)
 const _PAD_BOTTOM_FRAC: float = 0.07
 const _BTN_MIN_WIDTH: float = 380.0  # кнопки — фикс. ширина (центр), не на всю карточку
+const _TEXT_WIDTH_FRAC: float = 0.60  # ширина колонки текста (доля карточки) — читаемая, уже полной
 
 var _bg: TextureRect  # арт-фон карточки (меняем текстуру по типу локации)
 
@@ -81,6 +82,10 @@ func _ready() -> void:
 		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		b.custom_minimum_size.x = _BTN_MIN_WIDTH
 	_main_text.add_theme_color_override("font_color", UIColors.TEXT)
+	# Текст (основной + исход) — узкой колонкой по центру, не на всю ширину карточки.
+	# Ширина задаётся в _resize_card; SHRINK_CENTER центрирует колонку, автоперенос — по ней.
+	_main_text.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_outcome.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_style_check_plate()  # строка проверки — на резном баннере
 	_dice.add_theme_color_override("font_color", UIColors.MUTED)
 
@@ -174,6 +179,10 @@ func _resize_card() -> void:
 	_vbox.offset_right = -w * _PAD_X_FRAC
 	_vbox.offset_top = h * _PAD_TOP_FRAC
 	_vbox.offset_bottom = -h * _PAD_BOTTOM_FRAC
+	# Узкая колонка текста (по центру) — автоперенос по этой ширине.
+	var text_w: float = w * _TEXT_WIDTH_FRAC
+	_main_text.custom_minimum_size.x = text_w
+	_outcome.custom_minimum_size.x = text_w
 
 
 # Появление окна встречи: весь модал плавно проявляется (вкл. затемнение), а арт-
