@@ -43,8 +43,9 @@ var _intro_tween: Tween = null
 var _outcome_tween: Tween = null
 
 # Арт-подложка карточки встречи по типу локации (рамка/пропы запечены в ассет).
-# Пока все встречи — на городском; sea/wilderness добавим позже (см. _bg_texture).
 const _BG_CITY: Texture2D = preload("res://assets/encounter/city.png")
+const _BG_SEA: Texture2D = preload("res://assets/encounter/sea.png")
+const _BG_WILDERNESS: Texture2D = preload("res://assets/encounter/wilderness.png")
 # Резной баннер-плашка под строкой проверки (9-patch: концы не растягиваются).
 const _CHECK_PLATE: Texture2D = preload("res://assets/encounter/check-title.png")
 
@@ -232,9 +233,15 @@ func _apply_background() -> void:
 		_bg.texture = tex
 
 
-# Арт фона по типу локации. sea/wilderness появятся позже — добавить ветки и ассеты.
-func _bg_texture(_loc_type: String) -> Texture2D:
-	return _BG_CITY
+# Арт фона по типу локации (city.type из locations.json: city|sea|wilderness).
+func _bg_texture(loc_type: String) -> Texture2D:
+	match loc_type:
+		"sea":
+			return _BG_SEA
+		"wilderness":
+			return _BG_WILDERNESS
+		_:
+			return _BG_CITY
 
 
 # Активная проверка встречи (единая, CheckFlow), если она относится к встрече.
