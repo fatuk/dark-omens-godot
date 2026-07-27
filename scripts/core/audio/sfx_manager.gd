@@ -12,6 +12,12 @@ extends Node
 
 const SFX_SLIDE: AudioStream = preload("res://assets/audio/sfx/slide.wav")
 const SFX_BTN_CLICK: AudioStream = preload("res://assets/audio/sfx/btn-click.wav")
+## Вариации клика кнопки — play_random_btn_click() выбирает случайный индекс
+## без повтора предыдущего. Пока один файл; добавьте btn-click-2.wav /
+## btn-click-3.wav в assets/audio/sfx и допишите сюда, когда появятся.
+const SFX_BTN_CLICKS: Array[AudioStream] = [
+	SFX_BTN_CLICK,
+]
 const SFX_SIDEBAR_SLIDE: AudioStream = preload("res://assets/audio/sfx/sidebar-slide.wav")
 ## Наведение/уход курсора с жетонов локации (колода выезжает/прячется).
 const SFX_MAP_ITEM_HOVER: AudioStream = preload("res://assets/audio/sfx/map-item-hover.wav")
@@ -61,6 +67,8 @@ const FILTER_JITTER_HZ: float = 350.0  # ± случайный сдвиг цен
 const FILTER_RESONANCE: float = 0.5  # Q полосы (ниже — шире, мягче окрас)
 
 var volume: float = 0.5  # 0.0..1.0, линейная шкала (default override: SettingsStore.sfx_volume)
+
+var _last_btn_idx: int = -1  # play_random_btn_click: индекс прошлого проигрывания
 
 var _pool: Array[AudioStreamPlayer] = []
 var _next: int = 0
@@ -127,6 +135,21 @@ func play(stream: AudioStream, filtered: bool = false, pitch: float = 1.0) -> vo
 		p.bus = BUS_NAME
 	p.stream = stream
 	p.play()
+
+
+## Клик кнопки со случайной вариацией из SFX_BTN_CLICKS, без повтора того же
+## файла два раза подряд. С единственным файлом в массиве ведёт себя как
+## обычный play(SFX_BTN_CLICK, true).
+func play_random_btn_click() -> void:
+	var n: int = SFX_BTN_CLICKS.size()
+	if n <= 1:
+		play(SFX_BTN_CLICK, true)
+		return
+	var idx: int = randi() % n
+	if idx == _last_btn_idx:
+		idx = (idx + 1) % n
+	_last_btn_idx = idx
+	play(SFX_BTN_CLICKS[idx], true)
 
 
 ## Проиграть СЛУЧАЙНУЮ ВАРИАЦИЮ из одного файла, нарезанного по времени на
