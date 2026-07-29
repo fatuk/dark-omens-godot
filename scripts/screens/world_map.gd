@@ -113,6 +113,7 @@ func _ready() -> void:
 	_build_turn_banner()
 	_build_check_roll_modal()
 	_build_reckoning_wait_overlay()
+	_build_death_save_modal()
 	_build_chat_composer()
 	_build_hand_carousel()
 	_refresh_game_panel()
@@ -261,6 +262,13 @@ func _build_reckoning_wait_overlay() -> void:
 	var ov: CanvasLayer = load("res://scripts/ui/reckoning_wait_overlay.gd").new()
 	ov.name = "ReckoningWaitOverlay"
 	add_child(ov)
+
+
+# Модалка Порога (спас-бросок на 0 HP/SAN) — видна всем, пока идёт спас.
+func _build_death_save_modal() -> void:
+	var m: CanvasLayer = load("res://scripts/ui/death_save_modal.gd").new()
+	m.name = "DeathSaveModal"
+	add_child(m)
 
 
 # Композер чата (C): веер шаблонов → веер слов по секциям → центр-превью → Отправить.
