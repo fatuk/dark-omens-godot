@@ -214,7 +214,12 @@ var _mystery: MysteryFlow
 var _rumor: RumorFlow
 var _target: TargetResolver
 var _spell: SpellFlow
+var _death: DeathSaveFlow  # спас-бросок на Пороге (0 HP/SAN), см. death_save_flow.gd
 var _relay_router: RelayRouter  # адаптеры relay-действий (_act_*), см. relay_router.gd
+
+# Реэнтранси-гард централизованного свипа Порога в _broadcast_sync (свип открывает
+# спас и катит кубик → снова зовёт _broadcast_sync; без гарда — рекурсия).
+var _sweeping: bool = false
 
 # Реестр host-авторитетных relay-действий: имя → Callable(data) (адаптер RelayRouter).
 # Диспетчер _on_relay_received зовёт его вместо ~28 веток match. Строится в _ready
@@ -245,6 +250,7 @@ func _ready() -> void:
 	_rumor = RumorFlow.new(self)
 	_target = TargetResolver.new(self)
 	_spell = SpellFlow.new(self)
+	_death = DeathSaveFlow.new(self)
 	_build_action_registry()  # реестр relay-действий (модули уже созданы выше)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
@@ -305,6 +311,13 @@ const _SYNC_FIELDS: Array[String] = [
 func _broadcast_sync() -> void:
 	if not _is_host():
 		return
+	# Порог: централизованный триггер спас-броска. Урон приходит из многих мест
+	# (эффекты/бой/Миф/Расплата) без единой точки — поэтому ловим 0 HP/SAN здесь,
+	# после любой мутации. Гард _sweeping рвёт рекурсию (свип катит кубик → синк).
+	if not _sweeping:
+		_sweeping = true
+		_death.sweep()
+		_sweeping = false
 	_reconcile_clue_identities()  # синхронизируем clue_ids игроков с числом улик до рассылки
 	_reconcile_focus_quotes()  # цитаты жетонов концентрации привязаны к жетонам
 	var payload: Dictionary = {"action": RelayActions.SYNC, "mythos_index": _mythos.index}

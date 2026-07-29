@@ -58,6 +58,27 @@ func open(pid: String, stat: String) -> String:
 	return "save"
 
 
+## Хост: открыть Порог всем игрокам на 0 HP/SAN (живым, без активного спаса).
+## Централизованный триггер — зовётся из _broadcast_sync после любой мутации.
+## HP приоритетнее (если оба в 0 — сперва Сила-Порог, рассудок поймает следующий свип).
+## Возвращает число открытых спасов/мгновенных смертей.
+func sweep() -> int:
+	var n: int = 0
+	for pid_v: Variant in _gs.players:
+		var pid: String = pid_v
+		var p: Dictionary = _gs.players[pid]
+		if bool(p.get(PlayerKeys.DEAD, false)) or not slot(pid).is_empty():
+			continue
+		var stat: String = ""
+		if int(p.get(PlayerKeys.HP, 1)) <= 0:
+			stat = PlayerKeys.HP
+		elif int(p.get(PlayerKeys.SANITY, 1)) <= 0:
+			stat = PlayerKeys.SANITY
+		if not stat.is_empty() and not open(pid, stat).is_empty():
+			n += 1
+	return n
+
+
 ## Хост: сосед ally_pid тратит 1 ресурс на переброс куба die_index в спас-броске
 ## умирающего dying_pid. Куб перебрасывается только если провальный (иначе спас уже
 ## пройден — ресурс не тратим). true — переброшен.

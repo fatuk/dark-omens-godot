@@ -173,3 +173,44 @@ func test_reroll_by_resource_rejected_on_success_die() -> void:
 	_gs.players["ally"] = {"investigator": "", "resources": 1}
 	assert_false(_ds.reroll_by_resource("ally", "p", 0), "успешный куб не перебрасывается")
 	assert_eq(int(_gs.players["ally"]["resources"]), 1, "ресурс не тронут")
+
+
+# ── sweep: централизованный триггер по 0 HP/SAN ───────────────────────────────
+
+
+func test_sweep_opens_hp_save_at_zero_hp() -> void:
+	_player({"hp": 0, "sanity": 5})
+	assert_eq(_ds.sweep(), 1)
+	assert_eq(String(_ds.slot("p")["death_stat"]), "hp")
+
+
+func test_sweep_opens_sanity_save_at_zero_sanity() -> void:
+	_player({"hp": 5, "sanity": 0})
+	assert_eq(_ds.sweep(), 1)
+	assert_eq(String(_ds.slot("p")["death_stat"]), "sanity")
+
+
+func test_sweep_prioritizes_hp_when_both_zero() -> void:
+	_player({"hp": 0, "sanity": 0})
+	_ds.sweep()
+	assert_eq(String(_ds.slot("p")["death_stat"]), "hp", "при обоих 0 — сперва Сила-Порог")
+
+
+func test_sweep_skips_healthy_dead_and_pending() -> void:
+	_gs.players["healthy"] = {"investigator": "", "skill_mods": {}, "hp": 5, "sanity": 5}
+	_gs.players["gone"] = {"investigator": "", "skill_mods": {}, "hp": 0, "sanity": 0, "dead": true}
+	_player({"hp": 0})
+	_ds.open("p", "hp")  # уже в спасе
+	assert_eq(_ds.sweep(), 0, "здоровый / мёртвый / уже-в-спасе пропущены")
+
+
+func test_sweep_immediate_death_at_scar_cap() -> void:
+	_player({"hp": 0, "skill_mods": {"strength": -2}})
+	assert_eq(_ds.sweep(), 1, "мгновенная смерть тоже обработана")
+	assert_true(bool(_gs.players["p"]["dead"]))
+
+
+func test_sweep_counts_multiple_players() -> void:
+	_gs.players["a"] = {"investigator": "", "skill_mods": {}, "hp": 0, "sanity": 5}
+	_gs.players["b"] = {"investigator": "", "skill_mods": {}, "hp": 5, "sanity": 0}
+	assert_eq(_ds.sweep(), 2)
