@@ -207,6 +207,7 @@ func _on_reroll() -> void:
 
 
 func _on_accept() -> void:
-	if is_instance_valid(_accept_btn):
-		_accept_btn.disabled = true
+	# Без disabled-гарда: apply идемпотентен (пустой слот → no-op), а модалка может
+	# заново открыться (мифос снова уронил стат) — тогда кнопку нельзя оставлять
+	# заблокированной, иначе повторный Порог не принять.
 	GameState.death_save_apply()
