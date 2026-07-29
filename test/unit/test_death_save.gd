@@ -16,6 +16,7 @@ class MockGameState:
 	extends Node
 	var players: Dictionary = {}
 	var active_check: Dictionary = {}
+	var outcome: String = ""
 	var _check: CheckFlow
 	var sync_count: int = 0
 
@@ -239,3 +240,21 @@ func test_clear_grace_reenables_save() -> void:
 	_ds.clear_grace()  # новый раунд
 	assert_false(bool(_gs.players["p"].get("death_grace", false)), "grace снят")
 	assert_eq(_ds.sweep(), 1, "повторный урон в новом раунде — снова Порог")
+
+
+# ── поражение: не осталось живых сыщиков ──────────────────────────────────────
+
+
+func test_death_of_last_investigator_is_defeat() -> void:
+	_player({"hp": 0})
+	_save_slot("hp", false)
+	_ds.apply("p")  # провал → смерть; единственный сыщик → поражение
+	assert_eq(_gs.outcome, "defeat")
+
+
+func test_death_not_defeat_while_someone_alive() -> void:
+	_player({"hp": 0})
+	_save_slot("hp", false)
+	_gs.players["ally"] = {"investigator": "", "skill_mods": {}, "hp": 6, "sanity": 6}
+	_ds.apply("p")  # p погиб, ally жив → не поражение
+	assert_eq(_gs.outcome, "", "жив хотя бы один сыщик — не поражение")

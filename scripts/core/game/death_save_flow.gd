@@ -138,10 +138,24 @@ func clear_grace() -> void:
 		(_gs.players[pid_v] as Dictionary).erase(PlayerKeys.DEATH_GRACE)
 
 
-# Смерть. Chunk 1: помечаем флагом (Тень — отдельный кусок, см. docs/death-design.md).
+# Смерть. Chunk 1: помечаем флагом (переход в Тень — отдельный кусок). Если ни одного
+# живого сыщика не осталось — поражение (outcome_modal покажет всем по синку).
 func _die(pid: String) -> void:
 	var p: Dictionary = _gs.players.get(pid, {})
 	p.erase(PlayerKeys.DEATH_SAVE_CHECK)
 	p[PlayerKeys.DEAD] = true
+	if _all_dead() and String(_gs.outcome).is_empty():
+		_gs.outcome = "defeat"
+		GameConsole.log("[Смерть] Все сыщики погибли — поражение")
 	_gs._broadcast_sync()
 	_gs._emit_changed()
+
+
+# Не осталось живых сыщиков (все players помечены dead). Пусто → false (нет игроков).
+func _all_dead() -> bool:
+	if _gs.players.is_empty():
+		return false
+	for pid_v: Variant in _gs.players:
+		if not bool((_gs.players[pid_v] as Dictionary).get(PlayerKeys.DEAD, false)):
+			return false
+	return true
