@@ -155,7 +155,7 @@ func set_live_vitals(hp: int, hp_max: int, sanity: int, sanity_max: int) -> void
 
 
 ## Живые модификаторы навыков (player.skill_mods) для HUD: справа от числа навыка —
-## «+n» зелёным (улучшение) и «−n» красным (ухудшение); 0 — скрыто. Базовое число
+## «+n» зелёным (улучшение) и «−n» в цвет сердца (ухудшение); 0 — скрыто. Базовое число
 ## навыка задаётся отдельно в update() (из данных сыщика).
 func set_live_skill_mods(mods: Dictionary) -> void:
 	for field: String in _attr_mod_lbls.keys():
@@ -169,7 +169,7 @@ func set_live_skill_mods(mods: Dictionary) -> void:
 		else:
 			lbl.text = "%+d" % m  # +2 / −1
 			lbl.add_theme_color_override(
-				"font_color", UIColors.SUCCESS if m > 0 else UIColors.DANGER
+				"font_color", UIColors.SUCCESS if m > 0 else UIColors.IMPAIR
 			)
 			lbl.visible = true
 

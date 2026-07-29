@@ -11,6 +11,7 @@ const _SURFACE := Color(0.08, 0.07, 0.15)
 const _COPPER := Color(0.35, 0.25, 0.10)
 const _AMBER := Color(0.78, 0.66, 0.29)
 const _CRIMSON := Color(0.55, 0.10, 0.10)
+const _HEART := Color(0.61, 0.24, 0.19)  # яркий тон иконки здоровья (сэмпл health-icon.png)
 const _STONE := Color(0.85, 0.82, 0.75)
 const _ASH := Color(0.55, 0.52, 0.45)
 const _SCARLET := Color(0.90, 0.25, 0.20)
@@ -34,6 +35,7 @@ const ART_BG := _PITCH  ## тёмная подложка арт-слота ка�
 const TEXT := _STONE  ## основной текст
 const MUTED := _ASH  ## второстепенный текст, подсказки, disabled
 const VALUE := _BRONZE  ## числовые значения: атрибуты, счётчики (улики/ресурсы/концентрация)
+const IMPAIR := _HEART  ## ухудшение навыка/шрам (−n) — в цвет иконки здоровья, читаемее crimson
 
 # ── Роли действий ──────────────────────────────────────────────────────────────
 
