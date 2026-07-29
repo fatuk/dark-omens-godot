@@ -60,6 +60,8 @@ func build_registry() -> Dictionary:
 		RelayActions.RECKONING_REROLL_ALL: _act_reckoning_reroll_all,
 		RelayActions.RECKONING_ADD_DIE: _act_reckoning_add_die,
 		RelayActions.RECKONING_APPLY: _act_reckoning_apply,
+		RelayActions.DEATH_SAVE_REROLL: _act_death_save_reroll,
+		RelayActions.DEATH_SAVE_APPLY: _act_death_save_apply,
 		RelayActions.CAST_TRIGGER_SPELLS: _act_cast_trigger_spells,
 		RelayActions.DISMISS_CAST_RESULT: _act_dismiss_cast_result,
 		RelayActions.DISMISS_RECKONING: _act_dismiss_reckoning,
@@ -181,6 +183,14 @@ func _act_reckoning_reroll_all(d: Dictionary) -> void:
 func _act_reckoning_apply(d: Dictionary) -> void:
 	if bool(_gs.call("_reckoning_apply_host", String(d.get("pid", "")))):
 		_gs.call("_broadcast_and_emit")
+
+
+func _act_death_save_reroll(d: Dictionary) -> void:
+	_gs.call("_death_reroll_host", String(d.get("pid", "")), String(d.get("dying", "")))
+
+
+func _act_death_save_apply(d: Dictionary) -> void:
+	_gs.call("_death_apply_host", String(d.get("pid", "")))
 
 
 func _act_cast_trigger_spells(d: Dictionary) -> void:

@@ -1031,6 +1031,36 @@ func _reckoning_apply_host(pid: String) -> bool:
 	return true
 
 
+# ── Спас-бросок на Пороге (слот players[pid].death_save_check) ─────────────────
+
+
+## Сосед (я) тратит 1 ресурс на переброс кубика в спас-броске умирающего dying_pid.
+func death_save_reroll(dying_pid: String) -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_death.reroll_by_resource(my_pid, dying_pid, 0)  # _broadcast_sync внутри
+	else:
+		_nm.relay_all({"action": RelayActions.DEATH_SAVE_REROLL, "pid": my_pid, "dying": dying_pid})
+
+
+## Умирающий (я) принимает свой спас-бросок → выжил на 1 + шрам либо смерть.
+func death_save_apply() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_death.apply(my_pid)  # _broadcast_sync внутри при survive/death
+	else:
+		_nm.relay_all({"action": RelayActions.DEATH_SAVE_APPLY, "pid": my_pid})
+
+
+# Хост-обёртки relay-адаптеров (RelayRouter зовёт с pid отправителя).
+func _death_reroll_host(ally_pid: String, dying_pid: String) -> void:
+	_death.reroll_by_resource(ally_pid, dying_pid, 0)
+
+
+func _death_apply_host(pid: String) -> void:
+	_death.apply(pid)
+
+
 # ── Чат (Dark Souls-style): транзиентный broadcast, НЕ часть snapshot ──────────
 
 
