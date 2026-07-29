@@ -88,6 +88,13 @@ class StubSpell:
 		return true
 
 
+class StubDeath:
+	extends RefCounted
+
+	func clear_grace() -> void:
+		pass
+
+
 class MockGameState:
 	extends Node
 	signal phase_changed(phase: String)
@@ -112,6 +119,7 @@ class MockGameState:
 	var _mythos: StubFlow
 	var _encounter: StubFlow
 	var _spell: StubSpell
+	var _death: StubDeath
 
 	func _init() -> void:
 		_cond = StubCond.new()
@@ -119,6 +127,7 @@ class MockGameState:
 		_mythos = StubFlow.new()
 		_encounter = StubFlow.new()
 		_spell = StubSpell.new()
+		_death = StubDeath.new()
 
 	func _current_pid() -> String:
 		return String(turn_order[current_idx]) if current_idx < turn_order.size() else ""

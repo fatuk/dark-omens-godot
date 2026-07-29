@@ -214,3 +214,28 @@ func test_sweep_counts_multiple_players() -> void:
 	_gs.players["a"] = {"investigator": "", "skill_mods": {}, "hp": 0, "sanity": 5}
 	_gs.players["b"] = {"investigator": "", "skill_mods": {}, "hp": 5, "sanity": 0}
 	assert_eq(_ds.sweep(), 2)
+
+
+# ── grace: добор урона того же события впитывается ─────────────────────────────
+
+
+func test_survive_sets_death_grace() -> void:
+	_player({"hp": 0})
+	_save_slot("hp", true)
+	_ds.apply("p")
+	assert_true(bool(_gs.players["p"].get("death_grace", false)), "выживший получает иммунитет")
+
+
+func test_sweep_skips_player_in_grace() -> void:
+	# Выжил (grace) и тот же мифос снова уронил hp в 0 → новый Порог НЕ открывается.
+	_player({"hp": 0, "death_grace": true})
+	assert_eq(_ds.sweep(), 0, "добор урона в grace впитан")
+	assert_true(_ds.slot("p").is_empty())
+
+
+func test_clear_grace_reenables_save() -> void:
+	_player({"hp": 0, "death_grace": true})
+	assert_eq(_ds.sweep(), 0)
+	_ds.clear_grace()  # новый раунд
+	assert_false(bool(_gs.players["p"].get("death_grace", false)), "grace снят")
+	assert_eq(_ds.sweep(), 1, "повторный урон в новом раунде — снова Порог")

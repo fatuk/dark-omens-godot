@@ -664,6 +664,7 @@ func start_new_round() -> void:
 		_gs.players[pid]["actions_used"] = []
 		_gs.players[pid]["encounter_done"] = false
 		_gs._refresh_items(_gs.players[pid])  # снять истощение активов (Refresh-шаг)
+	_gs._death.clear_grace()  # новый раунд — снять иммунитет выживших на Пороге
 	skip_disconnected()  # начинаем раунд с первого подключённого игрока
 	GameConsole.log("[Game] Раунд %d · ход: %s" % [_gs.round_num, _gs._name_of(_gs._current_pid())])
 	_gs.phase_changed.emit(_gs.phase)

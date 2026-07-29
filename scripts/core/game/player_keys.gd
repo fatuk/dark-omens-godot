@@ -35,3 +35,4 @@ const ITEMS := "items"
 const SKILL_MODS := "skill_mods"
 const DEATH_SAVE_CHECK := "death_save_check"  # per-player слот спас-броска на Пороге
 const DEAD := "dead"  # сыщик погиб (заглушка до перехода в Тень — см. docs/death-design.md)
+const DEATH_GRACE := "death_grace"  # выжил на Пороге — иммунитет к повторному спасу до нового раунда

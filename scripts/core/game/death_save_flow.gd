@@ -67,7 +67,11 @@ func sweep() -> int:
 	for pid_v: Variant in _gs.players:
 		var pid: String = pid_v
 		var p: Dictionary = _gs.players[pid]
-		if bool(p.get(PlayerKeys.DEAD, false)) or not slot(pid).is_empty():
+		if (
+			bool(p.get(PlayerKeys.DEAD, false))
+			or bool(p.get(PlayerKeys.DEATH_GRACE, false))
+			or not slot(pid).is_empty()
+		):
 			continue
 		var stat: String = ""
 		if int(p.get(PlayerKeys.HP, 1)) <= 0:
@@ -113,6 +117,8 @@ func apply(pid: String) -> String:
 
 
 # Вырвали с Порога: выжил на 1 по stat + шрам −1 к соответствующему навыку (пол −2).
+# Ставим grace: добор урона от ТОГО ЖЕ события (мифос/встреча) впитывается — новый
+# Порог только от отдельного повторного урона в следующем раунде (clear_grace).
 func _survive(pid: String, stat: String) -> void:
 	var p: Dictionary = _gs.players.get(pid, {})
 	p.erase(PlayerKeys.DEATH_SAVE_CHECK)
@@ -121,8 +127,15 @@ func _survive(pid: String, stat: String) -> void:
 	var mods: Dictionary = p.get(PlayerKeys.SKILL_MODS, {})
 	mods[skill] = clampi(int(mods.get(skill, 0)) - 1, -SCAR_CAP, SCAR_CAP)
 	p[PlayerKeys.SKILL_MODS] = mods
+	p[PlayerKeys.DEATH_GRACE] = true
 	_gs._broadcast_sync()
 	_gs._emit_changed()
+
+
+## Хост: снять grace-иммунитет со всех (в начале раунда — урон уже «повторный»).
+func clear_grace() -> void:
+	for pid_v: Variant in _gs.players:
+		(_gs.players[pid_v] as Dictionary).erase(PlayerKeys.DEATH_GRACE)
 
 
 # Смерть. Chunk 1: помечаем флагом (Тень — отдельный кусок, см. docs/death-design.md).
