@@ -94,6 +94,9 @@ func reset_stack() -> void:
 ## Пул d6 = навык сыщика + модификаторы навыка + модификатор проверки + доп.кубы
 ## активированных карт (pre_roll_bonus). Для показа рубашек до броска и самого броска.
 func pool(c: Dictionary) -> int:
+	# Фикс-пул (спас-бросок на Пороге): ровно N кубов, без учёта навыков/модов/карт.
+	if c.has("fixed_pool"):
+		return maxi(1, int(c["fixed_pool"]))
 	var p: Dictionary = _gs.players.get(String(c.get("pid", "")), {})
 	var skill: String = String(c.get("skill", "will"))
 	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
@@ -403,6 +406,30 @@ func _allowance_all(c: Dictionary) -> int:
 		if String(m.get("do", "")) == "rerollDice" and int(m.get("count", 1)) >= _REROLL_ALL_MIN:
 			n += 1
 	return n
+
+
+## Хост: перебросить куб БЕЗ списания валюты владельца — плату берёт вызывающий
+## (спас-бросок на Пороге: ресурс снимает сосед, см. DeathSaveFlow). Куб должен быть
+## провальным по отображаемому значению. true — куб переброшен.
+func reroll_no_cost(pid: String, die_index: int, c: Dictionary = {}) -> bool:
+	if c.is_empty():
+		c = _gs.active_check
+	if c.is_empty() or String(c.get("pid", "")) != pid or not bool(c.get("rolled", false)):
+		return false
+	var base: Array = c.get("base", [])
+	var shown: Array = c.get("dice", base)
+	if (
+		die_index < 0
+		or die_index >= base.size()
+		or Dice.is_success(int(shown[die_index]), _threshold(c))
+	):
+		return false
+	base[die_index] = Dice.roll_one()
+	_set_roll(c, base)
+	c["reroll_nonce"] = int(c.get("reroll_nonce", 0)) + 1
+	c["reroll_index"] = die_index
+	_sync()
+	return true
 
 
 ## Хост: перебросить ВСЕ кубы разом (эффект карт «перебрось сколько угодно», напр.
