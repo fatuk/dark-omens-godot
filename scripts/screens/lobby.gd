@@ -148,8 +148,9 @@ func _on_selection_changed(inv_name: String) -> void:
 		_nm.set_lobby_not_ready(_nm.my_id)
 		if is_instance_valid(_picker):
 			_picker.unlock_confirm()
-	# Локальное состояние + броадкаст: остальные игроки сразу видят
-	# нашего сыщика как занятого, не дожидаясь нажатия «Готов».
+	# Локальное состояние + броадкаст текущего выбора. Занятым для остальных сыщик
+	# станет только после «Готов» (_recompute_taken учитывает лишь ready-игроков) —
+	# прокрутка чужого выбора никого не блокирует.
 	_nm.set_lobby_investigator(_nm.my_id, inv_name)
 	_nm.relay_all({"action": "picking", "player_id": _nm.my_id, "investigator": inv_name})
 	_refresh_start_button()
@@ -162,6 +163,9 @@ func _recompute_taken() -> void:
 	var taken: Dictionary = {}
 	for pid: String in _nm.players:
 		if pid == _nm.my_id:
+			continue
+		# Занятость — только по ПОДТВЕРЖДЁННЫМ (Ready), не по прокрутке чужого выбора.
+		if not bool(_nm.players[pid].get("ready", false)):
 			continue
 		var inv: String = _nm.players[pid].get("investigator", "")
 		if not inv.is_empty():
