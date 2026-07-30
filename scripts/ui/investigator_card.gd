@@ -218,7 +218,7 @@ func _build_taken_overlay() -> Control:
 	var lbl := UIStyle.label("PICKER_TAKEN", 64, UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "TakenLabel"
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl.custom_minimum_size = Vector2(560, 0)  # широкая плашка — как превью чата
+	lbl.custom_minimum_size = Vector2(360, 0)  # шире короткого слова, но с отступом от рамки карточки
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_card_text_shadow(lbl)
 	plate.add_child(lbl)
