@@ -74,6 +74,12 @@ func _ready() -> void:
 			var inv: String = info.get("investigator", "")
 			if not inv.is_empty():
 				_picker.mark_taken(inv, info.get("name", pid))
+	# Поздний вход: занять и сыщиков, уже играющих в партии (GameState.players) —
+	# до того, как пикер отложенно преселектит сохранённого (не даст дубликат).
+	var ingame: Dictionary = {}
+	_mark_ingame_taken(ingame)
+	for inv_id: String in ingame:
+		_picker.mark_taken(inv_id, String(ingame[inv_id]))
 
 	_refresh_start_button()
 
@@ -170,7 +176,20 @@ func _recompute_taken() -> void:
 		var inv: String = _nm.players[pid].get("investigator", "")
 		if not inv.is_empty():
 			taken[inv] = _nm.players[pid].get("name", pid)
+	_mark_ingame_taken(taken)
 	_picker.sync_taken(taken)
+
+
+# Поздний вход: сыщики игроков, УЖЕ играющих в партии, тоже заняты. В идущей
+# партии их не всегда видно в _nm.players (investigator/ready), поэтому источник
+# истины — GameState.players. Иначе пикер позднего входа даёт взять дубликат.
+func _mark_ingame_taken(taken: Dictionary) -> void:
+	for uid: String in GameState.players:
+		if uid == _nm.my_user_id:
+			continue
+		var ginv: String = String(GameState.players[uid].get("investigator", ""))
+		if not ginv.is_empty():
+			taken[ginv] = String(GameState.players[uid].get("name", uid))
 
 
 # Хост: разрешать «Начать», когда сам выбрал+подтвердил И все подключённые игроки

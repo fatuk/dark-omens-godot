@@ -1569,6 +1569,15 @@ func _handle_late_join(data: Dictionary) -> void:
 func _add_player_mid_game(uid: String, pname: String, investigator: String) -> void:
 	if uid.is_empty() or investigator.is_empty() or players.has(uid):
 		return
+	# Страховка от дубликата сыщика на позднем входе (клиентский пикер уже не даёт
+	# выбрать занятого — это защита от гонки/обхода): второго с тем же сыщиком не
+	# заводим. Игрок остаётся в лобби-пикере и выберет свободного.
+	for other_uid: String in players:
+		if String(players[other_uid].get("investigator", "")) == investigator:
+			GameConsole.warn(
+				"[Game] Сыщик %s занят — поздний вход %s отклонён" % [investigator, pname]
+			)
+			return
 	var inv: Dictionary = Investigators.get_data(investigator)
 	var hp_max: int = int(inv.get("health", 5))
 	var san_max: int = int(inv.get("sanity", 5))
