@@ -81,6 +81,19 @@ func test_resolve_each_connected() -> void:
 	assert_eq(_t._resolve_targets({"target": "each"}), ["p1", "p3"], "each → только подключённые")
 
 
+func test_resolve_each_excludes_dead() -> void:
+	_player("p1")
+	_player("p2", {"dead": true})  # Тень — не тело, не цель
+	_player("p3")
+	assert_eq(_t._resolve_targets({"target": "each"}), ["p1", "p3"], "each исключает Тень")
+
+
+func test_resolve_lead_skips_dead() -> void:
+	_player("p1", {"dead": true})
+	_player("p2")
+	assert_eq(_t._resolve_targets({"target": "lead"}), ["p2"], "мёртвый ведущий → первый живой")
+
+
 func test_resolve_each_on_city() -> void:
 	_gs.locations = [{"id": "ark", "type": "city"}, {"id": "sea1", "type": "sea"}]
 	_player("p1", {"location": "ark"})

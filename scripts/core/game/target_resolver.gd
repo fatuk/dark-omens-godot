@@ -58,7 +58,9 @@ func _resolve_targets(node: Dictionary) -> Array:
 	var target: String = String(node.get("target", ""))
 	match target:
 		"lead":
-			return [String(_gs.turn_order[0])] if not (_gs.turn_order as Array).is_empty() else []
+			# Ведущий = turn_order[0], но если он Тень — берём первого живого.
+			var live: Array = _connected_pids()
+			return [String(live[0])] if not live.is_empty() else []
 		"each":
 			return _connected_pids()
 		"eachOnCity":
@@ -102,12 +104,17 @@ func _neighbor(anchor: String, dir: int) -> Array:
 	return [String(pids[((idx + dir) % n + n) % n])]
 
 
-# Подключённые сыщики (id), в порядке turn_order.
+# Подключённые ЖИВЫЕ сыщики (id), в порядке turn_order. Тень (dead) — не тело,
+# не цель для эффектов/решений/Мифов, поэтому исключается наравне с отключёнными.
 func _connected_pids() -> Array:
 	var out: Array = []
 	for pid_v: Variant in _gs.turn_order:
 		var pid: String = String(pid_v)
-		if _gs.players.has(pid) and bool(_gs.players[pid].get("connected", true)):
+		if (
+			_gs.players.has(pid)
+			and bool(_gs.players[pid].get("connected", true))
+			and not bool(_gs.players[pid].get("dead", false))
+		):
 			out.append(pid)
 	return out
 

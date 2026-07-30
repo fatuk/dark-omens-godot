@@ -89,11 +89,14 @@ func on_player_left() -> void:
 		_apply_resolve()
 
 
-# Все подключённые сыщики отметились прочитавшими текущую карту.
+# Все подключённые ЖИВЫЕ сыщики отметились прочитавшими текущую карту. Тень карту
+# видит, но «Прочитал» не жмёт и миф не держит — иначе зависал бы на мёртвом.
 func _all_read() -> bool:
 	for uid_v: Variant in _gs.players:
 		var uid: String = String(uid_v)
 		if not bool(_gs.players[uid].get("connected", true)):
+			continue
+		if bool(_gs.players[uid].get("dead", false)):
 			continue
 		if not _gs.mythos_read.has(uid):
 			return false
@@ -315,6 +318,8 @@ func _other_pids(active_pid: String) -> Array:
 			continue
 		if not bool(_gs.players[p].get("connected", true)):
 			continue
+		if bool(_gs.players[p].get("dead", false)):
+			continue  # Тень нельзя выбрать как «другого сыщика»
 		out.append({"pid": p, "name": _gs._name_of(p)})
 	return out
 
