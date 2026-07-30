@@ -154,6 +154,10 @@ var _clue_pool: Array = []
 var _board_clue_ids: Dictionary = {}
 var _clue_pool_ready: bool = false
 
+# Вещи павших сыщиков — кэш на месте гибели (Тень: «чистый лут», подбор встречей).
+# {loc_id: [item-dict,…]}. Host-only, НЕ синкается (host выдаёт при подборе).
+var _ghost_caches: Dictionary = {}
+
 # Монстры по локациям. {loc_id: [{id, health},…]} — экземпляры из
 # MonsterCatalog с текущим здоровьем (урон в бою сохраняется между встречами).
 # Визуально склеиваются с entities (по количеству).
@@ -357,6 +361,27 @@ func _reset_clue_pool() -> void:
 	_clue_pool.clear()
 	_board_clue_ids.clear()
 	_clue_pool_ready = false
+	_ghost_caches.clear()  # вещи павших — тоже host-only, сбрасываем на старте партии
+
+
+# Вещи павшего сыщика → кэш на месте гибели (loc). Несколько павших на одной локации —
+# складываем вместе. Host-only, не синкается (host выдаёт при подборе).
+func _stash_belongings(loc: String, items: Array) -> void:
+	var cache: Array = _ghost_caches.get(loc, [])
+	cache.append_array(items)
+	_ghost_caches[loc] = cache
+
+
+# Забрать вещи с локации (подбор): вернуть и очистить кэш. [] — если ничего нет.
+func _take_belongings(loc: String) -> Array:
+	var items: Array = _ghost_caches.get(loc, [])
+	_ghost_caches.erase(loc)
+	return items
+
+
+# Есть ли на локации вещи павших (для предложения встречи «забрать вещи»).
+func _has_belongings(loc: String) -> bool:
+	return not (_ghost_caches.get(loc, []) as Array).is_empty()
 
 
 # Жетон улики лёг на локацию loc → строго берём улику ЭТОЙ локации из пула (если она

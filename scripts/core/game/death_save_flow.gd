@@ -138,17 +138,37 @@ func clear_grace() -> void:
 		(_gs.players[pid_v] as Dictionary).erase(PlayerKeys.DEATH_GRACE)
 
 
-# Смерть. Chunk 1: помечаем флагом (переход в Тень — отдельный кусок). Если ни одного
-# живого сыщика не осталось — поражение (outcome_modal покажет всем по синку).
+# Смерть → Тень-оракул до конца партии. Если живых сыщиков не осталось — поражение.
 func _die(pid: String) -> void:
 	var p: Dictionary = _gs.players.get(pid, {})
 	p.erase(PlayerKeys.DEATH_SAVE_CHECK)
 	p[PlayerKeys.DEAD] = true
+	# Бюджет улик Тени = число живых на момент гибели (pid уже помечен dead → не в счёте).
+	# Акт (сообщение/улика) доступен сразу в этом раунде.
+	p[PlayerKeys.GHOST_CLUE_BUDGET] = _living_count()
+	p[PlayerKeys.GHOST_ACTED] = false
+	# Вещи павшего → кэш на месте гибели (подбор встречей, «чистый лут»). Улики
+	# возвращаются в пул: обнуляем счёт — reconcile вернёт clue_ids в пул на синке.
+	var loc: String = String(p.get(PlayerKeys.LOCATION, ""))
+	var items: Array = p.get(PlayerKeys.ITEMS, [])
+	if not loc.is_empty() and not items.is_empty():
+		_gs._stash_belongings(loc, items.duplicate(true))
+	p[PlayerKeys.ITEMS] = []
+	p[PlayerKeys.CLUES] = 0
 	if _all_dead() and String(_gs.outcome).is_empty():
 		_gs.outcome = "defeat"
 		GameConsole.log("[Смерть] Все сыщики погибли — поражение")
 	_gs._broadcast_sync()
 	_gs._emit_changed()
+
+
+# Число живых сыщиков (не помеченных dead).
+func _living_count() -> int:
+	var n: int = 0
+	for pid_v: Variant in _gs.players:
+		if not bool((_gs.players[pid_v] as Dictionary).get(PlayerKeys.DEAD, false)):
+			n += 1
+	return n
 
 
 # Не осталось живых сыщиков (все players помечены dead). Пусто → false (нет игроков).

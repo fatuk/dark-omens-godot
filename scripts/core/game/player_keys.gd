@@ -36,3 +36,5 @@ const SKILL_MODS := "skill_mods"
 const DEATH_SAVE_CHECK := "death_save_check"  # per-player слот спас-броска на Пороге
 const DEAD := "dead"  # сыщик погиб (заглушка до перехода в Тень — см. docs/death-design.md)
 const DEATH_GRACE := "death_grace"  # выжил на Пороге — иммунитет к повторному спасу до нового раунда
+const GHOST_CLUE_BUDGET := "ghost_clue_budget"  # Тень: сколько улик ещё может выложить (лимит = живые на момент гибели)
+const GHOST_ACTED := "ghost_acted_this_round"  # Тень: акт (сообщение/улика) уже сделан в этом раунде

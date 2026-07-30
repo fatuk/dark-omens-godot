@@ -663,6 +663,7 @@ func start_new_round() -> void:
 		_gs.players[pid]["actions_left"] = _gs.ACTIONS_PER_ROUND
 		_gs.players[pid]["actions_used"] = []
 		_gs.players[pid]["encounter_done"] = false
+		_gs.players[pid]["ghost_acted_this_round"] = false  # Тень снова может действовать
 		_gs._refresh_items(_gs.players[pid])  # снять истощение активов (Refresh-шаг)
 	_gs._death.clear_grace()  # новый раунд — снять иммунитет выживших на Пороге
 	skip_disconnected()  # начинаем раунд с первого подключённого игрока

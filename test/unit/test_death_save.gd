@@ -18,10 +18,16 @@ class MockGameState:
 	var active_check: Dictionary = {}
 	var outcome: String = ""
 	var _check: CheckFlow
+	var _ghost_caches: Dictionary = {}
 	var sync_count: int = 0
 
 	func _init() -> void:
 		_check = CheckFlow.new(self)
+
+	func _stash_belongings(loc: String, items: Array) -> void:
+		var cache: Array = _ghost_caches.get(loc, [])
+		cache.append_array(items)
+		_ghost_caches[loc] = cache
 
 	func _name_of(pid: String) -> String:
 		return pid
@@ -258,3 +264,26 @@ func test_death_not_defeat_while_someone_alive() -> void:
 	_gs.players["ally"] = {"investigator": "", "skill_mods": {}, "hp": 6, "sanity": 6}
 	_ds.apply("p")  # p погиб, ally жив → не поражение
 	assert_eq(_gs.outcome, "", "жив хотя бы один сыщик — не поражение")
+
+
+# ── смерть → состояние Тени (бюджет, сброс вещей) ─────────────────────────────
+
+
+func test_death_sets_ghost_budget_to_living_count() -> void:
+	_player({"hp": 0})
+	_save_slot("hp", false)
+	_gs.players["a"] = {"investigator": "", "skill_mods": {}, "hp": 6, "sanity": 6}
+	_gs.players["b"] = {"investigator": "", "skill_mods": {}, "hp": 6, "sanity": 6}
+	_ds.apply("p")  # p погиб; живы a и b → бюджет 2
+	assert_eq(int(_gs.players["p"]["ghost_clue_budget"]), 2)
+	assert_false(bool(_gs.players["p"]["ghost_acted_this_round"]), "акт доступен сразу")
+
+
+func test_death_drops_items_to_cache_and_clears() -> void:
+	_player({"hp": 0, "location": "arkham", "items": [{"id": "axe"}], "clues": 3})
+	_save_slot("hp", false)
+	_gs.players["ally"] = {"investigator": "", "skill_mods": {}, "hp": 6, "sanity": 6}
+	_ds.apply("p")
+	assert_eq((_gs._ghost_caches.get("arkham", []) as Array).size(), 1, "вещи в кэше локации")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "у Тени вещей нет")
+	assert_eq(int(_gs.players["p"]["clues"]), 0, "улики обнулены (вернутся в пул)")
