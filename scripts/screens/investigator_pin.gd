@@ -11,6 +11,18 @@ extends Node2D
 
 const FRAME_TEX: Texture2D = preload("res://assets/map/avatar-pin.png")
 
+# Ч/б портрет мёртвого сыщика (Тень). Обесцвечиваем УЖЕ сэмплированный COLOR —
+# без texture()/UV, поэтому корректно и на Polygon2D (пиксельные UV), и с мипмапами.
+const _DEAD_SHADER := """
+shader_type canvas_item;
+void fragment() {
+	float g = dot(COLOR.rgb, vec3(0.299, 0.587, 0.114));
+	COLOR.rgb = vec3(g);
+}
+"""
+
+var _portrait_poly: Polygon2D
+
 # Размер карточки (нативный, ассет @2×) и геометрия прозрачного окна под портрет.
 const CARD_W: float = 325.0
 const CARD_H: float = 465.0
@@ -44,6 +56,7 @@ func setup(portrait: Texture2D) -> void:
 	# Портрет в окне: Polygon2D по окну (искажённому перспективой), UV =
 	# cover-crop портрета (заполняет окно, бока обрезаются формой полигона).
 	var poly := Polygon2D.new()
+	_portrait_poly = poly
 	poly.name = "Portrait"
 	poly.texture = portrait
 	poly.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
@@ -101,6 +114,20 @@ func setup(portrait: Texture2D) -> void:
 		]
 	)
 	add_child(frame)
+
+
+## Мёртвый сыщик (Тень) — портрет ч/б. Рамка остаётся цветной.
+func set_dead(dead: bool) -> void:
+	if not is_instance_valid(_portrait_poly):
+		return
+	if not dead:
+		_portrait_poly.material = null
+		return
+	var mat := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = _DEAD_SHADER
+	mat.shader = sh
+	_portrait_poly.material = mat
 
 
 # Высота карточки в нативных пикселях — MapLayer завязывает на неё экранный

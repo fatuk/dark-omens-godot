@@ -35,8 +35,13 @@ const _AVATAR_FRAME: Texture2D = preload("res://assets/investigator-panel/avatar
 # Круглая маска портрета: отсекаем фрагменты вне вписанного круга.
 const _CIRCLE_MASK_SHADER := """
 shader_type canvas_item;
+uniform float dead = 0.0;  // Тень: 1.0 → портрет ч/б
 void fragment() {
 	if (distance(UV, vec2(0.5)) > 0.5) { COLOR.a = 0.0; }
+	if (dead > 0.5) {
+		float g = dot(COLOR.rgb, vec3(0.299, 0.587, 0.114));
+		COLOR.rgb = vec3(g);
+	}
 }
 """
 
@@ -259,9 +264,11 @@ func _refresh_live() -> void:
 	var p: Dictionary = GameState.my_player()
 	if p.is_empty() or not is_instance_valid(_info_bar):
 		return
-	# Тень — не живой сыщик: прячем HP/рассудок/атрибуты, остаётся только портрет.
+	# Тень — не живой сыщик: прячем HP/рассудок/атрибуты, портрет делаем ч/б.
 	var ghost: bool = bool(p.get(PlayerKeys.DEAD, false))
 	_info_bar.visible = not ghost
+	if is_instance_valid(_portrait) and _portrait.material is ShaderMaterial:
+		(_portrait.material as ShaderMaterial).set_shader_parameter("dead", 1.0 if ghost else 0.0)
 	if ghost:
 		return
 	_info_bar.set_live_vitals(

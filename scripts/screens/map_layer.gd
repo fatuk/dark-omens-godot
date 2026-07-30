@@ -849,7 +849,15 @@ func set_investigators(list: Array) -> void:
 	var sig: String = ""
 	for i: int in range(list.size()):
 		var e: Dictionary = list[i]
-		sig += "%s@%s;" % [String(e.get("pid", "")), String(e.get("location", ""))]
+		# dead в сигнатуре — иначе пин не пересоберётся, когда сыщик стал Тенью.
+		sig += (
+			"%s@%s#%d;"
+			% [
+				String(e.get("pid", "")),
+				String(e.get("location", "")),
+				int(bool(e.get("dead", false)))
+			]
+		)
 	if sig == _inv_signature:
 		return
 	_inv_signature = sig
@@ -912,6 +920,7 @@ func set_investigators(list: Array) -> void:
 			pin.position = base + screen_off * inv0 * if0
 			add_child(pin)
 			pin.setup(tex)
+			pin.set_dead(bool(entry.get("dead", false)))
 			(
 				_inv_markers
 				. append(

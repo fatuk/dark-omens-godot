@@ -167,7 +167,9 @@ func _refresh_investigators() -> void:
 			continue  # whileHeld removeFromBoard (Lost in Time) — фишка снята с поля
 		var inv: String = String(p.get("investigator", ""))
 		var loc: String = String(p.get("location", ""))
-		list.append({"pid": pid, "investigator": inv, "location": loc})
+		list.append(
+			{"pid": pid, "investigator": inv, "location": loc, "dead": bool(p.get("dead", false))}
+		)
 		var prev: String = String(_inv_locs.get(pid, ""))
 		if _inv_seen and not prev.is_empty() and prev != loc:
 			# Многохоповое перемещение (билеты): путь сегментов из состояния игрока.
