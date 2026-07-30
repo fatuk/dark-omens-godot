@@ -209,6 +209,10 @@ func _build_taken_overlay() -> Control:
 	plate.name = "Plate"
 	plate.add_theme_stylebox_override("panel", _make_taken_frame())
 	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Рамка message-frame нарисована в 2× (композер чата тоже показывает её в 0.5).
+	# Масштаб вокруг центра — CenterContainer держит по центру, pivot не даёт «уехать».
+	plate.scale = Vector2(0.5, 0.5)
+	plate.resized.connect(func() -> void: plate.pivot_offset = plate.size * 0.5)
 	center.add_child(plate)
 
 	var lbl := UIStyle.label("PICKER_TAKEN", 30, UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
