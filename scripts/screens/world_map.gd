@@ -646,10 +646,10 @@ func _phase_label_for(p: String) -> String:
 func _current_player_name() -> String:
 	if GameState.phase != Phases.ACTION and GameState.phase != Phases.ENCOUNTER:
 		return ""
-	if GameState.turn_order.is_empty():
-		return ""
-	var pid: String = GameState.turn_order[GameState.current_idx]
-	if not GameState.players.has(pid):
+	# _current_pid() bounds-safe: при гибели всех / переходе фаз current_idx может
+	# оказаться за пределами turn_order — раньше был out-of-bounds краш.
+	var pid: String = GameState._current_pid()
+	if pid.is_empty() or not GameState.players.has(pid):
 		return ""
 	var inv_id: String = GameState.players[pid].get("investigator", "???")
 	return Investigators.display_name(inv_id)
