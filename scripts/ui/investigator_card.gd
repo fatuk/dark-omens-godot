@@ -215,9 +215,10 @@ func _build_taken_overlay() -> Control:
 	plate.resized.connect(func() -> void: plate.pivot_offset = plate.size * 0.5)
 	center.add_child(plate)
 
-	var lbl := UIStyle.label("PICKER_TAKEN", 30, UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := UIStyle.label("PICKER_TAKEN", 64, UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "TakenLabel"
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.custom_minimum_size = Vector2(560, 0)  # широкая плашка — как превью чата
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_card_text_shadow(lbl)
 	plate.add_child(lbl)
@@ -234,10 +235,10 @@ func _make_taken_frame() -> StyleBoxTexture:
 	sb.texture_margin_right = 72
 	sb.texture_margin_top = 46
 	sb.texture_margin_bottom = 46
-	sb.content_margin_left = 80
-	sb.content_margin_right = 80
-	sb.content_margin_top = 44
-	sb.content_margin_bottom = 44
+	sb.content_margin_left = 88
+	sb.content_margin_right = 88
+	sb.content_margin_top = 48
+	sb.content_margin_bottom = 48
 	return sb
 
 
