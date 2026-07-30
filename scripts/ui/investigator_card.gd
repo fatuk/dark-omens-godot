@@ -197,7 +197,7 @@ func _build_taken_overlay() -> Control:
 	ov.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ov.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var lbl := UIStyle.label("PICKER_TAKEN", 22, UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := UIStyle.label("PICKER_TAKEN", 32, UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "TakenLabel"
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
