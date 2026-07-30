@@ -171,9 +171,27 @@ func host_apply_choose(pid: String, kind: String) -> bool:
 		_begin_rumor_encounter(pid)
 	elif kind == "local":
 		generate("general", true)  # локационная встреча (привязанная к клетке)
+	elif kind == "belongings":
+		_collect_belongings(pid)  # без броска: забрать вещи павших, завершить встречу
 	else:
 		generate(kind)
 	return true
+
+
+# Хост: подобрать вещи павших сыщиков с клетки игрока (кэш _ghost_caches). Гранты
+# без броска, встреча сразу завершается (ход к следующему). «Чистый лут».
+func _collect_belongings(pid: String) -> void:
+	var loc: String = String(_gs.players[pid].get("location", ""))
+	var items: Array = _gs._take_belongings(loc)
+	for it_v: Variant in items:
+		var iid: String = String((it_v as Dictionary).get("id", ""))
+		if not iid.is_empty():
+			_gs._cond.host_grant_asset(pid, iid)
+	GameConsole.log("[Game] %s забрал вещи павшего (%d)" % [_gs._name_of(pid), items.size()])
+	_gs.players[pid]["encounter_done"] = true
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	_gs._phase.advance_encounter_turn()
 
 
 # Хост: собрать локальную карту bind-хода (без relay) из применимого хука набора.
@@ -460,6 +478,9 @@ func _compute_choices(pid: String) -> Array:
 	# Слух с solve=encounter: игрок на клетке слуха может разыграть встречу-решение.
 	if not _gs._rumor.encounter_location_for(pid).is_empty():
 		out.append("rumor")
+	# Вещи павших сыщиков на этой клетке — можно забрать (без броска, «чистый лут»).
+	if _gs._has_belongings(loc):
+		out.append("belongings")
 	return out
 
 
