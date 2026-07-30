@@ -37,6 +37,7 @@ var _confirm_btn: Button
 var _start_btn: Button  # видна только хосту
 var _nm: Node = null  # NetworkManager (читаем напрямую для room+players)
 var _player_details_modal: ModalDialog = null  # guard от двойного клика по «Подробнее»
+var _ready_locked: bool = false  # игрок нажал «Готов» — кнопка держится залоченной
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
@@ -83,18 +84,29 @@ func mark_taken(inv_name: String, taker_name: String) -> void:
 	_taken[inv_name] = taker_name
 	if _carousel:
 		_carousel.update_taken(_taken)
+	_refresh_confirm_for_taken()
 
 
 func sync_taken(taken_map: Dictionary) -> void:
 	_taken = taken_map.duplicate()
 	if _carousel:
 		_carousel.update_taken(_taken)
+	_refresh_confirm_for_taken()
 
 
 func mark_available(inv_name: String) -> void:
 	_taken.erase(inv_name)
 	if _carousel:
 		_carousel.update_taken(_taken)
+	_refresh_confirm_for_taken()
+
+
+# «Готов» недоступна, если центральный сыщик занят другим (кроме ready-лока —
+# там кнопка держится залоченной как «готов»).
+func _refresh_confirm_for_taken() -> void:
+	if _ready_locked or not is_instance_valid(_confirm_btn):
+		return
+	_confirm_btn.disabled = _taken.has(get_selected())
 
 
 # ── Загрузка данных ──────────────────────────────────────────────────────────
@@ -227,6 +239,7 @@ func _update_start_btn_visibility() -> void:
 func lock_confirm() -> void:
 	if not is_instance_valid(_confirm_btn):
 		return
+	_ready_locked = true
 	_confirm_btn.disabled = true
 	_confirm_btn.text = "LOBBY_BTN_READY_DONE"
 
@@ -235,8 +248,9 @@ func lock_confirm() -> void:
 func unlock_confirm() -> void:
 	if not is_instance_valid(_confirm_btn):
 		return
-	_confirm_btn.disabled = false
+	_ready_locked = false
 	_confirm_btn.text = "PICKER_CONFIRM"
+	_refresh_confirm_for_taken()  # но занятого другим подтвердить всё равно нельзя
 
 
 # Хост: включить/выключить кнопку «Начать игру».
@@ -256,9 +270,12 @@ func _on_carousel_index_changed(idx: int) -> void:
 	if _info_bar and idx >= 0 and idx < _investigators.size():
 		_info_bar.update(_investigators[idx])
 	_emit_selection()
+	_refresh_confirm_for_taken()
 
 
 func _on_confirm_pressed() -> void:
+	if _taken.has(get_selected()):
+		return  # сыщик занят другим игроком — подтвердить нельзя
 	# Селекцию эмитим ПЕРЕД confirm: иначе selection_changed прилетал бы уже с
 	# выставленным _was_ready и лобби тут же сбрасывало бы готовность (перевыбор),
 	# и «Подтвердить» не срабатывало. Порядок: сначала зафиксировать сыщика — потом
@@ -281,7 +298,7 @@ func _preselect_saved() -> void:
 		return
 	var start_idx: int = -1
 	var saved: String = SelectionPrefs.load_last()
-	if not saved.is_empty():
+	if not saved.is_empty() and not _taken.has(saved):  # занятого другим не преселектим
 		for i: int in range(_investigators.size()):
 			if _investigators[i].get("name", "") == saved:
 				start_idx = i

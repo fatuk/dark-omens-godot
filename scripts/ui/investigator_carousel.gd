@@ -436,7 +436,8 @@ func _populate_card(phys_idx: int, inv: Dictionary) -> void:
 	var view: InvestigatorCard = _cards[phys_idx]
 	view.set_data(inv)
 	var inv_name: String = inv.get("name", "")
-	view.set_taken(_taken.has(inv_name) and inv_name != selected_name())
+	# _taken не содержит собственный пик игрока → затеняем только чужих, даже в центре.
+	view.set_taken(_taken.has(inv_name))
 	_request_card_repaint(phys_idx)
 
 
@@ -456,13 +457,12 @@ func _refresh_taken_overlays() -> void:
 	if _investigators.is_empty():
 		return
 	var n: int = _investigators.size()
-	var current: String = selected_name()
 	for i: int in range(_card_meshes.size()):
 		var mesh: MeshInstance3D = _card_meshes[i]
 		var slot: int = int(mesh.get_meta("logical_slot", i))
 		var data_idx: int = (_index + slot - CENTER_SLOT + n) % n
 		var inv_name: String = _investigators[data_idx].get("name", "")
-		_cards[i].set_taken(_taken.has(inv_name) and inv_name != current)
+		_cards[i].set_taken(_taken.has(inv_name))
 		_request_card_repaint(i)
 
 
