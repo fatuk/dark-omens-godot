@@ -2006,6 +2006,31 @@ func current_act() -> int:
 func reset_pregame() -> void:
 	if not _is_host():
 		return
+	_clear_pregame_fields()
+
+
+## Полный сброс стейта при выходе из комнаты (ВСЕ клиенты, не host-only). В отличие
+## от reset_pregame (готовит хост к сборке новой библии) чистит и players/turn_order/
+## campaign — иначе рудимент прошлой партии всплывает в новом лобби (сыщик «занято»,
+## стейл-Тень). Зовётся из main_menu._ready при возврате в меню.
+func reset_session() -> void:
+	_clear_pregame_fields()
+	players.clear()
+	turn_order.clear()
+	current_idx = 0
+	round_num = 0
+	doom = 0
+	omens_step = 0
+	active_mystery = 0
+	phase = ""
+	campaign = {}
+	campaign_pending = false
+	_reset_clue_pool()  # чистит _clue_pool и _ghost_caches (наследство Теней)
+	_emit_changed()
+
+
+# Общая часть reset_pregame/reset_session — обнуление игровых полей (без players).
+func _clear_pregame_fields() -> void:
 	_campaign.reset()
 	current_encounter = {}
 	active_check = {}
