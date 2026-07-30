@@ -31,16 +31,25 @@ func _is_ghost() -> bool:
 
 
 func _build() -> void:
-	# Нижняя панель-плашка Тени.
+	# Полноэкранный «якорь»: без него anchors PanelContainer как ПРЯМОГО ребёнка
+	# CanvasLayer не считаются от вьюпорта — панель прилипала к верху и клипалась.
+	var wrap := Control.new()
+	wrap.name = "GhostWrap"
+	wrap.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE  # клики идут к карте, ловит только панель
+	add_child(wrap)
+
+	# Нижняя панель-плашка Тени (сама тянется по контенту, дно — над краем экрана).
 	var panel := PanelContainer.new()
 	panel.name = "GhostPanel"
 	UIStyle.style_modal_panel(panel)
-	panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	panel.set_anchors_and_offsets_preset(
+		Control.PRESET_CENTER_BOTTOM, Control.PRESET_MODE_KEEP_SIZE, 18
+	)
 	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	panel.offset_top = -132
-	panel.offset_bottom = -18
+	panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(panel)
+	wrap.add_child(panel)
 	_root = panel
 
 	var vb := VBoxContainer.new()
