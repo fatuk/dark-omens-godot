@@ -20,6 +20,16 @@ const _OVERLAY_TEX: Texture2D = preload("res://assets/cards/investigator/card-ov
 const _FRAME_TEX: Texture2D = preload("res://assets/cards/investigator/card-frame.png")
 const _BADGE_TEX: Texture2D = preload("res://assets/cards/investigator/card-badge.png")
 
+# Обесцвечивание портрета занятого сыщика (эффект «недоступен»): grayscale + затемнение.
+const _GRAY_SHADER := """
+shader_type canvas_item;
+void fragment() {
+	vec4 c = texture(TEXTURE, UV);
+	float g = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+	COLOR = vec4(vec3(g) * 0.6, c.a);
+}
+"""
+
 # Геометрия бейджа — подобрана под текущий card-badge.png. При смене ассета
 # проверить, что текст и завитки не вылезают.
 const _BADGE_TEX_SCALE: float = 0.25  # @4× ассет → отображаем в 1×
@@ -41,6 +51,7 @@ var _name_lbl: Label
 var _occ_lbl: Label
 var _quote_lbl: Label
 var _taken_ov: Control
+var _gray_mat: ShaderMaterial  # обесцвечивание портрета занятого сыщика
 
 
 func _init(placeholder_tex: ImageTexture) -> void:
@@ -71,12 +82,20 @@ func set_data(inv: Dictionary) -> void:
 
 func set_taken(taken: bool) -> void:
 	_taken_ov.visible = taken
+	# Обесцвечиваем портрет занятого — сразу читается как «недоступен».
+	if is_instance_valid(_portrait):
+		_portrait.material = _gray_mat if taken else null
 
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 
 
 func _build() -> void:
+	var gray_sh := Shader.new()
+	gray_sh.code = _GRAY_SHADER
+	_gray_mat = ShaderMaterial.new()
+	_gray_mat.shader = gray_sh
+
 	# Слой 1: портрет.
 	_portrait = TextureRect.new()
 	_portrait.name = "Portrait"
@@ -170,16 +189,29 @@ func _build_quote_label() -> Label:
 
 
 func _build_taken_overlay() -> Control:
+	# Вуаль поверх обесцвеченного портрета + орнаментальная плашка «ЗАНЯТО»
+	# (шевроны, как заголовки модалок) — в стиле игры, а не плоский текст.
 	var ov := ColorRect.new()
 	ov.name = "TakenOverlay"
-	ov.color = Color(0, 0, 0, 0.6)
+	ov.color = Color(0.03, 0.02, 0.05, 0.5)
 	ov.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ov.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var lbl := UIStyle.label("PICKER_TAKEN", 18, UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
-	lbl.name = "TakenLabel"
-	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	ov.add_child(lbl)
+
+	var center := CenterContainer.new()
+	center.name = "Center"
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ov.add_child(center)
+
+	var plate := PanelContainer.new()
+	plate.name = "Plate"
+	UIStyle.style_modal_panel(plate)
+	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.add_child(plate)
+
+	var title := UIStyle.ornate_title("PICKER_TAKEN", 24, UIColors.DANGER)
+	title.name = "TakenTitle"
+	plate.add_child(title)
 	return ov
 
 
