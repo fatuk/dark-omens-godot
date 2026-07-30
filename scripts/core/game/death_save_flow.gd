@@ -159,6 +159,13 @@ func _die(pid: String) -> void:
 	if _all_dead() and String(_gs.outcome).is_empty():
 		_gs.outcome = "defeat"
 		GameConsole.log("[Смерть] Все сыщики погибли — поражение")
+	elif _gs._current_pid() == pid:
+		# Погиб в СВОЙ ход — прокручиваем ход дальше, иначе застрянет на Тени
+		# (current_idx на ней; skip_disconnected срабатывает только на advance).
+		if _gs.phase == Phases.ACTION:
+			_gs._phase.advance_action_turn()
+		elif _gs.phase == Phases.ENCOUNTER:
+			_gs._phase.advance_encounter_turn()
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 

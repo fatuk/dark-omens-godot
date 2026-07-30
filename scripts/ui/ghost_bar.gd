@@ -3,9 +3,9 @@ extends CanvasLayer
 ## UI Тени («Мир духов») — показывается погибшему игроку (my_player.dead).
 ## Даёт акт раунда «Оставить улику» (случайная улика после ближайшего Мифа),
 ## просмотр ВСЕХ Тайн Древнего и 3 БЛИЖАЙШИХ Мифов (Тень — оракул) и подсказку
-## про чат. Колода Мифов host-only и не синкается — Тень тянет библию сама через
-## ContentApi (get_campaign по campaign.id) и показывает deck[index..index+3];
-## живым это не рассылается. Код, монтируется из world_map.
+## про чат. Ближайшие Мифы host режет из host-only колоды в синкаемое
+## GameState.ghost_upcoming (только при наличии Тени) — читаем его напрямую.
+## Код, монтируется из world_map.
 ##
 ## TODO(i18n): тексты литералами (translations.csv занят) — вынести в DEATH_*.
 
@@ -16,8 +16,6 @@ var _myst_veil: ColorRect  # оверлей со всеми Тайнами (то
 var _myst_list: VBoxContainer
 var _mythos_veil: ColorRect  # оверлей с ближайшими Мифами (тоггл)
 var _mythos_list: VBoxContainer
-var _mythos_deck: Array = []  # кэш колоды (тянется один раз через ContentApi)
-var _mythos_loaded: bool = false  # успешная загрузка колоды была
 
 
 func _ready() -> void:
@@ -222,53 +220,26 @@ func _on_show_mysteries() -> void:
 func _on_show_mythos() -> void:
 	if not is_instance_valid(_mythos_veil) or not is_instance_valid(_mythos_list):
 		return
-	_mythos_veil.visible = true
-	if not _mythos_loaded:
-		for c in _mythos_list.get_children():
-			c.queue_free()
-		_mythos_list.add_child(UIStyle.label("Заглядываем за завесу…", 26, UIColors.MUTED))
-		await _load_mythos_deck()
-		# Оверлей могли закрыть, пока тянули колоду.
-		if not is_instance_valid(_mythos_veil) or not _mythos_veil.visible:
-			return
 	_populate_mythos()
+	_mythos_veil.visible = true
 
 
-# Тень тянет колоду библии сама (host-only на хосте; get_campaign доступен любому
-# залогиненному). Одна успешная загрузка кэшируется на партию.
-func _load_mythos_deck() -> void:
-	var api: Node = get_node_or_null("/root/ContentApi")
-	var cid: String = String(GameState.campaign.get("id", ""))
-	if api == null or cid.is_empty():
-		return
-	@warning_ignore("unsafe_method_access")
-	var res: Dictionary = await api.get_campaign(cid)
-	if not bool(res.get("ok", false)):
-		return
-	var full: Dictionary = res.get("campaign", {})
-	_mythos_deck = full.get("mythosDeck", [])
-	_mythos_loaded = true
-
-
-# 3 ближайших Мифа: deck[index..index+3] (index синкается, указывает на след. карту).
+# 3 ближайших Мифа — из синкаемого GameState.ghost_upcoming (host режет host-only
+# колоду и кладёт только name/text, лишь когда в партии есть Тень).
 func _populate_mythos() -> void:
 	for c in _mythos_list.get_children():
 		c.queue_free()
-	if not _mythos_loaded or _mythos_deck.is_empty():
+	var upcoming: Array = GameState.ghost_upcoming
+	if upcoming.is_empty():
 		_mythos_list.add_child(
-			UIStyle.label("Завеса не поддаётся — Мифы скрыты.", 26, UIColors.MUTED)
+			UIStyle.label("Завеса тиха — ближайших Мифов не видно.", 26, UIColors.MUTED)
 		)
 		return
-	var idx: int = int(GameState._mythos.index)
-	var shown: int = 0
-	for i in range(idx, mini(idx + 3, _mythos_deck.size())):
-		var card: Dictionary = _mythos_deck[i]
+	for i in range(upcoming.size()):
+		var card: Dictionary = upcoming[i]
 		_add_list_entry(
 			_mythos_list,
-			"%d. %s" % [shown + 1, String(card.get("name", ""))],
+			"%d. %s" % [i + 1, String(card.get("name", ""))],
 			String(card.get("text", "")),
 			UIColors.ACCENT
 		)
-		shown += 1
-	if shown == 0:
-		_mythos_list.add_child(UIStyle.label("Колода Мифов на исходе.", 26, UIColors.MUTED))

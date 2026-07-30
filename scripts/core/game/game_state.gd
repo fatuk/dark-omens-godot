@@ -188,6 +188,10 @@ var shop_reserve: Array = []
 # Партия проходит Тайны по порядку; каждая решается набором «зачётов» помеченных
 # локаций через двух-фазную mystery-встречу (см. encounter_flow + effect_runner).
 var active_mystery: int = 0
+# 3 ближайших Мифа для оракула-Тени (host режет колоду). Наполняется ТОЛЬКО когда
+# в партии есть Тень; живые клиенты его получают, но в UI не показывают (колода и
+# так доступна любому через get_campaign — секрета тут нет, зато синк надёжен).
+var ghost_upcoming: Array = []
 # Сколько локаций активной Тайны уже зачищено (mysteryProgress). При достижении
 # solveCondition.n активная Тайна решается, индекс ++ (если уже 3 → outcome).
 var mystery_progress: int = 0
@@ -305,6 +309,7 @@ const _SYNC_FIELDS: Array[String] = [
 	"campaign_pending",
 	"active",
 	"active_mystery",
+	"ghost_upcoming",
 	"mystery_progress",
 	"mystery_claimed",
 	"mystery_tokens_on_card",
@@ -324,6 +329,7 @@ func _broadcast_sync() -> void:
 		_sweeping = false
 	_reconcile_clue_identities()  # синхронизируем clue_ids игроков с числом улик до рассылки
 	_reconcile_focus_quotes()  # цитаты жетонов концентрации привязаны к жетонам
+	_refresh_ghost_upcoming()  # 3 ближайших Мифа для Теней (host режет host-only колоду)
 	var payload: Dictionary = {"action": RelayActions.SYNC, "mythos_index": _mythos.index}
 	for f: String in _SYNC_FIELDS:
 		payload[f] = get(f)
@@ -382,6 +388,25 @@ func _take_belongings(loc: String) -> Array:
 # Есть ли на локации вещи павших (для предложения встречи «забрать вещи»).
 func _has_belongings(loc: String) -> bool:
 	return not (_ghost_caches.get(loc, []) as Array).is_empty()
+
+
+# Host: наполнить ghost_upcoming 3 ближайшими Мифами — только если есть Тень. Колода
+# host-only, index указывает на след. карту → deck[index..index+3]. Кладём лишь
+# name/text (для оверлея «Ближайшие Мифы»), чтобы не тащить весь эффект-DSL.
+func _refresh_ghost_upcoming() -> void:
+	var has_ghost: bool = false
+	for pid_v: Variant in players:
+		if bool((players[pid_v] as Dictionary).get(PlayerKeys.DEAD, false)):
+			has_ghost = true
+			break
+	if not has_ghost:
+		ghost_upcoming = []
+		return
+	var out: Array = []
+	for i in range(_mythos.index, mini(_mythos.index + 3, _mythos.deck.size())):
+		var card: Dictionary = _mythos.deck[i]
+		out.append({"name": String(card.get("name", "")), "text": String(card.get("text", ""))})
+	ghost_upcoming = out
 
 
 # Жетон улики лёг на локацию loc → строго берём улику ЭТОЙ локации из пула (если она
@@ -1749,6 +1774,8 @@ func _name_of(pid: String) -> String:
 
 ## Узнать, мой ли ход сейчас (только для phase=action).
 func is_my_turn() -> bool:
+	if bool(my_player().get(PlayerKeys.DEAD, false)):
+		return false  # Тень обычный ход не берёт (страховка к пропуску в phase_controller)
 	return active and phase == Phases.ACTION and _current_pid() == _nm.my_user_id
 
 

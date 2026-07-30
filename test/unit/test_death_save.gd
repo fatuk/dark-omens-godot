@@ -34,6 +34,10 @@ class MockGameState:
 	func _name_of(pid: String) -> String:
 		return pid
 
+	# Смерть НЕ в свой ход — _die не трогает phase/_phase (см. advance-ветку).
+	func _current_pid() -> String:
+		return ""
+
 	func _broadcast_sync() -> void:
 		sync_count += 1
 
