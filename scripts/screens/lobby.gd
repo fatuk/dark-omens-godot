@@ -184,6 +184,11 @@ func _recompute_taken() -> void:
 # партии их не всегда видно в _nm.players (investigator/ready), поэтому источник
 # истины — GameState.players. Иначе пикер позднего входа даёт взять дубликат.
 func _mark_ingame_taken(taken: Dictionary) -> void:
+	# Только при входе в ИДУЩУЮ партию (late-join). В свежем лобби GameState.players —
+	# рудимент прошлой игры (не сбрасывается при выходе из комнаты) и давал ложное
+	# «занято» на сыщике из предыдущей партии.
+	if not _nm.game_started:
+		return
 	for uid: String in GameState.players:
 		if uid == _nm.my_user_id:
 			continue
