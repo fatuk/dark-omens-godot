@@ -670,12 +670,14 @@ func start_new_round() -> void:
 	_gs.phase_changed.emit(_gs.phase)
 
 
-## Прокрутить current_idx мимо отключённых игроков. true — остановились на
-## подключённом игроке; false — досмотрели turn_order до конца (ходить некому).
+## Прокрутить current_idx мимо отключённых И погибших (Тень не берёт обычный ход).
+## true — остановились на живом подключённом игроке; false — досмотрели turn_order
+## до конца (ходить некому — все отключены/мертвы).
 func skip_disconnected() -> bool:
 	while _gs.current_idx < _gs.turn_order.size():
 		var pid: String = _gs.turn_order[_gs.current_idx]
-		if _gs.players.has(pid) and bool(_gs.players[pid].get("connected", true)):
+		var p: Dictionary = _gs.players.get(pid, {})
+		if not p.is_empty() and bool(p.get("connected", true)) and not bool(p.get("dead", false)):
 			return true
 		_gs.current_idx += 1
 	return false

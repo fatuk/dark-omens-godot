@@ -595,6 +595,24 @@ func test_skip_disconnected_false_when_all_gone() -> void:
 	assert_false(_pc.skip_disconnected(), "ходить некому")
 
 
+func test_skip_disconnected_advances_past_dead() -> void:
+	# Погибший (Тень) не берёт обычный ход — пропускается как отключённый.
+	_gs.turn_order = ["ghost", "p"]
+	_gs.current_idx = 0
+	_add_player("ghost", {"dead": true})
+	_add_player("p")
+	assert_true(_pc.skip_disconnected())
+	assert_eq(_gs.current_idx, 1, "пропустили погибшего")
+
+
+func test_skip_disconnected_false_when_all_dead() -> void:
+	_gs.turn_order = ["g1", "g2"]
+	_gs.current_idx = 0
+	_add_player("g1", {"dead": true})
+	_add_player("g2", {"dead": true})
+	assert_false(_pc.skip_disconnected(), "все — Тени, ходить некому")
+
+
 # ── start_new_round ───────────────────────────────────────────────────────────
 
 
