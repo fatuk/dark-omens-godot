@@ -19,6 +19,8 @@ extends Control
 const _OVERLAY_TEX: Texture2D = preload("res://assets/cards/investigator/card-overlay.png")
 const _FRAME_TEX: Texture2D = preload("res://assets/cards/investigator/card-frame.png")
 const _BADGE_TEX: Texture2D = preload("res://assets/cards/investigator/card-badge.png")
+# Плашка «ЗАНЯТО» — та же рамка, что у превью чата (nine-patch: углы целы, центр тянется).
+const _TAKEN_FRAME_TEX: Texture2D = preload("res://assets/chat/message-frame.png")
 
 # Обесцвечивание портрета занятого сыщика (эффект «недоступен»): grayscale + затемнение.
 const _GRAY_SHADER := """
@@ -205,14 +207,34 @@ func _build_taken_overlay() -> Control:
 
 	var plate := PanelContainer.new()
 	plate.name = "Plate"
-	UIStyle.style_modal_panel(plate)
+	plate.add_theme_stylebox_override("panel", _make_taken_frame())
 	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	center.add_child(plate)
 
-	var title := UIStyle.ornate_title("PICKER_TAKEN", 24, UIColors.DANGER)
-	title.name = "TakenTitle"
-	plate.add_child(title)
+	var lbl := UIStyle.label("PICKER_TAKEN", 30, UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl.name = "TakenLabel"
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_apply_card_text_shadow(lbl)
+	plate.add_child(lbl)
 	return ov
+
+
+# StyleBoxTexture из message-frame.png — как плашка превью чата: nine-patch, ornate-
+# углы не тянутся (texture_margin), центр растягивается под текст. content_margin
+# меньше, чем в чате (текст «ЗАНЯТО» короткий, а не крупная фраза).
+func _make_taken_frame() -> StyleBoxTexture:
+	var sb := StyleBoxTexture.new()
+	sb.texture = _TAKEN_FRAME_TEX
+	sb.texture_margin_left = 72
+	sb.texture_margin_right = 72
+	sb.texture_margin_top = 46
+	sb.texture_margin_bottom = 46
+	sb.content_margin_left = 80
+	sb.content_margin_right = 80
+	sb.content_margin_top = 44
+	sb.content_margin_bottom = 44
+	return sb
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
