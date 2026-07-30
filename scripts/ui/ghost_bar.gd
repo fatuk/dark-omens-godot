@@ -141,7 +141,7 @@ func _build_list_overlay(title_text: String) -> Array:
 	vb.add_theme_constant_override("separation", 10)
 	margin.add_child(vb)
 
-	vb.add_child(UIStyle.modal_title(title_text))
+	vb.add_child(UIStyle.ornate_title(title_text))
 
 	var scroll := ScrollContainer.new()
 	scroll.name = "Scroll"
