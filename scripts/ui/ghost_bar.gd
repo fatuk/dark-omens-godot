@@ -2,9 +2,10 @@ extends CanvasLayer
 
 ## UI Тени («Мир духов») — показывается погибшему игроку (my_player.dead).
 ## Даёт акт раунда «Оставить улику» (случайная улика после ближайшего Мифа),
-## просмотр ВСЕХ Тайн Древнего (Тень — оракул) и подсказку про чат.
-## Мифы Тень по замыслу тоже видит целиком, но адресный синк колоды — отдельный
-## кусок (пока не сделан). Код, монтируется из world_map.
+## просмотр ВСЕХ Тайн Древнего и 3 БЛИЖАЙШИХ Мифов (Тень — оракул) и подсказку
+## про чат. Колода Мифов host-only и не синкается — Тень тянет библию сама через
+## ContentApi (get_campaign по campaign.id) и показывает deck[index..index+3];
+## живым это не рассылается. Код, монтируется из world_map.
 ##
 ## TODO(i18n): тексты литералами (translations.csv занят) — вынести в DEATH_*.
 
@@ -13,6 +14,10 @@ var _budget_lbl: Label
 var _clue_btn: Button
 var _myst_veil: ColorRect  # оверлей со всеми Тайнами (тоггл)
 var _myst_list: VBoxContainer
+var _mythos_veil: ColorRect  # оверлей с ближайшими Мифами (тоггл)
+var _mythos_list: VBoxContainer
+var _mythos_deck: Array = []  # кэш колоды (тянется один раз через ContentApi)
+var _mythos_loaded: bool = false  # успешная загрузка колоды была
 
 
 func _ready() -> void:
@@ -81,6 +86,11 @@ func _build() -> void:
 	myst_btn.pressed.connect(_on_show_mysteries)
 	row.add_child(myst_btn)
 
+	var mythos_btn := UIStyle.button("Ближайшие Мифы", UIColors.WARNING)
+	mythos_btn.name = "MythosBtn"
+	mythos_btn.pressed.connect(_on_show_mythos)
+	row.add_child(mythos_btn)
+
 	var hint := UIStyle.label(
 		"Шёпот живым — через чат (C)", 12, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
 	)
@@ -89,23 +99,30 @@ func _build() -> void:
 
 	UIStyle.scale_modal_text(panel)
 
-	_build_mysteries_overlay()
-
-
-# Полноэкранный оверлей со списком ВСЕХ Тайн (оракул Тени).
-func _build_mysteries_overlay() -> void:
-	_myst_veil = ColorRect.new()
+	var myst: Array = _build_list_overlay("Все Тайны Древнего")
+	_myst_veil = myst[0]
 	_myst_veil.name = "MysteriesVeil"
-	_myst_veil.color = Color(0, 0, 0, 0.8)
-	_myst_veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_myst_veil.mouse_filter = Control.MOUSE_FILTER_STOP
-	_myst_veil.visible = false
-	add_child(_myst_veil)
+	_myst_list = myst[1]
+	var mythos: Array = _build_list_overlay("Ближайшие Мифы")
+	_mythos_veil = mythos[0]
+	_mythos_veil.name = "MythosVeil"
+	_mythos_list = mythos[1]
+
+
+# Полноэкранный оверлей-список (оракул Тени). Возвращает [veil, list_vbox].
+func _build_list_overlay(title_text: String) -> Array:
+	var veil := ColorRect.new()
+	veil.name = "Veil"
+	veil.color = Color(0, 0, 0, 0.8)
+	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	veil.mouse_filter = Control.MOUSE_FILTER_STOP
+	veil.visible = false
+	add_child(veil)
 
 	var center := CenterContainer.new()
 	center.name = "Center"
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_myst_veil.add_child(center)
+	veil.add_child(center)
 
 	var panel := PanelContainer.new()
 	panel.name = "Panel"
@@ -124,7 +141,7 @@ func _build_mysteries_overlay() -> void:
 	vb.add_theme_constant_override("separation", 10)
 	margin.add_child(vb)
 
-	vb.add_child(UIStyle.modal_title("Все Тайны Древнего"))
+	vb.add_child(UIStyle.modal_title(title_text))
 
 	var scroll := ScrollContainer.new()
 	scroll.name = "Scroll"
@@ -132,18 +149,27 @@ func _build_mysteries_overlay() -> void:
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	vb.add_child(scroll)
 
-	_myst_list = VBoxContainer.new()
-	_myst_list.name = "List"
-	_myst_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_myst_list.add_theme_constant_override("separation", 14)
-	scroll.add_child(_myst_list)
+	var list := VBoxContainer.new()
+	list.name = "List"
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list.add_theme_constant_override("separation", 14)
+	scroll.add_child(list)
 
 	var close := UIStyle.button("Закрыть", UIColors.MUTED)
 	close.name = "Close"
-	close.pressed.connect(func() -> void: _myst_veil.visible = false)
+	close.pressed.connect(func() -> void: veil.visible = false)
 	vb.add_child(close)
 
 	UIStyle.scale_modal_text(panel)
+	return [veil, list]
+
+
+# Строка заголовка + тело в список оверлея (единый стиль оракула).
+func _add_list_entry(list: VBoxContainer, head: String, body_text: String, head_col: Color) -> void:
+	list.add_child(UIStyle.label(head, 34, head_col, HORIZONTAL_ALIGNMENT_LEFT))
+	var body := UIStyle.label(body_text, 26, UIColors.TEXT)
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	list.add_child(body)
 
 
 # ── Обновление ────────────────────────────────────────────────────────────────
@@ -156,6 +182,8 @@ func _refresh() -> void:
 	if not ghost:
 		if is_instance_valid(_myst_veil):
 			_myst_veil.visible = false
+		if is_instance_valid(_mythos_veil):
+			_mythos_veil.visible = false
 		return
 	var me: Dictionary = GameState.my_player()
 	var budget: int = int(me.get(PlayerKeys.GHOST_CLUE_BUDGET, 0))
@@ -187,8 +215,60 @@ func _on_show_mysteries() -> void:
 		var solved: bool = i < GameState.active_mystery
 		var head := "%d. %s%s" % [i + 1, String(m.get("title", "")), "  ✓" if solved else ""]
 		var col: Color = UIColors.MUTED if solved else UIColors.ACCENT
-		_myst_list.add_child(UIStyle.label(head, 17, col, HORIZONTAL_ALIGNMENT_LEFT))
-		var body := UIStyle.label(String(m.get("text", "")), 13, UIColors.TEXT)
-		body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		_myst_list.add_child(body)
+		_add_list_entry(_myst_list, head, String(m.get("text", "")), col)
 	_myst_veil.visible = true
+
+
+func _on_show_mythos() -> void:
+	if not is_instance_valid(_mythos_veil) or not is_instance_valid(_mythos_list):
+		return
+	_mythos_veil.visible = true
+	if not _mythos_loaded:
+		for c in _mythos_list.get_children():
+			c.queue_free()
+		_mythos_list.add_child(UIStyle.label("Заглядываем за завесу…", 26, UIColors.MUTED))
+		await _load_mythos_deck()
+		# Оверлей могли закрыть, пока тянули колоду.
+		if not is_instance_valid(_mythos_veil) or not _mythos_veil.visible:
+			return
+	_populate_mythos()
+
+
+# Тень тянет колоду библии сама (host-only на хосте; get_campaign доступен любому
+# залогиненному). Одна успешная загрузка кэшируется на партию.
+func _load_mythos_deck() -> void:
+	var api: Node = get_node_or_null("/root/ContentApi")
+	var cid: String = String(GameState.campaign.get("id", ""))
+	if api == null or cid.is_empty():
+		return
+	@warning_ignore("unsafe_method_access")
+	var res: Dictionary = await api.get_campaign(cid)
+	if not bool(res.get("ok", false)):
+		return
+	var full: Dictionary = res.get("campaign", {})
+	_mythos_deck = full.get("mythosDeck", [])
+	_mythos_loaded = true
+
+
+# 3 ближайших Мифа: deck[index..index+3] (index синкается, указывает на след. карту).
+func _populate_mythos() -> void:
+	for c in _mythos_list.get_children():
+		c.queue_free()
+	if not _mythos_loaded or _mythos_deck.is_empty():
+		_mythos_list.add_child(
+			UIStyle.label("Завеса не поддаётся — Мифы скрыты.", 26, UIColors.MUTED)
+		)
+		return
+	var idx: int = int(GameState._mythos.index)
+	var shown: int = 0
+	for i in range(idx, mini(idx + 3, _mythos_deck.size())):
+		var card: Dictionary = _mythos_deck[i]
+		_add_list_entry(
+			_mythos_list,
+			"%d. %s" % [shown + 1, String(card.get("name", ""))],
+			String(card.get("text", "")),
+			UIColors.ACCENT
+		)
+		shown += 1
+	if shown == 0:
+		_mythos_list.add_child(UIStyle.label("Колода Мифов на исходе.", 26, UIColors.MUTED))
