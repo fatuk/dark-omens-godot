@@ -226,6 +226,12 @@ func _on_rooms_updated(rooms: Array) -> void:
 	for child in _rooms_list.get_children():
 		child.queue_free()
 
+	# Новые комнаты — сверху (по createdAt, убыв.). createdAt приходит из relay.
+	rooms.sort_custom(
+		func(a: Dictionary, b: Dictionary) -> bool:
+			return float(a.get("createdAt", 0)) > float(b.get("createdAt", 0))
+	)
+
 	if rooms.is_empty():
 		var empty_lbl := Label.new()
 		empty_lbl.name = "EmptyLabel"
