@@ -20,6 +20,7 @@ extends RefCounted
 const SCAR_CAP := 2  # шрам навыка клампится в [−SCAR_CAP, +SCAR_CAP] (как SKILL_MOD_CAP)
 
 var _gs: Node
+var _pending_ghost_clues: int = 0  # host-only: улики Теней, ждущие ближайшего Мифа
 
 
 func _init(gs: Node) -> void:
@@ -160,6 +161,33 @@ func _die(pid: String) -> void:
 		GameConsole.log("[Смерть] Все сыщики погибли — поражение")
 	_gs._broadcast_sync()
 	_gs._emit_changed()
+
+
+## Хост: Тень выкладывает улику — акт раунда. Гард: игрок — Тень (dead), есть бюджет,
+## в этом раунде ещё не действовал. Улика ляжет СЛУЧАЙНО после ближайшего Мифа
+## (flush_ghost_clues). true — принято.
+func ghost_place_clue(pid: String) -> bool:
+	var p: Dictionary = _gs.players.get(pid, {})
+	if not bool(p.get(PlayerKeys.DEAD, false)):
+		return false
+	if bool(p.get(PlayerKeys.GHOST_ACTED, false)):
+		return false
+	if int(p.get(PlayerKeys.GHOST_CLUE_BUDGET, 0)) <= 0:
+		return false
+	p[PlayerKeys.GHOST_ACTED] = true
+	p[PlayerKeys.GHOST_CLUE_BUDGET] = int(p.get(PlayerKeys.GHOST_CLUE_BUDGET, 0)) - 1
+	_pending_ghost_clues += 1
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
+## Хост: выложить отложенные улики Теней — зовётся ПОСЛЕ разрешения Мифа. Каждая —
+## случайная локация/улика через board.place_clue (как обычная улика). Синк — из мифоса.
+func flush_ghost_clues() -> void:
+	while _pending_ghost_clues > 0:
+		_pending_ghost_clues -= 1
+		_gs._board.place_clue()
 
 
 # Число живых сыщиков (не помеченных dead).

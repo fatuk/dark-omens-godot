@@ -1086,6 +1086,19 @@ func _death_apply_host(pid: String) -> void:
 	_death.apply(pid)
 
 
+## Тень (я) выкладывает улику — акт раунда (ляжет случайно после ближайшего Мифа).
+func ghost_place_clue() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_death.ghost_place_clue(my_pid)  # _broadcast_sync внутри
+	else:
+		_nm.relay_all({"action": RelayActions.GHOST_PLACE_CLUE, "pid": my_pid})
+
+
+func _ghost_place_clue_host(pid: String) -> void:
+	_death.ghost_place_clue(pid)
+
+
 # ── Чат (Dark Souls-style): транзиентный broadcast, НЕ часть snapshot ──────────
 
 

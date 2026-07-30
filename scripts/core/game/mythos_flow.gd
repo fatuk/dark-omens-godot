@@ -169,6 +169,7 @@ func _apply_resolve() -> void:
 		await _apply_effects(on_reck)
 	# Конец Фазы Мифов: Тайны типа tokensOnCard решаются именно здесь.
 	_gs._mystery.check_mystery_tokens_solve()
+	_gs._death.flush_ghost_clues()  # отложенные улики Теней ложатся после Мифа
 	_gs._phase.start_new_round()
 	_gs._broadcast_sync()
 	_gs._emit_changed()

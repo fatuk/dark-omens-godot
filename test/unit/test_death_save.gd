@@ -18,11 +18,13 @@ class MockGameState:
 	var active_check: Dictionary = {}
 	var outcome: String = ""
 	var _check: CheckFlow
+	var _board: StubBoard
 	var _ghost_caches: Dictionary = {}
 	var sync_count: int = 0
 
 	func _init() -> void:
 		_check = CheckFlow.new(self)
+		_board = StubBoard.new()
 
 	func _stash_belongings(loc: String, items: Array) -> void:
 		var cache: Array = _ghost_caches.get(loc, [])
@@ -37,6 +39,15 @@ class MockGameState:
 
 	func _emit_changed() -> void:
 		pass
+
+
+# Заглушка BoardState: считает вызовы place_clue (для flush_ghost_clues).
+class StubBoard:
+	extends RefCounted
+	var placed: int = 0
+
+	func place_clue() -> void:
+		placed += 1
 
 
 func before_each() -> void:
@@ -287,3 +298,44 @@ func test_death_drops_items_to_cache_and_clears() -> void:
 	assert_eq((_gs._ghost_caches.get("arkham", []) as Array).size(), 1, "вещи в кэше локации")
 	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "у Тени вещей нет")
 	assert_eq(int(_gs.players["p"]["clues"]), 0, "улики обнулены (вернутся в пул)")
+
+
+# ── Тень выкладывает улику (акт раунда) ───────────────────────────────────────
+
+
+func _ghost(extra: Dictionary = {}) -> void:
+	var base: Dictionary = {"dead": true, "ghost_clue_budget": 2, "ghost_acted_this_round": false}
+	for k_v: Variant in extra:
+		base[k_v] = extra[k_v]
+	_gs.players["g"] = base
+
+
+func test_ghost_place_clue_queues_and_spends_budget() -> void:
+	_ghost()
+	assert_true(_ds.ghost_place_clue("g"))
+	assert_true(bool(_gs.players["g"]["ghost_acted_this_round"]), "акт израсходован в раунде")
+	assert_eq(int(_gs.players["g"]["ghost_clue_budget"]), 1, "бюджет −1")
+
+
+func test_ghost_place_clue_rejected_when_acted() -> void:
+	_ghost({"ghost_acted_this_round": true})
+	assert_false(_ds.ghost_place_clue("g"), "в этом раунде уже действовал")
+
+
+func test_ghost_place_clue_rejected_without_budget() -> void:
+	_ghost({"ghost_clue_budget": 0})
+	assert_false(_ds.ghost_place_clue("g"), "бюджет улик исчерпан")
+
+
+func test_ghost_place_clue_rejected_for_living() -> void:
+	_gs.players["alive"] = {"dead": false, "ghost_clue_budget": 2, "ghost_acted_this_round": false}
+	assert_false(_ds.ghost_place_clue("alive"), "живой не Тень")
+
+
+func test_flush_ghost_clues_places_all_pending() -> void:
+	_ghost({"ghost_clue_budget": 3})
+	_ds.ghost_place_clue("g")
+	_gs.players["g"]["ghost_acted_this_round"] = false  # эмулируем новый раунд
+	_ds.ghost_place_clue("g")
+	_ds.flush_ghost_clues()
+	assert_eq(_gs._board.placed, 2, "обе отложенные улики выложены на доску")

@@ -34,6 +34,7 @@ const RECKONING_ADD_DIE := "game_reckoning_add_die"
 const RECKONING_APPLY := "game_reckoning_apply"
 const DEATH_SAVE_REROLL := "game_death_save_reroll"  # сосед тратит ресурс на переброс Порога
 const DEATH_SAVE_APPLY := "game_death_save_apply"  # умирающий принимает свой спас-бросок
+const GHOST_PLACE_CLUE := "game_ghost_place_clue"  # Тень выкладывает улику (акт раунда)
 const CAST_TRIGGER_SPELLS := "game_cast_trigger_spells"
 const DISMISS_CAST_RESULT := "game_dismiss_cast_result"
 const DISMISS_RECKONING := "game_dismiss_reckoning"
