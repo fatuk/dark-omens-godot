@@ -314,9 +314,15 @@ func _handle_message(msg: Dictionary) -> void:
 			player_connected.emit(pid, players[pid])
 
 		"player_left":
-			var pid: String = msg.get("player_id", "")
-			var new_host: String = msg.get("new_host_id", "")
-			var left_uid: String = msg.get("user_id", "")
+			# .get(key, "") НЕ спасает от JSON null: ключ есть со значением null (напр.
+			# new_host_id, когда вышел НЕ хост и миграции не было) → возвращается null,
+			# а не default. Приводим к "" через is-String-гард.
+			var pid_v: Variant = msg.get("player_id")
+			var pid: String = pid_v if pid_v is String else ""
+			var nh_v: Variant = msg.get("new_host_id")
+			var new_host: String = nh_v if nh_v is String else ""
+			var uid_v: Variant = msg.get("user_id")
+			var left_uid: String = uid_v if uid_v is String else ""
 			var pname: String = players.get(pid, {}).get("name", pid)
 			players.erase(pid)
 			# relay мигрировал хоста на new_host — обновляем его id соединения.
