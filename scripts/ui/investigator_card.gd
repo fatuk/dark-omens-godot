@@ -19,8 +19,6 @@ extends Control
 const _OVERLAY_TEX: Texture2D = preload("res://assets/cards/investigator/card-overlay.png")
 const _FRAME_TEX: Texture2D = preload("res://assets/cards/investigator/card-frame.png")
 const _BADGE_TEX: Texture2D = preload("res://assets/cards/investigator/card-badge.png")
-# Плашка «ЗАНЯТО» — та же рамка, что у превью чата (nine-patch: углы целы, центр тянется).
-const _TAKEN_FRAME_TEX: Texture2D = preload("res://assets/chat/message-frame.png")
 
 # Обесцвечивание портрета занятого сыщика (эффект «недоступен»): grayscale + затемнение.
 const _GRAY_SHADER := """
@@ -191,55 +189,22 @@ func _build_quote_label() -> Label:
 
 
 func _build_taken_overlay() -> Control:
-	# Вуаль поверх обесцвеченного портрета + орнаментальная плашка «ЗАНЯТО»
-	# (шевроны, как заголовки модалок) — в стиле игры, а не плоский текст.
+	# Просто вуаль поверх обесцвеченного (ЧБ) портрета + красная надпись «ЗАНЯТО»
+	# по центру — без рамки-плашки.
 	var ov := ColorRect.new()
 	ov.name = "TakenOverlay"
 	ov.color = Color(0.03, 0.02, 0.05, 0.5)
 	ov.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ov.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var center := CenterContainer.new()
-	center.name = "Center"
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ov.add_child(center)
-
-	var plate := PanelContainer.new()
-	plate.name = "Plate"
-	plate.add_theme_stylebox_override("panel", _make_taken_frame())
-	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# Рамка message-frame нарисована в 2× (композер чата тоже показывает её в 0.5).
-	# Масштаб вокруг центра — CenterContainer держит по центру, pivot не даёт «уехать».
-	plate.scale = Vector2(0.5, 0.5)
-	plate.resized.connect(func() -> void: plate.pivot_offset = plate.size * 0.5)
-	center.add_child(plate)
-
-	var lbl := UIStyle.label("PICKER_TAKEN", 64, UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := UIStyle.label("PICKER_TAKEN", 22, UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "TakenLabel"
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl.custom_minimum_size = Vector2(360, 0)  # шире короткого слова, но с отступом от рамки карточки
+	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_card_text_shadow(lbl)
-	plate.add_child(lbl)
+	ov.add_child(lbl)
 	return ov
-
-
-# StyleBoxTexture из message-frame.png — как плашка превью чата: nine-patch, ornate-
-# углы не тянутся (texture_margin), центр растягивается под текст. content_margin
-# меньше, чем в чате (текст «ЗАНЯТО» короткий, а не крупная фраза).
-func _make_taken_frame() -> StyleBoxTexture:
-	var sb := StyleBoxTexture.new()
-	sb.texture = _TAKEN_FRAME_TEX
-	sb.texture_margin_left = 72
-	sb.texture_margin_right = 72
-	sb.texture_margin_top = 46
-	sb.texture_margin_bottom = 46
-	sb.content_margin_left = 88
-	sb.content_margin_right = 88
-	sb.content_margin_top = 48
-	sb.content_margin_bottom = 48
-	return sb
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
