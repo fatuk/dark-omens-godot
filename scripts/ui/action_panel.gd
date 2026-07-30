@@ -317,6 +317,10 @@ func _refresh() -> void:
 	# Панель ВСЕГДА видна; кнопки активны только в мой ход фазы action.
 	var my_turn: bool = GameState.is_my_turn()
 	var me: Dictionary = GameState.my_player()
+	# Тень не ходит/не покупает/не ездит — прячем всю панель действий целиком.
+	_root.visible = not bool(me.get(PlayerKeys.DEAD, false))
+	if not _root.visible:
+		return
 	var used: Array = me.get("actions_used", [])
 	_conc_ab.set_disabled(
 		(

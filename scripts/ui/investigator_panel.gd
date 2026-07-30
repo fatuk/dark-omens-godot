@@ -259,6 +259,11 @@ func _refresh_live() -> void:
 	var p: Dictionary = GameState.my_player()
 	if p.is_empty() or not is_instance_valid(_info_bar):
 		return
+	# Тень — не живой сыщик: прячем HP/рассудок/атрибуты, остаётся только портрет.
+	var ghost: bool = bool(p.get(PlayerKeys.DEAD, false))
+	_info_bar.visible = not ghost
+	if ghost:
+		return
 	_info_bar.set_live_vitals(
 		int(p.get("hp", 0)),
 		int(p.get("hp_max", 0)),
