@@ -183,6 +183,7 @@ func host_apply_choose(pid: String, kind: String) -> bool:
 func _collect_belongings(pid: String) -> void:
 	var loc: String = String(_gs.players[pid].get("location", ""))
 	var cache: Dictionary = _gs._take_belongings(loc)
+	var before: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)  # для ленты исходов
 	var items: Array = cache.get("items", [])
 	for it_v: Variant in items:
 		var iid: String = String((it_v as Dictionary).get("id", ""))
@@ -207,6 +208,8 @@ func _collect_belongings(pid: String) -> void:
 		)
 	)
 	_gs.players[pid]["encounter_done"] = true
+	# Лента: «+N ресурс / +N улик» (предметы-активы объявляет host_grant_asset сам).
+	ActionFeed.announce_deltas(_gs, pid, before, _gs.players[pid])
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	_gs._phase.advance_encounter_turn()
