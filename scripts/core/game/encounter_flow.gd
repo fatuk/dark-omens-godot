@@ -184,12 +184,15 @@ func _collect_belongings(pid: String) -> void:
 	var loc: String = String(_gs.players[pid].get("location", ""))
 	var cache: Dictionary = _gs._take_belongings(loc)
 	var before: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)  # для ленты исходов
-	var items: Array = cache.get("items", [])
-	for it_v: Variant in items:
-		var iid: String = String((it_v as Dictionary).get("id", ""))
-		if not iid.is_empty():
-			_gs._cond.host_grant_asset(pid, iid)
+	var got_items: Array = cache.get("items", [])
 	var p: Dictionary = _gs.players[pid]
+	# Переносим предметы КАК ЕСТЬ (активы {id,exhausted} / заклинания {id,kind:spell} /
+	# артефакты) — как при обмене. Раньше был host_grant_asset(id): брал только активы
+	# из AssetCatalog и терял заклинания/артефакты; плюс повторно палил onGain.
+	if not got_items.is_empty():
+		var pitems: Array = p.get("items", [])
+		pitems.append_array(got_items)
+		p["items"] = pitems
 	# Улики: переносим clue_ids + счёт напрямую (идентичности уже вне пула — не дублируем).
 	var clue_ids: Array = cache.get("clue_ids", [])
 	if not clue_ids.is_empty():
@@ -204,7 +207,7 @@ func _collect_belongings(pid: String) -> void:
 	GameConsole.log(
 		(
 			"[Game] %s забрал вещи павшего (предметов %d, улик %d, ресурсов %d)"
-			% [_gs._name_of(pid), items.size(), clue_ids.size(), res]
+			% [_gs._name_of(pid), got_items.size(), clue_ids.size(), res]
 		)
 	)
 	_gs.players[pid]["encounter_done"] = true
