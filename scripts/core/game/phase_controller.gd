@@ -308,6 +308,8 @@ func _apply_trade(pid: String, payload: Dictionary) -> bool:
 		return false
 	var me: Dictionary = _gs.players[pid]
 	var ally: Dictionary = _gs.players[partner]
+	if bool(me.get("dead", false)) or bool(ally.get("dead", false)):
+		return false  # Тень не торгует (ни как инициатор, ни как партнёр)
 	if String(me.get("location", "")) != String(ally.get("location", "")):
 		GameConsole.warn(
 			"[Обмен] %s и %s не на одной локации" % [_gs._name_of(pid), _gs._name_of(partner)]

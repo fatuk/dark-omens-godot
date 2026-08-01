@@ -502,6 +502,7 @@ func _can_trade() -> bool:
 		if (
 			pid != my_id
 			and bool(p.get("connected", true))
+			and not bool(p.get("dead", false))  # с Тенью не поменяешься
 			and String(p.get("location", "")) == _loc_id
 		):
 			return true

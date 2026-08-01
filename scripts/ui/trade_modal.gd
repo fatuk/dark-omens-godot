@@ -34,6 +34,7 @@ func _allies() -> Array:
 		var ok: bool = (
 			pid != my_id
 			and bool(p.get("connected", true))
+			and not bool(p.get("dead", false))  # с Тенью не поменяешься
 			and String(p.get("location", "")) == my_loc
 		)
 		if ok:
