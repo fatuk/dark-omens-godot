@@ -170,6 +170,15 @@ func _reckon_investigator(pid: String) -> void:
 	if _gs.players.has(pid):
 		var cards: Array = _collect_reckoning_cards(pid)
 		while not (cards as Array).is_empty():
+			# Игрок погиб (Тень) ИЛИ ушёл на Порог посреди Расплаты — прекращаем его
+			# карты: иначе интерактивная проверка следующей карты повиснет (клиент
+			# показывает модалку смерти/Порога, не проверку) и фаза застрянет на «ждём».
+			var pp: Dictionary = _gs.players.get(pid, {})
+			if (
+				bool(pp.get(PlayerKeys.DEAD, false))
+				or not (pp.get(PlayerKeys.DEATH_SAVE_CHECK, {}) as Dictionary).is_empty()
+			):
+				break
 			var card: Dictionary = cards[0]
 			(cards as Array).remove_at(0)
 			await _resolve_card(pid, card)

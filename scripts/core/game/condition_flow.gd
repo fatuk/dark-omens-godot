@@ -88,8 +88,8 @@ func _reckon_condition_interactive(
 	var rolls: Dictionary = {}
 	var recon_before: Dictionary = (_gs.players.get(pid, {}) as Dictionary).duplicate(true)
 	while true:
-		if not _gs.players.has(pid):
-			return
+		if not _gs.players.has(pid) or bool(_gs.players[pid].get(PlayerKeys.DEAD, false)):
+			return  # погиб посреди интерактивной Расплаты — новую проверку не пендим
 		var dup: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
 		var fl: Dictionary = {
 			"interactive": true,
