@@ -441,6 +441,15 @@ func _caption_text(data: Dictionary) -> String:
 func _refresh_actions() -> void:
 	if not is_instance_valid(_travel_btn):
 		return
+	# Тень (dead) не ходит/не торгует/не покупает — прячем ВСЕ действия локации
+	# (сайдбар открыть можно как оракулу, но кнопки действий недоступны).
+	if bool(GameState.my_player().get("dead", false)):
+		_travel_btn.visible = false
+		_trade_btn.visible = false
+		_shop_btn.visible = false
+		_buy_train_btn.visible = false
+		_buy_ship_btn.visible = false
+		return
 	var travel_cost: Dictionary = {} if _loc_id.is_empty() else GameState.travel_cost_to(_loc_id)
 	_travel_btn.visible = not travel_cost.is_empty()
 	# Метка кнопки несёт стоимость в билетах: базовый хоп — просто «Переместиться»,
