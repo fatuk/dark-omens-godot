@@ -182,12 +182,30 @@ func host_apply_choose(pid: String, kind: String) -> bool:
 # без броска, встреча сразу завершается (ход к следующему). «Чистый лут».
 func _collect_belongings(pid: String) -> void:
 	var loc: String = String(_gs.players[pid].get("location", ""))
-	var items: Array = _gs._take_belongings(loc)
+	var cache: Dictionary = _gs._take_belongings(loc)
+	var items: Array = cache.get("items", [])
 	for it_v: Variant in items:
 		var iid: String = String((it_v as Dictionary).get("id", ""))
 		if not iid.is_empty():
 			_gs._cond.host_grant_asset(pid, iid)
-	GameConsole.log("[Game] %s забрал вещи павшего (%d)" % [_gs._name_of(pid), items.size()])
+	var p: Dictionary = _gs.players[pid]
+	# Улики: переносим clue_ids + счёт напрямую (идентичности уже вне пула — не дублируем).
+	var clue_ids: Array = cache.get("clue_ids", [])
+	if not clue_ids.is_empty():
+		var ids: Array = p.get("clue_ids", [])
+		ids.append_array(clue_ids)
+		p["clue_ids"] = ids
+		p["clues"] = int(p.get("clues", 0)) + clue_ids.size()
+	# Ресурсы: просто прибавляем счёт.
+	var res: int = int(cache.get("resources", 0))
+	if res > 0:
+		p["resources"] = int(p.get("resources", 0)) + res
+	GameConsole.log(
+		(
+			"[Game] %s забрал вещи павшего (предметов %d, улик %d, ресурсов %d)"
+			% [_gs._name_of(pid), items.size(), clue_ids.size(), res]
+		)
+	)
 	_gs.players[pid]["encounter_done"] = true
 	_gs._broadcast_sync()
 	_gs._emit_changed()

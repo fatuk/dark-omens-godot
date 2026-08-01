@@ -148,14 +148,26 @@ func _die(pid: String) -> void:
 	# Акт (сообщение/улика) доступен сразу в этом раунде.
 	p[PlayerKeys.GHOST_CLUE_BUDGET] = _living_count()
 	p[PlayerKeys.GHOST_ACTED] = false
-	# Вещи павшего → кэш на месте гибели (подбор встречей, «чистый лут»). Улики
-	# возвращаются в пул: обнуляем счёт — reconcile вернёт clue_ids в пул на синке.
+	# Вещи павшего → кэш на месте гибели (подбор встречей, «чистый лут»): предметы,
+	# улики (с идентичностью clue_ids) и ресурсы. Улики НЕ возвращаем в пул — чистим
+	# clue_ids сами, чтобы reconcile их не вернул; они ждут подбора в кэше.
 	var loc: String = String(p.get(PlayerKeys.LOCATION, ""))
-	var items: Array = p.get(PlayerKeys.ITEMS, [])
-	if not loc.is_empty() and not items.is_empty():
-		_gs._stash_belongings(loc, items.duplicate(true))
+	var payload: Dictionary = {
+		"items": (p.get(PlayerKeys.ITEMS, []) as Array).duplicate(true),
+		"clue_ids": (p.get(PlayerKeys.CLUE_IDS, []) as Array).duplicate(true),
+		"resources": int(p.get(PlayerKeys.RESOURCES, 0)),
+	}
+	var has_loot: bool = (
+		not (payload["items"] as Array).is_empty()
+		or not (payload["clue_ids"] as Array).is_empty()
+		or int(payload["resources"]) > 0
+	)
+	if not loc.is_empty() and has_loot:
+		_gs._stash_belongings(loc, payload)
 	p[PlayerKeys.ITEMS] = []
 	p[PlayerKeys.CLUES] = 0
+	p[PlayerKeys.CLUE_IDS] = []
+	p[PlayerKeys.RESOURCES] = 0
 	if _all_dead() and String(_gs.outcome).is_empty():
 		_gs.outcome = "defeat"
 		GameConsole.log("[Смерть] Все сыщики погибли — поражение")

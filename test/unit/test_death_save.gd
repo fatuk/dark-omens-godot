@@ -26,9 +26,13 @@ class MockGameState:
 		_check = CheckFlow.new(self)
 		_board = StubBoard.new()
 
-	func _stash_belongings(loc: String, items: Array) -> void:
-		var cache: Array = _ghost_caches.get(loc, [])
-		cache.append_array(items)
+	func _stash_belongings(loc: String, payload: Dictionary) -> void:
+		var cache: Dictionary = _ghost_caches.get(
+			loc, {"items": [], "clue_ids": [], "resources": 0}
+		)
+		(cache["items"] as Array).append_array(payload.get("items", []))
+		(cache["clue_ids"] as Array).append_array(payload.get("clue_ids", []))
+		cache["resources"] = int(cache["resources"]) + int(payload.get("resources", 0))
 		_ghost_caches[loc] = cache
 
 	func _name_of(pid: String) -> String:
@@ -294,14 +298,28 @@ func test_death_sets_ghost_budget_to_living_count() -> void:
 	assert_false(bool(_gs.players["p"]["ghost_acted_this_round"]), "акт доступен сразу")
 
 
-func test_death_drops_items_to_cache_and_clears() -> void:
-	_player({"hp": 0, "location": "arkham", "items": [{"id": "axe"}], "clues": 3})
+func test_death_drops_loot_to_cache_and_clears() -> void:
+	_player(
+		{
+			"hp": 0,
+			"location": "arkham",
+			"items": [{"id": "axe"}],
+			"clue_ids": ["dunwich"],
+			"clues": 1,
+			"resources": 2,
+		}
+	)
 	_save_slot("hp", false)
 	_gs.players["ally"] = {"investigator": "", "skill_mods": {}, "hp": 6, "sanity": 6}
 	_ds.apply("p")
-	assert_eq((_gs._ghost_caches.get("arkham", []) as Array).size(), 1, "вещи в кэше локации")
+	var cache: Dictionary = _gs._ghost_caches.get("arkham", {})
+	assert_eq((cache.get("items", []) as Array).size(), 1, "предмет в кэше")
+	assert_eq((cache.get("clue_ids", []) as Array).size(), 1, "улика в кэше (не в пул)")
+	assert_eq(int(cache.get("resources", 0)), 2, "ресурсы в кэше")
 	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "у Тени вещей нет")
-	assert_eq(int(_gs.players["p"]["clues"]), 0, "улики обнулены (вернутся в пул)")
+	assert_eq(int(_gs.players["p"]["clues"]), 0, "улики обнулены")
+	assert_eq((_gs.players["p"]["clue_ids"] as Array).size(), 0, "clue_ids очищены")
+	assert_eq(int(_gs.players["p"]["resources"]), 0, "ресурсы обнулены")
 
 
 # ── Тень выкладывает улику (акт раунда) ───────────────────────────────────────

@@ -370,24 +370,33 @@ func _reset_clue_pool() -> void:
 	_ghost_caches.clear()  # вещи павших — тоже host-only, сбрасываем на старте партии
 
 
-# Вещи павшего сыщика → кэш на месте гибели (loc). Несколько павших на одной локации —
-# складываем вместе. Host-only, не синкается (host выдаёт при подборе).
-func _stash_belongings(loc: String, items: Array) -> void:
-	var cache: Array = _ghost_caches.get(loc, [])
-	cache.append_array(items)
+# Вещи павшего → кэш на месте гибели (loc). payload = {items, clue_ids, resources}.
+# Несколько павших на одной локации — складываем вместе. Улики несут идентичность
+# (clue_ids, уникальны на партию) → в пул НЕ возвращаются, ждут подбора здесь.
+# Host-only, не синкается (host выдаёт при подборе).
+func _stash_belongings(loc: String, payload: Dictionary) -> void:
+	var cache: Dictionary = _ghost_caches.get(loc, {"items": [], "clue_ids": [], "resources": 0})
+	(cache["items"] as Array).append_array(payload.get("items", []))
+	(cache["clue_ids"] as Array).append_array(payload.get("clue_ids", []))
+	cache["resources"] = int(cache["resources"]) + int(payload.get("resources", 0))
 	_ghost_caches[loc] = cache
 
 
-# Забрать вещи с локации (подбор): вернуть и очистить кэш. [] — если ничего нет.
-func _take_belongings(loc: String) -> Array:
-	var items: Array = _ghost_caches.get(loc, [])
+# Забрать вещи с локации (подбор): вернуть и очистить кэш. Пустой payload — если нет.
+func _take_belongings(loc: String) -> Dictionary:
+	var cache: Dictionary = _ghost_caches.get(loc, {"items": [], "clue_ids": [], "resources": 0})
 	_ghost_caches.erase(loc)
-	return items
+	return cache
 
 
-# Есть ли на локации вещи павших (для предложения встречи «забрать вещи»).
+# Есть ли на локации вещи павших (предметы / улики / ресурсы) — для предложения встречи.
 func _has_belongings(loc: String) -> bool:
-	return not (_ghost_caches.get(loc, []) as Array).is_empty()
+	var c: Dictionary = _ghost_caches.get(loc, {})
+	return (
+		not (c.get("items", []) as Array).is_empty()
+		or not (c.get("clue_ids", []) as Array).is_empty()
+		or int(c.get("resources", 0)) > 0
+	)
 
 
 # Host: наполнить ghost_upcoming 3 ближайшими Мифами — только если есть Тень. Колода
