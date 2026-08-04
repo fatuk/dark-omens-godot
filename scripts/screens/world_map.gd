@@ -115,6 +115,7 @@ func _ready() -> void:
 	_build_reckoning_wait_overlay()
 	_build_death_save_modal()
 	_build_ghost_bar()
+	_build_encounter_watch_modal()
 	_build_chat_composer()
 	_build_hand_carousel()
 	_refresh_game_panel()
@@ -279,6 +280,14 @@ func _build_ghost_bar() -> void:
 	var g: CanvasLayer = load("res://scripts/ui/ghost_bar.gd").new()
 	g.name = "GhostBar"
 	add_child(g)
+
+
+# Окно наблюдателя: остальным игрокам видно, какую встречу проходит активный сыщик
+# (только текст и исход, без проверки и кубов).
+func _build_encounter_watch_modal() -> void:
+	var w: CanvasLayer = load("res://scripts/ui/encounter_watch_modal.gd").new()
+	w.name = "EncounterWatchModal"
+	add_child(w)
 
 
 # Композер чата (C): веер шаблонов → веер слов по секциям → центр-превью → Отправить.
