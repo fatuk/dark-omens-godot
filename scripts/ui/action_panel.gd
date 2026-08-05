@@ -235,7 +235,7 @@ func _show_convert_vitality() -> void:
 	upd_ref["fn"] = upd
 	upd.call()
 
-	var confirm := UIStyle.button("ACTION_REST_RES_CONFIRM", UIColors.ACCENT)
+	var confirm := UIStyle.button("ABILITY_CONFIRM", UIColors.ACCENT)
 	confirm.name = "Confirm"
 	var confirmed := {"v": false}
 	confirm.pressed.connect(
@@ -435,11 +435,12 @@ func _refresh() -> void:
 	)
 	_pass_ab.set_disabled(not my_turn)
 	# Спец-действие: кнопка есть только у сыщика со способностью; подпись — из данных.
-	var ability: Dictionary = GameState.my_ability()
-	var has_ability: bool = not (ability.get("do", []) as Array).is_empty()
+	# Способность = DSL-программа ЛИБО встроенный вид (kind), поэтому спрашиваем
+	# каталог, а не поле `do` — иначе виды вроде convertVitality остаются без кнопки.
+	var has_ability: bool = Investigators.has_ability(String(me.get("investigator", "")))
 	_ability_btn.visible = has_ability
 	if has_ability:
-		_ability_btn.text = String(ability.get("name", "ACTION_ABILITY_TITLE"))
+		_ability_btn.text = String(GameState.my_ability().get("name", "ACTION_ABILITY_TITLE"))
 		_ability_btn.disabled = not GameState.can_use_ability()
 	_conc_ab.set_badge(int(me.get("concentration", 0)))
 	_res_ab.set_badge(int(me.get("resources", 0)))

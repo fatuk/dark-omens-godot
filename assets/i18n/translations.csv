@@ -157,6 +157,7 @@ INV_MEI_LIN_PASSIVE_TEXT,"Улучшая навык, вы сразу улучш�
 ABILITY_CONVERT_PROMPT,Что потратить и сколько? Столько же вернётся в другое.,Spend from which pool — and how much? The same amount returns to the other.,
 ABILITY_CONVERT_HP_TO_SAN,Здоровье → Рассудок,Health → Sanity,
 ABILITY_CONVERT_SAN_TO_HP,Рассудок → Здоровье,Sanity → Health,
+ABILITY_CONFIRM,Применить,Apply,
 INV_AL_DOBBS_NAME,Эл Доббс,Al Dobbs,
 INV_AL_DOBBS_OCC,Коммивояжёр,The Salesman,
 INV_AL_DOBBS_QUOTE,«Реальность — лишь предмет переговоров.»,«Reality is just a matter of negotiation.»,
