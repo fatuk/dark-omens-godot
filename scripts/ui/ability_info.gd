@@ -12,13 +12,112 @@ const _MODAL := preload("res://scenes/ui/modal_dialog.tscn")
 
 
 ## Открыть модалку со способностями сыщика. parent — узел, к которому её цеплять
-## (модалка сама себя освобождает при закрытии).
+## (модалка сама себя освобождает при закрытии). Если это МОЙ сыщик и способность
+## сейчас применима — внизу появляется кнопка «использовать»: активация живёт
+## здесь, а не в панели действий (у медальонов нет арта под пятую кнопку).
 static func open(parent: Node, inv_name: String) -> void:
 	var modal: ModalDialog = _MODAL.instantiate()
 	parent.add_child(modal)
 	# tr() — метод Node, из static его звать нельзя: переводим через сервер напрямую.
 	modal.set_title(TranslationServer.translate(Investigators.display_name(inv_name)))
-	modal.set_content(build(inv_name))
+	var box: VBoxContainer = build(inv_name)
+	if _is_mine(inv_name) and GameState.can_use_ability():
+		var use := UIStyle.button(
+			String(Investigators.ability(inv_name).get("name", "")), UIColors.ACCENT
+		)
+		use.name = "UseAbility"
+		use.pressed.connect(
+			func() -> void:
+				modal.close()
+				_activate(parent, inv_name)
+		)
+		box.add_child(use)
+	modal.set_content(box)
+	modal.open()
+
+
+# Показываем ли способность СВОЕГО сыщика в идущей партии (только тогда её можно
+# применить: в карусели выбора партии ещё нет).
+static func _is_mine(inv_name: String) -> bool:
+	if not GameState.active:
+		return false
+	return String(GameState.my_player().get("investigator", "")) == inv_name
+
+
+# Запуск способности: встроенный вид с вводом открывает свой диалог, обычная
+# DSL-программа уходит хосту сразу.
+static func _activate(parent: Node, inv_name: String) -> void:
+	if Investigators.ability_kind(inv_name) == "convertVitality":
+		_open_convert_vitality(parent)
+		return
+	GameState.perform_action(GameActions.INVESTIGATOR_ABILITY)
+
+
+# Диалог «внутреннего равновесия»: из какого запаса потратить и сколько — столько
+# же вернётся в другой. Пределы: источник не ниже 1, приёмник не выше максимума
+# (те же гварды дублирует хост). Направление одно за раз.
+static func _open_convert_vitality(parent: Node) -> void:
+	var me: Dictionary = GameState.my_player()
+	var hp: int = int(me.get("hp", 0))
+	var san: int = int(me.get("sanity", 0))
+	var max_hp_to_san: int = mini(maxi(0, hp - 1), maxi(0, int(me.get("sanity_max", 0)) - san))
+	var max_san_to_hp: int = mini(maxi(0, san - 1), maxi(0, int(me.get("hp_max", 0)) - hp))
+	if max_hp_to_san <= 0 and max_san_to_hp <= 0:
+		return
+
+	var modal: ModalDialog = _MODAL.instantiate()
+	parent.add_child(modal)
+	modal.set_title(TranslationServer.translate("INV_MEI_LIN_ABILITY_NAME"))
+	var box := VBoxContainer.new()
+	box.name = "ConvertAlloc"
+	box.add_theme_constant_override("separation", 12)
+	var hint := UIStyle.label("ABILITY_CONVERT_PROMPT", 15)
+	hint.name = "Hint"
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size.x = 360
+	box.add_child(hint)
+
+	var state := {"hp": 0, "san": 0}  # сколько тратим ИЗ здоровья / ИЗ рассудка
+	var rows := {}
+	var upd_ref := {"fn": Callable()}
+	if max_hp_to_san > 0:
+		rows["hp"] = UIStyle.stepper_row(box, "ABILITY_CONVERT_HP_TO_SAN", state, "hp", upd_ref)
+	if max_san_to_hp > 0:
+		rows["san"] = UIStyle.stepper_row(box, "ABILITY_CONVERT_SAN_TO_HP", state, "san", upd_ref)
+	var upd := func() -> void:
+		for k_v: Variant in rows:
+			var k: String = k_v
+			var r: Dictionary = rows[k]
+			(r["count"] as Label).text = str(state[k])
+			var cap: int = max_hp_to_san if k == "hp" else max_san_to_hp
+			var other: int = int(state["san"] if k == "hp" else state["hp"])
+			(r["plus"] as Button).disabled = int(state[k]) >= cap or other > 0
+			(r["minus"] as Button).disabled = int(state[k]) <= 0
+	upd_ref["fn"] = upd
+	upd.call()
+
+	var confirm := UIStyle.button("ABILITY_CONFIRM", UIColors.ACCENT)
+	confirm.name = "Confirm"
+	var confirmed := {"v": false}
+	confirm.pressed.connect(
+		func() -> void:
+			confirmed["v"] = true
+			modal.close()
+	)
+	box.add_child(confirm)
+	modal.set_content(box)
+	modal.closed.connect(
+		func() -> void:
+			if not confirmed["v"]:
+				return
+			var amount: int = maxi(int(state["hp"]), int(state["san"]))
+			if amount <= 0:
+				return
+			var from: String = "hp" if int(state["hp"]) > 0 else "sanity"
+			GameState.perform_action(
+				GameActions.INVESTIGATOR_ABILITY, {"from": from, "amount": amount}
+			)
+	)
 	modal.open()
 
 

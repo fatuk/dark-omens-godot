@@ -696,6 +696,43 @@ const MODAL_LINE_COLOR: Color = Color("#0b0b09")
 
 
 ## Создаёт горизонтальный разделитель и добавляет его в parent.
+## Строка-степпер «метка [−] N [+]» для распределения величины. Мутирует state[key]
+## и зовёт upd_ref.fn после каждого изменения (вызывающий пересчитывает подписи и
+## доступность кнопок). Возвращает {count, plus, minus} — узлы для этого пересчёта.
+## Общая для модалки отдыха и способностей сыщика.
+static func stepper_row(
+	box: VBoxContainer, label_key: String, state: Dictionary, key: String, upd_ref: Dictionary
+) -> Dictionary:
+	var row := HBoxContainer.new()
+	row.name = "Row_%s" % key
+	row.add_theme_constant_override("separation", 10)
+	var lbl := label(label_key, 15)
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(lbl)
+	var minus := button("−")
+	minus.name = "Minus"
+	var count := label("0", 17, UIColors.VALUE, HORIZONTAL_ALIGNMENT_CENTER)
+	count.name = "Count"
+	count.custom_minimum_size.x = 32
+	var plus := button("+")
+	plus.name = "Plus"
+	minus.pressed.connect(
+		func() -> void:
+			state[key] = maxi(0, int(state[key]) - 1)
+			(upd_ref["fn"] as Callable).call()
+	)
+	plus.pressed.connect(
+		func() -> void:
+			state[key] = int(state[key]) + 1
+			(upd_ref["fn"] as Callable).call()
+	)
+	row.add_child(minus)
+	row.add_child(count)
+	row.add_child(plus)
+	box.add_child(row)
+	return {"count": count, "plus": plus, "minus": minus}
+
+
 static func separator(parent: Control, color: Color = MODAL_LINE_COLOR) -> void:
 	var sep := HSeparator.new()
 	sep.name = "Separator"

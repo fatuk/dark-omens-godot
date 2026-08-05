@@ -25,7 +25,6 @@ var _rest_ab: ActionButton
 var _conc_ab: ActionButton
 var _res_ab: ActionButton
 var _pass_ab: ActionButton
-var _ability_btn: Button  # спец-действие сыщика (скрыта, если способности нет)
 var _tickets: TicketsRow  # вертикальная стопка билетов
 var _no_tickets: Label  # заглушка «Нет билетов» в зарезервированной области
 var _clue: HBoxContainer  # индикатор улик [иконка ×N] сверху области билетов
@@ -81,14 +80,8 @@ func _build() -> void:
 	_res_ab.pressed.connect(_on_resource)
 	_pass_ab.pressed.connect(_on_pass)
 
-	# Спец-действие сыщика: у медальонов нет арта под него, поэтому пока текстовая
-	# кнопка под рядом. Видна только у сыщика со способностью (data/investigators.json).
-	# TODO(дизайн): свой медальон в общем ряду, когда появится арт.
-	_ability_btn = UIStyle.button("", UIColors.ACCENT)
-	_ability_btn.name = "AbilityBtn"
-	_ability_btn.visible = false
-	_ability_btn.pressed.connect(_on_ability)
-	_col.add_child(_ability_btn)
+	# Спец-действия сыщика в этом ряду нет: она живёт в карточке способностей
+	# (клик по аватару → AbilityInfo), пока у медальонов нет арта под пятую кнопку.
 
 	# Вертикальная стопка билетов — вне scale-обёртки (у неё свой внутренний масштаб).
 	_tickets = TicketsRow.new()
@@ -174,92 +167,6 @@ func _reposition() -> void:
 	_scale.position = Vector2(area_left - _TICKETS_GAP - w, top)
 
 
-func _on_ability() -> void:
-	if _busy:
-		return
-	# Встроенный вид, требующий ввода (Мэй Линь) — открываем выбор; обычная
-	# DSL-программа исполняется сразу.
-	var inv: String = String(GameState.my_player().get("investigator", ""))
-	if Investigators.ability_kind(inv) == "convertVitality":
-		_show_convert_vitality()
-		return
-	_busy = true
-	GameState.perform_action(GameActions.INVESTIGATOR_ABILITY)
-	_busy = false
-
-
-# Модалка способности «внутреннее равновесие»: выбрать, из какого запаса потратить
-# и сколько — столько же вернётся в другой. Пределы: источник не опускаем ниже 1,
-# приёмник не переливаем выше максимума (те же гварды дублирует хост).
-func _show_convert_vitality() -> void:
-	var me: Dictionary = GameState.my_player()
-	var hp: int = int(me.get("hp", 0))
-	var san: int = int(me.get("sanity", 0))
-	var hp_room: int = maxi(0, int(me.get("hp_max", 0)) - hp)
-	var san_room: int = maxi(0, int(me.get("sanity_max", 0)) - san)
-	# Сколько максимум можно перелить в каждую сторону.
-	var max_hp_to_san: int = mini(maxi(0, hp - 1), san_room)
-	var max_san_to_hp: int = mini(maxi(0, san - 1), hp_room)
-	if max_hp_to_san <= 0 and max_san_to_hp <= 0:
-		return  # переливать нечего — молча ничего не делаем
-
-	var modal: ModalDialog = _REST_MODAL.instantiate()
-	add_child(modal)
-	modal.set_title(tr(String(GameState.my_ability().get("name", ""))))
-	var box := VBoxContainer.new()
-	box.name = "ConvertAlloc"
-	box.add_theme_constant_override("separation", 12)
-	var hint := UIStyle.label("ABILITY_CONVERT_PROMPT", 15)
-	hint.name = "Hint"
-	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hint.custom_minimum_size.x = 360
-	box.add_child(hint)
-
-	var state := {"hp": 0, "san": 0}  # сколько тратим ИЗ здоровья / ИЗ рассудка
-	var rows := {}
-	var upd_ref := {"fn": Callable()}
-	if max_hp_to_san > 0:
-		rows["hp"] = _alloc_row(box, "ABILITY_CONVERT_HP_TO_SAN", state, "hp", upd_ref)
-	if max_san_to_hp > 0:
-		rows["san"] = _alloc_row(box, "ABILITY_CONVERT_SAN_TO_HP", state, "san", upd_ref)
-	# Направление одно за раз: набрал в одной строке — вторая блокируется.
-	var upd := func() -> void:
-		for k_v: Variant in rows:
-			var k: String = k_v
-			var r: Dictionary = rows[k]
-			(r["count"] as Label).text = str(state[k])
-			var cap: int = max_hp_to_san if k == "hp" else max_san_to_hp
-			var other: int = int(state["san"] if k == "hp" else state["hp"])
-			(r["plus"] as Button).disabled = int(state[k]) >= cap or other > 0
-			(r["minus"] as Button).disabled = int(state[k]) <= 0
-	upd_ref["fn"] = upd
-	upd.call()
-
-	var confirm := UIStyle.button("ABILITY_CONFIRM", UIColors.ACCENT)
-	confirm.name = "Confirm"
-	var confirmed := {"v": false}
-	confirm.pressed.connect(
-		func() -> void:
-			confirmed["v"] = true
-			modal.close()
-	)
-	box.add_child(confirm)
-	modal.set_content(box)
-	modal.closed.connect(
-		func() -> void:
-			if not confirmed["v"]:
-				return
-			var from: String = "hp" if int(state["hp"]) > 0 else "sanity"
-			var amount: int = maxi(int(state["hp"]), int(state["san"]))
-			if amount <= 0:
-				return
-			GameState.perform_action(
-				GameActions.INVESTIGATOR_ABILITY, {"from": from, "amount": amount}
-			)
-	)
-	modal.open()
-
-
 func _on_pass() -> void:
 	if _busy:
 		return
@@ -321,9 +228,9 @@ func _show_rest_alloc(res: int, hp_room: int, san_room: int) -> void:
 	var rows := {}  # key → {count, plus, minus}
 	var upd_ref := {"fn": Callable()}
 	if hp_room > 0:
-		rows["hp"] = _alloc_row(box, "ACTION_REST_RES_HP", state, "hp", upd_ref)
+		rows["hp"] = UIStyle.stepper_row(box, "ACTION_REST_RES_HP", state, "hp", upd_ref)
 	if san_room > 0:
-		rows["san"] = _alloc_row(box, "ACTION_REST_RES_SAN", state, "san", upd_ref)
+		rows["san"] = UIStyle.stepper_row(box, "ACTION_REST_RES_SAN", state, "san", upd_ref)
 	var upd := func() -> void:
 		var total: int = int(state["hp"]) + int(state["san"])
 		for k_v: Variant in rows:
@@ -356,39 +263,6 @@ func _show_rest_alloc(res: int, hp_room: int, san_room: int) -> void:
 
 # Строка-степпер «метка [−] N [+]» для распределения ресурса. Мутирует state[key],
 # зовёт upd_ref.fn после каждого изменения (пересчёт меток и доступности кнопок).
-func _alloc_row(
-	box: VBoxContainer, label_key: String, state: Dictionary, key: String, upd_ref: Dictionary
-) -> Dictionary:
-	var row := HBoxContainer.new()
-	row.name = "Row_%s" % key
-	row.add_theme_constant_override("separation", 10)
-	var lbl := UIStyle.label(label_key, 15)
-	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(lbl)
-	var minus := UIStyle.button("−")
-	minus.name = "Minus"
-	var count := UIStyle.label("0", 17, UIColors.VALUE, HORIZONTAL_ALIGNMENT_CENTER)
-	count.name = "Count"
-	count.custom_minimum_size.x = 32
-	var plus := UIStyle.button("+")
-	plus.name = "Plus"
-	minus.pressed.connect(
-		func() -> void:
-			state[key] = maxi(0, int(state[key]) - 1)
-			(upd_ref["fn"] as Callable).call()
-	)
-	plus.pressed.connect(
-		func() -> void:
-			state[key] = int(state[key]) + 1
-			(upd_ref["fn"] as Callable).call()
-	)
-	row.add_child(minus)
-	row.add_child(count)
-	row.add_child(plus)
-	box.add_child(row)
-	return {"count": count, "plus": plus, "minus": minus}
-
-
 func _on_concentration() -> void:
 	if _busy:
 		return
@@ -434,14 +308,6 @@ func _refresh() -> void:
 		)
 	)
 	_pass_ab.set_disabled(not my_turn)
-	# Спец-действие: кнопка есть только у сыщика со способностью; подпись — из данных.
-	# Способность = DSL-программа ЛИБО встроенный вид (kind), поэтому спрашиваем
-	# каталог, а не поле `do` — иначе виды вроде convertVitality остаются без кнопки.
-	var has_ability: bool = Investigators.has_ability(String(me.get("investigator", "")))
-	_ability_btn.visible = has_ability
-	if has_ability:
-		_ability_btn.text = String(GameState.my_ability().get("name", "ACTION_ABILITY_TITLE"))
-		_ability_btn.disabled = not GameState.can_use_ability()
 	_conc_ab.set_badge(int(me.get("concentration", 0)))
 	_res_ab.set_badge(int(me.get("resources", 0)))
 	# Инфо-колонка (улика + билеты) гаснет вместе с кнопками, когда не мой ход.
