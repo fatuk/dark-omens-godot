@@ -20,19 +20,19 @@ static func open(parent: Node, inv_name: String) -> void:
 	parent.add_child(modal)
 	# tr() — метод Node, из static его звать нельзя: переводим через сервер напрямую.
 	modal.set_title(TranslationServer.translate(Investigators.display_name(inv_name)))
-	var box: VBoxContainer = build(inv_name)
+	var use: Button = null
 	if _is_mine(inv_name) and GameState.can_use_ability():
-		var use := UIStyle.button(
+		use = UIStyle.button(
 			String(Investigators.ability(inv_name).get("name", "")), UIColors.ACCENT
 		)
 		use.name = "UseAbility"
+		use.add_theme_font_size_override("font_size", 19)  # читается как заголовок
 		use.pressed.connect(
 			func() -> void:
 				modal.close()
 				_activate(parent, inv_name)
 		)
-		box.add_child(use)
-	modal.set_content(box)
+	modal.set_content(build(inv_name, use))
 	modal.open()
 
 
@@ -121,8 +121,11 @@ static func _open_convert_vitality(parent: Node) -> void:
 	modal.open()
 
 
-## Блок «Спец-действие / Пассив» для встраивания в любую модалку.
-static func build(inv_name: String) -> Control:
+## Блок «спец-действие + пассив» для встраивания в любую модалку. Разделы не
+## подписываем: сверху всегда активка, под ней пассив — читается и без подписей.
+## action_btn (если передан) встаёт ВМЕСТО названия спец-действия: название на
+## самой кнопке, дублировать его строкой выше незачем.
+static func build(inv_name: String, action_btn: Button = null) -> Control:
 	var box := VBoxContainer.new()
 	box.name = "AbilityInfo"
 	box.add_theme_constant_override("separation", 14)
@@ -135,20 +138,18 @@ static func build(inv_name: String) -> Control:
 		return box
 
 	if not ability.is_empty():
-		_section(box, "INV_ABILITY_ACTION", ability)
+		_section(box, ability, action_btn)
 	if not passive.is_empty():
-		_section(box, "INV_ABILITY_PASSIVE", passive)
+		_section(box, passive)
 	return box
 
 
-# Заголовок раздела + название способности + её описание.
-static func _section(box: VBoxContainer, kind_key: String, data: Dictionary) -> void:
-	var kind := UIStyle.label(kind_key, 13, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
-	kind.name = "Kind"
-	box.add_child(kind)
-
+# Шапка (кнопка запуска ИЛИ название) + описание способности.
+static func _section(box: VBoxContainer, data: Dictionary, btn: Button = null) -> void:
 	var nm: String = String(data.get("name", ""))
-	if not nm.is_empty():
+	if btn != null:
+		box.add_child(btn)
+	elif not nm.is_empty():
 		var title := UIStyle.label(nm, 19, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 		title.name = "Name"
 		box.add_child(title)

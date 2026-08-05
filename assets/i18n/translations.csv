@@ -158,8 +158,6 @@ ABILITY_CONVERT_PROMPT,Что потратить и сколько? Стольк
 ABILITY_CONVERT_HP_TO_SAN,Здоровье → Рассудок,Health → Sanity,
 ABILITY_CONVERT_SAN_TO_HP,Рассудок → Здоровье,Sanity → Health,
 ABILITY_CONFIRM,Применить,Apply,
-INV_ABILITY_ACTION,Спец-действие,Special Action,
-INV_ABILITY_PASSIVE,Пассивная способность,Passive Ability,
 INV_ABILITY_NONE,У этого сыщика нет особых способностей.,This investigator has no special abilities.,
 INV_AL_DOBBS_NAME,Эл Доббс,Al Dobbs,
 INV_AL_DOBBS_OCC,Коммивояжёр,The Salesman,
