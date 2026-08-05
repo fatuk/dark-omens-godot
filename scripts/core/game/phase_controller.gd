@@ -56,22 +56,58 @@ func _rest_resources(p: Dictionary, rec: Array, res_hp: int, res_san: int) -> vo
 ## Хост: валидирует и применяет действие игрока. Возвращает true при успехе.
 ## Зовётся из GameState.perform_action (для своего действия) и из relay-router
 ## на game_action (для чужого).
-# Исполнить спец-действие сыщика: программа ability.do через общий EffectRunner.
-# Мутации игрока коммитятся сразу, board-эффекты уходят в _apply_board_effect,
-# изменения — в ленту исходов. false — у сыщика нет способности (действие не тратим).
-func _run_investigator_ability(pid: String, p: Dictionary) -> bool:
+# Исполнить спец-действие сыщика: встроенный вид (ability.kind) либо программа
+# ability.do через общий EffectRunner. Мутации игрока коммитятся сразу, board-эффекты
+# уходят в _apply_board_effect, изменения — в ленту исходов.
+# false — способности нет или ввод невалиден (действие НЕ тратим).
+func _run_investigator_ability(pid: String, p: Dictionary, payload: Dictionary) -> bool:
 	var inv_id: String = String(p.get("investigator", ""))
+	var before: Dictionary = (p as Dictionary).duplicate(true)  # для ленты исходов
+	var ok: bool = false
+	match Investigators.ability_kind(inv_id):
+		"convertVitality":
+			ok = _ability_convert_vitality(pid, p, payload)
+		_:
+			ok = _ability_run_program(pid, p, inv_id)
+	if ok:
+		ActionFeed.announce_deltas(_gs, pid, before, p)
+	return ok
+
+
+# Обычная DSL-программа способности.
+func _ability_run_program(pid: String, p: Dictionary, inv_id: String) -> bool:
 	var program: Array = Investigators.ability_program(inv_id)
 	if (program as Array).is_empty():
 		return false
 	var inv: Dictionary = Investigators.get_data(inv_id)
-	var before: Dictionary = (p as Dictionary).duplicate(true)  # для ленты исходов
 	var res: Dictionary = _EffectRunner.run(program, p, {"skills": inv.get("skills", {})})
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[Способность] %s: %s" % [_gs._name_of(pid), String(l_v)])
 	for node_v: Variant in res.get("board", []):
 		_gs._apply_board_effect(node_v as Dictionary)
-	ActionFeed.announce_deltas(_gs, pid, before, p)
+	return true
+
+
+# «Потратить N здоровья/рассудка и восстановить столько же другого» (Мэй Линь).
+# payload: {from: "hp"|"sanity", amount: N}. Гарды: источник НЕ опускаем до 0 —
+# иначе способность открыла бы себе Порог; приёмник не переливаем выше максимума.
+# Величина клампится под оба предела; если переливать нечего — false (ход не тратим).
+func _ability_convert_vitality(pid: String, p: Dictionary, payload: Dictionary) -> bool:
+	var from: String = String(payload.get("from", ""))
+	if from != PlayerKeys.HP and from != PlayerKeys.SANITY:
+		return false
+	var to: String = PlayerKeys.SANITY if from == PlayerKeys.HP else PlayerKeys.HP
+	var to_max: String = "sanity_max" if to == PlayerKeys.SANITY else "hp_max"
+	var spendable: int = maxi(0, int(p.get(from, 0)) - 1)  # оставляем минимум 1
+	var room: int = maxi(0, int(p.get(to_max, 0)) - int(p.get(to, 0)))
+	var amount: int = mini(mini(int(payload.get("amount", 0)), spendable), room)
+	if amount <= 0:
+		return false
+	p[from] = int(p.get(from, 0)) - amount
+	p[to] = int(p.get(to, 0)) + amount
+	GameConsole.log(
+		"[Способность] %s: %s −%d → %s +%d" % [_gs._name_of(pid), from, amount, to, amount]
+	)
 	return true
 
 
@@ -241,7 +277,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			# Спец-действие сыщика (data/investigators.json → ability.do). Мгновенное:
 			# программа без видимой проверки. Общие гейты (фаза, очередь, «раз в раунд»,
 			# cannotAct) уже отработали выше — здесь только исполнение.
-			if not _run_investigator_ability(pid, p):
+			if not _run_investigator_ability(pid, p, payload):
 				GameConsole.warn("[Game] %s — нет спец-действия сыщика" % _gs._name_of(pid))
 				return false
 			p["actions_left"] = int(p["actions_left"]) - 1

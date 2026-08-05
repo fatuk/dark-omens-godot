@@ -603,10 +603,20 @@ static func _apply_player_verb(
 				player["skill_mods"] = amods
 				logs.append("все навыки %+d" % delta)
 			elif not skill.is_empty():
+				# Пассив-триггер сыщика (Мэй Линь): улучшение навыка применяется ещё
+				# раз. Только на improveSkill — ухудшение НЕ удваиваем. Потолок
+				# SKILL_MOD_CAP всё равно клампит итог.
+				var repeats: int = 1
+				if verb == "improveSkill":
+					repeats += Investigators.extra_skill_improvements(
+						String(player.get("investigator", ""))
+					)
 				var mods: Dictionary = player.get("skill_mods", {})
-				mods[skill] = clampi(int(mods.get(skill, 0)) + delta, -SKILL_MOD_CAP, SKILL_MOD_CAP)
+				mods[skill] = clampi(
+					int(mods.get(skill, 0)) + delta * repeats, -SKILL_MOD_CAP, SKILL_MOD_CAP
+				)
 				player["skill_mods"] = mods
-				logs.append("навык %s %+d" % [skill, delta])
+				logs.append("навык %s %+d" % [skill, delta * repeats])
 		"becomeDelayed":
 			if _owns_immunity(player, "delayed"):
 				logs.append("иммунитет к задержке")  # Pocket Watch: immuneTo delayed

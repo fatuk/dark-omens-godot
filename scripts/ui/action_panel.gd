@@ -177,9 +177,87 @@ func _reposition() -> void:
 func _on_ability() -> void:
 	if _busy:
 		return
+	# Встроенный вид, требующий ввода (Мэй Линь) — открываем выбор; обычная
+	# DSL-программа исполняется сразу.
+	var inv: String = String(GameState.my_player().get("investigator", ""))
+	if Investigators.ability_kind(inv) == "convertVitality":
+		_show_convert_vitality()
+		return
 	_busy = true
 	GameState.perform_action(GameActions.INVESTIGATOR_ABILITY)
 	_busy = false
+
+
+# Модалка способности «внутреннее равновесие»: выбрать, из какого запаса потратить
+# и сколько — столько же вернётся в другой. Пределы: источник не опускаем ниже 1,
+# приёмник не переливаем выше максимума (те же гварды дублирует хост).
+func _show_convert_vitality() -> void:
+	var me: Dictionary = GameState.my_player()
+	var hp: int = int(me.get("hp", 0))
+	var san: int = int(me.get("sanity", 0))
+	var hp_room: int = maxi(0, int(me.get("hp_max", 0)) - hp)
+	var san_room: int = maxi(0, int(me.get("sanity_max", 0)) - san)
+	# Сколько максимум можно перелить в каждую сторону.
+	var max_hp_to_san: int = mini(maxi(0, hp - 1), san_room)
+	var max_san_to_hp: int = mini(maxi(0, san - 1), hp_room)
+	if max_hp_to_san <= 0 and max_san_to_hp <= 0:
+		return  # переливать нечего — молча ничего не делаем
+
+	var modal: ModalDialog = _REST_MODAL.instantiate()
+	add_child(modal)
+	modal.set_title(tr(String(GameState.my_ability().get("name", ""))))
+	var box := VBoxContainer.new()
+	box.name = "ConvertAlloc"
+	box.add_theme_constant_override("separation", 12)
+	var hint := UIStyle.label("ABILITY_CONVERT_PROMPT", 15)
+	hint.name = "Hint"
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size.x = 360
+	box.add_child(hint)
+
+	var state := {"hp": 0, "san": 0}  # сколько тратим ИЗ здоровья / ИЗ рассудка
+	var rows := {}
+	var upd_ref := {"fn": Callable()}
+	if max_hp_to_san > 0:
+		rows["hp"] = _alloc_row(box, "ABILITY_CONVERT_HP_TO_SAN", state, "hp", upd_ref)
+	if max_san_to_hp > 0:
+		rows["san"] = _alloc_row(box, "ABILITY_CONVERT_SAN_TO_HP", state, "san", upd_ref)
+	# Направление одно за раз: набрал в одной строке — вторая блокируется.
+	var upd := func() -> void:
+		for k_v: Variant in rows:
+			var k: String = k_v
+			var r: Dictionary = rows[k]
+			(r["count"] as Label).text = str(state[k])
+			var cap: int = max_hp_to_san if k == "hp" else max_san_to_hp
+			var other: int = int(state["san"] if k == "hp" else state["hp"])
+			(r["plus"] as Button).disabled = int(state[k]) >= cap or other > 0
+			(r["minus"] as Button).disabled = int(state[k]) <= 0
+	upd_ref["fn"] = upd
+	upd.call()
+
+	var confirm := UIStyle.button("ACTION_REST_RES_CONFIRM", UIColors.ACCENT)
+	confirm.name = "Confirm"
+	var confirmed := {"v": false}
+	confirm.pressed.connect(
+		func() -> void:
+			confirmed["v"] = true
+			modal.close()
+	)
+	box.add_child(confirm)
+	modal.set_content(box)
+	modal.closed.connect(
+		func() -> void:
+			if not confirmed["v"]:
+				return
+			var from: String = "hp" if int(state["hp"]) > 0 else "sanity"
+			var amount: int = maxi(int(state["hp"]), int(state["san"]))
+			if amount <= 0:
+				return
+			GameState.perform_action(
+				GameActions.INVESTIGATOR_ABILITY, {"from": from, "amount": amount}
+			)
+	)
+	modal.open()
 
 
 func _on_pass() -> void:

@@ -1,1168 +1,1459 @@
 [
-  {
-	"name": "Ezra Gilman",
-	"startingItems": [{"asset": "fishing_net"}],
-	"displayName": "INV_EZRA_GILMAN_NAME",
-	"occupation": "INV_EZRA_GILMAN_OCC",
-	"startingLocation": "Sydney",
-	"set": "INV_SET_CORE",
-	"quote": "INV_EZRA_GILMAN_QUOTE",
-	"role": [
-      "INV_ROLE_ALL_ROUNDER"
-	],
-	"health": 8,
-	"sanity": 4,
-	"skills": {
-	  "lore": 1,
-	  "influence": 3,
-	  "observation": 3,
-	  "strength": 3,
-	  "will": 3
+	{
+		"name": "Ezra Gilman",
+		"startingItems": [
+			{
+				"asset": "fishing_net"
+			}
+		],
+		"displayName": "INV_EZRA_GILMAN_NAME",
+		"occupation": "INV_EZRA_GILMAN_OCC",
+		"startingLocation": "Sydney",
+		"set": "INV_SET_CORE",
+		"quote": "INV_EZRA_GILMAN_QUOTE",
+		"role": [
+			"INV_ROLE_ALL_ROUNDER"
+		],
+		"health": 8,
+		"sanity": 4,
+		"skills": {
+			"lore": 1,
+			"influence": 3,
+			"observation": 3,
+			"strength": 3,
+			"will": 3
+		}
+	},
+	{
+		"name": "Colby Banks",
+		"startingItems": [
+			{
+				"asset": "bull_whip"
+			}
+		],
+		"displayName": "INV_COLBY_BANKS_NAME",
+		"occupation": "INV_COLBY_BANKS_OCC",
+		"startingLocation": "The Pyramids",
+		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"quote": "INV_COLBY_BANKS_QUOTE",
+		"role": [
+			"INV_ROLE_EXPEDITION"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 2,
+			"influence": 2,
+			"observation": 3,
+			"strength": 4,
+			"will": 2
+		}
+	},
+	{
+		"name": "Harold Perkins",
+		"startingItems": [
+			{
+				"asset": "camera"
+			},
+			{
+				"asset": "seek_the_truth"
+			}
+		],
+		"displayName": "INV_HAROLD_PERKINS_NAME",
+		"occupation": "INV_HAROLD_PERKINS_OCC",
+		"startingLocation": "20",
+		"set": "INV_SET_THE_DREAMLANDS",
+		"quote": "INV_HAROLD_PERKINS_QUOTE",
+		"role": [
+			"INV_ROLE_RESEARCH"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 1,
+			"influence": 3,
+			"observation": 4,
+			"strength": 2,
+			"will": 3
+		}
+	},
+	{
+		"name": "Nadia Blackwood",
+		"startingItems": [
+			{
+				"asset": "45_automatic"
+			}
+		],
+		"displayName": "INV_NADIA_BLACKWOOD_NAME",
+		"occupation": "INV_NADIA_BLACKWOOD_OCC",
+		"startingLocation": "16",
+		"set": "INV_SET_CORE",
+		"quote": "INV_NADIA_BLACKWOOD_QUOTE",
+		"role": [
+			"INV_ROLE_RESEARCH"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 1,
+			"influence": 3,
+			"observation": 4,
+			"strength": 3,
+			"will": 2
+		}
+	},
+	{
+		"name": "Elena Kostas",
+		"startingItems": [
+			{
+				"asset": "holy_cross"
+			}
+		],
+		"displayName": "INV_ELENA_KOSTAS_NAME",
+		"occupation": "INV_ELENA_KOSTAS_OCC",
+		"startingLocation": "Rome",
+		"set": "INV_SET_STRANGE_REMNANTS",
+		"quote": "INV_ELENA_KOSTAS_QUOTE",
+		"role": [
+			"INV_ROLE_COMBAT"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 3,
+			"influence": 2,
+			"observation": 1,
+			"strength": 3,
+			"will": 4
+		}
+	},
+	{
+		"name": "Vivienne Marchetti",
+		"startingItems": [
+			{
+				"clue": 1
+			}
+		],
+		"displayName": "INV_VIVIENNE_MARCHETTI_NAME",
+		"occupation": "INV_VIVIENNE_MARCHETTI_OCC",
+		"startingLocation": "5",
+		"set": "INV_SET_CORE",
+		"quote": "INV_VIVIENNE_MARCHETTI_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT",
+			"INV_ROLE_RESEARCH"
+		],
+		"health": 4,
+		"sanity": 8,
+		"skills": {
+			"lore": 4,
+			"influence": 2,
+			"observation": 3,
+			"strength": 1,
+			"will": 3
+		}
+	},
+	{
+		"name": "Maxwell Thorne",
+		"startingItems": [
+			{
+				"asset": "arcane_assistant"
+			},
+			{
+				"spell": "binding"
+			}
+		],
+		"displayName": "INV_MAXWELL_THORNE_NAME",
+		"occupation": "INV_MAXWELL_THORNE_OCC",
+		"startingLocation": "Tokyo",
+		"set": "INV_SET_SIGNS_OF_CARCOSA",
+		"quote": "INV_MAXWELL_THORNE_QUOTE",
+		"role": [
+			"INV_ROLE_MAGIC"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 4,
+			"influence": 2,
+			"observation": 2,
+			"strength": 2,
+			"will": 3
+		}
+	},
+	{
+		"name": "Clara Ashby",
+		"startingItems": [
+			{
+				"asset": "arcane_manuscripts"
+			},
+			{
+				"spell": "wither"
+			}
+		],
+		"displayName": "INV_CLARA_ASHBY_NAME",
+		"occupation": "INV_CLARA_ASHBY_OCC",
+		"startingLocation": "7",
+		"set": "INV_SET_CORE",
+		"quote": "INV_CLARA_ASHBY_QUOTE",
+		"role": [
+			"INV_ROLE_MAGIC",
+			"INV_ROLE_COMBAT"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 4,
+			"influence": 2,
+			"observation": 3,
+			"strength": 3,
+			"will": 1
+		}
+	},
+	{
+		"name": "Nora Quinn",
+		"startingItems": [],
+		"displayName": "INV_NORA_QUINN_NAME",
+		"occupation": "INV_NORA_QUINN_OCC",
+		"startingLocation": "Istanbul",
+		"set": "INV_SET_THE_DREAMLANDS",
+		"quote": "INV_NORA_QUINN_QUOTE",
+		"role": [
+			"INV_ROLE_RESEARCH"
+		],
+		"health": 6,
+		"sanity": 6,
+		"skills": {
+			"lore": 2,
+			"influence": 3,
+			"observation": 4,
+			"strength": 1,
+			"will": 3
+		}
+	},
+	{
+		"name": "Ruth Adler",
+		"startingItems": [],
+		"displayName": "INV_RUTH_ADLER_NAME",
+		"occupation": "INV_RUTH_ADLER_OCC",
+		"startingLocation": "Arkham",
+		"set": "INV_SET_THE_DREAMLANDS",
+		"quote": "INV_RUTH_ADLER_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT",
+			"INV_ROLE_RESEARCH"
+		],
+		"health": 4,
+		"sanity": 8,
+		"skills": {
+			"lore": 3,
+			"influence": 3,
+			"observation": 3,
+			"strength": 1,
+			"will": 3
+		}
+	},
+	{
+		"name": "Ada Fairfax",
+		"startingItems": [
+			{
+				"clue": 1
+			}
+		],
+		"displayName": "INV_ADA_FAIRFAX_NAME",
+		"occupation": "INV_ADA_FAIRFAX_OCC",
+		"startingLocation": "Buenos Aires",
+		"set": "INV_SET_THE_DREAMLANDS",
+		"quote": "INV_ADA_FAIRFAX_QUOTE",
+		"role": [
+			"INV_ROLE_RESEARCH",
+			"INV_ROLE_GATE_CLOSER"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 3,
+			"influence": 2,
+			"observation": 4,
+			"strength": 2,
+			"will": 2
+		}
+	},
+	{
+		"name": "Mai Nguyen",
+		"startingItems": [
+			{
+				"clue": 1
+			}
+		],
+		"displayName": "INV_MAI_NGUYEN_NAME",
+		"occupation": "INV_MAI_NGUYEN_OCC",
+		"startingLocation": "Tokyo",
+		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"quote": "INV_MAI_NGUYEN_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 6,
+		"sanity": 6,
+		"skills": {
+			"lore": 3,
+			"influence": 3,
+			"observation": 3,
+			"strength": 2,
+			"will": 2
+		}
+	},
+	{
+		"name": "Betty Cross",
+		"startingItems": [
+			{
+				"clue": 1
+			}
+		],
+		"displayName": "INV_BETTY_CROSS_NAME",
+		"occupation": "INV_BETTY_CROSS_OCC",
+		"startingLocation": "Shanghai",
+		"set": "INV_SET_CITIES_IN_RUIN",
+		"quote": "INV_BETTY_CROSS_QUOTE",
+		"role": [
+			"INV_ROLE_COMBAT"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 3,
+			"influence": 1,
+			"observation": 2,
+			"strength": 4,
+			"will": 3
+		}
+	},
+	{
+		"name": "Nick Stone",
+		"startingItems": [
+			{
+				"asset": "32_colt_pocket"
+			}
+		],
+		"displayName": "INV_NICK_STONE_NAME",
+		"occupation": "INV_NICK_STONE_OCC",
+		"startingLocation": "San Francisco",
+		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"quote": "INV_NICK_STONE_QUOTE",
+		"role": [
+			"INV_ROLE_RESEARCH"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 2,
+			"influence": 3,
+			"observation": 4,
+			"strength": 2,
+			"will": 2
+		}
+	},
+	{
+		"name": "Silas Graves",
+		"startingItems": [
+			{
+				"asset": "alchemical_concoction"
+			}
+		],
+		"displayName": "INV_SILAS_GRAVES_NAME",
+		"occupation": "INV_SILAS_GRAVES_OCC",
+		"startingLocation": "Sydney",
+		"set": "INV_SET_THE_DREAMLANDS",
+		"quote": "INV_SILAS_GRAVES_QUOTE",
+		"role": [
+			"INV_ROLE_COMBAT"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 3,
+			"influence": 2,
+			"observation": 2,
+			"strength": 3,
+			"will": 3
+		}
+	},
+	{
+		"name": "Cordelia Frost",
+		"startingItems": [
+			{
+				"spell": "call_the_storm"
+			}
+		],
+		"displayName": "INV_CORDELIA_FROST_NAME",
+		"occupation": "INV_CORDELIA_FROST_OCC",
+		"startingLocation": "Tokyo",
+		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"quote": "INV_CORDELIA_FROST_QUOTE",
+		"role": [
+			"INV_ROLE_MAGIC",
+			"INV_ROLE_RESEARCH"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 4,
+			"influence": 3,
+			"observation": 3,
+			"strength": 1,
+			"will": 2
+		}
+	},
+	{
+		"name": "Rosa Delgado",
+		"startingItems": [
+			{
+				"clue": 1
+			},
+			{
+				"resource": 1
+			}
+		],
+		"displayName": "INV_ROSA_DELGADO_NAME",
+		"occupation": "INV_ROSA_DELGADO_OCC",
+		"startingLocation": "San Francisco",
+		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"quote": "INV_ROSA_DELGADO_QUOTE",
+		"role": [
+			"INV_ROLE_ALL_ROUNDER"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 3,
+			"influence": 3,
+			"observation": 1,
+			"strength": 3,
+			"will": 3
+		}
+	},
+	{
+		"name": "Hobo Cal",
+		"startingItems": [
+			{
+				"clue": 1
+			}
+		],
+		"displayName": "INV_HOBO_CAL_NAME",
+		"occupation": "INV_HOBO_CAL_OCC",
+		"startingLocation": "14",
+		"set": "INV_SET_CITIES_IN_RUIN",
+		"quote": "INV_HOBO_CAL_QUOTE",
+		"role": [
+			"INV_ROLE_ALL_ROUNDER"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 3,
+			"influence": 1,
+			"observation": 3,
+			"strength": 3,
+			"will": 3
+		}
+	},
+	{
+		"name": "Frank Donnelly",
+		"startingItems": [
+			{
+				"asset": "tommy_gun"
+			}
+		],
+		"displayName": "INV_FRANK_DONNELLY_NAME",
+		"occupation": "INV_FRANK_DONNELLY_OCC",
+		"startingLocation": "London",
+		"set": "INV_SET_SIGNS_OF_CARCOSA",
+		"quote": "INV_FRANK_DONNELLY_QUOTE",
+		"role": [
+			"INV_ROLE_COMBAT"
+		],
+		"health": 8,
+		"sanity": 4,
+		"skills": {
+			"lore": 2,
+			"influence": 3,
+			"observation": 1,
+			"strength": 4,
+			"will": 3
+		}
+	},
+	{
+		"name": "Danny Kilroy",
+		"startingItems": [
+			{
+				"asset": "carbine_rifle"
+			}
+		],
+		"displayName": "INV_DANNY_KILROY_NAME",
+		"occupation": "INV_DANNY_KILROY_OCC",
+		"startingLocation": "1",
+		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"quote": "INV_DANNY_KILROY_QUOTE",
+		"role": [
+			"INV_ROLE_COMBAT"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 2,
+			"influence": 3,
+			"observation": 3,
+			"strength": 3,
+			"will": 2
+		}
+	},
+	{
+		"name": "Tavita Lebeau",
+		"startingItems": [
+			{
+				"clue": 1
+			},
+			{
+				"asset": "treasured_memento"
+			}
+		],
+		"displayName": "INV_TAVITA_LEBEAU_NAME",
+		"occupation": "INV_TAVITA_LEBEAU_OCC",
+		"startingLocation": "Sydney",
+		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"quote": "INV_TAVITA_LEBEAU_QUOTE",
+		"role": [
+			"INV_ROLE_RESEARCH"
+		],
+		"health": 4,
+		"sanity": 8,
+		"skills": {
+			"lore": 3,
+			"influence": 2,
+			"observation": 4,
+			"strength": 1,
+			"will": 3
+		}
+	},
+	{
+		"name": "Alfred Bramwell",
+		"startingItems": [
+			{
+				"asset": "ancient_tome"
+			}
+		],
+		"displayName": "INV_ALFRED_BRAMWELL_NAME",
+		"occupation": "INV_ALFRED_BRAMWELL_OCC",
+		"startingLocation": "Arkham",
+		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"quote": "INV_ALFRED_BRAMWELL_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 4,
+		"sanity": 8,
+		"skills": {
+			"lore": 3,
+			"influence": 2,
+			"observation": 3,
+			"strength": 2,
+			"will": 3
+		}
+	},
+	{
+		"name": "Celeste Dubois",
+		"startingItems": [
+			{
+				"asset": "ritual_dagger"
+			},
+			{
+				"spell": "voice_of_ra"
+			}
+		],
+		"displayName": "INV_CELESTE_DUBOIS_NAME",
+		"occupation": "INV_CELESTE_DUBOIS_OCC",
+		"startingLocation": "20",
+		"set": "INV_SET_STRANGE_REMNANTS",
+		"quote": "INV_CELESTE_DUBOIS_QUOTE",
+		"role": [
+			"INV_ROLE_MAGIC"
+		],
+		"health": 6,
+		"sanity": 6,
+		"skills": {
+			"lore": 3,
+			"influence": 4,
+			"observation": 2,
+			"strength": 2,
+			"will": 2
+		}
+	},
+	{
+		"name": "Arthur Pennington",
+		"startingItems": [
+			{
+				"asset": "investment"
+			},
+			{
+				"asset": "pocket_watch"
+			}
+		],
+		"displayName": "INV_ARTHUR_PENNINGTON_NAME",
+		"occupation": "INV_ARTHUR_PENNINGTON_OCC",
+		"startingLocation": "17",
+		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"quote": "INV_ARTHUR_PENNINGTON_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 4,
+		"sanity": 8,
+		"skills": {
+			"lore": 3,
+			"influence": 4,
+			"observation": 2,
+			"strength": 1,
+			"will": 3
+		}
+	},
+	{
+		"name": "Nellie Fox",
+		"startingItems": [
+			{
+				"clue": 1
+			}
+		],
+		"displayName": "INV_NELLIE_FOX_NAME",
+		"occupation": "INV_NELLIE_FOX_OCC",
+		"startingLocation": "16",
+		"set": "INV_SET_SIGNS_OF_CARCOSA",
+		"quote": "INV_NELLIE_FOX_QUOTE",
+		"role": [
+			"INV_ROLE_RESEARCH"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 3,
+			"influence": 1,
+			"observation": 4,
+			"strength": 2,
+			"will": 3
+		}
+	},
+	{
+		"name": "Greta Sterling",
+		"startingItems": [
+			{
+				"asset": "18_derringer"
+			}
+		],
+		"displayName": "INV_GRETA_STERLING_NAME",
+		"occupation": "INV_GRETA_STERLING_OCC",
+		"startingLocation": "Tokyo",
+		"set": "INV_SET_CORE",
+		"quote": "INV_GRETA_STERLING_QUOTE",
+		"role": [
+			"INV_ROLE_ALL_ROUNDER"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 2,
+			"influence": 4,
+			"observation": 2,
+			"strength": 2,
+			"will": 3
+		}
+	},
+	{
+		"name": "Nick Ryan",
+		"startingItems": [
+			{
+				"asset": "lucky_talisman"
+			}
+		],
+		"displayName": "INV_NICK_RYAN_NAME",
+		"occupation": "INV_NICK_RYAN_OCC",
+		"startingLocation": "1",
+		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"quote": "INV_NICK_RYAN_QUOTE",
+		"role": [
+			"INV_ROLE_ALL_ROUNDER"
+		],
+		"health": 7,
+		"sanity": 7,
+		"skills": {
+			"lore": 2,
+			"influence": 3,
+			"observation": 2,
+			"strength": 3,
+			"will": 3
+		}
+	},
+	{
+		"name": "Mei Lin",
+		"startingItems": [
+			{
+				"asset": "lucky_rabbits_foot"
+			},
+			{
+				"asset": "protective_amulet"
+			}
+		],
+		"displayName": "INV_MEI_LIN_NAME",
+		"occupation": "INV_MEI_LIN_OCC",
+		"startingLocation": "Shanghai",
+		"set": "INV_SET_CORE",
+		"quote": "INV_MEI_LIN_QUOTE",
+		"role": [
+			"INV_ROLE_COMBAT"
+		],
+		"health": 6,
+		"sanity": 6,
+		"skills": {
+			"lore": 2,
+			"influence": 2,
+			"observation": 2,
+			"strength": 4,
+			"will": 3
+		},
+		"ability": {
+			"name": "INV_MEI_LIN_ABILITY_NAME",
+			"text": "INV_MEI_LIN_ABILITY_TEXT",
+			"kind": "convertVitality"
+		},
+		"passive": {
+			"name": "INV_MEI_LIN_PASSIVE_NAME",
+			"text": "INV_MEI_LIN_PASSIVE_TEXT",
+			"triggers": [
+				{
+					"on": "improveSkill",
+					"repeat": 1
+				}
+			]
+		}
+	},
+	{
+		"name": "Al Dobbs",
+		"startingItems": [
+			{
+				"clue": 1
+			},
+			{
+				"asset": "winchester_rifle"
+			}
+		],
+		"displayName": "INV_AL_DOBBS_NAME",
+		"occupation": "INV_AL_DOBBS_OCC",
+		"startingLocation": "London",
+		"set": "INV_SET_CITIES_IN_RUIN",
+		"quote": "INV_AL_DOBBS_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 2,
+			"influence": 4,
+			"observation": 2,
+			"strength": 3,
+			"will": 2
+		}
+	},
+	{
+		"name": "Miles Barrow",
+		"startingItems": [
+			{
+				"clue": 1
+			},
+			{
+				"spell": "shriveling"
+			}
+		],
+		"displayName": "INV_MILES_BARROW_NAME",
+		"occupation": "INV_MILES_BARROW_OCC",
+		"startingLocation": "6",
+		"set": "INV_SET_CORE",
+		"quote": "INV_MILES_BARROW_QUOTE",
+		"role": [
+			"INV_ROLE_MAGIC",
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 3,
+			"influence": 3,
+			"observation": 2,
+			"strength": 2,
+			"will": 3
+		}
+	},
+	{
+		"name": "Daphne Vale",
+		"startingTickets": {
+			"ship": 1
+		},
+		"startingItems": [
+			{
+				"asset": "25_automatic"
+			},
+			{
+				"asset": "fine_jewelry"
+			}
+		],
+		"displayName": "INV_DAPHNE_VALE_NAME",
+		"occupation": "INV_DAPHNE_VALE_OCC",
+		"startingLocation": "8",
+		"set": "INV_SET_SIGNS_OF_CARCOSA",
+		"quote": "INV_DAPHNE_VALE_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 1,
+			"influence": 4,
+			"observation": 2,
+			"strength": 3,
+			"will": 3
+		}
+	},
+	{
+		"name": "Beatrix Kingsley",
+		"startingItems": [
+			{
+				"asset": "mineralogy_research"
+			}
+		],
+		"displayName": "INV_BEATRIX_KINGSLEY_NAME",
+		"occupation": "INV_BEATRIX_KINGSLEY_OCC",
+		"startingLocation": "The Heart of Africa",
+		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"quote": "INV_BEATRIX_KINGSLEY_QUOTE",
+		"role": [
+			"INV_ROLE_EXPEDITION"
+		],
+		"health": 6,
+		"sanity": 6,
+		"skills": {
+			"lore": 3,
+			"influence": 2,
+			"observation": 3,
+			"strength": 3,
+			"will": 2
+		}
+	},
+	{
+		"name": "Walter Briggs",
+		"startingItems": [
+			{
+				"asset": "blunderbuss"
+			}
+		],
+		"displayName": "INV_WALTER_BRIGGS_NAME",
+		"occupation": "INV_WALTER_BRIGGS_OCC",
+		"startingLocation": "Arkham",
+		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"quote": "INV_WALTER_BRIGGS_QUOTE",
+		"role": [
+			"INV_ROLE_COMBAT"
+		],
+		"health": 8,
+		"sanity": 4,
+		"skills": {
+			"lore": 1,
+			"influence": 3,
+			"observation": 2,
+			"strength": 4,
+			"will": 3
+		}
+	},
+	{
+		"name": "Casey Mercer",
+		"startingItems": [
+			{
+				"clue": 1
+			},
+			{
+				"asset": "dream_box"
+			}
+		],
+		"displayName": "INV_CASEY_MERCER_NAME",
+		"occupation": "INV_CASEY_MERCER_OCC",
+		"startingLocation": "Arkham",
+		"set": "INV_SET_THE_DREAMLANDS",
+		"quote": "INV_CASEY_MERCER_QUOTE",
+		"role": [
+			"INV_ROLE_GATE_CLOSER"
+		],
+		"health": 4,
+		"sanity": 8,
+		"skills": {
+			"lore": 4,
+			"influence": 2,
+			"observation": 1,
+			"strength": 2,
+			"will": 4
+		}
+	},
+	{
+		"name": "Gordon Pike",
+		"startingItems": [
+			{
+				"asset": "hired_muscle"
+			}
+		],
+		"displayName": "INV_GORDON_PIKE_NAME",
+		"occupation": "INV_GORDON_PIKE_OCC",
+		"startingLocation": "Buenos Aires",
+		"set": "INV_SET_CORE",
+		"quote": "INV_GORDON_PIKE_QUOTE",
+		"role": [
+			"INV_ROLE_EXPEDITION"
+		],
+		"health": 6,
+		"sanity": 6,
+		"skills": {
+			"lore": 2,
+			"influence": 2,
+			"observation": 3,
+			"strength": 3,
+			"will": 3
+		}
+	},
+	{
+		"name": "Chester Holloway",
+		"startingItems": [
+			{
+				"asset": "fine_clothes"
+			}
+		],
+		"displayName": "INV_CHESTER_HOLLOWAY_NAME",
+		"occupation": "INV_CHESTER_HOLLOWAY_OCC",
+		"startingLocation": "Istanbul",
+		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"quote": "INV_CHESTER_HOLLOWAY_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 2,
+			"influence": 5,
+			"observation": 2,
+			"strength": 3,
+			"will": 1
+		}
+	},
+	{
+		"name": "Clive Ashton",
+		"startingItems": [
+			{
+				"spell": "feed_the_mind"
+			}
+		],
+		"displayName": "INV_CLIVE_ASHTON_NAME",
+		"occupation": "INV_CLIVE_ASHTON_OCC",
+		"startingLocation": "Arkham",
+		"set": "INV_SET_CORE",
+		"quote": "INV_CLIVE_ASHTON_QUOTE",
+		"role": [
+			"INV_ROLE_MAGIC"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 3,
+			"influence": 1,
+			"observation": 3,
+			"strength": 2,
+			"will": 4
+		}
+	},
+	{
+		"name": "Father Ignatius",
+		"startingItems": [
+			{
+				"asset": "king_james_bible"
+			}
+		],
+		"displayName": "INV_FATHER_IGNATIUS_NAME",
+		"occupation": "INV_FATHER_IGNATIUS_OCC",
+		"startingLocation": "Rome",
+		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"quote": "INV_FATHER_IGNATIUS_QUOTE",
+		"role": [
+			"INV_ROLE_GATE_CLOSER",
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 3,
+			"influence": 3,
+			"observation": 1,
+			"strength": 2,
+			"will": 4
+		}
+	},
+	{
+		"name": "Frank Delaney",
+		"startingItems": [
+			{
+				"asset": "personal_assistant"
+			}
+		],
+		"displayName": "INV_FRANK_DELANEY_NAME",
+		"occupation": "INV_FRANK_DELANEY_OCC",
+		"startingLocation": "San Francisco",
+		"set": "INV_SET_CORE",
+		"quote": "INV_FRANK_DELANEY_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 4,
+		"sanity": 8,
+		"skills": {
+			"lore": 2,
+			"influence": 4,
+			"observation": 3,
+			"strength": 2,
+			"will": 2
+		}
+	},
+	{
+		"name": "Ngozi Eze",
+		"startingItems": [
+			{
+				"clue": 1
+			}
+		],
+		"displayName": "INV_NGOZI_EZE_NAME",
+		"occupation": "INV_NGOZI_EZE_OCC",
+		"startingLocation": "15",
+		"set": "INV_SET_CORE",
+		"quote": "INV_NGOZI_EZE_QUOTE",
+		"role": [
+			"INV_ROLE_GATE_CLOSER"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 3,
+			"influence": 2,
+			"observation": 2,
+			"strength": 2,
+			"will": 4
+		}
+	},
+	{
+		"name": "Frank Dalton",
+		"startingItems": [
+			{
+				"asset": "38_revolver"
+			},
+			{
+				"asset": "kerosene"
+			}
+		],
+		"displayName": "INV_FRANK_DALTON_NAME",
+		"occupation": "INV_FRANK_DALTON_OCC",
+		"startingLocation": "14",
+		"set": "INV_SET_CORE",
+		"quote": "INV_FRANK_DALTON_QUOTE",
+		"role": [
+			"INV_ROLE_COMBAT"
+		],
+		"health": 8,
+		"sanity": 4,
+		"skills": {
+			"lore": 1,
+			"influence": 2,
+			"observation": 2,
+			"strength": 4,
+			"will": 4
+		}
+	},
+	{
+		"name": "Marcus Bell",
+		"startingItems": [
+			{
+				"resource": 1
+			},
+			{
+				"clue": 1
+			},
+			{
+				"asset": "spirit_dagger"
+			}
+		],
+		"displayName": "INV_MARCUS_BELL_NAME",
+		"occupation": "INV_MARCUS_BELL_OCC",
+		"startingLocation": "Buenos Aires",
+		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"quote": "INV_MARCUS_BELL_QUOTE",
+		"role": [
+			"INV_ROLE_ALL_ROUNDER"
+		],
+		"health": 7,
+		"sanity": 7,
+		"skills": {
+			"lore": 3,
+			"influence": 3,
+			"observation": 3,
+			"strength": 3,
+			"will": 1
+		}
+	},
+	{
+		"name": "Nora Whitby",
+		"startingItems": [
+			{
+				"asset": "magnifying_glass"
+			}
+		],
+		"displayName": "INV_NORA_WHITBY_NAME",
+		"occupation": "INV_NORA_WHITBY_OCC",
+		"startingLocation": "Shanghai",
+		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"quote": "INV_NORA_WHITBY_QUOTE",
+		"role": [
+			"INV_ROLE_RESEARCH"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 3,
+			"influence": 3,
+			"observation": 4,
+			"strength": 1,
+			"will": 2
+		}
+	},
+	{
+		"name": "Iris Bellamy",
+		"startingItems": [
+			{
+				"spell": "arcane_insight"
+			}
+		],
+		"displayName": "INV_IRIS_BELLAMY_NAME",
+		"occupation": "INV_IRIS_BELLAMY_OCC",
+		"startingLocation": "Istanbul",
+		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"quote": "INV_IRIS_BELLAMY_QUOTE",
+		"role": [
+			"INV_ROLE_MAGIC"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 4,
+			"influence": 3,
+			"observation": 2,
+			"strength": 1,
+			"will": 3
+		}
+	},
+	{
+		"name": "Dale Corwin",
+		"startingItems": [
+			{
+				"asset": "mauser_c96"
+			}
+		],
+		"displayName": "INV_DALE_CORWIN_NAME",
+		"occupation": "INV_DALE_CORWIN_OCC",
+		"startingLocation": "San Francisco",
+		"set": "INV_SET_CITIES_IN_RUIN",
+		"quote": "INV_DALE_CORWIN_QUOTE",
+		"role": [
+			"INV_ROLE_RESEARCH",
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 2,
+			"influence": 2,
+			"observation": 4,
+			"strength": 2,
+			"will": 3
+		}
+	},
+	{
+		"name": "Buck Tanner",
+		"startingItems": [
+			{
+				"asset": "sledgehammer"
+			}
+		],
+		"displayName": "INV_BUCK_TANNER_NAME",
+		"occupation": "INV_BUCK_TANNER_OCC",
+		"startingLocation": "6",
+		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"quote": "INV_BUCK_TANNER_QUOTE",
+		"role": [
+			"INV_ROLE_COMBAT"
+		],
+		"health": 8,
+		"sanity": 4,
+		"skills": {
+			"lore": 1,
+			"influence": 2,
+			"observation": 3,
+			"strength": 4,
+			"will": 3
+		}
+	},
+	{
+		"name": "Sly Bracken",
+		"startingItems": [
+			{
+				"asset": "axe"
+			}
+		],
+		"displayName": "INV_SLY_BRACKEN_NAME",
+		"occupation": "INV_SLY_BRACKEN_OCC",
+		"startingLocation": "Buenos Aires",
+		"set": "INV_SET_STRANGE_REMNANTS",
+		"quote": "INV_SLY_BRACKEN_QUOTE",
+		"role": [
+			"INV_ROLE_COMBAT"
+		],
+		"health": 6,
+		"sanity": 6,
+		"skills": {
+			"lore": 2,
+			"influence": 1,
+			"observation": 3,
+			"strength": 4,
+			"will": 3
+		}
+	},
+	{
+		"name": "Evelyn Hart",
+		"startingItems": [
+			{
+				"asset": "dream_diary"
+			}
+		],
+		"displayName": "INV_EVELYN_HART_NAME",
+		"occupation": "INV_EVELYN_HART_OCC",
+		"startingLocation": "Rome",
+		"set": "INV_SET_THE_DREAMLANDS",
+		"quote": "INV_EVELYN_HART_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 2,
+			"influence": 3,
+			"observation": 2,
+			"strength": 2,
+			"will": 4
+		}
+	},
+	{
+		"name": "Henry Wu",
+		"startingItems": [
+			{
+				"asset": "bandages"
+			}
+		],
+		"displayName": "INV_HENRY_WU_NAME",
+		"occupation": "INV_HENRY_WU_OCC",
+		"startingLocation": "17",
+		"set": "INV_SET_THE_DREAMLANDS",
+		"quote": "INV_HENRY_WU_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 6,
+		"sanity": 6,
+		"skills": {
+			"lore": 1,
+			"influence": 3,
+			"observation": 3,
+			"strength": 2,
+			"will": 4
+		}
+	},
+	{
+		"name": "Esther Ravel",
+		"startingItems": [
+			{
+				"asset": "profane_tome"
+			},
+			{
+				"spell": "storm_of_spirits"
+			}
+		],
+		"displayName": "INV_ESTHER_RAVEL_NAME",
+		"occupation": "INV_ESTHER_RAVEL_OCC",
+		"startingLocation": "London",
+		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"quote": "INV_ESTHER_RAVEL_QUOTE",
+		"role": [
+			"INV_ROLE_MAGIC"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 4,
+			"influence": 3,
+			"observation": 2,
+			"strength": 2,
+			"will": 2
+		}
+	},
+	{
+		"name": "Rory Kell",
+		"startingItems": [
+			{
+				"asset": "cat_burglar"
+			},
+			{
+				"asset": "whiskey"
+			}
+		],
+		"displayName": "INV_RORY_KELL_NAME",
+		"occupation": "INV_RORY_KELL_OCC",
+		"startingLocation": "5",
+		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"quote": "INV_RORY_KELL_QUOTE",
+		"role": [
+			"INV_ROLE_ALL_ROUNDER"
+		],
+		"health": 6,
+		"sanity": 6,
+		"skills": {
+			"lore": 2,
+			"influence": 3,
+			"observation": 3,
+			"strength": 2,
+			"will": 3
+		}
+	},
+	{
+		"name": "Simone Ardent",
+		"startingItems": [
+			{
+				"clue": 1
+			},
+			{
+				"spell": "banishment"
+			}
+		],
+		"displayName": "INV_SIMONE_ARDENT_NAME",
+		"occupation": "INV_SIMONE_ARDENT_OCC",
+		"startingLocation": "Sydney",
+		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"quote": "INV_SIMONE_ARDENT_QUOTE",
+		"role": [
+			"INV_ROLE_GATE_CLOSER"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 3,
+			"influence": 2,
+			"observation": 3,
+			"strength": 1,
+			"will": 4
+		}
+	},
+	{
+		"name": "Percival Stane",
+		"startingItems": [
+			{
+				"clue": 1
+			},
+			{
+				"asset": "lucky_cigarette_case"
+			}
+		],
+		"displayName": "INV_PERCIVAL_STANE_NAME",
+		"occupation": "INV_PERCIVAL_STANE_OCC",
+		"startingLocation": "London",
+		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"quote": "INV_PERCIVAL_STANE_QUOTE",
+		"role": [
+			"INV_ROLE_ALL_ROUNDER",
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 6,
+		"sanity": 6,
+		"skills": {
+			"lore": 2,
+			"influence": 3,
+			"observation": 3,
+			"strength": 2,
+			"will": 3
+		}
+	},
+	{
+		"name": "Vince Cutter",
+		"startingItems": [
+			{
+				"asset": "handcuffs"
+			}
+		],
+		"displayName": "INV_VINCE_CUTTER_NAME",
+		"occupation": "INV_VINCE_CUTTER_OCC",
+		"startingLocation": "7",
+		"set": "INV_SET_STRANGE_REMNANTS",
+		"quote": "INV_VINCE_CUTTER_QUOTE",
+		"role": [
+			"INV_ROLE_RESEARCH"
+		],
+		"health": 7,
+		"sanity": 5,
+		"skills": {
+			"lore": 2,
+			"influence": 2,
+			"observation": 4,
+			"strength": 3,
+			"will": 2
+		}
+	},
+	{
+		"name": "Sister Cecilia",
+		"startingTickets": {
+			"ship": 1
+		},
+		"startingItems": [
+			{
+				"clue": 1
+			},
+			{
+				"asset": "holy_water"
+			}
+		],
+		"displayName": "INV_SISTER_CECILIA_NAME",
+		"occupation": "INV_SISTER_CECILIA_OCC",
+		"startingLocation": "15",
+		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"quote": "INV_SISTER_CECILIA_QUOTE",
+		"role": [
+			"INV_ROLE_SUPPORT"
+		],
+		"health": 5,
+		"sanity": 7,
+		"skills": {
+			"lore": 2,
+			"influence": 2,
+			"observation": 3,
+			"strength": 2,
+			"will": 4
+		}
 	}
-  },
-  {
-	"name": "Colby Banks",
-	"startingItems": [{"asset": "bull_whip"}],
-	"displayName": "INV_COLBY_BANKS_NAME",
-	"occupation": "INV_COLBY_BANKS_OCC",
-	"startingLocation": "The Pyramids",
-	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_COLBY_BANKS_QUOTE",
-	"role": [
-      "INV_ROLE_EXPEDITION"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 2,
-	  "influence": 2,
-	  "observation": 3,
-	  "strength": 4,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Harold Perkins",
-	"startingItems": [{"asset": "camera"}, {"asset": "seek_the_truth"}],
-	"displayName": "INV_HAROLD_PERKINS_NAME",
-	"occupation": "INV_HAROLD_PERKINS_OCC",
-	"startingLocation": "20",
-	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_HAROLD_PERKINS_QUOTE",
-	"role": [
-      "INV_ROLE_RESEARCH"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 1,
-	  "influence": 3,
-	  "observation": 4,
-	  "strength": 2,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Nadia Blackwood",
-	"startingItems": [{"asset": "45_automatic"}],
-	"displayName": "INV_NADIA_BLACKWOOD_NAME",
-	"occupation": "INV_NADIA_BLACKWOOD_OCC",
-	"startingLocation": "16",
-	"set": "INV_SET_CORE",
-	"quote": "INV_NADIA_BLACKWOOD_QUOTE",
-	"role": [
-      "INV_ROLE_RESEARCH"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 1,
-	  "influence": 3,
-	  "observation": 4,
-	  "strength": 3,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Elena Kostas",
-	"startingItems": [{"asset": "holy_cross"}],
-	"displayName": "INV_ELENA_KOSTAS_NAME",
-	"occupation": "INV_ELENA_KOSTAS_OCC",
-	"startingLocation": "Rome",
-	"set": "INV_SET_STRANGE_REMNANTS",
-	"quote": "INV_ELENA_KOSTAS_QUOTE",
-	"role": [
-      "INV_ROLE_COMBAT"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 3,
-	  "influence": 2,
-	  "observation": 1,
-	  "strength": 3,
-	  "will": 4
-	}
-  },
-  {
-	"name": "Vivienne Marchetti",
-	"startingItems": [{"clue": 1}],
-	"displayName": "INV_VIVIENNE_MARCHETTI_NAME",
-	"occupation": "INV_VIVIENNE_MARCHETTI_OCC",
-	"startingLocation": "5",
-	"set": "INV_SET_CORE",
-	"quote": "INV_VIVIENNE_MARCHETTI_QUOTE",
-	"role": [
-	  "INV_ROLE_SUPPORT",
-      "INV_ROLE_RESEARCH"
-	],
-	"health": 4,
-	"sanity": 8,
-	"skills": {
-	  "lore": 4,
-	  "influence": 2,
-	  "observation": 3,
-	  "strength": 1,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Maxwell Thorne",
-	"startingItems": [{"asset": "arcane_assistant"}, {"spell": "binding"}],
-	"displayName": "INV_MAXWELL_THORNE_NAME",
-	"occupation": "INV_MAXWELL_THORNE_OCC",
-	"startingLocation": "Tokyo",
-	"set": "INV_SET_SIGNS_OF_CARCOSA",
-	"quote": "INV_MAXWELL_THORNE_QUOTE",
-	"role": [
-      "INV_ROLE_MAGIC"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 4,
-	  "influence": 2,
-	  "observation": 2,
-	  "strength": 2,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Clara Ashby",
-	"startingItems": [{"asset": "arcane_manuscripts"}, {"spell": "wither"}],
-	"displayName": "INV_CLARA_ASHBY_NAME",
-	"occupation": "INV_CLARA_ASHBY_OCC",
-	"startingLocation": "7",
-	"set": "INV_SET_CORE",
-	"quote": "INV_CLARA_ASHBY_QUOTE",
-	"role": [
-	  "INV_ROLE_MAGIC",
-      "INV_ROLE_COMBAT"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 4,
-	  "influence": 2,
-	  "observation": 3,
-	  "strength": 3,
-	  "will": 1
-	}
-  },
-  {
-	"name": "Nora Quinn",
-	"startingItems": [],
-	"displayName": "INV_NORA_QUINN_NAME",
-	"occupation": "INV_NORA_QUINN_OCC",
-	"startingLocation": "Istanbul",
-	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_NORA_QUINN_QUOTE",
-	"role": [
-      "INV_ROLE_RESEARCH"
-	],
-	"health": 6,
-	"sanity": 6,
-	"skills": {
-	  "lore": 2,
-	  "influence": 3,
-	  "observation": 4,
-	  "strength": 1,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Ruth Adler",
-	"startingItems": [],
-	"displayName": "INV_RUTH_ADLER_NAME",
-	"occupation": "INV_RUTH_ADLER_OCC",
-	"startingLocation": "Arkham",
-	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_RUTH_ADLER_QUOTE",
-	"role": [
-	  "INV_ROLE_SUPPORT",
-      "INV_ROLE_RESEARCH"
-	],
-	"health": 4,
-	"sanity": 8,
-	"skills": {
-	  "lore": 3,
-	  "influence": 3,
-	  "observation": 3,
-	  "strength": 1,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Ada Fairfax",
-	"startingItems": [{"clue": 1}],
-	"displayName": "INV_ADA_FAIRFAX_NAME",
-	"occupation": "INV_ADA_FAIRFAX_OCC",
-	"startingLocation": "Buenos Aires",
-	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_ADA_FAIRFAX_QUOTE",
-	"role": [
-	  "INV_ROLE_RESEARCH",
-      "INV_ROLE_GATE_CLOSER"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 3,
-	  "influence": 2,
-	  "observation": 4,
-	  "strength": 2,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Mai Nguyen",
-	"startingItems": [{"clue": 1}],
-	"displayName": "INV_MAI_NGUYEN_NAME",
-	"occupation": "INV_MAI_NGUYEN_OCC",
-	"startingLocation": "Tokyo",
-	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_MAI_NGUYEN_QUOTE",
-	"role": [
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 6,
-	"sanity": 6,
-	"skills": {
-	  "lore": 3,
-	  "influence": 3,
-	  "observation": 3,
-	  "strength": 2,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Betty Cross",
-	"startingItems": [{"clue": 1}],
-	"displayName": "INV_BETTY_CROSS_NAME",
-	"occupation": "INV_BETTY_CROSS_OCC",
-	"startingLocation": "Shanghai",
-	"set": "INV_SET_CITIES_IN_RUIN",
-	"quote": "INV_BETTY_CROSS_QUOTE",
-	"role": [
-      "INV_ROLE_COMBAT"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 3,
-	  "influence": 1,
-	  "observation": 2,
-	  "strength": 4,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Nick Stone",
-	"startingItems": [{"asset": "32_colt_pocket"}],
-	"displayName": "INV_NICK_STONE_NAME",
-	"occupation": "INV_NICK_STONE_OCC",
-	"startingLocation": "San Francisco",
-	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_NICK_STONE_QUOTE",
-	"role": [
-      "INV_ROLE_RESEARCH"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 2,
-	  "influence": 3,
-	  "observation": 4,
-	  "strength": 2,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Silas Graves",
-	"startingItems": [{"asset": "alchemical_concoction"}],
-	"displayName": "INV_SILAS_GRAVES_NAME",
-	"occupation": "INV_SILAS_GRAVES_OCC",
-	"startingLocation": "Sydney",
-	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_SILAS_GRAVES_QUOTE",
-	"role": [
-      "INV_ROLE_COMBAT"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 3,
-	  "influence": 2,
-	  "observation": 2,
-	  "strength": 3,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Cordelia Frost",
-	"startingItems": [{"spell": "call_the_storm"}],
-	"displayName": "INV_CORDELIA_FROST_NAME",
-	"occupation": "INV_CORDELIA_FROST_OCC",
-	"startingLocation": "Tokyo",
-	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_CORDELIA_FROST_QUOTE",
-	"role": [
-	  "INV_ROLE_MAGIC",
-      "INV_ROLE_RESEARCH"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 4,
-	  "influence": 3,
-	  "observation": 3,
-	  "strength": 1,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Rosa Delgado",
-	"startingItems": [{"clue": 1}, {"resource": 1}],
-	"displayName": "INV_ROSA_DELGADO_NAME",
-	"occupation": "INV_ROSA_DELGADO_OCC",
-	"startingLocation": "San Francisco",
-	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_ROSA_DELGADO_QUOTE",
-	"role": [
-      "INV_ROLE_ALL_ROUNDER"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 3,
-	  "influence": 3,
-	  "observation": 1,
-	  "strength": 3,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Hobo Cal",
-	"startingItems": [{"clue": 1}],
-	"displayName": "INV_HOBO_CAL_NAME",
-	"occupation": "INV_HOBO_CAL_OCC",
-	"startingLocation": "14",
-	"set": "INV_SET_CITIES_IN_RUIN",
-	"quote": "INV_HOBO_CAL_QUOTE",
-	"role": [
-      "INV_ROLE_ALL_ROUNDER"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 3,
-	  "influence": 1,
-	  "observation": 3,
-	  "strength": 3,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Frank Donnelly",
-	"startingItems": [{"asset": "tommy_gun"}],
-	"displayName": "INV_FRANK_DONNELLY_NAME",
-	"occupation": "INV_FRANK_DONNELLY_OCC",
-	"startingLocation": "London",
-	"set": "INV_SET_SIGNS_OF_CARCOSA",
-	"quote": "INV_FRANK_DONNELLY_QUOTE",
-	"role": [
-      "INV_ROLE_COMBAT"
-	],
-	"health": 8,
-	"sanity": 4,
-	"skills": {
-	  "lore": 2,
-	  "influence": 3,
-	  "observation": 1,
-	  "strength": 4,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Danny Kilroy",
-	"startingItems": [{"asset": "carbine_rifle"}],
-	"displayName": "INV_DANNY_KILROY_NAME",
-	"occupation": "INV_DANNY_KILROY_OCC",
-	"startingLocation": "1",
-	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_DANNY_KILROY_QUOTE",
-	"role": [
-      "INV_ROLE_COMBAT"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 2,
-	  "influence": 3,
-	  "observation": 3,
-	  "strength": 3,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Tavita Lebeau",
-	"startingItems": [{"clue": 1}, {"asset": "treasured_memento"}],
-	"displayName": "INV_TAVITA_LEBEAU_NAME",
-	"occupation": "INV_TAVITA_LEBEAU_OCC",
-	"startingLocation": "Sydney",
-	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_TAVITA_LEBEAU_QUOTE",
-	"role": [
-      "INV_ROLE_RESEARCH"
-	],
-	"health": 4,
-	"sanity": 8,
-	"skills": {
-	  "lore": 3,
-	  "influence": 2,
-	  "observation": 4,
-	  "strength": 1,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Alfred Bramwell",
-	"startingItems": [{"asset": "ancient_tome"}],
-	"displayName": "INV_ALFRED_BRAMWELL_NAME",
-	"occupation": "INV_ALFRED_BRAMWELL_OCC",
-	"startingLocation": "Arkham",
-	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_ALFRED_BRAMWELL_QUOTE",
-	"role": [
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 4,
-	"sanity": 8,
-	"skills": {
-	  "lore": 3,
-	  "influence": 2,
-	  "observation": 3,
-	  "strength": 2,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Celeste Dubois",
-	"startingItems": [{"asset": "ritual_dagger"}, {"spell": "voice_of_ra"}],
-	"displayName": "INV_CELESTE_DUBOIS_NAME",
-	"occupation": "INV_CELESTE_DUBOIS_OCC",
-	"startingLocation": "20",
-	"set": "INV_SET_STRANGE_REMNANTS",
-	"quote": "INV_CELESTE_DUBOIS_QUOTE",
-	"role": [
-      "INV_ROLE_MAGIC"
-	],
-	"health": 6,
-	"sanity": 6,
-	"skills": {
-	  "lore": 3,
-	  "influence": 4,
-	  "observation": 2,
-	  "strength": 2,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Arthur Pennington",
-	"startingItems": [{"asset": "investment"}, {"asset": "pocket_watch"}],
-	"displayName": "INV_ARTHUR_PENNINGTON_NAME",
-	"occupation": "INV_ARTHUR_PENNINGTON_OCC",
-	"startingLocation": "17",
-	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_ARTHUR_PENNINGTON_QUOTE",
-	"role": [
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 4,
-	"sanity": 8,
-	"skills": {
-	  "lore": 3,
-	  "influence": 4,
-	  "observation": 2,
-	  "strength": 1,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Nellie Fox",
-	"startingItems": [{"clue": 1}],
-	"displayName": "INV_NELLIE_FOX_NAME",
-	"occupation": "INV_NELLIE_FOX_OCC",
-	"startingLocation": "16",
-	"set": "INV_SET_SIGNS_OF_CARCOSA",
-	"quote": "INV_NELLIE_FOX_QUOTE",
-	"role": [
-      "INV_ROLE_RESEARCH"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 3,
-	  "influence": 1,
-	  "observation": 4,
-	  "strength": 2,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Greta Sterling",
-	"startingItems": [{"asset": "18_derringer"}],
-	"displayName": "INV_GRETA_STERLING_NAME",
-	"occupation": "INV_GRETA_STERLING_OCC",
-	"startingLocation": "Tokyo",
-	"set": "INV_SET_CORE",
-	"quote": "INV_GRETA_STERLING_QUOTE",
-	"role": [
-      "INV_ROLE_ALL_ROUNDER"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 2,
-	  "influence": 4,
-	  "observation": 2,
-	  "strength": 2,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Nick Ryan",
-	"startingItems": [{"asset": "lucky_talisman"}],
-	"displayName": "INV_NICK_RYAN_NAME",
-	"occupation": "INV_NICK_RYAN_OCC",
-	"startingLocation": "1",
-	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_NICK_RYAN_QUOTE",
-	"role": [
-      "INV_ROLE_ALL_ROUNDER"
-	],
-	"health": 7,
-	"sanity": 7,
-	"skills": {
-	  "lore": 2,
-	  "influence": 3,
-	  "observation": 2,
-	  "strength": 3,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Mei Lin",
-	"startingItems": [{"asset": "lucky_rabbits_foot"}, {"asset": "protective_amulet"}],
-	"displayName": "INV_MEI_LIN_NAME",
-	"occupation": "INV_MEI_LIN_OCC",
-	"startingLocation": "Shanghai",
-	"set": "INV_SET_CORE",
-	"quote": "INV_MEI_LIN_QUOTE",
-	"role": [
-      "INV_ROLE_COMBAT"
-	],
-	"health": 6,
-	"sanity": 6,
-	"skills": {
-	  "lore": 2,
-	  "influence": 2,
-	  "observation": 2,
-	  "strength": 4,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Al Dobbs",
-	"startingItems": [{"clue": 1}, {"asset": "winchester_rifle"}],
-	"displayName": "INV_AL_DOBBS_NAME",
-	"occupation": "INV_AL_DOBBS_OCC",
-	"startingLocation": "London",
-	"set": "INV_SET_CITIES_IN_RUIN",
-	"quote": "INV_AL_DOBBS_QUOTE",
-	"role": [
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 2,
-	  "influence": 4,
-	  "observation": 2,
-	  "strength": 3,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Miles Barrow",
-	"startingItems": [{"clue": 1}, {"spell": "shriveling"}],
-	"displayName": "INV_MILES_BARROW_NAME",
-	"occupation": "INV_MILES_BARROW_OCC",
-	"startingLocation": "6",
-	"set": "INV_SET_CORE",
-	"quote": "INV_MILES_BARROW_QUOTE",
-	"role": [
-	  "INV_ROLE_MAGIC",
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 3,
-	  "influence": 3,
-	  "observation": 2,
-	  "strength": 2,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Daphne Vale",
-	"startingTickets": {"ship": 1},
-	"startingItems": [{"asset": "25_automatic"}, {"asset": "fine_jewelry"}],
-	"displayName": "INV_DAPHNE_VALE_NAME",
-	"occupation": "INV_DAPHNE_VALE_OCC",
-	"startingLocation": "8",
-	"set": "INV_SET_SIGNS_OF_CARCOSA",
-	"quote": "INV_DAPHNE_VALE_QUOTE",
-	"role": [
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 1,
-	  "influence": 4,
-	  "observation": 2,
-	  "strength": 3,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Beatrix Kingsley",
-	"startingItems": [{"asset": "mineralogy_research"}],
-	"displayName": "INV_BEATRIX_KINGSLEY_NAME",
-	"occupation": "INV_BEATRIX_KINGSLEY_OCC",
-	"startingLocation": "The Heart of Africa",
-	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_BEATRIX_KINGSLEY_QUOTE",
-	"role": [
-      "INV_ROLE_EXPEDITION"
-	],
-	"health": 6,
-	"sanity": 6,
-	"skills": {
-	  "lore": 3,
-	  "influence": 2,
-	  "observation": 3,
-	  "strength": 3,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Walter Briggs",
-	"startingItems": [{"asset": "blunderbuss"}],
-	"displayName": "INV_WALTER_BRIGGS_NAME",
-	"occupation": "INV_WALTER_BRIGGS_OCC",
-	"startingLocation": "Arkham",
-	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_WALTER_BRIGGS_QUOTE",
-	"role": [
-      "INV_ROLE_COMBAT"
-	],
-	"health": 8,
-	"sanity": 4,
-	"skills": {
-	  "lore": 1,
-	  "influence": 3,
-	  "observation": 2,
-	  "strength": 4,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Casey Mercer",
-	"startingItems": [{"clue": 1}, {"asset": "dream_box"}],
-	"displayName": "INV_CASEY_MERCER_NAME",
-	"occupation": "INV_CASEY_MERCER_OCC",
-	"startingLocation": "Arkham",
-	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_CASEY_MERCER_QUOTE",
-	"role": [
-      "INV_ROLE_GATE_CLOSER"
-	],
-	"health": 4,
-	"sanity": 8,
-	"skills": {
-	  "lore": 4,
-	  "influence": 2,
-	  "observation": 1,
-	  "strength": 2,
-	  "will": 4
-	}
-  },
-  {
-	"name": "Gordon Pike",
-	"startingItems": [{"asset": "hired_muscle"}],
-	"displayName": "INV_GORDON_PIKE_NAME",
-	"occupation": "INV_GORDON_PIKE_OCC",
-	"startingLocation": "Buenos Aires",
-	"set": "INV_SET_CORE",
-	"quote": "INV_GORDON_PIKE_QUOTE",
-	"role": [
-      "INV_ROLE_EXPEDITION"
-	],
-	"health": 6,
-	"sanity": 6,
-	"skills": {
-	  "lore": 2,
-	  "influence": 2,
-	  "observation": 3,
-	  "strength": 3,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Chester Holloway",
-	"startingItems": [{"asset": "fine_clothes"}],
-	"displayName": "INV_CHESTER_HOLLOWAY_NAME",
-	"occupation": "INV_CHESTER_HOLLOWAY_OCC",
-	"startingLocation": "Istanbul",
-	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_CHESTER_HOLLOWAY_QUOTE",
-	"role": [
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 2,
-	  "influence": 5,
-	  "observation": 2,
-	  "strength": 3,
-	  "will": 1
-	}
-  },
-  {
-	"name": "Clive Ashton",
-	"startingItems": [{"spell": "feed_the_mind"}],
-	"displayName": "INV_CLIVE_ASHTON_NAME",
-	"occupation": "INV_CLIVE_ASHTON_OCC",
-	"startingLocation": "Arkham",
-	"set": "INV_SET_CORE",
-	"quote": "INV_CLIVE_ASHTON_QUOTE",
-	"role": [
-      "INV_ROLE_MAGIC"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 3,
-	  "influence": 1,
-	  "observation": 3,
-	  "strength": 2,
-	  "will": 4
-	}
-  },
-  {
-	"name": "Father Ignatius",
-	"startingItems": [{"asset": "king_james_bible"}],
-	"displayName": "INV_FATHER_IGNATIUS_NAME",
-	"occupation": "INV_FATHER_IGNATIUS_OCC",
-	"startingLocation": "Rome",
-	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_FATHER_IGNATIUS_QUOTE",
-	"role": [
-	  "INV_ROLE_GATE_CLOSER",
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 3,
-	  "influence": 3,
-	  "observation": 1,
-	  "strength": 2,
-	  "will": 4
-	}
-  },
-  {
-	"name": "Frank Delaney",
-	"startingItems": [{"asset": "personal_assistant"}],
-	"displayName": "INV_FRANK_DELANEY_NAME",
-	"occupation": "INV_FRANK_DELANEY_OCC",
-	"startingLocation": "San Francisco",
-	"set": "INV_SET_CORE",
-	"quote": "INV_FRANK_DELANEY_QUOTE",
-	"role": [
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 4,
-	"sanity": 8,
-	"skills": {
-	  "lore": 2,
-	  "influence": 4,
-	  "observation": 3,
-	  "strength": 2,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Ngozi Eze",
-	"startingItems": [{"clue": 1}],
-	"displayName": "INV_NGOZI_EZE_NAME",
-	"occupation": "INV_NGOZI_EZE_OCC",
-	"startingLocation": "15",
-	"set": "INV_SET_CORE",
-	"quote": "INV_NGOZI_EZE_QUOTE",
-	"role": [
-      "INV_ROLE_GATE_CLOSER"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 3,
-	  "influence": 2,
-	  "observation": 2,
-	  "strength": 2,
-	  "will": 4
-	}
-  },
-  {
-	"name": "Frank Dalton",
-	"startingItems": [{"asset": "38_revolver"}, {"asset": "kerosene"}],
-	"displayName": "INV_FRANK_DALTON_NAME",
-	"occupation": "INV_FRANK_DALTON_OCC",
-	"startingLocation": "14",
-	"set": "INV_SET_CORE",
-	"quote": "INV_FRANK_DALTON_QUOTE",
-	"role": [
-      "INV_ROLE_COMBAT"
-	],
-	"health": 8,
-	"sanity": 4,
-	"skills": {
-	  "lore": 1,
-	  "influence": 2,
-	  "observation": 2,
-	  "strength": 4,
-	  "will": 4
-	}
-  },
-  {
-	"name": "Marcus Bell",
-	"startingItems": [{"resource": 1}, {"clue": 1}, {"asset": "spirit_dagger"}],
-	"displayName": "INV_MARCUS_BELL_NAME",
-	"occupation": "INV_MARCUS_BELL_OCC",
-	"startingLocation": "Buenos Aires",
-	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_MARCUS_BELL_QUOTE",
-	"role": [
-      "INV_ROLE_ALL_ROUNDER"
-	],
-	"health": 7,
-	"sanity": 7,
-	"skills": {
-	  "lore": 3,
-	  "influence": 3,
-	  "observation": 3,
-	  "strength": 3,
-	  "will": 1
-	}
-  },
-  {
-	"name": "Nora Whitby",
-	"startingItems": [{"asset": "magnifying_glass"}],
-	"displayName": "INV_NORA_WHITBY_NAME",
-	"occupation": "INV_NORA_WHITBY_OCC",
-	"startingLocation": "Shanghai",
-	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_NORA_WHITBY_QUOTE",
-	"role": [
-      "INV_ROLE_RESEARCH"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 3,
-	  "influence": 3,
-	  "observation": 4,
-	  "strength": 1,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Iris Bellamy",
-	"startingItems": [{"spell": "arcane_insight"}],
-	"displayName": "INV_IRIS_BELLAMY_NAME",
-	"occupation": "INV_IRIS_BELLAMY_OCC",
-	"startingLocation": "Istanbul",
-	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_IRIS_BELLAMY_QUOTE",
-	"role": [
-      "INV_ROLE_MAGIC"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 4,
-	  "influence": 3,
-	  "observation": 2,
-	  "strength": 1,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Dale Corwin",
-	"startingItems": [{"asset": "mauser_c96"}],
-	"displayName": "INV_DALE_CORWIN_NAME",
-	"occupation": "INV_DALE_CORWIN_OCC",
-	"startingLocation": "San Francisco",
-	"set": "INV_SET_CITIES_IN_RUIN",
-	"quote": "INV_DALE_CORWIN_QUOTE",
-	"role": [
-	  "INV_ROLE_RESEARCH",
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 2,
-	  "influence": 2,
-	  "observation": 4,
-	  "strength": 2,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Buck Tanner",
-	"startingItems": [{"asset": "sledgehammer"}],
-	"displayName": "INV_BUCK_TANNER_NAME",
-	"occupation": "INV_BUCK_TANNER_OCC",
-	"startingLocation": "6",
-	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_BUCK_TANNER_QUOTE",
-	"role": [
-      "INV_ROLE_COMBAT"
-	],
-	"health": 8,
-	"sanity": 4,
-	"skills": {
-	  "lore": 1,
-	  "influence": 2,
-	  "observation": 3,
-	  "strength": 4,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Sly Bracken",
-	"startingItems": [{"asset": "axe"}],
-	"displayName": "INV_SLY_BRACKEN_NAME",
-	"occupation": "INV_SLY_BRACKEN_OCC",
-	"startingLocation": "Buenos Aires",
-	"set": "INV_SET_STRANGE_REMNANTS",
-	"quote": "INV_SLY_BRACKEN_QUOTE",
-	"role": [
-      "INV_ROLE_COMBAT"
-	],
-	"health": 6,
-	"sanity": 6,
-	"skills": {
-	  "lore": 2,
-	  "influence": 1,
-	  "observation": 3,
-	  "strength": 4,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Evelyn Hart",
-	"startingItems": [{"asset": "dream_diary"}],
-	"displayName": "INV_EVELYN_HART_NAME",
-	"occupation": "INV_EVELYN_HART_OCC",
-	"startingLocation": "Rome",
-	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_EVELYN_HART_QUOTE",
-	"role": [
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 2,
-	  "influence": 3,
-	  "observation": 2,
-	  "strength": 2,
-	  "will": 4
-	}
-  },
-  {
-	"name": "Henry Wu",
-	"startingItems": [{"asset": "bandages"}],
-	"displayName": "INV_HENRY_WU_NAME",
-	"occupation": "INV_HENRY_WU_OCC",
-	"startingLocation": "17",
-	"set": "INV_SET_THE_DREAMLANDS",
-	"quote": "INV_HENRY_WU_QUOTE",
-	"role": [
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 6,
-	"sanity": 6,
-	"skills": {
-	  "lore": 1,
-	  "influence": 3,
-	  "observation": 3,
-	  "strength": 2,
-	  "will": 4
-	}
-  },
-  {
-	"name": "Esther Ravel",
-	"startingItems": [{"asset": "profane_tome"}, {"spell": "storm_of_spirits"}],
-	"displayName": "INV_ESTHER_RAVEL_NAME",
-	"occupation": "INV_ESTHER_RAVEL_OCC",
-	"startingLocation": "London",
-	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_ESTHER_RAVEL_QUOTE",
-	"role": [
-      "INV_ROLE_MAGIC"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 4,
-	  "influence": 3,
-	  "observation": 2,
-	  "strength": 2,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Rory Kell",
-	"startingItems": [{"asset": "cat_burglar"}, {"asset": "whiskey"}],
-	"displayName": "INV_RORY_KELL_NAME",
-	"occupation": "INV_RORY_KELL_OCC",
-	"startingLocation": "5",
-	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_RORY_KELL_QUOTE",
-	"role": [
-      "INV_ROLE_ALL_ROUNDER"
-	],
-	"health": 6,
-	"sanity": 6,
-	"skills": {
-	  "lore": 2,
-	  "influence": 3,
-	  "observation": 3,
-	  "strength": 2,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Simone Ardent",
-	"startingItems": [{"clue": 1}, {"spell": "banishment"}],
-	"displayName": "INV_SIMONE_ARDENT_NAME",
-	"occupation": "INV_SIMONE_ARDENT_OCC",
-	"startingLocation": "Sydney",
-	"set": "INV_SET_MOUNTAINS_OF_MADNESS",
-	"quote": "INV_SIMONE_ARDENT_QUOTE",
-	"role": [
-      "INV_ROLE_GATE_CLOSER"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 3,
-	  "influence": 2,
-	  "observation": 3,
-	  "strength": 1,
-	  "will": 4
-	}
-  },
-  {
-	"name": "Percival Stane",
-	"startingItems": [{"clue": 1}, {"asset": "lucky_cigarette_case"}],
-	"displayName": "INV_PERCIVAL_STANE_NAME",
-	"occupation": "INV_PERCIVAL_STANE_OCC",
-	"startingLocation": "London",
-	"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
-	"quote": "INV_PERCIVAL_STANE_QUOTE",
-	"role": [
-	  "INV_ROLE_ALL_ROUNDER",
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 6,
-	"sanity": 6,
-	"skills": {
-	  "lore": 2,
-	  "influence": 3,
-	  "observation": 3,
-	  "strength": 2,
-	  "will": 3
-	}
-  },
-  {
-	"name": "Vince Cutter",
-	"startingItems": [{"asset": "handcuffs"}],
-	"displayName": "INV_VINCE_CUTTER_NAME",
-	"occupation": "INV_VINCE_CUTTER_OCC",
-	"startingLocation": "7",
-	"set": "INV_SET_STRANGE_REMNANTS",
-	"quote": "INV_VINCE_CUTTER_QUOTE",
-	"role": [
-      "INV_ROLE_RESEARCH"
-	],
-	"health": 7,
-	"sanity": 5,
-	"skills": {
-	  "lore": 2,
-	  "influence": 2,
-	  "observation": 4,
-	  "strength": 3,
-	  "will": 2
-	}
-  },
-  {
-	"name": "Sister Cecilia",
-	"startingTickets": {"ship": 1},
-	"startingItems": [{"clue": 1}, {"asset": "holy_water"}],
-	"displayName": "INV_SISTER_CECILIA_NAME",
-	"occupation": "INV_SISTER_CECILIA_OCC",
-	"startingLocation": "15",
-	"set": "INV_SET_UNDER_THE_PYRAMIDS",
-	"quote": "INV_SISTER_CECILIA_QUOTE",
-	"role": [
-      "INV_ROLE_SUPPORT"
-	],
-	"health": 5,
-	"sanity": 7,
-	"skills": {
-	  "lore": 2,
-	  "influence": 2,
-	  "observation": 3,
-	  "strength": 2,
-	  "will": 4
-	}
-  }
 ]

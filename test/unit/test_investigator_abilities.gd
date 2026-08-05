@@ -11,6 +11,7 @@ extends GutTest
 var _saved: Dictionary = {}
 
 const INV := "Fixture Investigator"
+const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
 
 func before_each() -> void:
@@ -118,6 +119,47 @@ func test_check_without_passive_is_unchanged() -> void:
 	var cf: CheckFlow = CheckFlow.new(gs)
 	var c: Dictionary = cf.make_check("encounter", "p", "will", 0, "encounter")
 	assert_eq(c["active_mods"], [], "без пассива проверка как раньше")
+
+
+# ── Триггерный пассив: улучшение навыка применяется дважды (Мэй Линь) ─────────
+
+
+func test_improve_skill_doubled_by_passive() -> void:
+	_fixture({}, {"triggers": [{"on": "improveSkill", "repeat": 1}]})
+	var p: Dictionary = {"investigator": INV, "skill_mods": {}}
+	_EffectRunner.run([{"do": "improveSkill", "skill": "will", "amount": 1}], p)
+	assert_eq(int((p["skill_mods"] as Dictionary).get("will", 0)), 2, "+1 применилось дважды")
+
+
+func test_impair_skill_not_doubled() -> void:
+	# Пассив «улучшая навык…» — ухудшение удваивать нельзя, иначе он вредит владельцу.
+	_fixture({}, {"triggers": [{"on": "improveSkill", "repeat": 1}]})
+	var p: Dictionary = {"investigator": INV, "skill_mods": {}}
+	_EffectRunner.run([{"do": "impairSkill", "skill": "will", "amount": 1}], p)
+	assert_eq(int((p["skill_mods"] as Dictionary).get("will", 0)), -1, "ухудшение как обычно")
+
+
+func test_improve_skill_normal_without_passive() -> void:
+	_fixture()
+	var p: Dictionary = {"investigator": INV, "skill_mods": {}}
+	_EffectRunner.run([{"do": "improveSkill", "skill": "will", "amount": 1}], p)
+	assert_eq(int((p["skill_mods"] as Dictionary).get("will", 0)), 1, "без пассива — обычное +1")
+
+
+func test_doubled_improve_respects_cap() -> void:
+	_fixture({}, {"triggers": [{"on": "improveSkill", "repeat": 1}]})
+	var p: Dictionary = {"investigator": INV, "skill_mods": {"will": 1}}
+	_EffectRunner.run([{"do": "improveSkill", "skill": "will", "amount": 1}], p)
+	assert_eq(int((p["skill_mods"] as Dictionary).get("will", 0)), 2, "потолок +2 держится")
+
+
+# ── Встроенный вид действия ───────────────────────────────────────────────────
+
+
+func test_ability_kind_counts_as_ability() -> void:
+	_fixture({"name": "ABIL", "kind": "convertVitality"})
+	assert_true(Investigators.has_ability(INV), "вид без программы — тоже способность")
+	assert_eq(Investigators.ability_kind(INV), "convertVitality")
 
 
 func test_check_for_unknown_investigator_is_safe() -> void:

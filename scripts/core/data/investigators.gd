@@ -74,9 +74,40 @@ static func ability_program(inv_name: String) -> Array:
 	return ability(inv_name).get("do", [])
 
 
-## Есть ли у сыщика спец-действие с непустой программой (гейт кнопки в UI).
+## Вид встроенного спец-действия ("" — обычная DSL-программа `do`).
+## Встроенные виды нужны там, где действие ТРЕБУЕТ ВВОДА игрока и в данных не
+## выражается. Сейчас поддержан:
+##   "convertVitality" — «потратить N здоровья или рассудка и восстановить
+##                       столько же другого» (Мэй Линь). Игрок выбирает
+##                       направление и величину; хост валидирует.
+static func ability_kind(inv_name: String) -> String:
+	return String(ability(inv_name).get("kind", ""))
+
+
+## Есть ли у сыщика спец-действие: непустая программа ЛИБО встроенный вид.
 static func has_ability(inv_name: String) -> bool:
-	return not (ability_program(inv_name) as Array).is_empty()
+	return (
+		not (ability_program(inv_name) as Array).is_empty() or not ability_kind(inv_name).is_empty()
+	)
+
+
+## Триггеры пассива на событие `on` ([] — нет). Триггерный пассив срабатывает не на
+## проверке, а на игровом событии. Сейчас поддержан:
+##   {"on": "improveSkill", "repeat": 1} — улучшение навыка применяется ещё раз.
+static func passive_triggers(inv_name: String, on: String) -> Array:
+	var out: Array = []
+	for t_v: Variant in passive(inv_name).get("triggers", []) as Array:
+		if t_v is Dictionary and String((t_v as Dictionary).get("on", "")) == on:
+			out.append(t_v)
+	return out
+
+
+## Сколько РАЗ дополнительно повторить улучшение навыка (0 — пассива нет).
+static func extra_skill_improvements(inv_name: String) -> int:
+	var n: int = 0
+	for t_v: Variant in passive_triggers(inv_name, "improveSkill"):
+		n += maxi(0, int((t_v as Dictionary).get("repeat", 1)))
+	return n
 
 
 ## Пассив сыщика ({} — нет). Ключи: name, text, mods.
