@@ -466,8 +466,10 @@ func _refresh_actions() -> void:
 
 
 func _on_travel_pressed() -> void:
-	if not _loc_id.is_empty():
-		GameState.travel(_loc_id)
+	if _loc_id.is_empty():
+		return
+	GameState.travel(_loc_id)
+	close_panel()  # не заслоняем карту, пока фишка летит к новой локации
 
 
 # Стоимость плана в билетах → строка «ж/д ×N, корабль ×M» (только ненулевые).

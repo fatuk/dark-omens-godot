@@ -683,6 +683,17 @@ func perform_action(action_type: String, payload: Dictionary = {}) -> void:
 		)
 
 
+## Клиент переехавшего сообщает хосту, что анимация полёта фишки доиграна:
+## только после этого (плюс пауза) хост передаёт ход. Зовётся из world_map по
+## окончании play_travel; повторные вызовы хост игнорирует.
+func travel_arrived() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_phase.host_apply_travel_arrived(my_pid)
+	else:
+		_nm.relay_all({"action": RelayActions.TRAVEL_ARRIVED, "pid": my_pid})
+
+
 # ── Encounter (фасады) ────────────────────────────────────────────────────────
 
 

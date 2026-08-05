@@ -20,6 +20,8 @@ const REST_HEAL_SANITY: int = 1
 # и оставляет окно под будущие эффекты — ни одно действие не крутит цикл мгновенно.
 # В тестах _gs — мок вне дерева сцены, пауза пропускается (поведение синхронное).
 static var TURN_DELAY: float = 1.0
+static var TRAVEL_ARRIVE_DELAY: float = 2.0  # пауза после приезда фишки перед передачей хода
+static var TRAVEL_ANIM_TIMEOUT: float = 12.0  # сторож: клиент не отчитался о конце анимации
 
 const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
@@ -234,6 +236,11 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			# Путь (сегменты) — для посегментной анимации на клиентах.
 			p[PlayerKeys.TRAVEL_PATH] = plan.get("path", [here_travel, dest])
 			p["location"] = dest
+			# Фишка поедет по дуге на клиентах — ход не передаём, пока переехавший
+			# не отчитается (host_apply_travel_arrived). Иначе следующий игрок
+			# начинал ход, пока фишка ещё в полёте.
+			p[PlayerKeys.TRAVEL_ANIM] = true
+			_watch_travel_anim(pid)
 			p["actions_left"] = int(p["actions_left"]) - 1
 		GameActions.TRADE:
 			# Обмен предметами/уликами с со-локационным напарником (атомарно).
@@ -313,13 +320,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	# Пока игрок в магазине (модалка открыта) или висит промпт выбора заклинаний
 	# (отдых) — ход не передаём, даже если это было последнее действие. Передача:
 	# host_apply_shop_close / host_apply_cast_trigger_spells.
-	if (
-		int(p["actions_left"]) == 0
-		and not bool(p.get("shopping", false))
-		and not bool(p.get("spell_prompt", false))
-		and not bool(p.get("casting", false))
-		and not bool(p.get("condition_acting", false))
-	):
+	if _turn_can_advance(p):
 		_advance_turn_delayed()
 
 	_gs._broadcast_sync()
@@ -679,13 +680,54 @@ func advance_action_turn() -> void:
 		enter_encounter()
 
 
+# Действия кончились и игрока ничто не держит: магазин, промпт заклинаний, каст,
+# действие состояния — или ещё летящая фишка (ждём host_apply_travel_arrived).
+func _turn_can_advance(p: Dictionary) -> bool:
+	return (
+		int(p.get("actions_left", 0)) == 0
+		and not bool(p.get("shopping", false))
+		and not bool(p.get("spell_prompt", false))
+		and not bool(p.get("casting", false))
+		and not bool(p.get("condition_acting", false))
+		and not bool(p.get(PlayerKeys.TRAVEL_ANIM, false))
+	)
+
+
+## Клиент переехавшего сообщает: фишка доехала. Снимаем флаг и, если это было
+## последнее действие, передаём ход — с паузой TRAVEL_ARRIVE_DELAY, чтобы все
+## успели увидеть сыщика на новом месте.
+func host_apply_travel_arrived(pid: String) -> void:
+	if not _gs.players.has(pid):
+		return
+	var p: Dictionary = _gs.players[pid]
+	if not bool(p.get(PlayerKeys.TRAVEL_ANIM, false)):
+		return  # уже сняли (повторный отчёт или сработал сторож)
+	p.erase(PlayerKeys.TRAVEL_ANIM)
+	_gs.players[pid] = p
+	if _turn_can_advance(p):
+		_advance_turn_delayed(TRAVEL_ARRIVE_DELAY)
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+
+
+# Страховка от зависшего хода: клиент мог отвалиться, не доиграв анимацию.
+# Через TRAVEL_ANIM_TIMEOUT считаем, что доехал.
+func _watch_travel_anim(pid: String) -> void:
+	if not _gs.is_inside_tree():
+		return
+	await _gs.get_tree().create_timer(TRAVEL_ANIM_TIMEOUT).timeout
+	if _gs.players.has(pid) and bool(_gs.players[pid].get(PlayerKeys.TRAVEL_ANIM, false)):
+		GameConsole.warn("[Game] %s: не дождались конца анимации переезда" % _gs._name_of(pid))
+		host_apply_travel_arrived(pid)
+
+
 ## Передать ход с паузой TURN_DELAY: клиенты успевают «доиграть» действие/эффект,
 ## только потом ход уходит. В тестах (_gs вне дерева) — сразу, без паузы, а
 ## бродкаст делает вызывающий (как раньше). В игре — ждём таймер, затем сами
 ## бродкастим уже сменившийся ход (вызывающий бродкастнул состояние до паузы).
-func _advance_turn_delayed() -> void:
-	if TURN_DELAY > 0.0 and _gs.is_inside_tree():
-		await _gs.get_tree().create_timer(TURN_DELAY).timeout
+func _advance_turn_delayed(delay: float = TURN_DELAY) -> void:
+	if delay > 0.0 and _gs.is_inside_tree():
+		await _gs.get_tree().create_timer(delay).timeout
 		advance_action_turn()
 		_gs._broadcast_sync()
 		_gs._emit_changed()

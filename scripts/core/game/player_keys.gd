@@ -14,6 +14,7 @@ const NAME := "name"
 const INVESTIGATOR := "investigator"
 const LOCATION := "location"
 const TRAVEL_PATH := "travel_path"  # сегменты последнего перемещения (для анимации)
+const TRAVEL_ANIM := "travel_anim"  # фишка ещё летит: хост ждёт отчёта клиента, ход не передаём
 const CONNECTED := "connected"
 const ACTIONS_LEFT := "actions_left"
 const ACTIONS_USED := "actions_used"

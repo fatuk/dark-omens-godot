@@ -46,6 +46,7 @@ const SHOP_OPEN := "game_shop_open"
 const SHOP_REROLL := "game_shop_reroll"
 const REROLL_ALL := "game_reroll_all"
 const MYTHOS_DECIDE := "game_mythos_decide"
+const TRAVEL_ARRIVED := "game_travel_arrived"  # фишка доехала — хосту можно передавать ход
 
 # ── Host-only, но НЕ pid-владельческие ───────────────────────────────────────
 const RESOLVE_MYTHOS := "game_resolve_mythos"  # без pid (любой просит хоста разрешить Миф)

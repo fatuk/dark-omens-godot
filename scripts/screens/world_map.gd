@@ -191,6 +191,7 @@ func _refresh_investigators() -> void:
 # Последовательно проигрывает анимации перемещений, затем расставляет пины.
 func _animate_moves(moves: Array, list: Array) -> void:
 	_travelling = true
+	var me: String = String(GameState.my_player().get("user_id", ""))
 	for i: int in range(moves.size()):
 		var m: Dictionary = moves[i]
 		_map_layer.hide_investigator(String(m.pid))
@@ -199,6 +200,10 @@ func _animate_moves(moves: Array, list: Array) -> void:
 			var a: String = seg[0]
 			var b: String = seg[1]
 			await _map_layer.play_travel(String(m.inv), a, b, _map_layer.edge_ctype(a, b))
+		# Своя фишка доехала — сообщаем хосту: он держал передачу хода до этого
+		# момента, чтобы следующий игрок не начинал ход поверх летящей фишки.
+		if String(m.pid) == me:
+			GameState.travel_arrived()
 	_travelling = false
 	_map_layer.set_investigators(list)
 	_apply_bounds()
