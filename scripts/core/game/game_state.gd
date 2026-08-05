@@ -1252,7 +1252,25 @@ func can_use_ability() -> bool:
 		return false
 	if (me.get(PlayerKeys.ACTIONS_USED, []) as Array).has(GameActions.INVESTIGATOR_ABILITY):
 		return false
-	return Investigators.has_ability(String(me.get("investigator", "")))
+	var inv: String = String(me.get("investigator", ""))
+	if not Investigators.has_ability(inv):
+		return false
+	# Встроенные виды могут быть неприменимы прямо сейчас — иначе кнопка активна,
+	# а нажатие молча ничего не делает (полное здоровье И рассудок у Мэй Линь).
+	match Investigators.ability_kind(inv):
+		"convertVitality":
+			return _convert_vitality_max(me) > 0
+	return true
+
+
+## Максимум, который сейчас можно перелить в ЛЮБУЮ сторону (0 — способность
+## неприменима). Источник не опускаем ниже 1, приёмник — не выше максимума.
+func _convert_vitality_max(me: Dictionary) -> int:
+	var hp: int = int(me.get(PlayerKeys.HP, 0))
+	var san: int = int(me.get(PlayerKeys.SANITY, 0))
+	var hp_room: int = maxi(0, int(me.get("hp_max", 0)) - hp)
+	var san_room: int = maxi(0, int(me.get("sanity_max", 0)) - san)
+	return maxi(mini(maxi(0, hp - 1), san_room), mini(maxi(0, san - 1), hp_room))
 
 
 ## Способность сыщика локального игрока ({} — нет): name/text для подписи кнопки.

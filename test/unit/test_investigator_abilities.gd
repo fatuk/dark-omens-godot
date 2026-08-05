@@ -162,6 +162,55 @@ func test_ability_kind_counts_as_ability() -> void:
 	assert_eq(Investigators.ability_kind(INV), "convertVitality")
 
 
+# ── Доступность встроенного вида ──────────────────────────────────────────────
+#
+# Регрессия: кнопка была активна при полных здоровье И рассудке, а нажатие молча
+# ничего не делало — переливать было некуда. Доступность обязана это учитывать.
+
+
+func _mei(hp: int, san: int) -> void:
+	Investigators._by_name[INV] = {
+		"name": INV,
+		"skills": {},
+		"ability": {"name": "ABIL", "kind": "convertVitality"},
+	}
+	NetworkManager.my_user_id = "p"
+	GameState.active = true
+	GameState.phase = Phases.ACTION
+	GameState.turn_order = ["p"]
+	GameState.current_idx = 0
+	GameState.players = {
+		"p":
+		{
+			"user_id": "p",
+			"investigator": INV,
+			"connected": true,
+			"actions_left": 2,
+			"actions_used": [],
+			"hp": hp,
+			"hp_max": 6,
+			"sanity": san,
+			"sanity_max": 6,
+		}
+	}
+
+
+func test_convert_unavailable_when_both_pools_full() -> void:
+	_mei(6, 6)
+	assert_false(GameState.can_use_ability(), "переливать некуда — кнопка гаснет")
+
+
+func test_convert_available_when_target_has_room() -> void:
+	_mei(6, 2)
+	assert_true(GameState.can_use_ability(), "рассудок неполон — перелив возможен")
+
+
+func test_convert_unavailable_at_one_and_one() -> void:
+	# Источник нельзя опускать до 0, поэтому при 1/1 перелить нечего.
+	_mei(1, 1)
+	assert_false(GameState.can_use_ability(), "источник нельзя опустить до нуля")
+
+
 func test_check_for_unknown_investigator_is_safe() -> void:
 	var gs: MockGameState = autofree(MockGameState.new())
 	gs.players["p"] = {"investigator": "", "skill_mods": {}}
