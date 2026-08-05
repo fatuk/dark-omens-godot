@@ -41,6 +41,15 @@ func _init(gs: Node) -> void:
 
 ## Свежая проверка (до броска) как словарь — для active_check ИЛИ per-player слота
 ## (параллельная Расплата: players[pid].reckoning_check). Не привязана к _gs.active_check.
+# Пассив сыщика как авто-моды проверки. Пусто, если игрока/сыщика/пассива нет —
+# тогда проверка ведёт себя ровно как раньше.
+func _investigator_passive_mods(pid: String, context: String) -> Array:
+	var inv: String = String((_gs.players.get(pid, {}) as Dictionary).get("investigator", ""))
+	if inv.is_empty():
+		return []
+	return Investigators.passive_check_mods(inv, context)
+
+
 func make_check(
 	owner: String, pid: String, skill: String, modifier: int, context: String
 ) -> Dictionary:
@@ -55,7 +64,9 @@ func make_check(
 		"dice": [],
 		"successes": 0,
 		"passed": false,
-		"active_mods": [],  # все карты (action + пассивы) применяются тапом в вееро
+		# Карты (action + пассивы активов) применяются тапом в веере; пассив СЫЩИКА
+		# карты не имеет — сидируем его сюда сразу, иначе применить было бы нечем.
+		"active_mods": _investigator_passive_mods(pid, context),
 		"reroll_allowance": 0,
 		"rerolls_used": 0,
 		"reroll_all_allowance": 0,

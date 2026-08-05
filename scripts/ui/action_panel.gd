@@ -25,6 +25,7 @@ var _rest_ab: ActionButton
 var _conc_ab: ActionButton
 var _res_ab: ActionButton
 var _pass_ab: ActionButton
+var _ability_btn: Button  # спец-действие сыщика (скрыта, если способности нет)
 var _tickets: TicketsRow  # вертикальная стопка билетов
 var _no_tickets: Label  # заглушка «Нет билетов» в зарезервированной области
 var _clue: HBoxContainer  # индикатор улик [иконка ×N] сверху области билетов
@@ -79,6 +80,15 @@ func _build() -> void:
 	_conc_ab.pressed.connect(_on_concentration)
 	_res_ab.pressed.connect(_on_resource)
 	_pass_ab.pressed.connect(_on_pass)
+
+	# Спец-действие сыщика: у медальонов нет арта под него, поэтому пока текстовая
+	# кнопка под рядом. Видна только у сыщика со способностью (data/investigators.json).
+	# TODO(дизайн): свой медальон в общем ряду, когда появится арт.
+	_ability_btn = UIStyle.button("", UIColors.ACCENT)
+	_ability_btn.name = "AbilityBtn"
+	_ability_btn.visible = false
+	_ability_btn.pressed.connect(_on_ability)
+	_col.add_child(_ability_btn)
 
 	# Вертикальная стопка билетов — вне scale-обёртки (у неё свой внутренний масштаб).
 	_tickets = TicketsRow.new()
@@ -162,6 +172,14 @@ func _reposition() -> void:
 	if is_instance_valid(_no_tickets) and _no_tickets.visible:
 		_no_tickets.position = Vector2(area_left, bottom - _no_tickets.size.y)
 	_scale.position = Vector2(area_left - _TICKETS_GAP - w, top)
+
+
+func _on_ability() -> void:
+	if _busy:
+		return
+	_busy = true
+	GameState.perform_action(GameActions.INVESTIGATOR_ABILITY)
+	_busy = false
 
 
 func _on_pass() -> void:
@@ -338,6 +356,13 @@ func _refresh() -> void:
 		)
 	)
 	_pass_ab.set_disabled(not my_turn)
+	# Спец-действие: кнопка есть только у сыщика со способностью; подпись — из данных.
+	var ability: Dictionary = GameState.my_ability()
+	var has_ability: bool = not (ability.get("do", []) as Array).is_empty()
+	_ability_btn.visible = has_ability
+	if has_ability:
+		_ability_btn.text = String(ability.get("name", "ACTION_ABILITY_TITLE"))
+		_ability_btn.disabled = not GameState.can_use_ability()
 	_conc_ab.set_badge(int(me.get("concentration", 0)))
 	_res_ab.set_badge(int(me.get("resources", 0)))
 	# Инфо-колонка (улика + билеты) гаснет вместе с кнопками, когда не мой ход.

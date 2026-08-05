@@ -21,6 +21,8 @@ const REST_HEAL_SANITY: int = 1
 # В тестах _gs — мок вне дерева сцены, пауза пропускается (поведение синхронное).
 static var TURN_DELAY: float = 1.0
 
+const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
+
 var _gs: Node
 
 
@@ -54,6 +56,25 @@ func _rest_resources(p: Dictionary, rec: Array, res_hp: int, res_san: int) -> vo
 ## Хост: валидирует и применяет действие игрока. Возвращает true при успехе.
 ## Зовётся из GameState.perform_action (для своего действия) и из relay-router
 ## на game_action (для чужого).
+# Исполнить спец-действие сыщика: программа ability.do через общий EffectRunner.
+# Мутации игрока коммитятся сразу, board-эффекты уходят в _apply_board_effect,
+# изменения — в ленту исходов. false — у сыщика нет способности (действие не тратим).
+func _run_investigator_ability(pid: String, p: Dictionary) -> bool:
+	var inv_id: String = String(p.get("investigator", ""))
+	var program: Array = Investigators.ability_program(inv_id)
+	if (program as Array).is_empty():
+		return false
+	var inv: Dictionary = Investigators.get_data(inv_id)
+	var before: Dictionary = (p as Dictionary).duplicate(true)  # для ленты исходов
+	var res: Dictionary = _EffectRunner.run(program, p, {"skills": inv.get("skills", {})})
+	for l_v: Variant in res.get("logs", []):
+		GameConsole.log("[Способность] %s: %s" % [_gs._name_of(pid), String(l_v)])
+	for node_v: Variant in res.get("board", []):
+		_gs._apply_board_effect(node_v as Dictionary)
+	ActionFeed.announce_deltas(_gs, pid, before, p)
+	return true
+
+
 func host_apply_action(pid: String, action_type: String, payload: Dictionary = {}) -> bool:
 	if _gs.phase != Phases.ACTION:
 		GameConsole.warn("[Game] Действие вне фазы action отклонено")
@@ -216,6 +237,14 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 					"[Game] %s — нет локального действия состояния" % _gs._name_of(pid)
 				)
 				return false
+		GameActions.INVESTIGATOR_ABILITY:
+			# Спец-действие сыщика (data/investigators.json → ability.do). Мгновенное:
+			# программа без видимой проверки. Общие гейты (фаза, очередь, «раз в раунд»,
+			# cannotAct) уже отработали выше — здесь только исполнение.
+			if not _run_investigator_ability(pid, p):
+				GameConsole.warn("[Game] %s — нет спец-действия сыщика" % _gs._name_of(pid))
+				return false
+			p["actions_left"] = int(p["actions_left"]) - 1
 		GameActions.CAST_SPELL:
 			# Ritual-заклинание: каст = действие. begin_ritual стартует spell-проверку
 			# (БЕЗ броска); игрок бросает/перебрасывает в модалке и жмёт «Применить»
@@ -278,6 +307,8 @@ func _announce_action_feed(pid: String, action_type: String, payload: Dictionary
 		GameActions.BUY_TICKET, GameActions.TAKE_CONCENTRATION, GameActions.TAKE_RESOURCE:
 			_gs.announce_action(pid, action_type)
 		GameActions.REST, GameActions.TRADE, GameActions.ACQUIRE_ASSETS, GameActions.CAST_SPELL:
+			_gs.announce_action(pid, action_type)
+		GameActions.INVESTIGATOR_ABILITY:
 			_gs.announce_action(pid, action_type)
 		# GameActions.PASS — не анонсируем
 

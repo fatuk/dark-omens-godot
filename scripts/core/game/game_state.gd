@@ -1242,6 +1242,24 @@ func travel(dest: String) -> void:
 ## Может ли локальный игрок переместиться в dest прямо сейчас (для UI сайдбара).
 ## Дополнительно к чистой связности проверяет, что сейчас мой ход в action-фазе
 ## и не израсходован travel в этом раунде.
+## Доступно ли спец-действие сыщика: мой ход, есть действие, в раунде ещё не
+## использовал, и у сыщика вообще есть способность (data/investigators.json).
+func can_use_ability() -> bool:
+	if not is_my_turn():
+		return false
+	var me: Dictionary = my_player()
+	if int(me.get(PlayerKeys.ACTIONS_LEFT, 0)) <= 0:
+		return false
+	if (me.get(PlayerKeys.ACTIONS_USED, []) as Array).has(GameActions.INVESTIGATOR_ABILITY):
+		return false
+	return Investigators.has_ability(String(me.get("investigator", "")))
+
+
+## Способность сыщика локального игрока ({} — нет): name/text для подписи кнопки.
+func my_ability() -> Dictionary:
+	return Investigators.ability(String(my_player().get("investigator", "")))
+
+
 func can_travel_to(dest: String) -> bool:
 	if not is_my_turn():
 		return false
