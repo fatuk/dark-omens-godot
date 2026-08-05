@@ -6,7 +6,8 @@ class_name ModalDialog
 ## set_content() или add_content_child().
 ##
 ## Закрывается: крестиком, клавишей ESC, кликом по затемнению.
-## Открытие/закрытие — fade анимация. Работает во время паузы (process_mode=ALWAYS).
+## Открытие/закрытие — общий для всех модалок эффект (UIStyle.modal_transition).
+## Работает во время паузы (process_mode=ALWAYS).
 ##
 ## Использование:
 ##   var modal := preload("res://scenes/ui/modal_dialog.tscn").instantiate()
@@ -19,7 +20,7 @@ class_name ModalDialog
 
 signal closed
 
-const ANIM_TIME: float = 0.18
+const _BACKDROP_ALPHA: float = 0.6  # затемнение под панелью (проявляется вместе со слоем)
 
 @export var close_on_backdrop_click: bool = true
 @export var close_on_esc: bool = true
@@ -49,9 +50,9 @@ func _ready() -> void:
 	UIStyle.scale_modal_text(_title)  # заголовок крупнее (×1.5); контент масштабируется в set_content
 	_close_btn.pressed.connect(close)
 	_backdrop.gui_input.connect(_on_backdrop_input)
+	_backdrop.color.a = _BACKDROP_ALPHA
 	_root.visible = false
-	_backdrop.color.a = 0.0
-	_panel.modulate.a = 0.0
+	_root.modulate.a = 0.0  # эффект ведёт весь слой целиком (UIStyle.modal_transition)
 
 
 func _input(event: InputEvent) -> void:
@@ -132,13 +133,9 @@ func _on_backdrop_input(event: InputEvent) -> void:
 
 
 func _animate(showing: bool) -> void:
-	if _tween and _tween.is_valid():
-		_tween.kill()
-	_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	var target_backdrop: float = 0.6 if showing else 0.0
-	var target_panel: float = 1.0 if showing else 0.0
-	_tween.tween_property(_backdrop, "color:a", target_backdrop, ANIM_TIME)
-	_tween.tween_property(_panel, "modulate:a", target_panel, ANIM_TIME)
+	# Общий для всех модалок эффект (UIStyle.modal_transition): проявление слоя
+	# целиком + «выплывание» панели.
+	_tween = UIStyle.modal_transition(_root, _panel, showing)
 	if not showing:
 		_tween.chain().tween_callback(func() -> void: _root.visible = false)
 		if auto_free_on_close:

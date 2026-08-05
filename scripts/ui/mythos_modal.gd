@@ -110,14 +110,14 @@ func _refresh() -> void:
 		_next_btn.text = tr("MYTHOS_BTN_CLOSE")
 		return
 	# Показывать нечего.
-	_root.visible = false
+	UIStyle.modal_set_visible(_root, _panel, false)
 	_last_card_key = ""
 
 
 # Отрисовать карту (живую или на перечитку). Пересобираем UI только на смене
 # карты (ключ = name); первый показ проигрывает звук появления.
 func _show_card(card: Dictionary) -> void:
-	_root.visible = true
+	UIStyle.modal_set_visible(_root, _panel, true)
 	var card_key: String = String(card.get("name", ""))
 	if card_key == _last_card_key:
 		return

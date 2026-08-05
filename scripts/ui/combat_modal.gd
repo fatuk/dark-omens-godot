@@ -39,7 +39,7 @@ func _refresh() -> void:
 	var mine: bool = GameState.is_my_encounter_turn()
 	var card: Dictionary = GameState.current_encounter
 	var show_it: bool = mine and String(card.get("kind", "")) == "combat"
-	_root.visible = show_it
+	UIStyle.modal_set_visible(_root, _panel, show_it)
 	if show_it:
 		_build(card)
 

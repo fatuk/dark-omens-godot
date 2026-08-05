@@ -23,7 +23,7 @@ func _ready() -> void:
 func _refresh() -> void:
 	var r: Dictionary = GameState.last_cast_result
 	var mine: bool = not r.is_empty() and String(r.get("pid", "")) == _my_id()
-	_root.visible = mine
+	UIStyle.modal_set_visible(_root, _panel, mine)
 	if not mine:
 		_sig = ""
 		return
@@ -90,6 +90,6 @@ func _outcome_lines(outcome: Dictionary) -> Array:
 
 
 func _on_ok() -> void:
-	_root.visible = false  # скрыть сразу, не ждать синка
+	UIStyle.modal_set_visible(_root, _panel, false)  # скрыть сразу, не ждать синка
 	_sig = ""
 	GameState.dismiss_cast_result()

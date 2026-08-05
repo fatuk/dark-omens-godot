@@ -400,6 +400,84 @@ static func style_modal_panel(p: PanelContainer, content_pad: int = 22) -> void:
 	p.add_theme_stylebox_override("panel", make_modal_stylebox(content_pad))
 
 
+# ── Появление/исчезновение модалок ─────────────────────────────────────────────
+#
+# ЕДИНЫЙ эффект для ВСЕХ модалок (взят от окна встречи): вся модалка вместе с
+# затемнением плавно проявляется, а панель мягко подрастает из 0.95 —
+# «выплывает». Закрытие — то же в обратную сторону, но быстрее.
+
+const MODAL_FADE_IN: float = 0.22
+const MODAL_FADE_OUT: float = 0.15
+const _MODAL_POP: float = 0.95  # с какого масштаба выплывает панель
+const _MODAL_TWEEN_META: StringName = &"modal_anim_tween"
+const _MODAL_SHOWN_META: StringName = &"modal_anim_shown"
+const _MODAL_PIVOT_META: StringName = &"modal_anim_pivot"
+
+
+## Проигрывает переход модалки. root — слой целиком (вместе с затемнением),
+## card — панель, которая «выплывает» (можно null: тогда только проявление).
+## Возвращает tween, чтобы вызывающий дочепил свои шаги (скрытие, queue_free).
+static func modal_transition(root: Control, card: Control, showing: bool) -> Tween:
+	if root.has_meta(_MODAL_TWEEN_META):
+		var prev: Variant = root.get_meta(_MODAL_TWEEN_META)
+		if prev is Tween and (prev as Tween).is_valid():
+			(prev as Tween).kill()
+
+	var small := Vector2(_MODAL_POP, _MODAL_POP)
+	if card != null:
+		_track_modal_pivot(card)
+		if showing:
+			card.scale = small
+	if showing:
+		root.modulate.a = 0.0
+
+	var dur: float = MODAL_FADE_IN if showing else MODAL_FADE_OUT
+	var tw: Tween = root.create_tween().set_parallel(true)
+	tw.tween_property(root, "modulate:a", 1.0 if showing else 0.0, dur)
+	if card != null:
+		(
+			tw
+			. tween_property(card, "scale", Vector2.ONE if showing else small, dur * 1.45)
+			. set_trans(Tween.TRANS_CUBIC)
+			. set_ease(Tween.EASE_OUT)
+		)
+	root.set_meta(_MODAL_TWEEN_META, tw)
+	return tw
+
+
+## Показать/скрыть модалку общим эффектом. Идемпотентно: модалки дёргают это из
+## _refresh на КАЖДОМ синке, повторный вызов с тем же состоянием ничего не
+## перезапускает. Скрытие снимает visible только после анимации.
+static func modal_set_visible(root: Control, card: Control, want: bool) -> void:
+	var shown: bool = (
+		bool(root.get_meta(_MODAL_SHOWN_META)) if root.has_meta(_MODAL_SHOWN_META) else root.visible
+	)
+	if shown == want:
+		return
+	root.set_meta(_MODAL_SHOWN_META, want)
+	if want:
+		root.visible = true
+		modal_transition(root, card, true)
+		return
+	modal_transition(root, card, false).chain().tween_callback(
+		func() -> void:
+			# Скрываем, только если за время анимации модалку не открыли заново.
+			if not bool(root.get_meta(_MODAL_SHOWN_META)):
+				root.visible = false
+	)
+
+
+# Панель растёт из центра, а не из левого верхнего угла. Размер контейнерных
+# панелей считается позже, поэтому подписываемся на resized и держим pivot
+# актуальным (первый показ до раскладки — по custom_minimum_size).
+static func _track_modal_pivot(card: Control) -> void:
+	if not card.has_meta(_MODAL_PIVOT_META):
+		card.set_meta(_MODAL_PIVOT_META, true)
+		card.resized.connect(func() -> void: card.pivot_offset = card.size * 0.5)
+	var base: Vector2 = card.size if card.size != Vector2.ZERO else card.custom_minimum_size
+	card.pivot_offset = base * 0.5
+
+
 ## Делает кнопку закрытия модалки из арта modal-close-btn.png (без фона/рамок).
 static func style_modal_close_button(btn: Button) -> void:
 	btn.text = ""

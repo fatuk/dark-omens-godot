@@ -49,7 +49,7 @@ func open() -> void:
 		return
 	_partner = String(allies[0])
 	_reset_selection()
-	_root.visible = true
+	UIStyle.modal_set_visible(_root, _panel, true)
 	_build(allies)
 
 
@@ -107,7 +107,7 @@ func _build(allies: Array) -> void:
 	cancel.text = "BTN_CANCEL"
 	cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	UIStyle.style_button(cancel)
-	cancel.pressed.connect(func() -> void: _root.visible = false)
+	cancel.pressed.connect(func() -> void: UIStyle.modal_set_visible(_root, _panel, false))
 	row.add_child(ok)
 	row.add_child(cancel)
 	_vbox.add_child(row)
@@ -171,7 +171,7 @@ func _on_confirm() -> void:
 	for k_v: Variant in _take:
 		if bool(_take[k_v]):
 			take.append(int(k_v))
-	_root.visible = false
+	UIStyle.modal_set_visible(_root, _panel, false)
 	(
 		GameState
 		. perform_action(

@@ -116,7 +116,7 @@ func _reroll_all_available() -> bool:
 func _refresh() -> void:
 	var pc: Dictionary = _pc()
 	var active: bool = not pc.is_empty()
-	_root.visible = active
+	UIStyle.modal_set_visible(_root, _panel, active)
 	if not active:
 		_sig = ""
 		_last_dice = []

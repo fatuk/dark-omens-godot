@@ -26,7 +26,7 @@ func _my_id() -> String:
 func _refresh() -> void:
 	var d: Dictionary = GameState.mythos_decision
 	var mine: bool = bool(d.get("active", false)) and String(d.get("pid", "")) == _my_id()
-	_root.visible = mine
+	UIStyle.modal_set_visible(_root, _panel, mine)
 	if not mine:
 		_sig = ""
 		return
@@ -96,6 +96,6 @@ func _option_label(opt: Dictionary, kind: String) -> String:
 
 
 func _on_pick(index: int) -> void:
-	_root.visible = false  # скрыть сразу, не ждать синка от хоста
+	UIStyle.modal_set_visible(_root, _panel, false)  # скрыть сразу, не ждать синка
 	_sig = ""
 	GameState.decide_mythos(index)

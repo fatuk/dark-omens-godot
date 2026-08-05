@@ -89,7 +89,7 @@ func _my_id() -> String:
 
 func _refresh() -> void:
 	var dying: String = _dying_pid()
-	_root.visible = not dying.is_empty()
+	UIStyle.modal_set_visible(_root, _panel, not dying.is_empty())
 	if dying.is_empty():
 		_sig = ""
 		_last_dice = []

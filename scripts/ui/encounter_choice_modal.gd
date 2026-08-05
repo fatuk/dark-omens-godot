@@ -35,7 +35,7 @@ func _refresh() -> void:
 	var mine: bool = GameState.is_my_encounter_turn()
 	var choices: Array = GameState.encounter_choices
 	var should_show: bool = mine and not choices.is_empty()
-	_root.visible = should_show
+	UIStyle.modal_set_visible(_root, _panel, should_show)
 	if not should_show:
 		_sig = ""
 		return

@@ -37,9 +37,7 @@ var _pending_n: int = -1  # сколько рубашек показано до 
 var _revealed: bool = false
 
 # Анимации: карточка «выплывает» при показе; текст исхода плавно проявляется.
-var _was_shown: bool = false  # окно уже показано в этой встрече (интро — на первом показе)
 var _outcome_shown: bool = false  # исход уже проявлен (фейд — только на появлении)
-var _intro_tween: Tween = null
 var _outcome_tween: Tween = null
 
 # Арт-подложка карточки встречи по типу локации (рамка/пропы запечены в ассет).
@@ -185,24 +183,6 @@ func _resize_card() -> void:
 	_outcome.custom_minimum_size.x = text_w
 
 
-# Появление окна встречи: весь модал плавно проявляется (вкл. затемнение), а арт-
-# карточка мягко подрастает из ~0.95 — «выплывает».
-func _play_intro() -> void:
-	if _intro_tween != null and _intro_tween.is_valid():
-		_intro_tween.kill()
-	_panel.pivot_offset = _panel.custom_minimum_size * 0.5
-	_root.modulate.a = 0.0
-	_panel.scale = Vector2(0.95, 0.95)
-	_intro_tween = create_tween().set_parallel(true)
-	_intro_tween.tween_property(_root, "modulate:a", 1.0, 0.22)
-	(
-		_intro_tween
-		. tween_property(_panel, "scale", Vector2.ONE, 0.32)
-		. set_trans(Tween.TRANS_CUBIC)
-		. set_ease(Tween.EASE_OUT)
-	)
-
-
 # Плавное проявление текста исхода (успех/провал) при его добавлении.
 func _play_outcome_in() -> void:
 	if _outcome_tween != null and _outcome_tween.is_valid():
@@ -286,23 +266,19 @@ func _refresh() -> void:
 	var mine: bool = GameState.is_my_encounter_turn()
 	# Не мой ход / встреча кончилась — сброс, чтобы следующая встреча снова «выплыла».
 	if not mine:
-		_root.visible = false
-		_was_shown = false
+		UIStyle.modal_set_visible(_root, _panel, false)
 		return
 	# Пока активный игрок выбирает тип встречи — окно встречи скрыто
 	# (его место занимает модалка выбора). Флаг показа НЕ сбрасываем — это та же встреча.
 	if not (GameState.encounter_choices as Array).is_empty():
-		_root.visible = false
+		UIStyle.modal_set_visible(_root, _panel, false)
 		return
 	var card: Dictionary = GameState.current_encounter
 	# Бой — отдельная боевая модалка; это окно скрываем (та же встреча — флаг держим).
 	if String(card.get("kind", "")) == "combat":
-		_root.visible = false
+		UIStyle.modal_set_visible(_root, _panel, false)
 		return
-	_root.visible = true
-	if not _was_shown:  # первый показ этой встречи — карточка «выплывает»
-		_play_intro()
-		_was_shown = true
+	UIStyle.modal_set_visible(_root, _panel, true)
 	_apply_background()  # подложка по типу локации встречи
 	# Интерактивный выбор ветки эффектов (choice) — поверх любого состояния:
 	# коммит встал на паузу и ждёт решения активного игрока.

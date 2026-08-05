@@ -26,7 +26,7 @@ func _my_id() -> String:
 func _refresh() -> void:
 	var r: Dictionary = GameState.reckoning_results.get(_my_id(), {})
 	var should_show: bool = not r.is_empty()
-	_root.visible = should_show
+	UIStyle.modal_set_visible(_root, _panel, should_show)
 	if not should_show:
 		_sig = ""
 		return
@@ -71,6 +71,6 @@ func _build(r: Dictionary) -> void:
 
 
 func _on_ok() -> void:
-	_root.visible = false  # скрыть сразу, не ждать синка
+	UIStyle.modal_set_visible(_root, _panel, false)  # скрыть сразу, не ждать синка
 	_sig = ""
 	GameState.dismiss_reckoning_result()

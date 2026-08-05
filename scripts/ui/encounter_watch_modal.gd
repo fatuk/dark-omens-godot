@@ -135,7 +135,7 @@ func _refresh() -> void:
 		and String(card.get("kind", "")) != "combat"
 	)
 	if not watching:
-		_root.visible = false
+		UIStyle.modal_set_visible(_root, _panel, false)
 		_sig = ""
 		return
 
@@ -148,7 +148,7 @@ func _refresh() -> void:
 		"%s|%d|%s|%s|%s"
 		% [pid, int(card.get("stage", 0)), String(card.get("name", "")), str(rolled), str(passed)]
 	)
-	_root.visible = true
+	UIStyle.modal_set_visible(_root, _panel, true)
 	if sig == _sig:
 		return
 	_sig = sig

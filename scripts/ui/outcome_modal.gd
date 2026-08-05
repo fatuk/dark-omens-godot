@@ -68,7 +68,7 @@ func _build() -> void:
 func _refresh() -> void:
 	var o: String = GameState.outcome
 	if o.is_empty():
-		_backdrop.visible = false
+		UIStyle.modal_set_visible(_backdrop, _panel, false)
 		_shown_for = ""
 		return
 	if o == _shown_for:
@@ -87,7 +87,7 @@ func _refresh() -> void:
 		var awakening: String = String(ao.get("awakening", "")).strip_edges()
 		_body.text = awakening if not awakening.is_empty() else tr("OUTCOME_DEFEAT_BODY")
 	SfxManager.play(SfxManager.SFX_MYTHOS_START)  # тревожный аккорд финала
-	_backdrop.visible = true
+	UIStyle.modal_set_visible(_backdrop, _panel, true)
 
 
 func _go_menu() -> void:

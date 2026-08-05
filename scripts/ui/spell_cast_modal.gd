@@ -25,7 +25,7 @@ func _ready() -> void:
 func _refresh() -> void:
 	var prompt: Dictionary = GameState.pending_spell_cast
 	var should_show: bool = GameState.is_my_turn() and not prompt.is_empty()
-	_root.visible = should_show
+	UIStyle.modal_set_visible(_root, _panel, should_show)
 	if not should_show:
 		_sig = ""
 		return
@@ -81,6 +81,6 @@ func _on_confirm() -> void:
 		var entry: Dictionary = entry_v
 		if bool((entry["cb"] as CheckBox).button_pressed):
 			chosen.append(int(entry["index"]))
-	_root.visible = false  # скрыть сразу, не ждать синка от хоста
+	UIStyle.modal_set_visible(_root, _panel, false)  # скрыть сразу, не ждать синка
 	_sig = ""
 	GameState.cast_trigger_spells(chosen)
