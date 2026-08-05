@@ -6,7 +6,7 @@ extends CanvasLayer
 ## меня» → «ждут» (не мигает на каждом синке). Транзиентно, строится кодом,
 ## добавляется из world_map. Отключается SettingsStore.turn_notify.
 
-const _TOP_Y: float = 84.0  # отступ баннера от верха экрана
+const _TOP_RATIO: float = 0.4  # отступ сверху — доля высоты экрана
 const _SLIDE: float = 26.0  # с какой высоты выезжает
 
 var _anchor: Control
@@ -72,6 +72,12 @@ func _reposition() -> void:
 	_bar.position.x = (vp.x - _bar.size.x * _bar.scale.x) * 0.5
 
 
+# Целевая высота баннера — доля высоты экрана (не фикс. пиксели: иначе на разных
+# разрешениях плашка висит по-разному).
+func _top_y() -> float:
+	return get_viewport().get_visible_rect().size.y * _TOP_RATIO
+
+
 # Игра ждёт МОЕГО ввода прямо сейчас (любой из контекстов).
 func _awaiting_me() -> bool:
 	var me: String = String(GameState.my_player().get("user_id", ""))
@@ -103,15 +109,12 @@ func _show_banner() -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
 	_reposition()
+	var top: float = _top_y()
 	_bar.modulate.a = 0.0
 	_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_tween.tween_property(_bar, "modulate:a", 1.0, 0.25)
-	(
-		_tween
-		. parallel()
-		. tween_property(_bar, "position:y", _TOP_Y, 0.28)
-		. from(_TOP_Y - _SLIDE)
-		. set_trans(Tween.TRANS_BACK)
+	_tween.parallel().tween_property(_bar, "position:y", top, 0.28).from(top - _SLIDE).set_trans(
+		Tween.TRANS_BACK
 	)
 	_tween.tween_interval(1.3)
 	_tween.tween_property(_bar, "modulate:a", 0.0, 0.4)
