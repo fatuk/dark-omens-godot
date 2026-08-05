@@ -6,7 +6,10 @@ extends CanvasLayer
 ## меня» → «ждут» (не мигает на каждом синке). Транзиентно, строится кодом,
 ## добавляется из world_map. Отключается SettingsStore.turn_notify.
 
-var _center: CenterContainer
+const _TOP_Y: float = 84.0  # отступ баннера от верха экрана
+const _SLIDE: float = 26.0  # с какой высоты выезжает
+
+var _anchor: Control
 var _bar: PanelContainer
 var _was_awaiting: bool = false
 var _tween: Tween
@@ -16,40 +19,57 @@ func _ready() -> void:
 	layer = 100  # поверх всего (в т.ч. модалок выбора/проверки), чтобы был виден
 	_build()
 	GameState.state_changed.connect(_refresh)
+	get_viewport().size_changed.connect(_reposition)
 	# Текущее состояние — БЕЗ показа: первый переход в «ждут меня» покажет баннер.
 	_was_awaiting = _awaiting_me()
 
 
 func _build() -> void:
-	_center = CenterContainer.new()
-	_center.name = "Center"
-	_center.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	_center.offset_top = 84
-	_center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_center)
+	# Позиционируем вручную (CenterContainer не умеет центрировать по УМЕНЬШЕННОЙ
+	# ширине масштабированного ребёнка).
+	_anchor = Control.new()
+	_anchor.name = "Anchor"
+	_anchor.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_anchor.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_anchor)
 
 	_bar = PanelContainer.new()
 	_bar.name = "Bar"
-	UIStyle.style_modal_panel(_bar)  # тёмная плашка с рамкой
+	# Ассеты @2×: строим баннер в НАТУРАЛЬНОМ 2× и ужимаем вдвое. Иначе орнамент
+	# рамки (углы ~80px) на маленькой плашке выглядит вдвое крупнее нужного.
+	_bar.scale = Vector2(0.5, 0.5)
+	UIStyle.style_modal_panel(_bar, 44)  # тёмная плашка с рамкой
 	_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bar.modulate.a = 0.0
-	_center.add_child(_bar)
+	_bar.resized.connect(_reposition)
+	_anchor.add_child(_bar)
 
 	var margin := MarginContainer.new()
 	margin.name = "Margin"
-	margin.add_theme_constant_override("margin_left", 48)
-	margin.add_theme_constant_override("margin_right", 48)
-	margin.add_theme_constant_override("margin_top", 16)
-	margin.add_theme_constant_override("margin_bottom", 16)
+	margin.add_theme_constant_override("margin_left", 96)
+	margin.add_theme_constant_override("margin_right", 96)
+	margin.add_theme_constant_override("margin_top", 32)
+	margin.add_theme_constant_override("margin_bottom", 32)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bar.add_child(margin)
 
 	var label := UIStyle.label(
-		"TURN_BANNER_YOURS", 30, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
+		"TURN_BANNER_YOURS", 60, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
 	)
 	label.name = "Label"
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(label)
+
+	_reposition()
+
+
+# По центру экрана по горизонтали — с учётом того, что видимая ширина вдвое
+# меньше размера в раскладке. Вертикаль не трогаем: её ведёт тween выезда.
+func _reposition() -> void:
+	if not is_instance_valid(_bar):
+		return
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	_bar.position.x = (vp.x - _bar.size.x * _bar.scale.x) * 0.5
 
 
 # Игра ждёт МОЕГО ввода прямо сейчас (любой из контекстов).
@@ -82,11 +102,16 @@ func _refresh() -> void:
 func _show_banner() -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
+	_reposition()
 	_bar.modulate.a = 0.0
 	_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_tween.tween_property(_bar, "modulate:a", 1.0, 0.25)
-	_tween.parallel().tween_property(_center, "offset_top", 84.0, 0.28).from(58.0).set_trans(
-		Tween.TRANS_BACK
+	(
+		_tween
+		. parallel()
+		. tween_property(_bar, "position:y", _TOP_Y, 0.28)
+		. from(_TOP_Y - _SLIDE)
+		. set_trans(Tween.TRANS_BACK)
 	)
 	_tween.tween_interval(1.3)
 	_tween.tween_property(_bar, "modulate:a", 0.0, 0.4)
