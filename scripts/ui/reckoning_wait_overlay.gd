@@ -5,6 +5,8 @@ extends CanvasLayer
 ## reckoning_active. Ловит клики — нельзя действовать, пока фаза не завершится у всех.
 ## Под модалкой проверки (layer 85 < 86). Строится кодом, монтируется из world_map.
 
+const _TITLE_WIDTH: float = 380.0  # ширина строки заголовка (до ×1.5 scale_modal_text)
+
 var _root: ColorRect
 var _panel: PanelContainer
 
@@ -42,7 +44,12 @@ func _build() -> void:
 		margin.add_theme_constant_override("margin_" + side, 24)
 	_panel.add_child(margin)
 
-	margin.add_child(UIStyle.modal_title("RECK_WAIT"))
+	# Заголовок с автопереносом сам по себе имеет минимальную ширину в 1px, и
+	# панель схлопывается в вертикальную колонку по букве в строке. Задаём ширину
+	# явно — по ней и переносим.
+	var title := UIStyle.modal_title("RECK_WAIT")
+	title.custom_minimum_size.x = _TITLE_WIDTH
+	margin.add_child(title)
 	UIStyle.scale_modal_text(_panel)
 
 
