@@ -252,6 +252,8 @@ func _make_die(
 
 # Заполнить ленту гранями vals (сверху вниз) текстурами. reel.y = 0.
 func _set_reel(die: Dictionary, vals: Array) -> void:
+	if not is_instance_valid(die.get("reel")):
+		return  # куб уже освобождён пересборкой лотка — рисовать нечего
 	var reel: Control = die["reel"]
 	for c in reel.get_children():
 		c.queue_free()
@@ -285,7 +287,10 @@ func _spin(die: Dictionary, dur: float) -> void:
 	_set_reel(die, strip)
 
 	var last: int = strip.size() - 1
-	var tw := create_tween()
+	# Привязываем к самому кубу: лоток может пересобраться прямо во время спина
+	# (_build освобождает детей), и отложенный callback _settle дёрнул бы уже
+	# освобождённый reel. Привязка убивает твин вместе с нодой.
+	var tw := create_tween().bind_node(die["reel"])
 	tw.set_parallel(true)
 	(
 		tw
@@ -315,6 +320,8 @@ func _set_die_blur(die: Dictionary, b: float) -> void:
 
 # Финал: одна грань, свечение по состоянию, опц. вспышка.
 func _settle(die: Dictionary, flash: bool) -> void:
+	if not is_instance_valid(die.get("root")):
+		return  # лоток пересобрался, пока крутился куб
 	var val: int = int(die["value"])
 	_set_reel(die, [val])
 	_set_die_blur(die, 0.0)
@@ -331,7 +338,7 @@ func _settle(die: Dictionary, flash: bool) -> void:
 	if flash:
 		var root: Control = die["root"]
 		root.modulate = Color(1.45, 1.4, 1.2)
-		var tw := create_tween()
+		var tw := create_tween().bind_node(root)  # см. _spin: куб может исчезнуть по ходу
 		tw.tween_property(root, "modulate", Color(1, 1, 1), LOCK_FLASH)
 
 

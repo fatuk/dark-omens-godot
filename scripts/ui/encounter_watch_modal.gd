@@ -127,13 +127,14 @@ func _refresh() -> void:
 	var pid: String = _watching_pid()
 	var card: Dictionary = GameState.current_encounter
 	# Прячем: моя встреча / нет карты / игрок ещё выбирает тип / бой (своя модалка).
-	var show: bool = (
+	# НЕ называть `show` — затеняет метод CanvasLayer.show() (предупреждение движка).
+	var watching: bool = (
 		not pid.is_empty()
 		and not card.is_empty()
 		and (GameState.encounter_choices as Array).is_empty()
 		and String(card.get("kind", "")) != "combat"
 	)
-	if not show:
+	if not watching:
 		_root.visible = false
 		_sig = ""
 		return
