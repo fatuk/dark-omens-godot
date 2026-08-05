@@ -154,7 +154,10 @@ func _build_avatar() -> Control:
 	holder.name = "Avatar"
 	holder.custom_minimum_size = Vector2(_AVATAR_D, _AVATAR_D)
 	holder.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Аватар кликабелен — открывает карточку способностей (спец-действие + пассив).
+	holder.mouse_filter = Control.MOUSE_FILTER_STOP
+	holder.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	holder.gui_input.connect(_on_avatar_input)
 
 	# Портрет заполняет весь холдер с круговой маской; кольцо-фрейм сверху прячет
 	# края портрета — т.е. портрет лежит ПОД фреймом аватарки.
@@ -249,6 +252,16 @@ func _populate_data() -> void:
 		_occ_label.text = String(_inv_data.get("occupation", ""))
 	if is_instance_valid(_info_bar):
 		_info_bar.update(_inv_data)
+
+
+# Клик по аватару — карточка способностей сыщика.
+func _on_avatar_input(event: InputEvent) -> void:
+	var mb := event as InputEventMouseButton
+	if mb == null or not mb.pressed or mb.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if _inv_name.is_empty():
+		return
+	AbilityInfo.open(self, _inv_name)
 
 
 func _refresh_identity() -> void:

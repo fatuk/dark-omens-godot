@@ -128,7 +128,10 @@ func _build_ui() -> void:
 	_carousel = InvestigatorCarousel.new()
 	_carousel.name = "Carousel"
 	_carousel.index_changed.connect(_on_carousel_index_changed)
-	_carousel.center_clicked.connect(_on_confirm_pressed)
+	# Клик по центральному портрету показывает способности, а НЕ подтверждает выбор:
+	# подтверждение — только кнопкой «Подтвердить выбор» (случайный клик по карточке
+	# раньше сразу фиксировал сыщика).
+	_carousel.center_clicked.connect(_on_center_clicked)
 	_root.add_child(_carousel)
 	_root.add_child(_build_info_bar())
 	_root.add_child(_build_action_bar())
@@ -271,6 +274,13 @@ func _on_carousel_index_changed(idx: int) -> void:
 		_info_bar.update(_investigators[idx])
 	_emit_selection()
 	_refresh_confirm_for_taken()
+
+
+# Клик по центральному портрету — карточка способностей выбранного сыщика.
+func _on_center_clicked() -> void:
+	var sel: String = get_selected()
+	if not sel.is_empty():
+		AbilityInfo.open(self, sel)
 
 
 func _on_confirm_pressed() -> void:
