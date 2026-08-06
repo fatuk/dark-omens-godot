@@ -34,7 +34,7 @@ const SKILL_ICON_SCALE: float = 0.65  # ассеты @2× (0.5) + 30% — ико
 # Зазор между рамками кубов. У die-frame.png нет прозрачных полей по краям, поэтому
 # это ровно видимое расстояние между кубами. static — крутится в панели тюнинга
 # (Ctrl+M, секция «КУБЫ»); найденное значение запекается сюда же.
-static var DIE_GAP: float = 7.0
+static var DIE_GAP: float = 16.0
 const GAP_GROUP: StringName = &"dice_tray"
 
 const FACE_TEX := {
