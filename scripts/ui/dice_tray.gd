@@ -29,7 +29,7 @@ const SKILL_TEX := {
 	"influence": preload("res://assets/virtues-panel/influence.png"),
 	"observation": preload("res://assets/virtues-panel/observation.png"),
 }
-const SKILL_ICON_SCALE: float = 0.5  # ассеты @2× — выводим в половину
+const SKILL_ICON_SCALE: float = 0.65  # ассеты @2× (0.5) + 30% — иконка крупнее грани
 
 const FACE_TEX := {
 	1: preload("res://assets/dice/side1.png"),
@@ -228,6 +228,23 @@ func _make_die(
 	reel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	window.add_child(reel)
 
+	# Иконка навыка (пустой куб до броска) — ПОВЕРХ рамки, а не в окне грани:
+	# окно клипает по стороне грани, а иконка крупнее её. Центрируем по рамке.
+	if is_pending:
+		var icon: Texture2D = _pending_icon()
+		if icon != null:
+			var sz: Vector2 = icon.get_size() * SKILL_ICON_SCALE
+			var skill_icon := TextureRect.new()
+			skill_icon.name = "SkillIcon"
+			skill_icon.texture = icon
+			skill_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			skill_icon.stretch_mode = TextureRect.STRETCH_SCALE
+			skill_icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+			skill_icon.position = (Vector2(DIE_W, DIE_H) - sz) * 0.5
+			skill_icon.size = sz
+			skill_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			content.add_child(skill_icon)
+
 	# Материал блюра — один на куб (общий для всех граней ленты).
 	var blur_mat := ShaderMaterial.new()
 	var sh := Shader.new()
@@ -277,24 +294,15 @@ func _set_reel(die: Dictionary, vals: Array) -> void:
 	for c in reel.get_children():
 		c.queue_free()
 	for i in range(vals.size()):
-		var val: int = int(vals[i])
-		var icon: Texture2D = _pending_icon() if val == 0 else null
 		var face := TextureRect.new()
 		face.name = "Face%d" % i
-		face.texture = icon if icon != null else FACE_TEX.get(val, null)  # 0 → рубашка
+		face.texture = FACE_TEX.get(int(vals[i]), null)  # 0 → пусто (рубашка)
 		face.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		face.stretch_mode = TextureRect.STRETCH_SCALE
 		face.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		face.material = die["blur_mat"]
-		if icon != null:
-			# Иконку навыка НЕ растягиваем до грани — у неё свои пропорции. Ставим
-			# в натуральном размере (×0.5, ассеты @2×) по центру окна.
-			var sz: Vector2 = icon.get_size() * SKILL_ICON_SCALE
-			face.position = Vector2((_FACE - sz.x) * 0.5, i * _FACE + (_FACE - sz.y) * 0.5)
-			face.size = sz
-		else:
-			face.position = Vector2(0, i * _FACE)
-			face.size = Vector2(_FACE, _FACE)
+		face.position = Vector2(0, i * _FACE)
+		face.size = Vector2(_FACE, _FACE)
 		face.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		reel.add_child(face)
 	reel.position.y = 0.0
