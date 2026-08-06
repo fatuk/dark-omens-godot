@@ -1117,7 +1117,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
-			"default": 0.0,
+			"default": 1.0,
 			"set": _set_runes_amount
 		},
 		{
@@ -1126,7 +1126,7 @@ func _build_specs() -> Array:
 			"min": 2.0,
 			"max": 24.0,
 			"step": 1.0,
-			"default": 7.0,
+			"default": 16.0,
 			"set": _set_runes_grid
 		},
 		{
@@ -1135,7 +1135,7 @@ func _build_specs() -> Array:
 			"min": 0.1,
 			"max": 2.0,
 			"step": 0.01,
-			"default": 0.8,
+			"default": 0.84,
 			"set": _set_runes_glyph_scale
 		},
 		{
@@ -1144,7 +1144,7 @@ func _build_specs() -> Array:
 			"min": 0.01,
 			"max": 1.0,
 			"step": 0.01,
-			"default": 0.35,
+			"default": 0.73,
 			"set": _set_runes_reveal_spread
 		},
 		{
@@ -1153,7 +1153,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 3.0,
 			"step": 0.05,
-			"default": 1.0,
+			"default": 1.05,
 			"set": _set_runes_intensity
 		},
 		{
@@ -1162,7 +1162,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 4.0,
 			"step": 0.05,
-			"default": 0.6,
+			"default": 2.15,
 			"set": _set_runes_pulse_speed
 		},
 		{
@@ -1171,7 +1171,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
-			"default": 0.35,
+			"default": 0.43,
 			"set": _set_runes_pulse_depth
 		},
 		{
@@ -1180,17 +1180,17 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 0.5,
 			"step": 0.005,
-			"default": 0.03,
+			"default": 0.17,
 			"set": _set_runes_drift
 		},
 		{
-			"key": "runes_vignette",
-			"label": "К краям",
+			"key": "runes_edge_bias",
+			"label": "Руны к краям",
 			"min": 0.0,
 			"max": 2.0,
 			"step": 0.05,
-			"default": 0.9,
-			"set": _set_runes_vignette
+			"default": 1.05,
+			"set": _set_runes_edge_bias
 		},
 		{
 			"key": "runes_r",
@@ -1198,7 +1198,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
-			"default": 0.35,
+			"default": 0.64,
 			"set": _set_runes_r
 		},
 		{
@@ -1218,6 +1218,79 @@ func _build_specs() -> Array:
 			"step": 0.01,
 			"default": 0.55,
 			"set": _set_runes_b
+		},
+		{
+			"key": "runes_size_jitter",
+			"label": "Разброс размера",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.45,
+			"set": _set_runes_size_jitter
+		},
+		{
+			"key": "runes_pos_jitter",
+			"label": "Разброс позиции",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.35,
+			"set": _set_runes_pos_jitter
+		},
+		{"section": "ВИНЬЕТКА"},
+		{
+			"key": "vig_strength",
+			"label": "Сила",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.0,
+			"set": _set_vig_strength
+		},
+		{
+			"key": "vig_start",
+			"label": "Начало",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.35,
+			"set": _set_vig_start
+		},
+		{
+			"key": "vig_softness",
+			"label": "Растушёвка",
+			"min": 0.01,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.55,
+			"set": _set_vig_softness
+		},
+		{
+			"key": "vig_r",
+			"label": "Цвет R",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.0,
+			"set": _set_vig_r
+		},
+		{
+			"key": "vig_g",
+			"label": "Цвет G",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.0,
+			"set": _set_vig_g
+		},
+		{
+			"key": "vig_b",
+			"label": "Цвет B",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.0,
+			"set": _set_vig_b
 		},
 	]
 
@@ -2052,8 +2125,8 @@ func _set_runes_drift(v: float) -> void:
 	_runes_set("drift", v)
 
 
-func _set_runes_vignette(v: float) -> void:
-	_runes_set("vignette", v)
+func _set_runes_edge_bias(v: float) -> void:
+	_runes_set("edge_bias", v)
 
 
 func _set_runes_r(v: float) -> void:
@@ -2066,6 +2139,47 @@ func _set_runes_g(v: float) -> void:
 
 func _set_runes_b(v: float) -> void:
 	_runes_set_color(2, v)
+
+
+func _set_runes_size_jitter(v: float) -> void:
+	_runes_set("size_jitter", v)
+
+
+func _set_runes_pos_jitter(v: float) -> void:
+	_runes_set("pos_jitter", v)
+
+
+func _set_vig_strength(v: float) -> void:
+	_runes_set("vig_strength", v)
+
+
+func _set_vig_start(v: float) -> void:
+	_runes_set("vig_start", v)
+
+
+func _set_vig_softness(v: float) -> void:
+	_runes_set("vig_softness", v)
+
+
+# Цвет виньетки покомпонентно (тот же приём, что у цвета рун).
+func _vig_set_color(comp: int, v: float) -> void:
+	for n in get_tree().get_nodes_in_group(DoomRunes.GROUP):
+		var c: Variant = n.call("get_param", "vig_color")
+		var col: Color = c if c is Color else Color(0.0, 0.0, 0.0, 1.0)
+		col[comp] = v
+		n.call("set_param", "vig_color", col)
+
+
+func _set_vig_r(v: float) -> void:
+	_vig_set_color(0, v)
+
+
+func _set_vig_g(v: float) -> void:
+	_vig_set_color(1, v)
+
+
+func _set_vig_b(v: float) -> void:
+	_vig_set_color(2, v)
 
 
 # ── Кубы (DiceTray.DIE_GAP — static; пушим в живые лотки по группе) ──────────

@@ -13,6 +13,7 @@ extends CanvasLayer
 ## «постобработка», а руны — часть игрового состояния, их гасить нельзя.
 
 const _SHADER := preload("res://assets/shaders/doom_runes.gdshader")
+const _VIGNETTE_SHADER := preload("res://assets/shaders/screen_vignette.gdshader")
 const GROUP: StringName = &"doom_runes"
 const _ATLAS_N: int = 4  # глифов в ряду атласа (всего N×N разных рун)
 const _ATLAS_PX: int = 512  # сторона атласа в пикселях
@@ -20,9 +21,10 @@ const _GLYPH_FILL: float = 0.8  # доля клетки под сам знак (
 
 ## Ручной режим: amount задаёт панель тюнинга, а не трек Рока. Снять при привязке.
 static var MANUAL: bool = true
-static var MANUAL_AMOUNT: float = 0.0
+static var MANUAL_AMOUNT: float = 1.0
 
 var _rect: ColorRect
+var _vig: ColorRect
 
 
 func _ready() -> void:
@@ -34,6 +36,17 @@ func _ready() -> void:
 
 
 func _build() -> void:
+	# Виньетка — ОТДЕЛЬНЫМ проходом ПОД рунами: она затемняет (blend_mix), а руны
+	# рисуются аддитивно и затемнять не умеют — в одном шейдере не совместить.
+	_vig = ColorRect.new()
+	_vig.name = "Vignette"
+	_vig.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_vig.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var vmat := ShaderMaterial.new()
+	vmat.shader = _VIGNETTE_SHADER
+	_vig.material = vmat
+	add_child(_vig)
+
 	_rect = ColorRect.new()
 	_rect.name = "Runes"
 	_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -83,15 +96,18 @@ func _bake_atlas(mat: ShaderMaterial) -> void:
 
 ## Текущее значение uniform'а (панель тюнинга читает и пишет через set_param).
 func get_param(param: String) -> Variant:
-	if not is_instance_valid(_rect):
+	var target: ColorRect = _vig if param.begins_with("vig_") else _rect
+	if not is_instance_valid(target):
 		return null
-	return (_rect.material as ShaderMaterial).get_shader_parameter(param)
+	return (target.material as ShaderMaterial).get_shader_parameter(param)
 
 
 ## Записать uniform (панель тюнинга).
+## Параметры с префиксом vig_ уходят в слой виньетки, остальные — в руны.
 func set_param(param: String, value: Variant) -> void:
-	if is_instance_valid(_rect):
-		(_rect.material as ShaderMaterial).set_shader_parameter(param, value)
+	var target: ColorRect = _vig if param.begins_with("vig_") else _rect
+	if is_instance_valid(target):
+		(target.material as ShaderMaterial).set_shader_parameter(param, value)
 
 
 # Пока MANUAL — amount ведёт панель тюнинга. После привязки здесь будет доля
