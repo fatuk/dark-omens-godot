@@ -1056,6 +1056,60 @@ func _build_specs() -> Array:
 			"default": DiceTray.DIE_GAP,
 			"set": _set_die_gap
 		},
+		{
+			"key": "die_bonus_r",
+			"label": "Добавленный R",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": DiceTray.C_MARK_BONUS.r,
+			"set": _set_die_bonus_r
+		},
+		{
+			"key": "die_bonus_g",
+			"label": "Добавленный G",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": DiceTray.C_MARK_BONUS.g,
+			"set": _set_die_bonus_g
+		},
+		{
+			"key": "die_bonus_b",
+			"label": "Добавленный B",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": DiceTray.C_MARK_BONUS.b,
+			"set": _set_die_bonus_b
+		},
+		{
+			"key": "die_blocked_r",
+			"label": "Отнятый R",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": DiceTray.C_MARK_BLOCKED.r,
+			"set": _set_die_blocked_r
+		},
+		{
+			"key": "die_blocked_g",
+			"label": "Отнятый G",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": DiceTray.C_MARK_BLOCKED.g,
+			"set": _set_die_blocked_g
+		},
+		{
+			"key": "die_blocked_b",
+			"label": "Отнятый B",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": DiceTray.C_MARK_BLOCKED.b,
+			"set": _set_die_blocked_b
+		},
 	]
 
 
@@ -1840,6 +1894,54 @@ func _set_gal_mx(v: float) -> void:
 
 
 # ── Кубы (DiceTray.DIE_GAP — static; пушим в живые лотки по группе) ──────────
+
+
+func _set_die_bonus_r(v: float) -> void:
+	var c: Color = DiceTray.C_MARK_BONUS
+	c.r = v
+	DiceTray.C_MARK_BONUS = c
+	_refresh_dice_marks()
+
+
+func _set_die_bonus_g(v: float) -> void:
+	var c: Color = DiceTray.C_MARK_BONUS
+	c.g = v
+	DiceTray.C_MARK_BONUS = c
+	_refresh_dice_marks()
+
+
+func _set_die_bonus_b(v: float) -> void:
+	var c: Color = DiceTray.C_MARK_BONUS
+	c.b = v
+	DiceTray.C_MARK_BONUS = c
+	_refresh_dice_marks()
+
+
+func _set_die_blocked_r(v: float) -> void:
+	var c: Color = DiceTray.C_MARK_BLOCKED
+	c.r = v
+	DiceTray.C_MARK_BLOCKED = c
+	_refresh_dice_marks()
+
+
+func _set_die_blocked_g(v: float) -> void:
+	var c: Color = DiceTray.C_MARK_BLOCKED
+	c.g = v
+	DiceTray.C_MARK_BLOCKED = c
+	_refresh_dice_marks()
+
+
+func _set_die_blocked_b(v: float) -> void:
+	var c: Color = DiceTray.C_MARK_BLOCKED
+	c.b = v
+	DiceTray.C_MARK_BLOCKED = c
+	_refresh_dice_marks()
+
+
+# Перекрасить пометки пула в живых лотках (без пересборки).
+func _refresh_dice_marks() -> void:
+	for t in get_tree().get_nodes_in_group(DiceTray.GAP_GROUP):
+		t.call("refresh_marks")
 
 
 func _set_die_gap(v: float) -> void:

@@ -32,8 +32,9 @@ const SKILL_TEX := {
 const SKILL_ICON_SCALE: float = 0.65  # ассеты @2× (0.5) + 30% — иконка крупнее грани
 
 # Пометки пула (см. set_pool_marks): ряд всегда показывает полный пул сыщика.
-const C_MARK_BONUS := UIColors.SUCCESS  # куб добавлен сверх листа персонажа
-const C_MARK_BLOCKED := UIColors.DANGER  # куб отнят: рамка есть, но не бросается
+# static — крутятся в панели тюнинга (Ctrl+M, секция «КУБЫ»); найденное запекается сюда.
+static var C_MARK_BONUS: Color = UIColors.SUCCESS  # куб добавлен сверх листа персонажа
+static var C_MARK_BLOCKED: Color = UIColors.DANGER  # куб отнят: рамка есть, не бросается
 
 # Зазор между рамками кубов. У die-frame.png нет прозрачных полей по краям, поэтому
 # это ровно видимое расстояние между кубами. static — крутится в панели тюнинга
@@ -157,6 +158,21 @@ func set_pool_marks(bonus: int, blocked: int) -> void:
 ## Перечитать DIE_GAP в отступ контейнера (панель тюнинга дёргает у живых лотков).
 func refresh_gap() -> void:
 	add_theme_constant_override("separation", int(roundf(DIE_GAP)))
+
+
+## Перекрасить пометки по текущим C_MARK_* — без пересборки лотка (панель тюнинга).
+## Бонусные кубы стоят первыми, отнятые — отдельными нодами DieBlocked*.
+func refresh_marks() -> void:
+	var i: int = 0
+	for c in get_children():
+		var content: Control = c.get_node_or_null("Content")
+		if content == null:
+			continue
+		if String(c.name).begins_with("DieBlocked"):
+			_tint_die(content, C_MARK_BLOCKED)
+		elif i < _bonus_n:
+			_tint_die(content, C_MARK_BONUS)
+		i += 1
 
 
 ## Пустые кубы до броска. skill (strength/lore/will/influence/observation) рисует
