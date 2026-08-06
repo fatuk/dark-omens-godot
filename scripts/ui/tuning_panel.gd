@@ -1171,7 +1171,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
-			"default": 0.43,
+			"default": 0.61,
 			"set": _set_runes_pulse_depth
 		},
 		{
@@ -1180,7 +1180,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 0.5,
 			"step": 0.005,
-			"default": 0.17,
+			"default": 0.2,
 			"set": _set_runes_drift
 		},
 		{
@@ -1244,7 +1244,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
-			"default": 0.0,
+			"default": 0.56,
 			"set": _set_vig_strength
 		},
 		{
@@ -1253,7 +1253,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
-			"default": 0.35,
+			"default": 0.45,
 			"set": _set_vig_start
 		},
 		{
@@ -1262,7 +1262,7 @@ func _build_specs() -> Array:
 			"min": 0.01,
 			"max": 1.0,
 			"step": 0.01,
-			"default": 0.55,
+			"default": 0.85,
 			"set": _set_vig_softness
 		},
 		{
@@ -1271,7 +1271,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
-			"default": 0.0,
+			"default": 0.01,
 			"set": _set_vig_r
 		},
 		{
@@ -1280,7 +1280,7 @@ func _build_specs() -> Array:
 			"min": 0.0,
 			"max": 1.0,
 			"step": 0.01,
-			"default": 0.0,
+			"default": 0.03,
 			"set": _set_vig_g
 		},
 		{
@@ -2093,7 +2093,10 @@ func _runes_set_color(comp: int, v: float) -> void:
 
 
 func _set_runes_amount(v: float) -> void:
-	DoomRunes.MANUAL_AMOUNT = v  # ручной режим: трек Рока пока не рулит
+	# Трогаем слайдер — переводим слой в ручной режим, иначе следующий синк вернёт
+	# значение с трека Рока и покрутить не выйдет.
+	DoomRunes.MANUAL = true
+	DoomRunes.MANUAL_AMOUNT = v
 	_runes_set("amount", v)
 
 
@@ -2150,6 +2153,8 @@ func _set_runes_pos_jitter(v: float) -> void:
 
 
 func _set_vig_strength(v: float) -> void:
+	DoomRunes.MANUAL = true  # как и проявленность — иначе трек перебьёт
+	DoomRunes.MANUAL_VIGNETTE = v
 	_runes_set("vig_strength", v)
 
 

@@ -4,10 +4,13 @@ extends CanvasLayer
 ## Руны Ктулху поверх всего экрана — визуальный «градусник» безысходности.
 ## Чем дальше уехал трек Рока, тем больше знаков проступает.
 ##
-## СЕЙЧАС К ТРЕКУ НЕ ПРИВЯЗАНО: `amount` и остальные параметры крутятся вручную в
-## панели тюнинга (Ctrl+M, секция «РУНЫ РОКА») — сначала подбираем, как это должно
-## выглядеть, и только потом решаем, какой amount какому doom соответствует.
-## Привязка = снять ручной режим и считать amount из GameState.doom (см. _refresh).
+## Проявленность рун и сила виньетки растут ЛИНЕЙНО с треком Рока: 0 в начале
+## партии, MAX_* при полном треке (то есть прямо перед поражением). Остальные
+## параметры — постоянный «облик», их трек не трогает.
+##
+## Панель тюнинга (Ctrl+M, секции «РУНЫ РОКА» и «ВИНЬЕТКА») крутит всё живьём;
+## слайдеры проявленности и силы виньетки переводят слой в ручной режим (MANUAL),
+## иначе следующий синк тут же вернул бы значение с трека.
 ##
 ## Отдельный слой, а не второй ColorRect в PostFx: тот выключается настройкой
 ## «постобработка», а руны — часть игрового состояния, их гасить нельзя.
@@ -19,9 +22,15 @@ const _ATLAS_N: int = 4  # глифов в ряду атласа (всего N×
 const _ATLAS_PX: int = 512  # сторона атласа в пикселях
 const _GLYPH_FILL: float = 0.8  # доля клетки под сам знак (поля не режут глиф)
 
-## Ручной режим: amount задаёт панель тюнинга, а не трек Рока. Снять при привязке.
-static var MANUAL: bool = true
-static var MANUAL_AMOUNT: float = 1.0
+## Значения при ПОЛНОМ треке Рока (подобраны в панели). От них ведём линейно.
+static var MAX_AMOUNT: float = 0.99  # проявленность рун
+static var MAX_VIGNETTE: float = 0.56  # сила виньетки
+
+## Ручной режим: значения задаёт панель тюнинга, а не трек. Включается сама, когда
+## трогают соответствующий слайдер.
+static var MANUAL: bool = false
+static var MANUAL_AMOUNT: float = 0.99
+static var MANUAL_VIGNETTE: float = 0.56
 
 var _rect: ColorRect
 var _vig: ColorRect
@@ -110,13 +119,15 @@ func set_param(param: String, value: Variant) -> void:
 		(target.material as ShaderMaterial).set_shader_parameter(param, value)
 
 
-# Пока MANUAL — amount ведёт панель тюнинга. После привязки здесь будет доля
-# трека Рока: doom / doomClock Древнего.
+# Доля пройденного трека Рока → проявленность рун и сила виньетки (линейно).
 func _refresh() -> void:
 	if not is_instance_valid(_rect):
 		return
 	if MANUAL:
 		set_param("amount", MANUAL_AMOUNT)
+		set_param("vig_strength", MANUAL_VIGNETTE)
 		return
 	var clock: int = maxi(1, int(GameState.campaign.get("doomClock", 12)))
-	set_param("amount", clampf(float(GameState.doom) / float(clock), 0.0, 1.0))
+	var t: float = clampf(float(GameState.doom) / float(clock), 0.0, 1.0)
+	set_param("amount", MAX_AMOUNT * t)
+	set_param("vig_strength", MAX_VIGNETTE * t)

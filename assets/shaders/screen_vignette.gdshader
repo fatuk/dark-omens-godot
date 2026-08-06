@@ -2,10 +2,10 @@
 // Отдельный проход от рун: те рисуются аддитивно и затемнять не умеют.
 shader_type canvas_item;
 
-uniform vec4 vig_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
-uniform float vig_strength : hint_range(0.0, 1.0) = 0.0;  // непрозрачность у края
-uniform float vig_start : hint_range(0.0, 1.0) = 0.35;  // где начинается затемнение
-uniform float vig_softness : hint_range(0.01, 1.0) = 0.55;  // ширина растушёвки
+uniform vec4 vig_color : source_color = vec4(0.01, 0.03, 0.0, 1.0);
+uniform float vig_strength : hint_range(0.0, 1.0) = 0.0;  // ведёт трек Рока (0 в начале партии)
+uniform float vig_start : hint_range(0.0, 1.0) = 0.45;  // где начинается затемнение
+uniform float vig_softness : hint_range(0.01, 1.0) = 0.85;  // ширина растушёвки
 
 void fragment() {
 	// Круглая виньетка независимо от соотношения сторон: считаем в UV с поправкой.

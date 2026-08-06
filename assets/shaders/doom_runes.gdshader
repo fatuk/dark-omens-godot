@@ -12,7 +12,7 @@ render_mode blend_add;
 uniform sampler2D runes_tex : filter_linear_mipmap, repeat_disable;
 uniform float atlas : hint_range(1.0, 8.0) = 4.0;  // глифов в ряду атласа
 
-uniform float amount : hint_range(0.0, 1.0) = 1.0;  // сколько рун проступило
+uniform float amount : hint_range(0.0, 1.0) = 0.0;  // ведёт трек Рока (0 в начале партии)
 uniform float grid : hint_range(2.0, 24.0) = 16.0;  // ячеек по короткой стороне
 uniform float glyph_scale : hint_range(0.1, 2.0) = 0.84;  // базовый размер знака
 uniform float size_jitter : hint_range(0.0, 1.0) = 0.45;  // разброс размера, ±доля
@@ -20,8 +20,8 @@ uniform float pos_jitter : hint_range(0.0, 1.0) = 0.35;  // сдвиг внут�
 uniform float intensity : hint_range(0.0, 3.0) = 1.05;  // яркость свечения
 uniform float reveal_spread : hint_range(0.01, 1.0) = 0.73;  // разброс проявления
 uniform float pulse_speed : hint_range(0.0, 4.0) = 2.15;  // скорость «дыхания»
-uniform float pulse_depth : hint_range(0.0, 1.0) = 0.43;  // глубина «дыхания»
-uniform float drift : hint_range(0.0, 0.5) = 0.17;  // медленное блуждание сетки
+uniform float pulse_depth : hint_range(0.0, 1.0) = 0.61;  // глубина «дыхания»
+uniform float drift : hint_range(0.0, 0.5) = 0.20;  // блуждание КАЖДОЙ руны (в долях ячейки)
 uniform float edge_bias : hint_range(0.0, 2.0) = 1.05;  // к краям руны ярче
 uniform vec4 tint : source_color = vec4(0.64, 0.85, 0.55, 1.0);
 
@@ -39,9 +39,6 @@ void fragment() {
 	vec2 uv = SCREEN_UV;
 	uv.x *= aspect;
 
-	// Очень медленный дрейф — сетка не «прибита» к пикселям экрана.
-	uv += vec2(sin(TIME * 0.05), cos(TIME * 0.037)) * drift;
-
 	vec2 cell = floor(uv * grid);
 	vec2 local = fract(uv * grid) - 0.5;
 
@@ -50,6 +47,13 @@ void fragment() {
 	// ровно по сетке и читаются как таблица, а не как проступающее письмо.
 	vec3 j = hash3(cell + vec2(17.3, 41.7));
 	local += (j.yz - 0.5) * pos_jitter;
+	// Дрейф ХАОТИЧНЫЙ: у каждой руны своя частота и фаза по обеим осям, поэтому
+	// знаки блуждают независимо. Раньше сдвигалась вся сетка целиком — это читалось
+	// как ползущая таблица, а не как шевелящееся письмо.
+	local += drift * vec2(
+		sin(TIME * (0.17 + j.x * 0.5) + h.z * 6.2831),
+		cos(TIME * (0.13 + j.y * 0.5) + h.x * 6.2831)
+	);
 	float gscale = max(glyph_scale * (1.0 + (j.x - 0.5) * 2.0 * size_jitter), 0.001);
 	// Порог проявления свой у каждой ячейки — руны всплывают вразнобой.
 	float reveal = smoothstep(h.x, h.x + reveal_spread, amount);
