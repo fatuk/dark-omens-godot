@@ -775,7 +775,9 @@ func _render_dice() -> void:
 	if not _rolled():
 		if not _last_dice.is_empty():
 			_last_dice = []
-		_tray.show_pending(_influence_pool(), "influence")
+		var pb: Dictionary = _pool()
+		_tray.set_pool_marks(int(pb["bonus"]), int(pb["blocked"]))
+		_tray.show_pending(int(pb["pool"]), "influence")
 		_center_dice_row()  # число кубов могло измениться — перецентрировать ряд
 		return
 	var dice: Array = _check().get("dice", [])
@@ -823,13 +825,14 @@ func _single_diff(a: Array, b: Array) -> int:
 	return idx
 
 
-func _influence_pool() -> int:
+# Разбор пула Влияния: {pool, bonus, blocked} — см. DiceTray.set_pool_marks.
+func _pool() -> Dictionary:
 	var me: Dictionary = GameState.my_player()
 	var inv: Dictionary = Investigators.get_data(String(me.get("investigator", "")))
 	var base: int = int((inv.get("skills", {}) as Dictionary).get("influence", 1))
 	var mods: int = int((me.get("skill_mods", {}) as Dictionary).get("influence", 0))
-	var bonus: int = Dice.pre_roll_bonus(_check().get("active_mods", []), "influence")
-	return maxi(1, base + mods + bonus)
+	var extra: int = Dice.pre_roll_bonus(_check().get("active_mods", []), "influence")
+	return Dice.pool_breakdown(base, mods, 0, extra)
 
 
 # ── Действия ───────────────────────────────────────────────────────────────────

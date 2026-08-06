@@ -31,6 +31,10 @@ const SKILL_TEX := {
 }
 const SKILL_ICON_SCALE: float = 0.65  # ассеты @2× (0.5) + 30% — иконка крупнее грани
 
+# Пометки пула (см. set_pool_marks): ряд всегда показывает полный пул сыщика.
+const C_MARK_BONUS := UIColors.SUCCESS  # куб добавлен сверх листа персонажа
+const C_MARK_BLOCKED := UIColors.DANGER  # куб отнят: рамка есть, но не бросается
+
 # Зазор между рамками кубов. У die-frame.png нет прозрачных полей по краям, поэтому
 # это ровно видимое расстояние между кубами. static — крутится в панели тюнинга
 # (Ctrl+M, секция «КУБЫ»); найденное значение запекается сюда же.
@@ -99,6 +103,8 @@ void fragment() {
 
 var _dice: Array = []  # [{root, glow, reel, blur_mat, value, index, clickable, pending}]
 var _pending_skill: String = ""  # какой навык показывать в пустых кубах (см. show_pending)
+var _bonus_n: int = 0  # сколько ПЕРВЫХ кубов помечены как добавленные (зелёные)
+var _blocked_n: int = 0  # сколько холостых рамок дорисовать в хвосте (красные)
 
 
 func _init() -> void:
@@ -137,6 +143,15 @@ func play_roll(values: Array, can_reroll: bool = false, can_add: bool = false) -
 		_jitter(_dice[i])
 	if not _dice.is_empty():
 		_play_clatter(_dice.size())  # щелчки-активации бьёт _settle по всполохам
+
+
+## Пометки пула: bonus — сколько первых кубов добавлены сверх листа персонажа
+## (красим зелёным), blocked — сколько кубов отнято (рисуем холостые красные
+## рамки в хвосте, не бросаем). Ставится ДО show_pending/show_roll/play_roll и
+## держится до следующего вызова. Разбор считает Dice.pool_breakdown.
+func set_pool_marks(bonus: int, blocked: int) -> void:
+	_bonus_n = maxi(0, bonus)
+	_blocked_n = maxi(0, blocked)
 
 
 ## Перечитать DIE_GAP в отступ контейнера (панель тюнинга дёргает у живых лотков).
@@ -178,12 +193,19 @@ func reroll_die(index: int, new_value: int, can_reroll: bool, can_add: bool = fa
 
 func _build(values: Array, can_reroll: bool, pending: int = 0, can_add: bool = false) -> void:
 	for c in get_children():
+		# Снимаем с родителя СРАЗУ: queue_free отложен, и новые кубы получали бы
+		# имена @Control@N (старые Die0… ещё заняты до конца кадра).
+		remove_child(c)
 		c.queue_free()
 	_dice.clear()
 	var n: int = values.size() if not values.is_empty() else pending
 	for i in range(n):
 		var val: int = int(values[i]) if i < values.size() else 0
 		_dice.append(_make_die(val, can_reroll, i, values.is_empty(), can_add))
+	# Отнятые кубы: рамки есть (ряд не «худеет»), но они не в _dice — их не крутят,
+	# не подсвечивают и по ним нельзя кликнуть.
+	for i in range(_blocked_n):
+		add_child(_make_blocked_die(n + i))
 
 
 func _make_die(
@@ -204,15 +226,7 @@ func _make_die(
 	root.add_child(content)
 
 	# Рамка (текстура) — кант + тёмный центр. Свечение и грань идут ПОВЕРХ.
-	var frame := TextureRect.new()
-	frame.name = "Frame"
-	frame.texture = FRAME_TEX
-	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	frame.stretch_mode = TextureRect.STRETCH_SCALE
-	frame.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.add_child(frame)
+	content.add_child(_make_frame())
 
 	# Свечение-подложка — радиальная заливка во внутреннем вырезе (за гранью).
 	var glow := TextureRect.new()
@@ -245,17 +259,11 @@ func _make_die(
 	if is_pending:
 		var icon: Texture2D = _pending_icon()
 		if icon != null:
-			var sz: Vector2 = icon.get_size() * SKILL_ICON_SCALE
-			var skill_icon := TextureRect.new()
-			skill_icon.name = "SkillIcon"
-			skill_icon.texture = icon
-			skill_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			skill_icon.stretch_mode = TextureRect.STRETCH_SCALE
-			skill_icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-			skill_icon.position = (Vector2(DIE_W, DIE_H) - sz) * 0.5
-			skill_icon.size = sz
-			skill_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			content.add_child(skill_icon)
+			content.add_child(_make_skill_icon(icon))
+
+	# Куб добавлен сверх листа персонажа — красим рамку и иконку (см. set_pool_marks).
+	if index < _bonus_n:
+		_tint_die(content, C_MARK_BONUS)
 
 	# Материал блюра — один на куб (общий для всех граней ленты).
 	var blur_mat := ShaderMaterial.new()
@@ -296,6 +304,67 @@ func _make_die(
 	# Стартово — одна финальная грань (статика); спин перезаполнит ленту сам.
 	_set_reel(die, [value])
 	return die
+
+
+# Рамка куба — кант + тёмный центр, на всю площадь куба.
+func _make_frame() -> TextureRect:
+	var frame := TextureRect.new()
+	frame.name = "Frame"
+	frame.texture = FRAME_TEX
+	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	frame.stretch_mode = TextureRect.STRETCH_SCALE
+	frame.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return frame
+
+
+# Иконка навыка ПОВЕРХ рамки, а не в окне грани: окно клипает по стороне грани,
+# а иконка крупнее её. В натуральном размере (@2× × SKILL_ICON_SCALE), по центру.
+func _make_skill_icon(icon: Texture2D) -> TextureRect:
+	var sz: Vector2 = icon.get_size() * SKILL_ICON_SCALE
+	var skill_icon := TextureRect.new()
+	skill_icon.name = "SkillIcon"
+	skill_icon.texture = icon
+	skill_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	skill_icon.stretch_mode = TextureRect.STRETCH_SCALE
+	skill_icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	skill_icon.position = (Vector2(DIE_W, DIE_H) - sz) * 0.5
+	skill_icon.size = sz
+	skill_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return skill_icon
+
+
+# Холостая рамка отнятого куба: та же рамка с иконкой навыка, но красная и без
+# ленты граней — этот куб не бросается. В _dice не попадает: не крутится, не
+# светится, не кликается.
+func _make_blocked_die(index: int) -> Control:
+	var root := Control.new()
+	root.name = "DieBlocked%d" % index
+	root.custom_minimum_size = Vector2(DIE_W, DIE_H)
+	root.size = Vector2(DIE_W, DIE_H)
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var content := Control.new()
+	content.name = "Content"
+	content.size = Vector2(DIE_W, DIE_H)
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(content)
+	content.add_child(_make_frame())
+
+	var icon: Texture2D = _pending_icon()
+	if icon != null:
+		content.add_child(_make_skill_icon(icon))
+	_tint_die(content, C_MARK_BLOCKED)
+	return root
+
+
+# Пометка куба цветом: красим рамку и иконку навыка, но НЕ свечение и не грань —
+# у них своя семантика (успех/провал), её пометка пула перебивать не должна.
+func _tint_die(content: Control, color: Color) -> void:
+	for n in [content.get_node_or_null("Frame"), content.get_node_or_null("SkillIcon")]:
+		if n != null:
+			(n as CanvasItem).modulate = color
 
 
 # Заполнить ленту гранями vals (сверху вниз) текстурами. reel.y = 0.

@@ -104,6 +104,22 @@ static func min_dice(mods: Array, skill: String = "") -> int:
 	return floor_n
 
 
+## Разбор пула проверки для UI: сколько кубов бросаем и как их пометить.
+## base — ГОЛЫЙ навык сыщика по листу; всё сверх него (постоянные skill_mods,
+## модификатор карты/монстра, кубы от разыгранных карт) показываем цветом:
+##   bonus   — добавленные кубы (их бросаем, красим зелёным);
+##   blocked — отнятые: рамки показываем, но не бросаем (красим красным).
+## pool — сколько РЕАЛЬНО бросаем (минимум 1 — тот же кламп, что у хоста).
+## Сумма показанных рамок = pool + blocked, то есть ряд не «худеет» от штрафов.
+static func pool_breakdown(base: int, skill_mods: int, modifier: int, extra: int) -> Dictionary:
+	var pool: int = maxi(1, base + skill_mods + modifier + extra)
+	return {
+		"pool": pool,
+		"bonus": maxi(0, pool - base),
+		"blocked": maxi(0, base - pool),
+	}
+
+
 ## Доп. кубы к ПУЛУ от активных модификаторов (применяется ДО броска):
 ## rollAdditionalDice — складываются (разные источники); improveSkill — НЕ
 ## складываются (бонусы навыка/оружие не суммируются: берём МАКСИМУМ по навыку,

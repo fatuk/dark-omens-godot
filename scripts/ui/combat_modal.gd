@@ -154,14 +154,16 @@ func _single_diff(a: Array, b: Array) -> int:
 
 
 # Пул d6 проверки (как у хоста в CheckFlow.pool) — для рубашек до броска.
-func _check_pool(skill: String, modifier: int) -> int:
+# Разбор пула: {pool, bonus, blocked} — см. DiceTray.set_pool_marks.
+func _pool(skill: String, modifier: int) -> Dictionary:
 	var me: Dictionary = GameState.my_player()
 	var inv: Dictionary = Investigators.get_data(String(me.get("investigator", "")))
 	var base: int = int((inv.get("skills", {}) as Dictionary).get(skill, 1))
 	var mods: int = int((me.get("skill_mods", {}) as Dictionary).get(skill, 0))
 	# Доп. кубы от применённых карт (рубашки растут заранее).
 	var amods: Array = _chk().get("active_mods", [])
-	return maxi(1, base + mods + modifier + Dice.pre_roll_bonus(amods, skill))
+	var extra: int = Dice.pre_roll_bonus(amods, skill)
+	return Dice.pool_breakdown(base, mods, modifier, extra)
 
 
 # Локализованное имя навыка: "will" → «Воля», "influence" → «Влияние» и т.д.
@@ -179,14 +181,14 @@ func _step_label(step_key: String, test: Dictionary, default_skill: String) -> S
 	return txt
 
 
-func _will_pool(card: Dictionary) -> int:
+func _will_pool(card: Dictionary) -> Dictionary:
 	var h: Dictionary = card.get("horror", {})
-	return _check_pool(String(h.get("skill", "will")), int(h.get("modifier", 0)))
+	return _pool(String(h.get("skill", "will")), int(h.get("modifier", 0)))
 
 
-func _str_pool(card: Dictionary) -> int:
+func _str_pool(card: Dictionary) -> Dictionary:
 	var c: Dictionary = card.get("combat", {})
-	return _check_pool(String(c.get("skill", "strength")), int(c.get("modifier", 0)))
+	return _pool(String(c.get("skill", "strength")), int(c.get("modifier", 0)))
 
 
 # ── Колонки ───────────────────────────────────────────────────────────────────
@@ -256,9 +258,11 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 		_last_will = wd.duplicate()
 		_will_line(col, int(c.get("successes", 0)), card)
 		_reroll_hint(col, can)
-	else:  # рубашки до броска Воли
+	else:  # до броска Воли — полный пул с пометками
+		var wp: Dictionary = _will_pool(card)
+		_will_tray.set_pool_marks(int(wp["bonus"]), int(wp["blocked"]))
 		_will_tray.show_pending(
-			_will_pool(card), String((card.get("horror", {}) as Dictionary).get("skill", "will"))
+			int(wp["pool"]), String((card.get("horror", {}) as Dictionary).get("skill", "will"))
 		)
 		_last_will = []
 
@@ -301,8 +305,10 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 			_str_line(col, hits, hits, maxi(0, dmg - hits))
 			_reroll_hint(col, can)
 		else:
+			var sp: Dictionary = _str_pool(card)
+			_str_tray.set_pool_marks(int(sp["bonus"]), int(sp["blocked"]))
 			_str_tray.show_pending(
-				_str_pool(card),
+				int(sp["pool"]),
 				String((card.get("combat", {}) as Dictionary).get("skill", "strength"))
 			)
 			_last_str = []

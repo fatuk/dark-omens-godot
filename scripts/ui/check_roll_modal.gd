@@ -196,7 +196,9 @@ func _render_dice() -> void:
 	if not _rolled():
 		if not _last_dice.is_empty():
 			_last_dice = []
-		_tray.show_pending(_check_pool(), String(_chk().get("skill", "")))  # иконка навыка до броска
+		var pb: Dictionary = _pool()
+		_tray.set_pool_marks(int(pb["bonus"]), int(pb["blocked"]))
+		_tray.show_pending(int(pb["pool"]), String(_chk().get("skill", "")))
 		return
 	var dice: Array = _chk().get("dice", [])
 	var can: bool = _can_reroll()
@@ -246,15 +248,17 @@ func _single_diff(a: Array, b: Array) -> int:
 
 
 # Пул кубов навыка проверки до броска (для рубашек): навык + skill_mods + modifier + доп.кубы.
-func _check_pool() -> int:
+# Разбор пула: {pool, bonus, blocked} — ряд показывает полный пул сыщика,
+# добавленные/отнятые кубы помечены цветом (см. DiceTray.set_pool_marks).
+func _pool() -> Dictionary:
 	var c: Dictionary = _chk()
 	var skill: String = String(c.get("skill", "influence"))
 	var me: Dictionary = GameState.my_player()
 	var inv: Dictionary = Investigators.get_data(String(me.get("investigator", "")))
 	var base: int = int((inv.get("skills", {}) as Dictionary).get(skill, 1))
 	var mods: int = int((me.get("skill_mods", {}) as Dictionary).get(skill, 0))
-	var bonus: int = Dice.pre_roll_bonus(c.get("active_mods", []), skill)
-	return maxi(1, base + mods + int(c.get("modifier", 0)) + bonus)
+	var extra: int = Dice.pre_roll_bonus(c.get("active_mods", []), skill)
+	return Dice.pool_breakdown(base, mods, int(c.get("modifier", 0)), extra)
 
 
 # ── Действия ───────────────────────────────────────────────────────────────────

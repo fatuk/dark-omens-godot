@@ -350,7 +350,7 @@ func _show_card(card: Dictionary) -> void:
 	_outcome_shown = false  # исход ещё не показан — сброс фейд-флага
 	_finish_btn.visible = false
 	var test_c: Dictionary = card.get("test", {})
-	_show_dice_pending(_check_pool(test_c), String(test_c.get("skill", "")))  # иконка навыка
+	_show_dice_pending(test_c)
 
 
 func _show_outcome(card: Dictionary) -> void:
@@ -402,7 +402,7 @@ func _show_gate(card: Dictionary) -> void:
 		_outcome_shown = false  # исход ещё не показан — сброс фейд-флага
 		_finish_btn.visible = false
 		var test_n: Dictionary = node.get("test", {})
-		_show_dice_pending(_check_pool(test_n), String(test_n.get("skill", "")))  # иконка навыка
+		_show_dice_pending(test_n)
 		return
 
 	var res: Dictionary = _chk()
@@ -484,13 +484,16 @@ func _ensure_tray() -> void:
 	_dice_holder.add_child(_tray)
 
 
-# До броска — рубашки по числу кубов проверки (как в магазине).
-func _show_dice_pending(pool: int, skill: String = "") -> void:
+# До броска — полный пул сыщика: бросаемые кубы плюс помеченные добавленные/отнятые.
+func _show_dice_pending(test: Dictionary) -> void:
 	if not is_instance_valid(_dice_holder):
 		return
 	_ensure_tray()
+	var pb: Dictionary = _pool(test)
+	var pool: int = int(pb["pool"])
 	if _pending_n != pool or not _last_dice.is_empty():
-		_tray.show_pending(pool, skill)
+		_tray.set_pool_marks(int(pb["bonus"]), int(pb["blocked"]))
+		_tray.show_pending(pool, String(test.get("skill", "")))
 		_pending_n = pool
 		_last_dice = []
 	_dice_holder.visible = true
@@ -570,7 +573,9 @@ func _single_diff(a: Array, b: Array) -> int:
 
 # Пул d6 проверки = навык + модификаторы навыка + модификатор карты (как у хоста
 # в CheckFlow.pool). Для показа рубашек до броска.
-func _check_pool(test: Dictionary) -> int:
+# Разбор пула: {pool, bonus, blocked} — ряд показывает полный пул сыщика,
+# добавленные/отнятые кубы помечены цветом (см. DiceTray.set_pool_marks).
+func _pool(test: Dictionary) -> Dictionary:
 	var me: Dictionary = GameState.my_player()
 	var inv: Dictionary = Investigators.get_data(String(me.get("investigator", "")))
 	var skill: String = String(test.get("skill", "will"))
@@ -578,7 +583,8 @@ func _check_pool(test: Dictionary) -> int:
 	var mods: int = int((me.get("skill_mods", {}) as Dictionary).get(skill, 0))
 	# Доп. кубы от активированных карт до броска (Фаза 5) — рубашки растут заранее.
 	var amods: Array = _chk().get("active_mods", [])
-	return maxi(1, base + mods + int(test.get("modifier", 0)) + Dice.pre_roll_bonus(amods, skill))
+	var extra: int = Dice.pre_roll_bonus(amods, skill)
+	return Dice.pool_breakdown(base, mods, int(test.get("modifier", 0)), extra)
 
 
 # Кнопка под исходом: после первой проверки врат (stage 0) — «Дальше» ко второй
