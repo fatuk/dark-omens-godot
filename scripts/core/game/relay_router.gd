@@ -68,6 +68,7 @@ func build_registry() -> Dictionary:
 		RelayActions.CAST_TRIGGER_SPELLS: _act_cast_trigger_spells,
 		RelayActions.DISMISS_CAST_RESULT: _act_dismiss_cast_result,
 		RelayActions.DISMISS_RECKONING: _act_dismiss_reckoning,
+		RelayActions.DISMISS_GAINS: _act_dismiss_gains,
 		RelayActions.SHOP_GRANT: _act_shop_grant,
 		RelayActions.SHOP_CLOSE: _act_shop_close,
 		RelayActions.SHOP_DEBT: _act_shop_debt,
@@ -218,6 +219,10 @@ func _act_dismiss_cast_result(d: Dictionary) -> void:
 
 func _act_dismiss_reckoning(d: Dictionary) -> void:
 	_gs.call("_host_dismiss_reckoning", String(d.get("pid", "")))
+
+
+func _act_dismiss_gains(d: Dictionary) -> void:
+	_gs.call("_host_dismiss_gains", String(d.get("pid", "")))
 
 
 func _act_shop_grant(d: Dictionary) -> void:

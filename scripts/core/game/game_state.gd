@@ -1251,6 +1251,27 @@ func _host_dismiss_cast_result(pid: String) -> void:
 
 
 ## Игрок закрыл модалку результата флипа состояния — хост убирает его запись.
+## Окно «вы получили» закрыто — стираем накопленное (мифы/Расплата выдают молча,
+## поэтому показываем сводку; см. ActionFeed.collect_gains).
+func dismiss_gains() -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_host_dismiss_gains(my_pid)
+	else:
+		_nm.relay_all({"action": RelayActions.DISMISS_GAINS, "pid": my_pid})
+
+
+# Хост: стереть сводку приобретений игрока (по закрытию модалки).
+func _host_dismiss_gains(pid: String) -> void:
+	if not players.has(pid):
+		return
+	var p: Dictionary = players[pid]
+	if not p.has("gains"):
+		return
+	p.erase("gains")
+	_broadcast_and_emit()
+
+
 func dismiss_reckoning_result() -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():

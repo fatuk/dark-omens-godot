@@ -116,6 +116,7 @@ func _ready() -> void:
 	_build_death_save_modal()
 	_build_ghost_bar()
 	_build_encounter_watch_modal()
+	_build_gains_modal()
 	_build_chat_composer()
 	_build_hand_carousel()
 	_refresh_game_panel()
@@ -293,6 +294,14 @@ func _build_encounter_watch_modal() -> void:
 	var w: CanvasLayer = load("res://scripts/ui/encounter_watch_modal.gd").new()
 	w.name = "EncounterWatchModal"
 	add_child(w)
+
+
+# Окно «вы получили»: сводка приобретений после мифа/Расплаты — там выдача идёт
+# молча, и понять, что именно пришло, было неоткуда.
+func _build_gains_modal() -> void:
+	var g: CanvasLayer = load("res://scripts/ui/gains_modal.gd").new()
+	g.name = "GainsModal"
+	add_child(g)
 
 
 # Композер чата (C): веер шаблонов → веер слов по секциям → центр-превью → Отправить.

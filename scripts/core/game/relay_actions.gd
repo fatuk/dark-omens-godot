@@ -39,6 +39,7 @@ const GHOST_PLACE_CLUE := "game_ghost_place_clue"  # Тень выкладыва
 const CAST_TRIGGER_SPELLS := "game_cast_trigger_spells"
 const DISMISS_CAST_RESULT := "game_dismiss_cast_result"
 const DISMISS_RECKONING := "game_dismiss_reckoning"
+const DISMISS_GAINS := "game_dismiss_gains"  # закрыто окно «вы получили»
 const SHOP_GRANT := "game_shop_grant"
 const SHOP_CLOSE := "game_shop_close"
 const SHOP_DEBT := "game_shop_debt"

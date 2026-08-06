@@ -251,6 +251,7 @@ func _apply_effects(effects: Array) -> void:
 				var before: Dictionary = (_gs.players[uid] as Dictionary).duplicate(true)
 				var res: Dictionary = _EffectRunner.run([eff], _gs.players[uid])
 				ActionFeed.announce_deltas(_gs, uid, before, _gs.players[uid])  # лента исходов мифа
+				ActionFeed.collect_gains(_gs, uid, before, _gs.players[uid])  # окно «вы получили»
 				for log_msg in res.get("logs", []):
 					GameConsole.log("[Mythos→%s] %s" % [_gs._name_of(uid), String(log_msg)])
 		else:
@@ -358,6 +359,7 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 		if pending.is_empty():
 			_gs.players[pid] = dup  # коммит мутаций самого сыщика
 			ActionFeed.announce_deltas(_gs, pid, sub_before, dup)  # лента исходов мифа (forEach)
+			ActionFeed.collect_gains(_gs, pid, sub_before, dup)  # окно «вы получили»
 			for node_v: Variant in res.get("board", []):
 				var bnode: Dictionary = node_v
 				bnode["_anchor_pid"] = pid  # относительные цели — от этого сыщика

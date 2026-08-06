@@ -74,6 +74,7 @@ func reckon_condition(
 		var res: Dictionary = _EffectRunner.run(program, p, ctx, flow)
 		_apply_reckon_output(pid, cid, def, ctx, res, flow)
 		ActionFeed.announce_deltas(_gs, pid, recon_before, _gs.players.get(pid, {}))  # лента Расплаты
+		ActionFeed.collect_gains(_gs, pid, recon_before, _gs.players.get(pid, {}))
 		return
 	await _reckon_condition_interactive(pid, cid, def, program, ctx)
 
@@ -131,6 +132,7 @@ func _reckon_condition_interactive(
 		_gs.players[pid] = dup  # коммит мутаций сыщика
 		_apply_reckon_output(pid, cid, def, ctx, res, {})
 		ActionFeed.announce_deltas(_gs, pid, recon_before, _gs.players.get(pid, {}))  # лента Расплаты
+		ActionFeed.collect_gains(_gs, pid, recon_before, _gs.players.get(pid, {}))
 		return
 
 
