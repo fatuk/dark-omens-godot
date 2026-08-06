@@ -31,6 +31,12 @@ const SKILL_TEX := {
 }
 const SKILL_ICON_SCALE: float = 0.65  # ассеты @2× (0.5) + 30% — иконка крупнее грани
 
+# Зазор между рамками кубов. У die-frame.png нет прозрачных полей по краям, поэтому
+# это ровно видимое расстояние между кубами. static — крутится в панели тюнинга
+# (Ctrl+M, секция «КУБЫ»); найденное значение запекается сюда же.
+static var DIE_GAP: float = 7.0
+const GAP_GROUP: StringName = &"dice_tray"
+
 const FACE_TEX := {
 	1: preload("res://assets/dice/side1.png"),
 	2: preload("res://assets/dice/side2.png"),
@@ -97,9 +103,8 @@ var _pending_skill: String = ""  # какой навык показывать в
 
 func _init() -> void:
 	name = "DiceTray"
-	# Зазор между рамками. У die-frame.png нет прозрачных полей по краям, поэтому
-	# это ровно видимое расстояние между кубами.
-	add_theme_constant_override("separation", 7)
+	add_to_group(GAP_GROUP)  # чтобы панель тюнинга дотянулась до живых лотков
+	refresh_gap()
 	alignment = BoxContainer.ALIGNMENT_CENTER
 
 
@@ -132,6 +137,11 @@ func play_roll(values: Array, can_reroll: bool = false, can_add: bool = false) -
 		_jitter(_dice[i])
 	if not _dice.is_empty():
 		_play_clatter(_dice.size())  # щелчки-активации бьёт _settle по всполохам
+
+
+## Перечитать DIE_GAP в отступ контейнера (панель тюнинга дёргает у живых лотков).
+func refresh_gap() -> void:
+	add_theme_constant_override("separation", int(roundf(DIE_GAP)))
 
 
 ## Пустые кубы до броска. skill (strength/lore/will/influence/observation) рисует

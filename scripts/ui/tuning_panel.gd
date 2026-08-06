@@ -1046,6 +1046,16 @@ func _build_specs() -> Array:
 			"default": GalleryModal.TEXT_MARGIN.y,
 			"set": _set_gal_my
 		},
+		{"section": "КУБЫ"},
+		{
+			"key": "die_gap",
+			"label": "Зазор рамок",
+			"min": 0.0,
+			"max": 40.0,
+			"step": 1.0,
+			"default": DiceTray.DIE_GAP,
+			"set": _set_die_gap
+		},
 	]
 
 
@@ -1827,6 +1837,15 @@ func _set_gal_font(v: float) -> void:
 func _set_gal_mx(v: float) -> void:
 	GalleryModal.TEXT_MARGIN = Vector2(v, GalleryModal.TEXT_MARGIN.y)
 	_reapply_gallery_text()
+
+
+# ── Кубы (DiceTray.DIE_GAP — static; пушим в живые лотки по группе) ──────────
+
+
+func _set_die_gap(v: float) -> void:
+	DiceTray.DIE_GAP = v
+	for t in get_tree().get_nodes_in_group(DiceTray.GAP_GROUP):
+		t.call("refresh_gap")
 
 
 func _set_gal_my(v: float) -> void:
