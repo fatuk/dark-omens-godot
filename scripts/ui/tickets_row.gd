@@ -40,7 +40,15 @@ void fragment() {
 }
 """
 
+# «Падение» нового билета: проявляется из увеличенного масштаба — будто лёг
+# сверху на стопку. Играется ТОЛЬКО у добавленных билетов (см. set_counts).
+const _DROP_SCALE: float = 1.9  # с какого масштаба падает
+const _DROP_TIME: float = 0.26
+
 var _shadow_mat: ShaderMaterial
+var _train_n: int = 0  # прошлые количества — чтобы понять, какие билеты новые
+var _ship_n: int = 0
+var _seen: bool = false  # первая раскладка (стартовая рука) — без анимации
 
 
 func _init() -> void:
@@ -59,16 +67,49 @@ static func ticket_height_px() -> float:
 
 ## Перестроить ряд: train_n поездных + ship_n морских билетов.
 func set_counts(train_n: int, ship_n: int) -> void:
+	train_n = maxi(0, train_n)
+	ship_n = maxi(0, ship_n)
+	# Сколько билетов ПРИБАВИЛОСЬ с прошлой раскладки — только они падают.
+	# Первая раскладка (вход в игру/синк) анимации не играет: билеты уже «лежали».
+	var new_train: int = maxi(0, train_n - _train_n) if _seen else 0
+	var new_ship: int = maxi(0, ship_n - _ship_n) if _seen else 0
+	_seen = true
+	_train_n = train_n
+	_ship_n = ship_n
+
 	for c in get_children():
+		# Снимаем с родителя сразу: queue_free отложен, иначе новые билеты получат
+		# имена @Control@N (старые TrainTicket0… заняты до конца кадра).
+		remove_child(c)
 		c.queue_free()
 	var h: float = ticket_height_px()
 	var idx: int = 0
-	for i in range(maxi(0, train_n)):
-		add_child(_make_ticket(_TRAIN_TEX, "TrainTicket%d" % i, h, _tilt(idx)))
+	for i in range(train_n):
+		var tr: Control = _make_ticket(_TRAIN_TEX, "TrainTicket%d" % i, h, _tilt(idx))
+		add_child(tr)
+		if i >= train_n - new_train:
+			_drop_in(tr)
 		idx += 1
-	for i in range(maxi(0, ship_n)):
-		add_child(_make_ticket(_OCEAN_TEX, "OceanTicket%d" % i, h, _tilt(idx)))
+	for i in range(ship_n):
+		var sh: Control = _make_ticket(_OCEAN_TEX, "OceanTicket%d" % i, h, _tilt(idx))
+		add_child(sh)
+		if i >= ship_n - new_ship:
+			_drop_in(sh)
 		idx += 1
+
+
+# Новый билет «падает» на стопку: из увеличенного масштаба в свой, с проявлением.
+func _drop_in(holder: Control) -> void:
+	var tilt: Control = holder.get_node_or_null("Tilt")
+	if tilt == null:
+		return
+	tilt.scale = Vector2(_DROP_SCALE, _DROP_SCALE)
+	holder.modulate.a = 0.0
+	var tw: Tween = holder.create_tween().set_parallel(true)
+	tw.tween_property(holder, "modulate:a", 1.0, _DROP_TIME)
+	tw.tween_property(tilt, "scale", Vector2.ONE, _DROP_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(
+		Tween.EASE_OUT
+	)
 
 
 # Наклон для эффекта брошенной стопки: первый билет ровно, дальше — вразнобой.
