@@ -105,18 +105,25 @@ static func min_dice(mods: Array, skill: String = "") -> int:
 
 
 ## Разбор пула проверки для UI: сколько кубов бросаем и как их пометить.
-## base — ГОЛЫЙ навык сыщика по листу; всё сверх него (постоянные skill_mods,
-## модификатор карты/монстра, кубы от разыгранных карт) показываем цветом:
-##   bonus   — добавленные кубы (их бросаем, красим зелёным);
-##   blocked — отнятые: рамки показываем, но не бросаем (красим красным).
-## pool — сколько РЕАЛЬНО бросаем (минимум 1 — тот же кламп, что у хоста).
-## Сумма показанных рамок = pool + blocked, то есть ряд не «худеет» от штрафов.
+## base — ГОЛЫЙ навык сыщика по листу. Прибавки и штрафы считаем РАЗДЕЛЬНО, а не
+## по итогу: «+1 от предмета и −1 от монстра» — это зелёный и красный куб в ряду,
+## а не пустой ряд без пометок.
+##   bonus   — добавленные кубы (первые в ряду, бросаются, зелёные);
+##   blocked — отнятые: рамки в хвосте показываем, но не бросаем (красные);
+##   pool    — сколько РЕАЛЬНО бросаем (минимум 1 — тот же кламп, что у хоста).
+## Всего рамок = pool + blocked = base + прибавки, то есть ряд не «худеет».
+##
+## ОГОВОРКА: extra приходит из pre_roll_bonus уже свёрнутым по знаку, поэтому
+## внутри него плюс и минус от разных карт схлопнутся между собой.
 static func pool_breakdown(base: int, skill_mods: int, modifier: int, extra: int) -> Dictionary:
-	var pool: int = maxi(1, base + skill_mods + modifier + extra)
+	var ups: int = maxi(0, skill_mods) + maxi(0, modifier) + maxi(0, extra)
+	var downs: int = -(mini(0, skill_mods) + mini(0, modifier) + mini(0, extra))
+	var shown: int = base + ups  # сколько рамок в ряду всего
+	var pool: int = maxi(1, shown - downs)
 	return {
 		"pool": pool,
-		"bonus": maxi(0, pool - base),
-		"blocked": maxi(0, base - pool),
+		"bonus": mini(ups, pool),  # зелёных не больше, чем реально бросаем
+		"blocked": maxi(0, shown - pool),
 	}
 
 
