@@ -99,7 +99,7 @@ func _init() -> void:
 	name = "DiceTray"
 	# Зазор между рамками. У die-frame.png нет прозрачных полей по краям, поэтому
 	# это ровно видимое расстояние между кубами.
-	add_theme_constant_override("separation", 6)
+	add_theme_constant_override("separation", 7)
 	alignment = BoxContainer.ALIGNMENT_CENTER
 
 
