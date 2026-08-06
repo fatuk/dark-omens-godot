@@ -16,7 +16,6 @@ extends CanvasLayer
 @onready var _vbox: VBoxContainer = %VBox
 var _title: Label  # заголовок с шевронами (ставится в _ready вместо плоского %Title)
 @onready var _main_text: Label = %MainText
-@onready var _check: Label = %Check
 @onready var _roll_btn: Button = %RollBtn
 @onready var _dice: Label = %Dice
 @onready var _outcome: Label = %Outcome
@@ -45,7 +44,6 @@ const _BG_CITY: Texture2D = preload("res://assets/encounter/city.png")
 const _BG_SEA: Texture2D = preload("res://assets/encounter/sea.png")
 const _BG_WILDERNESS: Texture2D = preload("res://assets/encounter/wilderness.png")
 # Резной баннер-плашка под строкой проверки (9-patch: концы не растягиваются).
-const _CHECK_PLATE: Texture2D = preload("res://assets/encounter/check-title.png")
 
 # Карточка встречи — центрированная, ~70% ширины экрана, аспект арта 3:2 (2048/3072).
 # Контент — во внутренних отступах (доли от размера карточки), в нижней «тёмной» зоне
@@ -61,13 +59,6 @@ const _TEXT_WIDTH_FRAC: float = 0.65  # ширина колонки текста
 var _bg: TextureRect  # арт-фон карточки (меняем текстуру по типу локации)
 
 # Навык → ключ перевода для подписи проверки.
-const _SKILL_KEYS := {
-	"lore": "SKILL_LORE",
-	"influence": "SKILL_INFLUENCE",
-	"observation": "SKILL_OBSERVATION",
-	"strength": "SKILL_STRENGTH",
-	"will": "SKILL_WILL",
-}
 
 
 func _ready() -> void:
@@ -84,7 +75,6 @@ func _ready() -> void:
 	# Ширина задаётся в _resize_card; SHRINK_CENTER центрирует колонку, автоперенос — по ней.
 	_main_text.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_outcome.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_style_check_plate()  # строка проверки — на резном баннере
 	_dice.add_theme_color_override("font_color", UIColors.MUTED)
 
 	# Контейнер ряда кубиков — над строкой _dice (успехи/концентрация).
@@ -192,26 +182,6 @@ func _play_outcome_in() -> void:
 	_outcome_tween.tween_property(_outcome, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE)
 
 
-# Строка проверки на резном баннере check-title.png. Плашка — ФИКСИРОВАННОГО
-# размера (оригинал @2× → 0.5), центрирована, НЕ тянется ни по ширине, ни по высоте:
-# лейбл ужат до размера ассета (SHRINK_CENTER + custom_minimum_size), StyleBoxTexture
-# рисует текстуру ровно в этот размер (=½ натурального → без искажений). Текст —
-# по центру, боковые отступы уводят его с резных концов.
-func _style_check_plate() -> void:
-	var sb := StyleBoxTexture.new()
-	sb.texture = _CHECK_PLATE
-	sb.content_margin_left = 90
-	sb.content_margin_right = 90
-	sb.content_margin_top = 4
-	sb.content_margin_bottom = 6
-	_check.add_theme_stylebox_override("normal", sb)
-	_check.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_check.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_check.add_theme_color_override("font_color", UIColors.TEXT)
-	_check.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_check.custom_minimum_size = _CHECK_PLATE.get_size() * 0.5
-
-
 # Арт карточки по типу локации активной встречи. Пока все типы → город.
 func _apply_background() -> void:
 	if _bg == null:
@@ -302,7 +272,7 @@ func _refresh() -> void:
 func _show_loading() -> void:
 	_title.text = "ENCOUNTER_TITLE"
 	_main_text.text = "ENCOUNTER_GENERATING"
-	for node: Control in [_check, _roll_btn, _dice, _outcome, _finish_btn]:
+	for node: Control in [_roll_btn, _dice, _outcome, _finish_btn]:
 		node.visible = false
 	_outcome_shown = false  # исход ещё не показан — сброс фейд-флага
 	_hide_dice()
@@ -315,7 +285,7 @@ func _show_choice(card: Dictionary) -> void:
 	var kind: String = String(pending.get("kind", "choice"))  # choice | target | monster
 	_title.text = _title_text(card)
 	_main_text.text = tr(_choose_prompt_key(kind))
-	for node: Control in [_check, _roll_btn, _dice, _outcome, _finish_btn]:
+	for node: Control in [_roll_btn, _dice, _outcome, _finish_btn]:
 		node.visible = false
 	_hide_dice()
 	_clear_choice()
@@ -373,8 +343,6 @@ func _on_choice_pressed(index: int) -> void:
 func _show_card(card: Dictionary) -> void:
 	_title.text = _title_text(card)
 	_main_text.text = _main_or_stakes(card)
-	_check.text = _check_label(card.get("test", {}))
-	_check.visible = true
 	_roll_btn.text = "ENCOUNTER_ROLL"
 	_roll_btn.visible = true
 	_roll_btn.disabled = false
@@ -390,8 +358,6 @@ func _show_outcome(card: Dictionary) -> void:
 	var passed: bool = bool(res.get("passed", false))
 	_title.text = _title_text(card)
 	_main_text.text = _main_or_stakes(card)
-	_check.text = _check_label(card.get("test", {}))
-	_check.visible = true
 	_show_dice_result(res)
 	# Провал прячем, пока есть перебросы (поштучно или «всё») и игрок не «принял».
 	var hide_fail: bool = (
@@ -427,8 +393,6 @@ func _show_gate(card: Dictionary) -> void:
 		return
 	_title.text = "%s  (%d/2)" % [_title_text(card), stage + 1]
 	_main_text.text = _main_or_stakes(node)
-	_check.text = _check_label(node.get("test", {}))
-	_check.visible = true
 
 	if not _chk_rolled():
 		_roll_btn.text = "ENCOUNTER_ROLL"
@@ -709,14 +673,3 @@ func _outcome_text(src: Dictionary, passed: bool) -> String:
 func _eff(arr: Variant) -> String:
 	var s: String = EffectManifest.describe_list(arr)
 	return s if not s.is_empty() else tr("ENC_EFF_NONE")
-
-
-func _check_label(test: Dictionary) -> String:
-	var skill: String = String(test.get("skill", "will"))
-	var modifier: int = int(test.get("modifier", 0))
-	var skill_name: String = tr(String(_SKILL_KEYS.get(skill, "SKILL_WILL")))
-	var line: String = "%s: %s" % [tr("ENCOUNTER_CHECK"), skill_name]
-	if modifier != 0:
-		# Модификатор монстра/карты — как в бою: «… +1» / «… −3» (юникод-минус).
-		line += "  %s%d" % ["+" if modifier > 0 else "−", absi(modifier)]
-	return line
