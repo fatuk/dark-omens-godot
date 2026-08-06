@@ -85,10 +85,10 @@ func set_counts(train_n: int, ship_n: int) -> void:
 	var h: float = ticket_height_px()
 	var idx: int = 0
 	for i in range(train_n):
-		var tr: Control = _make_ticket(_TRAIN_TEX, "TrainTicket%d" % i, h, _tilt(idx))
-		add_child(tr)
+		var train: Control = _make_ticket(_TRAIN_TEX, "TrainTicket%d" % i, h, _tilt(idx))
+		add_child(train)
 		if i >= train_n - new_train:
-			_drop_in(tr)
+			_drop_in(train)
 		idx += 1
 	for i in range(ship_n):
 		var sh: Control = _make_ticket(_OCEAN_TEX, "OceanTicket%d" % i, h, _tilt(idx))

@@ -1110,6 +1110,115 @@ func _build_specs() -> Array:
 			"default": DiceTray.C_MARK_BLOCKED.b,
 			"set": _set_die_blocked_b
 		},
+		{"section": "РУНЫ РОКА"},
+		{
+			"key": "runes_amount",
+			"label": "Проявленность",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.0,
+			"set": _set_runes_amount
+		},
+		{
+			"key": "runes_grid",
+			"label": "Ячеек",
+			"min": 2.0,
+			"max": 24.0,
+			"step": 1.0,
+			"default": 7.0,
+			"set": _set_runes_grid
+		},
+		{
+			"key": "runes_glyph_scale",
+			"label": "Размер знака",
+			"min": 0.1,
+			"max": 2.0,
+			"step": 0.01,
+			"default": 0.8,
+			"set": _set_runes_glyph_scale
+		},
+		{
+			"key": "runes_reveal_spread",
+			"label": "Разброс появления",
+			"min": 0.01,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.35,
+			"set": _set_runes_reveal_spread
+		},
+		{
+			"key": "runes_intensity",
+			"label": "Яркость",
+			"min": 0.0,
+			"max": 3.0,
+			"step": 0.05,
+			"default": 1.0,
+			"set": _set_runes_intensity
+		},
+		{
+			"key": "runes_pulse_speed",
+			"label": "Скорость пульса",
+			"min": 0.0,
+			"max": 4.0,
+			"step": 0.05,
+			"default": 0.6,
+			"set": _set_runes_pulse_speed
+		},
+		{
+			"key": "runes_pulse_depth",
+			"label": "Глубина пульса",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.35,
+			"set": _set_runes_pulse_depth
+		},
+		{
+			"key": "runes_drift",
+			"label": "Дрейф",
+			"min": 0.0,
+			"max": 0.5,
+			"step": 0.005,
+			"default": 0.03,
+			"set": _set_runes_drift
+		},
+		{
+			"key": "runes_vignette",
+			"label": "К краям",
+			"min": 0.0,
+			"max": 2.0,
+			"step": 0.05,
+			"default": 0.9,
+			"set": _set_runes_vignette
+		},
+		{
+			"key": "runes_r",
+			"label": "Цвет R",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.35,
+			"set": _set_runes_r
+		},
+		{
+			"key": "runes_g",
+			"label": "Цвет G",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.85,
+			"set": _set_runes_g
+		},
+		{
+			"key": "runes_b",
+			"label": "Цвет B",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.55,
+			"set": _set_runes_b
+		},
 	]
 
 
@@ -1891,6 +2000,72 @@ func _set_gal_font(v: float) -> void:
 func _set_gal_mx(v: float) -> void:
 	GalleryModal.TEXT_MARGIN = Vector2(v, GalleryModal.TEXT_MARGIN.y)
 	_reapply_gallery_text()
+
+
+# ── Руны Рока (шейдер doom_runes; живой слой ищем по группе) ─────────────────
+
+
+# Записать uniform в живой слой рун. Слоя нет (мы не в партии) — тихо выходим.
+func _runes_set(param: String, value: Variant) -> void:
+	for n in get_tree().get_nodes_in_group(DoomRunes.GROUP):
+		n.call("set_param", param, value)
+
+
+func _runes_set_color(comp: int, v: float) -> void:
+	for n in get_tree().get_nodes_in_group(DoomRunes.GROUP):
+		var c: Variant = n.call("get_param", "tint")
+		var col: Color = c if c is Color else Color(0.35, 0.85, 0.55, 1.0)
+		col[comp] = v
+		n.call("set_param", "tint", col)
+
+
+func _set_runes_amount(v: float) -> void:
+	DoomRunes.MANUAL_AMOUNT = v  # ручной режим: трек Рока пока не рулит
+	_runes_set("amount", v)
+
+
+func _set_runes_grid(v: float) -> void:
+	_runes_set("grid", v)
+
+
+func _set_runes_glyph_scale(v: float) -> void:
+	_runes_set("glyph_scale", v)
+
+
+func _set_runes_reveal_spread(v: float) -> void:
+	_runes_set("reveal_spread", v)
+
+
+func _set_runes_intensity(v: float) -> void:
+	_runes_set("intensity", v)
+
+
+func _set_runes_pulse_speed(v: float) -> void:
+	_runes_set("pulse_speed", v)
+
+
+func _set_runes_pulse_depth(v: float) -> void:
+	_runes_set("pulse_depth", v)
+
+
+func _set_runes_drift(v: float) -> void:
+	_runes_set("drift", v)
+
+
+func _set_runes_vignette(v: float) -> void:
+	_runes_set("vignette", v)
+
+
+func _set_runes_r(v: float) -> void:
+	_runes_set_color(0, v)
+
+
+func _set_runes_g(v: float) -> void:
+	_runes_set_color(1, v)
+
+
+func _set_runes_b(v: float) -> void:
+	_runes_set_color(2, v)
 
 
 # ── Кубы (DiceTray.DIE_GAP — static; пушим в живые лотки по группе) ──────────

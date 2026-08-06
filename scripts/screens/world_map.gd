@@ -116,6 +116,7 @@ func _ready() -> void:
 	_build_death_save_modal()
 	_build_ghost_bar()
 	_build_encounter_watch_modal()
+	_build_doom_runes()
 	_build_gains_modal()
 	_build_chat_composer()
 	_build_hand_carousel()
@@ -302,6 +303,14 @@ func _build_gains_modal() -> void:
 	var g: CanvasLayer = load("res://scripts/ui/gains_modal.gd").new()
 	g.name = "GainsModal"
 	add_child(g)
+
+
+# Руны Рока: слой поверх всего, проступает по мере роста безысходности.
+# Пока в ручном режиме — параметры крутятся в панели тюнинга (Ctrl+M).
+func _build_doom_runes() -> void:
+	var r: CanvasLayer = load("res://scripts/ui/doom_runes.gd").new()
+	r.name = "DoomRunes"
+	add_child(r)
 
 
 # Композер чата (C): веер шаблонов → веер слов по секциям → центр-превью → Отправить.
