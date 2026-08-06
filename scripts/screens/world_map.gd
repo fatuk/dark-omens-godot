@@ -320,6 +320,12 @@ func _build_hand_carousel() -> void:
 				return  # карта ушла из руки — розыгрыш отменяем
 			var it: Variant = items[idx]
 			if not (it is Dictionary) or String((it as Dictionary).get("kind", "")) != "spell":
+				# Карточка с тегом "action" играется как ОТДЕЛЬНОЕ действие фазы, а не
+				# как модификатор проверки (у тех нет своей программы).
+				var entry: Dictionary = AssetCatalog.by_id(AssetCatalog.entry_id(it as Dictionary))
+				if AssetCatalog.has_standalone_action(entry):
+					GameState.perform_action(GameActions.ASSET_ACTION, {"item": idx})
+					return
 				# В параллельной Расплате проверка лежит в per-player слоте, а не в
 				# active_check — там свой маршрут, иначе карта молча не сработает.
 				if GameState.my_player().has("reckoning_pending"):
@@ -433,6 +439,16 @@ func _hand_spells_section() -> Array:
 
 # Применима ли карта к ТЕКУЩЕЙ активной проверке: есть ли у неё мод (action/whileOwned),
 # подходящий по контексту + навыку шага + таймингу (до/после броска). Вне проверки — да.
+# Может ли игрок потратить действие прямо сейчас (мой ход в фазе действий).
+func _can_spend_action() -> bool:
+	var me: Dictionary = GameState.my_player()
+	return (
+		GameState.is_my_turn()
+		and GameState.phase == Phases.ACTION
+		and int(me.get("actions_left", 0)) > 0
+	)
+
+
 func _card_applicable_now(pcard: Dictionary) -> bool:
 	# Боевой триггер карты (on:combatEncounter, напр. Handcuffs: фокус→победа) — у неё
 	# нет check-mod, но в бою она применима, если предикат/оплата проходят. Проверяем
@@ -442,8 +458,15 @@ func _card_applicable_now(pcard: Dictionary) -> bool:
 	# current_check, а не active_check: в Расплате проверка лежит в per-player слоте,
 	# и по пустому active_check веер показывал ВСЕ карты применимыми.
 	var c: Dictionary = GameState.current_check()
+	# Актив с самостоятельным действием (тег "action") играется отдельным действием
+	# фазы — он применим и вне проверки, лишь бы был ход и осталось действие.
+	if AssetCatalog.has_standalone_action(AssetCatalog.by_id(String(pcard.get("id", "")))):
+		return _can_spend_action()
+	# Прочие активы вне проверки сыграть НЕКУДА: activate_card ведёт либо в боевой
+	# триггер (проверен выше), либо в CheckFlow.activate, которому нужна проверка.
+	# Раньше тут стоял «true», и в фазе действий вся рука светилась играбельной.
 	if c.is_empty():
-		return true
+		return false
 	var asset: Dictionary = AssetCatalog.by_id(String(pcard.get("id", "")))
 	if asset.is_empty():
 		return true

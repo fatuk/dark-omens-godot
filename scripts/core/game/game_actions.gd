@@ -18,5 +18,6 @@ const TAKE_CONCENTRATION := "take_concentration"
 const TAKE_RESOURCE := "take_resource"
 const ACQUIRE_ASSETS := "acquire_assets"
 const CONDITION_ACTION := "condition_action"
+const ASSET_ACTION := "asset_action"  # самостоятельное действие актива (тег "action")
 const INVESTIGATOR_ABILITY := "investigator_ability"
 const CAST_SPELL := "cast_spell"

@@ -280,6 +280,19 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 					"[Game] %s — нет локального действия состояния" % _gs._name_of(pid)
 				)
 				return false
+		GameActions.ASSET_ACTION:
+			# Самостоятельное действие актива (карточка с тегом "action"). С проверкой →
+			# интерактивный прогон, ход держим (asset_acting) до «Применить»; без
+			# проверки — синхронно. Устроено как CONDITION_ACTION выше.
+			var asset_idx: int = int(payload.get("item", -1))
+			if _gs._asset_action.begin(pid, asset_idx):
+				p["asset_acting"] = true
+				p["actions_left"] = int(p["actions_left"]) - 1
+			elif _gs._asset_action.host_run(pid, asset_idx):
+				p["actions_left"] = int(p["actions_left"]) - 1
+			else:
+				GameConsole.warn("[Game] %s — у актива нет действия" % _gs._name_of(pid))
+				return false
 		GameActions.INVESTIGATOR_ABILITY:
 			# Спец-действие сыщика (data/investigators.json → ability.do). Мгновенное:
 			# программа без видимой проверки. Общие гейты (фаза, очередь, «раз в раунд»,
@@ -509,6 +522,17 @@ func release_cast_turn(pid: String) -> void:
 		_advance_turn_delayed()
 
 
+## Хост: освободить ход после самостоятельного действия актива.
+func release_asset_turn(pid: String) -> void:
+	if not _gs.players.has(pid):
+		return
+	var p: Dictionary = _gs.players[pid]
+	var was_acting: bool = bool(p.get("asset_acting", false))
+	p["asset_acting"] = false
+	if was_acting and int(p.get("actions_left", 0)) == 0:
+		_advance_turn_delayed()
+
+
 ## Хост: локальное действие состояния завершено — снимаем удержание хода condition_acting
 ## и, если действий не осталось, передаём отложенный ход. Зовётся из
 ## ConditionFlow._run_action_program (зеркало release_cast_turn).
@@ -689,6 +713,7 @@ func _turn_can_advance(p: Dictionary) -> bool:
 		and not bool(p.get("spell_prompt", false))
 		and not bool(p.get("casting", false))
 		and not bool(p.get("condition_acting", false))
+		and not bool(p.get("asset_acting", false))
 		and not bool(p.get(PlayerKeys.TRAVEL_ANIM, false))
 	)
 

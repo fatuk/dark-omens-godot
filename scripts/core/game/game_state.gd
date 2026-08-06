@@ -223,6 +223,7 @@ var _rumor: RumorFlow
 var _target: TargetResolver
 var _spell: SpellFlow
 var _death: DeathSaveFlow  # спас-бросок на Пороге (0 HP/SAN), см. death_save_flow.gd
+var _asset_action: AssetActionFlow  # самостоятельное действие актива (тег "action")
 var _relay_router: RelayRouter  # адаптеры relay-действий (_act_*), см. relay_router.gd
 
 # Реэнтранси-гард централизованного свипа Порога в _broadcast_sync (свип открывает
@@ -259,6 +260,7 @@ func _ready() -> void:
 	_target = TargetResolver.new(self)
 	_spell = SpellFlow.new(self)
 	_death = DeathSaveFlow.new(self)
+	_asset_action = AssetActionFlow.new(self)
 	_build_action_registry()  # реестр relay-действий (модули уже созданы выше)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
@@ -1001,6 +1003,8 @@ func _resolve_pending_check_host(pid: String) -> bool:
 	match String(pc.get("driver", "")):
 		"condition":
 			_cond.resolve_action_check(pid, path, passed)
+		"asset":
+			_asset_action.resolve_check(pid, path, passed)
 		"encounter":
 			_encounter.resolve_encounter_check(pid, path, passed)
 		"mythos":

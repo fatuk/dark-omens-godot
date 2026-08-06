@@ -146,6 +146,31 @@ const _CHECK_MOD_VERBS := [
 ## Ноды-модификаторы проверки из слота action актива, подходящие по контексту
 ## (пусто/anyTest/совпадение). Их скармливают конвейеру Dice; cost/limit/optional
 ## остаются в нодах — их читает обработчик активации (GameState).
+## Самостоятельное действие актива (тег "action" в карточке): action-узлы, которые
+## НЕ являются модификаторами проверки. Их играют отдельным действием в фазе
+## действий, а не тапом по активной проверке: ancient_tome (проверка Знания →
+## улика), ritual_candles (gainSpell), dynamite (damageMonster), holy_water
+## (gainCondition). Тег обязателен: reduceMonsterDamage/preventLoss у bandages и
+## tear_gas — РЕАКТИВНЫЕ способности, играть их по своей воле нельзя.
+static func standalone_action(a: Dictionary) -> Array:
+	if not (a.get("tags", []) as Array).has("action"):
+		return []
+	var out: Array = []
+	for n_v: Variant in (a.get("effect", {}) as Dictionary).get("action", []):
+		if not (n_v is Dictionary):
+			continue
+		var n: Dictionary = n_v
+		if _CHECK_MOD_VERBS.has(String(n.get("do", ""))):
+			continue  # это мод проверки — он играется тапом на проверке
+		out.append(n)
+	return out
+
+
+## Есть ли у актива самостоятельное действие (см. standalone_action).
+static func has_standalone_action(a: Dictionary) -> bool:
+	return not standalone_action(a).is_empty()
+
+
 static func action_check_mods(a: Dictionary, context: String) -> Array:
 	var out: Array = []
 	var action: Array = (a.get("effect", {}) as Dictionary).get("action", [])
