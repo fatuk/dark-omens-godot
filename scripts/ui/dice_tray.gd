@@ -97,7 +97,9 @@ var _pending_skill: String = ""  # какой навык показывать в
 
 func _init() -> void:
 	name = "DiceTray"
-	add_theme_constant_override("separation", 8)
+	# Зазор между рамками. У die-frame.png нет прозрачных полей по краям, поэтому
+	# это ровно видимое расстояние между кубами.
+	add_theme_constant_override("separation", 6)
 	alignment = BoxContainer.ALIGNMENT_CENTER
 
 
