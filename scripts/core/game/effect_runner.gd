@@ -551,13 +551,24 @@ static func _apply_player_verb(
 			player["conditions"] = rconds
 			(player.get("conditions_flipped", {}) as Dictionary).erase(rid)
 			logs.append("снято состояние «%s»" % rid)
-		"gainAsset", "gainArtifact", "gainImprovement":
-			# MVP: маркер предмета; полноценный карточный контент — отдельный слой.
-			# (gainSpell — НЕ здесь: это board-verb, host тянет реальную карту через
-			# SpellFlow.grant_spell; см. GameState._apply_board_verb.)
+		"gainAsset":
+			# Выдаём РЕАЛЬНУЮ карту из пула поддержанных активов. Раньше в items уезжал
+			# литерал "gainAsset", а веер (AssetCatalog.deck_for_items) отбрасывает
+			# неизвестные id — сыщик не получал ничего видимого.
+			var pool: Array = AssetCatalog.supported_ids()
 			var items: Array = player.get("items", [])
-			items.append(verb)
-			player["items"] = items
+			if pool.is_empty():
+				logs.append("активов в пуле не осталось")
+			else:
+				var aid: String = String(pool[randi() % pool.size()])
+				items.append({"id": aid, "exhausted": false})
+				player["items"] = items
+				logs.append("получен актив «%s»" % aid)
+		"gainArtifact", "gainImprovement":
+			# MVP: маркер предмета — своих каталогов у артефактов/улучшений пока нет.
+			var mitems: Array = player.get("items", [])
+			mitems.append(verb)
+			player["items"] = mitems
 			logs.append("получен предмет (%s)" % verb)
 		"loseAsset", "loseSpell", "loseImprovement":
 			var litems: Array = player.get("items", [])

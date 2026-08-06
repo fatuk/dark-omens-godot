@@ -2090,8 +2090,14 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 		"resolveReckoning":
 			_cond.host_resolve_reckoning()
 		"gainSpell":
-			# Активный сыщик тянет заклинание (реальная карта, не маркер).
-			_spell.grant_spell(_current_pid(), String(node.get("spell", "")))
+			# Заклинание тянет ТОТ сыщик, от которого идёт эффект (_anchor_pid ставит
+			# forEach-подпрограмма мифа), иначе — активный игрок хода. Раньше здесь
+			# всегда стоял _current_pid(): в фазе мифов это последний ходивший, и
+			# карта уходила не тому, кто её выбрал.
+			var spell_pid: String = String(node.get("_anchor_pid", ""))
+			if spell_pid.is_empty() or not players.has(spell_pid):
+				spell_pid = _current_pid()
+			_spell.grant_spell(spell_pid, String(node.get("spell", "")))
 		_:
 			GameConsole.log("[Эффект] %s — пока не поддержано движком" % verb)
 
