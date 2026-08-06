@@ -6,7 +6,7 @@ extends CanvasLayer
 ## меня» → «ждут» (не мигает на каждом синке). Транзиентно, строится кодом,
 ## добавляется из world_map. Отключается SettingsStore.turn_notify.
 
-const _TOP_RATIO: float = 0.4  # отступ сверху — доля высоты экрана
+const _TOP_RATIO: float = 0.3  # отступ сверху — доля высоты экрана
 const _SLIDE: float = 26.0  # с какой высоты выезжает
 
 var _anchor: Control
