@@ -263,8 +263,12 @@ func add_die(pid: String, die_index: int, c: Dictionary = {}) -> bool:
 ## карта применяется вручную — иммерсивно: и action (по выбору), и пассивы whileOwned
 ## (.38 Revolver, Lucky Ring). Способность правит бросок; карта оплачивается/истощается.
 ## Можно до и после броска. Каждую карту — раз за проверку. true при успехе.
-func activate(pid: String, item_index: int) -> bool:
-	var c: Dictionary = _gs.active_check
+## c — слот проверки (пусто → _gs.active_check; иначе per-player, напр.
+## players[pid].reckoning_check). Без слота карты не применялись к проверке
+## Расплаты вообще: active_check там пуст, и активация молча падала в false.
+func activate(pid: String, item_index: int, c: Dictionary = {}) -> bool:
+	if c.is_empty():
+		c = _gs.active_check
 	if c.is_empty() or String(c.get("pid", "")) != pid:
 		return false
 	var p: Dictionary = _gs.players.get(pid, {})

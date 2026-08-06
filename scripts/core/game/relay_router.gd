@@ -39,6 +39,7 @@ func setup(
 func build_registry() -> Dictionary:
 	return {
 		RelayActions.ACTION: _act_action,
+		RelayActions.RECKONING_ACTIVATE_CARD: _act_reckoning_activate_card,
 		RelayActions.TRAVEL_ARRIVED: _act_travel_arrived,
 		RelayActions.FINISH_ENCOUNTER: _act_finish_encounter,
 		RelayActions.RESOLVE_ENCOUNTER: _act_resolve_encounter,
@@ -87,6 +88,10 @@ func _act_action(d: Dictionary) -> void:
 	_phase.host_apply_action(
 		String(d.get("pid", "")), String(d.get("type", "")), d.get("payload", {})
 	)
+
+
+func _act_reckoning_activate_card(d: Dictionary) -> void:
+	_gs.host_apply_reckoning_activate_card(String(d.get("pid", "")), int(d.get("index", -1)))
 
 
 func _act_travel_arrived(d: Dictionary) -> void:

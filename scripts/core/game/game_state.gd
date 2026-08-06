@@ -1077,6 +1077,31 @@ func reckoning_can_reroll_now() -> bool:
 	return free > 0 or not pending_reroll_currency.is_empty()
 
 
+## Карта из веера на СВОЮ проверку Расплаты. Без этого маршрута активация уходила
+## в CheckFlow.activate с пустым active_check и молча ничего не делала — карты
+## (напр. «Кроличья лапка») в Расплате не срабатывали.
+func reckoning_activate_card(item_index: int) -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		host_apply_reckoning_activate_card(my_pid, item_index)
+	else:
+		(
+			_nm
+			. relay_all(
+				{
+					"action": RelayActions.RECKONING_ACTIVATE_CARD,
+					"pid": my_pid,
+					"index": item_index,
+				}
+			)
+		)
+
+
+## Хост: применить карту к проверке Расплаты игрока pid (см. relay-router).
+func host_apply_reckoning_activate_card(pid: String, item_index: int) -> void:
+	_check.activate(pid, item_index, _reckoning_slot(pid))  # _sync внутри
+
+
 ## Применить СВОЮ проверку Расплаты («Применить»): будит её корутину результатом.
 func reckoning_check_apply() -> void:
 	var my_pid: String = _nm.my_user_id

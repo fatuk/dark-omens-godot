@@ -31,6 +31,7 @@ const RECKONING_ROLL := "game_reckoning_roll"
 const RECKONING_REROLL := "game_reckoning_reroll"
 const RECKONING_REROLL_ALL := "game_reckoning_reroll_all"
 const RECKONING_ADD_DIE := "game_reckoning_add_die"
+const RECKONING_ACTIVATE_CARD := "game_reckoning_activate_card"  # карта на проверку Расплаты
 const RECKONING_APPLY := "game_reckoning_apply"
 const DEATH_SAVE_REROLL := "game_death_save_reroll"  # сосед тратит ресурс на переброс Порога
 const DEATH_SAVE_APPLY := "game_death_save_apply"  # умирающий принимает свой спас-бросок

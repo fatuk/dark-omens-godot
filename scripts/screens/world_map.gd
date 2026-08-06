@@ -320,7 +320,12 @@ func _build_hand_carousel() -> void:
 				return  # карта ушла из руки — розыгрыш отменяем
 			var it: Variant = items[idx]
 			if not (it is Dictionary) or String((it as Dictionary).get("kind", "")) != "spell":
-				GameState.activate_card(idx)
+				# В параллельной Расплате проверка лежит в per-player слоте, а не в
+				# active_check — там свой маршрут, иначе карта молча не сработает.
+				if GameState.my_player().has("reckoning_pending"):
+					GameState.reckoning_activate_card(idx)
+				else:
+					GameState.activate_card(idx)
 				return
 			# Glamour во время активной проверки → применить пассив-ауру (как актив);
 			# иначе (Ritual/Incantation/glamour вне проверки) → каст.
