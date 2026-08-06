@@ -257,7 +257,9 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 		_will_line(col, int(c.get("successes", 0)), card)
 		_reroll_hint(col, can)
 	else:  # рубашки до броска Воли
-		_will_tray.show_pending(_will_pool(card))
+		_will_tray.show_pending(
+			_will_pool(card), String((card.get("horror", {}) as Dictionary).get("skill", "will"))
+		)
 		_last_will = []
 
 	# Шаг 2 — атака (обычно Сила). Пропускаем, если монстр повержен на шаге 1 (спец-
@@ -299,7 +301,10 @@ func _center_col(card: Dictionary) -> VBoxContainer:
 			_str_line(col, hits, hits, maxi(0, dmg - hits))
 			_reroll_hint(col, can)
 		else:
-			_str_tray.show_pending(_str_pool(card))
+			_str_tray.show_pending(
+				_str_pool(card),
+				String((card.get("combat", {}) as Dictionary).get("skill", "strength"))
+			)
 			_last_str = []
 
 	# Итог: финальный (done) или превью по активной Силе.

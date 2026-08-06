@@ -196,7 +196,7 @@ func _render_dice() -> void:
 	if not _rolled():
 		if not _last_dice.is_empty():
 			_last_dice = []
-		_tray.show_pending(_check_pool())  # рубашки до броска
+		_tray.show_pending(_check_pool(), String(_chk().get("skill", "")))  # иконка навыка до броска
 		return
 	var dice: Array = _chk().get("dice", [])
 	var can: bool = _can_reroll()

@@ -20,6 +20,17 @@ signal die_selected(index: int)
 
 # Ассеты костей.
 const FRAME_TEX: Texture2D = preload("res://assets/dice/die-frame.png")
+# Иконки навыков (assets/virtues-panel, @2×) — стоят в пустом кубе ДО броска
+# вместо безликой рубашки: сразу видно, что именно проверяем.
+const SKILL_TEX := {
+	"strength": preload("res://assets/virtues-panel/strength.png"),
+	"lore": preload("res://assets/virtues-panel/lore.png"),
+	"will": preload("res://assets/virtues-panel/will.png"),
+	"influence": preload("res://assets/virtues-panel/influence.png"),
+	"observation": preload("res://assets/virtues-panel/observation.png"),
+}
+const SKILL_ICON_SCALE: float = 0.5  # ассеты @2× — выводим в половину
+
 const FACE_TEX := {
 	1: preload("res://assets/dice/side1.png"),
 	2: preload("res://assets/dice/side2.png"),
@@ -81,6 +92,7 @@ void fragment() {
 """
 
 var _dice: Array = []  # [{root, glow, reel, blur_mat, value, index, clickable, pending}]
+var _pending_skill: String = ""  # какой навык показывать в пустых кубах (см. show_pending)
 
 
 func _init() -> void:
@@ -120,9 +132,16 @@ func play_roll(values: Array, can_reroll: bool = false, can_add: bool = false) -
 		_play_clatter(_dice.size())  # щелчки-активации бьёт _settle по всполохам
 
 
-## Пустые кубы (рубашки) до броска.
-func show_pending(count: int) -> void:
+## Пустые кубы до броска. skill (strength/lore/will/influence/observation) рисует
+## в них иконку навыка; пустая строка — прежняя безликая рубашка.
+func show_pending(count: int, skill: String = "") -> void:
+	_pending_skill = skill
 	_build([], false, maxi(0, count))
+
+
+# Иконка навыка для пустого куба; null — рисуем рубашку.
+func _pending_icon() -> Texture2D:
+	return SKILL_TEX.get(_pending_skill, null) as Texture2D
 
 
 ## Перебросить ОДИН куб (по индексу): крутится только он. Остальные лишь
@@ -258,15 +277,24 @@ func _set_reel(die: Dictionary, vals: Array) -> void:
 	for c in reel.get_children():
 		c.queue_free()
 	for i in range(vals.size()):
+		var val: int = int(vals[i])
+		var icon: Texture2D = _pending_icon() if val == 0 else null
 		var face := TextureRect.new()
 		face.name = "Face%d" % i
-		face.texture = FACE_TEX.get(int(vals[i]), null)  # 0 → пусто (рубашка)
+		face.texture = icon if icon != null else FACE_TEX.get(val, null)  # 0 → рубашка
 		face.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		face.stretch_mode = TextureRect.STRETCH_SCALE
 		face.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		face.material = die["blur_mat"]
-		face.position = Vector2(0, i * _FACE)
-		face.size = Vector2(_FACE, _FACE)
+		if icon != null:
+			# Иконку навыка НЕ растягиваем до грани — у неё свои пропорции. Ставим
+			# в натуральном размере (×0.5, ассеты @2×) по центру окна.
+			var sz: Vector2 = icon.get_size() * SKILL_ICON_SCALE
+			face.position = Vector2((_FACE - sz.x) * 0.5, i * _FACE + (_FACE - sz.y) * 0.5)
+			face.size = sz
+		else:
+			face.position = Vector2(0, i * _FACE)
+			face.size = Vector2(_FACE, _FACE)
 		face.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		reel.add_child(face)
 	reel.position.y = 0.0

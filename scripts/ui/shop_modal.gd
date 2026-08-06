@@ -775,7 +775,7 @@ func _render_dice() -> void:
 	if not _rolled():
 		if not _last_dice.is_empty():
 			_last_dice = []
-		_tray.show_pending(_influence_pool())
+		_tray.show_pending(_influence_pool(), "influence")
 		_center_dice_row()  # число кубов могло измениться — перецентрировать ряд
 		return
 	var dice: Array = _check().get("dice", [])

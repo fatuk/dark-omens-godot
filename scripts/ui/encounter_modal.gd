@@ -381,7 +381,8 @@ func _show_card(card: Dictionary) -> void:
 	_outcome.visible = false
 	_outcome_shown = false  # исход ещё не показан — сброс фейд-флага
 	_finish_btn.visible = false
-	_show_dice_pending(_check_pool(card.get("test", {})))  # рубашки до броска
+	var test_c: Dictionary = card.get("test", {})
+	_show_dice_pending(_check_pool(test_c), String(test_c.get("skill", "")))  # иконка навыка
 
 
 func _show_outcome(card: Dictionary) -> void:
@@ -436,7 +437,8 @@ func _show_gate(card: Dictionary) -> void:
 		_outcome.visible = false
 		_outcome_shown = false  # исход ещё не показан — сброс фейд-флага
 		_finish_btn.visible = false
-		_show_dice_pending(_check_pool(node.get("test", {})))  # рубашки до броска
+		var test_n: Dictionary = node.get("test", {})
+		_show_dice_pending(_check_pool(test_n), String(test_n.get("skill", "")))  # иконка навыка
 		return
 
 	var res: Dictionary = _chk()
@@ -519,12 +521,12 @@ func _ensure_tray() -> void:
 
 
 # До броска — рубашки по числу кубов проверки (как в магазине).
-func _show_dice_pending(pool: int) -> void:
+func _show_dice_pending(pool: int, skill: String = "") -> void:
 	if not is_instance_valid(_dice_holder):
 		return
 	_ensure_tray()
 	if _pending_n != pool or not _last_dice.is_empty():
-		_tray.show_pending(pool)
+		_tray.show_pending(pool, skill)
 		_pending_n = pool
 		_last_dice = []
 	_dice_holder.visible = true
