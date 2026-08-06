@@ -1077,6 +1077,14 @@ func reckoning_can_reroll_now() -> bool:
 	return free > 0 or not pending_reroll_currency.is_empty()
 
 
+## Проверка, с которой ЛОКАЛЬНЫЙ игрок работает прямо сейчас: сначала per-player
+## слот Расплаты, потом единая active_check. UI обязан смотреть сюда: в Расплате
+## active_check пуст, и веер считал бы применимыми вообще все карты.
+func current_check() -> Dictionary:
+	var r: Dictionary = _reckoning_slot(_nm.my_user_id)
+	return r if not r.is_empty() else active_check
+
+
 ## Карта из веера на СВОЮ проверку Расплаты. Без этого маршрута активация уходила
 ## в CheckFlow.activate с пустым active_check и молча ничего не делала — карты
 ## (напр. «Кроличья лапка») в Расплате не срабатывали.

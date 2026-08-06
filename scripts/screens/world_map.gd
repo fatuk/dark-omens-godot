@@ -393,7 +393,7 @@ func _refresh_hand() -> void:
 # active_check.exhausted_cards — на проверку).
 func _hand_assets_section() -> Array:
 	var deck: Array = AssetCatalog.deck_for_items(GameState.my_player().get("items", []))
-	var per_check: Array = GameState.active_check.get("exhausted_cards", [])
+	var per_check: Array = GameState.current_check().get("exhausted_cards", [])
 	var out: Array = []
 	for p_v: Variant in deck:
 		var pcard: Dictionary = p_v
@@ -439,7 +439,9 @@ func _card_applicable_now(pcard: Dictionary) -> bool:
 	# первым: триггер не зависит от active_check (шага Воли/Силы).
 	if GameState.combat_trigger_ready(int(pcard.get("item_index", -1))):
 		return true
-	var c: Dictionary = GameState.active_check
+	# current_check, а не active_check: в Расплате проверка лежит в per-player слоте,
+	# и по пустому active_check веер показывал ВСЕ карты применимыми.
+	var c: Dictionary = GameState.current_check()
 	if c.is_empty():
 		return true
 	var asset: Dictionary = AssetCatalog.by_id(String(pcard.get("id", "")))
