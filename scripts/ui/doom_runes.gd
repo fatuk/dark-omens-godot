@@ -22,6 +22,8 @@ const _ATLAS_N: int = 4  # глифов в ряду атласа (всего N×
 const _ATLAS_PX: int = 512  # сторона атласа в пикселях
 const _GLYPH_FILL: float = 0.8  # доля клетки под сам знак (поля не режут глиф)
 
+const _RAMP: float = 1.2  # за сколько секунд доезжаем до нового уровня Рока
+
 ## Значения при ПОЛНОМ треке Рока (подобраны в панели). От них ведём линейно.
 static var MAX_AMOUNT: float = 0.99  # проявленность рун
 static var MAX_VIGNETTE: float = 0.56  # сила виньетки
@@ -34,6 +36,8 @@ static var MANUAL_VIGNETTE: float = 0.56
 
 var _rect: ColorRect
 var _vig: ColorRect
+var _ramp: Tween = null  # плавный переезд к новому уровню
+var _level: float = -1.0  # доля трека, на которую сейчас настроены слои
 
 
 func _ready() -> void:
@@ -120,14 +124,45 @@ func set_param(param: String, value: Variant) -> void:
 
 
 # Доля пройденного трека Рока → проявленность рун и сила виньетки (линейно).
+# doomClock берём из кампании — у каждого Древнего он свой (та же величина, по
+# которой рисуется трек и объявляется поражение), поэтому доля везде честная.
 func _refresh() -> void:
 	if not is_instance_valid(_rect):
 		return
 	if MANUAL:
-		set_param("amount", MANUAL_AMOUNT)
-		set_param("vig_strength", MANUAL_VIGNETTE)
+		_kill_ramp()
+		_level = -1.0
+		_apply_level(MANUAL_AMOUNT, MANUAL_VIGNETTE)
 		return
 	var clock: int = maxi(1, int(GameState.campaign.get("doomClock", 12)))
 	var t: float = clampf(float(GameState.doom) / float(clock), 0.0, 1.0)
-	set_param("amount", MAX_AMOUNT * t)
-	set_param("vig_strength", MAX_VIGNETTE * t)
+	if is_equal_approx(t, _level):
+		return  # уровень не менялся — синки приходят часто, дёргать нечего
+	# Первая раскладка (вход в партию) — сразу, без переезда: анимировать нечего.
+	if _level < 0.0:
+		_level = t
+		_apply_level(MAX_AMOUNT * t, MAX_VIGNETTE * t)
+		return
+	_ramp_to(t)
+
+
+# Плавный переезд от текущего уровня к новому: дум растёт целыми делениями, и без
+# этого руны с виньеткой скачком меняли яркость на каждый тик Рока.
+func _ramp_to(target: float) -> void:
+	_kill_ramp()
+	var from: float = _level
+	_level = target
+	_ramp = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_ramp.tween_method(
+		func(t: float) -> void: _apply_level(MAX_AMOUNT * t, MAX_VIGNETTE * t), from, target, _RAMP
+	)
+
+
+func _kill_ramp() -> void:
+	if _ramp != null and _ramp.is_valid():
+		_ramp.kill()
+
+
+func _apply_level(runes: float, vig: float) -> void:
+	set_param("amount", runes)
+	set_param("vig_strength", vig)
