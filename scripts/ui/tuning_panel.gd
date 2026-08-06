@@ -17,6 +17,12 @@ extends CanvasLayer
 # Кэш: key -> {slider: HSlider, val: Label, default: float, set: Callable}.
 var _rows: Dictionary = {}
 
+# Идёт первичная раскладка панели (см. _add_row: дефолты прогоняются через
+# сеттеры). Параметры, которыми в игре управляет СОСТОЯНИЕ (проявленность рун и
+# сила виньетки ведутся треком Рока), на этом этапе трогать нельзя — иначе на
+# старте партии руны включались бы на полную при нулевом Роке.
+var _seeding: bool = false
+
 # ── Спеки параметров ──────────────────────────────────────────────────────────
 
 
@@ -1319,12 +1325,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _build_ui() -> void:
+	_seeding = true
 	_add_title("  ТЮНИНГ  ·  Ctrl+M")
 	for spec: Dictionary in _build_specs():
 		if spec.has("section"):
 			_add_section(String(spec.section))
 		else:
 			_add_row(spec)
+	_seeding = false
 	_add_reset_button()
 
 
@@ -2093,6 +2101,8 @@ func _runes_set_color(comp: int, v: float) -> void:
 
 
 func _set_runes_amount(v: float) -> void:
+	if _seeding:
+		return  # на старте проявленность ведёт трек Рока, а не дефолт слайдера
 	# Трогаем слайдер — переводим слой в ручной режим, иначе следующий синк вернёт
 	# значение с трека Рока и покрутить не выйдет.
 	DoomRunes.MANUAL = true
@@ -2153,7 +2163,9 @@ func _set_runes_pos_jitter(v: float) -> void:
 
 
 func _set_vig_strength(v: float) -> void:
-	DoomRunes.MANUAL = true  # как и проявленность — иначе трек перебьёт
+	if _seeding:
+		return  # как и проявленность — на старте ведёт трек Рока
+	DoomRunes.MANUAL = true  # иначе следующий синк перебьёт значением с трека
 	DoomRunes.MANUAL_VIGNETTE = v
 	_runes_set("vig_strength", v)
 
