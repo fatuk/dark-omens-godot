@@ -314,7 +314,11 @@ func _make_buy_ticket_btn(label_key: String, ticket_type: String) -> Button:
 	var btn := UIStyle.button(label_key, CONN_COLORS[ticket_type])
 	btn.name = "BuyTicket_" + ticket_type
 	btn.visible = false
-	btn.pressed.connect(func() -> void: GameState.buy_ticket(ticket_type))
+	btn.pressed.connect(
+		func() -> void:
+			GameState.buy_ticket(ticket_type)
+			close_panel()  # как и перемещение: сыграли действие — уходим с карты
+	)
 	return btn
 
 
