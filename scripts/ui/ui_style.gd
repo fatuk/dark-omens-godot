@@ -413,6 +413,21 @@ const _MODAL_TWEEN_META: StringName = &"modal_anim_tween"
 const _MODAL_SHOWN_META: StringName = &"modal_anim_shown"
 const _MODAL_PIVOT_META: StringName = &"modal_anim_pivot"
 
+# Реестр ОТКРЫТЫХ модалок: id инстанса → root. Ведётся здесь, потому что через
+# modal_transition проходят все окна проекта. Нужен тем, кто не должен лезть
+# поверх открытого окна (баннер «Ваш ход» ждёт, пока экран освободится).
+static var _open_modals: Dictionary = {}
+
+
+## Открыта ли сейчас хоть одна модалка. Попутно чистит мёртвые записи: окно
+## могло уйти в queue_free, не сыграв закрытие (смена сцены).
+static func any_modal_open() -> bool:
+	for id_v: Variant in _open_modals.keys():
+		var n: Variant = _open_modals[id_v]
+		if not is_instance_valid(n) or not (n as CanvasItem).visible:
+			_open_modals.erase(id_v)
+	return not _open_modals.is_empty()
+
 
 ## Проигрывает переход модалки. root — слой целиком (вместе с затемнением),
 ## card — панель, которая «выплывает» (можно null: тогда только проявление).
@@ -430,6 +445,11 @@ static func modal_transition(root: Control, card: Control, showing: bool) -> Twe
 			card.scale = small
 	if showing:
 		root.modulate.a = 0.0
+
+	if showing:
+		_open_modals[root.get_instance_id()] = root
+	else:
+		_open_modals.erase(root.get_instance_id())
 
 	var dur: float = MODAL_FADE_IN if showing else MODAL_FADE_OUT
 	var tw: Tween = root.create_tween().set_parallel(true)

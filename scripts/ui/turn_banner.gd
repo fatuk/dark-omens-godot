@@ -12,6 +12,7 @@ const _SLIDE: float = 26.0  # с какой высоты выезжает
 var _anchor: Control
 var _bar: PanelContainer
 var _was_awaiting: bool = false
+var _pending: bool = false  # ход мой, но экран занят модалкой — ждём её закрытия
 var _tween: Tween
 
 
@@ -20,6 +21,7 @@ func _ready() -> void:
 	_build()
 	GameState.state_changed.connect(_refresh)
 	get_viewport().size_changed.connect(_reposition)
+	set_process(false)  # включаем только на время ожидания закрытия модалок
 	# Текущее состояние — БЕЗ показа: первый переход в «ждут меня» покажет баннер.
 	_was_awaiting = _awaiting_me()
 
@@ -101,8 +103,31 @@ func _awaiting_me() -> bool:
 func _refresh() -> void:
 	var now: bool = _awaiting_me()
 	if now and not _was_awaiting and SettingsStore.turn_notify:
-		_show_banner()
+		# Поверх открытого окна не лезем: миф, встреча, «вы получили» и прочие
+		# модалки игрок сначала закрывает — баннер ждёт освободившийся экран.
+		if UIStyle.any_modal_open():
+			_pending = true
+			set_process(true)
+		else:
+			_show_banner()
+	if not now:
+		_pending = false  # ждать больше нечего: ход уже не мой
+		set_process(false)
 	_was_awaiting = now
+
+
+# Крутится ТОЛЬКО пока баннер ждёт закрытия модалок (см. _refresh): закрытие окна
+# не сопровождается синком состояния, поймать его иначе нечем.
+func _process(_delta: float) -> void:
+	if not _pending:
+		set_process(false)
+		return
+	if UIStyle.any_modal_open():
+		return
+	_pending = false
+	set_process(false)
+	if _awaiting_me() and SettingsStore.turn_notify:
+		_show_banner()
 
 
 func _show_banner() -> void:
