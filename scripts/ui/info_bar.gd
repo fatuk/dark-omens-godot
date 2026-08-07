@@ -25,6 +25,14 @@ const ATTRIBUTES := [
 
 # Ассеты левой панели (player-hud). @2× — выводим с _HUD_SCALE.
 const _HUD_SCALE: float = 0.5
+
+# Тревога: иконка стата «дышит», пока запас ниже половины.
+const _ALARM_RATIO: float = 0.5  # с какой доли запаса включаем пульс
+const _ALARM_SCALE: float = 1.14  # до какого масштаба раздувается медальон
+const _ALARM_TIME: float = 0.55  # половина периода «дыхания», сек
+const _ALARM_TINT := Color(1.35, 1.2, 1.2, 1.0)  # подсветка на пике (чуть теплее)
+const _ALARM_META: StringName = &"vital_alarm"
+const _ALARM_TW_META: StringName = &"vital_alarm_tw"
 # Ширина жёлоба баров HP/санити (display-px). Бар фиксированной ширины —
 # увеличь/уменьши это число, чтобы растянуть или сжать оба бара.
 const _HUD_BAR_WIDTH: float = 180.0
@@ -81,6 +89,8 @@ const _BAR_SCRAMBLE_RUNES: int = 2
 
 var _hp_label: Label
 var _sanity_label: Label
+var _hp_icon: TextureRect  # медальоны статов: ниже половины запаса начинают пульсировать
+var _sanity_icon: TextureRect
 var _hp_fill_clip: Control  # клип заливки бара HP (ширина = доля current/max)
 var _sanity_fill_clip: Control  # клип заливки бара рассудка
 var _fill_inner_w: float = 0.0  # внутренняя ширина заливки бара (для пропорции)
@@ -152,6 +162,39 @@ func update(inv: Dictionary) -> void:
 func set_live_vitals(hp: int, hp_max: int, sanity: int, sanity_max: int) -> void:
 	_animate_vital(true, hp, hp_max)
 	_animate_vital(false, sanity, sanity_max)
+	# Ниже половины запаса — иконка «дышит»: тревожный сигнал, но только у своего
+	# HUD, соседям по столу ничего не мигает.
+	_pulse_icon(_hp_icon, hp_max > 0 and float(hp) / float(hp_max) < _ALARM_RATIO)
+	_pulse_icon(_sanity_icon, sanity_max > 0 and float(sanity) / float(sanity_max) < _ALARM_RATIO)
+
+
+# Пульс иконки стата: масштаб и яркость «дышат», пока запас ниже порога. Гоняем
+# только на ПЕРЕХОДЕ, иначе каждый синк перезапускал бы твин с нуля и пульс бы
+# дёргался. Снятие тревоги возвращает иконку в исходный вид.
+func _pulse_icon(icon: TextureRect, on: bool) -> void:
+	if not is_instance_valid(icon):
+		return
+	if bool(icon.get_meta(_ALARM_META, false)) == on:
+		return
+	icon.set_meta(_ALARM_META, on)
+	if icon.has_meta(_ALARM_TW_META):
+		for t_v: Variant in icon.get_meta(_ALARM_TW_META) as Array:
+			if t_v is Tween and (t_v as Tween).is_valid():
+				(t_v as Tween).kill()
+	if not on:
+		icon.scale = Vector2.ONE
+		icon.modulate = Color.WHITE
+		return
+	icon.pivot_offset = icon.size * 0.5  # дышим из центра, а не из угла
+	# ДВА отдельных цикла, а не один с parallel+chain: в смешанном режиме «туда» и
+	# «обратно» стартуют одновременно и гасят друг друга — иконка стоит на месте.
+	var tw_s: Tween = icon.create_tween().set_loops().set_trans(Tween.TRANS_SINE)
+	tw_s.tween_property(icon, "scale", Vector2.ONE * _ALARM_SCALE, _ALARM_TIME)
+	tw_s.tween_property(icon, "scale", Vector2.ONE, _ALARM_TIME)
+	var tw_m: Tween = icon.create_tween().set_loops().set_trans(Tween.TRANS_SINE)
+	tw_m.tween_property(icon, "modulate", _ALARM_TINT, _ALARM_TIME)
+	tw_m.tween_property(icon, "modulate", Color.WHITE, _ALARM_TIME)
+	icon.set_meta(_ALARM_TW_META, [tw_s, tw_m])
 
 
 ## Живые модификаторы навыков (player.skill_mods) для HUD: справа от числа навыка —
@@ -305,6 +348,11 @@ func _make_hud_stat_row(
 	icon.custom_minimum_size = icon_tex.get_size() * _HUD_SCALE
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	content.add_child(icon)
+	# Запоминаем: ниже половины запаса иконка начинает пульсировать (см. _pulse_icon).
+	if is_hp:
+		_hp_icon = icon
+	else:
+		_sanity_icon = icon
 
 	var info := VBoxContainer.new()
 	info.name = "Info"
