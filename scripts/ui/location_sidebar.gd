@@ -295,7 +295,11 @@ func _build_actions() -> void:
 	_shop_btn = UIStyle.button("SIDEBAR_BTN_SHOP", UIColors.ACCENT)
 	_shop_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_shop_btn.visible = false
-	_shop_btn.pressed.connect(func() -> void: shop_requested.emit())
+	_shop_btn.pressed.connect(
+		func() -> void:
+			shop_requested.emit()
+			close_panel()  # магазин занимает весь экран — панель под ним не нужна
+	)
 	shop_row.add_child(_shop_btn)
 
 	_close_btn = UIStyle.button("SIDEBAR_BTN_CLOSE")
