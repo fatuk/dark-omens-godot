@@ -117,7 +117,6 @@ func _ready() -> void:
 	_build_ghost_bar()
 	_build_encounter_watch_modal()
 	_build_doom_runes()
-	_build_vitals_vignette()
 	_build_gains_modal()
 	_build_chat_composer()
 	_build_hand_carousel()
@@ -312,14 +311,6 @@ func _build_doom_runes() -> void:
 	var r: CanvasLayer = load("res://scripts/ui/doom_runes.gd").new()
 	r.name = "DoomRunes"
 	add_child(r)
-
-
-# Виньетка «на грани»: красная при низком здоровье, голубая при низком рассудке.
-# ЛОКАЛЬНАЯ — читает моего сыщика, соседям по столу экран не красит.
-func _build_vitals_vignette() -> void:
-	var v: CanvasLayer = load("res://scripts/ui/vitals_vignette.gd").new()
-	v.name = "VitalsVignette"
-	add_child(v)
 
 
 # Композер чата (C): веер шаблонов → веер слов по секциям → центр-превью → Отправить.
