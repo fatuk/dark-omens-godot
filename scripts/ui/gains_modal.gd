@@ -10,18 +10,20 @@ extends CanvasLayer
 
 const _CARD_H: float = 210.0  # высота миниатюры карты в окне
 const _CARD_FULL_H: float = 520.0  # карту строим в полный рост и ужимаем (как в info_bar)
-const _ROW_ICON: float = 34.0
+const _TOKEN_H: float = 52.0  # высота жетона-иконки в ряду
 
-# Приобретения-числа: поле в gains → ключ подписи. Порядок = порядок строк в окне.
-const _NUM_ROWS: Array = [
-	["clues", "GAINS_CLUES"],
-	["resources", "GAINS_RESOURCES"],
-	["focus", "GAINS_FOCUS"],
-	["hp", "GAINS_HP"],
-	["sanity", "GAINS_SANITY"],
-	["train", "GAINS_TRAIN"],
-	["ship", "GAINS_SHIP"],
-]
+# Жетоны показываем ИКОНКОЙ с «×N», как в панели игрока, а не строкой текста.
+const _TOKEN_TEX := {
+	"clues": preload("res://assets/map/clue-icon.png"),
+	"resources": preload("res://assets/map/resource-icon.png"),
+	"focus": preload("res://assets/action-panel/concentration-icon.png"),
+	"hp": preload("res://assets/player-hud/health-icon.png"),
+	"sanity": preload("res://assets/player-hud/sanity-icon.png"),
+	"train": preload("res://assets/tickets/train-ticket.png"),
+	"ship": preload("res://assets/tickets/ocean-ticket.png"),
+}
+# Порядок жетонов в ряду.
+const _TOKEN_ORDER: Array = ["clues", "resources", "focus", "hp", "sanity", "train", "ship"]
 
 var _root: ColorRect
 var _panel: PanelContainer
@@ -100,11 +102,19 @@ func _fill(gains: Dictionary) -> void:
 		for it_v: Variant in cards:
 			row.add_child(_card_node(it_v))
 
-	for r_v: Variant in _NUM_ROWS:
-		var r: Array = r_v
-		var n: int = int(gains.get(r[0], 0))
+	# Жетоны — одним рядом иконок с «×N» (перенос, если не влезли).
+	var tokens := HFlowContainer.new()
+	tokens.name = "Tokens"
+	tokens.alignment = FlowContainer.ALIGNMENT_CENTER
+	tokens.add_theme_constant_override("h_separation", 18)
+	tokens.add_theme_constant_override("v_separation", 8)
+	for f_v: Variant in _TOKEN_ORDER:
+		var f: String = f_v
+		var n: int = int(gains.get(f, 0))
 		if n > 0:
-			_box.add_child(_num_row(String(r[1]), n))
+			tokens.add_child(_token(f, n))
+	if tokens.get_child_count() > 0:
+		_box.add_child(tokens)
 
 	var btn := UIStyle.button("GAINS_OK", UIColors.ACCENT)
 	btn.name = "OkBtn"
@@ -158,17 +168,26 @@ func _payload(entry: Variant) -> Dictionary:
 	return {"cost": "", "title": id, "subtitle": "", "desc": ""}
 
 
-# Строка числового приобретения: «Улики  ×2».
-func _num_row(label_key: String, n: int) -> Control:
-	var row := HBoxContainer.new()
-	row.name = "Row_" + label_key
-	row.add_theme_constant_override("separation", 10)
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	var lbl := UIStyle.label(label_key, 16)
-	lbl.name = "Label"
-	row.add_child(lbl)
-	var val := UIStyle.label("×%d" % n, 18, UIColors.VALUE)
-	val.name = "Value"
-	val.custom_minimum_size.x = _ROW_ICON
-	row.add_child(val)
-	return row
+# Жетон приобретения: иконка + «×N» (как в панели игрока), а не строка текста.
+func _token(field: String, n: int) -> Control:
+	var hb := HBoxContainer.new()
+	hb.name = "Token_" + field
+	hb.add_theme_constant_override("separation", 4)
+	hb.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	var tex: Texture2D = _TOKEN_TEX[field]
+	var icon := TextureRect.new()
+	icon.name = "Icon"
+	icon.texture = tex
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	icon.custom_minimum_size = tex.get_size() * (_TOKEN_H / tex.get_size().y)
+	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hb.add_child(icon)
+
+	var lbl := UIStyle.label("×%d" % n, 20, UIColors.VALUE)
+	lbl.name = "Count"
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	hb.add_child(lbl)
+	return hb
