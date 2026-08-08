@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ceqhbkdb6ydi2"
-path="res://.godot/imported/cube.png-241bd0747d106c2916e23ba008593ad4.ctex"
+uid="uid://d3j64gdtva15c"
+path="res://.godot/imported/The Amazon.png-be63396ab815fb9d8d7d3d1fc47a8ba2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/virtues-panel/cube.png"
-dest_files=["res://.godot/imported/cube.png-241bd0747d106c2916e23ba008593ad4.ctex"]
+source_file="res://assets/location-sidebar/The Amazon.png"
+dest_files=["res://.godot/imported/The Amazon.png-be63396ab815fb9d8d7d3d1fc47a8ba2.ctex"]
 
 [params]
 
