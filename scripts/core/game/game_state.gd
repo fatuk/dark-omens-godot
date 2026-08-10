@@ -164,6 +164,9 @@ var gate_discard: Array = []
 # в колоду: пока не пройдут все 36, ключи не повторяются.
 var clue_deck: Array = []
 var clue_discard: Array = []
+
+# Колода активов (синкается). Сброс НЕ хранится, а выводится — см. asset_discard_ids.
+var asset_deck: Array = []
 var _board_clue_ids: Dictionary = {}
 var _clue_deck_ready: bool = false
 
@@ -321,6 +324,7 @@ const _SYNC_FIELDS: Array[String] = [
 	"gate_discard",
 	"clue_deck",
 	"clue_discard",
+	"asset_deck",
 	"monster_surge",
 	"encounter_choices",
 	"shop_reserve",
@@ -1532,7 +1536,57 @@ func shop_reroll(die_index: int, currency: String = "") -> void:
 ## Хост: заполнить витрину магазина до SHOP_RESERVE_SIZE случайными ассетами.
 func _fill_shop_reserve() -> void:
 	shop_reserve = []
+	_reset_asset_deck()
 	_draw_shop_assets(SHOP_RESERVE_SIZE)
+
+
+## Сброс активов ВЫВОДИТСЯ, а не хранится: карта уходит от игрока семью разными
+## путями (discardSelf, loseAsset, loseAllPossessions, гибель сыщика…), и любой
+## пропущенный путь означал бы утечку из запаса. Сброс = все поддержанные карты
+## минус колода, витрина и руки — по определению, поэтому протечь не может.
+func asset_discard_ids() -> Array:
+	var taken: Dictionary = _assets_in_play()
+	for a: Variant in asset_deck:
+		taken[String(a)] = true
+	var out: Array = []
+	for aid: Variant in AssetCatalog.supported_ids():
+		if not taken.has(String(aid)):
+			out.append(String(aid))
+	return out
+
+
+# Карты, которые сейчас НЕ в колоде и не в сбросе: витрина магазина и руки игроков.
+func _assets_in_play() -> Dictionary:
+	var taken: Dictionary = {}
+	for r: Variant in shop_reserve:
+		taken[String(r)] = true
+	for pid: Variant in players:
+		for it: Variant in players[pid].get("items", []) as Array:
+			taken[AssetCatalog.entry_id(it)] = true  # item — инстанс {id,…} или id-строка
+	return taken
+
+
+# Свежая колода: все ПОЛНОСТЬЮ поддержанные карты (с нереализованными эффектами в
+# игру не вводим) за вычетом уже разобранных — стартовые предметы сыщиков выдаются
+# при входе игрока, ДО раскладки поля.
+func _reset_asset_deck() -> void:
+	var taken: Dictionary = _assets_in_play()
+	asset_deck = []
+	for aid: Variant in AssetCatalog.supported_ids():
+		if not taken.has(String(aid)):
+			asset_deck.append(String(aid))
+	asset_deck.shuffle()
+
+
+# Убрать из колоды карты, уже оказавшиеся в игре (поздний вход со стартовым
+# предметом): иначе один и тот же актив жил бы и в руке, и в колоде.
+func _prune_asset_deck() -> void:
+	var taken: Dictionary = _assets_in_play()
+	var kept: Array = []
+	for a: Variant in asset_deck:
+		if not taken.has(String(a)):
+			kept.append(String(a))
+	asset_deck = kept
 
 
 ## Гарантирует непустую витрину (на случай партий, начатых до появления резерва).
@@ -1559,22 +1613,18 @@ func _refill_shop_reserve(bought: Array) -> void:
 func _draw_shop_assets(n: int) -> void:
 	if n <= 0:
 		return
-	var taken: Dictionary = {}
-	for r: Variant in shop_reserve:
-		taken[String(r)] = true
-	for pid: Variant in players:
-		for it: Variant in players[pid].get("items", []) as Array:
-			taken[AssetCatalog.entry_id(it)] = true  # item — инстанс {id,…} или id-строка
-	var pool: Array = []
-	for a in AssetCatalog.all():
-		var aid: String = String((a as Dictionary).get("id", ""))
-		# Только ПОЛНОСТЬЮ поддержанные карты попадают в витрину — карты с ещё не
-		# реализованными эффектами вводим в игру, когда допилим их (AssetCatalog.is_supported).
-		if not aid.is_empty() and not taken.has(aid) and AssetCatalog.is_supported(a):
-			pool.append(aid)
-	pool.shuffle()
-	for i: int in mini(n, pool.size()):
-		shop_reserve.append(pool[i])
+	_prune_asset_deck()
+	for _i: int in n:
+		if asset_deck.is_empty():
+			# Колода кончилась — замешиваем сброс (всё, что не в колоде, витрине и
+			# руках). Пусто и там — вводить в игру больше нечего.
+			asset_deck = asset_discard_ids()
+			asset_deck.shuffle()
+			if asset_deck.is_empty():
+				GameConsole.warn("[Магазин] карты активов кончились")
+				return
+			GameConsole.log("[Активы] колода замешана из сброса: %d" % asset_deck.size())
+		shop_reserve.append(String(asset_deck.pop_back()))
 
 
 ## Тип локации по id (city|wilderness|sea), "" если не найдена.
