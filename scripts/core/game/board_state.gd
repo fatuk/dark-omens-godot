@@ -99,6 +99,7 @@ func setup_board(player_count: int) -> void:
 	var pool: Array = MonsterCatalog.non_epic()
 	for i: int in range(pool.size()):
 		_gs.monster_bag.append(String(pool[i].get("id", "")))
+	_reset_gate_deck()
 	var ref: Dictionary = _reference_for(player_count)
 	_gs.monster_surge = int(ref.get("surge", 1))
 	for _i: int in int(ref.get("gates", 1)):
@@ -125,22 +126,16 @@ func open_gate(loc_id: String = "", color: String = "") -> String:
 		return ""
 	var lid: String = loc_id
 	if lid.is_empty():
-		# Врата открываются ТОЛЬКО на гейт-спейсах (локации с gateColor), как на
-		# доске EH — номерные «реальные» точки гейтов не имеют.
-		var candidates: Array = []
-		var locations: Array = _gs._load_locations()
-		for i: int in range(locations.size()):
-			var l: Dictionary = locations[i]
-			var did: String = String(l.get("id", ""))
-			if did.is_empty() or _gs.gates.has(did):
-				continue
-			if String(l.get("gateColor", "")).is_empty():
-				continue  # не гейт-спейс
-			candidates.append(did)
-		if candidates.is_empty():
-			GameConsole.warn("[Врата] нет свободных гейт-локаций")
+		lid = _draw_gate()
+		if lid.is_empty():
+			# Ни в колоде, ни в сбросе — выкладывать нечего. Каждые невыложенные
+			# врата продвигают трек Рока: давление никуда не девается.
+			_gs.doom += 1
+			GameConsole.warn("[Врата] жетоны кончились — Рок +1")
+			_gs._mystery.check_defeat()
 			return ""
-		lid = String(candidates[randi() % candidates.size()])
+	else:
+		_gate_deck_take(lid)  # адресная выкладка (Слух и пр.) тоже тратит жетон
 	# Цвет привязан к локации (каноничный цвет спейса EH); явный аргумент имеет
 	# приоритет. Фолбэк (локация без gateColor) — зелёный.
 	var col: String = color
@@ -150,6 +145,48 @@ func open_gate(loc_id: String = "", color: String = "") -> String:
 	GameConsole.log("[Врата] открылись (%s) на %s" % [col, lid])
 	_spawn_monster(lid)  # каждые новые врата → 1 монстр
 	return lid
+
+
+# ── Колода врат ───────────────────────────────────────────────────────────────
+
+
+# Наполнить колоду всеми гейт-локациями (жетон врат = гейт-спейс) и перетасовать.
+func _reset_gate_deck() -> void:
+	_gs.gate_deck = []
+	_gs.gate_discard = []
+	var locations: Array = _gs._load_locations()
+	for i: int in range(locations.size()):
+		var l: Dictionary = locations[i]
+		var did: String = String(l.get("id", ""))
+		if not did.is_empty() and not String(l.get("gateColor", "")).is_empty():
+			_gs.gate_deck.append(did)
+	(_gs.gate_deck as Array).shuffle()
+
+
+# Вытянуть жетон врат. Колода пуста → замешиваем сброс. Пусты обе → "" (вызывающий
+# продвигает Рок).
+func _draw_gate() -> String:
+	if (_gs.gate_deck as Array).is_empty():
+		if (_gs.gate_discard as Array).is_empty():
+			return ""
+		_gs.gate_deck = (_gs.gate_discard as Array).duplicate()
+		_gs.gate_discard = []
+		(_gs.gate_deck as Array).shuffle()
+		GameConsole.log("[Врата] колода замешана из сброса: %d" % (_gs.gate_deck as Array).size())
+	return String((_gs.gate_deck as Array).pop_back())
+
+
+# Убрать конкретный жетон из колоды/сброса (адресная выкладка врат).
+func _gate_deck_take(loc_id: String) -> void:
+	(_gs.gate_deck as Array).erase(loc_id)
+	(_gs.gate_discard as Array).erase(loc_id)
+
+
+# Врата ушли с поля → жетон в сброс (инвариант «ровно в одном месте»).
+func _gate_to_discard(loc_id: String) -> void:
+	if loc_id.is_empty() or (_gs.gate_discard as Array).has(loc_id):
+		return
+	(_gs.gate_discard as Array).append(loc_id)
 
 
 ## Каноничный цвет врат локации (из data/locations.json → gateColor). Локация
@@ -176,6 +213,7 @@ func close_gate_at_active_player() -> void:
 	if _gs.gates.has(loc):
 		var color: String = String(_gs.gates[loc])
 		_gs.gates.erase(loc)
+		_gate_to_discard(loc)
 		GameConsole.log("[Врата] закрыты на %s" % loc)
 		# Триггер Тайны: закрытие врат (напр. «врата цвета омена → −1 улика → жетон»)
 		_gs._mystery.try_mystery_hook("gateClosed", {"loc": loc, "color": color}, pid)
@@ -381,6 +419,7 @@ func discard_gate() -> void:
 	if not _gs.gates.has(loc):
 		loc = String((_gs.gates.keys() as Array)[randi() % _gs.gates.size()])
 	_gs.gates.erase(loc)
+	_gate_to_discard(loc)
 	GameConsole.log("[Врата] сброшены на %s" % loc)
 
 
@@ -526,6 +565,8 @@ func discard_all_gates() -> int:
 	if not _gs._is_host():
 		return 0
 	var removed: int = (_gs.gates as Dictionary).size()
+	for loc_v: Variant in (_gs.gates as Dictionary).keys():
+		_gate_to_discard(String(loc_v))
 	_gs.gates = {}
 	if removed > 0:
 		GameConsole.log("[Эффект] убраны все врата: %d" % removed)

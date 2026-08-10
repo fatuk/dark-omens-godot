@@ -40,6 +40,8 @@ class MockGameState:
 	var entities: Dictionary = {}
 	var monsters: Dictionary = {}
 	var monster_bag: Array = []
+	var gate_deck: Array = []  # колода жетонов врат (см. BoardState._reset_gate_deck)
+	var gate_discard: Array = []
 	var monster_surge: int = 1
 	var doom: int = 0
 	var omens_step: int = 0
@@ -164,7 +166,8 @@ func test_open_gate_non_host_is_noop() -> void:
 func test_open_gate_random_uses_location_gate_color() -> void:
 	_gs.monster_bag = ["cultist"]
 	_gs.locations = [{"id": "gA", "gateColor": "red"}, {"id": "plain"}]
-	_board.open_gate()  # без loc → единственный гейт-спейс gA
+	_gs.gate_deck = ["gA"]  # жетон врат тянется из колоды (см. BoardState._draw_gate)
+	_board.open_gate()  # без loc → единственный жетон в колоде
 	assert_eq(String(_gs.gates.get("gA", "")), "red", "цвет взят из gateColor локации")
 	assert_false(_gs.gates.has("plain"), "не-гейт-спейс пропущен")
 
@@ -347,6 +350,7 @@ func test_monster_surge_opens_new_gate_when_none_match() -> void:
 	_gs.gates = {"gA": "red"}  # нет зелёных
 	_gs.monster_bag = ["cultist"]
 	_gs.locations = [{"id": "gB", "gateColor": "blue"}]
+	_gs.gate_deck = ["gB"]  # жетон врат тянется из колоды
 	_board.monster_surge()
 	assert_true(_gs.gates.has("gB"), "при отсутствии врат цвета омена — открываются новые")
 
