@@ -42,6 +42,8 @@ class MockGameState:
 	var monster_bag: Array = []
 	var gate_deck: Array = []  # колода жетонов врат (см. BoardState._reset_gate_deck)
 	var gate_discard: Array = []
+	var clue_deck: Array = []  # колода ключей улик (см. GameState._clue_draw_ready)
+	var clue_discard: Array = []
 	var monster_surge: int = 1
 	var doom: int = 0
 	var omens_step: int = 0
@@ -51,6 +53,11 @@ class MockGameState:
 	var locations: Array = []
 	var shop_filled: int = 0
 	var mythos_in_play: Array = []
+
+	# Колода улик: мок отдаёт «есть что тянуть», пока в ней что-то лежит.
+	func _clue_draw_ready() -> bool:
+		return not clue_deck.is_empty()
+
 	var _campaign: StubCampaign
 	var _mystery: StubMystery
 	var _rumor: RumorFlow
@@ -293,6 +300,7 @@ func test_remove_monsters_by_toughness_zero_noop() -> void:
 
 func test_place_clue_single_candidate() -> void:
 	_gs.locations = [{"id": "only"}]
+	_gs.clue_deck = ["only"]  # жетон улики привязан к ключу-локации (см. place_clue)
 	_board.place_clue()
 	assert_true((_gs.entities["only"] as Array).has("clue"))
 
@@ -300,6 +308,7 @@ func test_place_clue_single_candidate() -> void:
 func test_place_clue_skips_location_with_clue() -> void:
 	_gs.locations = [{"id": "taken"}, {"id": "free"}]
 	_gs.entities = {"taken": ["clue"]}
+	_gs.clue_deck = ["taken", "free"]  # ключи обеих локаций ещё в колоде
 	_board.place_clue()
 	assert_true((_gs.entities["free"] as Array).has("clue"), "улика на свободной локации")
 	assert_eq((_gs.entities["taken"] as Array).size(), 1, "вторая улика не кладётся (≤1)")
@@ -360,6 +369,7 @@ func test_monster_surge_opens_new_gate_when_none_match() -> void:
 
 func test_setup_board_lays_out_gates_clues_and_surge() -> void:
 	_gs.locations = [{"id": "g1", "gateColor": "green"}, {"id": "l1"}, {"id": "l2"}, {"id": "l3"}]
+	_gs.clue_deck = ["l1", "l2", "l3"]  # ключи улик (в бою их сеет GameState)
 	_board.setup_board(2)  # ref(2): gates 1, clues 2, surge 1
 	assert_eq(_gs.gates.size(), 1, "открыты врата по таблице")
 	assert_eq(_gs.monster_surge, 1, "Наплыв из таблицы")

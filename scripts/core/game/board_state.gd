@@ -438,11 +438,17 @@ func spawn_monster_from_gate() -> void:
 func place_clue() -> void:
 	if not _gs._is_host():
 		return
+	# Жетон улики привязан к своей локации (ключ = локация), поэтому выложить можно
+	# только туда, чей ключ ЕЩЁ В КОЛОДЕ. Колода пуста — замешиваем сброс; пусты обе
+	# — жетоны кончились, выкладывать нечего.
+	if not _gs._clue_draw_ready():
+		GameConsole.warn("[Улика] жетоны кончились — выкладывать нечего")
+		return
 	var candidates: Array = []
 	var locations: Array = _gs._load_locations()
 	for i: int in range(locations.size()):
 		var lid: String = String(locations[i].get("id", ""))
-		if lid.is_empty():
+		if lid.is_empty() or not (_gs.clue_deck as Array).has(lid):
 			continue
 		var arr: Array = _gs.entities.get(lid, [])
 		if not (arr as Array).has("clue"):

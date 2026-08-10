@@ -155,14 +155,17 @@ var entities: Dictionary = {}
 var gate_deck: Array = []
 var gate_discard: Array = []
 
-# ── Улики Древнего: аддитивный слой идентичности (host-only, НЕ синкается) ──────
-# Пул доступных улик = ВСЕ локации карты, ещё не на поле и не на руках (ключ улики =
-# локация; текст/арт — из campaign.ancientOne.clues, нет → имя локации). _board_clue_ids:
-# loc → [ключи улик на жетонах там]. Инвариант «доступно ⇄ на поле ⇄ на руках
-# (player.clue_ids)»: ключ улики всегда ровно в одном месте. Раскладку/поиск НЕ трогает.
-var _clue_pool: Array = []
+# ── Улики Древнего: колода идентичностей ───────────────────────────────────────
+# Ключ улики = локация карты (текст/арт — из campaign.ancientOne.clues, нет → имя
+# локации), всего 36. _board_clue_ids: loc → [ключи улик на жетонах там], host-only.
+# Инвариант «ровно в одном месте»: колода ⇄ поле ⇄ руки (player.clue_ids) ⇄ сброс.
+# Колода улик (36 = число локаций) и сброс — СИНКАЮТСЯ: их показывает общее окно
+# сбросов. Потраченная или снятая с поля улика уходит в сброс, а не сразу обратно
+# в колоду: пока не пройдут все 36, ключи не повторяются.
+var clue_deck: Array = []
+var clue_discard: Array = []
 var _board_clue_ids: Dictionary = {}
-var _clue_pool_ready: bool = false
+var _clue_deck_ready: bool = false
 
 # Вещи павших сыщиков — кэш на месте гибели (Тень: «чистый лут», подбор встречей).
 # {loc_id: [item-dict,…]}. Host-only, НЕ синкается (host выдаёт при подборе).
@@ -316,6 +319,8 @@ const _SYNC_FIELDS: Array[String] = [
 	"monster_bag",
 	"gate_deck",
 	"gate_discard",
+	"clue_deck",
+	"clue_discard",
 	"monster_surge",
 	"encounter_choices",
 	"shop_reserve",
@@ -365,22 +370,23 @@ func _emit_changed() -> void:
 # локации (до 20). Есть авторский текст Древнего (campaign.ancientOne.clues) → веер
 # покажет его; нет — имя локации (ClueCatalog). Так лишних анонимных улик не бывает,
 # пока не разобраны все локации. Идемпотентно.
-func _ensure_clue_pool() -> void:
-	if _clue_pool_ready:
+func _ensure_clue_deck() -> void:
+	if _clue_deck_ready:
 		return
-	_clue_pool.clear()
+	clue_deck.clear()
 	for loc: Variant in _load_locations():
 		var lid: String = String((loc as Dictionary).get("id", ""))
-		if not lid.is_empty() and not _clue_pool.has(lid):
-			_clue_pool.append(lid)
-	_clue_pool_ready = true
+		if not lid.is_empty() and not clue_deck.has(lid):
+			clue_deck.append(lid)
+	_clue_deck_ready = true
 
 
 # Сброс пула при старте партии (перед раскладкой). Пересоберётся лениво из campaign.
-func _reset_clue_pool() -> void:
-	_clue_pool.clear()
+func _reset_clue_deck() -> void:
+	clue_deck.clear()
+	clue_discard.clear()  # иначе сброс прошлой партии утекал в новую
 	_board_clue_ids.clear()
-	_clue_pool_ready = false
+	_clue_deck_ready = false
 	_ghost_caches.clear()  # вещи павших — тоже host-only, сбрасываем на старте партии
 
 
@@ -437,10 +443,10 @@ func _refresh_ghost_upcoming() -> void:
 func _claim_board_clue(loc: String) -> void:
 	if not _is_host():
 		return
-	_ensure_clue_pool()
-	if not _clue_pool.has(loc):
+	_ensure_clue_deck()
+	if not clue_deck.has(loc):
 		return
-	_clue_pool.erase(loc)
+	clue_deck.erase(loc)
 	var arr: Array = _board_clue_ids.get(loc, [])
 	arr.append(loc)
 	_board_clue_ids[loc] = arr
@@ -490,20 +496,40 @@ func _reconcile_focus_quotes() -> void:
 func _reconcile_clue_identities() -> void:
 	if not _is_host():
 		return
-	_ensure_clue_pool()
+	_ensure_clue_deck()
 	_reconcile_board_clue_ids()
 	for pid: Variant in players:
 		var p: Dictionary = players[pid]
 		var want: int = int(p.get(PlayerKeys.CLUES, 0))
 		var ids: Array = p.get(PlayerKeys.CLUE_IDS, [])
-		while ids.size() < want and not _clue_pool.is_empty():
-			ids.append(_clue_pool.pop_back())
+		while ids.size() < want and _clue_draw_ready():
+			ids.append(clue_deck.pop_back())
 		while ids.size() > want:
-			var back: String = String(ids.pop_back())
-			if not _clue_pool.has(back):
-				_clue_pool.append(back)
+			_clue_to_discard(String(ids.pop_back()))  # потрачена/утрачена → в сброс
 		p[PlayerKeys.CLUE_IDS] = ids
 		players[pid] = p
+
+
+## Есть ли что тянуть: колода пуста → замешиваем сброс. Обе пусты → false.
+func _clue_draw_ready() -> bool:
+	_ensure_clue_deck()
+	if not clue_deck.is_empty():
+		return true
+	if clue_discard.is_empty():
+		return false
+	clue_deck = clue_discard.duplicate()
+	clue_discard = []
+	clue_deck.shuffle()
+	GameConsole.log("[Улики] колода замешана из сброса: %d" % clue_deck.size())
+	return true
+
+
+## Ключ улики ушёл из игры (потрачена, утрачена, снесена с поля) → в сброс.
+## Инвариант «ровно в одном месте»: в колоду он вернётся только замешиванием.
+func _clue_to_discard(key: String) -> void:
+	if key.is_empty() or clue_discard.has(key) or clue_deck.has(key):
+		return
+	clue_discard.append(key)
 
 
 # Вернуть в пул ключи улик, чьих жетонов уже нет на поле (сняты не исследованием —
@@ -516,9 +542,8 @@ func _reconcile_board_clue_ids() -> void:
 				on_board += 1
 		var arr: Array = _board_clue_ids[loc]
 		while arr.size() > on_board:
-			var back: String = String(arr.pop_back())
-			if not _clue_pool.has(back):
-				_clue_pool.append(back)
+			# Жетон снесли мимо исследования (discardAllClues Слуха) → ключ в сброс.
+			_clue_to_discard(String(arr.pop_back()))
 		if arr.is_empty():
 			_board_clue_ids.erase(loc)
 		else:
@@ -667,7 +692,7 @@ func start_game(players_init: Array) -> void:
 	# библия ещё не готова) — тот же авторитет из CampaignGen. Соло-тест партии на
 	# N раскладывает поле и задаёт Наплыв как на N.
 	var setup_pc: int = int(campaign.get("playerCount", _campaign.balance_player_count()))
-	_reset_clue_pool()  # свежий пул улик Древнего перед раскладкой (соберётся лениво из campaign)
+	_reset_clue_deck()  # свежий пул улик Древнего перед раскладкой (соберётся лениво из campaign)
 	_board.setup_board(maxi(1, setup_pc))  # стартовая раскладка: врата+монстры, улики, Наплыв
 	_mystery.apply_mystery_on_enter()  # onEnter первой Тайны (если библия уже готова; иначе при её приходе)
 	_broadcast_sync()
@@ -2184,7 +2209,7 @@ func reset_session() -> void:
 	phase = ""
 	campaign = {}
 	campaign_pending = false
-	_reset_clue_pool()  # чистит _clue_pool и _ghost_caches (наследство Теней)
+	_reset_clue_deck()  # чистит _clue_pool и _ghost_caches (наследство Теней)
 	_emit_changed()
 
 
