@@ -1,30 +1,48 @@
 class_name AssetActionFlow
 extends RefCounted
 
-## Самостоятельное действие актива (карточка с тегом "action"): тап по карте в
-## веере играет её программу как ОТДЕЛЬНОЕ действие фазы действий — не как
-## модификатор проверки (те применяются тапом уже на брошенной проверке, см.
-## CheckFlow.activate).
+## Прогон программ актива — единственная точка, где исполняется Effect-DSL карты.
+## Два слота:
+##   action — самостоятельное действие (карточка с тегом "action"): тап по карте в
+##            веере играет её как ОТДЕЛЬНОЕ действие фазы действий, а не как
+##            модификатор проверки (те применяются тапом на брошенной проверке,
+##            см. CheckFlow.activate);
+##   onGain — программа при получении карты (услуги: сработала и ушла в сброс).
 ##
-## Два пути, как у локальных действий состояний (ConditionFlow):
-##   begin(pid, idx)      — программа с test-узлом: гоняем интерактивно, узел
-##                          пендит видимую проверку (pending_check driver="asset"),
-##                          ход держит phase_controller до «Применить».
-##   host_run(pid, idx)   — программа без проверки: исполняем синхронно.
+## Прогон ВСЕГДА интерактивный и шаговый: встретив узел, требующий игрока, движок
+## останавливается, а мы показываем ему:
+##   test          → общая модалка проверки (pending_check, driver="asset");
+##   chosenMonster → модалка выбора монстра  (канал mythos_decision, driver="asset");
+##   chosenSpace   → модалка выбора локации;
+##   chosenInvestigator / choice → модалка выбора сыщика / ветки.
+## Решение возвращается в resolve_check/resolve_decision, программа переигрывается
+## с начала по записанным decisions/rolls и идёт дальше (тот же приём, что у мифов).
+##
+## Мутации игрока копим в dup и коммитим ТОЛЬКО в конце — переигровка после каждого
+## решения иначе применила бы их повторно.
+##
+## Выдача карт (onGain) идёт ОЧЕРЕДЬЮ: покупка в магазине выдаёт несколько карт
+## подряд, а прогон может встать на выборе — следующая ждёт своей очереди.
 ##
 ## Стоимость cost.discardSelf снимает карту из инвентаря ПОСЛЕ успешного прогона.
 
 const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
+## Итог play(): нечего играть / отыграно сразу / ждём игрока (ход держим).
+const PLAY_INVALID := -1
+const PLAY_DONE := 0
+const PLAY_WAITING := 1
+
 var _gs: Node = null
-var _run: Dictionary = {}  # {pid, index, id, decisions, rolls} — идёт интерактивный прогон
+var _run: Dictionary = {}  # {pid, slot, index, id, decisions, rolls, held} — идёт прогон
+var _grants: Array = []  # очередь выдач onGain: [{pid, id}]
 
 
 func _init(gs: Node) -> void:
 	_gs = gs
 
 
-# ── Публичное ─────────────────────────────────────────────────────────────────
+# ── Публичное: действие актива ────────────────────────────────────────────────
 
 
 ## Актив игрока по индексу вместе с карточкой каталога: {} если индекс битый.
@@ -46,58 +64,119 @@ func can_play(pid: String, index: int) -> bool:
 		return false
 	if bool((items[index] as Dictionary).get("exhausted", false)):
 		return false
-	return AssetCatalog.has_standalone_action(asset_at(pid, index))
-
-
-## Хост: начать действие с ВИДИМОЙ проверкой. false — проверки в программе нет
-## (вызывающий пробует синхронный host_run).
-func begin(pid: String, index: int) -> bool:
-	if not _gs._is_host() or not can_play(pid, index):
+	var asset: Dictionary = asset_at(pid, index)
+	if not AssetCatalog.has_standalone_action(asset):
 		return false
-	if _test_node(asset_at(pid, index)).is_empty():
-		return false
-	var entry: String = String(asset_at(pid, index).get("id", ""))
-	_run = {"pid": pid, "index": index, "id": entry, "decisions": {}, "rolls": {}}
-	_step(pid)  # прогонит программу и запендит первую видимую проверку
+	# Карта бьёт по монстру, а монстров на поле нет — играть некого: действие
+	# сгорело бы впустую, а карта выглядела бы доступной.
+	if _needs_monster(AssetCatalog.standalone_action(asset)):
+		return not (_gs._board.monster_choices() as Array).is_empty()
 	return true
 
 
-## Хост: разрешить видимую проверку программы (диспетч из resolve_pending_check).
+# Есть ли в программе узел, целящийся в монстра или в локацию с монстрами.
+static func _needs_monster(node: Variant) -> bool:
+	if node is Dictionary:
+		var t: String = String((node as Dictionary).get("target", ""))
+		if t == "chosenMonster" or t == "chosenSpace":
+			return true
+		for k: Variant in node:
+			if _needs_monster((node as Dictionary)[k]):
+				return true
+	elif node is Array:
+		for x: Variant in node:
+			if _needs_monster(x):
+				return true
+	return false
+
+
+## Хост: сыграть действие актива. PLAY_INVALID — играть нечего (действие не тратим),
+## PLAY_DONE — отыграно целиком, PLAY_WAITING — ждём проверку/выбор, ход держим.
+func play(pid: String, index: int) -> int:
+	if not _gs._is_host() or not can_play(pid, index):
+		return PLAY_INVALID
+	if AssetCatalog.standalone_action(asset_at(pid, index)).is_empty():
+		return PLAY_INVALID
+	if not _run.is_empty():
+		return PLAY_INVALID  # другой прогон ещё не закрыт — не начинаем второй
+	var entry: String = String(asset_at(pid, index).get("id", ""))
+	_run = {
+		"pid": pid,
+		"slot": "action",
+		"index": index,
+		"id": entry,
+		"decisions": {},
+		"rolls": {},
+		"held": false,
+	}
+	_step()
+	return PLAY_WAITING if not _run.is_empty() else PLAY_DONE
+
+
+# ── Публичное: выдача карты с onGain ──────────────────────────────────────────
+
+
+## Хост: выдать актив сыщику, исполнив его onGain. Услуга (onGain содержит
+## discardCard) срабатывает и НЕ попадает в инвентарь; прочие — добавляются как
+## {id, exhausted:false}. Единая точка получения актива (магазин и пр.).
+func grant(pid: String, asset_id: String) -> void:
+	if not _gs._is_host() or not _gs.players.has(pid):
+		return
+	var asset: Dictionary = AssetCatalog.by_id(asset_id)
+	if asset.is_empty():
+		return
+	if (_on_gain(asset) as Array).is_empty():
+		_put_in_hand(pid, asset_id)  # без onGain — сразу в руку, очередь ни при чём
+		return
+	_grants.append({"pid": pid, "id": asset_id})
+	_pump()
+
+
+# ── Публичное: ответы игрока ──────────────────────────────────────────────────
+
+
+## Хост: разрешена видимая проверка программы (диспетч из resolve_pending_check).
 func resolve_check(pid: String, path: String, passed: bool) -> void:
 	if not _gs._is_host() or _run.is_empty() or String(_run.get("pid", "")) != pid:
 		return
 	(_run["decisions"] as Dictionary)[path] = passed
-	_step(pid)
+	_step()
 
 
-## Хост: исполнить действие БЕЗ проверки синхронно. false — играть нечего.
-func host_run(pid: String, index: int) -> bool:
-	if not _gs._is_host() or not can_play(pid, index):
-		return false
-	var asset: Dictionary = asset_at(pid, index)
-	var program: Array = AssetCatalog.standalone_action(asset)
-	if program.is_empty():
-		return false
-	var p: Dictionary = _gs.players[pid]
-	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-	var res: Dictionary = _EffectRunner.run(program, p, {"skills": inv.get("skills", {})})
-	_log(pid, String(asset.get("id", "")), res)
-	for node_v: Variant in res.get("board", []):
-		_gs._apply_board_effect(node_v as Dictionary)
-	_pay(pid, index, program)
-	return true
+## Хост: игрок выбрал вариант в модалке решения (монстр / локация / сыщик / ветка).
+## Что записать решением, зависит от вида: ref монстра или локации, pid сыщика,
+## иначе — индекс ветки (так же разбирает выбор MythosFlow).
+func resolve_decision(pid: String, index: int) -> void:
+	if not _gs._is_host() or _run.is_empty() or String(_run.get("pid", "")) != pid:
+		return
+	var md: Dictionary = _gs.mythos_decision
+	var opts: Array = md.get("options", [])
+	var kind: String = String(md.get("kind", "choice"))
+	var value: Variant = index
+	if index >= 0 and index < (opts as Array).size():
+		var opt: Dictionary = opts[index]
+		match kind:
+			"monster", "space":
+				value = String(opt.get("ref", ""))
+			"target":
+				value = String(opt.get("pid", ""))
+	(_run["decisions"] as Dictionary)[String(md.get("path", ""))] = value
+	_gs.mythos_decision = {}
+	_step()
 
 
-# ── Внутреннее ────────────────────────────────────────────────────────────────
+# ── Внутреннее: шаг прогона ───────────────────────────────────────────────────
 
 
-# Шаг интерактивного прогона: либо пендим следующую видимую проверку, либо
-# завершаем (коммит мутаций + board + оплата + освобождение хода).
-func _step(pid: String) -> void:
-	var index: int = int(_run.get("index", -1))
-	var asset: Dictionary = asset_at(pid, index)
-	var program: Array = AssetCatalog.standalone_action(asset)
-	var inv: Dictionary = Investigators.get_data(String(_gs.players[pid].get("investigator", "")))
+# Один проход программы: либо останавливаемся на вопросе к игроку, либо завершаем
+# (коммит мутаций + board + оплата/выдача + освобождение хода).
+func _step() -> void:
+	var pid: String = String(_run.get("pid", ""))
+	if not _gs.players.has(pid):
+		_finish_run()
+		return
+	var asset: Dictionary = _asset_of_run(pid)
+	var program: Array = _program_of_run(asset)
 	var dup: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
 	var flow: Dictionary = {
 		"interactive": true,
@@ -107,11 +186,14 @@ func _step(pid: String) -> void:
 		"pending": {},
 		"slot": "",
 	}
-	var res: Dictionary = _EffectRunner.run(program, dup, {"skills": inv.get("skills", {})}, flow)
+	var res: Dictionary = _EffectRunner.run(program, dup, _ctx(pid), flow)
 	_run["rolls"] = flow.get("rolls", {})
 
 	var pending: Dictionary = res.get("pending", {})
-	if String(pending.get("kind", "")) == "check":
+	var kind: String = String(pending.get("kind", ""))
+	if kind == "check":
+		_hold()
+		_run["check_started"] = true
 		_gs._check.start(
 			"effectCheck",
 			pid,
@@ -125,29 +207,159 @@ func _step(pid: String) -> void:
 			"path": String(pending.get("path", "")),
 			"subject": AssetCatalog.card_payload(asset),
 		}
-		return  # ждём resolve_check; ход держит phase_controller
+		_sync()
+		return
+	if not kind.is_empty():
+		_hold()
+		# Общий канал модалки решения (его же использует forEach Мифов) — кого
+		# будить на ответе, говорит driver.
+		_gs.mythos_decision = {
+			"active": true,
+			"pid": pid,
+			"driver": "asset",
+			"kind": kind,
+			"path": String(pending.get("path", "")),
+			"options": pending.get("options", []),
+			"title_key": String(asset.get("nameKey", "MYTHOS_DECISION_TITLE")),
+			"prompt_key": _prompt_key(kind, String(pending.get("verb", ""))),
+		}
+		_sync()
+		return
 
+	# Программа отыграна целиком — коммитим.
 	_gs.players[pid] = dup
 	_log(pid, String(asset.get("id", "")), res)
+	var consumed: bool = false
 	for node_v: Variant in res.get("board", []):
-		_gs._apply_board_effect(node_v as Dictionary)
-	_pay(pid, index, program)
+		var node: Dictionary = node_v
+		if String(node.get("do", "")) == "discardCard":
+			consumed = true  # услуга: сработала и сбрасывается — в инвентарь не идёт
+		else:
+			node["_anchor_pid"] = pid  # относительные цели — от этого сыщика
+			_gs._apply_board_effect(node)
+	if String(_run.get("slot", "")) == "onGain":
+		_finish_grant(pid, String(_run.get("id", "")), consumed)
+	else:
+		_pay(pid, int(_run.get("index", -1)), program)
+	_finish_run()
+
+
+# Завершение прогона: чистим состояние, отпускаем ход (если держали) и берём
+# следующую выдачу из очереди.
+func _finish_run() -> void:
+	var pid: String = String(_run.get("pid", ""))
+	var held: bool = bool(_run.get("held", false))
+	var slot: String = String(_run.get("slot", ""))
+	var had_check: bool = bool(_run.get("check_started", false))
 	_run = {}
-	_gs.pending_check = {}
-	_gs._check.clear()
-	_gs._phase.release_asset_turn(pid)
+	if String(_gs.pending_check.get("driver", "")) == "asset":
+		_gs.pending_check = {}
+	if String(_gs.mythos_decision.get("driver", "")) == "asset":
+		_gs.mythos_decision = {}
+	if had_check:
+		_gs._check.clear()  # чужую активную проверку (магазин/встреча) не трогаем
+	if held and slot == "action":
+		_gs._phase.release_asset_turn(pid)
+	_sync()
+	_pump()
 
 
-# Первый test-узел программы ({} — действие без видимой проверки).
-func _test_node(asset: Dictionary) -> Dictionary:
-	for n_v: Variant in AssetCatalog.standalone_action(asset):
-		if n_v is Dictionary and (n_v as Dictionary).has("test"):
-			return n_v
-	return {}
+# Выдача карты после отработавшего onGain.
+func _finish_grant(pid: String, asset_id: String, consumed: bool) -> void:
+	if consumed:
+		GameConsole.log(
+			"[Актив] %s — услуга «%s» применена и сброшена" % [_gs._name_of(pid), asset_id]
+		)
+		return
+	_put_in_hand(pid, asset_id)
 
 
-# Оплата: cost.discardSelf снимает карту из инвентаря; иначе — истощаем до конца
-# раунда (действие актива «раз в раунд», снимается на шаге Refresh).
+func _put_in_hand(pid: String, asset_id: String) -> void:
+	var p: Dictionary = _gs.players[pid]
+	var items: Array = p.get("items", [])
+	items.append({"id": asset_id, "exhausted": false})
+	p["items"] = items
+	GameConsole.log("[Актив] %s получил «%s»" % [_gs._name_of(pid), asset_id])
+
+
+# Взять следующую выдачу из очереди (если прогон не идёт).
+func _pump() -> void:
+	if not _run.is_empty() or _grants.is_empty():
+		return
+	var g: Dictionary = _grants.pop_front()
+	var pid: String = String(g.get("pid", ""))
+	if not _gs.players.has(pid):
+		_pump()
+		return
+	_run = {
+		"pid": pid,
+		"slot": "onGain",
+		"index": -1,
+		"id": String(g.get("id", "")),
+		"decisions": {},
+		"rolls": {},
+		"held": false,
+	}
+	_step()
+
+
+# ── Внутреннее: мелочи ────────────────────────────────────────────────────────
+
+
+# Контекст интерактивного прогона: навыки для test плюс варианты выбора цели.
+func _ctx(pid: String) -> Dictionary:
+	var inv: Dictionary = Investigators.get_data(String(_gs.players[pid].get("investigator", "")))
+	return {
+		"skills": inv.get("skills", {}),
+		"monster_choices": _gs._board.monster_choices(),  # chosenMonster
+		"space_choices": _gs._board.space_choices(),  # chosenSpace
+		"other_pids": _gs._target.other_pids(pid),  # chosenInvestigator
+	}
+
+
+# Карточка каталога текущего прогона: для action — по индексу в руке, для onGain
+# карты в руке ещё нет, поэтому по id.
+func _asset_of_run(pid: String) -> Dictionary:
+	if String(_run.get("slot", "")) == "onGain":
+		return AssetCatalog.by_id(String(_run.get("id", "")))
+	return asset_at(pid, int(_run.get("index", -1)))
+
+
+func _program_of_run(asset: Dictionary) -> Array:
+	if String(_run.get("slot", "")) == "onGain":
+		return _on_gain(asset)
+	return AssetCatalog.standalone_action(asset)
+
+
+func _on_gain(asset: Dictionary) -> Array:
+	return (asset.get("effect", {}) as Dictionary).get("onGain", [])
+
+
+# Подсказка модалки: по виду выбора и глаголу — «кого сбросить» и «кого ранить»
+# читаются по-разному. Пусто → модалка возьмёт подсказку по умолчанию.
+func _prompt_key(kind: String, verb: String) -> String:
+	match [kind, verb]:
+		["monster", "discardMonster"], ["monster", "defeatMonster"]:
+			return "PICK_MONSTER_DISCARD"
+		["monster", "damageMonster"]:
+			return "PICK_MONSTER_DAMAGE"
+		["space", "damageMonster"]:
+			return "PICK_SPACE_DAMAGE"
+	return ""
+
+
+# Прогон встал на вопросе к игроку — отмечаем, что ход придётся отпускать явно.
+func _hold() -> void:
+	_run["held"] = true
+
+
+func _sync() -> void:
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+
+
+# Оплата действия: cost.discardSelf снимает карту из инвентаря; иначе — истощаем до
+# конца раунда (действие актива «раз в раунд», снимается на шаге Refresh).
 func _pay(pid: String, index: int, program: Array) -> void:
 	var p: Dictionary = _gs.players[pid]
 	var items: Array = p.get("items", [])

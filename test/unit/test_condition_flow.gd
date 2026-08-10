@@ -6,16 +6,15 @@ extends GutTest
 ##   • расплата: детерминированный onReckoning (poisoned → −1 hp), подавление
 ##     у перевёрнутых, ворота через dieRoll (cursed);
 ##   • flip: then:flip / then:discard / выдача нового состояния / пустые исходы;
-##   • triggered (Hypothermia on:rest) и action (Detained escape);
-##   • выдача активов с onGain (обычный / сервис / гварды).
+##   • triggered (Hypothermia on:rest) и action (Detained escape).
+##
+## Выдача активов (host_grant_asset) переехала в AssetActionFlow — см.
+## test_asset_action_flow.gd.
 ##
 ## Случайность детерминируется тем же механизмом, что и в EffectRunner:
 ##   flow.rolls[path] — броски ворот (dieRoll/test); путь верхнеуровневой ноды
 ##     i == String(i), поэтому одиночный dieRoll → ключ "0";
 ##   flow.outcomes[cid] — форс конкретного reckoningOutcome при flip.
-
-const _DERRINGER: String = "18_derringer"  # обычный актив (без onGain)
-const _SERVICE: String = "agency_quarantine"  # сервис: onGain → damageMonster + discardCard
 
 var _gs: MockGameState
 var _cond: ConditionFlow
@@ -189,42 +188,6 @@ func test_reckoning_skips_flipped_condition() -> void:
 	_add_player("p", {"conditions": ["poisoned"], "conditions_flipped": {"poisoned": "x"}})
 	_cond.host_resolve_reckoning()
 	assert_eq(int(_gs.players["p"]["hp"]), 5, "у перевёрнутого фронтовой onReckoning подавлен")
-
-
-# ── Выдача активов с onGain ───────────────────────────────────────────────────
-
-
-func test_grant_normal_asset_added_to_items() -> void:
-	_add_player("p")
-	_cond.host_grant_asset("p", _DERRINGER)
-	var items: Array = _gs.players["p"]["items"]
-	assert_eq(items.size(), 1, "обычный актив попадает в инвентарь")
-	assert_eq(String((items[0] as Dictionary)["id"]), _DERRINGER)
-	assert_false(bool((items[0] as Dictionary)["exhausted"]), "выдан неистощённым")
-
-
-func test_grant_service_asset_consumed_not_kept() -> void:
-	_add_player("p")
-	_cond.host_grant_asset("p", _SERVICE)
-	var items: Array = _gs.players["p"]["items"]
-	assert_eq(items.size(), 0, "сервис сработал и сброшен — в инвентарь не идёт")
-	var verbs: Array = []
-	for i in range(_gs.board_effects.size()):
-		verbs.append(String((_gs.board_effects[i] as Dictionary).get("do", "")))
-	assert_has(verbs, "damageMonster", "onGain-эффект применён на доску")
-
-
-func test_grant_asset_non_host_is_noop() -> void:
-	_gs.host = false
-	_add_player("p")
-	_cond.host_grant_asset("p", _DERRINGER)
-	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "не-хост ничего не выдаёт")
-
-
-func test_grant_unknown_asset_is_noop() -> void:
-	_add_player("p")
-	_cond.host_grant_asset("p", "no_such_asset")
-	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "неизвестный id игнорируется")
 
 
 # ── Flip: выбор исхода форсируется flow.outcomes[cid] ─────────────────────────

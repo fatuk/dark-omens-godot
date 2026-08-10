@@ -267,8 +267,12 @@ func return_monster_to_bag(mid: String) -> void:
 
 
 ## Список монстров на поле для интерактивного выбора (chosenMonster): [{ref:"loc#idx",
-## name:<ключ перевода имени>, toughness:<с учётом размера партии>}]. ref — локация и
-## индекс экземпляра; модалка переведёт name, движок снимет монстра по ref.
+## name:<ключ перевода имени>, toughness:<с учётом размера партии>, health:<текущее>,
+## loc:<id локации>, loc_name:<ключ перевода локации>}]. ref — локация и индекс
+## экземпляра; модалка переведёт name/loc_name, движок найдёт монстра по ref.
+##
+## Локация в опции обязательна: карты-услуги бьют «монстра в ЛЮБОЙ локации», и без
+## неё игрок выбирает вслепую.
 func monster_choices() -> Array:
 	var out: Array = []
 	var pc: int = _gs._campaign.balance_player_count()
@@ -281,17 +285,43 @@ func monster_choices() -> Array:
 			var m: Dictionary = MonsterCatalog.by_id(mid)
 			if m.is_empty():
 				continue
+			var tough: int = maxi(1, MonsterCatalog.toughness_for(m, pc))
 			(
 				out
 				. append(
 					{
 						"ref": "%s#%d" % [loc, i],
 						"name": String(m.get("nameKey", mid)),
-						"toughness": maxi(1, MonsterCatalog.toughness_for(m, pc)),
+						"toughness": tough,
+						"health": int(inst.get("health", tough)) if inst is Dictionary else tough,
+						"loc": loc,
+						"loc_name": loc_name_key(loc),
 					}
 				)
 			)
 	return out
+
+
+## Локации, где ЕСТЬ монстры, — для выбора площадью (chosenSpace: «выберите локацию,
+## каждый монстр там теряет N здоровья»). [{ref:<loc id>, name:<ключ перевода>, count:N}].
+## Пустые локации не предлагаем: бить по ним нечего.
+func space_choices() -> Array:
+	var out: Array = []
+	for loc_v: Variant in (_gs.monsters as Dictionary).keys():
+		var loc: String = String(loc_v)
+		var n: int = (_gs.monsters[loc] as Array).size()
+		if n > 0:
+			out.append({"ref": loc, "name": loc_name_key(loc), "count": n})
+	return out
+
+
+## Ключ перевода имени локации (нет в данных — сам id, как в SupplyModal).
+func loc_name_key(loc_id: String) -> String:
+	for l_v: Variant in _gs._load_locations():
+		var l: Dictionary = l_v
+		if String(l.get("id", "")) == loc_id:
+			return String(l.get("name", loc_id))
+	return loc_id
 
 
 ## Снять КОНКРЕТНЫЙ экземпляр монстра по ref "loc#idx" (выбранный игроком, chosenMonster).
@@ -389,26 +419,68 @@ func remove_monsters_by_toughness(defeated: bool, max_t: int) -> void:
 func damage_monster_at_active(amount: int) -> void:
 	if not _gs._is_host() or amount <= 0:
 		return
-	var loc: String = _active_loc()
-	var arr: Array = _gs.monsters.get(loc, [])
-	if (arr as Array).is_empty():
+	_damage_at(_active_loc(), 0, amount)
+
+
+## Нанести урон КАЖДОМУ монстру на локации активного игрока (Dynamite: «каждый
+## монстр на вашей локации теряет 3 здоровья»).
+func damage_monsters_at_active(amount: int) -> void:
+	if not _gs._is_host():
 		return
-	var inst_v: Variant = arr[0]
+	damage_monsters_at(_active_loc(), amount)
+
+
+## Нанести урон КОНКРЕТНОМУ монстру по ref "loc#idx" — выбранному игроком
+## (damageMonster target:chosenMonster: Assassination, Monster Hunter, Enchanted Bow).
+func damage_monster_ref(ref: String, amount: int) -> void:
+	if not _gs._is_host() or amount <= 0:
+		return
+	var parts: PackedStringArray = ref.split("#")
+	if parts.size() != 2:
+		return
+	_damage_at(parts[0], int(parts[1]), amount)
+
+
+## Нанести урон КАЖДОМУ монстру выбранной локации (damageMonster target:chosenSpace:
+## Agency Quarantine, Police Raid). Идём с конца — павшие удаляются по индексу.
+func damage_monsters_at(loc: String, amount: int) -> void:
+	if not _gs._is_host() or amount <= 0 or loc.is_empty():
+		return
+	var n: int = (_gs.monsters.get(loc, []) as Array).size()
+	for i in range(n - 1, -1, -1):
+		_damage_at(loc, i, amount)
+
+
+# Урон одному экземпляру монстра (loc + индекс). Гибель → id возвращается в мешок.
+# Урон эффектов — МАГИЧЕСКИЙ: монстр с magical-резистом получает вдвое меньше.
+func _damage_at(loc: String, idx: int, amount: int) -> void:
+	if loc.is_empty():
+		return
+	var arr: Array = _gs.monsters.get(loc, [])
+	if idx < 0 or idx >= (arr as Array).size():
+		return
+	var inst_v: Variant = arr[idx]
 	var inst: Dictionary = inst_v if inst_v is Dictionary else {"id": String(inst_v), "health": 1}
-	# Урон заклинаний — МАГИЧЕСКИЙ: монстр с magical-резистом получает вдвое меньше.
-	var m: Dictionary = MonsterCatalog.by_id(String(inst.get("id", "")))
+	var mid: String = String(inst.get("id", ""))
+	var m: Dictionary = MonsterCatalog.by_id(mid)
 	var dealt: int = MonsterCatalog.apply_resistance(m, amount, "magical")
 	if dealt <= 0:
 		GameConsole.log("[Монстр] сопротивление магии — урон поглощён на %s" % loc)
 		return
 	var hp: int = int(inst.get("health", 1)) - dealt
-	if hp <= 0:
-		remove_monster_at_active(true, 1)
-	else:
+	if hp > 0:
 		inst["health"] = hp
-		arr[0] = inst
+		arr[idx] = inst
 		_gs.monsters[loc] = arr
-		GameConsole.log("[Монстр] −%d урона (осталось %d) на %s" % [dealt, hp, loc])
+		GameConsole.log("[Монстр] %s −%d урона (осталось %d) на %s" % [mid, dealt, hp, loc])
+		return
+	arr.remove_at(idx)
+	if (arr as Array).is_empty():
+		_gs.monsters.erase(loc)
+	else:
+		_gs.monsters[loc] = arr
+	return_monster_to_bag(mid)
+	GameConsole.log("[Монстр] %s побеждён уроном на %s" % [mid, loc])
 
 
 ## Снять врата: на локации активного игрока, иначе случайные открытые.

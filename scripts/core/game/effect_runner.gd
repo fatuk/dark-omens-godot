@@ -95,7 +95,8 @@ const SKILL_MOD_CAP := 2
 
 
 ## ctx (опц.) — контекст исполнения: { skills, loc_type, is_lead, gates_matching_omen,
-## gates_on_board, monsters_on_board, clues_on_board, rumors_in_play, monster_toughness }.
+## gates_on_board, monsters_on_board, clues_on_board, rumors_in_play, monster_toughness,
+## monster_choices (chosenMonster), space_choices (chosenSpace), other_pids (chosen*) }.
 ## Нужен для реального test (навыки), предикатов when и счётчиков repeat. Пусто
 ## (мифос/хуки без контекста) → test считается пройденным, board-предикаты — истинными.
 ##
@@ -482,13 +483,32 @@ static func _run_action(
 			var mopts: Array = ctx.get("monster_choices", [])
 			if (mopts as Array).is_empty():
 				return  # монстров нет — эффект пропадает
-			flow["pending"] = {"kind": "monster", "path": path, "options": mopts.duplicate()}
+			flow["pending"] = {
+				"kind": "monster", "path": path, "options": mopts.duplicate(), "verb": verb
+			}
 			return
 		var ref: String = String(mdec[path])
 		ctx["chosenMonsterToughness"] = _monster_choice_toughness(ctx, ref)
 		var mnode: Dictionary = node.duplicate(true)
 		mnode["_target_monster"] = ref
 		board.append(mnode)  # GameState снимет именно этого монстра
+		return
+	# (2c) Интерактивный выбор ЛОКАЦИИ по монстрам (damageMonster target:chosenSpace —
+	#      «выберите локацию, каждый монстр там теряет N»: Agency Quarantine, Police
+	#      Raid). Варианты — только локации С монстрами (ctx.space_choices).
+	if interactive and target == "chosenSpace":
+		var sdec: Dictionary = flow.get("decisions", {})
+		if not sdec.has(path):
+			var sopts: Array = ctx.get("space_choices", [])
+			if (sopts as Array).is_empty():
+				return  # монстров нигде нет — эффект пропадает
+			flow["pending"] = {
+				"kind": "space", "path": path, "options": sopts.duplicate(), "verb": verb
+			}
+			return
+		var snode: Dictionary = node.duplicate(true)
+		snode["_target_space"] = String(sdec[path])
+		board.append(snode)
 		return
 	# (3) board-verb ИЛИ игровой verb с детерминированной целью (lead/each/eachOn*)
 	#     → на доску с разрешённым повтором; цель разрешит GameState.

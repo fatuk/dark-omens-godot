@@ -79,7 +79,7 @@
 				{
 					"do": "damageMonster",
 					"amount": 4,
-					"target": "eachMonsterOnSpace"
+					"target": "chosenSpace"
 				},
 				{
 					"do": "discardCard"
@@ -3982,7 +3982,7 @@
 				{
 					"do": "damageMonster",
 					"amount": 3,
-					"target": "eachMonsterOnSpace"
+					"target": "chosenSpace"
 				},
 				{
 					"do": "discardCard"

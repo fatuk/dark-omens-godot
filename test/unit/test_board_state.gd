@@ -275,6 +275,60 @@ func test_damage_monster_lethal_removes() -> void:
 	assert_false(_gs.monsters.has("loc"), "смертельный урон снимает монстра")
 
 
+func test_damage_monster_ref_hits_exact_instance() -> void:
+	# chosenMonster: ref "loc#idx" — бьём именно выбранного, а не первого попавшегося.
+	_gs.monsters = {
+		"a": [{"id": "ghoul", "health": 3}],
+		"b": [{"id": "ghoul", "health": 3}, {"id": "ghoul", "health": 3}],
+	}
+	_board.damage_monster_ref("b#1", 2)
+	assert_eq(int(_gs.monsters["a"][0]["health"]), 3, "чужая локация не задета")
+	assert_eq(int(_gs.monsters["b"][0]["health"]), 3, "сосед по локации не задет")
+	assert_eq(int(_gs.monsters["b"][1]["health"]), 1, "урон ушёл выбранному")
+
+
+func test_damage_monster_ref_lethal_returns_to_bag() -> void:
+	_gs.monsters = {"b": [{"id": "ghoul", "health": 1}]}
+	_board.damage_monster_ref("b#0", 3)
+	assert_false(_gs.monsters.has("b"), "локация очищена")
+	assert_true(_gs.monster_bag.has("ghoul"), "id вернулся в мешок")
+
+
+func test_damage_monster_ref_bad_ref_is_noop() -> void:
+	_gs.monsters = {"b": [{"id": "ghoul", "health": 3}]}
+	_board.damage_monster_ref("b#7", 3)
+	_board.damage_monster_ref("мусор", 3)
+	assert_eq(int(_gs.monsters["b"][0]["health"]), 3, "битый ref ничего не ломает")
+
+
+func test_damage_monsters_at_hits_everyone_on_space() -> void:
+	# chosenSpace (Карантин/Рейд): достаётся каждому монстру локации, павшие снимаются.
+	_gs.monsters = {
+		"a": [{"id": "ghoul", "health": 2}, {"id": "ghoul", "health": 5}],
+		"b": [{"id": "ghoul", "health": 2}],
+	}
+	_board.damage_monsters_at("a", 3)
+	assert_eq((_gs.monsters["a"] as Array).size(), 1, "слабый пал, живучий остался")
+	assert_eq(int(_gs.monsters["a"][0]["health"]), 2, "живучему 5 − 3 = 2")
+	assert_eq(int(_gs.monsters["b"][0]["health"]), 2, "соседняя локация не задета")
+
+
+func test_space_choices_lists_only_occupied_spaces() -> void:
+	_gs.monsters = {"a": [{"id": "ghoul", "health": 2}, {"id": "ghoul", "health": 2}]}
+	var spaces: Array = _board.space_choices()
+	assert_eq(spaces.size(), 1, "предлагаем только локации с монстрами")
+	assert_eq(String((spaces[0] as Dictionary)["ref"]), "a")
+	assert_eq(int((spaces[0] as Dictionary)["count"]), 2, "счётчик монстров в опции")
+
+
+func test_monster_choices_carry_location() -> void:
+	_gs.monsters = {"a": [{"id": "ghoul", "health": 1}]}
+	var opt: Dictionary = (_board.monster_choices() as Array)[0]
+	assert_eq(String(opt["ref"]), "a#0")
+	assert_eq(String(opt["loc"]), "a", "в опции есть локация — карты бьют по всему полю")
+	assert_eq(int(opt["health"]), 1, "текущее здоровье, а не только стойкость")
+
+
 func test_remove_monsters_by_toughness_selective() -> void:
 	# child_of_the_goat t=1, avian_thrall t=3 (balance_pc=1). Порог ≤2: снять слабого.
 	_at("loc")

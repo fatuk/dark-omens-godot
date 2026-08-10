@@ -442,34 +442,8 @@ func _run_carrier_program(
 # ── Выдача активов с исполнением onGain ───────────────────────────────────────
 
 
-## Хост: выдать актив сыщику, исполнив его onGain. Сервис-актив (onGain содержит
-## discardCard) срабатывает и НЕ попадает в инвентарь; прочие — добавляются как
-## {id, exhausted:false}. Единая точка получения актива (магазин и пр.).
+## Хост: выдать актив сыщику, исполнив его onGain. Делегат в AssetActionFlow —
+## программа карты может спросить игрока (какого монстра ранить, кому отдать вещи),
+## поэтому выдача идёт тем же шаговым прогоном и очередью, что и действия активов.
 func host_grant_asset(pid: String, asset_id: String) -> void:
-	if not _gs._is_host() or not _gs.players.has(pid):
-		return
-	var asset: Dictionary = AssetCatalog.by_id(asset_id)
-	if asset.is_empty():
-		return
-	var p: Dictionary = _gs.players[pid]
-	var on_gain: Array = (asset.get("effect", {}) as Dictionary).get("onGain", [])
-	var consumed: bool = false
-	if not (on_gain as Array).is_empty():
-		var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-		var res: Dictionary = _EffectRunner.run(on_gain, p, {"skills": inv.get("skills", {})})
-		for l_v: Variant in res.get("logs", []):
-			GameConsole.log("[onGain %s] %s · %s" % [asset_id, _gs._name_of(pid), String(l_v)])
-		for node_v: Variant in res.get("board", []):
-			if String((node_v as Dictionary).get("do", "")) == "discardCard":
-				consumed = true  # сервис: сработал и сбрасывается — в инвентарь не идёт
-			else:
-				_gs._apply_board_effect(node_v as Dictionary)
-	if consumed:
-		GameConsole.log(
-			"[Актив] %s — сервис «%s» применён и сброшен" % [_gs._name_of(pid), asset_id]
-		)
-		return
-	var items: Array = p.get("items", [])
-	items.append({"id": asset_id, "exhausted": false})
-	p["items"] = items
-	GameConsole.log("[Актив] %s получил «%s»" % [_gs._name_of(pid), asset_id])
+	_gs._asset_action.grant(pid, asset_id)

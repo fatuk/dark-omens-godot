@@ -104,6 +104,17 @@ func _neighbor(anchor: String, dir: int) -> Array:
 	return [String(pids[((idx + dir) % n + n) % n])]
 
 
+## Прочие живые сыщики как [{pid, name}] — варианты интерактивного выбора цели
+## (target chosenInvestigator: передача активов/улик).
+func other_pids(exclude_pid: String) -> Array:
+	var out: Array = []
+	for pid_v: Variant in _connected_pids():
+		var pid: String = String(pid_v)
+		if pid != exclude_pid:
+			out.append({"pid": pid, "name": _gs._name_of(pid)})
+	return out
+
+
 # Подключённые ЖИВЫЕ сыщики (id), в порядке turn_order. Тень (dead) — не тело,
 # не цель для эффектов/решений/Мифов, поэтому исключается наравне с отключёнными.
 func _connected_pids() -> Array:

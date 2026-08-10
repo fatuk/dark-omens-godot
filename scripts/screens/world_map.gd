@@ -479,9 +479,10 @@ func _card_applicable_now(pcard: Dictionary) -> bool:
 	# и по пустому active_check веер показывал ВСЕ карты применимыми.
 	var c: Dictionary = GameState.current_check()
 	# Актив с самостоятельным действием (тег "action") играется отдельным действием
-	# фазы — он применим и вне проверки, лишь бы был ход и осталось действие.
+	# фазы — он применим и вне проверки, лишь бы был ход и осталось действие. Плюс
+	# гварды самой карты (истощена, бить некого) — тот же can_play, что у хоста.
 	if AssetCatalog.has_standalone_action(AssetCatalog.by_id(String(pcard.get("id", "")))):
-		return _can_spend_action()
+		return _can_spend_action() and GameState.can_play_asset(int(pcard.get("item_index", -1)))
 	# Прочие активы вне проверки сыграть НЕКУДА: activate_card ведёт либо в боевой
 	# триггер (проверен выше), либо в CheckFlow.activate, которому нужна проверка.
 	# Раньше тут стоял «true», и в фазе действий вся рука светилась играбельной.

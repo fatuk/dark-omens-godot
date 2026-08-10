@@ -15,6 +15,9 @@ extends Node
 
 signal state_changed  # любое изменение стейта
 signal phase_changed(new_phase: String)  # переход фазы
+# Будит корутину MythosFlow; emit'ит PhaseController, а не сам GameState — движок
+# считает такой сигнал неиспользованным, отсюда аннотация.
+@warning_ignore("unused_signal")
 signal mythos_decided(idx: int)  # сыщик выбрал ветку в forEach-проходе Мифов
 signal effect_check_applied(pid: String, passed: bool)  # игрок применил видимую проверку test (корутины)
 signal chat_received(pid: String, phrase_id: String, noun_ids: Array)  # транзиентный чат (Dark Souls-style)
@@ -899,6 +902,12 @@ func combat_trigger_ready(item_index: int) -> bool:
 	return not _encounter.combat_trigger_node_ready(_nm.my_user_id, item_index).is_empty()
 
 
+## Играется ли МОЯ карта как самостоятельное действие ПРЯМО СЕЙЧАС — для веера.
+## Read-only, считается и на клиенте: цели (монстры на поле) синкаются.
+func can_play_asset(item_index: int) -> bool:
+	return _asset_action.can_play(_nm.my_user_id, item_index)
+
+
 func activate_card(item_index: int) -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
@@ -1714,11 +1723,10 @@ func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -
 	players[uid]["connected"] = false
 	GameConsole.log("[Game] %s отключился — слот сохранён до возвращения" % _name_of(uid))
 
-	# Если отвалился сыщик, чьего выбора ждёт forEach-проход Мифов — разблокируем
-	# корутину дефолт-веткой 0, иначе фаза Мифов зависнет навсегда.
+	# Если отвалился сыщик, чьего выбора ждёт модалка решения (миф или программа
+	# актива) — выбираем за него первую опцию, иначе фаза зависнет навсегда.
 	if bool(mythos_decision.get("active", false)) and String(mythos_decision.get("pid", "")) == uid:
-		mythos_decision["picked"] = 0
-		mythos_decided.emit(0)
+		_phase.host_apply_mythos_decision(uid, 0)
 
 	# Если ждали «Прочитал» этого сыщика на открытой карте мифа, а остальные уже
 	# отметились — резолвим карту (иначе миф зависнет в ожидании ушедшего).
@@ -2194,7 +2202,18 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			else:
 				_board.remove_monster_at_active(true, n)  # победить (вернуть id в мешок)
 		"damageMonster":
-			_board.damage_monster_at_active(n)
+			# Цель разрешает интерпретатор: _target_monster — выбранный игроком монстр
+			# (chosenMonster), _target_space — выбранная локация (chosenSpace, бьём всех
+			# там). Без выбора: eachMonsterOnSpace — все на локации активного игрока,
+			# иначе первый монстр под ногами (легаси-цель заклинаний).
+			if node.has("_target_monster"):
+				_board.damage_monster_ref(String(node.get("_target_monster", "")), n)
+			elif node.has("_target_space"):
+				_board.damage_monsters_at(String(node.get("_target_space", "")), n)
+			elif String(node.get("target", "")) == "eachMonsterOnSpace":
+				_board.damage_monsters_at_active(n)
+			else:
+				_board.damage_monster_at_active(n)
 		"resolveReckoning":
 			_cond.host_resolve_reckoning()
 		"gainSpell":
