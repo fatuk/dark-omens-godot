@@ -55,6 +55,7 @@
 		"id": "3",
 		"name": "LOC_3_NAME",
 		"type": "sea",
+		"gateColor": "blue",
 		"realWorldLocation": "LOC_3_REAL",
 		"description": "LOC_3_DESC",
 		"encounterTypes": [
@@ -195,6 +196,7 @@
 		"id": "8",
 		"name": "LOC_8_NAME",
 		"type": "sea",
+		"gateColor": "red",
 		"realWorldLocation": "LOC_8_REAL",
 		"description": "LOC_8_DESC",
 		"encounterTypes": [
@@ -327,6 +329,7 @@
 		"id": "13",
 		"name": "LOC_13_NAME",
 		"type": "sea",
+		"gateColor": "red",
 		"realWorldLocation": "LOC_13_REAL",
 		"description": "LOC_13_DESC",
 		"encounterTypes": [
