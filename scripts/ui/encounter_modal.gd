@@ -353,6 +353,15 @@ func _show_card(card: Dictionary) -> void:
 	_show_dice_pending(test_c)
 
 
+# Кубы осели — проявляем исход (см. _show_outcome: пока крутится, он скрыт).
+func _on_roll_settled() -> void:
+	if _outcome_shown or _outcome.text.is_empty():
+		return
+	_outcome.visible = true
+	_play_outcome_in()
+	_outcome_shown = true
+
+
 func _show_outcome(card: Dictionary) -> void:
 	var res: Dictionary = _chk()
 	var passed: bool = bool(res.get("passed", false))
@@ -373,10 +382,16 @@ func _show_outcome(card: Dictionary) -> void:
 		_outcome.add_theme_color_override(
 			"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
 		)
-		_outcome.visible = true
-		if not _outcome_shown:
-			_play_outcome_in()
-			_outcome_shown = true
+		# Пока кубы крутятся — исход держим скрытым: иначе «успех» проявляется
+		# раньше, чем игрок увидел выпавшие грани. Покажет _on_roll_settled.
+		if _tray != null and _tray.is_rolling():
+			_outcome.visible = false
+			_outcome_shown = false
+		else:
+			_outcome.visible = true
+			if not _outcome_shown:
+				_play_outcome_in()
+				_outcome_shown = true
 	_set_reroll_all_btn()  # кнопка броска → «Перебросить кубы», пока доступен reroll-all
 	_finish_btn.text = "ENCOUNTER_ACCEPT" if hide_fail else "BTN_FINISH_BIG"
 	_finish_btn.visible = true
@@ -481,6 +496,7 @@ func _ensure_tray() -> void:
 	_tray.name = "DiceTray"
 	_tray.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_tray.die_selected.connect(_on_die_clicked)
+	_tray.roll_settled.connect(_on_roll_settled)
 	_dice_holder.add_child(_tray)
 
 

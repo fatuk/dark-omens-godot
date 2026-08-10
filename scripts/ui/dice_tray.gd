@@ -17,6 +17,9 @@ extends HBoxContainer
 ## Успех/провал/переброс показываем свечением за рамкой (_style_glow).
 
 signal die_selected(index: int)
+## Все кубы броска осели (последний доиграл спин со вспышкой). Кто показывает исход
+## проверки — ждёт этого, иначе «успех» проявляется поверх ещё крутящихся кубов.
+signal roll_settled
 
 # Ассеты костей.
 const FRAME_TEX: Texture2D = preload("res://assets/dice/die-frame.png")
@@ -104,6 +107,7 @@ void fragment() {
 
 var _dice: Array = []  # [{root, glow, reel, blur_mat, value, index, clickable, pending}]
 var _pending_skill: String = ""  # какой навык показывать в пустых кубах (см. show_pending)
+var _settle_tw: Tween = null  # ожидание конца броска (см. roll_settled)
 var _bonus_n: int = 0  # сколько ПЕРВЫХ кубов помечены как добавленные (зелёные)
 var _blocked_n: int = 0  # сколько холостых рамок дорисовать в хвосте (красные)
 
@@ -144,6 +148,31 @@ func play_roll(values: Array, can_reroll: bool = false, can_add: bool = false) -
 		_jitter(_dice[i])
 	if not _dice.is_empty():
 		_play_clatter(_dice.size())  # щелчки-активации бьёт _settle по всполохам
+	_arm_settled(roll_duration(_dice.size()))
+
+
+## Сколько длится спин n кубов: они оседают по очереди, последний — самый долгий.
+static func roll_duration(n: int) -> float:
+	if n <= 0:
+		return 0.0
+	return SPIN_BASE + float(n - 1) * SPIN_STAGGER + LOCK_FLASH
+
+
+## Крутится ли сейчас бросок (кто-то ещё не осел).
+func is_rolling() -> bool:
+	return _settle_tw != null and _settle_tw.is_valid()
+
+
+# Отложенный сигнал «всё осело». Новый бросок отменяет прежнее ожидание.
+func _arm_settled(dur: float) -> void:
+	if _settle_tw != null and _settle_tw.is_valid():
+		_settle_tw.kill()
+	if dur <= 0.0:
+		roll_settled.emit()
+		return
+	_settle_tw = create_tween()
+	_settle_tw.tween_interval(dur)
+	_settle_tw.tween_callback(func() -> void: roll_settled.emit())
 
 
 ## Пометки пула: bonus — сколько первых кубов добавлены сверх листа персонажа
@@ -202,6 +231,7 @@ func reroll_die(index: int, new_value: int, can_reroll: bool, can_add: bool = fa
 	_spin(_dice[index], SPIN_BASE)
 	_jitter(_dice[index])
 	_play_clatter(1)  # клаттер; щелчок — из _settle когда куб сядет
+	_arm_settled(roll_duration(1))
 
 
 # ── Сборка ──────────────────────────────────────────────────────────────────
