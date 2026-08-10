@@ -138,6 +138,8 @@ func _ready() -> void:
 	_game_panel.round_clicked.connect(_on_round_clicked)
 	# Клик по компасу знамений — перечитать последний вытянутый миф.
 	_game_panel.mythos_review_requested.connect(_mythos_modal.open_review)
+	# Кнопка «Запасы» — окно колод и сбросов (общее для стола: данные синкаются).
+	_game_panel.supply_requested.connect(func() -> void: SupplyModal.open(self))
 	# Смена языка не требует здесь обработки: данные локаций/сыщиков содержат
 	# translation keys, лейблы Godot переводит автоматически при смене локали.
 

@@ -23,12 +23,30 @@ signal round_clicked
 ## Клик по компасу знамений — «перечитать последний миф».
 signal mythos_review_requested
 
+## Кнопка «Запасы» — окно колод и сбросов.
+signal supply_requested
+
 
 func _ready() -> void:
 	_info.mouse_filter = Control.MOUSE_FILTER_STOP
 	_info.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_info.gui_input.connect(_on_info_gui_input)
 	_omens.clicked.connect(func() -> void: mythos_review_requested.emit())
+	_build_supply_btn()
+
+
+# Кнопка «Запасы» в правом углу панели — строим кодом, чтобы не трогать раскладку
+# сцены (позиции остальных элементов там выверены по арту фона).
+func _build_supply_btn() -> void:
+	var btn := UIStyle.button("SUPPLY_BTN")
+	btn.name = "SupplyBtn"
+	btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	btn.offset_left = -190.0
+	btn.offset_right = -24.0
+	btn.offset_top = 18.0
+	btn.offset_bottom = 54.0
+	btn.pressed.connect(func() -> void: supply_requested.emit())
+	($Root as Control).add_child(btn)
 
 
 func _on_info_gui_input(event: InputEvent) -> void:
