@@ -125,11 +125,21 @@ func grant(pid: String, asset_id: String) -> void:
 	var asset: Dictionary = AssetCatalog.by_id(asset_id)
 	if asset.is_empty():
 		return
+	_take_from_supply(asset_id)
 	if (_on_gain(asset) as Array).is_empty():
 		_put_in_hand(pid, asset_id)  # без onGain — сразу в руку, очередь ни при чём
 		return
 	_grants.append({"pid": pid, "id": asset_id})
 	_pump()
+
+
+# Карта уходит из запасов: вон из колоды и с витрины. Сброс активов не хранится, а
+# ВЫВОДИТСЯ (GameState.asset_discard_ids: поддержанные минус колода, витрина и руки),
+# поэтому услуга, выданная мимо магазина (консоль, эффект карты), без этого шага
+# так и считалась бы лежащей в колоде — и в сбросе не появлялась.
+func _take_from_supply(asset_id: String) -> void:
+	(_gs.asset_deck as Array).erase(asset_id)
+	(_gs.shop_reserve as Array).erase(asset_id)
 
 
 # ── Публичное: ответы игрока ──────────────────────────────────────────────────
@@ -156,7 +166,7 @@ func resolve_decision(pid: String, index: int) -> void:
 	if index >= 0 and index < (opts as Array).size():
 		var opt: Dictionary = opts[index]
 		match kind:
-			"monster", "space":
+			"monster", "space", "destination":
 				value = String(opt.get("ref", ""))
 			"target":
 				value = String(opt.get("pid", ""))
@@ -314,6 +324,7 @@ func _ctx(pid: String) -> Dictionary:
 		"monster_choices": _gs._board.monster_choices(),  # chosenMonster
 		"space_choices": _gs._board.space_choices(),  # chosenSpace
 		"other_pids": _gs._target.other_pids(pid),  # chosenInvestigator
+		"locations": _gs._load_locations(),  # move — куда шагать
 	}
 
 

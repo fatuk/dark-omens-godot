@@ -96,7 +96,8 @@ const SKILL_MOD_CAP := 2
 
 ## ctx (опц.) — контекст исполнения: { skills, loc_type, is_lead, gates_matching_omen,
 ## gates_on_board, monsters_on_board, clues_on_board, rumors_in_play, monster_toughness,
-## monster_choices (chosenMonster), space_choices (chosenSpace), other_pids (chosen*) }.
+## monster_choices (chosenMonster), space_choices (chosenSpace), other_pids (chosen*),
+## locations (граф локаций — куда шагать по move) }.
 ## Нужен для реального test (навыки), предикатов when и счётчиков repeat. Пусто
 ## (мифос/хуки без контекста) → test считается пройденным, board-предикаты — истинными.
 ##
@@ -351,6 +352,27 @@ static func _condition_of_kind(player: Dictionary, kind: String) -> String:
 	return ""
 
 
+# Куда может уйти сыщик по узлу move: [{ref:<id локации>, name:<ключ перевода>}].
+static func _move_options(player: Dictionary, ctx: Dictionary, node: Dictionary) -> Array:
+	var locations: Array = ctx.get("locations", [])
+	var origin: String = String(player.get("location", ""))
+	var ids: Array = TravelPlanner.within_hops(locations, origin, _amount_or(node, 0))
+	var name_of: Dictionary = {}
+	for l_v: Variant in locations:
+		var l: Dictionary = l_v
+		name_of[String(l.get("id", ""))] = String(l.get("name", l.get("id", "")))
+	var out: Array = []
+	for id_v: Variant in ids:
+		var id: String = String(id_v)
+		out.append({"ref": id, "name": String(name_of.get(id, id))})
+	return out
+
+
+# amount/count узла без подстановки дефолта 1 (для move: «без amount» ≠ «1 шаг»).
+static func _amount_or(node: Dictionary, fallback: int) -> int:
+	return int(node.get("amount", node.get("count", fallback)))
+
+
 # Стойкость выбранного монстра по его ref в ctx.monster_choices ([{ref,name,toughness}]).
 static func _monster_choice_toughness(ctx: Dictionary, ref: String) -> int:
 	for o_v: Variant in ctx.get("monster_choices", []) as Array:
@@ -450,6 +472,20 @@ static func _run_action(
 		for c_v: Variant in held:
 			copts.append({"do": "loseCondition", "condition": String(c_v)})
 		_run_choice({"choice": copts}, player, logs, board, ctx, flow, path)
+		return
+	# move: сыщик сам выбирает, КУДА. Варианты считаем по графу локаций из ctx —
+	# amount задаёт число шагов (Чартерный рейс: 2), без amount — куда угодно
+	# (Частный рейс). Нет графа в ctx (мифы/встречи) — глагол остаётся заглушкой.
+	if verb == "move" and interactive and ctx.has("locations"):
+		var vdec: Dictionary = flow.get("decisions", {})
+		if not vdec.has(path):
+			var dests: Array = _move_options(player, ctx, node)
+			if dests.is_empty():
+				return  # идти некуда — эффект пропадает
+			flow["pending"] = {"kind": "destination", "path": path, "options": dests, "verb": verb}
+			return
+		player["location"] = String(vdec[path])
+		logs.append("перемещение")
 		return
 	# (1) Игровой verb к ПЕРЕДАННОМУ игроку: самонаправленный, либо легаси-режим
 	#     (мифос/хуки сами разворачивают target по игрокам и зовут run без flow —

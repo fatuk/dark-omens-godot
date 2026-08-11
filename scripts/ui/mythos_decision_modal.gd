@@ -15,6 +15,9 @@ extends CanvasLayer
 @onready var _panel: PanelContainer = %Panel
 @onready var _vbox: VBoxContainer = %VBox
 
+const _SCROLL_AFTER: int = 8  # столько кнопок ещё влезает без прокрутки
+const _LIST_MAX_H: float = 420.0  # высота прокручиваемого списка вариантов
+
 var _sig: String = ""  # подпись текущего выбора — чтобы не пересобирать UI зря
 
 
@@ -83,6 +86,11 @@ func _build(options: Array) -> void:
 	prompt.add_theme_color_override("font_color", UIColors.MUTED)
 	_vbox.add_child(prompt)
 
+	# Вариантов бывает много (Частный рейс — вся карта), поэтому длинный список
+	# кладём в прокрутку: заголовок и подсказка остаются на месте.
+	var list := VBoxContainer.new()
+	list.name = "Options"
+	list.add_theme_constant_override("separation", 8)
 	for i in range(options.size()):
 		var opt: Dictionary = options[i] if options[i] is Dictionary else {}
 		var btn := Button.new()
@@ -94,7 +102,17 @@ func _build(options: Array) -> void:
 		btn.disabled = not bool(opt.get("_affordable", true))  # ветка не по карману
 		var idx: int = i
 		btn.pressed.connect(func() -> void: _on_pick(idx))
-		_vbox.add_child(btn)
+		list.add_child(btn)
+	if options.size() <= _SCROLL_AFTER:
+		_vbox.add_child(list)
+	else:
+		var scroll := ScrollContainer.new()
+		scroll.name = "Scroll"
+		scroll.custom_minimum_size.y = _LIST_MAX_H
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		scroll.add_child(list)
+		_vbox.add_child(scroll)
 	UIStyle.scale_modal_text(_vbox)
 
 
@@ -105,6 +123,8 @@ func _default_prompt_key(kind: String) -> String:
 			return "MYTHOS_CHOOSE_MONSTER"
 		"space":
 			return "PICK_SPACE_DAMAGE"
+		"destination":
+			return "PICK_DESTINATION"
 		"target":
 			return "MYTHOS_CHOOSE_TARGET"
 		_:
@@ -131,6 +151,8 @@ func _option_label(opt: Dictionary, kind: String) -> String:
 				tr("SPACE_CHOICE_LABEL")
 				% [tr(String(opt.get("name", "?"))), int(opt.get("count", 0))]
 			)
+		"destination":
+			return tr(String(opt.get("name", "?")))
 		"target":
 			return String(opt.get("name", "?"))
 		_:

@@ -15,6 +15,7 @@ const _DERRINGER: String = "18_derringer"  # обычный актив (без o
 const _QUARANTINE: String = "agency_quarantine"  # услуга: onGain → damageMonster chosenSpace
 const _ASSASSINATION: String = "assassination"  # услуга: onGain → damageMonster chosenMonster
 const _MONSTER_HUNTER: String = "monster_hunter"  # действие: damageMonster chosenMonster
+const _CHARTER: String = "charter_flight"  # услуга: onGain → move на 2 локации
 
 var _gs: MockGameState
 var _flow: AssetActionFlow
@@ -69,6 +70,9 @@ class MockGameState:
 	var host: bool = true
 	var pending_check: Dictionary = {}
 	var mythos_decision: Dictionary = {}
+	var asset_deck: Array = []  # запасы: выданная карта обязана уйти отсюда
+	var shop_reserve: Array = []
+	var locations: Array = []  # граф для move (Чартерный рейс)
 	var _board := StubBoard.new()
 	var _target := StubTarget.new()
 	var _check := StubCheck.new()
@@ -76,6 +80,9 @@ class MockGameState:
 
 	func _is_host() -> bool:
 		return host
+
+	func _load_locations() -> Array:
+		return locations
 
 	func _name_of(pid: String) -> String:
 		return pid
@@ -149,6 +156,26 @@ func test_grant_unknown_asset_is_noop() -> void:
 	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "неизвестный id игнорируется")
 
 
+func test_grant_takes_card_out_of_supply() -> void:
+	# Сброс активов ВЫВОДИТСЯ (поддержанные минус колода, витрина и руки). Если
+	# выданная карта осталась бы в колоде, в сбросе она никогда бы не появилась.
+	_add_player("p")
+	_gs.asset_deck = [_DERRINGER, _QUARANTINE]
+	_gs.shop_reserve = [_QUARANTINE]
+	_gs._board.spaces = [{"ref": "arkham", "name": "arkham", "count": 1}]
+	_flow.grant("p", _QUARANTINE)
+	assert_false(_gs.asset_deck.has(_QUARANTINE), "услуга ушла из колоды")
+	assert_false(_gs.shop_reserve.has(_QUARANTINE), "и с витрины")
+	assert_true(_gs.asset_deck.has(_DERRINGER), "остальную колоду не трогаем")
+
+
+func test_grant_without_ongain_also_leaves_deck() -> void:
+	_add_player("p")
+	_gs.asset_deck = [_DERRINGER]
+	_flow.grant("p", _DERRINGER)
+	assert_false(_gs.asset_deck.has(_DERRINGER), "карта в руке не может лежать и в колоде")
+
+
 # ── Выбор монстра (chosenMonster) ─────────────────────────────────────────────
 
 
@@ -196,6 +223,51 @@ func test_quarantine_asks_for_space() -> void:
 	var node: Dictionary = _board_node("damageMonster")
 	assert_eq(String(node.get("_target_space", "")), "arkham", "локация уехала на доску")
 	assert_eq(int(node.get("amount", 0)), 4, "урон карантина — 4")
+
+
+# ── Выбор точки назначения (move) ─────────────────────────────────────────────
+
+
+# Цепочка arkham — b — c — d: с 2 шагами достижимы b и c, но не d.
+func _chain_locations() -> Array:
+	return [
+		{"id": "arkham", "name": "L_ARKHAM", "connections": [{"to": "b", "type": "train"}]},
+		{
+			"id": "b",
+			"name": "L_B",
+			"connections": [{"to": "arkham", "type": "train"}, {"to": "c", "type": "ship"}],
+		},
+		{
+			"id": "c",
+			"name": "L_C",
+			"connections": [{"to": "b", "type": "ship"}, {"to": "d", "type": "train"}]
+		},
+		{"id": "d", "name": "L_D", "connections": [{"to": "c", "type": "train"}]},
+	]
+
+
+func test_charter_flight_offers_destinations_and_moves() -> void:
+	_add_player("p")
+	_gs.locations = _chain_locations()
+	_flow.grant("p", _CHARTER)
+	var d: Dictionary = _gs.mythos_decision
+	assert_eq(String(d.get("kind", "")), "destination", "рейс спрашивает, куда лететь")
+	var refs: Array = []
+	for o_v: Variant in d.get("options", []):
+		refs.append(String((o_v as Dictionary)["ref"]))
+	assert_eq(refs, ["b", "c"], "2 шага: соседняя и следующая за ней, но не дальше")
+	_flow.resolve_decision("p", 1)
+	assert_eq(String(_gs.players["p"]["location"]), "c", "сыщик переехал в выбранную локацию")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "услуга сброшена")
+
+
+func test_move_without_graph_is_still_noop() -> void:
+	# Мифы и встречи зовут прогон без графа локаций — там move остаётся заглушкой,
+	# а не молча роняет сыщика в пустоту.
+	_add_player("p")
+	_flow.grant("p", _CHARTER)
+	assert_true(_gs.mythos_decision.is_empty(), "идти некуда — вопроса нет")
+	assert_eq(String(_gs.players["p"]["location"]), "arkham", "сыщик остался на месте")
 
 
 # ── Очередь выдач ─────────────────────────────────────────────────────────────

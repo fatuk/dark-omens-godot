@@ -75,6 +75,39 @@ static func plan(locations: Array, origin: String, held_train: int, held_ship: i
 	return result
 
 
+## Локации в пределах hops шагов от origin — для эффектов «переместитесь на N
+## локаций» (Чартерный рейс): билеты не нужны, тип связи не важен. hops <= 0 —
+## перемещение куда угодно (Частный рейс): отдаём все локации, кроме origin.
+## `uncharted`-тропа, как и в plan(), проходима только ПЕРВЫМ шагом.
+static func within_hops(locations: Array, origin: String, hops: int) -> Array:
+	if hops <= 0:
+		var all: Array = []
+		for loc_v: Variant in locations:
+			var id: String = String((loc_v as Dictionary).get("id", ""))
+			if not id.is_empty() and id != origin:
+				all.append(id)
+		return all
+	var adj: Dictionary = _adjacency(locations)
+	var seen: Dictionary = {origin: true}
+	var out: Array = []
+	var frontier: Array = [origin]
+	for step in range(hops):
+		var next_frontier: Array = []
+		for node_v: Variant in frontier:
+			for e_v: Variant in adj.get(String(node_v), []):
+				var e: Dictionary = e_v
+				var to: String = String(e.get("to", ""))
+				if to.is_empty() or seen.has(to):
+					continue
+				if String(e.get("type", "")) == "uncharted" and step > 0:
+					continue  # тропу можно пройти только базовым шагом
+				seen[to] = true
+				out.append(to)
+				next_frontier.append(to)
+		frontier = next_frontier
+	return out
+
+
 ## Стоимость и путь до dest, либо {} если недостижим при данных билетах.
 static func cost_to(
 	locations: Array, origin: String, dest: String, held_train: int, held_ship: int
