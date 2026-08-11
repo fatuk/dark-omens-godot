@@ -12,9 +12,9 @@ extends RefCounted
 ## уходят от игроков множеством путей, и хранимый список однажды бы разъехался.
 
 const _MODAL := preload("res://scenes/ui/modal_dialog.tscn")
-const _CARD_H: float = 150.0  # высота миниатюры карты актива
+const _CARD_H: float = 300.0  # высота миниатюры карты актива (тап — крупный просмотр)
 const _CARD_FULL_H: float = 520.0  # строим в полный рост и ужимаем (как в info_bar)
-const _LIST_H: float = 320.0  # высота прокручиваемой области списка
+const _LIST_H: float = 420.0  # высота прокручиваемой области списка
 
 # Вкладки: ключ → подпись.
 const _TABS: Array = [
@@ -61,17 +61,18 @@ static func open(parent: Node) -> void:
 		var key: String = t[0]
 		var btn := UIStyle.button(String(t[1]))
 		btn.name = "Tab_" + key
-		btn.pressed.connect(func() -> void: _select(key, body, buttons))
+		btn.pressed.connect(func() -> void: _select(key, body, buttons, parent))
 		tabs.add_child(btn)
 		buttons.append({"key": key, "btn": btn})
 
-	_select("assets", body, buttons)
+	_select("assets", body, buttons, parent)
 	modal.set_content(box)
 	modal.open()
 
 
-# Переключить вкладку: подсветить кнопку и перерисовать тело.
-static func _select(key: String, body: VBoxContainer, buttons: Array) -> void:
+# Переключить вкладку: подсветить кнопку и перерисовать тело. host — узел под
+# крупный просмотр карты (слой просмотра живёт над модалкой, а не внутри неё).
+static func _select(key: String, body: VBoxContainer, buttons: Array, host: Node) -> void:
 	for b_v: Variant in buttons:
 		var b: Dictionary = b_v
 		var on: bool = String(b["key"]) == key
@@ -81,7 +82,7 @@ static func _select(key: String, body: VBoxContainer, buttons: Array) -> void:
 		c.queue_free()
 	match key:
 		"assets":
-			_fill_assets(body)
+			_fill_assets(body, host)
 		"gates":
 			_fill_gates(body)
 		"clues":
@@ -93,7 +94,7 @@ static func _select(key: String, body: VBoxContainer, buttons: Array) -> void:
 # ── Вкладки ───────────────────────────────────────────────────────────────────
 
 
-static func _fill_assets(body: VBoxContainer) -> void:
+static func _fill_assets(body: VBoxContainer, host: Node) -> void:
 	var discard: Array = GameState.asset_discard_ids()
 	body.add_child(_counts(GameState.asset_deck.size(), discard.size()))
 	var flow := HFlowContainer.new()
@@ -101,7 +102,7 @@ static func _fill_assets(body: VBoxContainer) -> void:
 	flow.add_theme_constant_override("h_separation", 10)
 	flow.add_theme_constant_override("v_separation", 10)
 	for aid_v: Variant in discard:
-		flow.add_child(_asset_card(String(aid_v)))
+		flow.add_child(_asset_card(String(aid_v), host))
 	body.add_child(_scroll(flow, discard.is_empty()))
 
 
@@ -230,14 +231,16 @@ static func _loc_name(loc_id: String) -> String:
 	return loc_id
 
 
-# Миниатюра карты актива — GameCard в полный рост, ужатый через scale.
-static func _asset_card(asset_id: String) -> Control:
+# Миниатюра карты актива — GameCard в полный рост, ужатый через scale. Тап по ней
+# открывает крупный просмотр: в миниатюре текст способности всё равно не прочитать.
+static func _asset_card(asset_id: String, host: Node) -> Control:
 	var full_w: float = _CARD_FULL_H * GameCard.ASPECT
 	var scale_f: float = _CARD_H / _CARD_FULL_H
 	var slot := Control.new()
-	slot.name = "CardSlot"
+	slot.name = "CardSlot_" + asset_id
 	slot.custom_minimum_size = Vector2(full_w * scale_f, _CARD_H)
-	slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot.mouse_filter = Control.MOUSE_FILTER_STOP
+	slot.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 	var card := GameCard.new()
 	card.name = "Card"
@@ -247,12 +250,16 @@ static func _asset_card(asset_id: String) -> Control:
 	card.scale = Vector2(scale_f, scale_f)
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var a: Dictionary = AssetCatalog.by_id(asset_id)
-	card.set_card(
-		(
-			AssetCatalog.card_payload(a)
-			if not a.is_empty()
-			else {"cost": "", "title": asset_id, "subtitle": "", "desc": ""}
-		)
+	var payload: Dictionary = (
+		AssetCatalog.card_payload(a)
+		if not a.is_empty()
+		else {"cost": "", "title": asset_id, "subtitle": "", "desc": ""}
 	)
+	card.set_card(payload)
 	slot.add_child(card)
+	slot.gui_input.connect(
+		func(event: InputEvent) -> void:
+			if event is InputEventMouseButton and (event as InputEventMouseButton).pressed:
+				CardPreview.show_card(host, payload)
+	)
 	return slot

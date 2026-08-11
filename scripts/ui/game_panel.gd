@@ -23,8 +23,15 @@ signal round_clicked
 ## Клик по компасу знамений — «перечитать последний миф».
 signal mythos_review_requested
 
-## Кнопка «Запасы» — окно колод и сбросов.
+## Клик по медальону в центре панели — окно «Запасы» (колоды и сбросы).
 signal supply_requested
+
+# Медальон-компас нарисован в фоне панели (game-panel-bg.png). Прямоугольник — в
+# координатах Root (790×110): арт нарисован в двойном размере, поэтому центр ядра
+# из текстуры (768, 117) даёт здесь (384, 58). По низу не доходим до трека Рока,
+# он лежит поверх той же полосы.
+const _SUPPLY_HOTSPOT := Rect2(330.0, 6.0, 108.0, 86.0)
+const _HOVER_ALPHA: float = 0.16  # подсветка медальона под курсором
 
 
 func _ready() -> void:
@@ -32,21 +39,49 @@ func _ready() -> void:
 	_info.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_info.gui_input.connect(_on_info_gui_input)
 	_omens.clicked.connect(func() -> void: mythos_review_requested.emit())
-	_build_supply_btn()
+	_build_supply_hotspot()
 
 
-# Кнопка «Запасы» в правом углу панели — строим кодом, чтобы не трогать раскладку
-# сцены (позиции остальных элементов там выверены по арту фона).
-func _build_supply_btn() -> void:
-	var btn := UIStyle.button("SUPPLY_BTN")
-	btn.name = "SupplyBtn"
-	btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	btn.offset_left = -190.0
-	btn.offset_right = -24.0
-	btn.offset_top = 18.0
-	btn.offset_bottom = 54.0
-	btn.pressed.connect(func() -> void: supply_requested.emit())
-	($Root as Control).add_child(btn)
+# «Запасы» открываются кликом по медальону в фоне панели — отдельной кнопки нет.
+# Кликабельную область строим кодом, чтобы не трогать раскладку сцены (позиции
+# остальных элементов там выверены по арту).
+func _build_supply_hotspot() -> void:
+	var hot := Control.new()
+	hot.name = "SupplyHotspot"
+	hot.position = _SUPPLY_HOTSPOT.position
+	hot.size = _SUPPLY_HOTSPOT.size
+	hot.custom_minimum_size = _SUPPLY_HOTSPOT.size
+	hot.mouse_filter = Control.MOUSE_FILTER_STOP
+	hot.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	hot.tooltip_text = TranslationServer.translate("SUPPLY_BTN")
+
+	# Медальон — часть фонового арта, подсвечивать нечего: кладём поверх мягкий
+	# круг, он и служит откликом на наведение.
+	var glow := Panel.new()
+	glow.name = "Hover"
+	glow.set_anchors_preset(Control.PRESET_FULL_RECT)
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	glow.modulate.a = 0.0
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(UIColors.ACCENT, _HOVER_ALPHA)
+	sb.set_corner_radius_all(int(_SUPPLY_HOTSPOT.size.y * 0.5))
+	glow.add_theme_stylebox_override("panel", sb)
+	hot.add_child(glow)
+
+	hot.mouse_entered.connect(func() -> void: _fade(glow, 1.0))
+	hot.mouse_exited.connect(func() -> void: _fade(glow, 0.0))
+	hot.gui_input.connect(
+		func(event: InputEvent) -> void:
+			if event is InputEventMouseButton:
+				var mb := event as InputEventMouseButton
+				if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+					supply_requested.emit()
+	)
+	($Root as Control).add_child(hot)
+
+
+func _fade(node: Control, to: float) -> void:
+	node.create_tween().tween_property(node, "modulate:a", to, 0.12)
 
 
 func _on_info_gui_input(event: InputEvent) -> void:
