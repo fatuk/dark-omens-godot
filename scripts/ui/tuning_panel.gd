@@ -1298,6 +1298,34 @@ func _build_specs() -> Array:
 			"default": 0.0,
 			"set": _set_vig_b
 		},
+		{"section": "ПРОСМОТР КАРТЫ"},
+		{
+			"key": "cpv_max_h",
+			"label": "Высота карты",
+			"min": 400.0,
+			"max": 1600.0,
+			"step": 10.0,
+			"default": CardPreview.MAX_H,
+			"set": _set_cpv_max_h
+		},
+		{
+			"key": "cpv_margin",
+			"label": "Отступ от краёв",
+			"min": 0.0,
+			"max": 300.0,
+			"step": 2.0,
+			"default": CardPreview.MARGIN_V,
+			"set": _set_cpv_margin
+		},
+		{
+			"key": "cpv_backdrop",
+			"label": "Затемнение фона",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": CardPreview.BACKDROP_ALPHA,
+			"set": _set_cpv_backdrop
+		},
 	]
 
 
@@ -2259,3 +2287,28 @@ func _set_die_gap(v: float) -> void:
 func _set_gal_my(v: float) -> void:
 	GalleryModal.TEXT_MARGIN = Vector2(GalleryModal.TEXT_MARGIN.x, v)
 	_reapply_gallery_text()
+
+
+# ── Просмотр карты (CardPreview) ──────────────────────────────────────────────
+# Слой создаётся по тапу и живёт до закрытия, поэтому правку показываем сразу на
+# открытом просмотре; закрыт — значения подхватит следующий.
+
+
+func _refresh_card_preview() -> void:
+	for p in get_tree().get_nodes_in_group(CardPreview.GROUP):
+		p.call("refresh_tuning")
+
+
+func _set_cpv_max_h(v: float) -> void:
+	CardPreview.MAX_H = v
+	_refresh_card_preview()
+
+
+func _set_cpv_margin(v: float) -> void:
+	CardPreview.MARGIN_V = v
+	_refresh_card_preview()
+
+
+func _set_cpv_backdrop(v: float) -> void:
+	CardPreview.BACKDROP_ALPHA = v
+	_refresh_card_preview()

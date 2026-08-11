@@ -11,13 +11,19 @@ extends CanvasLayer
 ##
 ##   CardPreview.show_card(world_map, AssetCatalog.card_payload(asset))
 
+const GROUP: StringName = &"card_preview"  # живые слои — для панели тюнинга
 const _LAYER: int = 120  # выше модалок (ModalDialog — 90) и подсказок
-const _MARGIN_V: float = 48.0  # запас сверху и снизу
-const _MAX_H: float = 900.0  # выше карту не растягиваем — станет мылом
 const _BUILD_H: float = 520.0  # строим в каноничном росте и масштабируем (как в info_bar)
+
+# Крутится в панели тюнинга (Ctrl+M, секция «ПРОСМОТР КАРТЫ»); найденное значение
+# запекается сюда же. static var, а не const — панель правит их на живой игре.
+static var MARGIN_V: float = 48.0  # запас сверху и снизу
+static var MAX_H: float = 900.0  # выше карту не растягиваем — станет мылом
+static var BACKDROP_ALPHA: float = 0.72  # затемнение экрана под картой
 
 var _root: ColorRect
 var _wrap: Control
+var _payload: Dictionary = {}  # что показываем — для пересборки при правке тюнинга
 
 
 ## Показать карту. parent — узел, к которому цеплять слой (обычно экран карты).
@@ -32,10 +38,11 @@ static func show_card(parent: Node, payload: Dictionary) -> CardPreview:
 func _ready() -> void:
 	layer = _LAYER
 	process_mode = Node.PROCESS_MODE_ALWAYS  # просмотр работает и на паузе
+	add_to_group(GROUP)
 
 	_root = ColorRect.new()
 	_root.name = "Root"
-	_root.color = Color(0, 0, 0, 0.72)
+	_root.color = Color(0, 0, 0, BACKDROP_ALPHA)
 	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_STOP  # клик мимо карты — тоже закрытие
 	_root.gui_input.connect(_on_input)
@@ -64,12 +71,27 @@ func _input(event: InputEvent) -> void:
 func set_card(payload: Dictionary) -> void:
 	if not is_node_ready():
 		await ready
+	_payload = payload
+	_rebuild()
+	UIStyle.modal_transition(_root, _wrap, true)
+
+
+## Перерисовать по текущим значениям тюнинга — без повторного появления: просмотр
+## уже на экране. Зовёт панель тюнинга на живом слое.
+func refresh_tuning() -> void:
+	if not _payload.is_empty():
+		_rebuild()
+
+
+# Собрать карту по текущим размерам. Появление играет тот, кто зовёт.
+func _rebuild() -> void:
+	_root.color = Color(0, 0, 0, BACKDROP_ALPHA)
 	for c in _wrap.get_children():
 		_wrap.remove_child(c)
 		c.queue_free()
 
 	var view_h: float = get_viewport().get_visible_rect().size.y
-	var h: float = minf(_MAX_H, maxf(_BUILD_H, view_h - _MARGIN_V * 2.0))
+	var h: float = minf(MAX_H, maxf(_BUILD_H, view_h - MARGIN_V * 2.0))
 	var scale_f: float = h / _BUILD_H
 	var full_w: float = _BUILD_H * GameCard.ASPECT
 	_wrap.custom_minimum_size = Vector2(full_w * scale_f, h)
@@ -85,10 +107,8 @@ func set_card(payload: Dictionary) -> void:
 	# эталона — значит и шрифт тянем во столько же раз, иначе текст на крупной карте
 	# выйдет мельче, чем на той же карте в руке.
 	card.set_font_scale(full_w / HandCarousel.CARD_W)
-	card.set_card(payload)
+	card.set_card(_payload)
 	_wrap.add_child(card)
-
-	UIStyle.modal_transition(_root, _wrap, true)
 
 
 func close() -> void:
