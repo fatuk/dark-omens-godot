@@ -406,9 +406,14 @@ static func style_modal_panel(p: PanelContainer, content_pad: int = 22) -> void:
 # затемнением плавно проявляется, а панель мягко подрастает из 0.95 —
 # «выплывает». Закрытие — то же в обратную сторону, но быстрее.
 
-const MODAL_FADE_IN: float = 0.22
-const MODAL_FADE_OUT: float = 0.15
-const _MODAL_POP: float = 0.95  # с какого масштаба выплывает панель
+# Крутится в панели тюнинга (Ctrl+M, секция «МОДАЛКИ»); найденное значение
+# запекается сюда же. static var, а не const — панель правит их на живой игре.
+static var MODAL_FADE_IN: float = 0.22
+static var MODAL_FADE_OUT: float = 0.15
+static var MODAL_POP: float = 0.95  # с какого масштаба выплывает панель
+static var MODAL_BACKDROP_ALPHA: float = 0.6  # затемнение экрана под панелью
+
+const _MODAL_OWN_BACKDROP: StringName = &"modal_own_backdrop"
 const _MODAL_TWEEN_META: StringName = &"modal_anim_tween"
 const _MODAL_SHOWN_META: StringName = &"modal_anim_shown"
 const _MODAL_PIVOT_META: StringName = &"modal_anim_pivot"
@@ -447,6 +452,36 @@ static func mark_modal(node: Node, open: bool) -> void:
 		_open_modals.erase(node.get_instance_id())
 
 
+## Пометить окно, у которого затемнение СВОЁ (крупный просмотр карты темнее прочих),
+## — общий ползунок его не трогает.
+static func keep_own_backdrop(root: Control) -> void:
+	root.set_meta(_MODAL_OWN_BACKDROP, true)
+
+
+## Проставить окну общее затемнение. Подложка — сам root, если он ColorRect (так у
+## большинства окон), иначе ColorRect среди его ПРЯМЫХ детей (у ModalDialog это
+## Backdrop). Глубже не лезем: там уже декоративные заливки внутри панели.
+static func apply_backdrop_alpha(root: Control) -> void:
+	if root.has_meta(_MODAL_OWN_BACKDROP):
+		return
+	var backdrop: ColorRect = root as ColorRect
+	if backdrop == null:
+		for c: Node in root.get_children():
+			if c is ColorRect:
+				backdrop = c
+				break
+	if backdrop != null:
+		backdrop.color.a = MODAL_BACKDROP_ALPHA
+
+
+## Перекрасить подложки всех ОТКРЫТЫХ окон (панель тюнинга — видно сразу).
+static func refresh_backdrops() -> void:
+	for id_v: Variant in _open_modals.keys():
+		var n: Variant = _open_modals[id_v]
+		if is_instance_valid(n) and n is Control:
+			apply_backdrop_alpha(n as Control)
+
+
 ## Проигрывает переход модалки. root — слой целиком (вместе с затемнением),
 ## card — панель, которая «выплывает» (можно null: тогда только проявление).
 ## Возвращает tween, чтобы вызывающий дочепил свои шаги (скрытие, queue_free).
@@ -456,13 +491,14 @@ static func modal_transition(root: Control, card: Control, showing: bool) -> Twe
 		if prev is Tween and (prev as Tween).is_valid():
 			(prev as Tween).kill()
 
-	var small := Vector2(_MODAL_POP, _MODAL_POP)
+	var small := Vector2(MODAL_POP, MODAL_POP)
 	if card != null:
 		_track_modal_pivot(card)
 		if showing:
 			card.scale = small
 	if showing:
 		root.modulate.a = 0.0
+		apply_backdrop_alpha(root)
 
 	if showing:
 		_open_modals[root.get_instance_id()] = root

@@ -20,7 +20,8 @@ class_name ModalDialog
 
 signal closed
 
-const _BACKDROP_ALPHA: float = 0.6  # затемнение под панелью (проявляется вместе со слоем)
+# Затемнение под панелью — общее для всех окон (UIStyle.MODAL_BACKDROP_ALPHA,
+# крутится в панели тюнинга); проставляет его modal_transition при открытии.
 
 @export var close_on_backdrop_click: bool = true
 @export var close_on_esc: bool = true
@@ -50,7 +51,7 @@ func _ready() -> void:
 	UIStyle.scale_modal_text(_title)  # заголовок крупнее (×1.5); контент масштабируется в set_content
 	_close_btn.pressed.connect(close)
 	_backdrop.gui_input.connect(_on_backdrop_input)
-	_backdrop.color.a = _BACKDROP_ALPHA
+	UIStyle.apply_backdrop_alpha(_root)
 	_root.visible = false
 	_root.modulate.a = 0.0  # эффект ведёт весь слой целиком (UIStyle.modal_transition)
 

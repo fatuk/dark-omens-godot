@@ -46,6 +46,7 @@ func _ready() -> void:
 	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_STOP  # клик мимо карты — тоже закрытие
 	_root.gui_input.connect(_on_input)
+	UIStyle.keep_own_backdrop(_root)  # тут затемнение своё, глубже общего для модалок
 	add_child(_root)
 
 	var center := CenterContainer.new()

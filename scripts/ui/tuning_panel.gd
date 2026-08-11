@@ -1298,6 +1298,43 @@ func _build_specs() -> Array:
 			"default": 0.0,
 			"set": _set_vig_b
 		},
+		{"section": "МОДАЛКИ"},
+		{
+			"key": "modal_backdrop",
+			"label": "Затемнение фона",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": UIStyle.MODAL_BACKDROP_ALPHA,
+			"set": _set_modal_backdrop
+		},
+		{
+			"key": "modal_fade_in",
+			"label": "Появление, сек",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": UIStyle.MODAL_FADE_IN,
+			"set": _set_modal_fade_in
+		},
+		{
+			"key": "modal_fade_out",
+			"label": "Закрытие, сек",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": UIStyle.MODAL_FADE_OUT,
+			"set": _set_modal_fade_out
+		},
+		{
+			"key": "modal_pop",
+			"label": "Масштаб выплывания",
+			"min": 0.5,
+			"max": 1.0,
+			"step": 0.01,
+			"default": UIStyle.MODAL_POP,
+			"set": _set_modal_pop
+		},
 		{"section": "ПРОСМОТР КАРТЫ"},
 		{
 			"key": "cpv_max_h",
@@ -2312,3 +2349,25 @@ func _set_cpv_margin(v: float) -> void:
 func _set_cpv_backdrop(v: float) -> void:
 	CardPreview.BACKDROP_ALPHA = v
 	_refresh_card_preview()
+
+
+# ── Модалки: общий эффект открытия/закрытия ───────────────────────────────────
+# Длительности и «выплывание» подхватит следующий переход; затемнение видно сразу
+# на всех открытых окнах.
+
+
+func _set_modal_backdrop(v: float) -> void:
+	UIStyle.MODAL_BACKDROP_ALPHA = v
+	UIStyle.refresh_backdrops()
+
+
+func _set_modal_fade_in(v: float) -> void:
+	UIStyle.MODAL_FADE_IN = v
+
+
+func _set_modal_fade_out(v: float) -> void:
+	UIStyle.MODAL_FADE_OUT = v
+
+
+func _set_modal_pop(v: float) -> void:
+	UIStyle.MODAL_POP = v
