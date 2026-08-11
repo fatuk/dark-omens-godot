@@ -81,6 +81,10 @@ func set_card(payload: Dictionary) -> void:
 	card.pivot_offset = Vector2.ZERO
 	card.scale = Vector2(scale_f, scale_f)
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Размеры шрифтов в GameCard откалиброваны под карту веера (CARD_W). Строим шире
+	# эталона — значит и шрифт тянем во столько же раз, иначе текст на крупной карте
+	# выйдет мельче, чем на той же карте в руке.
+	card.set_font_scale(full_w / HandCarousel.CARD_W)
 	card.set_card(payload)
 	_wrap.add_child(card)
 

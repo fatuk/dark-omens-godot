@@ -249,6 +249,7 @@ static func _asset_card(asset_id: String, host: Node) -> Control:
 	card.pivot_offset = Vector2.ZERO
 	card.scale = Vector2(scale_f, scale_f)
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.set_font_scale(full_w / HandCarousel.CARD_W)  # пропорция текста как в веере
 	var a: Dictionary = AssetCatalog.by_id(asset_id)
 	var payload: Dictionary = (
 		AssetCatalog.card_payload(a)
