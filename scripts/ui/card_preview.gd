@@ -18,8 +18,8 @@ const _BUILD_H: float = 520.0  # строим в каноничном росте
 # Крутится в панели тюнинга (Ctrl+M, секция «ПРОСМОТР КАРТЫ»); найденное значение
 # запекается сюда же. static var, а не const — панель правит их на живой игре.
 static var MARGIN_V: float = 48.0  # запас сверху и снизу
-static var MAX_H: float = 900.0  # выше карту не растягиваем — станет мылом
-static var BACKDROP_ALPHA: float = 0.72  # затемнение экрана под картой
+static var MAX_H: float = 630.0  # выше карту не растягиваем — станет мылом
+static var BACKDROP_ALPHA: float = 0.7  # затемнение экрана под картой
 
 var _root: ColorRect
 var _wrap: Control

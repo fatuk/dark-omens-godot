@@ -408,10 +408,10 @@ static func style_modal_panel(p: PanelContainer, content_pad: int = 22) -> void:
 
 # Крутится в панели тюнинга (Ctrl+M, секция «МОДАЛКИ»); найденное значение
 # запекается сюда же. static var, а не const — панель правит их на живой игре.
-static var MODAL_FADE_IN: float = 0.22
+static var MODAL_FADE_IN: float = 0.2
 static var MODAL_FADE_OUT: float = 0.15
-static var MODAL_POP: float = 0.95  # с какого масштаба выплывает панель
-static var MODAL_BACKDROP_ALPHA: float = 0.6  # затемнение экрана под панелью
+static var MODAL_POP: float = 0.9  # с какого масштаба выплывает панель
+static var MODAL_BACKDROP_ALPHA: float = 0.8  # затемнение экрана под панелью
 
 const _MODAL_OWN_BACKDROP: StringName = &"modal_own_backdrop"
 const _MODAL_TWEEN_META: StringName = &"modal_anim_tween"
