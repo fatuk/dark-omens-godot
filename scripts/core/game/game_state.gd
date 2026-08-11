@@ -160,7 +160,7 @@ var gate_discard: Array = []
 
 # ── Улики Древнего: колода идентичностей ───────────────────────────────────────
 # Ключ улики = локация карты (текст/арт — из campaign.ancientOne.clues, нет → имя
-# локации), всего 36. _board_clue_ids: loc → [ключи улик на жетонах там], host-only.
+# локации), всего 36. clue_board_ids: loc → [ключи улик на жетонах там].
 # Инвариант «ровно в одном месте»: колода ⇄ поле ⇄ руки (player.clue_ids) ⇄ сброс.
 # Колода улик (36 = число локаций) и сброс — СИНКАЮТСЯ: их показывает общее окно
 # сбросов. Потраченная или снятая с поля улика уходит в сброс, а не сразу обратно
@@ -170,8 +170,16 @@ var clue_discard: Array = []
 
 # Колода активов (синкается). Сброс НЕ хранится, а выводится — см. asset_discard_ids.
 var asset_deck: Array = []
-var _board_clue_ids: Dictionary = {}
-var _clue_deck_ready: bool = false
+
+# Где лежат ключи улик, уже вышедших из колоды: на жетонах поля. Синкается вместе с
+# колодой — иначе перезаход хоста терял привязку, и ключи этих жетонов пропадали из
+# оборота (в колоде их уже нет, в сброс они никогда не попадут).
+var clue_board_ids: Dictionary = {}
+
+# Колода улик уже собрана. Тоже синкается: флаг — часть состояния колоды, а не
+# кэш. Без этого перезашедший хост считал колоду несобранной и на ближайшей же
+# сверке пересобирал её из всех 36 локаций поверх живой партии.
+var clue_deck_built: bool = false
 
 # Вещи павших сыщиков — кэш на месте гибели (Тень: «чистый лут», подбор встречей).
 # {loc_id: [item-dict,…]}. Host-only, НЕ синкается (host выдаёт при подборе).
@@ -327,6 +335,8 @@ const _SYNC_FIELDS: Array[String] = [
 	"gate_discard",
 	"clue_deck",
 	"clue_discard",
+	"clue_board_ids",
+	"clue_deck_built",
 	"asset_deck",
 	"monster_surge",
 	"encounter_choices",
@@ -378,22 +388,22 @@ func _emit_changed() -> void:
 # покажет его; нет — имя локации (ClueCatalog). Так лишних анонимных улик не бывает,
 # пока не разобраны все локации. Идемпотентно.
 func _ensure_clue_deck() -> void:
-	if _clue_deck_ready:
+	if clue_deck_built:
 		return
 	clue_deck.clear()
 	for loc: Variant in _load_locations():
 		var lid: String = String((loc as Dictionary).get("id", ""))
 		if not lid.is_empty() and not clue_deck.has(lid):
 			clue_deck.append(lid)
-	_clue_deck_ready = true
+	clue_deck_built = true
 
 
 # Сброс пула при старте партии (перед раскладкой). Пересоберётся лениво из campaign.
 func _reset_clue_deck() -> void:
 	clue_deck.clear()
 	clue_discard.clear()  # иначе сброс прошлой партии утекал в новую
-	_board_clue_ids.clear()
-	_clue_deck_ready = false
+	clue_board_ids.clear()
+	clue_deck_built = false
 	_ghost_caches.clear()  # вещи павших — тоже host-only, сбрасываем на старте партии
 
 
@@ -454,9 +464,9 @@ func _claim_board_clue(loc: String) -> void:
 	if not clue_deck.has(loc):
 		return
 	clue_deck.erase(loc)
-	var arr: Array = _board_clue_ids.get(loc, [])
+	var arr: Array = clue_board_ids.get(loc, [])
 	arr.append(loc)
-	_board_clue_ids[loc] = arr
+	clue_board_ids[loc] = arr
 
 
 # Исследование: до n улик с жетонов локации loc → на руки игроку (player.clue_ids).
@@ -464,7 +474,7 @@ func _claim_board_clue(loc: String) -> void:
 func _collect_board_clues(pid: String, loc: String, n: int) -> void:
 	if not _is_host() or not players.has(pid):
 		return
-	var board: Array = _board_clue_ids.get(loc, [])
+	var board: Array = clue_board_ids.get(loc, [])
 	var p: Dictionary = players[pid]
 	var ids: Array = p.get(PlayerKeys.CLUE_IDS, [])
 	var moved: int = 0
@@ -474,9 +484,9 @@ func _collect_board_clues(pid: String, loc: String, n: int) -> void:
 	p[PlayerKeys.CLUE_IDS] = ids
 	players[pid] = p
 	if board.is_empty():
-		_board_clue_ids.erase(loc)
+		clue_board_ids.erase(loc)
 	else:
-		_board_clue_ids[loc] = board
+		clue_board_ids[loc] = board
 
 
 # Сверка идентичностей с числом улик (host, каждый _broadcast_sync). Сначала вернуть
@@ -540,21 +550,21 @@ func _clue_to_discard(key: String) -> void:
 
 
 # Вернуть в пул ключи улик, чьих жетонов уже нет на поле (сняты не исследованием —
-# напр. discardAllClues Слуха). _board_clue_ids приводим к реальному числу "clue".
+# напр. discardAllClues Слуха). clue_board_ids приводим к реальному числу "clue".
 func _reconcile_board_clue_ids() -> void:
-	for loc: Variant in _board_clue_ids.keys():
+	for loc: Variant in clue_board_ids.keys():
 		var on_board: int = 0
 		for e: Variant in entities.get(loc, []):
 			if String(e) == "clue":
 				on_board += 1
-		var arr: Array = _board_clue_ids[loc]
+		var arr: Array = clue_board_ids[loc]
 		while arr.size() > on_board:
 			# Жетон снесли мимо исследования (discardAllClues Слуха) → ключ в сброс.
 			_clue_to_discard(String(arr.pop_back()))
 		if arr.is_empty():
-			_board_clue_ids.erase(loc)
+			clue_board_ids.erase(loc)
 		else:
-			_board_clue_ids[loc] = arr
+			clue_board_ids[loc] = arr
 
 
 # Сборка свежей записи игрока — общий шаблон для старта партии и поздних

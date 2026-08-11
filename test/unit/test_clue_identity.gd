@@ -58,14 +58,14 @@ func test_claim_board_clue_takes_own_location() -> void:
 	GameState._ensure_clue_deck()
 	GameState._claim_board_clue("A")
 	assert_false(GameState.clue_deck.has("A"), "A ушла из пула на поле")
-	assert_eq(GameState._board_clue_ids.get("A", []), ["A"], "A на жетоне локации A")
+	assert_eq(GameState.clue_board_ids.get("A", []), ["A"], "A на жетоне локации A")
 
 
 func test_claim_unknown_location_is_noop() -> void:
 	GameState._ensure_clue_deck()
 	GameState._claim_board_clue("Z")  # нет улики для Z
 	assert_eq(GameState.clue_deck.size(), 3, "пул не тронут")
-	assert_false(GameState._board_clue_ids.has("Z"))
+	assert_false(GameState.clue_board_ids.has("Z"))
 
 
 # ── Исследование: жетон → на руки ──────────────────────────────────────────────
@@ -77,7 +77,7 @@ func test_research_collects_board_clue_to_player() -> void:
 	GameState.players = {"p1": {"clues": 1, "clue_ids": []}}
 	GameState._collect_board_clues("p1", "A", 1)
 	assert_eq(GameState.players["p1"]["clue_ids"], ["A"], "улика A на руках у p1")
-	assert_false(GameState._board_clue_ids.has("A"), "жетон A больше не на поле")
+	assert_false(GameState.clue_board_ids.has("A"), "жетон A больше не на поле")
 
 
 # ── Сверка: generic gain / потеря ──────────────────────────────────────────────
@@ -111,7 +111,7 @@ func test_reconcile_board_dead_token_goes_to_discard() -> void:
 	GameState._reconcile_board_clue_ids()
 	assert_true(GameState.clue_discard.has("A"), "A ушла в сброс")
 	assert_false(GameState.clue_deck.has("A"), "и не вернулась в колоду напрямую")
-	assert_false(GameState._board_clue_ids.has("A"))
+	assert_false(GameState.clue_board_ids.has("A"))
 
 
 func test_uniqueness_across_deck_board_hand_discard() -> void:
@@ -121,8 +121,8 @@ func test_uniqueness_across_deck_board_hand_discard() -> void:
 	GameState._reconcile_clue_identities()  # p1 добирает из остатка (B или C)
 	var seen: Array = []
 	seen.append_array(GameState.clue_deck)
-	for loc: Variant in GameState._board_clue_ids:
-		seen.append_array(GameState._board_clue_ids[loc])
+	for loc: Variant in GameState.clue_board_ids:
+		seen.append_array(GameState.clue_board_ids[loc])
 	seen.append_array(GameState.players["p1"]["clue_ids"])
 	seen.append_array(GameState.clue_discard)
 	assert_eq(seen.size(), 3, "все 3 ключа учтены (колода+поле+руки+сброс)")
@@ -166,3 +166,49 @@ func test_catalog_deck_for_ids() -> void:
 	assert_eq(String((deck[0] as Dictionary).get("id", "")), "A")
 	assert_eq(int((deck[0] as Dictionary).get("clue_index", -1)), 0)
 	assert_eq(int((deck[1] as Dictionary).get("clue_index", -1)), 1)
+
+
+# ── Переживание перезахода хоста ──────────────────────────────────────────────
+
+
+# Состояние колоды приходит хосту снапшотом (_SYNC_FIELDS). Раньше «колода собрана»
+# и привязка ключей к жетонам были host-only: перезашедший хост считал колоду
+# несобранной и на ближайшей же сверке пересобирал её из ВСЕХ локаций поверх живой
+# партии — счётчик прыгал обратно на максимум, а потраченные улики переставали
+# попадать в сброс (_clue_to_discard молчит, если ключ «лежит в колоде»).
+func _snapshot_roundtrip() -> void:
+	var snap: Dictionary = {}
+	for f: String in GameState._SYNC_FIELDS:
+		snap[f] = GameState.get(f)
+	# Host-only поля перезаход НЕ переживают — их и проверяем.
+	GameState.clue_deck = []
+	GameState.clue_board_ids = {}
+	GameState.clue_deck_built = false
+	for f: String in GameState._SYNC_FIELDS:
+		GameState.set(f, snap.get(f, GameState.get(f)))
+
+
+func test_deck_survives_host_rejoin() -> void:
+	GameState._ensure_clue_deck()
+	GameState.entities["A"] = ["clue"]  # жетон лежит на поле…
+	GameState._claim_board_clue("A")  # …и несёт ключ улики этой локации
+	GameState.players["p"] = {"clues": 1, "clue_ids": []}
+	GameState._reconcile_clue_identities()  # игроку выдали ключ из колоды
+	var deck_before: int = GameState.clue_deck.size()
+	assert_eq(deck_before, 1, "3 ключа: один на поле, один на руках, один в колоде")
+
+	_snapshot_roundtrip()
+	GameState._reconcile_clue_identities()  # ближайшая сверка после перезахода
+	assert_eq(GameState.clue_deck.size(), deck_before, "колода не пересобирается заново")
+	assert_eq(GameState.clue_board_ids.get("A", []), ["A"], "привязка жетона к ключу цела")
+
+
+func test_spent_clue_reaches_discard_after_rejoin() -> void:
+	GameState._ensure_clue_deck()
+	GameState.players["p"] = {"clues": 1, "clue_ids": []}
+	GameState._reconcile_clue_identities()
+	_snapshot_roundtrip()
+
+	GameState.players["p"]["clues"] = 0  # потратил на переброс
+	GameState._reconcile_clue_identities()
+	assert_eq(GameState.clue_discard.size(), 1, "потраченная улика видна в сбросе")
