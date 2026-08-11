@@ -413,20 +413,38 @@ const _MODAL_TWEEN_META: StringName = &"modal_anim_tween"
 const _MODAL_SHOWN_META: StringName = &"modal_anim_shown"
 const _MODAL_PIVOT_META: StringName = &"modal_anim_pivot"
 
-# Реестр ОТКРЫТЫХ модалок: id инстанса → root. Ведётся здесь, потому что через
+# Реестр ОТКРЫТЫХ модалок: id инстанса → узел. Ведётся здесь, потому что через
 # modal_transition проходят все окна проекта. Нужен тем, кто не должен лезть
-# поверх открытого окна (баннер «Ваш ход» ждёт, пока экран освободится).
+# поверх открытого окна (баннер «Ваш ход» ждёт, пока экран освободится) и карте:
+# под открытым окном она не зумится и не таскается.
 static var _open_modals: Dictionary = {}
 
 
-## Открыта ли сейчас хоть одна модалка. Попутно чистит мёртвые записи: окно
-## могло уйти в queue_free, не сыграв закрытие (смена сцены).
+## Открыта ли сейчас хоть одна модалка. Запись считается открытой, только пока узел
+## жив И виден: так в реестре может постоянно жить окно, которое само себя прячет
+## (магазин, галерея), — оно «закрыто», пока невидимо. Мёртвые записи чистим.
 static func any_modal_open() -> bool:
+	var open: bool = false
 	for id_v: Variant in _open_modals.keys():
 		var n: Variant = _open_modals[id_v]
-		if not is_instance_valid(n) or not (n as CanvasItem).visible:
+		if not is_instance_valid(n):
 			_open_modals.erase(id_v)
-	return not _open_modals.is_empty()
+			continue
+		# visible читаем через get: в реестре бывают и Control, и CanvasLayer.
+		if bool((n as Object).get("visible")):
+			open = true
+	return open
+
+
+## Внести окно в реестр открытых. Для тех, кто НЕ пользуется общим эффектом
+## (магазин, галерея): зовётся один раз при создании, дальше учитывается по
+## собственной видимости узла. Иначе карта под таким окном осталась бы живой —
+## Control с MOUSE_FILTER_STOP съедает клик, но колесо пропускает сквозь себя.
+static func mark_modal(node: Node, open: bool) -> void:
+	if open:
+		_open_modals[node.get_instance_id()] = node
+	else:
+		_open_modals.erase(node.get_instance_id())
 
 
 ## Проигрывает переход модалки. root — слой целиком (вместе с затемнением),

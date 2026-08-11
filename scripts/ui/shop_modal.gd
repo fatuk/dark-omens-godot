@@ -168,6 +168,9 @@ var _hover_sfx_tried: bool = false
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("shop_modal")  # TuningPanel пушит сюда relayout при правке static var
+	# В реестр открытых окон: пока мы видимы, карта под нами не зумится
+	# (общим эффектом модалок это окно не пользуется).
+	UIStyle.mark_modal(self, true)
 	_build()
 	GameState.state_changed.connect(_refresh)
 	get_viewport().size_changed.connect(_layout_stage)

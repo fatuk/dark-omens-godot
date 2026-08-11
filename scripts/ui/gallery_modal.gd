@@ -128,6 +128,9 @@ var _prev_msaa: int = Viewport.MSAA_DISABLED  # вернём MSAA вьюпорт
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("gallery_modal")  # тюнинг текста стенда дёргает группу
+	# В реестр открытых окон: пока мы видимы, карта под нами не зумится
+	# (общим эффектом модалок это окно не пользуется).
+	UIStyle.mark_modal(self, true)
 	_build()
 	set_process(true)
 

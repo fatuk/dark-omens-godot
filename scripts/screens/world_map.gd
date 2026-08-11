@@ -751,6 +751,12 @@ func _fan_open() -> bool:
 func _unhandled_input(event: InputEvent) -> void:
 	if GameConsole.is_open():
 		return  # консоль открыта — не зумим/не таскаем/не кликаем карту, пока печатаешь
+	# Открыта любая модалка — карта не реагирует. Полагаться на затемнение модалки
+	# нельзя: Control с MOUSE_FILTER_STOP съедает клик, но КОЛЕСО пропускает сквозь
+	# себя, и карта зумилась прямо под окном. Реестр ведёт UIStyle.modal_transition,
+	# через который проходят все модалки.
+	if UIStyle.any_modal_open():
+		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		match mb.button_index:
