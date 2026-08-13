@@ -18,6 +18,7 @@ const ZOOM_SPEED: float = 12.0  # скорость интерполяции (в�
 ## Меньше этого числа экранных пикселей считаем за клик, не за драг.
 const CLICK_THRESHOLD: float = 6.0
 
+var _map_tiles: Array[Sprite2D] = []  # три копии карты — переключаем им фильтр по зуму
 var _dragging: bool = false
 var _drag_origin: Vector2 = Vector2.ZERO
 var _cam_origin: Vector2 = Vector2.ZERO
@@ -151,8 +152,7 @@ func _exit_tree() -> void:
 
 # Три копии карты по горизонтали дают бесшовную прокрутку через шов долготы.
 # Раскладываем их ПО РАЗМЕРУ ТЕКСТУРЫ, а не по числу из сцены: замена ассета на
-# более крупный не потребует править .tscn. Заодно включаем мипмапы — на отдалении
-# (зум 0.5) карта ужимается вдвое, и без них тонкие линии мерцают.
+# более крупный не потребует править .tscn.
 func _setup_map_tiles() -> void:
 	var shift := {"TileLeft": -MapLayer.TILE_W, "TileCenter": 0, "TileRight": MapLayer.TILE_W}
 	for tile_name: String in shift:
@@ -160,7 +160,31 @@ func _setup_map_tiles() -> void:
 		if s == null:
 			continue
 		s.position.x = float(shift[tile_name])
-		s.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		_map_tiles.append(s)
+	_apply_tile_filter(_camera.zoom.x)
+
+
+# Мипмапы карте нужны ТОЛЬКО когда она ужимается: на дальнем зуме без них мерцают
+# тонкие линии. На приближении они, наоборот, мылят — движок подмешивает мелкий
+# уровень даже при увеличении (замерено: кадр с мипмапами на 35% менее резкий).
+# Поэтому переключаем фильтр по тому, ужимаем мы текстуру или растягиваем.
+#
+# Один тексель карты занимает на экране zoom × (реальная ширина окна / 1920):
+# холст в режиме canvas_items растянут на окно, и это тоже увеличение.
+func _apply_tile_filter(zoom: float) -> void:
+	var base_w: float = float(
+		ProjectSettings.get_setting("display/window/size/viewport_width", 1920)
+	)
+	var canvas_scale: float = float(get_window().size.x) / maxf(base_w, 1.0)
+	var minifying: bool = zoom * canvas_scale < 1.0
+	var want: int = (
+		CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		if minifying
+		else CanvasItem.TEXTURE_FILTER_LINEAR
+	)
+	for s: Sprite2D in _map_tiles:
+		if is_instance_valid(s) and s.texture_filter != want:
+			s.texture_filter = want
 
 
 # Обновляем верхний HUD по текущему стейту игры.
@@ -751,6 +775,7 @@ func _process(delta: float) -> void:
 		var new_zoom: float = lerpf(current, _zoom_target, ZOOM_SPEED * delta)
 		_camera.zoom = Vector2.ONE * new_zoom
 		_apply_bounds()
+		_apply_tile_filter(new_zoom)
 
 
 # Открыт ли ЛЮБОЙ веер — руки/имущества ИЛИ чата (отдельный инстанс, монтируется
