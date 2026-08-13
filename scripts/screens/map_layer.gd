@@ -6,8 +6,14 @@ class_name MapLayer
 
 # ── Константы карты ───────────────────────────────────────────────────────────
 
-const TILE_W: int = 4098
-const TILE_H: int = 4000
+# Размер тайла берём из САМОЙ текстуры карты — она же единственный источник
+# правды о её размере. Проекция Меркатора (_project) считает координаты локаций от
+# этих чисел, поэтому при замене ассета на более крупный маркеры встают сами: ни
+# здесь, ни в сцене править нечего (позиции тайлов world_map расставляет по TILE_W).
+const MAP_TEX: Texture2D = preload("res://assets/map/map.png")
+
+static var TILE_W: int = int(MAP_TEX.get_size().x)
+static var TILE_H: int = int(MAP_TEX.get_size().y)
 
 ## Смещение всех маркеров и связей в мировых пикселях.
 @export var offset: Vector2 = Vector2(-120.0, 10.0)

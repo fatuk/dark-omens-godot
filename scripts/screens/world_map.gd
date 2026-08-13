@@ -89,6 +89,7 @@ func _ready() -> void:
 	# На карте мира декоративная рамка лишняя (карта — основная игровая сцена,
 	# UI поверх неё в виде GamePanel/LocationSidebar). Возвращаем при выходе.
 	ScreenFrame.set_enabled(false)
+	_setup_map_tiles()
 	_camera.position = Vector2(MapLayer.TILE_W / 2.0, MapLayer.TILE_H / 2.0)
 	_zoom_target = _camera.zoom.x
 
@@ -146,6 +147,20 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	ScreenFrame.set_enabled(true)
+
+
+# Три копии карты по горизонтали дают бесшовную прокрутку через шов долготы.
+# Раскладываем их ПО РАЗМЕРУ ТЕКСТУРЫ, а не по числу из сцены: замена ассета на
+# более крупный не потребует править .tscn. Заодно включаем мипмапы — на отдалении
+# (зум 0.5) карта ужимается вдвое, и без них тонкие линии мерцают.
+func _setup_map_tiles() -> void:
+	var shift := {"TileLeft": -MapLayer.TILE_W, "TileCenter": 0, "TileRight": MapLayer.TILE_W}
+	for tile_name: String in shift:
+		var s: Sprite2D = get_node_or_null(NodePath(tile_name)) as Sprite2D
+		if s == null:
+			continue
+		s.position.x = float(shift[tile_name])
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 
 
 # Обновляем верхний HUD по текущему стейту игры.
