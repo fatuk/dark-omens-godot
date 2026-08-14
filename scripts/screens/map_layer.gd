@@ -41,10 +41,10 @@ const SHADOW_GROUP: StringName = &"map_shadows"
 # медальона. Без рамки размытие обрезало плоско по кромке.
 const SHADOW_MARGIN: float = 0.14
 
-static var SHADOW_RADIUS: float = 6.0  # мягкость кромки
-static var SHADOW_DARKNESS: float = 0.6  # непрозрачность
-static var SHADOW_OFFSET_Y: float = 4.0  # сдвиг вниз, «источник света сверху»
-static var SHADOW_SPREAD: float = 1.1  # во сколько раз тень шире медальона
+static var SHADOW_RADIUS: float = 4.5  # мягкость кромки
+static var SHADOW_DARKNESS: float = 0.15  # непрозрачность
+static var SHADOW_OFFSET_Y: float = -2.5  # сдвиг по вертикали (минус — вверх)
+static var SHADOW_SPREAD: float = 1.11  # во сколько раз тень шире медальона
 
 # ── Цвета связей ──────────────────────────────────────────────────────────────
 
