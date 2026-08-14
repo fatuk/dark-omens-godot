@@ -29,10 +29,10 @@ static func art_scale() -> float:
 ## Проекция Меркатора не идеально совпадает с рисунком — это ручная поправка.
 @export var offset: Vector2 = Vector2(-120.0, 10.0)
 
-# ── Тень медальонов и плашек ──────────────────────────────────────────────────
+# ── Тень медальонов ───────────────────────────────────────────────────────────
 # Крутится в панели тюнинга (Ctrl+M, секция «КАРТА · ТЕНИ»); найденное значение
-# запекается сюда. Одни и те же числа ведут и мягкую тень медальона (шейдер), и
-# встроенную тень StyleBox у плашки имени — чтобы они смотрелись заодно.
+# запекается сюда. Тень есть только под медальоном: под плашкой имени она
+# читалась грязно и убрана намеренно (см. _make_label_bg).
 const SHADOW_SHADER: Shader = preload("res://assets/shaders/drop_shadow.gdshader")
 const SHADOW_GROUP: StringName = &"map_shadows"
 # Медальоны нарисованы в упор к краям текстуры, поэтому спрайту-двойнику даём
@@ -868,25 +868,14 @@ static func _apply_shadow_params(sh: Sprite2D) -> void:
 		mat.set_shader_parameter("inset", grow / maxf(SHADOW_SPREAD, 0.01))
 
 
-## Обновить тени медальонов и плашек по текущим настройкам (панель тюнинга).
+## Обновить тени медальонов по текущим настройкам (панель тюнинга).
 func refresh_shadows() -> void:
 	for sh in get_tree().get_nodes_in_group(SHADOW_GROUP):
 		_apply_shadow_params(sh as Sprite2D)
-	for i: int in range(_markers.size()):
-		var lb: Label = (_markers[i] as Dictionary).label as Label
-		if is_instance_valid(lb):
-			lb.add_theme_stylebox_override("normal", _make_label_bg(_label_color(lb)))
-
-
-# Текущий цвет плашки (подсветка билетов красит её) — чтобы пересборка стиля
-# не сбрасывала подсветку.
-func _label_color(lb: Label) -> Color:
-	var sb: StyleBox = lb.get_theme_stylebox("normal")
-	return (sb as StyleBoxFlat).bg_color if sb is StyleBoxFlat else _LABEL_BG_DEFAULT
 
 
 # Плашка-имя локации: StyleBox с заданным цветом фона (форма/отступы общие).
-# Тень у плашки своя, встроенная в StyleBoxFlat — отдельный узел не нужен.
+# Тени у плашки НЕТ намеренно: она есть только под медальоном.
 func _make_label_bg(col: Color) -> StyleBoxFlat:
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = col
@@ -894,9 +883,6 @@ func _make_label_bg(col: Color) -> StyleBoxFlat:
 	bg.set_content_margin_all(4)
 	bg.content_margin_left = 10.0
 	bg.content_margin_right = 10.0
-	bg.shadow_size = int(round(SHADOW_RADIUS))
-	bg.shadow_offset = Vector2(0.0, SHADOW_OFFSET_Y)
-	bg.shadow_color = Color(0.0, 0.0, 0.0, SHADOW_DARKNESS)
 	return bg
 
 
