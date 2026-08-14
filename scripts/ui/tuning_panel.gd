@@ -1318,6 +1318,15 @@ func _build_specs() -> Array:
 			"set": _set_shadow_dark
 		},
 		{
+			"key": "shadow_spread",
+			"label": "Расширение",
+			"min": 1.0,
+			"max": 1.3,
+			"step": 0.01,
+			"default": MapLayer.SHADOW_SPREAD,
+			"set": _set_shadow_spread
+		},
+		{
 			"key": "shadow_dy",
 			"label": "Сдвиг вниз, px",
 			"min": -8.0,
@@ -2505,4 +2514,9 @@ func _set_shadow_dark(v: float) -> void:
 
 func _set_shadow_dy(v: float) -> void:
 	MapLayer.SHADOW_OFFSET_Y = v
+	_refresh_map_shadows()
+
+
+func _set_shadow_spread(v: float) -> void:
+	MapLayer.SHADOW_SPREAD = v
 	_refresh_map_shadows()

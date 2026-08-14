@@ -34,12 +34,17 @@ static func art_scale() -> float:
 # запекается сюда. Одни и те же числа ведут и мягкую тень медальона (шейдер), и
 # встроенную тень StyleBox у плашки имени — чтобы они смотрелись заодно.
 const SHADOW_SHADER: Shader = preload("res://assets/shaders/drop_shadow.gdshader")
-const SHADOW_GROW: float = 1.18  # двойник крупнее оригинала — размытию нужен запас
 const SHADOW_GROUP: StringName = &"map_shadows"
+# Медальоны нарисованы в упор к краям текстуры, поэтому спрайту-двойнику даём
+# прозрачную рамку под размытие: он растянут на SPREAD+MARGIN, а содержимое
+# ужато обратно (inset в шейдере), так что силуэт выходит ровно на SPREAD шире
+# медальона. Без рамки размытие обрезало плоско по кромке.
+const SHADOW_MARGIN: float = 0.14
 
-static var SHADOW_RADIUS: float = 4.0  # мягкость кромки
-static var SHADOW_DARKNESS: float = 0.55  # непрозрачность
-static var SHADOW_OFFSET_Y: float = 3.0  # сдвиг вниз, «источник света сверху»
+static var SHADOW_RADIUS: float = 6.0  # мягкость кромки
+static var SHADOW_DARKNESS: float = 0.6  # непрозрачность
+static var SHADOW_OFFSET_Y: float = 4.0  # сдвиг вниз, «источник света сверху»
+static var SHADOW_SPREAD: float = 1.1  # во сколько раз тень шире медальона
 
 # ── Цвета связей ──────────────────────────────────────────────────────────────
 
@@ -842,8 +847,6 @@ func _make_shadow(tex: Texture2D) -> Sprite2D:
 	sh.texture = tex
 	sh.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	sh.show_behind_parent = true
-	sh.scale = Vector2.ONE * SHADOW_GROW
-	sh.position = Vector2(0.0, SHADOW_OFFSET_Y)
 	var mat := ShaderMaterial.new()
 	mat.shader = SHADOW_SHADER
 	sh.material = mat
@@ -854,11 +857,15 @@ func _make_shadow(tex: Texture2D) -> Sprite2D:
 
 # Перелить текущие настройки тени в спрайт-двойник.
 static func _apply_shadow_params(sh: Sprite2D) -> void:
-	sh.position.y = SHADOW_OFFSET_Y
+	var grow: float = SHADOW_SPREAD + SHADOW_MARGIN
+	sh.scale = Vector2.ONE * grow
+	sh.position = Vector2(0.0, SHADOW_OFFSET_Y)
 	var mat: ShaderMaterial = sh.material as ShaderMaterial
 	if mat != null:
 		mat.set_shader_parameter("radius", SHADOW_RADIUS)
 		mat.set_shader_parameter("darkness", SHADOW_DARKNESS)
+		# Содержимое ужимаем ровно на запас: силуэт остаётся шире медальона на SPREAD.
+		mat.set_shader_parameter("inset", grow / maxf(SHADOW_SPREAD, 0.01))
 
 
 ## Обновить тени медальонов и плашек по текущим настройкам (панель тюнинга).
