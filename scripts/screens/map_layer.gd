@@ -564,8 +564,12 @@ func _draw_great_circle(lat0: float, lon0: float, lat1: float, lon1: float, colo
 			elif dx < -half_w:
 				acc += float(TILE_W)
 		pts.append(all_pts[i] + Vector2(acc, 0.0))
-	if pts.size() >= 2:
-		draw_polyline(pts, color, LINE_W, true)
+	# Сегментами, а не draw_polyline: тот в этом рендерере игнорирует сглаживание —
+	# замер на пробнике дал 8 градаций яркости вдоль линии против 180 у draw_line,
+	# то есть диагонали шли откровенной лесенкой. Геометрии столько же, просто
+	# каждый сегмент рисуется своей командой.
+	for i: int in range(pts.size() - 1):
+		draw_line(pts[i], pts[i + 1], color, LINE_W, true)
 
 
 # ── Вспомогательные ───────────────────────────────────────────────────────────

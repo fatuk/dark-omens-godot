@@ -189,14 +189,10 @@ func _setup_map_tiles() -> void:
 # Один тексель карты занимает на экране zoom × (реальная ширина окна / 1920):
 # холст в режиме canvas_items растянут на окно, и это тоже увеличение.
 func _apply_tile_filter(zoom: float) -> void:
-	var base_w: float = float(
-		ProjectSettings.get_setting("display/window/size/viewport_width", 1920)
-	)
-	var canvas_scale: float = float(get_window().size.x) / maxf(base_w, 1.0)
 	# Порог с запасом, а не ровно 1.0: движок и при увеличении норовит взять
 	# уровень помельче, а на крупном ассете максимальный зум как раз садится на
 	# 0.99 текселя в пиксель — у самой границы.
-	var minifying: bool = zoom * canvas_scale < 0.95
+	var minifying: bool = zoom * _canvas_scale() < 0.95
 	var want: int = (
 		CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		if minifying
@@ -205,6 +201,25 @@ func _apply_tile_filter(zoom: float) -> void:
 	for s: Sprite2D in _map_tiles:
 		if is_instance_valid(s) and s.texture_filter != want:
 			s.texture_filter = want
+
+
+# Во сколько раз холст растянут на окно (режим canvas_items): мировая единица
+# занимает на экране zoom × это число.
+func _canvas_scale() -> float:
+	var base_w: float = float(
+		ProjectSettings.get_setting("display/window/size/viewport_width", 1920)
+	)
+	return float(get_window().size.x) / maxf(base_w, 1.0)
+
+
+# Дробная позиция камеры на зернистой карте даёт «рябь»: билинейная выборка каждый
+# кадр по-новому усредняет соседние тексели, и зерно ползёт. Заметнее всего на
+# затухании инерции, когда сдвиг за кадр — доли пикселя. Прижимаем камеру к целому
+# ЭКРАННОМУ пикселю: шум замирает, а шаг привязки меньше пикселя и незаметен.
+func _snap_camera_to_pixel() -> void:
+	var s: float = _camera.zoom.x * _canvas_scale()
+	if s > 0.0:
+		_camera.position = (_camera.position * s).round() / s
 
 
 # Обновляем верхний HUD по текущему стейту игры.
@@ -1147,3 +1162,5 @@ func _apply_bounds() -> void:
 	# Вертикальный clamp: не выходим за верх/низ карты
 	var vp_half_h: float = get_viewport().get_visible_rect().size.y * 0.5 / _camera.zoom.y
 	_camera.position.y = clamp(_camera.position.y, vp_half_h, MapLayer.TILE_H - vp_half_h)
+
+	_snap_camera_to_pixel()
