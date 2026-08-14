@@ -1298,6 +1298,25 @@ func _build_specs() -> Array:
 			"default": 0.0,
 			"set": _set_vig_b
 		},
+		{"section": "ЗЕРНО КАРТЫ"},
+		{
+			"key": "grain_amount",
+			"label": "Сила (Amount, %)",
+			"min": 0.0,
+			"max": 15.0,
+			"step": 0.1,
+			"default": MapGrain.AMOUNT * 100.0,
+			"set": _set_grain_amount
+		},
+		{
+			"key": "grain_size",
+			"label": "Размер зерна, px",
+			"min": 0.5,
+			"max": 4.0,
+			"step": 0.1,
+			"default": MapGrain.SIZE,
+			"set": _set_grain_size
+		},
 		{"section": "МОДАЛКИ"},
 		{
 			"key": "modal_backdrop",
@@ -2371,3 +2390,23 @@ func _set_modal_fade_out(v: float) -> void:
 
 func _set_modal_pop(v: float) -> void:
 	UIStyle.MODAL_POP = v
+
+
+# ── Зерно карты (MapGrain) ────────────────────────────────────────────────────
+# Ползунок «Сила» показан в процентах — как Amount в фотошопе; в шейдер уходит
+# доля (3% → 0.03).
+
+
+func _refresh_map_grain() -> void:
+	for m in get_tree().get_nodes_in_group(MapGrain.GROUP):
+		m.call("refresh_grain")
+
+
+func _set_grain_amount(v: float) -> void:
+	MapGrain.AMOUNT = v * 0.01
+	_refresh_map_grain()
+
+
+func _set_grain_size(v: float) -> void:
+	MapGrain.SIZE = v
+	_refresh_map_grain()

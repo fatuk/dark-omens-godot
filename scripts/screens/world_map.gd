@@ -27,6 +27,7 @@ var _zoom_step: float = ZOOM_STEP_REF
 const CLICK_THRESHOLD: float = 6.0
 
 var _map_tiles: Array[Sprite2D] = []  # три копии карты — переключаем им фильтр по зуму
+var _grain_material: ShaderMaterial = MapGrain.make_material()  # общее зерно на все копии
 var _dragging: bool = false
 var _drag_origin: Vector2 = Vector2.ZERO
 var _cam_origin: Vector2 = Vector2.ZERO
@@ -98,6 +99,7 @@ func _ready() -> void:
 	# На карте мира декоративная рамка лишняя (карта — основная игровая сцена,
 	# UI поверх неё в виде GamePanel/LocationSidebar). Возвращаем при выходе.
 	ScreenFrame.set_enabled(false)
+	add_to_group(MapGrain.GROUP)  # панель тюнинга крутит зерно на живой карте
 	_setup_map_tiles()
 	_camera.position = Vector2(MapLayer.TILE_W / 2.0, MapLayer.TILE_H / 2.0)
 	_zoom_target = _camera.zoom.x
@@ -168,6 +170,7 @@ func _setup_map_tiles() -> void:
 		if s == null:
 			continue
 		s.position.x = float(shift[tile_name])
+		s.material = _grain_material
 		_map_tiles.append(s)
 
 	# Зум живёт в мировых единицах, то есть в текселях карты: на вдвое большем
@@ -201,6 +204,11 @@ func _apply_tile_filter(zoom: float) -> void:
 	for s: Sprite2D in _map_tiles:
 		if is_instance_valid(s) and s.texture_filter != want:
 			s.texture_filter = want
+
+
+## Перелить настройки зерна в материал карты. Зовёт панель тюнинга по группе.
+func refresh_grain() -> void:
+	MapGrain.apply_to(_grain_material)
 
 
 # Во сколько раз холст растянут на окно (режим canvas_items): мировая единица
