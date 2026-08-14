@@ -29,6 +29,18 @@ static func art_scale() -> float:
 ## Проекция Меркатора не идеально совпадает с рисунком — это ручная поправка.
 @export var offset: Vector2 = Vector2(-120.0, 10.0)
 
+# ── Тень медальонов и плашек ──────────────────────────────────────────────────
+# Крутится в панели тюнинга (Ctrl+M, секция «КАРТА · ТЕНИ»); найденное значение
+# запекается сюда. Одни и те же числа ведут и мягкую тень медальона (шейдер), и
+# встроенную тень StyleBox у плашки имени — чтобы они смотрелись заодно.
+const SHADOW_SHADER: Shader = preload("res://assets/shaders/drop_shadow.gdshader")
+const SHADOW_GROW: float = 1.18  # двойник крупнее оригинала — размытию нужен запас
+const SHADOW_GROUP: StringName = &"map_shadows"
+
+static var SHADOW_RADIUS: float = 4.0  # мягкость кромки
+static var SHADOW_DARKNESS: float = 0.55  # непрозрачность
+static var SHADOW_OFFSET_Y: float = 3.0  # сдвиг вниз, «источник света сверху»
+
 # ── Цвета связей ──────────────────────────────────────────────────────────────
 
 const COLOR_SHIP: Color = Color(0.275, 0.510, 0.706, 0.90)  # #4682B4
@@ -447,6 +459,7 @@ func _spawn_markers() -> void:
 			sprite.position = world_pos
 			sprite.z_index = 2  # медальон локации — над колодой сущностей (z=1)
 			add_child(sprite)
+			sprite.add_child(_make_shadow(tex))  # тень ребёнком: сама следует за зумом
 
 			var lbl := Label.new()
 			lbl.name = "Label_%s_%d" % [loc_name, tile_idx]
@@ -820,7 +833,53 @@ func set_selected(loc_name: String) -> void:
 			ind.scale = Vector2.ONE * inv * marker_factor  # сразу нужный размер до первого _process
 
 
+# Спрайт-двойник позади медальона: та же текстура, но размытая в чёрный силуэт.
+# Ребёнком оригинала — тогда масштаб по зуму достаётся ему даром; рисуется под
+# родителем через show_behind_parent.
+func _make_shadow(tex: Texture2D) -> Sprite2D:
+	var sh := Sprite2D.new()
+	sh.name = "Shadow"
+	sh.texture = tex
+	sh.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	sh.show_behind_parent = true
+	sh.scale = Vector2.ONE * SHADOW_GROW
+	sh.position = Vector2(0.0, SHADOW_OFFSET_Y)
+	var mat := ShaderMaterial.new()
+	mat.shader = SHADOW_SHADER
+	sh.material = mat
+	sh.add_to_group(SHADOW_GROUP)  # панель тюнинга крутит тени на живой карте
+	_apply_shadow_params(sh)
+	return sh
+
+
+# Перелить текущие настройки тени в спрайт-двойник.
+static func _apply_shadow_params(sh: Sprite2D) -> void:
+	sh.position.y = SHADOW_OFFSET_Y
+	var mat: ShaderMaterial = sh.material as ShaderMaterial
+	if mat != null:
+		mat.set_shader_parameter("radius", SHADOW_RADIUS)
+		mat.set_shader_parameter("darkness", SHADOW_DARKNESS)
+
+
+## Обновить тени медальонов и плашек по текущим настройкам (панель тюнинга).
+func refresh_shadows() -> void:
+	for sh in get_tree().get_nodes_in_group(SHADOW_GROUP):
+		_apply_shadow_params(sh as Sprite2D)
+	for i: int in range(_markers.size()):
+		var lb: Label = (_markers[i] as Dictionary).label as Label
+		if is_instance_valid(lb):
+			lb.add_theme_stylebox_override("normal", _make_label_bg(_label_color(lb)))
+
+
+# Текущий цвет плашки (подсветка билетов красит её) — чтобы пересборка стиля
+# не сбрасывала подсветку.
+func _label_color(lb: Label) -> Color:
+	var sb: StyleBox = lb.get_theme_stylebox("normal")
+	return (sb as StyleBoxFlat).bg_color if sb is StyleBoxFlat else _LABEL_BG_DEFAULT
+
+
 # Плашка-имя локации: StyleBox с заданным цветом фона (форма/отступы общие).
+# Тень у плашки своя, встроенная в StyleBoxFlat — отдельный узел не нужен.
 func _make_label_bg(col: Color) -> StyleBoxFlat:
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = col
@@ -828,6 +887,9 @@ func _make_label_bg(col: Color) -> StyleBoxFlat:
 	bg.set_content_margin_all(4)
 	bg.content_margin_left = 10.0
 	bg.content_margin_right = 10.0
+	bg.shadow_size = int(round(SHADOW_RADIUS))
+	bg.shadow_offset = Vector2(0.0, SHADOW_OFFSET_Y)
+	bg.shadow_color = Color(0.0, 0.0, 0.0, SHADOW_DARKNESS)
 	return bg
 
 

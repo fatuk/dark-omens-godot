@@ -1298,6 +1298,34 @@ func _build_specs() -> Array:
 			"default": 0.0,
 			"set": _set_vig_b
 		},
+		{"section": "КАРТА · ТЕНИ"},
+		{
+			"key": "shadow_radius",
+			"label": "Мягкость",
+			"min": 0.0,
+			"max": 16.0,
+			"step": 0.5,
+			"default": MapLayer.SHADOW_RADIUS,
+			"set": _set_shadow_radius
+		},
+		{
+			"key": "shadow_dark",
+			"label": "Плотность",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": MapLayer.SHADOW_DARKNESS,
+			"set": _set_shadow_dark
+		},
+		{
+			"key": "shadow_dy",
+			"label": "Сдвиг вниз, px",
+			"min": -8.0,
+			"max": 16.0,
+			"step": 0.5,
+			"default": MapLayer.SHADOW_OFFSET_Y,
+			"set": _set_shadow_dy
+		},
 		{"section": "КАРТА · ПАНОРАМИРОВАНИЕ"},
 		{
 			"key": "map_friction",
@@ -2455,3 +2483,26 @@ func _set_map_zoom_speed(v: float) -> void:
 
 func _set_map_zoom_step(v: float) -> void:
 	WorldMap.ZOOM_STEP_REF = v
+
+
+# ── Карта: тени медальонов и плашек ───────────────────────────────────────────
+
+
+func _refresh_map_shadows() -> void:
+	for m in get_tree().get_nodes_in_group("map_layer"):
+		m.call("refresh_shadows")
+
+
+func _set_shadow_radius(v: float) -> void:
+	MapLayer.SHADOW_RADIUS = v
+	_refresh_map_shadows()
+
+
+func _set_shadow_dark(v: float) -> void:
+	MapLayer.SHADOW_DARKNESS = v
+	_refresh_map_shadows()
+
+
+func _set_shadow_dy(v: float) -> void:
+	MapLayer.SHADOW_OFFSET_Y = v
+	_refresh_map_shadows()
