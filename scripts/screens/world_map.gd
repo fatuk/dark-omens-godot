@@ -35,7 +35,7 @@ var _drag_distance: float = 0.0
 # ── Инерция (как в Google Maps) ──────────────────────────────────────────────
 
 ## Экспоненциальное затухание скорости. Выше = быстрее тормозит.
-static var INERTIA_FRICTION: float = 2.5
+static var INERTIA_FRICTION: float = 6.0
 ## Ниже этой скорости (world units/сек) — обнуляем инерцию.
 static var INERTIA_MIN_SPEED: float = 6.0
 ## Окно для расчёта flick-скорости. Берём delta между самым старым сэмплом
