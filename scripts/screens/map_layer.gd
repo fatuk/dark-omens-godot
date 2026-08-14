@@ -15,7 +15,18 @@ const MAP_TEX: Texture2D = preload("res://assets/map/map.png")
 static var TILE_W: int = int(MAP_TEX.get_size().x)
 static var TILE_H: int = int(MAP_TEX.get_size().y)
 
-## Смещение всех маркеров и связей в мировых пикселях.
+## Ширина карты, под которую ПОДБИРАЛИСЬ вручную величины в мировых пикселях
+## (offset здесь, диапазон зума в world_map). Ассет крупнее — те же величины
+## умножаем на art_scale(), и раскладка остаётся прежней.
+const REF_TILE_W: float = 4098.0
+
+
+static func art_scale() -> float:
+	return float(TILE_W) / REF_TILE_W
+
+
+## Смещение всех маркеров и связей в мировых пикселях эталонной карты (REF_TILE_W).
+## Проекция Меркатора не идеально совпадает с рисунком — это ручная поправка.
 @export var offset: Vector2 = Vector2(-120.0, 10.0)
 
 # ── Цвета связей ──────────────────────────────────────────────────────────────
@@ -571,7 +582,7 @@ func _geo_to_pixel(lat: float, lon: float) -> Vector2:
 	var lat_r: float = lat * PI / 180.0
 	var y_m: float = log(tan(PI / 4.0 + lat_r / 2.0))
 	var y: float = (PI - y_m) / (2.0 * PI) * float(TILE_H)
-	return Vector2(x, y) + offset
+	return Vector2(x, y) + offset * art_scale()
 
 
 func _conn_color(ctype: String) -> Color:

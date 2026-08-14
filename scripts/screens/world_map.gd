@@ -8,10 +8,18 @@ extends Node2D
 
 const _CONCENTRATION_FRAME: Texture2D = preload("res://assets/cards/concentration/card-frame.png")
 
-const ZOOM_MIN: float = 0.5
-const ZOOM_MAX: float = 1.2
-const ZOOM_STEP: float = 0.15
+# Зум подобран под эталонную карту (MapLayer.REF_TILE_W). Ассет крупнее — те же
+# числа показали бы во столько же раз меньший кусок мира, поэтому делим на
+# art_scale(): кадр остаётся прежним, а карта просто перестаёт растягиваться.
+# Рабочие пределы — _zoom_min/_zoom_max, считаются в _setup_map_tiles.
+const ZOOM_MIN_REF: float = 0.5
+const ZOOM_MAX_REF: float = 1.2
+const ZOOM_STEP_REF: float = 0.15
 const ZOOM_SPEED: float = 12.0  # скорость интерполяции (выше = быстрее)
+
+var _zoom_min: float = ZOOM_MIN_REF
+var _zoom_max: float = ZOOM_MAX_REF
+var _zoom_step: float = ZOOM_STEP_REF
 
 # ── Состояние перетаскивания ──────────────────────────────────────────────────
 
@@ -99,8 +107,8 @@ func _ready() -> void:
 	add_child(_map_layer)
 	_map_layer.camera = _camera
 	# Лерп MARKER_SCREEN_FAR↔_NEAR в MapLayer привязан к этому диапазону.
-	_map_layer.zoom_min = ZOOM_MIN
-	_map_layer.zoom_max = ZOOM_MAX
+	_map_layer.zoom_min = _zoom_min
+	_map_layer.zoom_max = _zoom_max
 	_map_layer.load_from_file("res://data/locations.json")
 
 	# Привязка GamePanel к глобальному GameState
@@ -161,6 +169,15 @@ func _setup_map_tiles() -> void:
 			continue
 		s.position.x = float(shift[tile_name])
 		_map_tiles.append(s)
+
+	# Зум живёт в мировых единицах, то есть в текселях карты: на вдвое большем
+	# ассете прежние 0.5 показали бы вдвое меньший кусок мира. Делим на art_scale —
+	# кадр и шаг колеса остаются те же, меняется только резкость.
+	var k: float = MapLayer.art_scale()
+	_zoom_min = ZOOM_MIN_REF / k
+	_zoom_max = ZOOM_MAX_REF / k
+	_zoom_step = ZOOM_STEP_REF / k
+	_camera.zoom = Vector2.ONE * clampf(_camera.zoom.x / k, _zoom_min, _zoom_max)
 	_apply_tile_filter(_camera.zoom.x)
 
 
@@ -176,7 +193,10 @@ func _apply_tile_filter(zoom: float) -> void:
 		ProjectSettings.get_setting("display/window/size/viewport_width", 1920)
 	)
 	var canvas_scale: float = float(get_window().size.x) / maxf(base_w, 1.0)
-	var minifying: bool = zoom * canvas_scale < 1.0
+	# Порог с запасом, а не ровно 1.0: движок и при увеличении норовит взять
+	# уровень помельче, а на крупном ассете максимальный зум как раз садится на
+	# 0.99 текселя в пиксель — у самой границы.
+	var minifying: bool = zoom * canvas_scale < 0.95
 	var want: int = (
 		CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		if minifying
@@ -817,10 +837,10 @@ func _unhandled_input(event: InputEvent) -> void:
 					_release_with_inertia()
 			MOUSE_BUTTON_WHEEL_UP:
 				if not _fan_open():  # при открытом вевере колесо листает карты, не зумит карту
-					_zoom_target = clamp(_zoom_target + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+					_zoom_target = clamp(_zoom_target + _zoom_step, _zoom_min, _zoom_max)
 			MOUSE_BUTTON_WHEEL_DOWN:
 				if not _fan_open():
-					_zoom_target = clamp(_zoom_target - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+					_zoom_target = clamp(_zoom_target - _zoom_step, _zoom_min, _zoom_max)
 
 	elif event is InputEventMouseMotion and _dragging:
 		var motion := event as InputEventMouseMotion
@@ -1111,7 +1131,7 @@ func _to_roman(n: int) -> String:
 
 # Устарело — оставлено для совместимости, используй _zoom_target напрямую
 func _set_zoom(value: float) -> void:
-	_zoom_target = clamp(value, ZOOM_MIN, ZOOM_MAX)
+	_zoom_target = clamp(value, _zoom_min, _zoom_max)
 
 
 # ── Границы и горизонтальная бесконечность ────────────────────────────────────
