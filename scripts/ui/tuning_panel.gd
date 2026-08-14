@@ -1298,6 +1298,61 @@ func _build_specs() -> Array:
 			"default": 0.0,
 			"set": _set_vig_b
 		},
+		{"section": "КАРТА · ПАНОРАМИРОВАНИЕ"},
+		{
+			"key": "map_friction",
+			"label": "Трение инерции",
+			"min": 0.3,
+			"max": 12.0,
+			"step": 0.1,
+			"default": WorldMap.INERTIA_FRICTION,
+			"set": _set_map_friction
+		},
+		{
+			"key": "map_stop",
+			"label": "Порог остановки",
+			"min": 1.0,
+			"max": 60.0,
+			"step": 1.0,
+			"default": WorldMap.INERTIA_MIN_SPEED,
+			"set": _set_map_stop
+		},
+		{
+			"key": "map_flick",
+			"label": "Окно броска, мс",
+			"min": 20.0,
+			"max": 400.0,
+			"step": 10.0,
+			"default": float(WorldMap.FLICK_WINDOW_MS),
+			"set": _set_map_flick
+		},
+		{
+			"key": "map_click",
+			"label": "Порог клика, px",
+			"min": 1.0,
+			"max": 24.0,
+			"step": 1.0,
+			"default": WorldMap.CLICK_THRESHOLD,
+			"set": _set_map_click
+		},
+		{
+			"key": "map_zoom_speed",
+			"label": "Плавность зума",
+			"min": 2.0,
+			"max": 30.0,
+			"step": 0.5,
+			"default": WorldMap.ZOOM_SPEED,
+			"set": _set_map_zoom_speed
+		},
+		{
+			"key": "map_zoom_step",
+			"label": "Шаг колеса",
+			"min": 0.02,
+			"max": 0.5,
+			"step": 0.01,
+			"default": WorldMap.ZOOM_STEP_REF,
+			"set": _set_map_zoom_step
+		},
 		{"section": "МОДАЛКИ"},
 		{
 			"key": "modal_backdrop",
@@ -2371,3 +2426,32 @@ func _set_modal_fade_out(v: float) -> void:
 
 func _set_modal_pop(v: float) -> void:
 	UIStyle.MODAL_POP = v
+
+
+# ── Карта: панорамирование и зум ──────────────────────────────────────────────
+# Все значения читаются на месте каждый кадр, поэтому живой карте ничего
+# пересылать не нужно — правка действует со следующего же движения.
+
+
+func _set_map_friction(v: float) -> void:
+	WorldMap.INERTIA_FRICTION = v
+
+
+func _set_map_stop(v: float) -> void:
+	WorldMap.INERTIA_MIN_SPEED = v
+
+
+func _set_map_flick(v: float) -> void:
+	WorldMap.FLICK_WINDOW_MS = int(v)
+
+
+func _set_map_click(v: float) -> void:
+	WorldMap.CLICK_THRESHOLD = v
+
+
+func _set_map_zoom_speed(v: float) -> void:
+	WorldMap.ZOOM_SPEED = v
+
+
+func _set_map_zoom_step(v: float) -> void:
+	WorldMap.ZOOM_STEP_REF = v

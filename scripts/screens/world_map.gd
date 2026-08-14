@@ -1,3 +1,4 @@
+class_name WorldMap
 extends Node2D
 
 # ── Константы ─────────────────────────────────────────────────────────────────
@@ -14,17 +15,16 @@ const _CONCENTRATION_FRAME: Texture2D = preload("res://assets/cards/concentratio
 # Рабочие пределы — _zoom_min/_zoom_max, считаются в _setup_map_tiles.
 const ZOOM_MIN_REF: float = 0.5
 const ZOOM_MAX_REF: float = 1.2
-const ZOOM_STEP_REF: float = 0.15
-const ZOOM_SPEED: float = 12.0  # скорость интерполяции (выше = быстрее)
+static var ZOOM_STEP_REF: float = 0.15
+static var ZOOM_SPEED: float = 12.0  # скорость интерполяции зума (выше = быстрее)
 
 var _zoom_min: float = ZOOM_MIN_REF
 var _zoom_max: float = ZOOM_MAX_REF
-var _zoom_step: float = ZOOM_STEP_REF
 
 # ── Состояние перетаскивания ──────────────────────────────────────────────────
 
 ## Меньше этого числа экранных пикселей считаем за клик, не за драг.
-const CLICK_THRESHOLD: float = 6.0
+static var CLICK_THRESHOLD: float = 6.0
 
 var _map_tiles: Array[Sprite2D] = []  # три копии карты — переключаем им фильтр по зуму
 var _dragging: bool = false
@@ -35,13 +35,13 @@ var _drag_distance: float = 0.0
 # ── Инерция (как в Google Maps) ──────────────────────────────────────────────
 
 ## Экспоненциальное затухание скорости. Выше = быстрее тормозит.
-const INERTIA_FRICTION: float = 2.5
+static var INERTIA_FRICTION: float = 2.5
 ## Ниже этой скорости (world units/сек) — обнуляем инерцию.
-const INERTIA_MIN_SPEED: float = 6.0
+static var INERTIA_MIN_SPEED: float = 6.0
 ## Окно для расчёта flick-скорости. Берём delta между самым старым сэмплом
 ## в окне и последним — даже если в самом конце мышь замедлилась, флик-моментум
 ## сохраняется. То же делают touch UI на iOS/Android.
-const FLICK_WINDOW_MS: int = 100
+static var FLICK_WINDOW_MS: int = 100
 
 var _inertia_velocity: Vector2 = Vector2.ZERO  # world units/сек
 # Кольцевые сэмплы (t_ms, screen_pos) последних мотион-эвентов в окне FLICK_WINDOW_MS.
@@ -176,7 +176,6 @@ func _setup_map_tiles() -> void:
 	var k: float = MapLayer.art_scale()
 	_zoom_min = ZOOM_MIN_REF / k
 	_zoom_max = ZOOM_MAX_REF / k
-	_zoom_step = ZOOM_STEP_REF / k
 	_camera.zoom = Vector2.ONE * clampf(_camera.zoom.x / k, _zoom_min, _zoom_max)
 	_apply_tile_filter(_camera.zoom.x)
 
@@ -201,6 +200,12 @@ func _apply_tile_filter(zoom: float) -> void:
 	for s: Sprite2D in _map_tiles:
 		if is_instance_valid(s) and s.texture_filter != want:
 			s.texture_filter = want
+
+
+# Шаг колеса в текущих единицах зума. Не кешируем: панель тюнинга правит
+# ZOOM_STEP_REF на живой игре, и следующий щелчок должен уже это учесть.
+func _wheel_step() -> float:
+	return ZOOM_STEP_REF / MapLayer.art_scale()
 
 
 # Во сколько раз холст растянут на окно (режим canvas_items): мировая единица
@@ -852,10 +857,10 @@ func _unhandled_input(event: InputEvent) -> void:
 					_release_with_inertia()
 			MOUSE_BUTTON_WHEEL_UP:
 				if not _fan_open():  # при открытом вевере колесо листает карты, не зумит карту
-					_zoom_target = clamp(_zoom_target + _zoom_step, _zoom_min, _zoom_max)
+					_zoom_target = clamp(_zoom_target + _wheel_step(), _zoom_min, _zoom_max)
 			MOUSE_BUTTON_WHEEL_DOWN:
 				if not _fan_open():
-					_zoom_target = clamp(_zoom_target - _zoom_step, _zoom_min, _zoom_max)
+					_zoom_target = clamp(_zoom_target - _wheel_step(), _zoom_min, _zoom_max)
 
 	elif event is InputEventMouseMotion and _dragging:
 		var motion := event as InputEventMouseMotion

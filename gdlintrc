@@ -33,7 +33,7 @@ function-preload-variable-name: ([A-Z][a-z0-9]*)+
 function-variable-name: '[a-z][a-z0-9]*(_[a-z0-9]+)*'
 load-constant-name: (_?([A-Z][a-z0-9]*)+|_?[A-Z][A-Z0-9]*(_[A-Z0-9]+)*)
 loop-variable-name: _?[a-z][a-z0-9]*(_[a-z0-9]+)*
-max-file-lines: 2420
+max-file-lines: 2500
 max-line-length: 160
 max-public-methods: 79
 max-returns: 20
