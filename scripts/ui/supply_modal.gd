@@ -12,9 +12,44 @@ extends RefCounted
 ## уходят от игроков множеством путей, и хранимый список однажды бы разъехался.
 
 const _MODAL := preload("res://scenes/ui/modal_dialog.tscn")
-const _CARD_H: float = 300.0  # высота миниатюры карты актива (тап — крупный просмотр)
 const _CARD_FULL_H: float = 520.0  # строим в полный рост и ужимаем (как в info_bar)
 const _LIST_H: float = 420.0  # высота прокручиваемой области списка
+const _LIST_W: float = 660.0  # ширина прокручиваемой области
+const _CARD_GAP: float = 10.0  # зазор между миниатюрами
+const _CARDS_PER_ROW: int = 3
+# Полоса прокрутки съедает ширину у содержимого. Не заложив её, три карты ровно
+# по трети перестают влезать в ряд, и третья уезжает на следующую строку.
+const _SCROLLBAR_W: float = 16.0
+
+
+## Ширина миниатюры при заданной ширине ряда: ровно треть за вычетом зазоров.
+static func card_width(row_w: float) -> float:
+	var usable: float = row_w - _CARD_GAP * float(_CARDS_PER_ROW - 1)
+	return maxf(1.0, usable / float(_CARDS_PER_ROW))
+
+
+## Стартовая ширина — до раскладки настоящая неизвестна, берём номинальную минус
+## полосу прокрутки. Дальше _fit_cards пересчитает по факту.
+static func _initial_card_width() -> float:
+	return card_width(_LIST_W - _SCROLLBAR_W)
+
+
+# Подогнать миниатюры под ФАКТИЧЕСКУЮ ширину ряда. Зовётся на resized контейнера:
+# номинальные 660 и реальные 668 расходятся (панель шире минимума), и по номиналу
+# справа оставалась пустота. Порог в полпикселя гасит возможную петлю раскладки.
+static func _fit_cards(flow: HFlowContainer) -> void:
+	var w: float = card_width(flow.size.x)
+	for slot_v: Variant in flow.get_children():
+		var slot: Control = slot_v
+		if absf(slot.custom_minimum_size.x - w) < 0.5:
+			continue
+		var card: GameCard = slot.get_child(0) as GameCard
+		if card == null:
+			continue
+		var scale_f: float = w / card.size.x
+		card.scale = Vector2(scale_f, scale_f)
+		slot.custom_minimum_size = Vector2(w, card.size.y * scale_f)
+
 
 # Вкладки: ключ → подпись.
 const _TABS: Array = [
@@ -52,7 +87,7 @@ static func open(parent: Node) -> void:
 	var body := VBoxContainer.new()
 	body.name = "Body"
 	body.add_theme_constant_override("separation", 10)
-	body.custom_minimum_size = Vector2(660, _LIST_H)
+	body.custom_minimum_size = Vector2(_LIST_W, _LIST_H)
 	box.add_child(body)
 
 	var buttons: Array = []
@@ -99,10 +134,11 @@ static func _fill_assets(body: VBoxContainer, host: Node) -> void:
 	body.add_child(_counts(GameState.asset_deck.size(), discard.size()))
 	var flow := HFlowContainer.new()
 	flow.name = "Cards"
-	flow.add_theme_constant_override("h_separation", 10)
-	flow.add_theme_constant_override("v_separation", 10)
+	flow.add_theme_constant_override("h_separation", int(_CARD_GAP))
+	flow.add_theme_constant_override("v_separation", int(_CARD_GAP))
 	for aid_v: Variant in discard:
 		flow.add_child(_asset_card(String(aid_v), host))
+	flow.resized.connect(func() -> void: _fit_cards(flow))
 	body.add_child(_scroll(flow, discard.is_empty()))
 
 
@@ -184,7 +220,7 @@ static func _scroll(content: Control, empty: bool) -> Control:
 		return lbl
 	var sc := ScrollContainer.new()
 	sc.name = "Scroll"
-	sc.custom_minimum_size = Vector2(660, _LIST_H)
+	sc.custom_minimum_size = Vector2(_LIST_W, _LIST_H)
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sc.add_child(content)
@@ -235,10 +271,11 @@ static func _loc_name(loc_id: String) -> String:
 # открывает крупный просмотр: в миниатюре текст способности всё равно не прочитать.
 static func _asset_card(asset_id: String, host: Node) -> Control:
 	var full_w: float = _CARD_FULL_H * GameCard.ASPECT
-	var scale_f: float = _CARD_H / _CARD_FULL_H
+	# Ведём размер от ШИРИНЫ (треть списка), высота идёт следом по пропорции карты.
+	var scale_f: float = _initial_card_width() / full_w
 	var slot := Control.new()
 	slot.name = "CardSlot_" + asset_id
-	slot.custom_minimum_size = Vector2(full_w * scale_f, _CARD_H)
+	slot.custom_minimum_size = Vector2(_initial_card_width(), _CARD_FULL_H * scale_f)
 	slot.mouse_filter = Control.MOUSE_FILTER_STOP
 	slot.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
