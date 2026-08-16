@@ -747,7 +747,7 @@ static func label(
 ## Единый заголовок модалки: размер 22, по центру, перенос по словам.
 ## color — обычно ACCENT (янтарь), у мифа DANGER (красный).
 static func modal_title(text: String, color: Color = UIColors.ACCENT) -> Label:
-	var lbl := label(text, 22, color, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := label(text, MODAL_FS_TITLE, color, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Title"
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return lbl
@@ -822,30 +822,27 @@ static func modal_header(
 	return header
 
 
-## Множитель размера шрифта в модалках.
-const MODAL_FONT_SCALE: float = 1.5
+# ── Шрифт в модалках ──────────────────────────────────────────────────────────
+#
+# Лесенка размеров вместо прежнего рекурсивного скейла (×1.5 поверх всего дерева).
+# Тот был удобен ровно один раз — когда решили «сделать текст крупнее», — а платить
+# за него приходилось постоянно: числа в коде не совпадали с экраном, повторный
+# вызов удваивал масштаб, и прибавка протекала в составные виджеты, которые держат
+# типографику сами (карта в «Запасах» раздувалась именно из-за этого).
+#
+# Ступени подобраны по фактическим размерам, которые были на экране, поэтому
+# перевод почти нигде не сдвинул текст больше чем на 3 px.
 
-
-## Рекурсивно увеличивает размер шрифта текстовых контролов поддерева в factor раз.
-## КНОПКИ НЕ трогаем (Button/OptionButton) — у них свой стиль и размер; масштабируем
-## только текст (Label) и поля ввода (LineEdit). Вызывать ОДИН раз после построения
-## контента модалки (повторный вызов на тех же узлах удвоит масштаб — для
-## перестраиваемых модалок звать после каждой пересборки, узлы создаются заново).
-static func scale_modal_text(node: Node, factor: float = MODAL_FONT_SCALE) -> void:
-	# Карту (GameCard) обходим стороной: она держит типографику пропорционально
-	# СВОЕЙ ширине (FS_* откалиброваны под карту веера + set_font_scale) и ужимается
-	# целиком через scale. Прибавка размера шрифта поверх этого не масштабируется
-	# вместе с картой — на миниатюре текст раздувался и вылезал за зоны.
-	if node is GameCard:
-		return
-	if node is Label or node is LineEdit:
-		var c := node as Control
-		var cur: int = c.get_theme_font_size("font_size")
-		if cur > 0:
-			c.add_theme_font_size_override("font_size", roundi(float(cur) * factor))
-	for ch in node.get_children():
-		scale_modal_text(ch, factor)
-
+## Подсказки, сноски, мелкие пояснения.
+const MODAL_FS_HINT: int = 18
+## Основной текст окна.
+const MODAL_FS_BODY: int = 22
+## Акцентная строка: подзаголовок, крупное значение, шаг проверки.
+const MODAL_FS_LEAD: int = 26
+## Заголовок окна.
+const MODAL_FS_TITLE: int = 30
+## Самое крупное — там, где заголовок и есть всё содержимое.
+const MODAL_FS_HERO: int = 39
 
 # ── Разделитель ────────────────────────────────────────────────────────────────
 
@@ -864,12 +861,12 @@ static func stepper_row(
 	var row := HBoxContainer.new()
 	row.name = "Row_%s" % key
 	row.add_theme_constant_override("separation", 10)
-	var lbl := label(label_key, 15)
+	var lbl := label(label_key, MODAL_FS_BODY)
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(lbl)
 	var minus := button("−")
 	minus.name = "Minus"
-	var count := label("0", 17, UIColors.VALUE, HORIZONTAL_ALIGNMENT_CENTER)
+	var count := label("0", MODAL_FS_LEAD, UIColors.VALUE, HORIZONTAL_ALIGNMENT_CENTER)
 	count.name = "Count"
 	count.custom_minimum_size.x = 32
 	var plus := button("+")
@@ -946,7 +943,6 @@ static func modal(
 	separator(vbox)
 
 	content_builder.call(vbox)
-	scale_modal_text(vbox)  # текст модалок крупнее (×1.5)
 
 	return backdrop
 

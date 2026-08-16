@@ -88,14 +88,13 @@ func _build() -> void:
 	# Строка ошибки — скрыта, пока ввод корректен
 	_error_label = Label.new()
 	_error_label.name = "ErrorLabel"
-	_error_label.add_theme_font_size_override("font_size", 13)
+	_error_label.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
 	_error_label.add_theme_color_override("font_color", UIColors.ERROR)
 	_error_label.visible = false
 	_vbox.add_child(_error_label)
 
 	UIStyle.separator(_vbox)
 	_build_buttons()
-	UIStyle.scale_modal_text(_vbox)  # текст модалок крупнее (×1.5)
 
 
 func _labeled_row(label_key: String, control: Control, node_name: String) -> HBoxContainer:

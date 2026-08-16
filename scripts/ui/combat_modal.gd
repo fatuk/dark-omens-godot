@@ -92,7 +92,6 @@ func _build(card: Dictionary) -> void:
 		)
 	else:
 		btns.add_child(_button("BTN_FINISH_BIG", func() -> void: GameState.finish_encounter()))
-	UIStyle.scale_modal_text(_vbox)  # текст модалок крупнее (×1.5), пересборка — заново
 
 
 # Переброс выбранного куба: заряженным жетоном (concentration/clue) или авто-приоритетом.

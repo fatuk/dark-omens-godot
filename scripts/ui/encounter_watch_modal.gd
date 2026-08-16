@@ -71,24 +71,23 @@ func _build() -> void:
 	vb.add_child(ornate)
 	_title = ornate.get_node("Title")
 
-	_who = UIStyle.label("", 14, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	_who = UIStyle.label("", UIStyle.MODAL_FS_BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	_who.name = "Who"
 	vb.add_child(_who)
 
-	_text = UIStyle.label("", 16, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	_text = UIStyle.label("", UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	_text.name = "Text"
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_text.custom_minimum_size.x = 700
 	vb.add_child(_text)
 
-	_outcome = UIStyle.label("", 16, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	_outcome = UIStyle.label("", UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	_outcome.name = "Outcome"
 	_outcome.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_outcome.custom_minimum_size.x = 700
 	_outcome.visible = false
 	vb.add_child(_outcome)
 
-	UIStyle.scale_modal_text(_panel)
 	_root.visible = false
 
 

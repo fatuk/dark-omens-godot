@@ -174,8 +174,6 @@ func _build(pc: Dictionary) -> void:
 	_apply_btn.pressed.connect(_on_apply)
 	btns.add_child(_apply_btn)
 
-	UIStyle.scale_modal_text(_panel)
-
 
 # ── Кубы (переиспользуемый лоток, рендер из active_check) ──────────────────────
 

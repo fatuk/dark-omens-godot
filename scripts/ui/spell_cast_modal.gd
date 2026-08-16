@@ -72,7 +72,6 @@ func _build(opts: Array) -> void:
 	UIStyle.style_button(confirm)
 	confirm.pressed.connect(_on_confirm)
 	_vbox.add_child(confirm)
-	UIStyle.scale_modal_text(_vbox)  # текст модалок крупнее (×1.5)
 
 
 func _on_confirm() -> void:

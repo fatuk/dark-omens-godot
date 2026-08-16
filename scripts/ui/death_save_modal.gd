@@ -109,7 +109,7 @@ func _build() -> void:
 
 	_vbox.add_child(UIStyle.modal_title("На Пороге", UIColors.DANGER))
 
-	_sub = UIStyle.label("", 16, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	_sub = UIStyle.label("", UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	_sub.name = "Subtitle"
 	_vbox.add_child(_sub)
 
@@ -119,7 +119,7 @@ func _build() -> void:
 	_dice_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_vbox.add_child(_dice_box)
 
-	_status = UIStyle.label("", 15, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	_status = UIStyle.label("", UIStyle.MODAL_FS_BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	_status.name = "Status"
 	_vbox.add_child(_status)
 
@@ -138,8 +138,6 @@ func _build() -> void:
 	_accept_btn.name = "AcceptBtn"
 	_accept_btn.pressed.connect(_on_accept)
 	btns.add_child(_accept_btn)
-
-	UIStyle.scale_modal_text(_panel)
 
 
 func _ensure_tray() -> void:

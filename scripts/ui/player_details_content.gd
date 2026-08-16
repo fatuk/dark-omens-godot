@@ -16,18 +16,18 @@ static func build(nm: Node) -> Control:
 	# Шапка: имя комнаты + наша роль. TranslationServer.translate() — статичный
 	# аналог tr() (последний — instance-метод Object, недоступен из static).
 	var fmt := TranslationServer.translate("LOBBY_DETAILS_ROOM_FMT")
-	var room_lbl := UIStyle.label(fmt % nm.room_name, 14)
+	var room_lbl := UIStyle.label(fmt % nm.room_name, UIStyle.MODAL_FS_BODY)
 	room_lbl.name = "Room"
 	vb.add_child(room_lbl)
 
 	var role_key: String = "LOBBY_DETAILS_ROLE_HOST" if nm.is_host() else "LOBBY_DETAILS_ROLE_GUEST"
-	var role_lbl := UIStyle.label(role_key, 11, UIColors.MUTED)
+	var role_lbl := UIStyle.label(role_key, UIStyle.MODAL_FS_HINT, UIColors.MUTED)
 	role_lbl.name = "Role"
 	vb.add_child(role_lbl)
 
 	UIStyle.separator(vb)
 
-	var hdr := UIStyle.label("LOBBY_PLAYERS_HEADER", 11, UIColors.MUTED)
+	var hdr := UIStyle.label("LOBBY_PLAYERS_HEADER", UIStyle.MODAL_FS_HINT, UIColors.MUTED)
 	hdr.name = "PlayersHeader"
 	vb.add_child(hdr)
 
@@ -63,16 +63,18 @@ static func _make_row(pid: String, info: Dictionary, host_id: String) -> Control
 	info_vb.add_theme_constant_override("separation", 2)
 	row.add_child(info_vb)
 
-	var name_lbl := UIStyle.label(info.get("name", pid), 16)
+	var name_lbl := UIStyle.label(info.get("name", pid), UIStyle.MODAL_FS_BODY)
 	name_lbl.name = "Name"
 	info_vb.add_child(name_lbl)
 
 	var inv_name: String = info.get("investigator", "")
 	var inv_lbl: Label
 	if inv_name.is_empty():
-		inv_lbl = UIStyle.label("—", 11, UIColors.MUTED)
+		inv_lbl = UIStyle.label("—", UIStyle.MODAL_FS_HINT, UIColors.MUTED)
 	else:
-		inv_lbl = UIStyle.label(Investigators.display_name(inv_name), 11, UIColors.ACCENT)
+		inv_lbl = UIStyle.label(
+			Investigators.display_name(inv_name), UIStyle.MODAL_FS_HINT, UIColors.ACCENT
+		)
 	inv_lbl.name = "Investigator"
 	info_vb.add_child(inv_lbl)
 
@@ -92,7 +94,7 @@ static func _make_status_tag(pid: String, info: Dictionary, host_id: String) -> 
 	else:
 		key = "LOBBY_TAG_WAITING"
 		color = UIColors.MUTED
-	var tag := UIStyle.label(key, 13, color, HORIZONTAL_ALIGNMENT_RIGHT)
+	var tag := UIStyle.label(key, UIStyle.MODAL_FS_HINT, color, HORIZONTAL_ALIGNMENT_RIGHT)
 	tag.name = "Tag"
 	tag.custom_minimum_size.x = 100
 	return tag

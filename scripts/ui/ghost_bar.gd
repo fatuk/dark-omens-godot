@@ -9,6 +9,9 @@ extends CanvasLayer
 ##
 ## TODO(i18n): тексты литералами (translations.csv занят) — вынести в DEATH_*.
 
+# Единственный размер вне лесенки — см. комментарий у места использования.
+const _HEAD_FS: int = 51
+
 var _root: Control
 var _budget_lbl: Label
 var _clue_btn: Button
@@ -60,11 +63,15 @@ func _build() -> void:
 	vb.add_theme_constant_override("separation", 8)
 	panel.add_child(vb)
 
-	var title := UIStyle.label("Мир духов", 20, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	var title := UIStyle.label(
+		"Мир духов", UIStyle.MODAL_FS_TITLE, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	title.name = "Title"
 	vb.add_child(title)
 
-	_budget_lbl = UIStyle.label("", 14, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	_budget_lbl = UIStyle.label(
+		"", UIStyle.MODAL_FS_BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	_budget_lbl.name = "Budget"
 	vb.add_child(_budget_lbl)
 
@@ -90,12 +97,13 @@ func _build() -> void:
 	row.add_child(mythos_btn)
 
 	var hint := UIStyle.label(
-		"Шёпот живым — через чат (C)", 12, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+		"Шёпот живым — через чат (C)",
+		UIStyle.MODAL_FS_HINT,
+		UIColors.MUTED,
+		HORIZONTAL_ALIGNMENT_CENTER
 	)
 	hint.name = "Hint"
 	vb.add_child(hint)
-
-	UIStyle.scale_modal_text(panel)
 
 	var myst: Array = _build_list_overlay("Все Тайны Древнего")
 	_myst_veil = myst[0]
@@ -158,14 +166,15 @@ func _build_list_overlay(title_text: String) -> Array:
 	close.pressed.connect(func() -> void: veil.visible = false)
 	vb.add_child(close)
 
-	UIStyle.scale_modal_text(panel)
 	return [veil, list]
 
 
 # Строка заголовка + тело в список оверлея (единый стиль оракула).
 func _add_list_entry(list: VBoxContainer, head: String, body_text: String, head_col: Color) -> void:
-	list.add_child(UIStyle.label(head, 34, head_col, HORIZONTAL_ALIGNMENT_LEFT))
-	var body := UIStyle.label(body_text, 26, UIColors.TEXT)
+	# Крупнее самой верхней ступени лесенки: это не заголовок окна, а название
+	# ближайшего Мифа во весь бок панели Тени — единственное исключение.
+	list.add_child(UIStyle.label(head, _HEAD_FS, head_col, HORIZONTAL_ALIGNMENT_LEFT))
+	var body := UIStyle.label(body_text, UIStyle.MODAL_FS_HERO, UIColors.TEXT)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	list.add_child(body)
 
@@ -232,7 +241,9 @@ func _populate_mythos() -> void:
 	var upcoming: Array = GameState.ghost_upcoming
 	if upcoming.is_empty():
 		_mythos_list.add_child(
-			UIStyle.label("Завеса тиха — ближайших Мифов не видно.", 26, UIColors.MUTED)
+			UIStyle.label(
+				"Завеса тиха — ближайших Мифов не видно.", UIStyle.MODAL_FS_HERO, UIColors.MUTED
+			)
 		)
 		return
 	for i in range(upcoming.size()):

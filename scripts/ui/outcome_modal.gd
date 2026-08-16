@@ -50,7 +50,7 @@ func _build() -> void:
 	_body = Label.new()
 	_body.name = "Body"
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_body.add_theme_font_size_override("font_size", 15)
+	_body.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
 	_body.add_theme_color_override("font_color", UIColors.TEXT)
 	vbox.add_child(_body)
 
@@ -61,7 +61,6 @@ func _build() -> void:
 	_btn.pressed.connect(_go_menu)
 	vbox.add_child(_btn)
 
-	UIStyle.scale_modal_text(_panel)  # текст модалок крупнее (×1.5)
 	_backdrop.visible = false
 
 

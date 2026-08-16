@@ -1078,7 +1078,6 @@ func _render_gate() -> void:
 				_gate_body(flavor)
 			_gate_body(String(m.get("text", "")))
 			_gate_button("INTRO_START", _on_gate_start)
-	UIStyle.scale_modal_text(_gate_vbox)  # текст модалок крупнее (×1.5)
 
 
 func _on_gate_next() -> void:
@@ -1095,25 +1094,33 @@ func _on_gate_start() -> void:
 
 
 func _gate_eyebrow(text: String) -> void:
-	var lbl := UIStyle.label(text, 12, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := UIStyle.label(
+		text, UIStyle.MODAL_FS_HINT, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	lbl.name = "Eyebrow"
 	_gate_vbox.add_child(lbl)
 
 
 func _gate_title(text: String) -> void:
-	var lbl := UIStyle.label(text, 26, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := UIStyle.label(
+		text, UIStyle.MODAL_FS_HERO, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	lbl.name = "Title"
 	_gate_vbox.add_child(lbl)
 
 
 func _gate_subtitle(text: String) -> void:
-	var lbl := UIStyle.label(text, 15, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := UIStyle.label(
+		text, UIStyle.MODAL_FS_BODY, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	lbl.name = "Subtitle"
 	_gate_vbox.add_child(lbl)
 
 
 func _gate_body(text: String) -> void:
-	var lbl := UIStyle.label(text, 15, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := UIStyle.label(
+		text, UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	lbl.name = "Body"
 	lbl.custom_minimum_size = Vector2(540.0, 0.0)
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

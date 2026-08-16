@@ -131,8 +131,6 @@ func _build(cs: Dictionary) -> void:
 	_apply_btn.pressed.connect(_on_apply)
 	btns.add_child(_apply_btn)
 
-	UIStyle.scale_modal_text(_panel)  # текст модалок крупнее (×1.5)
-
 
 # ── Кубы (переиспользуемый лоток, рендер из active_check) ──────────────────────
 

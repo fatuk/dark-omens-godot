@@ -83,6 +83,7 @@ func _build(allies: Array) -> void:
 			_vbox.add_child(pb)
 	else:
 		var who := Label.new()
+		who.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
 		who.name = "Partner"
 		who.text = (
 			"%s: %s" % [tr("TRADE_PARTNER"), GameState.players[_partner].get("name", _partner)]
@@ -111,7 +112,6 @@ func _build(allies: Array) -> void:
 	row.add_child(ok)
 	row.add_child(cancel)
 	_vbox.add_child(row)
-	UIStyle.scale_modal_text(_vbox)
 
 
 # Секция «отдать»/«взять»: чекбоксы предметов (sel[idx]) + счётчик улик. is_mine
@@ -120,6 +120,7 @@ func _section(
 	title_key: String, items: Array, sel: Dictionary, owner_data: Dictionary, is_mine: bool
 ) -> void:
 	var hdr := Label.new()
+	hdr.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_LEAD)
 	hdr.name = "Header"
 	hdr.text = tr(title_key)
 	hdr.add_theme_color_override("font_color", UIColors.ACCENT)

@@ -5,8 +5,6 @@ extends CanvasLayer
 ## reckoning_active. Ловит клики — нельзя действовать, пока фаза не завершится у всех.
 ## Под модалкой проверки (layer 85 < 86). Строится кодом, монтируется из world_map.
 
-const _TITLE_WIDTH: float = 380.0  # ширина строки заголовка (до ×1.5 scale_modal_text)
-
 var _root: ColorRect
 var _panel: PanelContainer
 
@@ -50,7 +48,6 @@ func _build() -> void:
 	var title := UIStyle.modal_title("RECK_WAIT")
 	title.custom_minimum_size.x = _TITLE_WIDTH
 	margin.add_child(title)
-	UIStyle.scale_modal_text(_panel)
 
 
 func _refresh() -> void:

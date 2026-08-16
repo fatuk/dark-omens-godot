@@ -109,7 +109,6 @@ func _ready() -> void:
 
 	_roll_btn.pressed.connect(_on_roll_pressed)
 	_finish_btn.pressed.connect(_on_finish_pressed)
-	UIStyle.scale_modal_text(_panel)  # текст модалок крупнее (×1.5)
 
 	GameState.state_changed.connect(_refresh)
 	_refresh()

@@ -121,7 +121,6 @@ func _fill(gains: Dictionary) -> void:
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.pressed.connect(GameState.dismiss_gains)
 	_box.add_child(btn)
-	UIStyle.scale_modal_text(_box)
 
 
 # Миниатюра полученной карты: GameCard в полный рост, ужатый через scale — те же
@@ -186,7 +185,7 @@ func _token(field: String, n: int) -> Control:
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hb.add_child(icon)
 
-	var lbl := UIStyle.label("×%d" % n, 20, UIColors.VALUE)
+	var lbl := UIStyle.label("×%d" % n, UIStyle.MODAL_FS_TITLE, UIColors.VALUE)
 	lbl.name = "Count"
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hb.add_child(lbl)

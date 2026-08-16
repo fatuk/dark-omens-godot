@@ -71,7 +71,7 @@ static func _open_convert_vitality(parent: Node) -> void:
 	var box := VBoxContainer.new()
 	box.name = "ConvertAlloc"
 	box.add_theme_constant_override("separation", 12)
-	var hint := UIStyle.label("ABILITY_CONVERT_PROMPT", 15)
+	var hint := UIStyle.label("ABILITY_CONVERT_PROMPT", UIStyle.MODAL_FS_BODY)
 	hint.name = "Hint"
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.custom_minimum_size.x = 360
@@ -150,7 +150,9 @@ static func _section(box: VBoxContainer, data: Dictionary, btn: Button = null) -
 	if btn != null:
 		box.add_child(btn)
 	elif not nm.is_empty():
-		var title := UIStyle.label(nm, 19, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+		var title := UIStyle.label(
+			nm, UIStyle.MODAL_FS_TITLE, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
+		)
 		title.name = "Name"
 		box.add_child(title)
 
@@ -158,7 +160,7 @@ static func _section(box: VBoxContainer, data: Dictionary, btn: Button = null) -
 
 
 static func _body(key: String) -> Label:
-	var lbl := UIStyle.label(key, 15, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := UIStyle.label(key, UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Text"
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl.custom_minimum_size.x = 420

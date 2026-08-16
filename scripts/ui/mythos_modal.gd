@@ -47,7 +47,7 @@ func _build() -> void:
 
 	_flavor_lbl = Label.new()
 	_flavor_lbl.name = "Flavor"
-	_flavor_lbl.add_theme_font_size_override("font_size", 13)
+	_flavor_lbl.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
 	_flavor_lbl.add_theme_color_override("font_color", UIColors.MUTED)
 	_flavor_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_flavor_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -55,7 +55,7 @@ func _build() -> void:
 
 	_text_lbl = Label.new()
 	_text_lbl.name = "Text"
-	_text_lbl.add_theme_font_size_override("font_size", 14)
+	_text_lbl.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
 	_text_lbl.add_theme_color_override("font_color", UIColors.TEXT)
 	_text_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_vbox.add_child(_text_lbl)
@@ -65,7 +65,7 @@ func _build() -> void:
 	_eff_header = Label.new()
 	_eff_header.name = "EffectsHeader"
 	_eff_header.text = tr("MYTHOS_EFFECTS_HEADER")
-	_eff_header.add_theme_font_size_override("font_size", 12)
+	_eff_header.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
 	_eff_header.add_theme_color_override("font_color", UIColors.MUTED)
 	_vbox.add_child(_eff_header)
 
@@ -81,7 +81,6 @@ func _build() -> void:
 	_next_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_next_btn.pressed.connect(_on_next)
 	_vbox.add_child(_next_btn)
-	UIStyle.scale_modal_text(_vbox)  # текст модалок крупнее (×1.5)
 
 
 # ── Отрисовка по стейту ───────────────────────────────────────────────────────
@@ -159,21 +158,19 @@ func _render_effects(effects: Array) -> void:
 		var lbl := Label.new()
 		lbl.text = tr("MYTHOS_NO_EFFECTS")
 		lbl.add_theme_color_override("font_color", UIColors.MUTED)
-		lbl.add_theme_font_size_override("font_size", 12)
+		lbl.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
 		_eff_box.add_child(lbl)
 		_eff_header.visible = false
-		UIStyle.scale_modal_text(_eff_box)
 		return
 	_eff_header.visible = true
 	for i in range(effects.size()):
 		var lbl := Label.new()
 		lbl.name = "Label"
 		lbl.text = "• " + EffectManifest.describe(effects[i])
-		lbl.add_theme_font_size_override("font_size", 13)
+		lbl.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
 		lbl.add_theme_color_override("font_color", UIColors.TEXT)
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_eff_box.add_child(lbl)
-	UIStyle.scale_modal_text(_eff_box)  # эффекты пересобираются — масштаб заново
 
 
 # ── Кнопка ────────────────────────────────────────────────────────────────────

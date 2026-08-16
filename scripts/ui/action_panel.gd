@@ -218,7 +218,7 @@ func _show_rest_alloc(res: int, hp_room: int, san_room: int) -> void:
 	var box := VBoxContainer.new()
 	box.name = "RestAlloc"
 	box.add_theme_constant_override("separation", 12)
-	var hint := UIStyle.label("ACTION_REST_RES_PROMPT", 15)
+	var hint := UIStyle.label("ACTION_REST_RES_PROMPT", UIStyle.MODAL_FS_BODY)
 	hint.name = "Hint"
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.custom_minimum_size.x = 360

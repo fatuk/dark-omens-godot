@@ -48,7 +48,6 @@ func _ready() -> void:
 	UIStyle.style_modal_close_button(_close_btn)
 	UIStyle.style_separator(_header_sep)
 	_title.add_theme_color_override("font_color", UIColors.ACCENT)
-	UIStyle.scale_modal_text(_title)  # заголовок крупнее (×1.5); контент масштабируется в set_content
 	_close_btn.pressed.connect(close)
 	_backdrop.gui_input.connect(_on_backdrop_input)
 	UIStyle.apply_backdrop_alpha(_root)
@@ -86,14 +85,12 @@ func set_content(node: Control) -> void:
 	_clear_content()
 	if node:
 		_content.add_child(node)
-		UIStyle.scale_modal_text(node)
 
 
 func add_content_child(node: Control) -> void:
 	if not is_node_ready():
 		await ready
 	_content.add_child(node)
-	UIStyle.scale_modal_text(node)
 
 
 ## Прямой доступ к VBoxContainer контента — для тонкой настройки порядка/спейсинга.

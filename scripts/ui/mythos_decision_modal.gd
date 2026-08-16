@@ -76,6 +76,7 @@ func _build(options: Array) -> void:
 	)
 
 	var prompt := Label.new()
+	prompt.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
 	prompt.name = "Prompt"
 	var prompt_key: String = String(d.get("prompt_key", ""))
 	if prompt_key.is_empty():
@@ -113,7 +114,6 @@ func _build(options: Array) -> void:
 		list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		scroll.add_child(list)
 		_vbox.add_child(scroll)
-	UIStyle.scale_modal_text(_vbox)
 
 
 # Подсказка по умолчанию — зависит от вида выбора (ветка / сыщик / монстр / локация).

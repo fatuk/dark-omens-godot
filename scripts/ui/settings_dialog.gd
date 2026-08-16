@@ -72,7 +72,6 @@ func _build() -> void:
 	UIStyle.separator(_vbox)
 
 	_build_buttons()
-	UIStyle.scale_modal_text(_vbox)  # текст модалок крупнее (×1.5)
 
 
 func _build_server_section() -> void:
