@@ -832,6 +832,12 @@ const MODAL_FONT_SCALE: float = 1.5
 ## контента модалки (повторный вызов на тех же узлах удвоит масштаб — для
 ## перестраиваемых модалок звать после каждой пересборки, узлы создаются заново).
 static func scale_modal_text(node: Node, factor: float = MODAL_FONT_SCALE) -> void:
+	# Карту (GameCard) обходим стороной: она держит типографику пропорционально
+	# СВОЕЙ ширине (FS_* откалиброваны под карту веера + set_font_scale) и ужимается
+	# целиком через scale. Прибавка размера шрифта поверх этого не масштабируется
+	# вместе с картой — на миниатюре текст раздувался и вылезал за зоны.
+	if node is GameCard:
+		return
 	if node is Label or node is LineEdit:
 		var c := node as Control
 		var cur: int = c.get_theme_font_size("font_size")
