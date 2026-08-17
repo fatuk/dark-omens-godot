@@ -56,6 +56,9 @@ const _PAD_TOP_FRAC: float = 0.05  # верхний инсет (текст вс�
 const _PAD_BOTTOM_FRAC: float = 0.07
 const _BTN_MIN_WIDTH: float = 380.0  # кнопки — фикс. ширина (центр), не на всю карточку
 const _TEXT_WIDTH_FRAC: float = 0.65  # ширина колонки текста (доля карточки) — читаемая, уже полной
+# Высота подписи «где мы» — доля высоты карточки от её верха. Метится в полосу под
+# «глазом» рамки и НАД резной гирляндой, поэтому меньше верхнего отступа контента.
+const _PLACE_TOP_FRAC: float = 0.028
 
 var _bg: TextureRect  # арт-фон карточки (меняем текстуру по типу локации)
 
@@ -120,11 +123,14 @@ func _ready() -> void:
 	vbox.add_child(top_spacer)
 	vbox.move_child(top_spacer, 0)  # распорка — самой первой, над всем контентом
 
-	# Где мы находимся — в самой верхней полосе карточки, НАД распоркой, чтобы стояла
-	# у верхнего края и не ездила вслед за текстом. Пока заполняется только за
-	# вратами: имя Иного мира (в реальной локации сцена и так узнаётся по арту).
+	# Где мы находимся — имя Иного мира в самой верхней полосе карточки, под «глазом»
+	# рамки. Живёт НЕ в VBox, а прямо на карточке по якорям: у VBox свой верхний
+	# отступ под контент, и внутри него подпись не поднять выше, чем он начинается.
+	# Точная высота — _PLACE_TOP_FRAC в _resize_card.
 	_place = UIStyle.label("", UIStyle.MODAL_FS_LEAD, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	_place.name = "Place"
+	_place.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_place.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Верх арта у миров разный — у Страны снов там светлое небо, у Юггота тьма.
 	# Приглушённый цвет там терялся, поэтому акцентный + тёмная тень под буквами
 	# (тот же приём, что у подписей на карточке сыщика).
@@ -133,8 +139,8 @@ func _ready() -> void:
 	_place.add_theme_constant_override("shadow_offset_y", 1)
 	_place.add_theme_constant_override("shadow_outline_size", 3)
 	_place.visible = false
-	vbox.add_child(_place)
-	vbox.move_child(_place, 0)
+	_panel.add_child(_place)  # поверх арта, но вне потока VBox
+	_resize_card()  # подпись только что появилась — расставим её по высоте
 
 	_roll_btn.pressed.connect(_on_roll_pressed)
 	_finish_btn.pressed.connect(_on_finish_pressed)
@@ -199,6 +205,9 @@ func _resize_card() -> void:
 	var text_w: float = w * _TEXT_WIDTH_FRAC
 	_main_text.custom_minimum_size.x = text_w
 	_outcome.custom_minimum_size.x = text_w
+	# Подпись «где мы» висит на якорях карточки, а не в VBox — двигаем сами.
+	if _place != null:
+		_place.offset_top = h * _PLACE_TOP_FRAC
 
 
 # Плавное проявление текста исхода (успех/провал) при его добавлении.
