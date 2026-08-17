@@ -184,6 +184,7 @@ func reroll(pid: String, die_index: int, currency: String = "", c: Dictionary = 
 	match pay:
 		"free":
 			c["rerolls_used"] = used + 1
+			_settle_reroll_debt(pid, c, "reroll_debt")
 		"concentration":
 			p["concentration"] = foc - 1
 		"clue":
@@ -279,8 +280,11 @@ func activate(pid: String, item_index: int, c: Dictionary = {}) -> bool:
 	if not (it_v is Dictionary):
 		return false
 	var it: Dictionary = it_v
-	if bool(it.get("exhausted", false)):
-		return false  # уже истощена в этом раунде (oncePerRound)
+	# Истощена — но пассив whileOwned на ней работает ВСЕГДА («Древняя рукопись»:
+	# +1 Знания и +1 Воли постоянно, раз в раунд — только переброс). Так что тап по
+	# истощённой карте не отбиваем, а срезаем ей слот action (см. action_mods ниже);
+	# если пассива под контекст нет, mods окажутся пусты и мы выйдем там же.
+	var spent: bool = bool(it.get("exhausted", false))
 	if (c.get("exhausted_cards", []) as Array).has(item_index):
 		return false  # уже применена в ЭТОЙ проверке
 	var entry: String = AssetCatalog.entry_id(it)
@@ -303,7 +307,7 @@ func activate(pid: String, item_index: int, c: Dictionary = {}) -> bool:
 		return Dice.mod_skill_ok(m_v3, skill) and (not Dice.mod_is_pre_roll(m_v3) or not rolled)
 	# Glamour — только пассив-аура (без cost/limit); актив — action + passive.
 	var action_mods: Array = (
-		[] if is_glam else AssetCatalog.action_check_mods(asset, ctx).filter(ok)
+		[] if (is_glam or spent) else AssetCatalog.action_check_mods(asset, ctx).filter(ok)
 	)
 	var passive_mods: Array = (
 		SpellCatalog.aura_check_mods(glamour, ctx).filter(ok)
@@ -353,15 +357,33 @@ func activate(pid: String, item_index: int, c: Dictionary = {}) -> bool:
 
 	# Истощение/сброс: discardSelf сбрасывает карту; action oncePerRound — до конца
 	# раунда (item.exhausted, Refresh-шаг); прочее (пассивы) — на ТЕКУЩУЮ проверку.
+	# Переброс — не мгновенный эффект, а ЗАПАС: карта кладёт его в reroll_allowance,
+	# тратится он позже тапом по кубу и может не потратиться вовсе. Поэтому такую
+	# oncePerRound-карту истощаем не тапом, а в момент реального переброса — иначе
+	# игрок, тапнувший карту ради постоянного бонуса к навыку, терял переброс, ничего
+	# не перебросив. Долг — очередь item_index, по записи на каждый выданный переброс.
 	if bool(cost.get("discardSelf", false)):
 		items.remove_at(item_index)
 		p["items"] = items
-	elif limit == "oncePerRound":
-		it["exhausted"] = true
 	else:
 		var ex: Array = c.get("exhausted_cards", [])
 		ex.append(item_index)
 		c["exhausted_cards"] = ex
+		if limit == "oncePerRound":
+			var deferred: bool = false
+			for m_v4: Variant in action_mods:
+				var m4: Dictionary = m_v4
+				if String(m4.get("do", "")) != "rerollDice":
+					continue
+				deferred = true
+				var cnt4: int = int(m4.get("count", 1))
+				var key: String = "reroll_all_debt" if cnt4 >= _REROLL_ALL_MIN else "reroll_debt"
+				var debt: Array = c.get(key, [])
+				for _k in range(1 if cnt4 >= _REROLL_ALL_MIN else cnt4):
+					debt.append(item_index)
+				c[key] = debt
+			if not deferred:
+				it["exhausted"] = true  # мгновенный эффект — истощаем сразу, как раньше
 
 	var card_id: String = String(glamour.get("id", "")) if is_glam else String(asset.get("id", ""))
 	GameConsole.log("[Карта] %s применил «%s»" % [_gs._name_of(pid), card_id])
@@ -465,9 +487,29 @@ func reroll_all(pid: String, c: Dictionary = {}) -> bool:
 		base[i] = Dice.roll_one()
 	_set_roll(c, base)
 	c["reroll_all_used"] = int(c.get("reroll_all_used", 0)) + 1
+	_settle_reroll_debt(pid, c, "reroll_all_debt")
 	GameConsole.log("[Переброс] %s · перебросил все кубы" % _gs._name_of(pid))
 	_sync()
 	return true
+
+
+# Закрыть долг за выданный картой переброс: oncePerRound-карта, дающая ЗАПАС
+# перебросов, истощается не тапом, а здесь — когда переброс реально потратили
+# (см. activate). Долг — очередь item_index в порядке активации: чей переброс
+# тратим, тот и истощается. Пусто — переброс пришёл не от такой карты (жетон,
+# улика, пассив без лимита), истощать нечего.
+func _settle_reroll_debt(pid: String, c: Dictionary, key: String) -> void:
+	var debt: Array = c.get(key, [])
+	if debt.is_empty():
+		return
+	var idx: int = int(debt.pop_front())
+	c[key] = debt
+	var items: Array = (_gs.players.get(pid, {}) as Dictionary).get("items", [])
+	if idx < 0 or idx >= items.size():
+		return  # карта успела уйти из руки (discardSelf/обмен) — долг сгорает
+	var it_v: Variant = items[idx]
+	if it_v is Dictionary:
+		(it_v as Dictionary)["exhausted"] = true
 
 
 # Может ли игрок оплатить ресурс-стоимость активации (asset/spell пока не поддержаны).

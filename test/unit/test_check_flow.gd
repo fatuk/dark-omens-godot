@@ -556,3 +556,63 @@ func test_substitute_resource_prefers_direct_payment() -> void:
 	assert_eq(int(p["concentration"]), 1, "есть фокус — платим им напрямую")
 	assert_eq(int(p["clues"]), 2, "улики целы")
 	assert_false(bool(p["items"][0]["exhausted"]), "карта не истрачена")
+
+
+# ── «Древняя рукопись»: постоянный бонус + переброс раз в раунд ────────────────
+#
+# whileOwned improveSkill lore/will +1 (пассив, работает ВСЕГДА) и action
+# rerollDice ×1 с limit oncePerRound. Раньше тап клал оба мода и сразу истощал
+# карту: игрок, тапнувший её ради бонуса к навыку, терял переброс, ничего не
+# перебросив, и до конца раунда оставался ещё и без +1/+1.
+
+
+func test_manuscript_tap_alone_does_not_exhaust() -> void:
+	_player({"items": [{"id": "ancient_manuscript", "exhausted": false}]})
+	_cf.start("effectCheck", "p", "lore", 0, "")
+	assert_true(_cf.activate("p", 0), "рукопись применима на проверке Знания")
+	assert_eq(_cf.pool(_gs.active_check), 2, "пул = Знание 1 + improveSkill 1")
+	_cf.roll("p")
+	assert_eq(int(_gs.active_check["reroll_allowance"]), 1, "переброс выдан")
+	assert_false(bool(_gs.players["p"]["items"][0]["exhausted"]), "сам тап карту не истощает")
+
+
+func test_manuscript_exhausts_only_when_reroll_spent() -> void:
+	_player({"items": [{"id": "ancient_manuscript", "exhausted": false}]})
+	_cf.start("effectCheck", "p", "lore", 0, "")
+	_cf.activate("p", 0)
+	_gs.active_check["base"] = [2, 2]
+	_gs.active_check["dice"] = [2, 2]
+	_gs.active_check["rolled"] = true
+	_gs.active_check["reroll_allowance"] = 1
+	_gs.active_check["rerolls_used"] = 0
+	assert_true(_cf.reroll("p", 0, "free"), "бесплатный переброс от карты прошёл")
+	assert_true(bool(_gs.players["p"]["items"][0]["exhausted"]), "истощается в момент переброса")
+
+
+func test_manuscript_passive_works_while_exhausted() -> void:
+	# Переброс за раунд уже потрачен — но +1 Знания и +1 Воли остаются.
+	_player({"items": [{"id": "ancient_manuscript", "exhausted": true}]})
+	_cf.start("effectCheck", "p", "lore", 0, "")
+	assert_true(_cf.activate("p", 0), "истощённая карта всё ещё даёт пассив")
+	assert_eq(_cf.pool(_gs.active_check), 2, "пул = Знание 1 + improveSkill 1")
+	var verbs: Array = []
+	for m_v: Variant in _gs.active_check["active_mods"]:
+		verbs.append(String((m_v as Dictionary).get("do", "")))
+	assert_has(verbs, "improveSkill", "пассив лёг")
+	assert_does_not_have(verbs, "rerollDice", "переброс за раунд уже потрачен — не выдаём")
+	_cf.roll("p")
+	assert_eq(int(_gs.active_check["reroll_allowance"]), 0, "второго переброса в раунде нет")
+
+
+func test_manuscript_reroll_survives_unused_check() -> void:
+	# Тапнул ради бонуса в одной проверке, не перебросил — в следующей проверке
+	# того же раунда переброс всё ещё доступен.
+	_player({"items": [{"id": "ancient_manuscript", "exhausted": false}]})
+	_cf.start("effectCheck", "p", "lore", 0, "")
+	_cf.activate("p", 0)
+	_cf.roll("p")
+	_cf.clear()
+	_cf.start("effectCheck", "p", "will", 0, "")
+	assert_true(_cf.activate("p", 0), "карта не истощена — применима снова")
+	_cf.roll("p")
+	assert_eq(int(_gs.active_check["reroll_allowance"]), 1, "переброс не сгорел")
