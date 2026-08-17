@@ -66,7 +66,7 @@ func _build() -> void:
 	vb.add_theme_constant_override("separation", 10)
 	margin.add_child(vb)
 
-	var ornate: HBoxContainer = UIStyle.ornate_title("", 22, UIColors.ACCENT)
+	var ornate: HBoxContainer = UIStyle.ornate_title("", UIStyle.MODAL_FS_TITLE, UIColors.ACCENT)
 	ornate.name = "OrnateTitle"
 	vb.add_child(ornate)
 	_title = ornate.get_node("Title")
@@ -75,13 +75,13 @@ func _build() -> void:
 	_who.name = "Who"
 	vb.add_child(_who)
 
-	_text = UIStyle.label("", UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	_text = UIStyle.label("", UIStyle.MODAL_FS_LEAD, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	_text.name = "Text"
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_text.custom_minimum_size.x = 700
 	vb.add_child(_text)
 
-	_outcome = UIStyle.label("", UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	_outcome = UIStyle.label("", UIStyle.MODAL_FS_LEAD, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	_outcome.name = "Outcome"
 	_outcome.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_outcome.custom_minimum_size.x = 700

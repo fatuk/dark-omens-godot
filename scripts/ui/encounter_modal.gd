@@ -81,11 +81,14 @@ func _ready() -> void:
 		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		b.custom_minimum_size.x = _BTN_MIN_WIDTH
 	# Размеры — ступени лесенки UIStyle (в сцене не хардкодим): повествование и исход
-	# читаются как основной текст, строка успехов — подпись. Те же ступени, что у
-	# encounter_watch_modal, где эту же встречу видят зрители.
-	_main_text.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
-	_outcome.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
-	_dice.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
+	# читаются как основной текст, строка успехов — подпись. Карточка встречи — самая
+	# крупная в игре (три четверти экрана) и текста на ней больше всего, поэтому вся
+	# группа стоит на ступень ВЫШЕ обычной модалки: повествование и исход как LEAD,
+	# строка успехов как BODY. Заголовок остаётся TITLE — над ним ещё имя мира (HERO),
+	# и поднимать его некуда без слипания верхушки.
+	_main_text.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_LEAD)
+	_outcome.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_LEAD)
+	_dice.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
 	_main_text.add_theme_color_override("font_color", UIColors.TEXT)
 	# Текст (основной + исход) — узкой колонкой по центру, не на всю ширину карточки.
 	# Ширина задаётся в _resize_card; SHRINK_CENTER центрирует колонку, автоперенос — по ней.
