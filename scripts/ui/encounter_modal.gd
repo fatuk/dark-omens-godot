@@ -62,6 +62,7 @@ var _bg: TextureRect  # арт-фон карточки (меняем текст�
 const _OTHER_WORLD_DIR: String = "res://assets/other-world/"
 
 var _world_bg_cache: Dictionary = {}  # мир → Texture2D|null, чтобы не дёргать диск
+var _warned_card: String = ""  # id карты, по которой уже ругались на пустой мир
 
 # Навык → ключ перевода для подписи проверки.
 
@@ -196,7 +197,16 @@ func _play_outcome_in() -> void:
 func _apply_background() -> void:
 	if _bg == null:
 		return
-	var tex: Texture2D = _world_texture(String(GameState.current_encounter.get("otherWorld", "")))
+	var card: Dictionary = GameState.current_encounter
+	var world: String = String(card.get("otherWorld", ""))
+	# Врата без мира — дефект контента (в админке у карточки не проставлена ось
+	# world), а не отсутствие арта: молча покажется фон по типу реальной локации.
+	# Ругаемся один раз на карту, а не на каждый синк.
+	var card_id: String = String(card.get("id", ""))
+	if world.is_empty() and String(card.get("kind", "")) == "gate" and card_id != _warned_card:
+		_warned_card = card_id
+		GameConsole.log("[Встреча] у врат «%s» не указан Иной мир" % _title_text(card))
+	var tex: Texture2D = _world_texture(world)
 	if tex == null:
 		var loc: String = String(GameState.my_player().get("location", ""))
 		tex = _bg_texture(GameState.location_type(loc))
