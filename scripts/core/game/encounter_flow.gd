@@ -83,6 +83,7 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 	var encs: Array = res.get("encounters", [])
 	if bool(res.get("ok", false)) and not encs.is_empty():
 		_gs.current_encounter = encs[0]
+		_discard_encounter(_gs.current_encounter)
 		GameConsole.log("[Game] Встреча готова: %s" % String(_gs.current_encounter.get("name", "")))
 	else:
 		_gs.current_encounter = _fallback_card()
@@ -869,6 +870,16 @@ func _remove_clues_at(loc_id: String, n: int) -> void:
 
 # Тело запроса /encounters/draw для игрока (kind ∈ general/research/gate).
 # site_specific=true → локационная встреча (привязанная к клетке тегом location:<id>).
+# Положить сыгранную карточку в сброс встреч. sourceId — id карточки корпуса (id
+# самой карты свежий на каждую выдачу, колоду по нему не собрать). Заглушки его не
+# несут — их не копим. Реле вернёт сброс в колоду само, когда свежих не останется.
+func _discard_encounter(card: Dictionary) -> void:
+	var sid: String = String(card.get("sourceId", ""))
+	if sid.is_empty() or (_gs.encounter_discard as Array).has(sid):
+		return
+	(_gs.encounter_discard as Array).append(sid)
+
+
 func _build_request(
 	p: Dictionary, kind: String = "general", site_specific: bool = false
 ) -> Dictionary:
@@ -897,6 +908,8 @@ func _build_request(
 		"count": 1,
 		"language": _gs._relay_language(),
 		"siteSpecific": site_specific,
+		# Сброс встреч: карточки, уже сыгранные в этой партии, реле повторно не выдаст.
+		"exclude": _gs.encounter_discard,
 	}
 	# Библия готова — встреча несёт контекст кампании (Древний, акт, doom).
 	var cid: String = String(_gs.campaign.get("id", ""))

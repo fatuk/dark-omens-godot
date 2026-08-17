@@ -61,6 +61,7 @@ class MockGS:
 	var phase: String = "encounter"
 	var players: Dictionary = {}
 	var current_encounter: Dictionary = {}
+	var encounter_discard: Array = []
 	var _check := MockCheck.new()
 
 	func _is_host() -> bool:
@@ -119,3 +120,31 @@ func test_combat_trigger_false_outside_combat() -> void:
 	var ef: EncounterFlow = _combat_ctx(2, 1)
 	ef._gs.current_encounter["kind"] = "general"  # не бой
 	assert_false(ef.try_combat_trigger("p", 0), "вне боя — false (роутер пробует check-mod)")
+
+
+# ── Сброс встреч ──────────────────────────────────────────────────────────────
+#
+# Карточка уходит в сброс в момент ВЫДАЧИ, а не по исходу: врата могли не
+# закрыться, проверка — провалиться, встреча всё равно сыграна и повторно не
+# выпадает. Сброс уезжает в реле полем exclude запроса.
+
+
+func _discard_ctx() -> EncounterFlow:
+	var gs: MockGS = autofree(MockGS.new())
+	gs.players["p"] = {"items": []}
+	return EncounterFlow.new(gs)
+
+
+func test_discard_collects_source_id() -> void:
+	var ef: EncounterFlow = _discard_ctx()
+	ef._discard_encounter({"sourceId": "ow-dreamlands-01", "name": "Кошки Ултара"})
+	assert_eq(ef._gs.encounter_discard, ["ow-dreamlands-01"], "карточка ушла в сброс")
+
+
+func test_discard_ignores_repeat_and_stubs() -> void:
+	var ef: EncounterFlow = _discard_ctx()
+	ef._discard_encounter({"sourceId": "ow-abyss-03"})
+	ef._discard_encounter({"sourceId": "ow-abyss-03"})
+	assert_eq(ef._gs.encounter_discard.size(), 1, "повтор в сброс не дублируется")
+	ef._discard_encounter({"name": "Заглушка"})
+	assert_eq(ef._gs.encounter_discard.size(), 1, "заглушка без sourceId в сброс не идёт")

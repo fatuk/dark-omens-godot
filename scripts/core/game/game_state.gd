@@ -168,6 +168,14 @@ var gate_discard: Array = []
 var clue_deck: Array = []
 var clue_discard: Array = []
 
+# ── Сброс встреч: колода карточек корпуса ─────────────────────────────────────
+# sourceId уже вытянутых карточек CMS. Уходит в /encounters/draw полем exclude,
+# чтобы одна и та же встреча не выпадала дважды за партию. Свежих в подходящем
+# пуле не осталось — реле само возвращает сброс в колоду (пулы маленькие: девять
+# морских встреч, десять диких). Синкается: колода общая на партию, и подхватить
+# её должен любой, кто станет хостом.
+var encounter_discard: Array = []
+
 # Колода активов (синкается). Сброс НЕ хранится, а выводится — см. asset_discard_ids.
 var asset_deck: Array = []
 
@@ -337,6 +345,7 @@ const _SYNC_FIELDS: Array[String] = [
 	"clue_discard",
 	"clue_board_ids",
 	"clue_deck_built",
+	"encounter_discard",
 	"asset_deck",
 	"monster_surge",
 	"encounter_choices",
@@ -661,6 +670,7 @@ func start_game(players_init: Array) -> void:
 
 	players.clear()
 	turn_order.clear()
+	encounter_discard.clear()  # сброс встреч — на партию
 	current_encounter = {}
 	pending_spell_cast = {}
 	last_cast_result = {}
