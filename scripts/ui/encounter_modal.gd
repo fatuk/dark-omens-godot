@@ -40,6 +40,16 @@ var _revealed: bool = false
 var _outcome_shown: bool = false  # исход уже проявлен (фейд — только на появлении)
 var _outcome_tween: Tween = null
 
+# Смена узла ветвящейся встречи (врата/Тайна): stage 0 → ветка успеха/провала.
+# Узлы — разные сцены одной истории, поэтому меняем их не подменой текста, а
+# перекрёстным фейдом. _stage_key — отрисованный сейчас узел, _stage_fading —
+# идёт затухание старого (в это время текст НЕ трогаем, иначе гасили бы уже новый).
+const _STAGE_FADE_OUT: float = 0.18
+const _STAGE_FADE_IN: float = 0.3
+var _stage_key: String = ""
+var _stage_fading: bool = false
+var _stage_tween: Tween = null
+
 # Арт-подложка карточки встречи по типу локации (рамка/пропы запечены в ассет).
 const _BG_CITY: Texture2D = preload("res://assets/encounter/city.png")
 const _BG_SEA: Texture2D = preload("res://assets/encounter/sea.png")
@@ -222,6 +232,64 @@ func _play_outcome_in() -> void:
 	_outcome_tween.tween_property(_outcome, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE)
 
 
+# Гаснет весь старый узел, включая уже показанный исход; проявляется — только
+# заголовок с повествованием: на свежей стадии исход ещё скрыт, и появится он
+# своим фейдом (_play_outcome_in), когда осядут кубы.
+func _stage_out_nodes() -> Array:
+	return [_title.get_parent(), _main_text, _outcome]
+
+
+func _stage_in_nodes() -> Array:
+	return [_title.get_parent(), _main_text]
+
+
+# Затухание старого узла. По завершении снимаем флаг и просим перерисовку — там
+# ключ уже не совпадёт с _stage_key, узел отрисуется заново и проявится.
+func _play_stage_out() -> void:
+	if _stage_tween != null and _stage_tween.is_valid():
+		_stage_tween.kill()
+	_stage_fading = true
+	_stage_tween = create_tween()
+	_stage_tween.set_parallel(true)
+	for n: CanvasItem in _stage_out_nodes():
+		_stage_tween.tween_property(n, "modulate:a", 0.0, _STAGE_FADE_OUT).set_trans(
+			Tween.TRANS_SINE
+		)
+	_stage_tween.chain().tween_callback(
+		func() -> void:
+			_stage_fading = false
+			_stage_key = ""  # следующий рендер считает узел новым и проявит его
+			_refresh()
+	)
+
+
+# Страховка от «карточка осталась прозрачной»: затухание рассчитывает, что за ним
+# придёт перерисовка ветвящегося узла, но встреча могла закончиться прямо во время
+# фейда — тогда следующий рендер пошёл бы другой веткой, а альфа осталась нулевой.
+func _ensure_stage_opaque() -> void:
+	if _stage_fading:
+		return
+	for n: CanvasItem in _stage_out_nodes():
+		if n.modulate.a < 1.0:
+			n.modulate.a = 1.0
+
+
+func _play_stage_in() -> void:
+	if _stage_tween != null and _stage_tween.is_valid():
+		_stage_tween.kill()
+	# Исход гасили вместе со старым узлом — вернём ему непрозрачность, иначе он
+	# останется невидимым, если покажется без собственного фейда.
+	_outcome.modulate.a = 1.0
+	for n: CanvasItem in _stage_in_nodes():
+		n.modulate.a = 0.0
+	_stage_tween = create_tween()
+	_stage_tween.set_parallel(true)
+	for n: CanvasItem in _stage_in_nodes():
+		_stage_tween.tween_property(n, "modulate:a", 1.0, _STAGE_FADE_IN).set_trans(
+			Tween.TRANS_SINE
+		)
+
+
 # Арт карточки: за вратами — сцена Иного мира, иначе по типу локации. Заодно
 # подписываем верхнюю полосу именем мира — за вратами сыщик не на карте, и понять,
 # куда его занесло, больше неоткуда.
@@ -370,6 +438,8 @@ func _refresh() -> void:
 
 
 func _show_loading() -> void:
+	_ensure_stage_opaque()
+	_stage_key = ""  # встреча кончилась — следующая ветвящаяся начнётся с проявления
 	_title.text = "ENCOUNTER_TITLE"
 	_main_text.text = "ENCOUNTER_GENERATING"
 	for node: Control in [_roll_btn, _dice, _outcome, _finish_btn]:
@@ -381,6 +451,7 @@ func _show_loading() -> void:
 # Интерактивный выбор: подсказка + кнопка на каждую ветку pending_choice.options.
 # Клик → GameState.choose_effect(index); хост запишет выбор и доиграет коммит.
 func _show_choice(card: Dictionary) -> void:
+	_ensure_stage_opaque()
 	var pending: Dictionary = card.get("pending_choice", {})
 	var kind: String = String(pending.get("kind", "choice"))  # choice | target | monster
 	_title.text = _title_text(card)
@@ -441,6 +512,7 @@ func _on_choice_pressed(index: int) -> void:
 
 
 func _show_card(card: Dictionary) -> void:
+	_ensure_stage_opaque()
 	_title.text = _title_text(card)
 	_main_text.text = _main_or_stakes(card)
 	_roll_btn.text = "ENCOUNTER_ROLL"
@@ -463,6 +535,7 @@ func _on_roll_settled() -> void:
 
 
 func _show_outcome(card: Dictionary) -> void:
+	_ensure_stage_opaque()
 	var res: Dictionary = _chk()
 	var passed: bool = bool(res.get("passed", false))
 	_title.text = _title_text(card)
@@ -506,8 +579,20 @@ func _show_gate(card: Dictionary) -> void:
 	if node.is_empty():
 		_show_loading()
 		return
+	# Узел сменился (первая проверка → ветка) — гасим старый и выходим: текст
+	# перерисуется в колбэке затухания, оттуда же начнётся проявление нового.
+	var key: String = "%d|%s" % [stage, String(card.get("branch", ""))]
+	if _stage_fading:
+		return
+	if not _stage_key.is_empty() and key != _stage_key:
+		_play_stage_out()
+		return
+	var fresh: bool = _stage_key != key
+	_stage_key = key
 	_title.text = "%s  (%d/2)" % [_title_text(card), stage + 1]
 	_main_text.text = _main_or_stakes(node)
+	if fresh:
+		_play_stage_in()
 
 	if not _chk_rolled():
 		_roll_btn.text = "ENCOUNTER_ROLL"
