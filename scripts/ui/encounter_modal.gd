@@ -127,7 +127,7 @@ func _ready() -> void:
 	# рамки. Живёт НЕ в VBox, а прямо на карточке по якорям: у VBox свой верхний
 	# отступ под контент, и внутри него подпись не поднять выше, чем он начинается.
 	# Точная высота — _PLACE_TOP_FRAC в _resize_card.
-	_place = UIStyle.label("", UIStyle.MODAL_FS_LEAD, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_place = UIStyle.label("", UIStyle.MODAL_FS_HERO, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	_place.name = "Place"
 	_place.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	_place.mouse_filter = Control.MOUSE_FILTER_IGNORE
