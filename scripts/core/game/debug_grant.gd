@@ -54,6 +54,37 @@ static func open_gate(gs: Node, loc_id: String, color: String) -> String:
 	return "врата на %s" % opened
 
 
+# Виды встреч для консоли → (kind, siteSpecific) запроса. «local» — это та же
+# general, но привязанная к клетке (siteSpecific), отдельного kind у неё нет.
+# combat сюда не берём: бой не генерится из корпуса, он начинается от монстра на
+# клетке (см. EncounterFlow._begin_combat) — назначать его нечем.
+const ENCOUNTER_KINDS := {
+	"general": ["general", false],
+	"local": ["general", true],
+	"research": ["research", false],
+	"gate": ["gate", false],
+	"mystery": ["mystery", false],
+}
+
+
+# Назначить игроку встречу на его следующий ход встречи. Мир — только для gate:
+# штатно врата ведут в случайный мир, здесь можно прицелиться.
+static func assign_encounter(gs: Node, pid: String, kind: String, world: String) -> String:
+	if not (gs.get("players") as Dictionary).has(pid):
+		return "нет игрока «%s»" % pid
+	if not ENCOUNTER_KINDS.has(kind):
+		return "вид встречи: %s" % ", ".join(ENCOUNTER_KINDS.keys())
+	if not world.is_empty() and kind != "gate":
+		return "мир задаётся только для gate"
+	var pair: Array = ENCOUNTER_KINDS[kind]
+	var spec: Dictionary = {"kind": String(pair[0]), "siteSpecific": bool(pair[1])}
+	if not world.is_empty():
+		spec["world"] = world
+	(gs.get("_encounter") as EncounterFlow).debug_assign(pid, spec)
+	var where: String = " → %s" % world if not world.is_empty() else ""
+	return "следующая встреча %s: %s%s" % [String(gs.call("_name_of", pid)), kind, where]
+
+
 static func gain_condition(gs: Node, pid: String, cid: String) -> String:
 	if not (gs.get("players") as Dictionary).has(pid):
 		return "нет игрока «%s»" % pid

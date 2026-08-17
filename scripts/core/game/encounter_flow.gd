@@ -18,12 +18,30 @@ var _gs: Node
 # если два generate() как-то перекрылись.
 var _gen_token: int = 0
 
+# Встречи, назначенные из debug-консоли: pid → {kind, world, siteSpecific}. Хост-
+# локально, НЕ синкается (карты генерит только хост). Съедается первой же встречей
+# этого игрока — см. generate/debug_assign.
+var _forced: Dictionary = {}
+
 
 func _init(gs: Node) -> void:
 	_gs = gs
 
 
 # ── Public API (host-only) ───────────────────────────────────────────────────
+
+
+## Debug-консоль: назначить игроку встречу на его следующий ход встречи.
+## spec = {kind, world, siteSpecific}. Хост-локально и НЕ синкается — карты и так
+## генерит только хост, а клиентам достаётся готовая. Съедается первой же
+## сгенерированной встречей этого игрока.
+func debug_assign(pid: String, spec: Dictionary) -> void:
+	_forced[pid] = spec
+
+
+## Назначена ли игроку debug-встреча (её и сгенерируем, минуя выбор типа).
+func debug_assigned(pid: String) -> Dictionary:
+	return _forced.get(pid, {})
 
 
 ## Хост: сгенерировать карту встречи (kind) для игрока, чей сейчас ход на
@@ -35,6 +53,15 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 	var pid: String = _gs._current_pid()
 	if pid.is_empty() or not _gs.players.has(pid):
 		return
+
+	# Назначенная из консоли встреча перебивает выбранный тип и съедается сразу:
+	# повтор — только новой командой, иначе игрок застрял бы в одном типе.
+	var forced: Dictionary = _forced.get(pid, {})
+	if not forced.is_empty():
+		_forced.erase(pid)
+		kind = String(forced.get("kind", kind))
+		site_specific = bool(forced.get("siteSpecific", site_specific))
+		GameConsole.log("[Debug] встреча «%s» для %s" % [kind, _gs._name_of(pid)])
 
 	# Лента действий: тип не-боевой встречи (бой → _begin_combat, eldritch → _begin_eldritch_move).
 	var feed_id: String = {"research": "research", "gate": "gate", "mystery": "mystery"}.get(
@@ -61,6 +88,11 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 		return
 
 	var req: Dictionary = _build_request(_gs.players[pid], kind, site_specific)
+	# Мир врат штатно не задаём (за одними вратами каждый раз новый), но из консоли
+	# им можно прицелиться: реле по otherWorld отфильтрует пул.
+	var forced_world: String = String(forced.get("world", ""))
+	if not forced_world.is_empty():
+		req["otherWorld"] = forced_world
 	# Захватываем раунд — после долгого await тот же игрок может оказаться
 	# уже в новом раунде с новой встречей, и старый ответ нельзя писать.
 	var captured_round: int = _gs.round_num
@@ -115,6 +147,12 @@ func begin_turn() -> void:
 ## Не-боевая встреча: выбор типа (без combat) по содержимому клетки. Один вариант
 ## → генерим сразу; несколько → выставляем encounter_choices и ждём выбора.
 func _begin_noncombat(pid: String) -> void:
+	# Назначенная из консоли встреча минует выбор типа: иначе игроку показали бы
+	# меню, а получил бы он всё равно назначенное — выбор был бы ложным.
+	if not _forced.get(pid, {}).is_empty():
+		_gs.encounter_choices = []
+		generate()
+		return
 	var choices: Array = _compute_choices(pid)
 	choices.erase("combat")  # бой отыгрывается отдельно, не как выбор
 	if choices.size() <= 1:

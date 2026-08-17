@@ -2024,7 +2024,7 @@ func locations() -> Array:
 # приходит op + готовые id. Мутации (DebugGrant) идут ТЕМ ЖЕ хост-путём, что геймплей,
 # и синкают всем; гейт двойной (релиз ИЛИ не-хост → no-op). op: mypid | give_asset |
 # give_spell | spawn | gate | condition.
-func debug_exec(op: String, a: String = "", b: String = "") -> String:
+func debug_exec(op: String, a: String = "", b: String = "", c: String = "") -> String:
 	if op == "mypid":
 		return _nm.my_user_id
 	if not (OS.is_debug_build() and _is_host()):
@@ -2040,6 +2040,8 @@ func debug_exec(op: String, a: String = "", b: String = "") -> String:
 			return DebugGrant.open_gate(self, a, b)
 		"condition":
 			return DebugGrant.gain_condition(self, a, b)
+		"encounter":  # a=игрок, b=вид, c=мир (для gate)
+			return DebugGrant.assign_encounter(self, a, b, c)
 		_:
 			return "неизвестная debug-операция «%s»" % op
 

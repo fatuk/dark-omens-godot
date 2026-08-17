@@ -257,8 +257,8 @@ func _apply_place(world: String) -> void:
 		_place.visible = false
 		return
 	var key: String = "WORLD_" + _world_slug(world).replace("-", "_").to_upper()
-	var name: String = tr(key)
-	_place.text = world if name == key else name
+	var localized: String = tr(key)
+	_place.text = world if localized == key else localized
 	_place.visible = true
 
 

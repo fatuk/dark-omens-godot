@@ -27,6 +27,28 @@ var _tween: Tween = null
 const _SUGGEST_MAX := 8  # сколько подсказок показывать разом
 const _COLORS := ["green", "blue", "red"]  # цвета врат для gate
 
+# Виды встреч для `enc` (зеркало DebugGrant.ENCOUNTER_KINDS) и девять Иных миров
+# в каноничном написании — реле принимает только его (см. OTHER_WORLDS в relay).
+const _ENC_KINDS := {
+	"general": "общая встреча",
+	"local": "локационная (привязана к клетке)",
+	"research": "исследование (улика)",
+	"gate": "врата в Иной мир",
+	"mystery": "Тайна",
+}
+const _WORLDS := [
+	"Dreamlands",
+	"Yuggoth",
+	"The Abyss",
+	"The Underworld",
+	"City of the Great Race",
+	"Lost Carcosa",
+	"Great Hall of Celaeno",
+	"The Past",
+	"The Future",
+]
+const _WORLD_UNKNOWN := "?"  # _resolve_world: токен задан, но ни на что не похож
+
 # ── Публичный API ─────────────────────────────────────────────────────────────
 
 
@@ -277,6 +299,7 @@ const _COMMANDS := [
 	{"text": "spawn", "hint": "монстр на локации"},
 	{"text": "gate", "hint": "открыть врата"},
 	{"text": "cond", "hint": "наложить состояние"},
+	{"text": "enc", "hint": "назначить встречу игроку"},
 	{"text": "list", "hint": "список каталога"},
 	{"text": "who", "hint": "игроки"},
 	{"text": "clear", "hint": "очистить консоль"},
@@ -321,6 +344,10 @@ func _candidates(toks: Array, arg_index: int, editing: String) -> Array:
 			)
 		"cond", "condition":
 			return _players_cands() if arg_index == 1 else _as_cands(_condition_entries())
+		"enc", "encounter":
+			if arg_index == 1:
+				return _players_cands()
+			return _enc_kind_cands() if arg_index == 2 else _world_cands()
 		"spawn", "mon":
 			return _location_cands() if editing.begins_with("@") else _as_cands(_monster_entries())
 		"gate":
@@ -491,6 +518,8 @@ func _on_command_submitted(text: String) -> void:
 			_cmd_gate(args)
 		"cond", "condition":
 			_cmd_cond(args)
+		"enc", "encounter":
+			_cmd_enc(args)
 		_:
 			err("неизвестная команда «%s» — введите `help`" % cmd)
 	_scroll_bottom_deferred()  # вывод команды мог добавить строки — промотать вниз
@@ -503,6 +532,7 @@ func _cmd_help() -> void:
 	self.log("  spawn <монстр> [@локация]   — монстр на локации (по умолч. — твоя)")
 	self.log("  gate [@локация] [цвет]      — открыть врата (+1 монстр)")
 	self.log("  cond <игрок> <состояние>    — наложить состояние")
+	self.log("  enc <игрок> <вид> [мир]     — назначить встречу на следующий ход")
 	self.log("  list assets|spells|monsters|conditions|locations [фильтр]")
 	self.log("  who                         — игроки и их id/локации")
 	self.log("  clear                       — очистить консоль")
@@ -603,6 +633,55 @@ func _cmd_cond(args: Array) -> void:
 	if hit.is_empty():
 		return
 	self.log(GameState.debug_exec("condition", pid, String(hit["id"])))
+
+
+## Назначить игроку встречу на его следующий ход встречи: вид (general/local/
+## research/gate/mystery) и, для врат, конкретный Иной мир. Выбор типа встречи у
+## этого игрока при этом пропускается — иначе меню было бы ложным.
+func _cmd_enc(args: Array) -> void:
+	if args.size() < 2:
+		err("enc <игрок> <вид> [мир] — вид: %s" % ", ".join(_ENC_KINDS.keys()))
+		return
+	var pid: String = _resolve_pid(String(args[0]))
+	if pid.is_empty():
+		err("не нашёл игрока «%s» (см. `who`)" % args[0])
+		return
+	var kind: String = String(args[1]).to_lower()
+	# Мир может быть из нескольких слов («City of the Great Race») — склеиваем хвост
+	# и приводим к каноничному написанию: реле принимает только его.
+	var world: String = _resolve_world(_join(args.slice(2)))
+	if world == _WORLD_UNKNOWN:
+		err("миры: %s" % ", ".join(_WORLDS))
+		return
+	self.log(GameState.debug_exec("encounter", pid, kind, world))
+
+
+## Хвост команды → каноничное имя мира ("" если не задан, _WORLD_UNKNOWN если мимо).
+func _resolve_world(token: String) -> String:
+	var t: String = token.strip_edges()
+	if t.is_empty():
+		return ""
+	for w: String in _WORLDS:
+		if w.to_lower() == t.to_lower():
+			return w
+	for w: String in _WORLDS:
+		if w.to_lower().contains(t.to_lower()):
+			return w
+	return _WORLD_UNKNOWN
+
+
+func _enc_kind_cands() -> Array:
+	var out: Array = []
+	for k_v: Variant in _ENC_KINDS:
+		out.append({"text": String(k_v), "hint": String(_ENC_KINDS[k_v])})
+	return out
+
+
+func _world_cands() -> Array:
+	var out: Array = []
+	for w: String in _WORLDS:
+		out.append({"text": w, "hint": "Иной мир (только для gate)"})
+	return out
 
 
 # ── Резолв ────────────────────────────────────────────────────────────────────

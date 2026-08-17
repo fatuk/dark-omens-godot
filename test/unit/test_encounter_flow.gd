@@ -148,3 +148,58 @@ func test_discard_ignores_repeat_and_stubs() -> void:
 	assert_eq(ef._gs.encounter_discard.size(), 1, "повтор в сброс не дублируется")
 	ef._discard_encounter({"name": "Заглушка"})
 	assert_eq(ef._gs.encounter_discard.size(), 1, "заглушка без sourceId в сброс не идёт")
+
+
+# ── Назначение встречи из debug-консоли ───────────────────────────────────────
+
+
+class MockGSDebug:
+	extends Node
+	var players: Dictionary = {}
+	var _encounter: EncounterFlow
+
+	func _name_of(pid: String) -> String:
+		return pid
+
+
+func _debug_gs() -> MockGSDebug:
+	var gs: MockGSDebug = autofree(MockGSDebug.new())
+	gs.players["p"] = {}
+	gs.players["q"] = {}
+	gs._encounter = EncounterFlow.new(gs)
+	return gs
+
+
+func test_debug_assign_is_per_player() -> void:
+	var gs: MockGSDebug = _debug_gs()
+	gs._encounter.debug_assign("p", {"kind": "gate"})
+	assert_eq(String(gs._encounter.debug_assigned("p").get("kind", "")), "gate", "назначено p")
+	assert_true(gs._encounter.debug_assigned("q").is_empty(), "соседу ничего не назначено")
+
+
+func test_debug_assign_local_maps_to_site_specific() -> void:
+	# «local» — не отдельный kind, а general с привязкой к клетке.
+	var gs: MockGSDebug = _debug_gs()
+	DebugGrant.assign_encounter(gs, "p", "local", "")
+	var spec: Dictionary = gs._encounter.debug_assigned("p")
+	assert_eq(String(spec.get("kind", "")), "general", "kind запроса — general")
+	assert_true(bool(spec.get("siteSpecific", false)), "с привязкой к клетке")
+
+
+func test_debug_assign_world_only_for_gate() -> void:
+	var gs: MockGSDebug = _debug_gs()
+	var msg: String = DebugGrant.assign_encounter(gs, "p", "research", "Yuggoth")
+	assert_string_contains(msg, "только для gate", "мир не для врат — отказ")
+	assert_true(gs._encounter.debug_assigned("p").is_empty(), "ничего не назначено")
+	DebugGrant.assign_encounter(gs, "p", "gate", "Yuggoth")
+	assert_eq(String(gs._encounter.debug_assigned("p").get("world", "")), "Yuggoth", "мир врат лёг")
+
+
+func test_debug_assign_rejects_unknown_kind_and_player() -> void:
+	var gs: MockGSDebug = _debug_gs()
+	assert_string_contains(
+		DebugGrant.assign_encounter(gs, "p", "duel", ""), "вид встречи", "неизвестный вид"
+	)
+	assert_string_contains(
+		DebugGrant.assign_encounter(gs, "nobody", "gate", ""), "нет игрока", "нет такого игрока"
+	)
