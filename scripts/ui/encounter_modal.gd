@@ -15,6 +15,7 @@ extends CanvasLayer
 @onready var _panel: Control = %Panel  # карточка ФИКС-размера (не растёт под контент)
 @onready var _vbox: VBoxContainer = %VBox
 var _title: Label  # заголовок с шевронами (ставится в _ready вместо плоского %Title)
+var _place: Label  # где мы: имя Иного мира в верхней полосе карточки (создаётся в _ready)
 @onready var _main_text: Label = %MainText
 @onready var _roll_btn: Button = %RollBtn
 @onready var _dice: Label = %Dice
@@ -119,6 +120,22 @@ func _ready() -> void:
 	vbox.add_child(top_spacer)
 	vbox.move_child(top_spacer, 0)  # распорка — самой первой, над всем контентом
 
+	# Где мы находимся — в самой верхней полосе карточки, НАД распоркой, чтобы стояла
+	# у верхнего края и не ездила вслед за текстом. Пока заполняется только за
+	# вратами: имя Иного мира (в реальной локации сцена и так узнаётся по арту).
+	_place = UIStyle.label("", UIStyle.MODAL_FS_LEAD, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_place.name = "Place"
+	# Верх арта у миров разный — у Страны снов там светлое небо, у Юггота тьма.
+	# Приглушённый цвет там терялся, поэтому акцентный + тёмная тень под буквами
+	# (тот же приём, что у подписей на карточке сыщика).
+	_place.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	_place.add_theme_constant_override("shadow_offset_x", 1)
+	_place.add_theme_constant_override("shadow_offset_y", 1)
+	_place.add_theme_constant_override("shadow_outline_size", 3)
+	_place.visible = false
+	vbox.add_child(_place)
+	vbox.move_child(_place, 0)
+
 	_roll_btn.pressed.connect(_on_roll_pressed)
 	_finish_btn.pressed.connect(_on_finish_pressed)
 
@@ -193,12 +210,15 @@ func _play_outcome_in() -> void:
 	_outcome_tween.tween_property(_outcome, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE)
 
 
-# Арт карточки: за вратами — сцена Иного мира, иначе по типу локации.
+# Арт карточки: за вратами — сцена Иного мира, иначе по типу локации. Заодно
+# подписываем верхнюю полосу именем мира — за вратами сыщик не на карте, и понять,
+# куда его занесло, больше неоткуда.
 func _apply_background() -> void:
 	if _bg == null:
 		return
 	var card: Dictionary = GameState.current_encounter
 	var world: String = String(card.get("otherWorld", ""))
+	_apply_place(world)
 	# Врата без мира — дефект контента (в админке у карточки не проставлена ось
 	# world), а не отсутствие арта: молча покажется фон по типу реальной локации.
 	# Ругаемся один раз на карту, а не на каждый синк.
@@ -212,6 +232,22 @@ func _apply_background() -> void:
 		tex = _bg_texture(GameState.location_type(loc))
 	if _bg.texture != tex:
 		_bg.texture = tex
+
+
+# Подпись «где мы» в верхней полосе: имя Иного мира. Ключ перевода выводим из имени
+# («City of the Great Race» → WORLD_CITY_OF_THE_GREAT_RACE), как и файл арта, чтобы
+# новый мир подхватывался строкой в translations.csv без правок кода. Перевода нет —
+# tr() вернёт сам ключ, поэтому в этом случае показываем исходное имя.
+func _apply_place(world: String) -> void:
+	if _place == null:
+		return
+	if world.is_empty():
+		_place.visible = false
+		return
+	var key: String = "WORLD_" + _world_slug(world).replace("-", "_").to_upper()
+	var name: String = tr(key)
+	_place.text = world if name == key else name
+	_place.visible = true
 
 
 # Арт фона по типу локации (city.type из locations.json: city|sea|wilderness).
