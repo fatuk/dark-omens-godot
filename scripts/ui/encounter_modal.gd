@@ -58,6 +58,11 @@ const _TEXT_WIDTH_FRAC: float = 0.65  # ширина колонки текста
 
 var _bg: TextureRect  # арт-фон карточки (меняем текстуру по типу локации)
 
+# Сцены Иных миров лежат отдельно и подхватываются по имени мира — см. _world_texture.
+const _OTHER_WORLD_DIR: String = "res://assets/other-world/"
+
+var _world_bg_cache: Dictionary = {}  # мир → Texture2D|null, чтобы не дёргать диск
+
 # Навык → ключ перевода для подписи проверки.
 
 
@@ -181,12 +186,14 @@ func _play_outcome_in() -> void:
 	_outcome_tween.tween_property(_outcome, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE)
 
 
-# Арт карточки по типу локации активной встречи. Пока все типы → город.
+# Арт карточки: за вратами — сцена Иного мира, иначе по типу локации.
 func _apply_background() -> void:
 	if _bg == null:
 		return
-	var loc: String = String(GameState.my_player().get("location", ""))
-	var tex: Texture2D = _bg_texture(GameState.location_type(loc))
+	var tex: Texture2D = _world_texture(String(GameState.current_encounter.get("otherWorld", "")))
+	if tex == null:
+		var loc: String = String(GameState.my_player().get("location", ""))
+		tex = _bg_texture(GameState.location_type(loc))
 	if _bg.texture != tex:
 		_bg.texture = tex
 
@@ -200,6 +207,36 @@ func _bg_texture(loc_type: String) -> Texture2D:
 			return _BG_WILDERNESS
 		_:
 			return _BG_CITY
+
+
+# Арт Иного мира по имени из карты встречи (relay кладёт его в otherWorld —
+# фиксированный набор из девяти миров). Файл ищем по слагу имени, поэтому новый
+# мир достаточно положить в assets/other-world/ и код править не надо. Нет
+# файла — null, и вызывающий откатится на арт по типу локации.
+func _world_texture(world: String) -> Texture2D:
+	if world.is_empty():
+		return null
+	if _world_bg_cache.has(world):
+		return _world_bg_cache[world]
+	var path: String = _OTHER_WORLD_DIR + _world_slug(world) + ".png"
+	var tex: Texture2D = load(path) as Texture2D if ResourceLoader.exists(path) else null
+	if tex == null:
+		GameConsole.log("[Встреча] нет арта Иного мира «%s» (ждём %s)" % [world, path])
+	_world_bg_cache[world] = tex
+	return tex
+
+
+# «City of the Great Race» → «city-of-the-great-race»: латиница и цифры как есть,
+# всё прочее — дефис, повторы схлопываем.
+static func _world_slug(world: String) -> String:
+	var out: String = ""
+	for ch: String in world.to_lower():
+		var ok: bool = (ch >= "a" and ch <= "z") or (ch >= "0" and ch <= "9")
+		if ok:
+			out += ch
+		elif not out.ends_with("-"):
+			out += "-"
+	return out.trim_prefix("-").trim_suffix("-")
 
 
 # Активная проверка встречи (единая, CheckFlow), если она относится к встрече.
