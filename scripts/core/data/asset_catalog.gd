@@ -171,6 +171,18 @@ static func has_standalone_action(a: Dictionary) -> bool:
 	return not standalone_action(a).is_empty()
 
 
+## Есть ли у актива мод под КОНКРЕТНУЮ проверку: по контексту, навыку шага и таймингу
+## (усиление пула — только до броска, работа с результатом — только после). Зеркалит
+## фильтр CheckFlow.activate, чтобы UI не предлагал розыгрыш туда, откуда вернут false.
+static func fits_check(a: Dictionary, context: String, skill: String, rolled: bool) -> bool:
+	var mods: Array = action_check_mods(a, context).duplicate()
+	mods.append_array(passive_check_mods(a, context))
+	for m_v: Variant in mods:
+		if Dice.mod_skill_ok(m_v, skill) and Dice.mod_is_pre_roll(m_v) != rolled:
+			return true
+	return false
+
+
 static func action_check_mods(a: Dictionary, context: String) -> Array:
 	var out: Array = []
 	var action: Array = (a.get("effect", {}) as Dictionary).get("action", [])

@@ -420,9 +420,14 @@ func _build_hand_carousel() -> void:
 			var it: Variant = items[idx]
 			if not (it is Dictionary) or String((it as Dictionary).get("kind", "")) != "spell":
 				# Карточка с тегом "action" играется как ОТДЕЛЬНОЕ действие фазы, а не
-				# как модификатор проверки (у тех нет своей программы).
+				# как модификатор проверки (у тех нет своей программы). Но если идёт
+				# проверка и карта ей подходит — она играется В ПРОВЕРКУ: у «Охотника на
+				# монстров» есть и действие, и пассив +2 Силы в бою, а в бою действие не
+				# потратить, и клик уходил в никуда.
 				var entry: Dictionary = AssetCatalog.by_id(AssetCatalog.entry_id(it as Dictionary))
-				if AssetCatalog.has_standalone_action(entry):
+				var cur: Dictionary = GameState.current_check()
+				var to_check: bool = not cur.is_empty() and _asset_fits_check(entry, cur)
+				if not to_check and AssetCatalog.has_standalone_action(entry):
 					GameState.perform_action(GameActions.ASSET_ACTION, {"item": idx})
 					return
 				# В параллельной Расплате проверка лежит в per-player слоте, а не в
@@ -557,28 +562,33 @@ func _card_applicable_now(pcard: Dictionary) -> bool:
 	# current_check, а не active_check: в Расплате проверка лежит в per-player слоте,
 	# и по пустому active_check веер показывал ВСЕ карты применимыми.
 	var c: Dictionary = GameState.current_check()
+	var asset: Dictionary = AssetCatalog.by_id(String(pcard.get("id", "")))
+	# Идёт проверка и у карты есть подходящий ей мод — играется В ПРОВЕРКУ. Этот
+	# случай ПЕРВЕЕ самостоятельного действия: «Охотник на монстров» умеет и то, и
+	# другое (пассив +2 Силы в бою и действие «монстр теряет 1 здоровье»), и пока
+	# ветка действия стояла выше, в бою карта считалась неиграбельной — действие в
+	# бою не потратить, а до пассива дело не доходило.
+	if not c.is_empty() and (asset.is_empty() or _asset_fits_check(asset, c)):
+		return true
 	# Актив с самостоятельным действием (тег "action") играется отдельным действием
 	# фазы — он применим и вне проверки, лишь бы был ход и осталось действие. Плюс
 	# гварды самой карты (истощена, бить некого) — тот же can_play, что у хоста.
-	if AssetCatalog.has_standalone_action(AssetCatalog.by_id(String(pcard.get("id", "")))):
+	if AssetCatalog.has_standalone_action(asset):
 		return _can_spend_action() and GameState.can_play_asset(int(pcard.get("item_index", -1)))
 	# Прочие активы вне проверки сыграть НЕКУДА: activate_card ведёт либо в боевой
 	# триггер (проверен выше), либо в CheckFlow.activate, которому нужна проверка.
 	# Раньше тут стоял «true», и в фазе действий вся рука светилась играбельной.
-	if c.is_empty():
-		return false
-	var asset: Dictionary = AssetCatalog.by_id(String(pcard.get("id", "")))
-	if asset.is_empty():
-		return true
-	var ctx: String = String(c.get("context", ""))
-	var skill: String = String(c.get("skill", ""))
-	var rolled: bool = bool(c.get("rolled", false))
-	var mods: Array = AssetCatalog.action_check_mods(asset, ctx).duplicate()
-	mods.append_array(AssetCatalog.passive_check_mods(asset, ctx))
-	for m_v: Variant in mods:
-		if Dice.mod_skill_ok(m_v, skill) and Dice.mod_is_pre_roll(m_v) != rolled:
-			return true
 	return false
+
+
+# Подходит ли актив ЭТОЙ проверке — тот же фильтр, что у хоста (AssetCatalog.fits_check).
+func _asset_fits_check(asset: Dictionary, c: Dictionary) -> bool:
+	return AssetCatalog.fits_check(
+		asset,
+		String(c.get("context", "")),
+		String(c.get("skill", "")),
+		bool(c.get("rolled", false))
+	)
 
 
 # Веер «Жетоны»: по одному элементу на жетон концентрации/улики. Доступен, когда у

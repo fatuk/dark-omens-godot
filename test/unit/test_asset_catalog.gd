@@ -58,3 +58,36 @@ func test_supported_ids_excludes_unsupported() -> void:
 	assert_does_not_have(ids, "bandages")
 	assert_does_not_have(ids, "arcane_tome")
 	assert_true(ids.size() > 120, "большинство карт (131) поддержано: %d" % ids.size())
+
+
+# ── fits_check: подходит ли карта конкретной проверке ──────────────────────────
+#
+# «Охотник на монстров» умеет ДВА разных розыгрыша: пассив whileOwned (+2 Силы в
+# бою) и самостоятельное действие (монстр теряет 1 здоровье). В бою действие не
+# потратить — там нет фазы действий, — но пассив применим. Веер и маршрут клика
+# опирались только на has_standalone_action и считали карту неиграбельной.
+
+
+func test_fits_check_ally_with_standalone_action() -> void:
+	var a: Dictionary = AssetCatalog.by_id("monster_hunter")
+	assert_true(AssetCatalog.has_standalone_action(a), "у карты есть и самостоятельное действие")
+	assert_true(
+		AssetCatalog.fits_check(a, "combatEncounter", "strength", false),
+		"пассив +2 Силы подходит шагу Силы до броска"
+	)
+
+
+func test_fits_check_rejects_wrong_step_context_and_timing() -> void:
+	var a: Dictionary = AssetCatalog.by_id("monster_hunter")
+	assert_false(
+		AssetCatalog.fits_check(a, "combatEncounter", "will", false),
+		"на шаге Воли карта Силы не применима"
+	)
+	assert_false(
+		AssetCatalog.fits_check(a, "combatEncounter", "strength", true),
+		"усиление пула — только ДО броска"
+	)
+	assert_false(
+		AssetCatalog.fits_check(a, "", "strength", false),
+		"вне боевой встречи бонус не действует (context combatEncounter)"
+	)
