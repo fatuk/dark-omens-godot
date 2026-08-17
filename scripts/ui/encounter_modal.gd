@@ -75,6 +75,12 @@ func _ready() -> void:
 	for b: Button in [_roll_btn, _finish_btn]:
 		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		b.custom_minimum_size.x = _BTN_MIN_WIDTH
+	# Размеры — ступени лесенки UIStyle (в сцене не хардкодим): повествование и исход
+	# читаются как основной текст, строка успехов — подпись. Те же ступени, что у
+	# encounter_watch_modal, где эту же встречу видят зрители.
+	_main_text.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+	_outcome.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+	_dice.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
 	_main_text.add_theme_color_override("font_color", UIColors.TEXT)
 	# Текст (основной + исход) — узкой колонкой по центру, не на всю ширину карточки.
 	# Ширина задаётся в _resize_card; SHRINK_CENTER центрирует колонку, автоперенос — по ней.
@@ -123,7 +129,7 @@ func _ready() -> void:
 # Возвращает внутренний Label — в него пишем текст встречи (_title.text = …).
 func _install_ornate_title() -> Label:
 	var placeholder: Label = %Title
-	var ot: HBoxContainer = UIStyle.ornate_title("", 22, UIColors.ACCENT)
+	var ot: HBoxContainer = UIStyle.ornate_title("", UIStyle.MODAL_FS_TITLE, UIColors.ACCENT)
 	var vbox: Node = placeholder.get_parent()
 	var at: int = placeholder.get_index()
 	vbox.add_child(ot)
