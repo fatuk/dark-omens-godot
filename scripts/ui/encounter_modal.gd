@@ -69,6 +69,10 @@ const _TEXT_WIDTH_FRAC: float = 0.65  # ширина колонки текста
 # Высота подписи «где мы» — доля высоты карточки от её верха. Метится в полосу под
 # «глазом» рамки и НАД резной гирляндой, поэтому меньше верхнего отступа контента.
 const _PLACE_TOP_FRAC: float = 0.018
+# Рамка запечена в арт и у миров нарисована по-своему: у Юггота «глаз» опущен, и
+# на общей высоте подпись садилась прямо на него. Мир, которого тут нет, берёт
+# общую высоту — новый арт достаточно положить в папку, как и раньше.
+const _PLACE_TOP_BY_WORLD := {"Yuggoth": 0.055}
 
 var _bg: TextureRect  # арт-фон карточки (меняем текстуру по типу локации)
 
@@ -77,6 +81,8 @@ const _OTHER_WORLD_DIR: String = "res://assets/other-world/"
 
 var _world_bg_cache: Dictionary = {}  # мир → Texture2D|null, чтобы не дёргать диск
 var _warned_card: String = ""  # id карты, по которой уже ругались на пустой мир
+var _card_h: float = 0.0  # высота карточки из _resize_card — для высоты подписи
+var _place_frac: float = _PLACE_TOP_FRAC  # доля высоты у ТЕКУЩЕГО мира
 
 # Навык → ключ перевода для подписи проверки.
 
@@ -219,8 +225,8 @@ func _resize_card() -> void:
 	_main_text.custom_minimum_size.x = text_w
 	_outcome.custom_minimum_size.x = text_w
 	# Подпись «где мы» висит на якорях карточки, а не в VBox — двигаем сами.
-	if _place != null:
-		_place.offset_top = h * _PLACE_TOP_FRAC
+	_card_h = h
+	_position_place()
 
 
 # Плавное проявление текста исхода (успех/провал) при его добавлении.
@@ -318,6 +324,13 @@ func _apply_background() -> void:
 # («City of the Great Race» → WORLD_CITY_OF_THE_GREAT_RACE), как и файл арта, чтобы
 # новый мир подхватывался строкой в translations.csv без правок кода. Перевода нет —
 # tr() вернёт сам ключ, поэтому в этом случае показываем исходное имя.
+# Высота подписи «где мы»: общая, либо своя у мира с иначе нарисованной рамкой.
+func _position_place() -> void:
+	if _place == null or _card_h <= 0.0:
+		return
+	_place.offset_top = _card_h * _place_frac
+
+
 func _apply_place(world: String) -> void:
 	if _place == null:
 		return
@@ -328,6 +341,8 @@ func _apply_place(world: String) -> void:
 	var localized: String = tr(key)
 	_place.text = world if localized == key else localized
 	_place.visible = true
+	_place_frac = float(_PLACE_TOP_BY_WORLD.get(world, _PLACE_TOP_FRAC))
+	_position_place()
 
 
 # Арт фона по типу локации (city.type из locations.json: city|sea|wilderness).
