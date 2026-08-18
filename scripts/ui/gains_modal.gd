@@ -8,6 +8,9 @@ extends CanvasLayer
 ## стирает запись через GameState.dismiss_gains(), поэтому окно не всплывает
 ## повторно на следующем синке. Строится кодом, монтируется из world_map.
 
+# Ширина окна. Без неё панель ужималась по содержимому — на паре жетонов выходило
+# 248 px, заголовок переносился на две строки, и окно смотрелось узкой полоской.
+const _MIN_W: float = 496.0
 const _CARD_H: float = 210.0  # высота миниатюры карты в окне
 const _CARD_FULL_H: float = 520.0  # карту строим в полный рост и ужимаем (как в info_bar)
 const _TOKEN_H: float = 52.0  # высота жетона-иконки в ряду
@@ -54,6 +57,7 @@ func _build() -> void:
 
 	_panel = PanelContainer.new()
 	_panel.name = "Panel"
+	_panel.custom_minimum_size.x = _MIN_W
 	UIStyle.style_modal_panel(_panel)
 	center.add_child(_panel)
 
