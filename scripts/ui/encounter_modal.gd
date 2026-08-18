@@ -37,8 +37,14 @@ var _pending_n: int = -1  # сколько рубашек показано до 
 var _revealed: bool = false
 
 # Анимации: карточка «выплывает» при показе; текст исхода плавно проявляется.
+const _OUTCOME_FADE: float = 0.35  # проявление текста исхода
+const _OUTCOME_GROW: float = 0.3  # раздвигание блока под него
 var _outcome_shown: bool = false  # исход уже проявлен (фейд — только на появлении)
 var _outcome_tween: Tween = null
+# Обойма исхода: Label в VBox нельзя сжать ниже его содержимого, поэтому высоту
+# анимируем не у него, а у клипающего контейнера вокруг. Пока её нет, появление
+# исхода мгновенно раздвигало блок — текст встречи скачком уезжал вверх.
+var _outcome_slot: Control
 
 # Смена узла ветвящейся встречи (врата/Тайна): stage 0 → ветка успеха/провала.
 # Узлы — разные сцены одной истории, поэтому меняем их не подменой текста, а
@@ -131,6 +137,19 @@ func _ready() -> void:
 
 	# Исход (успех/провал) — сразу ПОД основным текстом (продолжением), своим цветом.
 	vbox.move_child(_outcome, _main_text.get_index() + 1)
+	_outcome_slot = Control.new()
+	_outcome_slot.name = "OutcomeSlot"
+	_outcome_slot.clip_contents = true  # растём от нуля — лишнее прячем, а не толкаем
+	_outcome_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_outcome_slot.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var out_at: int = _outcome.get_index()
+	vbox.add_child(_outcome_slot)
+	vbox.move_child(_outcome_slot, out_at)
+	vbox.remove_child(_outcome)
+	_outcome_slot.add_child(_outcome)
+	_outcome.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	# Прячут исход из многих мест — вместо правки каждого схлопываем обойму по сигналу.
+	_outcome.visibility_changed.connect(_on_outcome_visibility)
 	# Верхняя распорка (EXPAND): блок «текст + нижняя группа» прижат к НИЗУ карточки.
 	# Нижняя группа (проверка · кубы · кнопка) стоит у низа НЕПОДВИЖНО; при длинном
 	# тексте распорка сжимается и ТЕКСТ поднимается вверх (заходя на верхний арт), а не
@@ -224,6 +243,14 @@ func _resize_card() -> void:
 	var text_w: float = w * _TEXT_WIDTH_FRAC
 	_main_text.custom_minimum_size.x = text_w
 	_outcome.custom_minimum_size.x = text_w
+	if _outcome_slot != null:
+		_outcome_slot.custom_minimum_size.x = text_w
+		# Колонка стала уже/шире — исход перевёрстан, обойме нужна новая высота. Но не
+		# в разгар анимации: там высоту ведёт твин, и снап оборвал бы её на полпути.
+		var growing: bool = _outcome_tween != null and _outcome_tween.is_valid()
+		if _outcome.visible and not growing:
+			_outcome_slot.custom_minimum_size.y = _outcome_height()
+			_outcome.offset_bottom = _outcome_slot.custom_minimum_size.y
 	# Подпись «где мы» висит на якорях карточки, а не в VBox — двигаем сами.
 	_card_h = h
 	_position_place()
@@ -234,8 +261,37 @@ func _play_outcome_in() -> void:
 	if _outcome_tween != null and _outcome_tween.is_valid():
 		_outcome_tween.kill()
 	_outcome.modulate.a = 0.0
+	# Блок раздвигается вместе с проявлением: обойма растёт от нуля до высоты
+	# текста, поэтому текст встречи уезжает вверх плавно, а не скачком.
+	var h: float = _outcome_height()
+	_outcome.offset_bottom = h  # внутри обоймы Label по якорям — высоту задаём сами
+	_outcome_slot.custom_minimum_size.y = 0.0
 	_outcome_tween = create_tween()
-	_outcome_tween.tween_property(_outcome, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE)
+	_outcome_tween.set_parallel(true)
+	_outcome_tween.tween_property(_outcome, "modulate:a", 1.0, _OUTCOME_FADE).set_trans(
+		Tween.TRANS_SINE
+	)
+	(
+		_outcome_tween
+		. tween_property(_outcome_slot, "custom_minimum_size:y", h, _OUTCOME_GROW)
+		. set_trans(Tween.TRANS_CUBIC)
+		. set_ease(Tween.EASE_OUT)
+	)
+
+
+# Естественная высота текста исхода при текущей ширине колонки.
+func _outcome_height() -> float:
+	return _outcome.get_combined_minimum_size().y
+
+
+# Исход спрятали — обойма схлопывается сразу: держать пустое место незачем.
+func _on_outcome_visibility() -> void:
+	if _outcome_slot == null:
+		return
+	if not _outcome.visible:
+		if _outcome_tween != null and _outcome_tween.is_valid():
+			_outcome_tween.kill()
+		_outcome_slot.custom_minimum_size.y = 0.0
 
 
 # Гаснет весь старый узел, включая уже показанный исход; проявляется — только
