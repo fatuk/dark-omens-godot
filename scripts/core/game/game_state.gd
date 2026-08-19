@@ -1756,6 +1756,9 @@ func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -
 	# Если отвалился сыщик, чьей видимой проверки ждёт корутина (Расплата или
 	# mythos-driver test) — будим её «провалом». Сама парковка после пробуждения
 	# видит connected=false и мгновенно дренирует остаток карт, не зависая.
+	# Именно провал, а не бросок за него: решение по игре — партия должна быть
+	# тяжёлой, и уход не даёт шанса выкрутиться. Выбор из вариантов — другое дело,
+	# там берём случайный (host_apply_absent_decision).
 	var awaiting_check: bool = (
 		String(pending_check.get("pid", "")) == uid
 		or players[uid].has("reckoning_pending")
