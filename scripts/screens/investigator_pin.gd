@@ -13,8 +13,15 @@ const FRAME_TEX: Texture2D = preload("res://assets/map/avatar-pin.png")
 
 # Ореол хода: золото под цвет рамки, заметно ярче фона карты и НЕ лаймовый —
 # лайм уже занят подсветкой выделения (SelectionIndicator), путать нельзя.
-const GLOW_COLOR: Color = Color(0.85, 0.71, 0.32, 0.85)
-const _GLOW_SPREAD: float = 1.55  # насколько ореол крупнее карточки
+# static var, а не const: тюнинг-панель крутит их вживую (см. GROUP/refresh_glow).
+const GLOW_RGB: Color = Color(0.85, 0.71, 0.32)
+static var GLOW_ALPHA: float = 0.85  # яркость в самой плотной части
+static var GLOW_SPREAD: float = 1.55  # насколько ореол крупнее карточки
+static var GLOW_PULSE_SPEED: float = 2.4  # скорость дыхания, рад/с
+static var GLOW_PULSE_AMOUNT: float = 0.25  # глубина дыхания (0 — ровное свечение)
+
+## Группа всех пинов на карте — тюнинг-панель через неё переприменяет параметры.
+const GROUP := "investigator_pins"
 
 # Ореол вокруг карточки: сплошная заливка ВНУТРИ силуэта (её всё равно закрывает
 # портрет с рамкой) и затухание наружу. Расстояние считаем от ПОЗИЦИИ ВЕРШИНЫ, а
@@ -30,10 +37,12 @@ varying vec2 v_local;
 void vertex() {
 	v_local = VERTEX;
 }
+uniform float pulse_speed;
+uniform float pulse_amount;
 void fragment() {
 	float d = length(v_local / half_size);
 	float a = 1.0 - smoothstep(edge, 1.0, d);
-	a *= 0.75 + 0.25 * sin(TIME * 2.4);
+	a *= (1.0 - pulse_amount) + pulse_amount * sin(TIME * pulse_speed);
 	COLOR = vec4(glow.rgb, glow.a * a);
 }
 """
@@ -79,6 +88,10 @@ func _persp(p: Vector2) -> Vector2:
 	var sx: float = lerpf(1.0, PERSP_BOT_SCALE, t)
 	var y_squash: float = lerpf(0.0, PERSP_BOT_SQUASH, t) * CARD_H * 0.5
 	return Vector2(p.x * sx, p.y - y_squash)
+
+
+func _ready() -> void:
+	add_to_group(GROUP)
 
 
 func setup(portrait: Texture2D) -> void:
@@ -156,8 +169,8 @@ func set_active(active: bool) -> void:
 		return
 	if is_instance_valid(_turn_glow):
 		return
-	var hw: float = CARD_W * 0.5 * _GLOW_SPREAD
-	var hh: float = CARD_H * 0.5 * _GLOW_SPREAD
+	var hw: float = CARD_W * 0.5 * GLOW_SPREAD
+	var hh: float = CARD_H * 0.5 * GLOW_SPREAD
 	_turn_glow = Polygon2D.new()
 	_turn_glow.name = "TurnGlow"
 	_turn_glow.z_index = -1  # под портретом и рамкой
@@ -174,13 +187,28 @@ func set_active(active: bool) -> void:
 	var sh := Shader.new()
 	sh.code = _GLOW_SHADER
 	_turn_mat.shader = sh
-	_turn_mat.set_shader_parameter(
-		"glow", Vector4(GLOW_COLOR.r, GLOW_COLOR.g, GLOW_COLOR.b, GLOW_COLOR.a)
-	)
-	_turn_mat.set_shader_parameter("edge", 1.0 / _GLOW_SPREAD)
-	_turn_mat.set_shader_parameter("half_size", Vector2(hw, hh))
 	_turn_glow.material = _turn_mat
+	_apply_glow_params(hw, hh)
 	add_child(_turn_glow)
+
+
+# Параметры ореола в материал. Отдельно от сборки — их же переприменяет
+# refresh_glow, когда тюнинг-панель подвинула ползунок.
+func _apply_glow_params(hw: float, hh: float) -> void:
+	_turn_mat.set_shader_parameter("glow", Vector4(GLOW_RGB.r, GLOW_RGB.g, GLOW_RGB.b, GLOW_ALPHA))
+	_turn_mat.set_shader_parameter("edge", 1.0 / GLOW_SPREAD)
+	_turn_mat.set_shader_parameter("half_size", Vector2(hw, hh))
+	_turn_mat.set_shader_parameter("pulse_speed", GLOW_PULSE_SPEED)
+	_turn_mat.set_shader_parameter("pulse_amount", GLOW_PULSE_AMOUNT)
+
+
+## Тюнинг-панель подвинула ползунок — пересобираем ореол (размах меняет геометрию
+## полигона, поэтому проще собрать заново, чем править точки).
+func refresh_glow() -> void:
+	if not is_instance_valid(_turn_glow):
+		return
+	set_active(false)
+	set_active(true)
 
 
 ## Мёртвый сыщик (Тень) — портрет ч/б. Рамка остаётся цветной.

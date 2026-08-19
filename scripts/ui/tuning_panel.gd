@@ -1335,6 +1335,43 @@ func _build_specs() -> Array:
 			"default": MapLayer.SHADOW_OFFSET_Y,
 			"set": _set_shadow_dy
 		},
+		{"section": "КАРТА · ОРЕОЛ ХОДА"},
+		{
+			"key": "turn_glow_alpha",
+			"label": "Яркость",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": InvestigatorPin.GLOW_ALPHA,
+			"set": _set_turn_glow_alpha
+		},
+		{
+			"key": "turn_glow_spread",
+			"label": "Размах",
+			"min": 1.05,
+			"max": 2.5,
+			"step": 0.05,
+			"default": InvestigatorPin.GLOW_SPREAD,
+			"set": _set_turn_glow_spread
+		},
+		{
+			"key": "turn_glow_pulse_speed",
+			"label": "Скорость пульсации",
+			"min": 0.0,
+			"max": 8.0,
+			"step": 0.1,
+			"default": InvestigatorPin.GLOW_PULSE_SPEED,
+			"set": _set_turn_glow_pulse_speed
+		},
+		{
+			"key": "turn_glow_pulse_amount",
+			"label": "Глубина пульсации",
+			"min": 0.0,
+			"max": 0.6,
+			"step": 0.01,
+			"default": InvestigatorPin.GLOW_PULSE_AMOUNT,
+			"set": _set_turn_glow_pulse_amount
+		},
 		{"section": "КАРТА · ПАНОРАМИРОВАНИЕ"},
 		{
 			"key": "map_friction",
@@ -2520,3 +2557,31 @@ func _set_shadow_dy(v: float) -> void:
 func _set_shadow_spread(v: float) -> void:
 	MapLayer.SHADOW_SPREAD = v
 	_refresh_map_shadows()
+
+
+# ── Карта: ореол «сейчас ходит» на пине сыщика ────────────────────────────────
+
+
+func _refresh_turn_glow() -> void:
+	for p: Node in get_tree().get_nodes_in_group(InvestigatorPin.GROUP):
+		p.call("refresh_glow")
+
+
+func _set_turn_glow_alpha(v: float) -> void:
+	InvestigatorPin.GLOW_ALPHA = v
+	_refresh_turn_glow()
+
+
+func _set_turn_glow_spread(v: float) -> void:
+	InvestigatorPin.GLOW_SPREAD = v
+	_refresh_turn_glow()
+
+
+func _set_turn_glow_pulse_speed(v: float) -> void:
+	InvestigatorPin.GLOW_PULSE_SPEED = v
+	_refresh_turn_glow()
+
+
+func _set_turn_glow_pulse_amount(v: float) -> void:
+	InvestigatorPin.GLOW_PULSE_AMOUNT = v
+	_refresh_turn_glow()
