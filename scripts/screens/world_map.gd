@@ -760,7 +760,10 @@ func _pan_camera_to(target: Vector2) -> void:
 		tx -= MapLayer.TILE_W
 	elif dx < -MapLayer.TILE_W * 0.5:
 		tx += MapLayer.TILE_W
-	var dest := Vector2(tx, target.y)
+	# Вертикаль клампим ДО твина, а не после: у полярной локации центр кадра лежит
+	# за краем карты, твин уводил камеру туда, и _apply_bounds в конце дёргал её
+	# обратно. На дальнем зуме рывок доходил до 1080 px.
+	var dest := Vector2(tx, _clamp_cam_y(target.y))
 	var tw := create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.tween_property(_camera, "position", dest, 0.6)
 	await tw.finished
@@ -1199,6 +1202,16 @@ func _set_zoom(value: float) -> void:
 # ── Границы и горизонтальная бесконечность ────────────────────────────────────
 
 
+# Допустимая высота центра камеры: полкадра от края карты сверху и снизу. Полоса
+# зависит от зума, поэтому считается каждый раз. Карта уже TILE_H в высоту — на
+# самом дальнем зуме полоса схлопывается, clamp тогда просто ставит центр.
+func _clamp_cam_y(y: float) -> float:
+	var half: float = get_viewport().get_visible_rect().size.y * 0.5 / _camera.zoom.y
+	if half * 2.0 >= float(MapLayer.TILE_H):
+		return float(MapLayer.TILE_H) * 0.5
+	return clampf(y, half, float(MapLayer.TILE_H) - half)
+
+
 func _apply_bounds() -> void:
 	# Горизонтальный wrap: камера всегда остаётся в [0, TILE_W)
 	# Три тайла рядом делают переход незаметным
@@ -1207,7 +1220,6 @@ func _apply_bounds() -> void:
 		_camera.position.x += MapLayer.TILE_W
 
 	# Вертикальный clamp: не выходим за верх/низ карты
-	var vp_half_h: float = get_viewport().get_visible_rect().size.y * 0.5 / _camera.zoom.y
-	_camera.position.y = clamp(_camera.position.y, vp_half_h, MapLayer.TILE_H - vp_half_h)
+	_camera.position.y = _clamp_cam_y(_camera.position.y)
 
 	_snap_camera_to_pixel()
