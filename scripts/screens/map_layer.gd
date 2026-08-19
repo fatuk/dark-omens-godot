@@ -919,6 +919,19 @@ func set_ticket_reach(origin: String, train: int, ship: int) -> void:
 # ── Маркеры сыщиков ───────────────────────────────────────────────────────────
 
 
+## Помечает ореолом пин того, чей сейчас ход (пусто — снять со всех). Отдельно от
+## set_investigators намеренно: смена хода не меняет ни состав, ни локации, и
+## пересобирать из-за неё все пины (а с ними — веер и анимации) незачем.
+func set_active_investigator(pid: String) -> void:
+	for e_v: Variant in _inv_markers:
+		var e: Dictionary = e_v
+		var pin: Variant = e.get("sprite")
+		if pin is InvestigatorPin:
+			(pin as InvestigatorPin).set_active(
+				not pid.is_empty() and String(e.get("pid", "")) == pid
+			)
+
+
 ## Размещает маркеры сыщиков на карте. list: [{pid, investigator, location}].
 ## Перестраивает, только если состав/локации изменились (сигнатура).
 func set_investigators(list: Array) -> void:

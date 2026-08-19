@@ -239,6 +239,16 @@ func _refresh_game_panel() -> void:
 	_game_panel.set_info(_to_roman(GameState.round_num))
 
 
+# Чей сейчас ход — для пометки на карте и плашки. Пусто, если партия не идёт или
+# фаза не про конкретного игрока (Миф, Расплата): помечать тогда некого.
+func _active_turn_pid() -> String:
+	if not GameState.active:
+		return ""
+	if GameState.phase != Phases.ACTION and GameState.phase != Phases.ENCOUNTER:
+		return ""
+	return GameState._current_pid()
+
+
 ## Обновляет маркеры сыщиков на карте по позициям из GameState.
 func _refresh_investigators() -> void:
 	if not is_instance_valid(_map_layer) or _travelling:
@@ -262,10 +272,15 @@ func _refresh_investigators() -> void:
 			)
 		_inv_locs[pid] = loc
 
+	# Ореол «сейчас ходит» — на каждом рефреше: ход меняется без смены локаций, и
+	# set_investigators по неизменной сигнатуре ничего бы не перестроил.
+	_map_layer.set_active_investigator(_active_turn_pid())
+
 	# Первый рефреш или нет перемещений — просто расставляем пины.
 	if not _inv_seen or moves.is_empty():
 		_inv_seen = true
 		_map_layer.set_investigators(list)
+		_map_layer.set_active_investigator(_active_turn_pid())
 		return
 
 	_animate_moves(moves, list)
@@ -289,6 +304,7 @@ func _animate_moves(moves: Array, list: Array) -> void:
 			GameState.travel_arrived()
 	_travelling = false
 	_map_layer.set_investigators(list)
+	_map_layer.set_active_investigator(_active_turn_pid())
 	_apply_bounds()
 
 

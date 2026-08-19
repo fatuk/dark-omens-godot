@@ -11,6 +11,33 @@ extends Node2D
 
 const FRAME_TEX: Texture2D = preload("res://assets/map/avatar-pin.png")
 
+# Ореол хода: золото под цвет рамки, заметно ярче фона карты и НЕ лаймовый —
+# лайм уже занят подсветкой выделения (SelectionIndicator), путать нельзя.
+const GLOW_COLOR: Color = Color(0.85, 0.71, 0.32, 0.85)
+const _GLOW_SPREAD: float = 1.55  # насколько ореол крупнее карточки
+
+# Ореол вокруг карточки: сплошная заливка ВНУТРИ силуэта (её всё равно закрывает
+# портрет с рамкой) и затухание наружу. Расстояние считаем от ПОЗИЦИИ ВЕРШИНЫ, а
+# не от UV: у Polygon2D без текстуры массив uv в шейдер не попадает, UV там нулевой,
+# и на нём альфа выходила нулевой всюду — ореола не было видно вообще.
+# edge — где по этой мере проходит край карточки (обратная _GLOW_SPREAD).
+const _GLOW_SHADER := """
+shader_type canvas_item;
+uniform vec4 glow;
+uniform vec2 half_size;
+uniform float edge;
+varying vec2 v_local;
+void vertex() {
+	v_local = VERTEX;
+}
+void fragment() {
+	float d = length(v_local / half_size);
+	float a = 1.0 - smoothstep(edge, 1.0, d);
+	a *= 0.75 + 0.25 * sin(TIME * 2.4);
+	COLOR = vec4(glow.rgb, glow.a * a);
+}
+"""
+
 # Ч/б портрет мёртвого сыщика (Тень). Обесцвечиваем УЖЕ сэмплированный COLOR —
 # без texture()/UV, поэтому корректно и на Polygon2D (пиксельные UV), и с мипмапами.
 const _DEAD_SHADER := """
@@ -22,6 +49,8 @@ void fragment() {
 """
 
 var _portrait_poly: Polygon2D
+var _turn_glow: Polygon2D  # ореол «сейчас ходит» ПОД карточкой (см. set_active)
+var _turn_mat: ShaderMaterial
 
 # Размер карточки (нативный, ассет @2×) и геометрия прозрачного окна под портрет.
 const CARD_W: float = 325.0
@@ -114,6 +143,44 @@ func setup(portrait: Texture2D) -> void:
 		]
 	)
 	add_child(frame)
+
+
+## Пометка «сейчас ходит»: мягкий золотой ореол ПОД карточкой. Живёт на самом
+## пине, поэтому едет вместе с ним при панорамировании, зуме и веере на клетке —
+## отдельной ноде пришлось бы синхронить позицию каждый кадр.
+func set_active(active: bool) -> void:
+	if not active:
+		if is_instance_valid(_turn_glow):
+			_turn_glow.queue_free()
+			_turn_glow = null
+		return
+	if is_instance_valid(_turn_glow):
+		return
+	var hw: float = CARD_W * 0.5 * _GLOW_SPREAD
+	var hh: float = CARD_H * 0.5 * _GLOW_SPREAD
+	_turn_glow = Polygon2D.new()
+	_turn_glow.name = "TurnGlow"
+	_turn_glow.z_index = -1  # под портретом и рамкой
+	_turn_glow.polygon = PackedVector2Array(
+		[
+			_persp(Vector2(-hw, -hh)),
+			_persp(Vector2(hw, -hh)),
+			_persp(Vector2(hw, hh)),
+			_persp(Vector2(-hw, hh)),
+		]
+	)
+	_turn_glow.uv = PackedVector2Array([Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)])
+	_turn_mat = ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = _GLOW_SHADER
+	_turn_mat.shader = sh
+	_turn_mat.set_shader_parameter(
+		"glow", Vector4(GLOW_COLOR.r, GLOW_COLOR.g, GLOW_COLOR.b, GLOW_COLOR.a)
+	)
+	_turn_mat.set_shader_parameter("edge", 1.0 / _GLOW_SPREAD)
+	_turn_mat.set_shader_parameter("half_size", Vector2(hw, hh))
+	_turn_glow.material = _turn_mat
+	add_child(_turn_glow)
 
 
 ## Мёртвый сыщик (Тень) — портрет ч/б. Рамка остаётся цветной.
