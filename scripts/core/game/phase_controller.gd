@@ -650,6 +650,23 @@ func host_apply_effect_choice(pid: String, index: int) -> bool:
 ## заводит и forEach-проход Мифов, и программа актива (выбор монстра/локации), —
 ## кого будить, говорит md.driver. Клампим индекс к числу веток.
 ## Зовётся из GameState.decide_mythos и relay-router на game_mythos_decide.
+## Выбор ЗА отсутствующего игрока — СЛУЧАЙНОЙ опцией, а не первой. Первая — это
+## всегда одна и та же ветка карты: исход ушедшего был бы предсказуем, а заодно
+## появлялся бы эксплойт «выйти, чтобы получить нужную ветку». Зовётся из
+## GameState._on_player_left, когда ждали именно его решения.
+func host_apply_absent_decision(pid: String) -> void:
+	var md: Dictionary = _gs.mythos_decision
+	var n: int = (md.get("options", []) as Array).size()
+	var pick: int = randi() % n if n > 0 else 0
+	GameConsole.log(
+		(
+			"[Game] выбор за отсутствующего %s: вариант %d из %d"
+			% [_gs._name_of(pid), pick + 1, maxi(n, 1)]
+		)
+	)
+	host_apply_mythos_decision(pid, pick)
+
+
 func host_apply_mythos_decision(pid: String, index: int) -> void:
 	var md: Dictionary = _gs.mythos_decision
 	if not bool(md.get("active", false)) or String(md.get("pid", "")) != pid:

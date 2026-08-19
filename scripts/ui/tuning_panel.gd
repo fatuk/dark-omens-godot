@@ -1372,6 +1372,15 @@ func _build_specs() -> Array:
 			"default": InvestigatorPin.GLOW_PULSE_AMOUNT,
 			"set": _set_turn_glow_pulse_amount
 		},
+		{
+			"key": "pin_away_alpha",
+			"label": "Прозрачность вышедшего",
+			"min": 0.1,
+			"max": 1.0,
+			"step": 0.05,
+			"default": InvestigatorPin.AWAY_ALPHA,
+			"set": _set_pin_away_alpha
+		},
 		{"section": "КАРТА · ПАНОРАМИРОВАНИЕ"},
 		{
 			"key": "map_friction",
@@ -2585,3 +2594,11 @@ func _set_turn_glow_pulse_speed(v: float) -> void:
 func _set_turn_glow_pulse_amount(v: float) -> void:
 	InvestigatorPin.GLOW_PULSE_AMOUNT = v
 	_refresh_turn_glow()
+
+
+# Прозрачность карточки вышедшего игрока. Ореол тут ни при чём, поэтому не
+# refresh_glow, а прямое переприменение по текущему connected из состояния.
+func _set_pin_away_alpha(v: float) -> void:
+	InvestigatorPin.AWAY_ALPHA = v
+	for m: Node in get_tree().get_nodes_in_group("map_layer"):
+		m.call("refresh_away")

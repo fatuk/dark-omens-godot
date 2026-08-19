@@ -919,6 +919,18 @@ func set_ticket_reach(origin: String, train: int, ship: int) -> void:
 # ── Маркеры сыщиков ───────────────────────────────────────────────────────────
 
 
+## Тюнинг-панель подвинула AWAY_ALPHA — переприменяем прозрачность вышедших. Кто
+## вышел, берём из состояния: в маркерах хранится только нода пина.
+func refresh_away() -> void:
+	for e_v: Variant in _inv_markers:
+		var e: Dictionary = e_v
+		var pin: Variant = e.get("sprite")
+		if not (pin is InvestigatorPin):
+			continue
+		var p: Dictionary = GameState.players.get(String(e.get("pid", "")), {})
+		(pin as InvestigatorPin).set_away(not bool(p.get("connected", true)))
+
+
 ## Помечает ореолом пин того, чей сейчас ход (пусто — снять со всех). Отдельно от
 ## set_investigators намеренно: смена хода не меняет ни состав, ни локации, и
 ## пересобирать из-за неё все пины (а с ними — веер и анимации) незачем.

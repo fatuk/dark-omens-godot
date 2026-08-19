@@ -1744,9 +1744,10 @@ func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -
 	GameConsole.log("[Game] %s отключился — слот сохранён до возвращения" % _name_of(uid))
 
 	# Если отвалился сыщик, чьего выбора ждёт модалка решения (миф или программа
-	# актива) — выбираем за него первую опцию, иначе фаза зависнет навсегда.
+	# актива) — выбираем за него сами, иначе фаза зависнет навсегда. Случайно, а не
+	# первой опцией: см. host_apply_absent_decision.
 	if bool(mythos_decision.get("active", false)) and String(mythos_decision.get("pid", "")) == uid:
-		_phase.host_apply_mythos_decision(uid, 0)
+		_phase.host_apply_absent_decision(uid)
 
 	# Если ждали «Прочитал» этого сыщика на открытой карте мифа, а остальные уже
 	# отметились — резолвим карту (иначе миф зависнет в ожидании ушедшего).
