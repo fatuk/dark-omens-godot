@@ -20,6 +20,10 @@ signal otp_failed(error: String)  # ошибка при запросе кода
 signal login_succeeded(user: Dictionary)  # успешный вход / подтверждение сессии
 signal login_failed(error: String)  # неверный код или истёк
 signal session_invalid  # сохранённый токен недействителен
+## Право на игру отозвано. Отдельно от session_invalid: там «войди заново», а тут
+## входить бесполезно — сервер откажет и после нового кода. Иначе игрок гонял бы
+## письма с кодом по кругу, не понимая, почему его не пускают.
+signal license_revoked(reason: String)
 signal logged_out  # пользователь вышел
 
 # ── Состояние ──────────────────────────────────────────────────────────────────
@@ -171,6 +175,8 @@ func _on_request_completed(
 				current_user = json.get("user", {})
 				_save_session()
 				login_succeeded.emit(current_user)
+			elif response_code == 403 and String(json.get("code", "")) == "license_revoked":
+				license_revoked.emit(String(json.get("error", "")))
 			else:
 				login_failed.emit(json.get("error", "Неверный код"))
 
@@ -178,6 +184,13 @@ func _on_request_completed(
 			if response_code == 200:
 				current_user = json
 				login_succeeded.emit(current_user)
+			elif response_code == 403 and String(json.get("code", "")) == "license_revoked":
+				# Право отозвано. Токен стираем — сервер уже снёс сессию на своей
+				# стороне, держать его смысла нет.
+				session_token = ""
+				current_user = {}
+				_save_session()
+				license_revoked.emit(String(json.get("error", "")))
 			elif response_code == 401:
 				# Токен явно инвалидирован сервером — стираем
 				session_token = ""
