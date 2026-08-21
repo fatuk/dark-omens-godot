@@ -73,6 +73,7 @@ func build_registry() -> Dictionary:
 		RelayActions.SHOP_CLOSE: _act_shop_close,
 		RelayActions.SHOP_DEBT: _act_shop_debt,
 		RelayActions.SHOP_SPEND_RESOURCE: _act_shop_spend_resource,
+		RelayActions.SHOP_SELL_ASSET: _act_shop_sell_asset,
 		RelayActions.SHOP_OPEN: _act_shop_open,
 		RelayActions.SHOP_REROLL: _act_shop_reroll,
 		RelayActions.REROLL_ALL: _act_reroll_all,
@@ -239,6 +240,10 @@ func _act_shop_debt(d: Dictionary) -> void:
 
 func _act_shop_spend_resource(d: Dictionary) -> void:
 	_phase.host_apply_shop_spend_resource(String(d.get("pid", "")))
+
+
+func _act_shop_sell_asset(d: Dictionary) -> void:
+	_phase.host_apply_shop_sell_asset(String(d.get("pid", "")), int(d.get("item", -1)))
 
 
 func _act_shop_open(d: Dictionary) -> void:

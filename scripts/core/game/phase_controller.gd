@@ -612,6 +612,39 @@ func host_apply_shop_spend_resource(pid: String) -> bool:
 	return true
 
 
+## Хост: продать актив в магазине — карта уходит из имущества (в сброс он
+## выводится, а не хранится), взамен +1 монета в общий котёл с ресурсами.
+## Не больше ОДНОГО актива за заход: флаг живёт на active_check, а он создаётся
+## заново каждым shop_open — отдельный сброс счётчика не нужен.
+func host_apply_shop_sell_asset(pid: String, item_index: int) -> bool:
+	if not _gs.players.has(pid):
+		return false
+	var c: Dictionary = _gs.active_check
+	if String(c.get("owner", "")) != "shop" or String(c.get("pid", "")) != pid:
+		return false
+	if bool(c.get("shop_asset_sold", false)):
+		return false
+	var items: Array = _gs.players[pid].get("items", [])
+	if item_index < 0 or item_index >= items.size():
+		return false
+	var it_v: Variant = items[item_index]
+	if not (it_v is Dictionary):
+		return false
+	# Продаём только активы: заклинания и улики живут по своим правилам.
+	var entry: String = AssetCatalog.entry_id(it_v as Dictionary)
+	if AssetCatalog.by_id(entry).is_empty():
+		return false
+	items.remove_at(item_index)
+	_gs.players[pid]["items"] = items
+	c["shop_asset_sold"] = true
+	c["shop_resource_coins"] = int(c.get("shop_resource_coins", 0)) + 1
+	_gs.active_check = c
+	GameConsole.log("[Магазин] %s продал «%s» (+1 монета)" % [_gs._name_of(pid), entry])
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
 # Переброс куба магазина теперь идёт через единый CheckFlow.reroll (active_check):
 # бесплатные перебросы от карт → концентрация → улика. См. GameState.shop_reroll.
 

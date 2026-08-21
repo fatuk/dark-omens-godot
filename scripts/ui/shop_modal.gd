@@ -152,6 +152,9 @@ var _coins_lbl: Label
 var _roll_btn: Button
 var _debt_btn: Button
 var _res_btn: Button  # «потратить ресурс» — +1 монета
+var _sell_btn: Button  # «продать актив» — +1 монета, не больше одного за заход
+var _sell_panel: PanelContainer  # выбор, какой именно актив продать
+var _sell_box: VBoxContainer
 var _buy_btn: Button
 var _cards: Array = []  # [{id, cost, card, vp, mesh, mat, hit, slot, total, hovering, buying}]
 var _chrome: Array = []  # [{node, fx, fy, fw, fh}] — элементы, позиционируемые по долям
@@ -324,6 +327,13 @@ func _build() -> void:
 	_res_btn.pressed.connect(_on_spend_resource)
 	_res_btn.visible = int(GameState.my_player().get("resources", 0)) > 0
 	btns.add_child(_res_btn)
+
+	_sell_btn = UIStyle.button("SHOP_SELL_ASSET", UIColors.WARNING)
+	_sell_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_sell_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_sell_btn.pressed.connect(_on_sell_pressed)
+	btns.add_child(_sell_btn)
+	_build_sell_panel()
 
 	_roll_btn = UIStyle.button("SHOP_ROLL", UIColors.ACCENT)
 	_roll_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -938,6 +948,11 @@ func _refresh() -> void:
 		_debt_btn.visible = not _has_debt()
 	if is_instance_valid(_res_btn):
 		_res_btn.visible = int(GameState.my_player().get("resources", 0)) > 0
+	if is_instance_valid(_sell_btn):
+		# Прячем, а не блокируем: без активов или после продажи кнопке делать нечего.
+		_sell_btn.visible = not _asset_sold() and not _my_assets().is_empty()
+		if not _sell_btn.visible and is_instance_valid(_sell_panel):
+			_sell_panel.visible = false
 	if is_instance_valid(_buy_btn):
 		_buy_btn.disabled = _selected.is_empty()
 	# Недоступные НЕ затемняем (доступность покажем иначе позже). Тёплый тинт выбора +
@@ -953,3 +968,91 @@ func _refresh() -> void:
 # тёплые лампы (SHADED), одинаково для лежащих и наведённых карт.
 func _card_albedo(entry: Dictionary) -> Color:
 	return Color(1.2, 1.14, 0.9) if _selected.has(entry.id) else Color.WHITE
+
+
+# ── Продажа актива: +1 монета, не больше одного за заход ──────────────────────
+# Какой именно актив уходит — решает игрок, поэтому кнопка открывает список его
+# имущества. Панель строится один раз и наполняется на каждом открытии: состав
+# имущества мог измениться (карту сыграли, обменяли).
+
+
+func _build_sell_panel() -> void:
+	_sell_panel = PanelContainer.new()
+	_sell_panel.name = "SellPanel"
+	UIStyle.style_modal_panel(_sell_panel)
+	_sell_panel.visible = false
+	_stage.add_child(_sell_panel)
+	_chrome.append({"node": _sell_panel, "fx": 0.3, "fy": 0.42, "fw": 0.4, "fh": 0.42})
+
+	var margin := MarginContainer.new()
+	margin.name = "Margin"
+	for side: String in ["left", "right", "top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 16)
+	_sell_panel.add_child(margin)
+
+	var scroll := ScrollContainer.new()
+	scroll.name = "Scroll"
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	margin.add_child(scroll)
+
+	_sell_box = VBoxContainer.new()
+	_sell_box.name = "Box"
+	_sell_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_sell_box.add_theme_constant_override("separation", 8)
+	scroll.add_child(_sell_box)
+
+
+# Активы в имуществе: [{index, id, name}]. Заклинания и улики не продаются.
+func _my_assets() -> Array:
+	var out: Array = []
+	var items: Array = GameState.my_player().get("items", [])
+	for i in range(items.size()):
+		var it_v: Variant = items[i]
+		if not (it_v is Dictionary):
+			continue
+		var entry: String = AssetCatalog.entry_id(it_v as Dictionary)
+		var a: Dictionary = AssetCatalog.by_id(entry)
+		if a.is_empty():
+			continue
+		out.append({"index": i, "id": entry, "name": tr(String(a.get("nameKey", entry)))})
+	return out
+
+
+# Актив за этот заход уже продан (флаг живёт на проверке магазина).
+func _asset_sold() -> bool:
+	return bool(_check().get("shop_asset_sold", false))
+
+
+func _on_sell_pressed() -> void:
+	if _asset_sold():
+		return
+	_fill_sell_panel()
+	_sell_panel.visible = not _sell_panel.visible
+
+
+func _fill_sell_panel() -> void:
+	for c in _sell_box.get_children():
+		_sell_box.remove_child(c)
+		c.queue_free()
+	var title := UIStyle.label("SHOP_SELL_PICK", UIStyle.MODAL_FS_HINT, UIColors.MUTED)
+	title.name = "Title"
+	_sell_box.add_child(title)
+	for e_v: Variant in _my_assets():
+		var e: Dictionary = e_v
+		var b := UIStyle.button(String(e["name"]), UIColors.WARNING)
+		b.name = "Sell_%d" % int(e["index"])
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var idx: int = int(e["index"])
+		b.pressed.connect(func() -> void: _on_sell_asset(idx))
+		_sell_box.add_child(b)
+	var cancel := UIStyle.button("BTN_CANCEL", UIColors.MUTED)
+	cancel.name = "Cancel"
+	cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cancel.pressed.connect(func() -> void: _sell_panel.visible = false)
+	_sell_box.add_child(cancel)
+
+
+func _on_sell_asset(item_index: int) -> void:
+	_sell_panel.visible = false
+	GameState.shop_sell_asset(item_index)
+	_refresh()

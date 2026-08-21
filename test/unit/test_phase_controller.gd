@@ -774,3 +774,48 @@ func test_shop_grant_rejects_without_active_shop_check() -> void:
 	_shopper(9, ["18_derringer"])
 	_gs.active_check = {}  # проверка магазина уже снята — монеты неизвестны
 	assert_false(_pc.host_apply_shop_grant("p", ["18_derringer"]), "нет активной проверки — отказ")
+
+
+# ── host_apply_shop_sell_asset: продажа актива за монету ──────────────────────
+#
+# Любой актив стоит одну монету, как потраченный ресурс. За заход в магазин
+# продать можно ровно один: флаг живёт на active_check, а он создаётся заново
+# каждым shop_open.
+
+
+func _shopper_with(items: Array) -> void:
+	_solo({"location": "arkham", "items": items})
+	_gs.loc_types = {"arkham": "city"}
+	_gs.active_check = {"owner": "shop", "pid": "p"}
+
+
+func test_shop_sell_asset_gives_coin_and_removes_card() -> void:
+	_shopper_with([{"id": "ancient_manuscript"}, {"id": "monster_hunter"}])
+	assert_true(_pc.host_apply_shop_sell_asset("p", 0))
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "карта ушла из имущества")
+	assert_eq(
+		String((_gs.players["p"]["items"] as Array)[0]["id"]), "monster_hunter", "ушла именно та"
+	)
+	assert_eq(int(_gs.active_check.get("shop_resource_coins", 0)), 1, "монета добавлена")
+
+
+func test_shop_sell_asset_only_once_per_visit() -> void:
+	_shopper_with([{"id": "ancient_manuscript"}, {"id": "monster_hunter"}])
+	assert_true(_pc.host_apply_shop_sell_asset("p", 0))
+	assert_false(_pc.host_apply_shop_sell_asset("p", 0), "второй актив за заход не продать")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "вторая карта на месте")
+	assert_eq(int(_gs.active_check.get("shop_resource_coins", 0)), 1, "монета всё ещё одна")
+
+
+func test_shop_sell_asset_rejects_non_asset_and_bad_index() -> void:
+	_shopper_with([{"id": "не-актив", "kind": "spell"}])
+	assert_false(_pc.host_apply_shop_sell_asset("p", 0), "не актив — отказ")
+	assert_false(_pc.host_apply_shop_sell_asset("p", 5), "индекс вне списка — отказ")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "имущество не тронуто")
+
+
+func test_shop_sell_asset_rejected_when_not_shopper() -> void:
+	_shopper_with([{"id": "ancient_manuscript"}])
+	_gs.active_check = {"owner": "shop", "pid": "other"}
+	assert_false(_pc.host_apply_shop_sell_asset("p", 0), "не активный покупатель — отказ")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "карта на месте")

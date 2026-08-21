@@ -1542,6 +1542,25 @@ func shop_spend_resource() -> void:
 		_nm.relay_all({"action": RelayActions.SHOP_SPEND_RESOURCE, "pid": my_pid})
 
 
+## Продать актив в магазине — карта уходит из имущества, +1 монета. Не больше
+## одного актива за заход (гард — на стороне хоста).
+func shop_sell_asset(item_index: int) -> void:
+	var my_pid: String = _nm.my_user_id
+	if _is_host():
+		_phase.host_apply_shop_sell_asset(my_pid, item_index)
+	else:
+		(
+			_nm
+			. relay_all(
+				{
+					"action": RelayActions.SHOP_SELL_ASSET,
+					"pid": my_pid,
+					"item": item_index,
+				}
+			)
+		)
+
+
 ## Переброс куба магазина (die_index) — через общий механизм проверки (бесплатные
 ## от карт → концентрация → улика). Хост авторитетно правит active_check.
 func shop_reroll(die_index: int, currency: String = "") -> void:
