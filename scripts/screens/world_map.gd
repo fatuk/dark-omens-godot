@@ -246,7 +246,11 @@ func _active_turn_pid() -> String:
 		return ""
 	if GameState.phase != Phases.ACTION and GameState.phase != Phases.ENCOUNTER:
 		return ""
-	return GameState._current_pid()
+	var pid: String = GameState._current_pid()
+	# Свой ход себе не подсвечиваем: игрок и так знает, что ходит — ему про это
+	# говорят баннер «Ваш ход» и доступные действия. Ореол нужен ОСТАЛЬНЫМ, чтобы
+	# видеть, кого ждут; на своей же карточке он был бы лишним шумом.
+	return "" if pid == GameState.local_pid() else pid
 
 
 ## Обновляет маркеры сыщиков на карте по позициям из GameState.
