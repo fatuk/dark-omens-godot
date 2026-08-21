@@ -31,7 +31,9 @@ signal closed
 @onready var _root: Control = %Root
 @onready var _backdrop: ColorRect = %Backdrop
 @onready var _panel: PanelContainer = %Panel
-@onready var _title: Label = %Title
+@onready var _header: Control = %Header
+@onready var _flat_title: Label = %Title  # плоский заголовок из сцены — заменяем орнаментальным
+var _title: Label  # внутренний Label орнаментального заголовка (в него пишет set_title)
 @onready var _content: VBoxContainer = %Content
 @onready var _close_btn: Button = %CloseBtn
 @onready var _header_sep: HSeparator = %HeaderSep
@@ -47,12 +49,30 @@ func _ready() -> void:
 	UIStyle.style_modal_panel(_panel)
 	UIStyle.style_modal_close_button(_close_btn)
 	UIStyle.style_separator(_header_sep)
-	_title.add_theme_color_override("font_color", UIColors.ACCENT)
+	_title = _install_ornate_title()
 	_close_btn.pressed.connect(close)
 	_backdrop.gui_input.connect(_on_backdrop_input)
 	UIStyle.apply_backdrop_alpha(_root)
 	_root.visible = false
 	_root.modulate.a = 0.0  # эффект ведёт весь слой целиком (UIStyle.modal_transition)
+
+
+# Заголовок — общий орнаментальный (шеврон · текст · шеврон), как в окне встречи.
+# Плоский Label и щит-подложка из сцены прячутся: шевроны рисуют ту же рамку, и
+# вместе с щитом получалась бы рамка в рамке.
+func _install_ornate_title() -> Label:
+	_flat_title.visible = false
+	_shield.visible = false
+	var holder := CenterContainer.new()
+	holder.name = "TitleHolder"
+	holder.set_anchors_preset(Control.PRESET_FULL_RECT)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE  # клики уходят кнопке закрытия
+	_header.add_child(holder)
+	_header.move_child(holder, 0)  # под кнопкой закрытия, иначе она перекрыта
+	var ot: HBoxContainer = UIStyle.ornate_title("", UIStyle.MODAL_FS_TITLE, UIColors.ACCENT)
+	ot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(ot)
+	return ot.get_node("Title") as Label
 
 
 func _input(event: InputEvent) -> void:
@@ -72,8 +92,7 @@ func set_title(text: String) -> void:
 		await ready
 	_title.text = text
 	var has_title := not text.is_empty()
-	_title.visible = has_title
-	_shield.visible = has_title
+	_title.get_parent().get_parent().visible = has_title  # холдер орнаментального заголовка
 	_header_sep.visible = has_title
 
 

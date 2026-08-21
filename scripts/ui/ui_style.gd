@@ -768,18 +768,18 @@ static func ornate_title(
 	hb.alignment = BoxContainer.ALIGNMENT_CENTER
 	hb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hb.add_theme_constant_override("separation", 14)
-	hb.add_child(_ornate_chevron(_ORNATE_CHEVRON_L))
+	hb.add_child(_ornate_chevron(_ORNATE_CHEVRON_L, "ChevronL"))
 	var lbl := label(text, size, color, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Title"
 	hb.add_child(lbl)
-	hb.add_child(_ornate_chevron(_ORNATE_CHEVRON_R))
+	hb.add_child(_ornate_chevron(_ORNATE_CHEVRON_R, "ChevronR"))
 	return hb
 
 
 # Декоративный шеврон сбоку от орнаментального заголовка (PNG @≈4× → скейл 0.25).
-static func _ornate_chevron(tex: Texture2D) -> TextureRect:
+static func _ornate_chevron(tex: Texture2D, node_name: String) -> TextureRect:
 	var r := TextureRect.new()
-	r.name = "Chevron"
+	r.name = node_name  # L/R по отдельности: два одинаковых имени Godot развёл бы в @TextureRect@N
 	r.texture = tex
 	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
