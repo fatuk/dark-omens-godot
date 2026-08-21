@@ -1182,12 +1182,66 @@ func _build_specs() -> Array:
 		},
 		{
 			"key": "runes_drift",
-			"label": "Дрейф",
+			"label": "Снос вбок",
 			"min": 0.0,
 			"max": 0.5,
 			"step": 0.005,
-			"default": 0.2,
+			"default": 0.1,
 			"set": _set_runes_drift
+		},
+		{
+			"key": "runes_fall_angle",
+			"label": "Наклон падения",
+			"min": -1.2,
+			"max": 1.2,
+			"step": 0.02,
+			"default": 0.6,
+			"set": _set_runes_fall_angle
+		},
+		{
+			"key": "runes_fall_speed",
+			"label": "Скорость падения",
+			"min": 0.0,
+			"max": 3.0,
+			"step": 0.05,
+			"default": 0.55,
+			"set": _set_runes_fall_speed
+		},
+		{
+			"key": "runes_fall_jitter",
+			"label": "Разброс скорости",
+			"min": 0.0,
+			"max": 2.0,
+			"step": 0.05,
+			"default": 1.1,
+			"set": _set_runes_fall_jitter
+		},
+		{
+			"key": "runes_streak",
+			"label": "Длина следа",
+			"min": 0.0,
+			"max": 4.0,
+			"step": 0.05,
+			"default": 1.6,
+			"set": _set_runes_streak
+		},
+		{
+			"key": "runes_burn_start",
+			"label": "Начало выгорания",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.12,
+			"set": _set_runes_burn_start
+		},
+		{
+			"key": "runes_burn_end",
+			"label": "Конец выгорания",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": 0.72,
+			"set": _set_runes_burn_end
 		},
 		{
 			"key": "runes_edge_bias",
@@ -2335,6 +2389,30 @@ func _set_runes_pulse_speed(v: float) -> void:
 
 func _set_runes_pulse_depth(v: float) -> void:
 	_runes_set("pulse_depth", v)
+
+
+func _set_runes_fall_angle(v: float) -> void:
+	_runes_set("fall_angle", v)
+
+
+func _set_runes_fall_speed(v: float) -> void:
+	_runes_set("fall_speed", v)
+
+
+func _set_runes_fall_jitter(v: float) -> void:
+	_runes_set("fall_jitter", v)
+
+
+func _set_runes_streak(v: float) -> void:
+	_runes_set("streak", v)
+
+
+func _set_runes_burn_start(v: float) -> void:
+	_runes_set("burn_start", v)
+
+
+func _set_runes_burn_end(v: float) -> void:
+	_runes_set("burn_end", v)
 
 
 func _set_runes_drift(v: float) -> void:
