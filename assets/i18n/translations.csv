@@ -429,6 +429,7 @@ STATUS_DISCONNECTED,Отключено от сервера,Disconnected from ser
 TOOLTIP_DELETE_EMPTY_ROOM,Удалить пустую комнату,Delete empty room,
 LOGIN_SESSION_EXPIRED,Сессия истекла — войдите снова,Session expired — sign in again,
 LOGIN_LICENSE_REVOKED,Доступ к игре отозван. Обратитесь в поддержку.,Your access to the game was revoked. Please contact support.,
+LOGIN_LICENSE_REQUIRED,У этого аккаунта нет доступа к игре.,This account does not have access to the game.,
 ACTION_ROUND_FMT,Раунд %d  ·  осталось действий: %d,Round %d  ·  actions left: %d,
 LOBBY_ROOM_HOST_FMT,Комната: %s  •  Вы — ведущий игры  •  Ожидание участников...,Room: %s  •  You are the host  •  Waiting for players...,
 LOBBY_ROOM_GUEST_FMT,Комната: %s  •  Ожидайте начала игры,Room: %s  •  Wait for the host to start,

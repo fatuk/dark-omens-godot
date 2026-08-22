@@ -39,7 +39,7 @@ func _ready() -> void:
 	_auth.login_succeeded.connect(_on_login_succeeded)
 	_auth.login_failed.connect(_on_login_failed)
 	_auth.session_invalid.connect(_on_session_invalid)
-	_auth.license_revoked.connect(_on_license_revoked)
+	_auth.access_denied.connect(_on_access_denied)
 
 	if not _auth.session_token.is_empty():
 		_show_panel("check")
@@ -162,11 +162,15 @@ func _on_session_invalid() -> void:
 	_show_status("LOGIN_SESSION_EXPIRED", UIColors.WARNING)
 
 
-# Право отозвано. Форму входа показываем, но предупреждаем: новый код ничего не
+# Играть нельзя. Форму входа показываем, но предупреждаем: новый код ничего не
 # изменит, сервер откажет снова — иначе игрок будет слать себе письма по кругу.
-func _on_license_revoked(reason: String) -> void:
+# Слова разные: отозванному — в поддержку, не купившему — купить.
+func _on_access_denied(code: String, reason: String) -> void:
 	_show_panel("email")
-	var text: String = tr("LOGIN_LICENSE_REVOKED")
+	var key: String = (
+		"LOGIN_LICENSE_REVOKED" if code == "license_revoked" else "LOGIN_LICENSE_REQUIRED"
+	)
+	var text: String = tr(key)
 	if not reason.strip_edges().is_empty():
 		text += " (%s)" % reason
 	_show_status(text, UIColors.ERROR)
