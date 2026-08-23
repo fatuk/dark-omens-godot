@@ -5,6 +5,10 @@
 
 ## Для игрока
 
+Короткая версия этого раздела — `docs/macos-install-ru.txt`; `make game-export-mac`
+кладёт её рядом с архивом как «Установка на macOS.txt». Правки вносить туда же,
+иначе игрок получит устаревший текст.
+
 Скачивается `DarkOmens-<версия>.zip`. Внутри `Dark Omens.app` — universal-бинарь:
 работает и на Apple Silicon (M1 и новее, macOS 11+), и на Intel (macOS 10.12+).
 
