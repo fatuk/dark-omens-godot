@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4vgh10bo6212"
 path.bptc="res://.godot/imported/wilderness.png-9ba6881c8bde7c2d1c3a9d407c3a08db.bptc.ctex"
+path.astc="res://.godot/imported/wilderness.png-9ba6881c8bde7c2d1c3a9d407c3a08db.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/encounter/wilderness.png"
-dest_files=["res://.godot/imported/wilderness.png-9ba6881c8bde7c2d1c3a9d407c3a08db.bptc.ctex"]
+dest_files=["res://.godot/imported/wilderness.png-9ba6881c8bde7c2d1c3a9d407c3a08db.bptc.ctex", "res://.godot/imported/wilderness.png-9ba6881c8bde7c2d1c3a9d407c3a08db.astc.ctex"]
 
 [params]
 

@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dpceckqun2uny"
 path.bptc="res://.godot/imported/city.png-ba5960869faa6a71de36ce68f44d879c.bptc.ctex"
+path.astc="res://.godot/imported/city.png-ba5960869faa6a71de36ce68f44d879c.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/encounter/city.png"
-dest_files=["res://.godot/imported/city.png-ba5960869faa6a71de36ce68f44d879c.bptc.ctex"]
+dest_files=["res://.godot/imported/city.png-ba5960869faa6a71de36ce68f44d879c.bptc.ctex", "res://.godot/imported/city.png-ba5960869faa6a71de36ce68f44d879c.astc.ctex"]
 
 [params]
 
