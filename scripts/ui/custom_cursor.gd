@@ -24,15 +24,36 @@ var _tween: Tween = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	_hide_system_cursor()
 	_icon_default.size = CURSOR_SIZE
 	_icon_active.size = CURSOR_SIZE
+
+
+## macOS прячет курсор только для окна в фокусе, а autoload зовёт set_mouse_mode
+## раньше, чем окно станет активным, — системная стрелка остаётся поверх нашей,
+## и игрок видит два курсора. Переспрашиваем на возврат фокуса и на вход мыши.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN or what == NOTIFICATION_WM_MOUSE_ENTER:
+		_hide_system_cursor(true)
+
+
+## force — переставить режим через VISIBLE. Нужно потому, что set_mouse_mode
+## выходит раньше времени, если запрошенный режим совпадает с текущим: когда
+## движок считает курсор скрытым, а система его всё же рисует, простой повтор
+## вызова ничего не даст. Дёшево только по событиям, не каждый кадр.
+func _hide_system_cursor(force: bool = false) -> void:
+	if Input.get_mouse_mode() == Input.MOUSE_MODE_HIDDEN:
+		if not force:
+			return
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 
 
 func _process(_dt: float) -> void:
 	var vp := get_viewport()
 	if vp == null:
 		return
+	_hide_system_cursor()  # страховка: системный курсор мог вернуться сам
 	var pos := vp.get_mouse_position()
 	_icon_default.position = pos
 	_icon_active.position = pos
