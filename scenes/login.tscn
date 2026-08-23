@@ -1,35 +1,40 @@
-[gd_scene load_steps=3 format=3 uid="uid://buxo6le3jeepc"]
+[gd_scene format=3 uid="uid://buxo6le3jeepc"]
 
 [ext_resource type="Script" uid="uid://iflg6egts45l" path="res://scripts/screens/login.gd" id="1_pymad"]
 [ext_resource type="Texture2D" uid="uid://vkts82xxlwl1" path="res://assets/menu/logo.png" id="2_logo"]
 
-[node name="Login" type="Control"]
+[node name="Login" type="Control" unique_id=876817879]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_pymad")
 
-[node name="Bg" type="ColorRect" parent="."]
+[node name="Bg" type="ColorRect" parent="." unique_id=1384155486]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="Center" type="CenterContainer" parent="." unique_id=859354266]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-mouse_filter = 1
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="Root" type="VBoxContainer" parent="Center"]
+[node name="Root" type="VBoxContainer" parent="Center" unique_id=1334526754]
 custom_minimum_size = Vector2(480, 0)
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="Logo" type="TextureRect" parent="Center/Root"]
+[node name="Logo" type="TextureRect" parent="Center/Root" unique_id=677943211]
 custom_minimum_size = Vector2(400, 236)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -38,127 +43,124 @@ texture = ExtResource("2_logo")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Subtitle" type="Label" parent="Center/Root"]
+[node name="Subtitle" type="Label" parent="Center/Root" unique_id=1899545880]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "APP_SUBTITLE"
 horizontal_alignment = 1
 
-[node name="Sep1" type="HSeparator" parent="Center/Root"]
+[node name="Sep1" type="HSeparator" parent="Center/Root" unique_id=526386933]
 layout_mode = 2
 
-; ── Панель «проверка сессии» ───────────────────────────────────────────────
-[node name="CheckPanel" type="PanelContainer" parent="Center/Root"]
+[node name="CheckPanel" type="PanelContainer" parent="Center/Root" unique_id=178951940]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Center/Root/CheckPanel"]
+[node name="VBox" type="VBoxContainer" parent="Center/Root/CheckPanel" unique_id=483338560]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="CheckLabel" type="Label" parent="Center/Root/CheckPanel/VBox"]
+[node name="CheckLabel" type="Label" parent="Center/Root/CheckPanel/VBox" unique_id=557994882]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "LOGIN_STATUS_CHECKING"
 horizontal_alignment = 1
 
-; ── Панель email ───────────────────────────────────────────────────────────
-[node name="EmailPanel" type="PanelContainer" parent="Center/Root"]
+[node name="EmailPanel" type="PanelContainer" parent="Center/Root" unique_id=1965487837]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Center/Root/EmailPanel"]
+[node name="VBox" type="VBoxContainer" parent="Center/Root/EmailPanel" unique_id=1625073885]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Header" type="Label" parent="Center/Root/EmailPanel/VBox"]
+[node name="Header" type="Label" parent="Center/Root/EmailPanel/VBox" unique_id=547916139]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "LOGIN_HEADER_AUTH"
 
-[node name="Sep" type="HSeparator" parent="Center/Root/EmailPanel/VBox"]
+[node name="Sep" type="HSeparator" parent="Center/Root/EmailPanel/VBox" unique_id=1642792945]
 layout_mode = 2
 
-[node name="EmailRow" type="HBoxContainer" parent="Center/Root/EmailPanel/VBox"]
+[node name="EmailRow" type="HBoxContainer" parent="Center/Root/EmailPanel/VBox" unique_id=471696511]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="EmailLabel" type="Label" parent="Center/Root/EmailPanel/VBox/EmailRow"]
+[node name="EmailLabel" type="Label" parent="Center/Root/EmailPanel/VBox/EmailRow" unique_id=2102012029]
 custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Email:"
 vertical_alignment = 1
 
-[node name="EmailInput" type="LineEdit" parent="Center/Root/EmailPanel/VBox/EmailRow"]
+[node name="EmailInput" type="LineEdit" parent="Center/Root/EmailPanel/VBox/EmailRow" unique_id=634754289]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "your@email.com"
 
-[node name="SendBtn" type="Button" parent="Center/Root/EmailPanel/VBox"]
+[node name="SendBtn" type="Button" parent="Center/Root/EmailPanel/VBox" unique_id=974675178]
 unique_name_in_owner = true
 layout_mode = 2
 text = "LOGIN_BTN_SEND_CODE"
 
-; ── Панель кода ────────────────────────────────────────────────────────────
-[node name="CodePanel" type="PanelContainer" parent="Center/Root"]
+[node name="CodePanel" type="PanelContainer" parent="Center/Root" unique_id=1996925662]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Center/Root/CodePanel"]
+[node name="VBox" type="VBoxContainer" parent="Center/Root/CodePanel" unique_id=372712963]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Header" type="Label" parent="Center/Root/CodePanel/VBox"]
+[node name="Header" type="Label" parent="Center/Root/CodePanel/VBox" unique_id=516659430]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "LOGIN_HEADER_CODE"
 
-[node name="Sep" type="HSeparator" parent="Center/Root/CodePanel/VBox"]
+[node name="Sep" type="HSeparator" parent="Center/Root/CodePanel/VBox" unique_id=2021885059]
 layout_mode = 2
 
-[node name="CodeLabel" type="Label" parent="Center/Root/CodePanel/VBox"]
+[node name="CodeLabel" type="Label" parent="Center/Root/CodePanel/VBox" unique_id=1900771496]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "LOGIN_CODE_SENT_PREFIX"
 horizontal_alignment = 1
 
-[node name="CodeRow" type="HBoxContainer" parent="Center/Root/CodePanel/VBox"]
+[node name="CodeRow" type="HBoxContainer" parent="Center/Root/CodePanel/VBox" unique_id=1488176573]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="CodeRowLabel" type="Label" parent="Center/Root/CodePanel/VBox/CodeRow"]
+[node name="CodeRowLabel" type="Label" parent="Center/Root/CodePanel/VBox/CodeRow" unique_id=2134564559]
 custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "FORM_CODE"
 vertical_alignment = 1
 
-[node name="CodeInput" type="LineEdit" parent="Center/Root/CodePanel/VBox/CodeRow"]
+[node name="CodeInput" type="LineEdit" parent="Center/Root/CodePanel/VBox/CodeRow" unique_id=321655849]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-max_length = 6
 placeholder_text = "123456"
+max_length = 6
 
-[node name="VerifyBtn" type="Button" parent="Center/Root/CodePanel/VBox"]
+[node name="VerifyBtn" type="Button" parent="Center/Root/CodePanel/VBox" unique_id=1576214343]
 unique_name_in_owner = true
 layout_mode = 2
 text = "BTN_LOG_IN"
 
-[node name="BackBtn" type="Button" parent="Center/Root/CodePanel/VBox"]
+[node name="BackBtn" type="Button" parent="Center/Root/CodePanel/VBox" unique_id=311569129]
 unique_name_in_owner = true
 layout_mode = 2
 text = "LOGIN_LINK_CHANGE_EMAIL"
 
-[node name="Sep2" type="HSeparator" parent="Center/Root"]
+[node name="Sep2" type="HSeparator" parent="Center/Root" unique_id=1871829622]
 layout_mode = 2
 
-[node name="StatusLabel" type="Label" parent="Center/Root"]
+[node name="StatusLabel" type="Label" parent="Center/Root" unique_id=1698160597]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
