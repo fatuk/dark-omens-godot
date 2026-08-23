@@ -34,6 +34,9 @@ var fullscreen: bool = false
 var music_volume: float = 0.5  # 0..1, читается Music/SfxManager на _ready
 var sfx_volume: float = 0.5
 var turn_notify: bool = true  # баннер «Ваш ход», когда игра ждёт моего ввода
+# Счётчик FPS поверх игры. Отладочный, но живёт в обычных настройках, а не за
+# OS.is_debug_build(): нужен на плейтестах, а они идут на релизной сборке.
+var show_fps: bool = false
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -131,6 +134,7 @@ func save() -> void:
 	cfg.set_value("audio", "music", MusicManager.volume)
 	cfg.set_value("audio", "sfx", SfxManager.volume)
 	cfg.set_value("game", "turn_notify", turn_notify)
+	cfg.set_value("game", "show_fps", show_fps)
 	music_volume = MusicManager.volume
 	sfx_volume = SfxManager.volume
 	cfg.save(SETTINGS_FILE)
@@ -155,3 +159,4 @@ func _load() -> void:
 	music_volume = float(cfg.get_value("audio", "music", 0.5))
 	sfx_volume = float(cfg.get_value("audio", "sfx", 0.5))
 	turn_notify = bool(cfg.get_value("game", "turn_notify", true))
+	show_fps = bool(cfg.get_value("game", "show_fps", false))

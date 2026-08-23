@@ -30,6 +30,7 @@ var _res_option: OptionButton
 var _fs_check: CheckBox
 var _fx_check: CheckBox
 var _turn_check: CheckBox
+var _fps_check: CheckBox
 var _music_slider: HSlider
 var _sfx_slider: HSlider
 var _lang_option: OptionButton
@@ -152,6 +153,21 @@ func _build_display_section() -> void:
 	turn_lbl.name = "TurnNotifyLabel"
 	turn_row.add_child(turn_lbl)
 
+	var fps_row := HBoxContainer.new()
+	fps_row.name = "FpsRow"
+	fps_row.add_theme_constant_override("separation", 10)
+	_vbox.add_child(fps_row)
+
+	_fps_check = CheckBox.new()
+	_fps_check.name = "ShowFpsCheck"
+	_fps_check.button_pressed = SettingsStore.show_fps
+	_fps_check.add_theme_color_override("font_color", UIColors.TEXT)
+	_fps_check.add_theme_font_size_override("font_size", 14)
+	fps_row.add_child(_fps_check)
+	var fps_lbl := _plain_label("SETTINGS_SHOW_FPS")
+	fps_lbl.name = "ShowFpsLabel"
+	fps_row.add_child(fps_lbl)
+
 
 func _build_audio_section() -> void:
 	_section_header("SECTION_AUDIO", "AudioHeader")
@@ -213,6 +229,8 @@ func _on_save() -> void:
 
 	PostFx.set_enabled(_fx_check.button_pressed)
 	SettingsStore.turn_notify = _turn_check.button_pressed
+	SettingsStore.show_fps = _fps_check.button_pressed
+	FpsOverlay.set_shown(SettingsStore.show_fps)
 	if _lang_option.selected >= 0:
 		I18n.set_locale(I18n.SUPPORTED[_lang_option.selected])
 
