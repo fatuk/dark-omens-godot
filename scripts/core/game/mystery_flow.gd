@@ -57,7 +57,8 @@ func _mystery_target() -> int:
 
 
 ## Тип условия решения активной Тайны: "tokensOnCard" | "cluesOnCard" |
-## "monsterDefeated" | "" (старый location-счётчик). Источник — solveCondition.kind.
+## "" (старый location-счётчик). Источник — solveCondition.kind.
+## "monsterDefeated" убран из словаря: так решается только Слух, не Тайна.
 func mystery_kind() -> String:
 	var m: Dictionary = _gs._campaign.current_mystery()
 	return String((m.get("solveCondition", {}) as Dictionary).get("kind", ""))
@@ -159,7 +160,8 @@ func mystery_apply_hook(hook: Dictionary, pid: String) -> bool:
 	return true
 
 
-# Хост: реакция-триггеры (gateClosed/monsterDefeated). Пока БЕЗ opt-in промпта —
+# Хост: реакция-триггеры. Фактически стреляет только gateClosed (BoardState).
+# Пока БЕЗ opt-in промпта —
 # применяется автоматически, если игрок может оплатить (см. MYSTERY-PROGRESS.md).
 func try_mystery_hook(event: String, ctx: Dictionary, pid: String) -> void:
 	var hook: Dictionary = mystery_hook_for(event, ctx)
