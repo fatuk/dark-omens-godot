@@ -122,7 +122,7 @@ func logout() -> void:
 			["Content-Type: application/json", "Authorization: Bearer " + session_token],
 			HTTPClient.METHOD_POST
 		)
-	current_user = {}
+	_apply_user({})  # заодно закрывает сезоны: вышел — играешь снова базой
 	session_token = ""
 	_save_session()
 	logged_out.emit()
@@ -174,7 +174,7 @@ func _on_request_completed(
 		"otp_verify":
 			if response_code == 200:
 				session_token = json.get("token", "")
-				current_user = json.get("user", {})
+				_apply_user(json.get("user", {}))
 				_save_session()
 				login_succeeded.emit(current_user)
 			elif response_code == 403 and _is_denial(json):
@@ -184,19 +184,19 @@ func _on_request_completed(
 
 		"check_session":
 			if response_code == 200:
-				current_user = json
+				_apply_user(json)
 				login_succeeded.emit(current_user)
 			elif response_code == 403 and _is_denial(json):
 				# Играть нельзя. Токен стираем — сервер уже снёс сессию на своей
 				# стороне, держать его смысла нет.
 				session_token = ""
-				current_user = {}
+				_apply_user({})
 				_save_session()
 				access_denied.emit(String(json.get("code", "")), String(json.get("error", "")))
 			elif response_code == 401:
 				# Токен явно инвалидирован сервером — стираем
 				session_token = ""
-				current_user = {}
+				_apply_user({})
 				_save_session()
 				session_invalid.emit()
 			else:
@@ -209,6 +209,18 @@ func _on_request_completed(
 
 
 # Отказ по праву на игру, а не какой-то другой 403.
+## Принять пользователя от сервера и открыть ему его сезоны.
+##
+## Форма ответа одна у /auth/verify и /auth/me, поэтому и путь один: иначе после
+## свежего входа сезоны оставались бы закрытыми до следующего запуска.
+##
+## Это ЛИЧНЫЙ набор — за каких сыщиков можно играть. Контент стола решает хост,
+## он приходит отдельно. И это лишь UX: настоящую проверку делает сервер.
+func _apply_user(u: Dictionary) -> void:
+	current_user = u
+	SeasonGate.set_own(u.get("seasons", []))
+
+
 func _is_denial(json: Dictionary) -> bool:
 	var code: String = String(json.get("code", ""))
 	return code == "license_revoked" or code == "license_required"
