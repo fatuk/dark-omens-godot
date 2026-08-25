@@ -10,6 +10,7 @@
 		"occupation": "INV_EZRA_GILMAN_OCC",
 		"startingLocation": "Sydney",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_EZRA_GILMAN_QUOTE",
 		"role": [
 			"INV_ROLE_ALL_ROUNDER"
@@ -35,6 +36,7 @@
 		"occupation": "INV_COLBY_BANKS_OCC",
 		"startingLocation": "The Pyramids",
 		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"season": "utp",
 		"quote": "INV_COLBY_BANKS_QUOTE",
 		"role": [
 			"INV_ROLE_EXPEDITION"
@@ -63,6 +65,7 @@
 		"occupation": "INV_HAROLD_PERKINS_OCC",
 		"startingLocation": "20",
 		"set": "INV_SET_THE_DREAMLANDS",
+		"season": "td",
 		"quote": "INV_HAROLD_PERKINS_QUOTE",
 		"role": [
 			"INV_ROLE_RESEARCH"
@@ -88,6 +91,7 @@
 		"occupation": "INV_NADIA_BLACKWOOD_OCC",
 		"startingLocation": "16",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_NADIA_BLACKWOOD_QUOTE",
 		"role": [
 			"INV_ROLE_RESEARCH"
@@ -113,6 +117,7 @@
 		"occupation": "INV_ELENA_KOSTAS_OCC",
 		"startingLocation": "Rome",
 		"set": "INV_SET_STRANGE_REMNANTS",
+		"season": "sr",
 		"quote": "INV_ELENA_KOSTAS_QUOTE",
 		"role": [
 			"INV_ROLE_COMBAT"
@@ -138,6 +143,7 @@
 		"occupation": "INV_VIVIENNE_MARCHETTI_OCC",
 		"startingLocation": "5",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_VIVIENNE_MARCHETTI_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT",
@@ -167,6 +173,7 @@
 		"occupation": "INV_MAXWELL_THORNE_OCC",
 		"startingLocation": "Tokyo",
 		"set": "INV_SET_SIGNS_OF_CARCOSA",
+		"season": "soc",
 		"quote": "INV_MAXWELL_THORNE_QUOTE",
 		"role": [
 			"INV_ROLE_MAGIC"
@@ -195,6 +202,7 @@
 		"occupation": "INV_CLARA_ASHBY_OCC",
 		"startingLocation": "7",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_CLARA_ASHBY_QUOTE",
 		"role": [
 			"INV_ROLE_MAGIC",
@@ -217,6 +225,7 @@
 		"occupation": "INV_NORA_QUINN_OCC",
 		"startingLocation": "Istanbul",
 		"set": "INV_SET_THE_DREAMLANDS",
+		"season": "td",
 		"quote": "INV_NORA_QUINN_QUOTE",
 		"role": [
 			"INV_ROLE_RESEARCH"
@@ -238,6 +247,7 @@
 		"occupation": "INV_RUTH_ADLER_OCC",
 		"startingLocation": "Arkham",
 		"set": "INV_SET_THE_DREAMLANDS",
+		"season": "td",
 		"quote": "INV_RUTH_ADLER_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT",
@@ -264,6 +274,7 @@
 		"occupation": "INV_ADA_FAIRFAX_OCC",
 		"startingLocation": "Buenos Aires",
 		"set": "INV_SET_THE_DREAMLANDS",
+		"season": "td",
 		"quote": "INV_ADA_FAIRFAX_QUOTE",
 		"role": [
 			"INV_ROLE_RESEARCH",
@@ -290,6 +301,7 @@
 		"occupation": "INV_MAI_NGUYEN_OCC",
 		"startingLocation": "Tokyo",
 		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"season": "utp",
 		"quote": "INV_MAI_NGUYEN_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT"
@@ -315,6 +327,7 @@
 		"occupation": "INV_BETTY_CROSS_OCC",
 		"startingLocation": "Shanghai",
 		"set": "INV_SET_CITIES_IN_RUIN",
+		"season": "cir",
 		"quote": "INV_BETTY_CROSS_QUOTE",
 		"role": [
 			"INV_ROLE_COMBAT"
@@ -340,6 +353,7 @@
 		"occupation": "INV_NICK_STONE_OCC",
 		"startingLocation": "San Francisco",
 		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"season": "utp",
 		"quote": "INV_NICK_STONE_QUOTE",
 		"role": [
 			"INV_ROLE_RESEARCH"
@@ -365,6 +379,7 @@
 		"occupation": "INV_SILAS_GRAVES_OCC",
 		"startingLocation": "Sydney",
 		"set": "INV_SET_THE_DREAMLANDS",
+		"season": "td",
 		"quote": "INV_SILAS_GRAVES_QUOTE",
 		"role": [
 			"INV_ROLE_COMBAT"
@@ -390,6 +405,7 @@
 		"occupation": "INV_CORDELIA_FROST_OCC",
 		"startingLocation": "Tokyo",
 		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"season": "mon",
 		"quote": "INV_CORDELIA_FROST_QUOTE",
 		"role": [
 			"INV_ROLE_MAGIC",
@@ -419,6 +435,7 @@
 		"occupation": "INV_ROSA_DELGADO_OCC",
 		"startingLocation": "San Francisco",
 		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"season": "mon",
 		"quote": "INV_ROSA_DELGADO_QUOTE",
 		"role": [
 			"INV_ROLE_ALL_ROUNDER"
@@ -444,6 +461,7 @@
 		"occupation": "INV_HOBO_CAL_OCC",
 		"startingLocation": "14",
 		"set": "INV_SET_CITIES_IN_RUIN",
+		"season": "cir",
 		"quote": "INV_HOBO_CAL_QUOTE",
 		"role": [
 			"INV_ROLE_ALL_ROUNDER"
@@ -469,6 +487,7 @@
 		"occupation": "INV_FRANK_DONNELLY_OCC",
 		"startingLocation": "London",
 		"set": "INV_SET_SIGNS_OF_CARCOSA",
+		"season": "soc",
 		"quote": "INV_FRANK_DONNELLY_QUOTE",
 		"role": [
 			"INV_ROLE_COMBAT"
@@ -494,6 +513,7 @@
 		"occupation": "INV_DANNY_KILROY_OCC",
 		"startingLocation": "1",
 		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"season": "mom",
 		"quote": "INV_DANNY_KILROY_QUOTE",
 		"role": [
 			"INV_ROLE_COMBAT"
@@ -522,6 +542,7 @@
 		"occupation": "INV_TAVITA_LEBEAU_OCC",
 		"startingLocation": "Sydney",
 		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"season": "mon",
 		"quote": "INV_TAVITA_LEBEAU_QUOTE",
 		"role": [
 			"INV_ROLE_RESEARCH"
@@ -547,6 +568,7 @@
 		"occupation": "INV_ALFRED_BRAMWELL_OCC",
 		"startingLocation": "Arkham",
 		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"season": "utp",
 		"quote": "INV_ALFRED_BRAMWELL_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT"
@@ -575,6 +597,7 @@
 		"occupation": "INV_CELESTE_DUBOIS_OCC",
 		"startingLocation": "20",
 		"set": "INV_SET_STRANGE_REMNANTS",
+		"season": "sr",
 		"quote": "INV_CELESTE_DUBOIS_QUOTE",
 		"role": [
 			"INV_ROLE_MAGIC"
@@ -603,6 +626,7 @@
 		"occupation": "INV_ARTHUR_PENNINGTON_OCC",
 		"startingLocation": "17",
 		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"season": "mom",
 		"quote": "INV_ARTHUR_PENNINGTON_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT"
@@ -628,6 +652,7 @@
 		"occupation": "INV_NELLIE_FOX_OCC",
 		"startingLocation": "16",
 		"set": "INV_SET_SIGNS_OF_CARCOSA",
+		"season": "soc",
 		"quote": "INV_NELLIE_FOX_QUOTE",
 		"role": [
 			"INV_ROLE_RESEARCH"
@@ -653,6 +678,7 @@
 		"occupation": "INV_GRETA_STERLING_OCC",
 		"startingLocation": "Tokyo",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_GRETA_STERLING_QUOTE",
 		"role": [
 			"INV_ROLE_ALL_ROUNDER"
@@ -678,6 +704,7 @@
 		"occupation": "INV_NICK_RYAN_OCC",
 		"startingLocation": "1",
 		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"season": "utp",
 		"quote": "INV_NICK_RYAN_QUOTE",
 		"role": [
 			"INV_ROLE_ALL_ROUNDER"
@@ -706,6 +733,7 @@
 		"occupation": "INV_MEI_LIN_OCC",
 		"startingLocation": "Shanghai",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_MEI_LIN_QUOTE",
 		"role": [
 			"INV_ROLE_COMBAT"
@@ -749,6 +777,7 @@
 		"occupation": "INV_AL_DOBBS_OCC",
 		"startingLocation": "London",
 		"set": "INV_SET_CITIES_IN_RUIN",
+		"season": "cir",
 		"quote": "INV_AL_DOBBS_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT"
@@ -777,6 +806,7 @@
 		"occupation": "INV_MILES_BARROW_OCC",
 		"startingLocation": "6",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_MILES_BARROW_QUOTE",
 		"role": [
 			"INV_ROLE_MAGIC",
@@ -809,6 +839,7 @@
 		"occupation": "INV_DAPHNE_VALE_OCC",
 		"startingLocation": "8",
 		"set": "INV_SET_SIGNS_OF_CARCOSA",
+		"season": "soc",
 		"quote": "INV_DAPHNE_VALE_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT"
@@ -834,6 +865,7 @@
 		"occupation": "INV_BEATRIX_KINGSLEY_OCC",
 		"startingLocation": "The Heart of Africa",
 		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"season": "mom",
 		"quote": "INV_BEATRIX_KINGSLEY_QUOTE",
 		"role": [
 			"INV_ROLE_EXPEDITION"
@@ -859,6 +891,7 @@
 		"occupation": "INV_WALTER_BRIGGS_OCC",
 		"startingLocation": "Arkham",
 		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"season": "mom",
 		"quote": "INV_WALTER_BRIGGS_QUOTE",
 		"role": [
 			"INV_ROLE_COMBAT"
@@ -887,6 +920,7 @@
 		"occupation": "INV_CASEY_MERCER_OCC",
 		"startingLocation": "Arkham",
 		"set": "INV_SET_THE_DREAMLANDS",
+		"season": "td",
 		"quote": "INV_CASEY_MERCER_QUOTE",
 		"role": [
 			"INV_ROLE_GATE_CLOSER"
@@ -912,6 +946,7 @@
 		"occupation": "INV_GORDON_PIKE_OCC",
 		"startingLocation": "Buenos Aires",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_GORDON_PIKE_QUOTE",
 		"role": [
 			"INV_ROLE_EXPEDITION"
@@ -937,6 +972,7 @@
 		"occupation": "INV_CHESTER_HOLLOWAY_OCC",
 		"startingLocation": "Istanbul",
 		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"season": "mon",
 		"quote": "INV_CHESTER_HOLLOWAY_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT"
@@ -962,6 +998,7 @@
 		"occupation": "INV_CLIVE_ASHTON_OCC",
 		"startingLocation": "Arkham",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_CLIVE_ASHTON_QUOTE",
 		"role": [
 			"INV_ROLE_MAGIC"
@@ -987,6 +1024,7 @@
 		"occupation": "INV_FATHER_IGNATIUS_OCC",
 		"startingLocation": "Rome",
 		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"season": "mon",
 		"quote": "INV_FATHER_IGNATIUS_QUOTE",
 		"role": [
 			"INV_ROLE_GATE_CLOSER",
@@ -1013,6 +1051,7 @@
 		"occupation": "INV_FRANK_DELANEY_OCC",
 		"startingLocation": "San Francisco",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_FRANK_DELANEY_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT"
@@ -1038,6 +1077,7 @@
 		"occupation": "INV_NGOZI_EZE_OCC",
 		"startingLocation": "15",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_NGOZI_EZE_QUOTE",
 		"role": [
 			"INV_ROLE_GATE_CLOSER"
@@ -1066,6 +1106,7 @@
 		"occupation": "INV_FRANK_DALTON_OCC",
 		"startingLocation": "14",
 		"set": "INV_SET_CORE",
+		"season": "core",
 		"quote": "INV_FRANK_DALTON_QUOTE",
 		"role": [
 			"INV_ROLE_COMBAT"
@@ -1097,6 +1138,7 @@
 		"occupation": "INV_MARCUS_BELL_OCC",
 		"startingLocation": "Buenos Aires",
 		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"season": "mon",
 		"quote": "INV_MARCUS_BELL_QUOTE",
 		"role": [
 			"INV_ROLE_ALL_ROUNDER"
@@ -1122,6 +1164,7 @@
 		"occupation": "INV_NORA_WHITBY_OCC",
 		"startingLocation": "Shanghai",
 		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"season": "utp",
 		"quote": "INV_NORA_WHITBY_QUOTE",
 		"role": [
 			"INV_ROLE_RESEARCH"
@@ -1147,6 +1190,7 @@
 		"occupation": "INV_IRIS_BELLAMY_OCC",
 		"startingLocation": "Istanbul",
 		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"season": "mom",
 		"quote": "INV_IRIS_BELLAMY_QUOTE",
 		"role": [
 			"INV_ROLE_MAGIC"
@@ -1172,6 +1216,7 @@
 		"occupation": "INV_DALE_CORWIN_OCC",
 		"startingLocation": "San Francisco",
 		"set": "INV_SET_CITIES_IN_RUIN",
+		"season": "cir",
 		"quote": "INV_DALE_CORWIN_QUOTE",
 		"role": [
 			"INV_ROLE_RESEARCH",
@@ -1198,6 +1243,7 @@
 		"occupation": "INV_BUCK_TANNER_OCC",
 		"startingLocation": "6",
 		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"season": "utp",
 		"quote": "INV_BUCK_TANNER_QUOTE",
 		"role": [
 			"INV_ROLE_COMBAT"
@@ -1223,6 +1269,7 @@
 		"occupation": "INV_SLY_BRACKEN_OCC",
 		"startingLocation": "Buenos Aires",
 		"set": "INV_SET_STRANGE_REMNANTS",
+		"season": "sr",
 		"quote": "INV_SLY_BRACKEN_QUOTE",
 		"role": [
 			"INV_ROLE_COMBAT"
@@ -1248,6 +1295,7 @@
 		"occupation": "INV_EVELYN_HART_OCC",
 		"startingLocation": "Rome",
 		"set": "INV_SET_THE_DREAMLANDS",
+		"season": "td",
 		"quote": "INV_EVELYN_HART_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT"
@@ -1273,6 +1321,7 @@
 		"occupation": "INV_HENRY_WU_OCC",
 		"startingLocation": "17",
 		"set": "INV_SET_THE_DREAMLANDS",
+		"season": "td",
 		"quote": "INV_HENRY_WU_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT"
@@ -1301,6 +1350,7 @@
 		"occupation": "INV_ESTHER_RAVEL_OCC",
 		"startingLocation": "London",
 		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"season": "mom",
 		"quote": "INV_ESTHER_RAVEL_QUOTE",
 		"role": [
 			"INV_ROLE_MAGIC"
@@ -1329,6 +1379,7 @@
 		"occupation": "INV_RORY_KELL_OCC",
 		"startingLocation": "5",
 		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"season": "mom",
 		"quote": "INV_RORY_KELL_QUOTE",
 		"role": [
 			"INV_ROLE_ALL_ROUNDER"
@@ -1357,6 +1408,7 @@
 		"occupation": "INV_SIMONE_ARDENT_OCC",
 		"startingLocation": "Sydney",
 		"set": "INV_SET_MOUNTAINS_OF_MADNESS",
+		"season": "mom",
 		"quote": "INV_SIMONE_ARDENT_QUOTE",
 		"role": [
 			"INV_ROLE_GATE_CLOSER"
@@ -1385,6 +1437,7 @@
 		"occupation": "INV_PERCIVAL_STANE_OCC",
 		"startingLocation": "London",
 		"set": "INV_SET_MASKS_OF_NYARLATHOTEP",
+		"season": "mon",
 		"quote": "INV_PERCIVAL_STANE_QUOTE",
 		"role": [
 			"INV_ROLE_ALL_ROUNDER",
@@ -1411,6 +1464,7 @@
 		"occupation": "INV_VINCE_CUTTER_OCC",
 		"startingLocation": "7",
 		"set": "INV_SET_STRANGE_REMNANTS",
+		"season": "sr",
 		"quote": "INV_VINCE_CUTTER_QUOTE",
 		"role": [
 			"INV_ROLE_RESEARCH"
@@ -1442,6 +1496,7 @@
 		"occupation": "INV_SISTER_CECILIA_OCC",
 		"startingLocation": "15",
 		"set": "INV_SET_UNDER_THE_PYRAMIDS",
+		"season": "utp",
 		"quote": "INV_SISTER_CECILIA_QUOTE",
 		"role": [
 			"INV_ROLE_SUPPORT"

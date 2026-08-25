@@ -4,6 +4,7 @@
 		"name": "SPELL_SHRIVELING_NAME",
 		"subtype": "ritual",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -58,6 +59,7 @@
 		"name": "SPELL_WITHER_NAME",
 		"subtype": "incantation",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "combatEncounter",
@@ -112,6 +114,7 @@
 		"name": "SPELL_MINDS_EYE_NAME",
 		"subtype": "glamour",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "exhaust",
@@ -161,6 +164,7 @@
 		"name": "SPELL_HEALING_WORDS_NAME",
 		"subtype": "incantation",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "onRest",
@@ -215,6 +219,7 @@
 		"name": "SPELL_AZURE_FLAME_NAME",
 		"subtype": "glamour",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "exhaust",
@@ -266,6 +271,7 @@
 		"name": "SPELL_ENCHANT_WEAPON_NAME",
 		"subtype": "glamour",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "exhaust",
@@ -317,6 +323,7 @@
 		"name": "SPELL_WRACK_NAME",
 		"subtype": "incantation",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "combatEncounter",
@@ -371,6 +378,7 @@
 		"name": "SPELL_POISON_MIST_NAME",
 		"subtype": "ritual",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -419,6 +427,7 @@
 		"name": "SPELL_CLAIRVOYANCE_NAME",
 		"subtype": "ritual",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -467,6 +476,7 @@
 		"name": "SPELL_STORM_OF_SPIRITS_NAME",
 		"subtype": "ritual",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -521,6 +531,7 @@
 		"name": "SPELL_SPECTRAL_RAZOR_NAME",
 		"subtype": "incantation",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "combatEncounter",
@@ -575,6 +586,7 @@
 		"name": "SPELL_BANISHMENT_NAME",
 		"subtype": "ritual",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -623,6 +635,7 @@
 		"name": "SPELL_BLESSING_OF_ISIS_NAME",
 		"subtype": "ritual",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -671,6 +684,7 @@
 		"name": "SPELL_VOICE_OF_RA_NAME",
 		"subtype": "ritual",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -719,6 +733,7 @@
 		"name": "SPELL_CALL_THE_STORM_NAME",
 		"subtype": "ritual",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -767,6 +782,7 @@
 		"name": "SPELL_CONJURATION_NAME",
 		"subtype": "ritual",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -815,6 +831,7 @@
 		"name": "SPELL_ARCANE_INSIGHT_NAME",
 		"subtype": "ritual",
 		"set": "mountains_of_madness",
+		"season": "mom",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -863,6 +880,7 @@
 		"name": "SPELL_FEED_THE_MIND_NAME",
 		"subtype": "ritual",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -911,6 +929,7 @@
 		"name": "SPELL_OCCULT_EXALTATION_NAME",
 		"subtype": "ritual",
 		"set": "signs_of_carcosa",
+		"season": "soc",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "action",
@@ -959,6 +978,7 @@
 		"name": "SPELL_BINDING_NAME",
 		"subtype": "incantation",
 		"set": "signs_of_carcosa",
+		"season": "soc",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "combatEncounter",
@@ -1007,6 +1027,7 @@
 		"name": "SPELL_DREAD_CURSE_NAME",
 		"subtype": "incantation",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "combatEncounter",
@@ -1055,6 +1076,7 @@
 		"name": "SPELL_BEAST_WITHIN_NAME",
 		"subtype": "glamour",
 		"set": "core",
+		"season": "core",
 		"traits": ["magical", "spell"],
 		"front": {
 			"trigger": "exhaust",

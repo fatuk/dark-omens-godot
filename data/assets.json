@@ -3,6 +3,7 @@
 		"id": "18_derringer",
 		"nameKey": "ASSET_18_DERRINGER_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"trinket",
@@ -25,6 +26,7 @@
 		"id": "38_revolver",
 		"nameKey": "ASSET_38_REVOLVER_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -47,6 +49,7 @@
 		"id": "45_automatic",
 		"nameKey": "ASSET_45_AUTOMATIC_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -69,6 +72,7 @@
 		"id": "agency_quarantine",
 		"nameKey": "ASSET_AGENCY_QUARANTINE_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 4,
 		"traits": [
 			"service"
@@ -91,6 +95,7 @@
 		"id": "arcane_manuscripts",
 		"nameKey": "ASSET_ARCANE_MANUSCRIPTS_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -113,6 +118,7 @@
 		"id": "arcane_scholar",
 		"nameKey": "ASSET_ARCANE_SCHOLAR_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -138,6 +144,7 @@
 		"id": "arcane_tome",
 		"nameKey": "ASSET_ARCANE_TOME_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -176,6 +183,7 @@
 		"id": "axe",
 		"nameKey": "ASSET_AXE_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -209,6 +217,7 @@
 		"id": "bandages",
 		"nameKey": "ASSET_BANDAGES_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item"
@@ -233,6 +242,7 @@
 		"id": "bull_whip",
 		"nameKey": "ASSET_BULL_WHIP_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -261,6 +271,7 @@
 		"id": "carbine_rifle",
 		"nameKey": "ASSET_CARBINE_RIFLE_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -285,6 +296,7 @@
 		"id": "cat_burglar",
 		"nameKey": "ASSET_CAT_BURGLAR_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"ally"
@@ -327,6 +339,7 @@
 		"id": "charter_flight",
 		"nameKey": "ASSET_CHARTER_FLIGHT_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"service"
@@ -348,6 +361,7 @@
 		"id": "delivery_service",
 		"nameKey": "ASSET_DELIVERY_SERVICE_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"service",
@@ -373,6 +387,7 @@
 		"id": "double_barreled_shotgun",
 		"nameKey": "ASSET_DOUBLE_BARRELED_SHOTGUN_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 4,
 		"traits": [
 			"item",
@@ -402,6 +417,7 @@
 		"id": "dynamite",
 		"nameKey": "ASSET_DYNAMITE_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -428,6 +444,7 @@
 		"id": "fine_clothes",
 		"nameKey": "ASSET_FINE_CLOTHES_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"item"
@@ -448,6 +465,7 @@
 		"id": "fishing_net",
 		"nameKey": "ASSET_FISHING_NET_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"item"
@@ -473,6 +491,7 @@
 		"id": "hired_muscle",
 		"nameKey": "ASSET_HIRED_MUSCLE_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -498,6 +517,7 @@
 		"id": "holy_cross",
 		"nameKey": "ASSET_HOLY_CROSS_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"item"
@@ -519,6 +539,7 @@
 		"id": "holy_water",
 		"nameKey": "ASSET_HOLY_WATER_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -563,6 +584,7 @@
 		"id": "kerosene",
 		"nameKey": "ASSET_KEROSENE_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item"
@@ -588,6 +610,7 @@
 		"id": "king_james_bible",
 		"nameKey": "ASSET_KING_JAMES_BIBLE_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -621,6 +644,7 @@
 		"id": "lodge_researcher",
 		"nameKey": "ASSET_LODGE_RESEARCHER_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 3,
 		"traits": [
 			"ally"
@@ -648,6 +672,7 @@
 		"id": "lucky_cigarette_case",
 		"nameKey": "ASSET_LUCKY_CIGARETTE_CASE_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"trinket"
@@ -670,6 +695,7 @@
 		"id": "lucky_rabbits_foot",
 		"nameKey": "ASSET_LUCKY_RABBITS_FOOT_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"trinket"
@@ -694,6 +720,7 @@
 		"id": "personal_assistant",
 		"nameKey": "ASSET_PERSONAL_ASSISTANT_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -719,6 +746,7 @@
 		"id": "pocket_watch",
 		"nameKey": "ASSET_POCKET_WATCH_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"trinket"
@@ -737,6 +765,7 @@
 		"id": "private_care",
 		"nameKey": "ASSET_PRIVATE_CARE_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"service"
@@ -762,6 +791,7 @@
 		"id": "private_investigator",
 		"nameKey": "ASSET_PRIVATE_INVESTIGATOR_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -787,6 +817,7 @@
 		"id": "protective_amulet",
 		"nameKey": "ASSET_PROTECTIVE_AMULET_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item"
@@ -808,6 +839,7 @@
 		"id": "puzzle_box",
 		"nameKey": "ASSET_PUZZLE_BOX_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 3,
 		"traits": [
 			"trinket"
@@ -841,6 +873,7 @@
 		"id": "sanctuary",
 		"nameKey": "ASSET_SANCTUARY_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"service"
@@ -862,6 +895,7 @@
 		"id": "silver_twilight_ritual",
 		"nameKey": "ASSET_SILVER_TWILIGHT_RITUAL_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 3,
 		"traits": [
 			"service"
@@ -883,6 +917,7 @@
 		"id": "spirit_dagger",
 		"nameKey": "ASSET_SPIRIT_DAGGER_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -912,6 +947,7 @@
 		"id": "urban_guide",
 		"nameKey": "ASSET_URBAN_GUIDE_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 4,
 		"traits": [
 			"ally"
@@ -936,6 +972,7 @@
 		"id": "vatican_missionary",
 		"nameKey": "ASSET_VATICAN_MISSIONARY_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -961,6 +998,7 @@
 		"id": "whiskey",
 		"nameKey": "ASSET_WHISKEY_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item"
@@ -985,6 +1023,7 @@
 		"id": "wireless_report",
 		"nameKey": "ASSET_WIRELESS_REPORT_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"service",
@@ -1009,6 +1048,7 @@
 		"id": "witch_doctor",
 		"nameKey": "ASSET_WITCH_DOCTOR_NAME",
 		"set": "core",
+		"season": "core",
 		"cost": 3,
 		"traits": [
 			"ally"
@@ -1041,6 +1081,7 @@
 		"id": "45_colt_revolver",
 		"nameKey": "ASSET_45_COLT_REVOLVER_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -1065,6 +1106,7 @@
 		"id": "appeal_to_the_council",
 		"nameKey": "ASSET_APPEAL_TO_THE_COUNCIL_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"service"
@@ -1091,6 +1133,7 @@
 		"id": "bodyguard",
 		"nameKey": "ASSET_BODYGUARD_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -1116,6 +1159,7 @@
 		"id": "conspiracy_theorist",
 		"nameKey": "ASSET_CONSPIRACY_THEORIST_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 3,
 		"traits": [
 			"ally"
@@ -1159,6 +1203,7 @@
 		"id": "elder_sign",
 		"nameKey": "ASSET_ELDER_SIGN_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"trinket",
@@ -1185,6 +1230,7 @@
 		"id": "enchanted_blade",
 		"nameKey": "ASSET_ENCHANTED_BLADE_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -1214,6 +1260,7 @@
 		"id": "fresh_fruit",
 		"nameKey": "ASSET_FRESH_FRUIT_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item"
@@ -1245,6 +1292,7 @@
 		"id": "intelligence_report",
 		"nameKey": "ASSET_INTELLIGENCE_REPORT_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 3,
 		"traits": [
 			"service"
@@ -1266,6 +1314,7 @@
 		"id": "lantern",
 		"nameKey": "ASSET_LANTERN_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item"
@@ -1290,6 +1339,7 @@
 		"id": "lucky_ring",
 		"nameKey": "ASSET_LUCKY_RING_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 3,
 		"traits": [
 			"trinket"
@@ -1313,6 +1363,7 @@
 		"id": "mystic_bounty_hunter",
 		"nameKey": "ASSET_MYSTIC_BOUNTY_HUNTER_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -1340,6 +1391,7 @@
 		"id": "police_assistance",
 		"nameKey": "ASSET_POLICE_ASSISTANCE_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"service"
@@ -1361,6 +1413,7 @@
 		"id": "police_ledger",
 		"nameKey": "ASSET_POLICE_LEDGER_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item"
@@ -1394,6 +1447,7 @@
 		"id": "research_student",
 		"nameKey": "ASSET_RESEARCH_STUDENT_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"ally"
@@ -1436,6 +1490,7 @@
 		"id": "syndicate_agent",
 		"nameKey": "ASSET_SYNDICATE_AGENT_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -1463,6 +1518,7 @@
 		"id": "tear_gas",
 		"nameKey": "ASSET_TEAR_GAS_NAME",
 		"set": "fl",
+		"season": "core",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -1493,6 +1549,7 @@
 		"id": "astronomy_guidebook",
 		"nameKey": "ASSET_ASTRONOMY_GUIDEBOOK_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -1521,6 +1578,7 @@
 		"id": "blunderbuss",
 		"nameKey": "ASSET_BLUNDERBUSS_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -1557,6 +1615,7 @@
 		"id": "courier_needed",
 		"nameKey": "ASSET_COURIER_NEEDED_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 1,
 		"traits": [
 			"service"
@@ -1579,6 +1638,7 @@
 		"id": "cultists_journal",
 		"nameKey": "ASSET_CULTISTS_JOURNAL_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -1608,6 +1668,7 @@
 		"id": "gamblers_dice",
 		"nameKey": "ASSET_GAMBLERS_DICE_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 3,
 		"traits": [
 			"trinket"
@@ -1638,6 +1699,7 @@
 		"id": "genealogy_research",
 		"nameKey": "ASSET_GENEALOGY_RESEARCH_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 1,
 		"traits": [
 			"tasks",
@@ -1671,6 +1733,7 @@
 		"id": "investment",
 		"nameKey": "ASSET_INVESTMENT_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 1,
 		"traits": [
 			"tasks",
@@ -1697,6 +1760,7 @@
 		"id": "map_of_the_ley_lines",
 		"nameKey": "ASSET_MAP_OF_THE_LEY_LINES_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 4,
 		"traits": [
 			"item",
@@ -1735,6 +1799,7 @@
 		"id": "mineralogy_research",
 		"nameKey": "ASSET_MINERALOGY_RESEARCH_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 1,
 		"traits": [
 			"tasks",
@@ -1768,6 +1833,7 @@
 		"id": "monster_hunter",
 		"nameKey": "ASSET_MONSTER_HUNTER_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 3,
 		"traits": [
 			"ally"
@@ -1799,6 +1865,7 @@
 		"id": "newspaper_report",
 		"nameKey": "ASSET_NEWSPAPER_REPORT_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 1,
 		"traits": [
 			"tasks",
@@ -1829,6 +1896,7 @@
 		"id": "patrolling_the_streets",
 		"nameKey": "ASSET_PATROLLING_THE_STREETS_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 1,
 		"traits": [
 			"tasks",
@@ -1857,6 +1925,7 @@
 		"id": "profane_tome",
 		"nameKey": "ASSET_PROFANE_TOME_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -1878,6 +1947,7 @@
 		"id": "search_the_archives",
 		"nameKey": "ASSET_SEARCH_THE_ARCHIVES_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 2,
 		"traits": [
 			"service"
@@ -1900,6 +1970,7 @@
 		"id": "secret_page",
 		"nameKey": "ASSET_SECRET_PAGE_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -1927,6 +1998,7 @@
 		"id": "tome_of_horrors",
 		"nameKey": "ASSET_TOME_OF_HORRORS_NAME",
 		"set": "mom",
+		"season": "mom",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -1954,6 +2026,7 @@
 		"id": "agent_of_secrets",
 		"nameKey": "ASSET_AGENT_OF_SECRETS_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 4,
 		"traits": [
 			"ally"
@@ -1984,6 +2057,7 @@
 		"id": "arcane_blade",
 		"nameKey": "ASSET_ARCANE_BLADE_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -2013,6 +2087,7 @@
 		"id": "consecration",
 		"nameKey": "ASSET_CONSECRATION_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 2,
 		"traits": [
 			"service"
@@ -2034,6 +2109,7 @@
 		"id": "expedition_guide",
 		"nameKey": "ASSET_EXPEDITION_GUIDE_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -2053,6 +2129,7 @@
 		"id": "expedition_map",
 		"nameKey": "ASSET_EXPEDITION_MAP_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 1,
 		"traits": [
 			"trinket",
@@ -2076,6 +2153,7 @@
 		"id": "gruesome_talisman",
 		"nameKey": "ASSET_GRUESOME_TALISMAN_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 1,
 		"traits": [
 			"trinket"
@@ -2097,6 +2175,7 @@
 		"id": "handcuffs",
 		"nameKey": "ASSET_HANDCUFFS_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 2,
 		"traits": [
 			"item"
@@ -2129,6 +2208,7 @@
 		"id": "holy_spear",
 		"nameKey": "ASSET_HOLY_SPEAR_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -2153,6 +2233,7 @@
 		"id": "lavish_feast",
 		"nameKey": "ASSET_LAVISH_FEAST_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 1,
 		"traits": [
 			"service"
@@ -2178,6 +2259,7 @@
 		"id": "medical_journal",
 		"nameKey": "ASSET_MEDICAL_JOURNAL_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -2211,6 +2293,7 @@
 		"id": "museum_curator",
 		"nameKey": "ASSET_MUSEUM_CURATOR_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 3,
 		"traits": [
 			"ally"
@@ -2241,6 +2324,7 @@
 		"id": "mysterious_tome",
 		"nameKey": "ASSET_MYSTERIOUS_TOME_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -2261,6 +2345,7 @@
 		"id": "opus_arcana",
 		"nameKey": "ASSET_OPUS_ARCANA_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -2288,6 +2373,7 @@
 		"id": "ritual_dagger",
 		"nameKey": "ASSET_RITUAL_DAGGER_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -2323,6 +2409,7 @@
 		"id": "specialized_training",
 		"nameKey": "ASSET_SPECIALIZED_TRAINING_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 1,
 		"traits": [
 			"tasks",
@@ -2356,6 +2443,7 @@
 		"id": "tome_of_secrets",
 		"nameKey": "ASSET_TOME_OF_SECRETS_NAME",
 		"set": "sr",
+		"season": "sr",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -2388,6 +2476,7 @@
 		"id": "25_automatic",
 		"nameKey": "ASSET_25_AUTOMATIC_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -2409,6 +2498,7 @@
 		"id": "arcane_assistant",
 		"nameKey": "ASSET_ARCANE_ASSISTANT_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 1,
 		"traits": [
 			"ally"
@@ -2429,6 +2519,7 @@
 		"id": "assassination",
 		"nameKey": "ASSET_ASSASSINATION_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 2,
 		"traits": [
 			"service"
@@ -2451,6 +2542,7 @@
 		"id": "chief_inspector",
 		"nameKey": "ASSET_CHIEF_INSPECTOR_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -2477,6 +2569,7 @@
 		"id": "enchanted_cane",
 		"nameKey": "ASSET_ENCHANTED_CANE_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -2500,6 +2593,7 @@
 		"id": "esteemed_author",
 		"nameKey": "ASSET_ESTEEMED_AUTHOR_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 3,
 		"traits": [
 			"ally"
@@ -2530,6 +2624,7 @@
 		"id": "fine_jewelry",
 		"nameKey": "ASSET_FINE_JEWELRY_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 1,
 		"traits": [
 			"trinket"
@@ -2552,6 +2647,7 @@
 		"id": "flamethrower",
 		"nameKey": "ASSET_FLAMETHROWER_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 4,
 		"traits": [
 			"item",
@@ -2579,6 +2675,7 @@
 		"id": "lodge_disciple",
 		"nameKey": "ASSET_LODGE_DISCIPLE_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 4,
 		"traits": [
 			"ally"
@@ -2609,6 +2706,7 @@
 		"id": "lodge_physician",
 		"nameKey": "ASSET_LODGE_PHYSICIAN_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -2641,6 +2739,7 @@
 		"id": "occult_text",
 		"nameKey": "ASSET_OCCULT_TEXT_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -2663,6 +2762,7 @@
 		"id": "rumor_mill",
 		"nameKey": "ASSET_RUMOR_MILL_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 1,
 		"traits": [
 			"service"
@@ -2684,6 +2784,7 @@
 		"id": "security_squad",
 		"nameKey": "ASSET_SECURITY_SQUAD_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -2704,6 +2805,7 @@
 		"id": "specialist",
 		"nameKey": "ASSET_SPECIALIST_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 3,
 		"traits": [
 			"ally"
@@ -2733,6 +2835,7 @@
 		"id": "three_card_monte",
 		"nameKey": "ASSET_THREE_CARD_MONTE_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 1,
 		"traits": [
 			"service"
@@ -2767,6 +2870,7 @@
 		"id": "tommy_gun",
 		"nameKey": "ASSET_TOMMY_GUN_NAME",
 		"set": "soc",
+		"season": "soc",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -2789,6 +2893,7 @@
 		"id": "32_colt_pocket",
 		"nameKey": "ASSET_32_COLT_POCKET_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -2817,6 +2922,7 @@
 		"id": "ancient_tome",
 		"nameKey": "ASSET_ANCIENT_TOME_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -2846,6 +2952,7 @@
 		"id": "ankh",
 		"nameKey": "ASSET_ANKH_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -2874,6 +2981,7 @@
 		"id": "arcane_scroll",
 		"nameKey": "ASSET_ARCANE_SCROLL_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 1,
 		"traits": [
 			"trinket",
@@ -2896,6 +3004,7 @@
 		"id": "book_of_spells",
 		"nameKey": "ASSET_BOOK_OF_SPELLS_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -2929,6 +3038,7 @@
 		"id": "curiosity_shoppe",
 		"nameKey": "ASSET_CURIOSITY_SHOPPE_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 4,
 		"traits": [
 			"service"
@@ -2949,6 +3059,7 @@
 		"id": "enchanted_dagger",
 		"nameKey": "ASSET_ENCHANTED_DAGGER_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -2972,6 +3083,7 @@
 		"id": "lucky_talisman",
 		"nameKey": "ASSET_LUCKY_TALISMAN_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 3,
 		"traits": [
 			"trinket",
@@ -2997,6 +3109,7 @@
 		"id": "magick_shoppe",
 		"nameKey": "ASSET_MAGICK_SHOPPE_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 2,
 		"traits": [
 			"service"
@@ -3023,6 +3136,7 @@
 		"id": "magnifying_glass",
 		"nameKey": "ASSET_MAGNIFYING_GLASS_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 1,
 		"traits": [
 			"trinket"
@@ -3052,6 +3166,7 @@
 		"id": "psychoanalyst",
 		"nameKey": "ASSET_PSYCHOANALYST_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -3084,6 +3199,7 @@
 		"id": "ritual_candles",
 		"nameKey": "ASSET_RITUAL_CANDLES_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 1,
 		"traits": [
 			"trinket"
@@ -3119,6 +3235,7 @@
 		"id": "scribes_journal",
 		"nameKey": "ASSET_SCRIBES_JOURNAL_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -3142,6 +3259,7 @@
 		"id": "sledgehammer",
 		"nameKey": "ASSET_SLEDGEHAMMER_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 2,
 		"traits": [
 			"item"
@@ -3168,6 +3286,7 @@
 		"id": "treasure_hunter",
 		"nameKey": "ASSET_TREASURE_HUNTER_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 4,
 		"traits": [
 			"ally"
@@ -3198,6 +3317,7 @@
 		"id": "ward_evil",
 		"nameKey": "ASSET_WARD_EVIL_NAME",
 		"set": "utp",
+		"season": "utp",
 		"cost": 2,
 		"traits": [
 			"service"
@@ -3219,6 +3339,7 @@
 		"id": "agency_stakeout",
 		"nameKey": "ASSET_AGENCY_STAKEOUT_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 3,
 		"traits": [
 			"service"
@@ -3245,6 +3366,7 @@
 		"id": "arcane_sutra",
 		"nameKey": "ASSET_ARCANE_SUTRA_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -3274,6 +3396,7 @@
 		"id": "forbidden_secrets",
 		"nameKey": "ASSET_FORBIDDEN_SECRETS_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -3296,6 +3419,7 @@
 		"id": "gatling_gun",
 		"nameKey": "ASSET_GATLING_GUN_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 4,
 		"traits": [
 			"item",
@@ -3325,6 +3449,7 @@
 		"id": "grisly_totem",
 		"nameKey": "ASSET_GRISLY_TOTEM_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 3,
 		"traits": [
 			"trinket",
@@ -3363,6 +3488,7 @@
 		"id": "lodge_hunter",
 		"nameKey": "ASSET_LODGE_HUNTER_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 4,
 		"traits": [
 			"ally"
@@ -3393,6 +3519,7 @@
 		"id": "mauser_c96",
 		"nameKey": "ASSET_MAUSER_C96_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -3421,6 +3548,7 @@
 		"id": "mission_briefing",
 		"nameKey": "ASSET_MISSION_BRIEFING_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 1,
 		"traits": [
 			"service"
@@ -3452,6 +3580,7 @@
 		"id": "mystic_scroll",
 		"nameKey": "ASSET_MYSTIC_SCROLL_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -3472,6 +3601,7 @@
 		"id": "news_report",
 		"nameKey": "ASSET_NEWS_REPORT_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 1,
 		"traits": [
 			"service"
@@ -3494,6 +3624,7 @@
 		"id": "occult_scripture",
 		"nameKey": "ASSET_OCCULT_SCRIPTURE_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -3525,6 +3656,7 @@
 		"id": "painkillers",
 		"nameKey": "ASSET_PAINKILLERS_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 1,
 		"traits": [
 			"trinket"
@@ -3546,6 +3678,7 @@
 		"id": "private_flight",
 		"nameKey": "ASSET_PRIVATE_FLIGHT_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 2,
 		"traits": [
 			"service"
@@ -3566,6 +3699,7 @@
 		"id": "silver_twilight_host",
 		"nameKey": "ASSET_SILVER_TWILIGHT_HOST_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 3,
 		"traits": [
 			"service"
@@ -3595,6 +3729,7 @@
 		"id": "training_regimen",
 		"nameKey": "ASSET_TRAINING_REGIMEN_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 2,
 		"traits": [
 			"service"
@@ -3616,6 +3751,7 @@
 		"id": "winchester_rifle",
 		"nameKey": "ASSET_WINCHESTER_RIFLE_NAME",
 		"set": "cir",
+		"season": "cir",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -3640,6 +3776,7 @@
 		"id": "alchemical_concoction",
 		"nameKey": "ASSET_ALCHEMICAL_CONCOCTION_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -3666,6 +3803,7 @@
 		"id": "arcanist",
 		"nameKey": "ASSET_ARCANIST_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 3,
 		"traits": [
 			"ally"
@@ -3697,6 +3835,7 @@
 		"id": "camera",
 		"nameKey": "ASSET_CAMERA_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 2,
 		"traits": [
 			"item"
@@ -3720,6 +3859,7 @@
 		"id": "divination",
 		"nameKey": "ASSET_DIVINATION_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 1,
 		"traits": [
 			"service"
@@ -3744,6 +3884,7 @@
 		"id": "dream_box",
 		"nameKey": "ASSET_DREAM_BOX_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 2,
 		"traits": [
 			"trinket",
@@ -3772,6 +3913,7 @@
 		"id": "dream_diary",
 		"nameKey": "ASSET_DREAM_DIARY_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -3806,6 +3948,7 @@
 		"id": "enchanted_bow",
 		"nameKey": "ASSET_ENCHANTED_BOW_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -3839,6 +3982,7 @@
 		"id": "forbidden_text",
 		"nameKey": "ASSET_FORBIDDEN_TEXT_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -3866,6 +4010,7 @@
 		"id": "hitman",
 		"nameKey": "ASSET_HITMAN_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 3,
 		"traits": [
 			"ally"
@@ -3893,6 +4038,7 @@
 		"id": "night_classes",
 		"nameKey": "ASSET_NIGHT_CLASSES_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 2,
 		"traits": [
 			"service"
@@ -3919,6 +4065,7 @@
 		"id": "occult_grimoire",
 		"nameKey": "ASSET_OCCULT_GRIMOIRE_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -3946,6 +4093,7 @@
 		"id": "otherworld_codex",
 		"nameKey": "ASSET_OTHERWORLD_CODEX_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -3972,6 +4120,7 @@
 		"id": "police_raid",
 		"nameKey": "ASSET_POLICE_RAID_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 3,
 		"traits": [
 			"service"
@@ -3994,6 +4143,7 @@
 		"id": "seek_the_truth",
 		"nameKey": "ASSET_SEEK_THE_TRUTH_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 1,
 		"traits": [
 			"task"
@@ -4018,6 +4168,7 @@
 		"id": "skeleton_keys",
 		"nameKey": "ASSET_SKELETON_KEYS_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 1,
 		"traits": [
 			"trinket"
@@ -4040,6 +4191,7 @@
 		"id": "willful_aristocrat",
 		"nameKey": "ASSET_WILLFUL_ARISTOCRAT_NAME",
 		"set": "td",
+		"season": "td",
 		"cost": 4,
 		"traits": [
 			"ally"
@@ -4070,6 +4222,7 @@
 		"id": "ancient_manuscript",
 		"nameKey": "ASSET_ANCIENT_MANUSCRIPT_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 3,
 		"traits": [
 			"trinket",
@@ -4109,6 +4262,7 @@
 		"id": "astute_researcher",
 		"nameKey": "ASSET_ASTUTE_RESEARCHER_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 2,
 		"traits": [
 			"ally"
@@ -4137,6 +4291,7 @@
 		"id": "blessed_blade",
 		"nameKey": "ASSET_BLESSED_BLADE_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -4167,6 +4322,7 @@
 		"id": "chainsaw",
 		"nameKey": "ASSET_CHAINSAW_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 3,
 		"traits": [
 			"item"
@@ -4195,6 +4351,7 @@
 		"id": "enchanted_jewelry",
 		"nameKey": "ASSET_ENCHANTED_JEWELRY_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -4221,6 +4378,7 @@
 		"id": "experts_blade",
 		"nameKey": "ASSET_EXPERTS_BLADE_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -4250,6 +4408,7 @@
 		"id": "grim_lexicon",
 		"nameKey": "ASSET_GRIM_LEXICON_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -4276,6 +4435,7 @@
 		"id": "grotesque_compendium",
 		"nameKey": "ASSET_GROTESQUE_COMPENDIUM_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 4,
 		"traits": [
 			"item",
@@ -4304,6 +4464,7 @@
 		"id": "museum_director",
 		"nameKey": "ASSET_MUSEUM_DIRECTOR_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 4,
 		"traits": [
 			"ally"
@@ -4329,6 +4490,7 @@
 		"id": "mystic_tome",
 		"nameKey": "ASSET_MYSTIC_TOME_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -4364,6 +4526,7 @@
 		"id": "occult_tablet",
 		"nameKey": "ASSET_OCCULT_TABLET_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 3,
 		"traits": [
 			"item",
@@ -4409,6 +4572,7 @@
 		"id": "protective_totem",
 		"nameKey": "ASSET_PROTECTIVE_TOTEM_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -4432,6 +4596,7 @@
 		"id": "scroll_of_secrets",
 		"nameKey": "ASSET_SCROLL_OF_SECRETS_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 2,
 		"traits": [
 			"item",
@@ -4460,6 +4625,7 @@
 		"id": "timeworn_brand",
 		"nameKey": "ASSET_TIMEWORN_BRAND_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 1,
 		"traits": [
 			"item",
@@ -4491,6 +4657,7 @@
 		"id": "treasured_memento",
 		"nameKey": "ASSET_TREASURED_MEMENTO_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 1,
 		"traits": [
 			"trinket"
@@ -4514,6 +4681,7 @@
 		"id": "vampiric_talisman",
 		"nameKey": "ASSET_VAMPIRIC_TALISMAN_NAME",
 		"set": "mon",
+		"season": "mon",
 		"cost": 2,
 		"traits": [
 			"item",
