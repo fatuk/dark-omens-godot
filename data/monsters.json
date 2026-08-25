@@ -128,7 +128,7 @@
 	},
 	{
 		"id": "crazed_mob",
-		"season": "core",
+		"season": "cir",
 		"nameKey": "MON_CRAZED_MOB_NAME",
 		"toughness": 3,
 		"horror": {
@@ -279,7 +279,7 @@
 	},
 	{
 		"id": "elder_thing",
-		"season": "core",
+		"season": "mom",
 		"nameKey": "MON_ELDER_THING_NAME",
 		"toughness": 3,
 		"horror": {
@@ -319,7 +319,7 @@
 	},
 	{
 		"id": "firebug",
-		"season": "core",
+		"season": "cir",
 		"nameKey": "MON_FIREBUG_NAME",
 		"toughness": 1,
 		"horror": {
@@ -380,7 +380,7 @@
 	},
 	{
 		"id": "ghast",
-		"season": "core",
+		"season": "td",
 		"nameKey": "MON_GHAST_NAME",
 		"toughness": 2,
 		"horror": {
@@ -461,7 +461,7 @@
 	},
 	{
 		"id": "giant_penguin",
-		"season": "core",
+		"season": "mom",
 		"nameKey": "MON_GIANT_PENGUIN_NAME",
 		"toughness": 2,
 		"horror": {
@@ -481,7 +481,7 @@
 	},
 	{
 		"id": "gnoph_keh",
-		"season": "core",
+		"season": "mom",
 		"nameKey": "MON_GNOPH_KEH_NAME",
 		"toughness": 3,
 		"horror": {
@@ -521,7 +521,7 @@
 	},
 	{
 		"id": "gug",
-		"season": "core",
+		"season": "td",
 		"nameKey": "MON_GUG_NAME",
 		"toughness": 4,
 		"horror": {
@@ -621,7 +621,7 @@
 	},
 	{
 		"id": "jiangshi",
-		"season": "core",
+		"season": "mon",
 		"nameKey": "MON_JIANGSHI_NAME",
 		"toughness": 3,
 		"horror": {
@@ -641,7 +641,7 @@
 	},
 	{
 		"id": "leng_spider",
-		"season": "core",
+		"season": "td",
 		"nameKey": "MON_LENG_SPIDER_NAME",
 		"toughness": 3,
 		"horror": {
@@ -661,7 +661,7 @@
 	},
 	{
 		"id": "leopard_man",
-		"season": "core",
+		"season": "mon",
 		"nameKey": "MON_LEOPARD_MAN_NAME",
 		"toughness": 2,
 		"horror": {
@@ -741,7 +741,7 @@
 	},
 	{
 		"id": "moon_beast",
-		"season": "core",
+		"season": "td",
 		"nameKey": "MON_MOON_BEAST_NAME",
 		"toughness": 4,
 		"horror": {
@@ -761,7 +761,7 @@
 	},
 	{
 		"id": "mummy",
-		"season": "core",
+		"season": "utp",
 		"nameKey": "MON_MUMMY_NAME",
 		"toughness": 3,
 		"horror": {
@@ -822,7 +822,7 @@
 	},
 	{
 		"id": "proto_shoggoth",
-		"season": "core",
+		"season": "mom",
 		"nameKey": "MON_PROTO_SHOGGOTH_NAME",
 		"toughness": 3,
 		"horror": {
@@ -862,7 +862,7 @@
 	},
 	{
 		"id": "ravenous_gug",
-		"season": "core",
+		"season": "td",
 		"nameKey": "MON_RAVENOUS_GUG_NAME",
 		"toughness": 5,
 		"horror": {
@@ -882,7 +882,7 @@
 	},
 	{
 		"id": "riot",
-		"season": "core",
+		"season": "cir",
 		"nameKey": "MON_RIOT_NAME",
 		"toughness": 3,
 		"horror": {
@@ -902,7 +902,7 @@
 	},
 	{
 		"id": "sand_dweller",
-		"season": "core",
+		"season": "utp",
 		"nameKey": "MON_SAND_DWELLER_NAME",
 		"toughness": 2,
 		"horror": {
@@ -1022,7 +1022,7 @@
 	},
 	{
 		"id": "spawn_of_sebak",
-		"season": "core",
+		"season": "utp",
 		"nameKey": "MON_SPAWN_OF_SEBAK_NAME",
 		"toughness": 4,
 		"horror": {
@@ -1082,7 +1082,7 @@
 	},
 	{
 		"id": "tcho_tcho",
-		"season": "core",
+		"season": "mon",
 		"nameKey": "MON_TCHO_TCHO_NAME",
 		"toughness": 1,
 		"horror": {
@@ -1303,7 +1303,7 @@
 	},
 	{
 		"id": "zoog",
-		"season": "core",
+		"season": "td",
 		"nameKey": "MON_ZOOG_NAME",
 		"toughness": 1,
 		"horror": {
@@ -1345,7 +1345,7 @@
 	},
 	{
 		"id": "ancient_cthonian",
-		"season": "core",
+		"season": "cir",
 		"nameKey": "MON_ANCIENT_CTHONIAN_NAME",
 		"epic": true,
 		"toughness": 5,
@@ -1366,7 +1366,7 @@
 	},
 	{
 		"id": "atlach_nacha",
-		"season": "core",
+		"season": "td",
 		"nameKey": "MON_ATLACH_NACHA_NAME",
 		"epic": true,
 		"toughness": 3,
@@ -1388,7 +1388,7 @@
 	},
 	{
 		"id": "bloated_woman",
-		"season": "core",
+		"season": "mon",
 		"nameKey": "MON_BLOATED_WOMAN_NAME",
 		"epic": true,
 		"toughness": 2,
@@ -1454,7 +1454,7 @@
 	},
 	{
 		"id": "crawling_chaos",
-		"season": "core",
+		"season": "mon",
 		"nameKey": "MON_CRAWLING_CHAOS_NAME",
 		"epic": true,
 		"toughness": 2,
@@ -1476,7 +1476,7 @@
 	},
 	{
 		"id": "crazed_elder_thing",
-		"season": "core",
+		"season": "mom",
 		"nameKey": "MON_CRAZED_ELDER_THING_NAME",
 		"epic": true,
 		"toughness": 3,
@@ -1605,7 +1605,7 @@
 	},
 	{
 		"id": "god_of_the_bloody_tongue",
-		"season": "core",
+		"season": "mon",
 		"nameKey": "MON_GOD_OF_THE_BLOODY_TONGUE_NAME",
 		"epic": true,
 		"toughness": 2,
@@ -1627,7 +1627,7 @@
 	},
 	{
 		"id": "haunter_of_the_dark",
-		"season": "core",
+		"season": "mon",
 		"nameKey": "MON_HAUNTER_OF_THE_DARK_NAME",
 		"epic": true,
 		"toughness": 2,
@@ -1824,7 +1824,7 @@
 	},
 	{
 		"id": "rhan_tegoth",
-		"season": "core",
+		"season": "mom",
 		"nameKey": "MON_RHAN_TEGOTH_NAME",
 		"epic": true,
 		"toughness": 2,
@@ -1889,7 +1889,7 @@
 	},
 	{
 		"id": "shudde_m_ell",
-		"season": "core",
+		"season": "cir",
 		"nameKey": "MON_SHUDDE_M_ELL_NAME",
 		"epic": true,
 		"toughness": 3,
@@ -1954,7 +1954,7 @@
 	},
 	{
 		"id": "spawn_of_hastur",
-		"season": "core",
+		"season": "soc",
 		"nameKey": "MON_SPAWN_OF_HASTUR_NAME",
 		"epic": true,
 		"toughness": 2,
@@ -1976,7 +1976,7 @@
 	},
 	{
 		"id": "spinner_of_webs",
-		"season": "core",
+		"season": "mon",
 		"nameKey": "MON_SPINNER_OF_WEBS_NAME",
 		"epic": true,
 		"toughness": 2,
@@ -1998,7 +1998,7 @@
 	},
 	{
 		"id": "the_beast",
-		"season": "core",
+		"season": "mon",
 		"nameKey": "MON_THE_BEAST_NAME",
 		"epic": true,
 		"toughness": 2,
@@ -2108,7 +2108,7 @@
 	},
 	{
 		"id": "winged_serpent",
-		"season": "core",
+		"season": "utp",
 		"nameKey": "MON_WINGED_SERPENT_NAME",
 		"epic": true,
 		"toughness": 2,
