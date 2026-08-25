@@ -94,9 +94,9 @@ func setup_board(player_count: int) -> void:
 	_gs.entities = {}
 	_gs.monsters = {}
 	_gs._fill_shop_reserve()  # стартовая витрина магазина
-	# Наполняем «мешок» всеми не-эпическими монстрами (по одному id).
+	# Наполняем «мешок» не-эпическими монстрами доступных столу сезонов (по id).
 	_gs.monster_bag = []
-	var pool: Array = MonsterCatalog.non_epic()
+	var pool: Array = SeasonGate.filter_room(MonsterCatalog.non_epic())
 	for i: int in range(pool.size()):
 		_gs.monster_bag.append(String(pool[i].get("id", "")))
 	_reset_gate_deck()

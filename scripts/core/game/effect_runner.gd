@@ -611,7 +611,7 @@ static func _apply_player_verb(
 			# Выдаём РЕАЛЬНУЮ карту из пула поддержанных активов. Раньше в items уезжал
 			# литерал "gainAsset", а веер (AssetCatalog.deck_for_items) отбрасывает
 			# неизвестные id — сыщик не получал ничего видимого.
-			var pool: Array = AssetCatalog.supported_ids()
+			var pool: Array = AssetCatalog.available_ids()
 			var items: Array = player.get("items", [])
 			if pool.is_empty():
 				logs.append("активов в пуле не осталось")

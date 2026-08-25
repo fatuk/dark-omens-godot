@@ -113,7 +113,9 @@ func _refresh_confirm_for_taken() -> void:
 
 
 func _load_investigators() -> void:
-	_investigators = DataLoader.load_array("res://data/investigators.json")
+	# Личный пул: сезонных сыщиков показываем только владельцу сезона. Это UX —
+	# настоящая проверка на хосте, он авторитетен по состоянию партии.
+	_investigators = SeasonGate.filter_own(DataLoader.load_array("res://data/investigators.json"))
 	if _investigators.is_empty():
 		push_error("InvestigatorPicker: пустой список сыщиков")
 

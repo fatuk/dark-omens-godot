@@ -349,7 +349,7 @@ func grant_spell(pid: String, spell_id: String = "") -> void:
 		return
 	var sid: String = spell_id
 	if sid.is_empty():
-		var pool: Array = SpellCatalog.all()
+		var pool: Array = SeasonGate.filter_room(SpellCatalog.all())
 		if pool.is_empty():
 			return
 		sid = String((pool[randi() % pool.size()] as Dictionary).get("id", ""))

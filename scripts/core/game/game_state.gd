@@ -1597,7 +1597,7 @@ func asset_discard_ids() -> Array:
 	for a: Variant in asset_deck:
 		taken[String(a)] = true
 	var out: Array = []
-	for aid: Variant in AssetCatalog.supported_ids():
+	for aid: Variant in AssetCatalog.available_ids():
 		if not taken.has(String(aid)):
 			out.append(String(aid))
 	return out
@@ -1620,7 +1620,7 @@ func _assets_in_play() -> Dictionary:
 func _reset_asset_deck() -> void:
 	var taken: Dictionary = _assets_in_play()
 	asset_deck = []
-	for aid: Variant in AssetCatalog.supported_ids():
+	for aid: Variant in AssetCatalog.available_ids():
 		if not taken.has(String(aid)):
 			asset_deck.append(String(aid))
 	asset_deck.shuffle()

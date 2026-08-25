@@ -42,16 +42,16 @@ static func reckoning_of(id: String) -> Array:
 	return (by_id(id).get("effect", {}) as Dictionary).get("onReckoning", [])
 
 
-## Несколько ассетов для витрины магазина (пока — первые `count` из набора core).
+## Несколько ассетов для витрины магазина (пока — первые `count` из доступных сезонов).
 ## Позже заменится на «резерв» (выложенные лицом карты) из стейта.
 static func shop_offer(count: int = 4) -> Array:
-	var core: Array = []
+	var out: Array = []
 	for a in all():
-		if String((a as Dictionary).get("set", "")) == "core":
-			core.append(a)
-		if core.size() >= count:
+		if SeasonGate.room_allows(a):
+			out.append(a)
+		if out.size() >= count:
 			break
-	return core
+	return out
 
 
 static func _load() -> void:
@@ -352,6 +352,21 @@ static func supported_ids() -> Array:
 	for a_v: Variant in all():
 		var a: Dictionary = a_v
 		if is_supported(a):
+			out.append(String(a.get("id", "")))
+	return out
+
+
+## Активы, доступные СТОЛУ: поддержанные движком минус чужие сезоны.
+##
+## Отдельно от supported_ids() намеренно: там речь про то, что умеет движок, а
+## тут — про то, что куплено. Колода и сброс обязаны считаться из ОДНОГО
+## источника (сброс выводится как «всё минус колода/витрина/руки»), поэтому оба
+## зовут именно эту функцию — иначе активы бы утекали.
+static func available_ids() -> Array:
+	var out: Array = []
+	for a_v: Variant in all():
+		var a: Dictionary = a_v
+		if is_supported(a) and SeasonGate.room_allows(a):
 			out.append(String(a.get("id", "")))
 	return out
 
