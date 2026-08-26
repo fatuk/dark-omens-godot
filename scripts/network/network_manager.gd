@@ -257,6 +257,10 @@ func _handle_message(msg: Dictionary) -> void:
 			# GameState не сможет отфильтровать чужой game_sync, но и не сломается).
 			_host_id = String(msg.get("host_id", ""))
 			game_started = msg.get("game_started", false)
+			# Сезоны СТОЛА приходят от сервера снимком прав хоста: чью коробку
+			# принесли, в ту и играем. Свои личные сезоны (SeasonGate.own) при
+			# этом не трогаем — за них отвечает вход в аккаунт.
+			SeasonGate.set_room(msg.get("seasons", []))
 			_saved_room_id = room_id
 			players.clear()
 			var raw_players: Array = msg.get("players", [])
@@ -417,6 +421,9 @@ func _transport() -> Node:
 
 
 func _clear_room_state() -> void:
+	# Вышли из комнаты — стол снова базовый. Иначе сезоны прошлого хоста
+	# протекли бы в следующую партию, где их никто не покупал.
+	SeasonGate.set_room([])
 	room_id = ""
 	room_name = ""
 	_saved_room_id = ""
