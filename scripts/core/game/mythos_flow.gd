@@ -41,9 +41,44 @@ func enter_phase() -> void:
 	GameConsole.log("[Game] Фаза Мифов")
 	_gs.phase_changed.emit(_gs.phase)
 	if _gs._is_host():
+		# Две поломки, которые раньше были навсегда: обе лечатся здесь, потому
+		# что фаза Мифов — единственное место, куда партия приходит регулярно.
+		#
+		# 1. Кампании нет вовсе: сборка при старте упала (API был недоступен), а
+		#    игра пошла дальше без неё — без колоды Мифов и с заглушками вместо
+		#    встреч (реле не знает Древнего). Перезапускаем сборку; она
+		#    асинхронная, колода появится к следующей фазе, а встречи получат
+		#    контекст кампании сразу, как она придёт.
+		# 2. Кампания есть, колоды нет: единственная попытка восстановить её при
+		#    реджойне упала. Пробуем ещё раз ПЕРЕД вытяжкой.
+		if _campaign_id().is_empty():
+			_retry_campaign()
+		elif deck.is_empty():
+			await restore_deck(_campaign_id())
 		_draw_card()
 		_gs._broadcast_sync()
 	_gs._emit_changed()
+
+
+## Перезапустить сборку кампании, если она не идёт прямо сейчас. Стабы без
+## CampaignGen (тесты) — тихо ничего.
+func _retry_campaign() -> void:
+	if bool(_gs.get("campaign_pending")):
+		return
+	var gen: Variant = _gs.get("_campaign")
+	if gen == null or not gen.has_method("start_generation"):
+		return
+	GameConsole.warn("[Mythos] Кампании нет — перезапуск сборки")
+	@warning_ignore("unsafe_method_access")
+	gen.start_generation(gen.balance_player_count(), "")
+
+
+## id кампании из GameState ("" — кампании нет или это стаб без поля).
+func _campaign_id() -> String:
+	var camp: Variant = _gs.get("campaign")
+	if not (camp is Dictionary):
+		return ""
+	return String((camp as Dictionary).get("id", ""))
 
 
 ## Игрок нажал «Прочитал» в модалке мифа — отмечаем ЕГО. Не-хост шлёт хосту свой
@@ -447,7 +482,9 @@ func _await_check(pid: String) -> bool:
 ## (таблица `campaigns`), тянем её по campaign.id из снапшота. Индекс уже
 ## подтянулся из снапшота — здесь восстанавливаем только саму колоду.
 func restore_deck(campaign_id: String) -> void:
-	var api: Node = _gs.get_node_or_null("/root/ContentApi")
+	# Абсолютный путь допустим только из дерева сцены: вне его (тесты, стабы)
+	# Godot пишет ERROR в консоль вместо null.
+	var api: Node = _gs.get_node_or_null("/root/ContentApi") if _gs.is_inside_tree() else null
 	if api == null:
 		GameConsole.warn("[Mythos] ContentApi недоступен — колоду не восстановить")
 		return
