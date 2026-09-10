@@ -156,7 +156,7 @@ func _render_dice() -> void:
 		_tray.show_pending(int(pb["pool"]), String(_chk().get("skill", "")))
 		return
 	var dice: Array = _chk().get("dice", [])
-	var can: bool = GameState.can_reroll_now()
+	var can: bool = GameState.dice.can_reroll()
 	var nonce: int = int(_chk().get("reroll_nonce", 0))
 	if dice != _last_dice:
 		var prev: Array = _last_dice
@@ -225,9 +225,9 @@ func _on_roll() -> void:
 
 
 func _on_die_clicked(index: int) -> void:
-	if not GameState.can_reroll_now():
+	if not GameState.dice.can_reroll():
 		return
-	GameState.reroll_die(index)  # маршрутится по owner="spell" → SPELL_CAST_REROLL
+	GameState.dice.tap(index)  # маршрутится по owner="spell" → SPELL_CAST_REROLL
 
 
 func _on_apply() -> void:

@@ -223,7 +223,7 @@ func test_reroll_rejected_out_of_range() -> void:
 	assert_false(_cf.reroll("p", 9, "concentration"), "индекс вне диапазона")
 
 
-# Гард для UI (GameState.reroll_die): тапнули по неперебрасываемому кубу → НЕ тратим
+# Гард для UI (LocalDice.tap): тапнули по неперебрасываемому кубу → НЕ тратим
 # заряженный жетон. die_is_rerollable зеркалит гард reroll() без мутаций.
 func test_die_is_rerollable_mirrors_reroll_guard() -> void:
 	_player({"concentration": 1})

@@ -105,7 +105,7 @@ func _build(card: Dictionary) -> void:
 
 # Переброс выбранного куба: заряженным жетоном (concentration/clue) или авто-приоритетом.
 func _on_die_clicked(index: int) -> void:
-	GameState.reroll_die(index)
+	GameState.dice.tap(index)
 
 
 # Лоток создаётся лениво и переиспользуется (персистентный — переживает пересборку
@@ -128,7 +128,7 @@ func _ensure_tray(t: DiceTray) -> DiceTray:
 func _configure_tray(
 	tray: DiceTray, dice: Array, last: Array, can: bool, nonce: int = -1, ri: int = -1
 ) -> void:
-	var add: bool = GameState.can_add_die_now()  # заряжен +1 → кубы < 6 кликабельны
+	var add: bool = GameState.dice.can_add()  # заряжен +1 → кубы < 6 кликабельны
 	if last.is_empty():
 		tray.play_roll(dice, can, add)
 	elif dice == last:
@@ -355,7 +355,7 @@ func _free_rerolls() -> int:
 func _can_reroll() -> bool:
 	if bool(GameState.current_encounter.get("committed", false)):
 		return false
-	return GameState.can_reroll_now()
+	return GameState.dice.can_reroll()
 
 
 # Доступен ли «перебросить все провальные кубы разом» (Талисман) на текущем шаге.
@@ -399,7 +399,7 @@ func _reroll_hint(col: VBoxContainer, can: bool) -> void:
 	var txt: String = ""
 	if can:
 		txt = (tr("ENCOUNTER_REROLL_FREE") % free) if free > 0 else tr("ENCOUNTER_REROLL_TAP")
-	elif GameState.has_reroll_resource():
+	elif GameState.dice.has_resource():
 		txt = tr("ENCOUNTER_REROLL_DRAG")
 	if not txt.is_empty():
 		col.add_child(_lbl(txt, 11, UIColors.MUTED))

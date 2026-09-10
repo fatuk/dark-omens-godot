@@ -214,7 +214,7 @@ func _coins() -> int:
 
 
 func _can_reroll() -> bool:
-	return GameState.can_reroll_now()
+	return GameState.dice.can_reroll()
 
 
 func _reroll_all_available() -> bool:
@@ -795,7 +795,7 @@ func _render_dice() -> void:
 		return
 	var dice: Array = _check().get("dice", [])
 	var can: bool = _can_reroll()
-	var add: bool = GameState.can_add_die_now()
+	var add: bool = GameState.dice.can_add()
 	var nonce: int = int(_check().get("reroll_nonce", 0))
 	if dice != _last_dice:
 		var prev: Array = _last_dice
@@ -882,7 +882,7 @@ func _on_die_clicked(index: int) -> void:
 	# reroll_die сам решает: заряжен +1 (addToDie) → кладёт его на куб; иначе
 	# перебрасывает (с внутренней валидацией валюты). Гард _can_reroll() глушил
 	# клик «+1», когда переброса нет — из-за этого «+1 к значению» не применялся.
-	GameState.reroll_die(index)
+	GameState.dice.tap(index)
 
 
 func _toggle_card(aid: String, cost: int) -> void:

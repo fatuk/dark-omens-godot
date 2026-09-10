@@ -81,11 +81,6 @@ var reckoning_results: Dictionary = {}
 # (синкаются с players).
 var reckoning_active: bool = false
 
-# UI-локально: «заряженная» жетоном валюта переброса ("concentration"/"clue"/"") —
-# игрок закинул жетон на проверку, следующий тап по кубу тратит ИМЕННО её. Не
-# синкается (намерение локального игрока), потребляется в reroll_die.
-var pending_reroll_currency: String = ""
-
 # UI-локально: время последнего отправленного сообщения чата (анти-спам кулдаун).
 const CHAT_COOLDOWN_MS := 800
 var _chat_last_ms: int = 0
@@ -250,6 +245,10 @@ var _campaign: CampaignGen
 var _encounter: EncounterFlow
 var _phase: PhaseController
 var _check: CheckFlow
+
+## Кубы локального игрока: кликабельность, заряженный жетон, тап по кубу — для
+## модалок проверок (GameState.dice). UI-слой над CheckFlow, см. local_dice.gd.
+var dice: LocalDice
 var _cond: ConditionFlow
 var _reckoning: ReckoningFlow
 var _board: BoardState
@@ -287,6 +286,7 @@ func _ready() -> void:
 	_encounter = EncounterFlow.new(self)
 	_phase = PhaseController.new(self)
 	_check = CheckFlow.new(self)
+	dice = LocalDice.new(self, _check)
 	_cond = ConditionFlow.new(self)
 	_reckoning = ReckoningFlow.new(self)
 	_board = BoardState.new(self)
@@ -754,70 +754,6 @@ func perform_action(action_type: String, payload: Dictionary = {}) -> void:
 	act(RelayActions.ACTION, {"type": action_type, "payload": payload})
 
 
-## Тап по кубу — переброс. Если игрок «закинул» жетон (pending_reroll_currency),
-## тратится ИМЕННО эта валюта (один раз). Без жетона — только БЕСПЛАТНЫЙ переброс от
-## карт (concentration/улика без розыгрыша жетона не тратятся). Маршрут по владельцу.
-func reroll_die(die_index: int) -> void:
-	# Приоритет: если заряжен +1 (addToDie) и куб можно улучшить (< 6) — кладём +1
-	# на этот куб, а не перебрасываем. Игрок зарядил карту осознанно; сперва тратим её.
-	if _check.die_can_add(_nm.my_user_id, die_index, active_check):
-		act(RelayActions.ADD_DIE, {"die": die_index})
-		return
-	# Гард ДО списания заряда: клик по НЕперебрасываемому кубу (успех по порогу
-	# проверки / вне диапазона / ещё не брошено) не должен «съедать» заряженный жетон
-	# и засчитывать попытку. Валидируем по ЖИВОМУ active_check — как сделает хост.
-	if not _check.die_is_rerollable(_nm.my_user_id, die_index, active_check):
-		return
-	var cur: String = pending_reroll_currency
-	pending_reroll_currency = ""  # потребили намерение (один жетон = один переброс)
-	if cur.is_empty():
-		cur = "free"  # без жетона — только бесплатный переброс от карт
-	var relay: String = RelayActions.REROLL_ENCOUNTER
-	match String(active_check.get("owner", "")):
-		"shop":
-			relay = RelayActions.SHOP_REROLL
-		"spell":
-			relay = RelayActions.SPELL_CAST_REROLL
-		"effectCheck":
-			relay = RelayActions.CHECK_REROLL
-	act(relay, {"die": die_index, "currency": cur})
-
-
-## UI: «зарядить» валюту переброса (закинули жетон на проверку) и перерисовать —
-## чтобы кубы стали кликабельны.
-func set_pending_reroll(currency: String) -> void:
-	pending_reroll_currency = currency
-	_emit_changed()
-
-
-## Можно ли перебросить куб ПРЯМО СЕЙЧАС (тапом): есть бесплатный переброс от карт
-## ИЛИ заряжен жетон. Без розыгрыша жетона/карты перебросов нет.
-func can_reroll_now() -> bool:
-	var c: Dictionary = active_check
-	if c.is_empty() or not bool(c.get("rolled", false)):
-		return false
-	var free: int = int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0))
-	return free > 0 or not pending_reroll_currency.is_empty()
-
-
-## Есть ли незаряженный +1 (addToDie) — куб можно улучшить тапом. reckoning=true —
-## для проверки Расплаты (per-player слот), иначе active_check. Для кликабельности в UI.
-func can_add_die_now(reckoning: bool = false) -> bool:
-	var c: Dictionary = _reckoning_slot(_nm.my_user_id) if reckoning else active_check
-	return _check.add_available(c) > 0
-
-
-## Есть ли ВООБЩЕ чем перебросить (бесплатно / концентрация / улика) — для скрытия
-## исхода: пока игрок может разыграть жетон, провал не показываем.
-func has_reroll_resource() -> bool:
-	var c: Dictionary = active_check
-	if c.is_empty() or not bool(c.get("rolled", false)):
-		return false
-	var free: int = int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0))
-	var me: Dictionary = my_player()
-	return free > 0 or int(me.get("concentration", 0)) > 0 or int(me.get("clues", 0)) > 0
-
-
 ## Применим ли боевой триггер карты (on:combatEncounter, напр. Handcuffs) ПРЯМО
 ## СЕЙЧАС — для веера: показать карту играбельной, хотя у неё нет check-mod. Read-only.
 func combat_trigger_ready(item_index: int) -> bool:
@@ -897,41 +833,6 @@ func _resolve_pending_check_host(pid: String) -> bool:
 # Слот проверки Расплаты игрока (players[pid].reckoning_check) — {} если нет.
 func _reckoning_slot(pid: String) -> Dictionary:
 	return (players.get(pid, {}) as Dictionary).get("reckoning_check", {})
-
-
-## Переброс куба своей проверки Расплаты (тап по кубу). Маршрут валюты как reroll_die.
-func reckoning_reroll_die(die_index: int) -> void:
-	var my_pid: String = _nm.my_user_id
-	# Приоритет +1 (addToDie), как в reroll_die.
-	if _check.die_can_add(my_pid, die_index, _reckoning_slot(my_pid)):
-		act(RelayActions.RECKONING_ADD_DIE, {"die": die_index})
-		return
-	# Тот же гард, что и в reroll_die: не тратим заряд жетона на клик по
-	# неперебрасываемому кубу своей проверки Расплаты (успех по порогу / вне диапазона).
-	if not _check.die_is_rerollable(my_pid, die_index, _reckoning_slot(my_pid)):
-		return
-	var cur: String = pending_reroll_currency
-	pending_reroll_currency = ""
-	if cur.is_empty():
-		cur = "free"
-	act(RelayActions.RECKONING_REROLL, {"die": die_index, "currency": cur})
-
-
-## Можно ли перебросить куб СВОЕЙ проверки Расплаты сейчас (бесплатный/жетон).
-func reckoning_can_reroll_now() -> bool:
-	var c: Dictionary = _reckoning_slot(_nm.my_user_id)
-	if c.is_empty() or not bool(c.get("rolled", false)):
-		return false
-	var free: int = int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0))
-	return free > 0 or not pending_reroll_currency.is_empty()
-
-
-## Проверка, с которой ЛОКАЛЬНЫЙ игрок работает прямо сейчас: сначала per-player
-## слот Расплаты, потом единая active_check. UI обязан смотреть сюда: в Расплате
-## active_check пуст, и веер считал бы применимыми вообще все карты.
-func current_check() -> Dictionary:
-	var r: Dictionary = _reckoning_slot(_nm.my_user_id)
-	return r if not r.is_empty() else active_check
 
 
 ## Хост: применить проверку Расплаты игрока — прочитать passed и разбудить его корутину

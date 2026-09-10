@@ -201,7 +201,7 @@ func reroll(pid: String, die_index: int, currency: String = "", c: Dictionary = 
 ## UI-валидация (без мутаций): можно ли перебросить ЭТОТ куб проверки c прямо сейчас —
 ## в диапазоне и НЕ успех по порогу проверки. Зеркалит гард reroll() ДО оплаты. Нужна,
 ## чтобы клик по неперебрасываемому кубу не «съедал» заряженный жетон и не засчитывал
-## попытку (см. GameState.reroll_die): валюту тратим только при реальном перебросе.
+## попытку (см. LocalDice.tap): валюту тратим только при реальном перебросе.
 func die_is_rerollable(pid: String, die_index: int, c: Dictionary = {}) -> bool:
 	if c.is_empty():
 		c = _gs.active_check

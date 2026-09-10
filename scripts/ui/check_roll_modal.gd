@@ -200,7 +200,7 @@ func _render_dice() -> void:
 		return
 	var dice: Array = _chk().get("dice", [])
 	var can: bool = _can_reroll()
-	var add: bool = GameState.can_add_die_now(_reck_mode())  # заряжен +1 → кубы < 6 кликабельны
+	var add: bool = GameState.dice.can_add(_reck_mode())  # заряжен +1 → кубы < 6 кликабельны
 	var nonce: int = int(_chk().get("reroll_nonce", 0))
 	if dice != _last_dice:
 		var prev: Array = _last_dice
@@ -264,7 +264,7 @@ func _pool() -> Dictionary:
 
 # Можно ли перебросить куб сейчас — в режиме Расплаты свой per-player счётчик.
 func _can_reroll() -> bool:
-	return GameState.reckoning_can_reroll_now() if _reck_mode() else GameState.can_reroll_now()
+	return GameState.dice.can_reroll(_reck_mode())
 
 
 func _on_roll() -> void:
@@ -285,10 +285,7 @@ func _on_roll() -> void:
 func _on_die_clicked(index: int) -> void:
 	if not _can_reroll():
 		return
-	if _reck_mode():
-		GameState.reckoning_reroll_die(index)  # свой слот Расплаты
-	else:
-		GameState.reroll_die(index)  # маршрутится по owner="effectCheck"
+	GameState.dice.tap(index, _reck_mode())  # Расплата — свой слот, иначе по owner
 
 
 func _on_apply() -> void:

@@ -737,10 +737,10 @@ func _on_roll_pressed() -> void:
 
 func _on_die_clicked(index: int) -> void:
 	# После «принятия» встречи кубы не трогаем. Иначе делегируем reroll_die: он сам
-	# приоритезирует +1 (addToDie) над перебросом — гард can_reroll_now() глушил «+1».
+	# приоритезирует +1 (addToDie) над перебросом — гард dice.can_reroll() глушил «+1».
 	if _revealed:
 		return
-	GameState.reroll_die(index)
+	GameState.dice.tap(index)
 
 
 # Единый лоток — создаётся лениво и переиспользуется, чтобы спин не рвался при
@@ -782,8 +782,8 @@ func _show_dice_result(res: Dictionary) -> void:
 	var committed: bool = bool(GameState.current_encounter.get("committed", false))
 	# Тапом перебросить можно ТОЛЬКО бесплатно (карта) или заряженным жетоном.
 	# Концентрация/улика — лишь через розыгрыш жетона. После «принятия» (_revealed) — нет.
-	var can: bool = GameState.can_reroll_now() and not committed and not _revealed
-	var add: bool = GameState.can_add_die_now() and not committed and not _revealed
+	var can: bool = GameState.dice.can_reroll() and not committed and not _revealed
+	var add: bool = GameState.dice.can_add() and not committed and not _revealed
 	var nonce: int = int(res.get("reroll_nonce", 0))
 	if dice != _last_dice:
 		var prev: Array = _last_dice
@@ -883,7 +883,7 @@ func _on_finish_pressed() -> void:
 func _rerolls_available() -> bool:
 	if bool(GameState.current_encounter.get("committed", false)):
 		return false
-	return GameState.has_reroll_resource()
+	return GameState.dice.has_resource()
 
 
 # Текущий показанный результат — провал? (из активной проверки встречи).

@@ -454,7 +454,7 @@ func _build_hand_carousel() -> void:
 				# монстров» есть и действие, и пассив +2 Силы в бою, а в бою действие не
 				# потратить, и клик уходил в никуда.
 				var entry: Dictionary = AssetCatalog.by_id(AssetCatalog.entry_id(it as Dictionary))
-				var cur: Dictionary = GameState.current_check()
+				var cur: Dictionary = GameState.dice.current_check()
 				var to_check: bool = not cur.is_empty() and _asset_fits_check(entry, cur)
 				if not to_check and AssetCatalog.has_standalone_action(entry):
 					GameState.perform_action(GameActions.ASSET_ACTION, {"item": idx})
@@ -475,7 +475,7 @@ func _build_hand_carousel() -> void:
 				GameState.cast_spell(idx)
 	)
 	# Жетон закинули на проверку — заряжаем валюту переброса; куб игрок выберет тапом.
-	hc.token_played.connect(func(currency: String) -> void: GameState.set_pending_reroll(currency))
+	hc.token_played.connect(func(currency: String) -> void: GameState.dice.charge(currency))
 	# Сыграли карту состояния — запускаем его локальное действие (хост валидирует).
 	hc.condition_acted.connect(
 		func(cid: String) -> void:
@@ -532,7 +532,7 @@ func _refresh_hand() -> void:
 # active_check.exhausted_cards — на проверку).
 func _hand_assets_section() -> Array:
 	var deck: Array = AssetCatalog.deck_for_items(GameState.my_player().get("items", []))
-	var per_check: Array = GameState.current_check().get("exhausted_cards", [])
+	var per_check: Array = GameState.dice.current_check().get("exhausted_cards", [])
 	var out: Array = []
 	for p_v: Variant in deck:
 		var pcard: Dictionary = p_v
@@ -593,7 +593,7 @@ func _card_applicable_now(pcard: Dictionary) -> bool:
 		return true
 	# current_check, а не active_check: в Расплате проверка лежит в per-player слоте,
 	# и по пустому active_check веер показывал ВСЕ карты применимыми.
-	var c: Dictionary = GameState.current_check()
+	var c: Dictionary = GameState.dice.current_check()
 	var asset: Dictionary = AssetCatalog.by_id(String(pcard.get("id", "")))
 	# Идёт проверка и у карты есть подходящий ей мод — играется В ПРОВЕРКУ. Этот
 	# случай ПЕРВЕЕ самостоятельного действия: «Охотник на монстров» умеет и то, и
