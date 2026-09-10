@@ -205,6 +205,9 @@ func _build_ui() -> void:
 	_input_line.name = "Input"
 	_input_line.placeholder_text = "help · give me flesh_ward · spawn deep_one @uptown · gate @rivertown"
 	_input_line.clear_button_enabled = false
+	# Godot 4.4+: по Enter LineEdit сам выходит из режима редактирования (unedit) —
+	# фокус остаётся, но клавиши игнорируются до клика. Консоль — цепочка команд.
+	_input_line.keep_editing_on_text_submit = true
 	_input_line.add_theme_font_size_override("font_size", FONT_SIZE)
 	var in_style := StyleBoxFlat.new()
 	in_style.bg_color = Color(0.02, 0.02, 0.05, 0.9)
@@ -538,8 +541,12 @@ func _reclaim_focus() -> void:
 
 
 func _grab_input_focus() -> void:
-	if _shown and is_instance_valid(_input_line) and not _input_line.has_focus():
+	if not (_shown and is_instance_valid(_input_line)):
+		return
+	if not _input_line.has_focus():
 		_input_line.grab_focus()
+	if not _input_line.is_editing():
+		_input_line.edit()  # фокус без editing — клавиши мимо (см. keep_editing_on_text_submit)
 
 
 func _cmd_help() -> void:
