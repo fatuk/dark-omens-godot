@@ -2,6 +2,10 @@ class_name SpellCatalog
 extends RefCounted
 
 ## Статичный каталог заклинаний (data/spells.json). Зеркало AssetCatalog.
+##
+## ФАЙЛ ГЕНЕРИРУЕТСЯ ИЗ CMS (relay scripts/export-game-content.ts), править
+## его руками бессмысленно — следующий экспорт затрёт. Источник правды —
+## админка. См. data/README.md.
 ## Заклинание двустороннее: front (каст: trigger/test/modifier/onPass) + backs
 ## (набор рубашек; при касте тянется случайная, каждая — tiers по числу успехов).
 

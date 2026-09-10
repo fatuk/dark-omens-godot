@@ -3,6 +3,10 @@ class_name Investigators
 ## Реестр данных сыщиков. Данные локалe-агностичны (все переводимые поля —
 ## ключи translations.csv), кэш заполняется один раз и не инвалидируется.
 ##
+## ФАЙЛ ГЕНЕРИРУЕТСЯ ИЗ CMS (relay scripts/export-game-content.ts), править
+## его руками бессмысленно — следующий экспорт затрёт. Источник правды —
+## админка. См. data/README.md.
+##
 ## Использование:
 ##   Investigators.display_name("Ezra Gilman")  → "INV_EZRA_GILMAN_NAME" (ключ)
 ##   # При присвоении в label.text Godot сам вызовет tr() и покажет «Эзра Гилман»

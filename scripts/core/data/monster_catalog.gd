@@ -2,7 +2,14 @@ class_name MonsterCatalog
 extends RefCounted
 
 ## Статический каталог монстров (data/monsters.json). Загружается лениво и
-## кэшируется. Источник данных — вики Eldritch Horror (инфобоксы). Модель:
+## кэшируется.
+##
+## ФАЙЛ ГЕНЕРИРУЕТСЯ ИЗ CMS (relay scripts/export-game-content.ts), править
+## его руками бессмысленно — следующий экспорт затрёт. Источник правды —
+## админка (данные когда-то были сняты с вики Eldritch Horror, но с переезда
+## каталогов в CMS вики источником быть перестала). См. data/README.md.
+##
+## Модель:
 ##   {
 ##     id, nameKey,
 ##     toughness:int,
