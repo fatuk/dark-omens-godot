@@ -535,3 +535,288 @@ func test_gain_focus_capped_at_max() -> void:
 	var p: Dictionary = {"concentration": 1}
 	EffectRunner.run([{"do": "gainFocus", "amount": 5}], p)
 	assert_eq(int(p["concentration"]), GameState.MAX_CONCENTRATION, "концентрация не выше потолка")
+
+
+# ── Состояния по ВИДУ (kind), а не по id ──────────────────────────────────────
+
+
+func test_gain_condition_by_kind_picks_that_kind() -> void:
+	# «Получите состояние Безумие» — вид, а не карта: движок берёт случайное того вида.
+	var p: Dictionary = _player()
+	EffectRunner.run([{"do": "gainCondition", "kind": "madness"}], p)
+	assert_eq((p["conditions"] as Array).size(), 1, "выдано ровно одно состояние")
+	var cid: String = String((p["conditions"] as Array)[0])
+	assert_eq(Conditions.kind_of(cid), "madness", "и оно нужного вида")
+
+
+func test_gain_condition_by_kind_does_not_duplicate() -> void:
+	# Пул вида исчерпан (все уже на руках) — verb не делает ничего, а не дублирует.
+	var p: Dictionary = _player()
+	var all_madness: Array = Conditions.ids_of_kinds(["madness"])
+	p["conditions"] = all_madness.duplicate()
+	EffectRunner.run([{"do": "gainCondition", "kind": "madness"}], p)
+	assert_eq(
+		(p["conditions"] as Array).size(), all_madness.size(), "нечего выдать — состав тот же"
+	)
+
+
+func test_gain_condition_id_still_wins_over_kind() -> void:
+	# Явный id важнее вида: старые карточки не должны поменять поведение.
+	var p: Dictionary = _player()
+	EffectRunner.run([{"do": "gainCondition", "condition": "blessed", "kind": "madness"}], p)
+	assert_has(p["conditions"], "blessed", "выдан именно указанный id")
+
+
+func test_lose_condition_by_kind_removes_matching_only() -> void:
+	# «Сбросьте 1 Безумие» не должно трогать благословение.
+	var p: Dictionary = _player()
+	p["conditions"] = ["blessed", "paranoia"]
+	EffectRunner.run([{"do": "loseCondition", "kind": "madness"}], p)
+	assert_has(p["conditions"], "blessed", "чужой вид не тронут")
+	assert_does_not_have(p["conditions"], "paranoia", "снято безумие")
+
+
+func test_lose_condition_accepts_kind_list() -> void:
+	# «Сбросьте 1 Болезнь ИЛИ Травму» — массив видов.
+	var p: Dictionary = _player()
+	p["conditions"] = ["blessed", "legInjury"]
+	EffectRunner.run([{"do": "loseCondition", "kind": ["illness", "injury"]}], p)
+	assert_does_not_have(p["conditions"], "legInjury", "травма снята по списку видов")
+	assert_eq((p["conditions"] as Array).size(), 1, "снято ровно одно")
+
+
+func test_lose_condition_without_id_removes_first_held() -> void:
+	# choose:true без id раньше стирал пустую строку и не делал НИЧЕГО.
+	var p: Dictionary = _player()
+	p["conditions"] = ["blessed", "paranoia"]
+	EffectRunner.run([{"do": "loseCondition", "choose": true}], p)
+	assert_eq((p["conditions"] as Array).size(), 1, "одно состояние снято")
+
+
+func test_lose_condition_no_match_is_noop() -> void:
+	var p: Dictionary = _player()
+	p["conditions"] = ["blessed"]
+	EffectRunner.run([{"do": "loseCondition", "kind": "madness"}], p)
+	assert_eq(p["conditions"] as Array, ["blessed"], "нечего снимать — состав тот же")
+
+
+# ── Выдача актива по трейту ───────────────────────────────────────────────────
+
+
+func test_gain_asset_with_trait_respects_trait() -> void:
+	# «Получите случайное ОРУЖИЕ из колоды»: выдача сужается трейтом.
+	var p: Dictionary = _player()
+	EffectRunner.run([{"do": "gainAsset", "trait": "weapon"}], p)
+	assert_eq((p["items"] as Array).size(), 1, "актив выдан")
+	var aid: String = AssetCatalog.entry_id((p["items"] as Array)[0])
+	var item_traits: Array = AssetCatalog.by_id(aid).get("traits", [])
+	assert_has(item_traits, "weapon", "у выданного актива есть запрошенный трейт")
+
+
+func test_gain_asset_unknown_trait_falls_back_to_pool() -> void:
+	# Ни одного актива с таким трейтом — выдаём из общего пула, а не пустоту:
+	# пустая награда за успех хуже слегка неточной.
+	var p: Dictionary = _player()
+	EffectRunner.run([{"do": "gainAsset", "trait": "нет-такого-трейта"}], p)
+	assert_eq((p["items"] as Array).size(), 1, "выдан хоть какой-то актив")
+
+
+# ── Сброс имущества: трейт, count, keep ───────────────────────────────────────
+
+
+func _items(ids: Array) -> Array:
+	var out: Array = []
+	for id_v: Variant in ids:
+		out.append({"id": String(id_v), "exhausted": false})
+	return out
+
+
+func _first_asset_with(trait_name: String) -> String:
+	for id_v: Variant in AssetCatalog.available_ids():
+		var a: Dictionary = AssetCatalog.by_id(String(id_v))
+		if (a.get("traits", []) as Array).has(trait_name):
+			return String(id_v)
+	return ""
+
+
+func test_lose_asset_by_trait_picks_matching_item() -> void:
+	# «Сбросьте 1 Вещь» при наличии оружия — уходит именно вещь.
+	var weapon: String = _first_asset_with("weapon")
+	var item: String = _first_asset_with("item")
+	assert_ne(weapon, "", "в корпусе есть оружие")
+	assert_ne(item, "", "в корпусе есть вещь")
+	var p: Dictionary = _player()
+	p["items"] = _items([weapon, item])
+	EffectRunner.run([{"do": "loseAsset", "trait": "item"}], p)
+	assert_eq((p["items"] as Array).size(), 1, "сброшен ровно один")
+	assert_eq(AssetCatalog.entry_id((p["items"] as Array)[0]), weapon, "ушла вещь, оружие цело")
+
+
+func test_lose_asset_count_drops_several() -> void:
+	var p: Dictionary = _player()
+	p["items"] = _items(["a", "b", "c"])
+	EffectRunner.run([{"do": "loseAsset", "count": 2}], p)
+	assert_eq((p["items"] as Array).size(), 1, "сброшено 2 из 3")
+
+
+func test_lose_asset_keep_leaves_n() -> void:
+	# «Сбросьте всё, кроме одного» — поле keep, которое словарь объявлял мёртвым.
+	var p: Dictionary = _player()
+	p["items"] = _items(["a", "b", "c", "d"])
+	EffectRunner.run([{"do": "loseAsset", "keep": 1}], p)
+	assert_eq((p["items"] as Array).size(), 1, "оставлен ровно один")
+
+
+func test_lose_spell_hits_spells_not_assets() -> void:
+	# loseSpell и loseAsset делили обработчик и снимали последний предмет подряд.
+	var p: Dictionary = _player()
+	p["items"] = [{"id": "shriveling", "kind": "spell"}, {"id": "18_derringer", "exhausted": false}]
+	EffectRunner.run([{"do": "loseSpell"}], p)
+	assert_eq((p["items"] as Array).size(), 1, "сброшено одно")
+	assert_eq(
+		AssetCatalog.entry_id((p["items"] as Array)[0]), "18_derringer", "актив остался на руках"
+	)
+
+
+func test_lose_asset_nothing_matching_is_noop() -> void:
+	var p: Dictionary = _player()
+	p["items"] = [{"id": "shriveling", "kind": "spell"}]
+	EffectRunner.run([{"do": "loseAsset"}], p)
+	assert_eq((p["items"] as Array).size(), 1, "заклинание не считается активом")
+
+
+# ── Билеты ────────────────────────────────────────────────────────────────────
+
+
+func test_gain_ticket_by_kind() -> void:
+	var p: Dictionary = _player()
+	EffectRunner.run([{"do": "gainTicket", "kind": "ship", "count": 2}], p)
+	assert_eq(int(p.get("ship_tickets", 0)), 2, "пароходные выданы")
+	assert_eq(int(p.get("train_tickets", 0)), 0, "поездные не тронуты")
+
+
+func test_gain_ticket_defaults_to_train() -> void:
+	var p: Dictionary = _player()
+	EffectRunner.run([{"do": "gainTicket"}], p)
+	assert_eq(int(p.get("train_tickets", 0)), 1, "без kind — поездной")
+
+
+func test_gain_ticket_capped_by_shared_limit() -> void:
+	# Потолок MAX_TICKETS общий на оба вида, а не по виду.
+	var p: Dictionary = _player()
+	p["train_tickets"] = GameState.MAX_TICKETS
+	EffectRunner.run([{"do": "gainTicket", "kind": "ship", "count": 3}], p)
+	assert_eq(int(p.get("ship_tickets", 0)), 0, "лимит уже выбран поездными")
+
+
+func test_lose_ticket_clamps_at_zero() -> void:
+	var p: Dictionary = _player()
+	p["ship_tickets"] = 1
+	EffectRunner.run([{"do": "loseTicket", "kind": "ship", "count": 5}], p)
+	assert_eq(int(p.get("ship_tickets", 0)), 0, "не уходит в минус")
+
+
+# ── skill:"choice" — «улучшите 1 навык на свой выбор» ─────────────────────────
+
+
+func test_skill_choice_improves_exactly_one_skill() -> void:
+	# Без интерактива choice берёт первую ветку — важно, что затронут РОВНО один навык
+	# (а не все пять, как сделал бы skill:"all").
+	var p: Dictionary = _player()
+	EffectRunner.run([{"do": "improveSkill", "skill": "choice", "amount": 1}], p)
+	var mods: Dictionary = p["skill_mods"]
+	var touched: int = 0
+	for k_v: Variant in mods.keys():
+		if int(mods[k_v]) != 0:
+			touched += 1
+	assert_eq(touched, 1, "улучшен ровно один навык")
+
+
+func test_skill_choice_pends_a_decision_when_interactive() -> void:
+	# В интерактивном прогоне выбор навыка идёт через общий тракт пауз: программа
+	# останавливается и кладёт пять веток в pending.
+	var p: Dictionary = _player()
+	var flow: Dictionary = {"interactive": true, "decisions": {}, "rolls": {}, "pending": {}}
+	var res: Dictionary = EffectRunner.run(
+		[{"do": "improveSkill", "skill": "choice", "amount": 1}], p, {}, flow
+	)
+	var pending: Dictionary = res.get("pending", {})
+	# У паузы обычного choice поля kind нет (оно только у destination/target/check) —
+	# ветки узнаются по options, и это ровно та пауза, что нужна.
+	assert_eq(String(pending.get("path", "")), "0", "пауза на верхнеуровневом узле")
+	assert_eq((pending.get("options", []) as Array).size(), 5, "пять веток — по навыку на ветку")
+	assert_eq((p["skill_mods"] as Dictionary).size(), 0, "до решения ничего не применено")
+
+
+func test_skill_choice_applies_recorded_decision() -> void:
+	# Записанное решение переигрывается детерминированно — как у обычного choice.
+	var p: Dictionary = _player()
+	var flow: Dictionary = {"interactive": true, "decisions": {"0": 4}, "rolls": {}, "pending": {}}
+	EffectRunner.run([{"do": "improveSkill", "skill": "choice", "amount": 2}], p, {}, flow)
+	assert_eq(int((p["skill_mods"] as Dictionary).get("will", 0)), 2, "пятая ветка — воля")
+
+
+func test_skill_choice_untouched_for_other_verbs() -> void:
+	# Разворачиваем только improveSkill/impairSkill: у чужого verb-а skill — параметр.
+	var p: Dictionary = _player()
+	EffectRunner.run([{"do": "rerollDice", "count": 1, "skill": "choice"}], p)
+	assert_eq((p["passive_mods"] as Array).size(), 1, "узел ушёл в пассивы как есть")
+
+
+# ── Счётчик conditionsOf (имя из словаря DSL) ─────────────────────────────────
+
+
+func test_repeat_by_conditions_of_counts_held() -> void:
+	# Словарь объявляет conditionsOf, движок знал только conditions — карточка
+	# со счётчиком из словаря молча повторялась 1 раз.
+	var p: Dictionary = _player()
+	p["conditions"] = ["blessed", "paranoia", "delayed"]
+	EffectRunner.run([{"do": "loseSanity", "amount": 1, "repeat": {"source": "conditionsOf"}}], p)
+	assert_eq(int(p["sanity"]), 2, "5 − 3 состояния = 2")
+
+
+# ── Артефакты: сброс (выдача — board-ветка, тестируется в test_game_sync) ─────
+
+
+func test_lose_artifact_takes_artifact_not_asset() -> void:
+	# Артефакт и актив могут делить трейт (обе бывают Книгой), поэтому «сбросьте
+	# 1 Артефакт» различает их по каталогу-владельцу, а не по трейту.
+	var p: Dictionary = _player()
+	p["items"] = [
+		{"id": "18_derringer", "exhausted": false},
+		{"id": "necronomicon", "kind": "artifact", "exhausted": false},
+	]
+	EffectRunner.run([{"do": "loseArtifact"}], p)
+	assert_eq((p["items"] as Array).size(), 1, "сброшено одно")
+	assert_eq(
+		AssetCatalog.entry_id((p["items"] as Array)[0]), "18_derringer", "актив остался на руках"
+	)
+
+
+func test_lose_asset_does_not_take_artifact() -> void:
+	# Обратная сторона: «сбросьте 1 предмет» не должно унести артефакт.
+	var p: Dictionary = _player()
+	p["items"] = [
+		{"id": "necronomicon", "kind": "artifact", "exhausted": false},
+		{"id": "18_derringer", "exhausted": false},
+	]
+	EffectRunner.run([{"do": "loseAsset"}], p)
+	assert_eq((p["items"] as Array).size(), 1, "сброшено одно")
+	assert_eq(AssetCatalog.entry_id((p["items"] as Array)[0]), "necronomicon", "артефакт остался")
+
+
+func test_lose_artifact_by_trait() -> void:
+	var p: Dictionary = _player()
+	p["items"] = [
+		{"id": "necronomicon", "kind": "artifact", "exhausted": false},
+		{"id": "gate_box", "kind": "artifact", "exhausted": false},
+	]
+	EffectRunner.run([{"do": "loseArtifact", "trait": "tome"}], p)
+	assert_eq(AssetCatalog.entry_id((p["items"] as Array)[0]), "gate_box", "ушла именно книга")
+
+
+func test_lose_artifact_without_any_is_noop() -> void:
+	var p: Dictionary = _player()
+	p["items"] = [{"id": "18_derringer", "exhausted": false}]
+	EffectRunner.run([{"do": "loseArtifact"}], p)
+	assert_eq((p["items"] as Array).size(), 1, "нечего сбрасывать — инвентарь цел")

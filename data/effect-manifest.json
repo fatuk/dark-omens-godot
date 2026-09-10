@@ -110,7 +110,13 @@
             "t": "ref",
             "of": "condition"
           },
-          "required": true
+          "required": false
+        },
+        {
+          "name": "kind",
+          "type": {
+            "t": "str"
+          }
         }
       ],
       "targets": "players",
@@ -126,6 +132,12 @@
             "of": "condition"
           },
           "required": false
+        },
+        {
+          "name": "kind",
+          "type": {
+            "t": "str"
+          }
         },
         {
           "name": "choose",
@@ -207,6 +219,14 @@
       "kind": "player",
       "params": [
         {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
           "name": "keep",
           "type": {
             "t": "int",
@@ -227,6 +247,14 @@
       "kind": "board",
       "params": [
         {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
           "name": "trait",
           "type": {
             "t": "str"
@@ -239,15 +267,66 @@
     },
     "loseSpell": {
       "kind": "player",
-      "params": [],
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
       "targets": "players",
       "describeKey": "VERB_LOSE_SPELL"
     },
     "gainArtifact": {
-      "kind": "player",
-      "params": [],
+      "kind": "board",
+      "params": [
+        {
+          "name": "artifact",
+          "type": {
+            "t": "str"
+          }
+        },
+        {
+          "name": "trait",
+          "type": {
+            "t": "str"
+          }
+        },
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
       "targets": "players",
       "describeKey": "VERB_GAIN_ARTIFACT"
+    },
+    "loseArtifact": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        },
+        {
+          "name": "trait",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": "players",
+      "describeKey": "VERB_LOSE_ARTIFACT"
     },
     "loseAllPossessions": {
       "kind": "player",
@@ -320,6 +399,71 @@
       "params": [],
       "targets": "players",
       "describeKey": "VERB_MOVE"
+    },
+    "gainTicket": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "kind",
+          "type": {
+            "t": "enum",
+            "values": [
+              "train",
+              "ship"
+            ]
+          }
+        },
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "describeKey": "VERB_GAIN_TICKET"
+    },
+    "loseTicket": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "kind",
+          "type": {
+            "t": "enum",
+            "values": [
+              "train",
+              "ship"
+            ]
+          }
+        },
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "describeKey": "VERB_LOSE_TICKET"
+    },
+    "extraAction": {
+      "kind": "player",
+      "params": [
+        {
+          "name": "count",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": "players",
+      "describeKey": "VERB_EXTRA_ACTION"
     },
     "becomeDelayed": {
       "kind": "player",
@@ -519,7 +663,14 @@
     },
     "discardMonster": {
       "kind": "board",
-      "params": [],
+      "params": [
+        {
+          "name": "maxToughness",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
       "targets": "oneMonster",
       "describeKey": "VERB_DISCARD_MONSTER"
     },
@@ -948,7 +1099,14 @@
     },
     "defeatMonster": {
       "kind": "board",
-      "params": [],
+      "params": [
+        {
+          "name": "maxToughness",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
       "targets": "oneMonster",
       "describeKey": "VERB_DEFEAT_MONSTER"
     },

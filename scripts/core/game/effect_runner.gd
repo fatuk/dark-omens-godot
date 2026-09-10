@@ -21,8 +21,8 @@ const _PLAYER_VERBS := [
 	"gainCondition",
 	"loseCondition",
 	"gainAsset",
-	"gainArtifact",
 	"gainImprovement",
+	"loseArtifact",
 	"loseAsset",
 	"loseSpell",
 	"loseImprovement",
@@ -35,6 +35,8 @@ const _PLAYER_VERBS := [
 	"impairSkill",
 	"becomeDelayed",
 	"extraAction",
+	"gainTicket",
+	"loseTicket",
 	"move",
 	"text",
 	# v2/v3: пассивные модификаторы проверок/боя/правил — собираются в
@@ -86,6 +88,9 @@ const _PASSIVE_VERBS := [
 
 # Навыки Dark Omens — для improveSkill/impairSkill со skill:"all" (Markings of Isis).
 const _ALL_SKILLS := ["influence", "lore", "observation", "strength", "will"]
+
+# Verb'ы, у которых skill:"choice" разворачивается в choice из пяти веток.
+const _SKILL_CHOICE_VERBS := ["improveSkill", "impairSkill"]
 
 # Предел модификатора навыка: skill_mods[skill] ∈ [−SKILL_MOD_CAP, +SKILL_MOD_CAP] —
 # улучшить максимум на +2, ухудшить на −2 (касты/встречи/состояния не стекаются
@@ -154,6 +159,15 @@ static func _run_node(
 				if _stopped(flow):
 					return
 				_run_node(children[i], player, logs, board, ctx, flow, path + "/g" + str(i))
+		return
+	# «улучшите 1 навык на свой выбор» — самая частая формулировка встреч. Разворачиваем
+	# в обычный choice из пяти веток: так выбор проходит по уже существующему тракту
+	# пауз/решений (pending → игрок выбрал → переигровка), а не заводит второй.
+	if (
+		String(node.get("skill", "")) == "choice"
+		and _SKILL_CHOICE_VERBS.has(String(node.get("do", "")))
+	):
+		_run_choice(_skill_choice_node(node), player, logs, board, ctx, flow, path)
 		return
 	if node.has("choice"):
 		# repeat у choice → N независимых выборов подряд (под-путь с индексом повтора);
@@ -593,7 +607,11 @@ static func _apply_player_verb(
 			player["clues"] = maxi(0, int(player.get("clues", 0)) - n)
 			logs.append("−%d улик" % n)
 		"gainCondition":
+			# condition — конкретная карта; kind — ВИД («получите состояние Безумие»):
+			# берём случайное того вида, которого ещё нет на руках.
 			var cid: String = String(node.get("condition", ""))
+			if cid.is_empty():
+				cid = _pick_condition(node, player)
 			if not cid.is_empty():
 				var conds: Array = player.get("conditions", [])
 				if not conds.has(cid):
@@ -601,17 +619,30 @@ static func _apply_player_verb(
 				player["conditions"] = conds
 				logs.append("состояние «%s»" % cid)
 		"loseCondition":
+			# Без condition снимаем held-состояние подходящего вида (kind: "madness"
+			# или ["illness","injury"]). Без kind — первое имеющееся: карточки с
+			# choose:true раньше стирали пустой id и не делали НИЧЕГО.
 			var rid: String = String(node.get("condition", ""))
 			var rconds: Array = player.get("conditions", [])
-			rconds.erase(rid)
-			player["conditions"] = rconds
-			(player.get("conditions_flipped", {}) as Dictionary).erase(rid)
-			logs.append("снято состояние «%s»" % rid)
+			if rid.is_empty():
+				rid = _held_of_kinds(player, _kinds_of(node))
+			if rid.is_empty():
+				logs.append("нечего снимать")
+			else:
+				rconds.erase(rid)
+				player["conditions"] = rconds
+				(player.get("conditions_flipped", {}) as Dictionary).erase(rid)
+				logs.append("снято состояние «%s»" % rid)
 		"gainAsset":
 			# Выдаём РЕАЛЬНУЮ карту из пула поддержанных активов. Раньше в items уезжал
 			# литерал "gainAsset", а веер (AssetCatalog.deck_for_items) отбрасывает
 			# неизвестные id — сыщик не получал ничего видимого.
-			var pool: Array = AssetCatalog.available_ids()
+			# trait сужает выдачу («получите случайное ОРУЖИЕ из колоды»). Трейта нет
+			# ни у одного доступного актива → выдаём из общего пула, а не ничего:
+			# пустая награда за успех хуже слегка неточной.
+			var pool: Array = _assets_with_trait(
+				AssetCatalog.available_ids(), String(node.get("trait", ""))
+			)
 			var items: Array = player.get("items", [])
 			if pool.is_empty():
 				logs.append("активов в пуле не осталось")
@@ -620,18 +651,18 @@ static func _apply_player_verb(
 				items.append({"id": aid, "exhausted": false})
 				player["items"] = items
 				logs.append("получен актив «%s»" % aid)
-		"gainArtifact", "gainImprovement":
-			# MVP: маркер предмета — своих каталогов у артефактов/улучшений пока нет.
+		"gainImprovement":
+			# MVP: маркер предмета — каталога улучшений пока нет. У артефактов он
+			# появился, и gainArtifact ушёл в board-ветку GameState: выдача обязана
+			# видеть ВЕСЬ стол, иначе уникальную карту получат двое.
 			var mitems: Array = player.get("items", [])
 			mitems.append(verb)
 			player["items"] = mitems
 			logs.append("получен предмет (%s)" % verb)
+		"loseArtifact":
+			_drop_items(verb, node, player, logs)
 		"loseAsset", "loseSpell", "loseImprovement":
-			var litems: Array = player.get("items", [])
-			if not litems.is_empty():
-				litems.pop_back()
-			player["items"] = litems
-			logs.append("утрачен предмет")
+			_drop_items(verb, node, player, logs)
 		"loseAllPossessions":
 			# Сбросить весь инвентарь карт (активы/заклинания/артефакты). Состояния,
 			# улики, билеты — НЕ имущество (хранятся отдельными полями), их не трогаем.
@@ -693,6 +724,22 @@ static func _apply_player_verb(
 					dconds.append("delayed")
 				player["conditions"] = dconds
 				logs.append("задержка")
+		"gainTicket", "loseTicket":
+			# Билеты лежат отдельными полями (train_tickets/ship_tickets), а потолок
+			# MAX_TICKETS — ОБЩИЙ на оба вида, поэтому клампим по сумме.
+			var tf: String = (
+				"ship_tickets" if String(node.get("kind", "")) == "ship" else "train_tickets"
+			)
+			var have: int = int(player.get(tf, 0))
+			if verb == "gainTicket":
+				var other: int = int(
+					player.get("train_tickets" if tf == "ship_tickets" else "ship_tickets", 0)
+				)
+				var room: int = maxi(0, GameState.MAX_TICKETS - have - other)
+				player[tf] = have + mini(n, room)
+			else:
+				player[tf] = maxi(0, have - n)
+			logs.append("%s%d %s" % ["+" if verb == "gainTicket" else "−", n, tf])
 		"move", "text":
 			pass  # move — трекинга позиции пока нет; text — только показ
 		_:
@@ -706,6 +753,117 @@ static func _apply_player_verb(
 
 
 # ── Хелперы ───────────────────────────────────────────────────────────────────
+
+
+## Узел skill:"choice" → choice из пяти копий узла, по одной на навык. Прочие поля
+## (amount, cost, limit, context) переезжают в каждую ветку как есть.
+static func _skill_choice_node(node: Dictionary) -> Dictionary:
+	var branches: Array = []
+	for sk_v: Variant in _ALL_SKILLS:
+		var b: Dictionary = node.duplicate(true)
+		b["skill"] = String(sk_v)
+		branches.append(b)
+	return {"choice": branches}
+
+
+## Виды состояний из узла: kind — строка ("madness") либо массив (["illness",
+## "injury"] под «сбросьте Болезнь ИЛИ Травму»). Нет kind → пустой список.
+static func _kinds_of(node: Dictionary) -> Array:
+	var raw: Variant = node.get("kind", "")
+	if raw is Array:
+		var out: Array = []
+		for k_v: Variant in raw as Array:
+			out.append(String(k_v))
+		return out
+	var one: String = String(raw)
+	return [] if one.is_empty() else [one]
+
+
+## Случайное состояние заданных видов, которого у сыщика ещё нет. Все уже на
+## руках (или вид пуст) → "" и verb ничего не делает.
+static func _pick_condition(node: Dictionary, player: Dictionary) -> String:
+	var kinds: Array = _kinds_of(node)
+	if kinds.is_empty():
+		return ""
+	var held: Array = player.get("conditions", [])
+	var pool: Array = []
+	for id_v: Variant in Conditions.ids_of_kinds(kinds):
+		if not held.has(String(id_v)):
+			pool.append(String(id_v))
+	if pool.is_empty():
+		return ""
+	return String(pool[randi() % pool.size()])
+
+
+## Первое held-состояние подходящего вида ("" — нет такого). Пустой список видов →
+## первое любое: карточка «снимите состояние по выбору» без вида.
+static func _held_of_kinds(player: Dictionary, kinds: Array) -> String:
+	for c_v: Variant in player.get("conditions", []):
+		var cid: String = String(c_v)
+		if kinds.is_empty() or kinds.has(Conditions.kind_of(cid)):
+			return cid
+	return ""
+
+
+## Активы из пула, имеющие трейт. Трейт пуст — пул целиком. Ни одного совпадения —
+## тоже пул целиком (см. комментарий у gainAsset).
+static func _assets_with_trait(pool: Array, want: String) -> Array:
+	if want.is_empty():
+		return pool
+	var out: Array = []
+	for id_v: Variant in pool:
+		var a: Dictionary = AssetCatalog.by_id(String(id_v))
+		if (a.get("traits", []) as Array).has(want):
+			out.append(String(id_v))
+	return out if not out.is_empty() else pool
+
+
+## Подходит ли предмет инвентаря под verb сброса и трейт.
+## loseSpell бьёт по заклинаниям ({id, kind:"spell"}), loseAsset — по активам,
+## loseImprovement — по маркерам-строкам (каталога улучшений пока нет).
+static func _item_matches(entry: Variant, verb: String, want_trait: String) -> bool:
+	var is_spell: bool = (
+		entry is Dictionary and String((entry as Dictionary).get("kind", "")) == "spell"
+	)
+	if verb == "loseSpell":
+		return is_spell
+	if verb == "loseImprovement":
+		return entry is String
+	if is_spell:
+		return false
+	var aid: String = AssetCatalog.entry_id(entry)
+	# «Сбросьте 1 Артефакт» — это КЛАСС карты, а не трейт: артефакт и актив могут
+	# делить трейт (обе бывают Книгой), поэтому различаем по каталогу-владельцу.
+	var is_artifact: bool = ArtifactCatalog.has(aid)
+	if (verb == "loseArtifact") != is_artifact:
+		return false
+	if want_trait.is_empty():
+		return true
+	var a: Dictionary = AssetCatalog.by_id(aid)
+	return (a.get("traits", []) as Array).has(want_trait)
+
+
+## Сброс предметов: trait сужает («сбросьте 1 Вещь»), count — сколько,
+## keep — «оставьте N, остальное сбросьте». Снимаем С КОНЦА, как раньше делал
+## pop_back: порядок детерминирован, а выбор игроком — отдельная механика (§15.2).
+static func _drop_items(verb: String, node: Dictionary, player: Dictionary, logs: Array) -> void:
+	var items: Array = player.get("items", [])
+	var want_trait: String = String(node.get("trait", ""))
+	var idx: Array = []
+	for i in range(items.size()):
+		if _item_matches(items[i], verb, want_trait):
+			idx.append(i)
+	if idx.is_empty():
+		logs.append("нечего сбрасывать")
+		return
+	var drop: int = _amount(node)
+	if node.has("keep"):
+		drop = maxi(0, (idx as Array).size() - int(node["keep"]))
+	drop = mini(drop, (idx as Array).size())
+	for k in range(drop):
+		items.remove_at(int(idx[(idx as Array).size() - 1 - k]))
+	player["items"] = items
+	logs.append("утрачено предметов: %d" % drop)
 
 
 ## Величина действия: amount либо count, по умолчанию 1.
@@ -752,7 +910,9 @@ static func _count_source(
 		"chosenMonsterToughness":
 			# Стойкость монстра, выбранного ранее в этой же программе (chosenMonster).
 			return int(ctx.get("chosenMonsterToughness", 0))
-		"conditions":
+		"conditions", "conditionsOf":
+			# conditionsOf — имя из словаря DSL, conditions — историческое имя движка.
+			# Держим оба: карточка со счётчиком из словаря молча возвращала 1.
 			var conds: Array = player.get("conditions", [])
 			var cond: String = String(spec.get("condition", ""))
 			if cond.is_empty():

@@ -471,3 +471,39 @@ func test_reference_amount_scales_with_party_size() -> void:
 	_gs._campaign.balance_pc = 7  # ref(7): clues 4
 	assert_eq(_board.reference_amount("clues"), 4, "улик по карте баланса на 7")
 	assert_eq(_board.reference_amount("missing"), 1, "неизвестное поле → 1")
+
+
+# ── eachMonster: снятие по стойкости ПО ВСЕМУ ПОЛЮ ────────────────────────────
+
+
+func test_remove_by_toughness_everywhere_clears_all_locations() -> void:
+	# «Сбросьте всех монстров со стойкостью 1 с игрового поля» — цель eachMonster.
+	# Отличие от версии «на моей клетке»: активный игрок не при чём, чистится всё.
+	_at("loc")
+	_gs.monsters = {
+		"a": [{"id": "ghoul", "health": 1}, {"id": "shoggoth", "health": 4}],
+		"b": [{"id": "maniac", "health": 1}],
+		"c": [{"id": "zombie", "health": 2}],
+	}
+	_board.remove_monsters_by_toughness_everywhere(false, 1)
+	assert_eq((_gs.monsters["a"] as Array).size(), 1, "на a остался только живучий")
+	assert_eq(String(_gs.monsters["a"][0]["id"]), "shoggoth", "выжил именно шоггот")
+	assert_false(_gs.monsters.has("b"), "клетка со слабым монстром очищена")
+	assert_eq((_gs.monsters["c"] as Array).size(), 1, "стойкость 2 > порога — не тронут")
+	assert_true(_gs.monster_bag.has("ghoul"), "снятые id вернулись в мешок")
+	assert_true(_gs.monster_bag.has("maniac"), "снятые id вернулись в мешок")
+
+
+func test_remove_by_toughness_everywhere_ignores_active_location() -> void:
+	# Активный игрок стоит на пустой клетке — область всё равно всё поле.
+	_at("empty")
+	_gs.monsters = {"far": [{"id": "ghoul", "health": 1}]}
+	_board.remove_monsters_by_toughness_everywhere(true, 1)
+	assert_false(_gs.monsters.has("far"), "снято на чужой клетке")
+
+
+func test_remove_by_toughness_everywhere_zero_threshold_is_noop() -> void:
+	# max_t < 1 — защита от узла без maxToughness, распарсенного в 0: не сносим поле.
+	_gs.monsters = {"a": [{"id": "ghoul", "health": 1}]}
+	_board.remove_monsters_by_toughness_everywhere(false, 0)
+	assert_eq((_gs.monsters["a"] as Array).size(), 1, "порог 0 ничего не снимает")

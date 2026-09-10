@@ -75,6 +75,21 @@ static func kind_of(id: String) -> String:
 	return String(get_def(id).get("kind", ""))
 
 
+## Все id состояний перечисленных видов. На картах «Безумие», «Болезнь», «Травма» —
+## это ВИД, а не карта: берётся случайная того вида. Пустой список видов → все id.
+## Порядок — как в data/conditions.json (детерминирован для тестов).
+static func ids_of_kinds(kinds: Array) -> Array:
+	_ensure_loaded()
+	if kinds.is_empty():
+		return all_ids()
+	var out: Array = []
+	for id_v: Variant in _by_id.keys():
+		var id: String = String(id_v)
+		if kinds.has(kind_of(id)):
+			out.append(id)
+	return out
+
+
 ## Порог успеха проверок сыщика от held-состояний (whileHeld successThreshold):
 ## Cursed → 6 («только 6»), Blessed → 4 («4-6»). Перевёрнутые фронтом не действуют.
 ## Конфликт (Cursed+Blessed разом) → нейтральные Dice.SUCCESS_MIN. Единый источник

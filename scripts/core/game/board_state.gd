@@ -415,6 +415,42 @@ func remove_monsters_by_toughness(defeated: bool, max_t: int) -> void:
 		)
 
 
+## То же, но по ВСЕМУ полю (цель eachMonster): «сбросьте всех монстров со
+## стойкостью 1 с игрового поля». Отдельно от версии «на моей клетке» —
+## у карточек это две разные механики, и путать область нельзя.
+func remove_monsters_by_toughness_everywhere(defeated: bool, max_t: int) -> void:
+	if not _gs._is_host() or max_t < 1:
+		return
+	var balance_pc: int = _gs._campaign.balance_player_count()
+	var removed: int = 0
+	for loc_v: Variant in (_gs.monsters as Dictionary).keys():
+		var loc: String = String(loc_v)
+		var kept: Array = []
+		for inst_v: Variant in _gs.monsters[loc]:
+			var inst: Dictionary = inst_v if inst_v is Dictionary else {"id": String(inst_v)}
+			var m: Dictionary = MonsterCatalog.by_id(String(inst.get("id", "")))
+			@warning_ignore("unsafe_method_access")
+			var t: int = maxi(
+				1, MonsterCatalog.toughness_for(m, balance_pc) if not m.is_empty() else 1
+			)
+			if t <= max_t:
+				return_monster_to_bag(String(inst.get("id", "")))
+				removed += 1
+			else:
+				kept.append(inst)
+		if kept.is_empty():
+			_gs.monsters.erase(loc)
+		else:
+			_gs.monsters[loc] = kept
+	if removed > 0:
+		GameConsole.log(
+			(
+				"[Монстр] %s ×%d (стойкость ≤ %d) со всего поля"
+				% ["побеждён" if defeated else "сброшен", removed, max_t]
+			)
+		)
+
+
 ## Нанести amount урона первому монстру на локации активного игрока; гибель → снять.
 func damage_monster_at_active(amount: int) -> void:
 	if not _gs._is_host() or amount <= 0:
