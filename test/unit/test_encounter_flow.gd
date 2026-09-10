@@ -491,6 +491,36 @@ func test_whiskey_prevents_sanity_loss() -> void:
 	assert_eq(int(ef._gs.players["p"]["sanity"]), 5, "рассудок цел")
 
 
+func test_whiskey_window_opens_with_will_roll_before_freeze() -> void:
+	# Шаг 1: Воля брошена (0 успехов, ужас 2), «Дальше» ещё не нажато — рассудок
+	# уже известен, виски играется; бинты (здоровье) — ещё нет.
+	var ef: EncounterFlow = _wounded(
+		[{"id": "whiskey", "exhausted": false}, {"id": "bandages", "exhausted": false}], [], 3
+	)
+	var enc: Dictionary = ef._gs.current_encounter
+	enc.erase("will")
+	enc.erase("sanity_loss")
+	enc["horror"] = {"damage": 2}
+	assert_false(ef.play_prevent_loss("p", 1), "здоровье до броска Силы неизвестно")
+	assert_true(ef.play_prevent_loss("p", 0), "рассудок известен с броска Воли")
+	assert_eq(int(enc.get("prevented_sanity", 0)), 2)
+	# «Дальше»: заморозка Воли считает потерю тем же расчётом → 2, минус предотвращённое.
+	enc["will"] = {"dice": [], "successes": 0}
+	enc["sanity_loss"] = 2
+	ef._gs.active_check = {"owner": "combat", "rolled": false}
+	assert_eq(ef._remaining_loss(enc, "sanity"), 0, "терять больше нечего")
+	ef._gs.active_check = {"owner": "combat", "rolled": true, "successes": 0, "dice": [1]}
+	ef._commit_combat("p")
+	assert_eq(int(ef._gs.players["p"]["sanity"]), 5, "рассудок цел")
+
+
+func test_whiskey_window_stays_open_in_strength_preroll() -> void:
+	# Шаг 2 до броска Силы: Воля заморожена (рассудок известен), Сила не брошена.
+	var ef: EncounterFlow = _wounded([{"id": "whiskey", "exhausted": false}], [], 2, 2)
+	ef._gs.active_check = {"owner": "combat", "rolled": false}
+	assert_true(ef.play_prevent_loss("p", 0), "рассудок известен — окно открыто")
+
+
 func test_totem_is_exhausted_not_discarded_and_covers_only_owner() -> void:
 	# Оберег: без цены, oncePerRound, без площадной цели — за соседа сыграть нельзя,
 	# за себя — раз в раунд (карта истощается, а не сбрасывается).

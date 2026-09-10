@@ -469,17 +469,9 @@ func _resolve_combat(pid: String) -> bool:
 		# PRE-ROLL — окно для карт усиления (оружие +Сила применяется ДО броска), сам
 		# бросок Силы — следующим нажатием.
 		var horror: Dictionary = enc.get("horror", {})
-		# Пассивная защита от ужаса (Elder Sign и т.п., whileOwned) — авто, урон монстра
-		# по рассудку снижается ДО вычитания успехов Воли (пол min).
-		var hd: int = AssetCatalog.apply_combat_reduce(
-			int(horror.get("damage", 0)),
-			AssetCatalog.owned_combat_reduce(
-				_gs.players.get(pid, {}).get("items", []), "reduceMonsterHorror"
-			)
-		)
 		var w_succ: int = int(c.get("successes", 0))
 		enc["will"] = {"dice": (c.get("dice", []) as Array).duplicate(), "successes": w_succ}
-		enc["sanity_loss"] = maxi(0, hd - w_succ)
+		enc["sanity_loss"] = _sanity_loss_for(enc, pid, w_succ)
 		# Спец-способность монстра: пройденный horror-тест (Crazed Mob — Влияние)
 		# сразу побеждает монстра — шаг атаки (Сила) пропускаем.
 		if bool(c.get("passed", false)) and bool(horror.get("defeatOnPass", false)):
@@ -828,7 +820,7 @@ func prevent_loss_node_ready(helper_pid: String, item_index: int) -> Dictionary:
 	if _gs.phase != Phases.ENCOUNTER or not _gs.players.has(helper_pid):
 		return {}
 	var enc: Dictionary = _gs.current_encounter
-	if String(enc.get("kind", "")) != "combat" or not _loss_known(enc):
+	if String(enc.get("kind", "")) != "combat":
 		return {}
 	var victim_pid: String = _gs._current_pid()
 	if not _gs.players.has(victim_pid):
@@ -849,7 +841,8 @@ func prevent_loss_node_ready(helper_pid: String, item_index: int) -> Dictionary:
 	# Чужого прикрывает только карта с площадной целью; свою — любая.
 	if helper_pid != victim_pid and String(node.get("target", "")) != "eachOnSpace":
 		return {}
-	if _remaining_loss(enc, String(node.get("stat", "health"))) <= 0:
+	var stat: String = String(node.get("stat", "health"))
+	if not _loss_known(enc, stat) or _remaining_loss(enc, stat) <= 0:
 		return {}
 	var cost: Dictionary = node.get("cost", {})
 	if cost.has("spend"):
@@ -910,17 +903,32 @@ func play_prevent_loss(helper_pid: String, item_index: int) -> bool:
 	return true
 
 
-## Потеря уже известна? Итог боя фиксируется в enc.resolution только при
-## «Завершить»; до этого — после броска Силы — он живёт в active_check. Окно
-## предотвращения открывается именно с броска: игрок видит «−2 здоровья», а
-## списания ещё не было. Проверяется и на клиенте (веер) — active_check синкается.
-func _loss_known(enc: Dictionary) -> bool:
+## Потеря по стату уже известна? Окно предотвращения открывается с броска, а не
+## с фиксации: игрок видит «−2 рассудка» / «−3 здоровья», а списания ещё не было.
+## Рассудок известен с броска ВОЛИ (шаг 1) и дальше — в pre-roll Силы и после её
+## броска; здоровье — только с броска СИЛЫ (шаг 2). Итог в enc.resolution
+## появляется лишь при «Завершить». Проверяется и на клиенте — active_check синкается.
+func _loss_known(enc: Dictionary, stat: String) -> bool:
 	if enc.has("resolution"):
 		return true
 	var c: Dictionary = _gs.active_check
-	return (
-		enc.has("will") and String(c.get("owner", "")) == "combat" and bool(c.get("rolled", false))
+	var rolled: bool = String(c.get("owner", "")) == "combat" and bool(c.get("rolled", false))
+	if stat == "sanity":
+		return enc.has("will") or rolled  # Воля заморожена либо только что брошена
+	return enc.has("will") and rolled  # шаг Силы, бросок сделан
+
+
+## Урон по рассудку от ужаса монстра за вычетом успехов Воли. Пассивная защита от
+## ужаса (Elder Sign и т.п., whileOwned) — авто: урон снижается ДО вычитания
+## успехов (пол min). Один расчёт для заморозки Воли и для окна предотвращения.
+func _sanity_loss_for(enc: Dictionary, pid: String, will_successes: int) -> int:
+	var hd: int = AssetCatalog.apply_combat_reduce(
+		int((enc.get("horror", {}) as Dictionary).get("damage", 0)),
+		AssetCatalog.owned_combat_reduce(
+			_gs.players.get(pid, {}).get("items", []), "reduceMonsterHorror"
+		)
 	)
+	return maxi(0, hd - will_successes)
 
 
 ## Итог боя для окна предотвращения: зафиксированный, а до фиксации — считанный
@@ -931,10 +939,16 @@ func _pending_resolution(enc: Dictionary) -> Dictionary:
 	return _combat_resolution(enc, _gs.active_check, _gs._current_pid())
 
 
-## Сколько ещё не предотвращено: потеря по итогу боя минус уже сыгранные карты.
+## Сколько ещё не предотвращено: потеря по итогу шага минус уже сыгранные карты.
+## Рассудок до заморозки Воли читается с текущего броска (шаг 1).
 func _remaining_loss(enc: Dictionary, stat: String) -> int:
 	if stat == "sanity":
-		return maxi(0, int(enc.get("sanity_loss", 0)) - int(enc.get("prevented_sanity", 0)))
+		var loss: int = int(enc.get("sanity_loss", 0))
+		if not enc.has("will"):
+			loss = _sanity_loss_for(
+				enc, _gs._current_pid(), int(_gs.active_check.get("successes", 0))
+			)
+		return maxi(0, loss - int(enc.get("prevented_sanity", 0)))
 	var r: Dictionary = _pending_resolution(enc)
 	return maxi(0, int(r.get("hp_loss", 0)) - int(enc.get("prevented_hp", 0)))
 
