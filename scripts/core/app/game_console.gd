@@ -218,6 +218,9 @@ func _build_ui() -> void:
 	_input_line.add_theme_stylebox_override("focus", in_style)
 	_input_line.text_submitted.connect(_on_command_submitted)
 	_input_line.text_changed.connect(_on_text_changed)
+	# Пока консоль открыта, клавиатура — её: любую потерю фокуса (перерисовка UI после
+	# give/spawn, модалка, клик по логу) возвращаем в строку ввода на следующем idle.
+	_input_line.focus_exited.connect(_reclaim_focus)
 	vbox.add_child(_input_line)
 
 
@@ -490,7 +493,6 @@ func _category_cands() -> Array:
 
 func _on_command_submitted(text: String) -> void:
 	_input_line.clear()
-	_input_line.grab_focus.call_deferred()  # держим фокус для цепочки команд (idle — иначе не липнет)
 	_hide_suggestions()
 	var line: String = text.strip_edges()
 	if line.is_empty():
@@ -523,7 +525,21 @@ func _on_command_submitted(text: String) -> void:
 		_:
 			err("неизвестная команда «%s» — введите `help`" % cmd)
 	_scroll_bottom_deferred()  # вывод команды мог добавить строки — промотать вниз
-	# фокус вернётся отложенным grab_focus выше (call_deferred, после диспатча)
+	_reclaim_focus()  # держим фокус для цепочки команд
+
+
+# Вернуть фокус строке ввода, если консоль открыта, а фокус ушёл (или вот-вот уйдёт:
+# зовётся и из focus_exited, и после команды). Отложенно — в момент сигнала фокус ещё
+# переезжает, и синхронный grab_focus не липнет; проверка _shown в самом коллбэке,
+# чтобы закрытие консоли (release_focus в _toggle) не перехватывалось.
+func _reclaim_focus() -> void:
+	if _shown and is_instance_valid(_input_line):
+		_grab_input_focus.call_deferred()
+
+
+func _grab_input_focus() -> void:
+	if _shown and is_instance_valid(_input_line) and not _input_line.has_focus():
+		_input_line.grab_focus()
 
 
 func _cmd_help() -> void:
