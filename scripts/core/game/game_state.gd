@@ -919,7 +919,11 @@ func choose_effect(index: int) -> void:
 ## Применим ли боевой триггер карты (on:combatEncounter, напр. Handcuffs) ПРЯМО
 ## СЕЙЧАС — для веера: показать карту играбельной, хотя у неё нет check-mod. Read-only.
 func combat_trigger_ready(item_index: int) -> bool:
-	return not _encounter.combat_trigger_node_ready(_nm.my_user_id, item_index).is_empty()
+	var me: String = _nm.my_user_id
+	return (
+		not _encounter.combat_trigger_node_ready(me, item_index).is_empty()
+		or not _encounter.prevent_loss_node_ready(me, item_index).is_empty()
+	)
 
 
 ## Играется ли МОЯ карта как самостоятельное действие ПРЯМО СЕЙЧАС — для веера.
@@ -931,9 +935,13 @@ func can_play_asset(item_index: int) -> bool:
 func activate_card(item_index: int) -> void:
 	var my_pid: String = _nm.my_user_id
 	if _is_host():
-		# Боевой триггер карты (on:combatEncounter, напр. Handcuffs: фокус→победа)
-		# имеет приоритет; не подошёл — обычный check-mod (бафф навыка/переброс).
-		if not _encounter.try_combat_trigger(my_pid, item_index):
+		# Реакции карты по приоритету: боевой триггер (Handcuffs: фокус→победа) →
+		# предотвращение потери (бинты, в т.ч. за соседа в ЕГО ход) → обычный
+		# check-mod (бафф навыка/переброс) в активную проверку.
+		if (
+			not _encounter.try_combat_trigger(my_pid, item_index)
+			and not _encounter.play_prevent_loss(my_pid, item_index)
+		):
 			_check.activate(my_pid, item_index)  # единая активная проверка (встреча/магазин/бой)
 	else:
 		_nm.relay_all({"action": RelayActions.ACTIVATE_CARD, "pid": my_pid, "index": item_index})

@@ -784,7 +784,7 @@ func _commit_combat(pid: String) -> void:
 	var enc: Dictionary = _gs.current_encounter
 	var p: Dictionary = _gs.players[pid]
 	var before_combat: Dictionary = (p as Dictionary).duplicate(true)
-	var sl: int = int(enc.get("sanity_loss", 0))
+	var sl: int = maxi(0, int(enc.get("sanity_loss", 0)) - int(enc.get("prevented_sanity", 0)))
 	if sl > 0:
 		p["sanity"] = maxi(0, int(p.get("sanity", 0)) - sl)
 	# Зафиксировать итог Силы из активной проверки (если ещё не зафиксирован).
@@ -794,7 +794,9 @@ func _commit_combat(pid: String) -> void:
 	var won: bool = bool(r.get("won", false))
 	var mon_name: String = String(enc.get("monsterName", ""))
 	_gs.announce_action(pid, "combat_won" if won else "combat_lost", {"monster": mon_name})
-	var hp_loss: int = int(r.get("hp_loss", 0))
+	# Предотвращённое бинтами (и подобным) вычитаем ДО списания: карты играются в
+	# окне между броском и «Завершить», их вклад копится в prevented_hp.
+	var hp_loss: int = maxi(0, int(r.get("hp_loss", 0)) - int(enc.get("prevented_hp", 0)))
 	if hp_loss > 0:
 		p["hp"] = maxi(0, int(p.get("hp", 0)) - hp_loss)
 	ActionFeed.announce_deltas(_gs, pid, before_combat, p)  # лента: урон/рассудок от боя
@@ -808,6 +810,125 @@ func _commit_combat(pid: String) -> void:
 		_set_monster_health(loc, idx, int(r.get("health_after", 0)))
 		_mark_fought(loc, idx)  # выжил — но повторно в этом ходу не предлагается
 	_gs._check.clear()  # проверка боя завершена — снять active_check
+
+
+# ── Предотвращение потери (preventLoss): бинты и подобное ─────────────────────
+#
+# Окно — между броском (resolution есть) и «Завершить» (commit). Потеря уже
+# видна на экране, но ещё не списана. Карту разыгрывает ЛЮБОЙ сыщик на клетке
+# раненого, у которого она есть и чей узел это позволяет (target: eachOnSpace);
+# карта с target:self прикроет только владельца. Хост ничего ни у кого не
+# спрашивает: раненый сам держит паузу (может попросить в чате), сосед сам
+# жмёт карту — как с переброcом Порога за умирающего.
+
+
+## Хост/клиент: узел preventLoss карты helper_pid (item_index), применимый к текущему
+## бою ПРЯМО СЕЙЧАС. {} — карта не подходит (не бой, потерь нет, чужая клетка,
+## нечем платить, нечего предотвращать). Read-only: считается и на клиенте для веера.
+func prevent_loss_node_ready(helper_pid: String, item_index: int) -> Dictionary:
+	if _gs.phase != Phases.ENCOUNTER or not _gs.players.has(helper_pid):
+		return {}
+	var enc: Dictionary = _gs.current_encounter
+	if String(enc.get("kind", "")) != "combat" or not enc.has("resolution"):
+		return {}
+	var victim_pid: String = _gs._current_pid()
+	if not _gs.players.has(victim_pid):
+		return {}
+	var helper: Dictionary = _gs.players[helper_pid]
+	var victim: Dictionary = _gs.players[victim_pid]
+	if String(helper.get("location", "")) != String(victim.get("location", "")):
+		return {}
+	var items: Array = helper.get("items", [])
+	if item_index < 0 or item_index >= items.size():
+		return {}
+	var it: Variant = items[item_index]
+	if it is Dictionary and bool((it as Dictionary).get("exhausted", false)):
+		return {}
+	var node: Dictionary = _prevent_loss_node(AssetCatalog.by_id(AssetCatalog.entry_id(it)))
+	if node.is_empty():
+		return {}
+	# Чужого прикрывает только карта с площадной целью; свою — любая.
+	if helper_pid != victim_pid and String(node.get("target", "")) != "eachOnSpace":
+		return {}
+	if _remaining_loss(enc, String(node.get("stat", "health"))) <= 0:
+		return {}
+	var cost: Dictionary = node.get("cost", {})
+	if cost.has("spend"):
+		if not ResourceLedger.can_pay(
+			helper, String(cost.get("spend", "")), int(cost.get("amount", 1))
+		):
+			return {}
+	return node
+
+
+## Хост: разыграть карту preventLoss. true — потеря уменьшена (и карта оплачена).
+func play_prevent_loss(helper_pid: String, item_index: int) -> bool:
+	if not _gs._is_host():
+		return false
+	var node: Dictionary = prevent_loss_node_ready(helper_pid, item_index)
+	if node.is_empty():
+		return false
+	var helper: Dictionary = _gs.players[helper_pid]
+	var enc: Dictionary = _gs.current_encounter
+	var stat: String = String(node.get("stat", "health"))
+	var remaining: int = _remaining_loss(enc, stat)
+	var amount: int = (
+		remaining if bool(node.get("all", false)) else mini(remaining, int(node.get("amount", 1)))
+	)
+	var cost: Dictionary = node.get("cost", {})
+	if cost.has("spend"):
+		ResourceLedger.spend(helper, String(cost.get("spend", "")), int(cost.get("amount", 1)))
+	var items: Array = helper.get("items", [])
+	var card_name: String = String(
+		AssetCatalog.by_id(AssetCatalog.entry_id(items[item_index])).get("nameKey", "")
+	)
+	if bool(cost.get("discardSelf", false)):
+		items.remove_at(item_index)
+		helper["items"] = items
+	# limit (oncePerRound у оберега) — истощаем карту до конца раунда: тот же
+	# флаг exhausted, что снимает розыгрыш в проверке.
+	if node.has("limit") and not bool(cost.get("discardSelf", false)):
+		var it_v: Variant = items[item_index]
+		var inst: Dictionary = it_v if it_v is Dictionary else {"id": String(it_v)}
+		inst["exhausted"] = true
+		items[item_index] = inst
+		helper["items"] = items
+	var key: String = "prevented_sanity" if stat == "sanity" else "prevented_hp"
+	enc[key] = int(enc.get(key, 0)) + amount
+	_gs.announce_action(
+		helper_pid,
+		"prevent_loss",
+		{"card": card_name, "amount": amount, "target": _gs._name_of(_gs._current_pid())}
+	)
+	GameConsole.log(
+		(
+			"[Бой] %s разыграл «%s»: −%d к потере %s у %s"
+			% [_gs._name_of(helper_pid), card_name, amount, stat, _gs._name_of(_gs._current_pid())]
+		)
+	)
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	return true
+
+
+## Сколько ещё не предотвращено: потеря по итогу боя минус уже сыгранные карты.
+func _remaining_loss(enc: Dictionary, stat: String) -> int:
+	if stat == "sanity":
+		return maxi(0, int(enc.get("sanity_loss", 0)) - int(enc.get("prevented_sanity", 0)))
+	var r: Dictionary = enc.get("resolution", {})
+	return maxi(0, int(r.get("hp_loss", 0)) - int(enc.get("prevented_hp", 0)))
+
+
+## Узел preventLoss актива ({} — нет такого). Слоты action и whileOwned: бинты и
+## виски лежат в action (сброс карты), зачарованные украшения — в whileOwned
+## (плата фокусом, карта остаётся). Для реакции разница только в цене.
+func _prevent_loss_node(asset: Dictionary) -> Dictionary:
+	var eff: Dictionary = asset.get("effect", {})
+	for slot: String in ["action", "whileOwned"]:
+		for n_v: Variant in eff.get(slot, []):
+			if n_v is Dictionary and String((n_v as Dictionary).get("do", "")) == "preventLoss":
+				return n_v
+	return {}
 
 
 ## Хост: боевой триггер карты (effect.triggered, on:"combatEncounter") — напр.

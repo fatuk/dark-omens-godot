@@ -82,6 +82,11 @@
 			"ru": "Враг уцелел. {monster}."
 		},
 		{
+			"id": "prevent_loss",
+			"en": "Plays {card} for {target}: −{amount} to the loss.",
+			"ru": "Играет {card} за {target}: −{amount} к потере."
+		},
+		{
 			"id": "gate",
 			"en": "Steps through the gate…",
 			"ru": "Шаг во врата…"

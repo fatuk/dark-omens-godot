@@ -404,3 +404,97 @@ func test_second_investigator_does_not_see_defeated_monster() -> void:
 	assert_true((ef._gs.encounter_choices as Array).is_empty(), "один монстр — без выбора")
 	assert_eq(String(ef._gs.current_encounter.get("monsterId", "")), "ghoul")
 	assert_eq((ef._gs.monsters["loc"] as Array).size(), 1, "поверженный первым не воскрес")
+
+
+# ── Предотвращение потери: бинты за себя и за соседа ──────────────────────────
+#
+# Окно — между броском и «Завершить»: resolution уже есть, commit ещё нет.
+
+
+func _wounded(items_p: Array, items_q: Array, hp_loss: int, sanity_loss: int = 0) -> EncounterFlow:
+	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 3}])
+	ef._gs.players["p"]["items"] = items_p
+	ef._gs.players["q"] = {
+		"location": "loc", "hp": 5, "sanity": 5, "items": items_q, "concentration": 1
+	}
+	ef.begin_turn()
+	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": hp_loss, "health_after": 3}
+	ef._gs.current_encounter["sanity_loss"] = sanity_loss
+	return ef
+
+
+func test_bandages_prevent_own_damage() -> void:
+	var ef: EncounterFlow = _wounded([{"id": "bandages", "exhausted": false}], [], 3)
+	assert_true(ef.play_prevent_loss("p", 0), "бинты сыграны")
+	assert_eq(int(ef._gs.current_encounter.get("prevented_hp", 0)), 2, "предотвращено 2 из 3")
+	assert_true((ef._gs.players["p"]["items"] as Array).is_empty(), "бинты сброшены")
+	ef._commit_combat("p")
+	assert_eq(int(ef._gs.players["p"]["hp"]), 4, "списана только оставшаяся 1")
+
+
+func test_neighbour_bandages_prevent_damage_in_others_turn() -> void:
+	# Ход p, бинты у q на той же клетке — q играет их со своего экрана.
+	var ef: EncounterFlow = _wounded([], [{"id": "bandages", "exhausted": false}], 2)
+	assert_true(ef.play_prevent_loss("q", 0), "сосед прикрыл")
+	assert_true((ef._gs.players["q"]["items"] as Array).is_empty(), "бинты соседа сброшены")
+	ef._commit_combat("p")
+	assert_eq(int(ef._gs.players["p"]["hp"]), 5, "раненый не потерял ничего")
+
+
+func test_prevent_loss_rejected_from_another_location() -> void:
+	var ef: EncounterFlow = _wounded([], [{"id": "bandages", "exhausted": false}], 2)
+	ef._gs.players["q"]["location"] = "far"
+	assert_false(ef.play_prevent_loss("q", 0), "с другой клетки не дотянуться")
+	assert_eq((ef._gs.players["q"]["items"] as Array).size(), 1, "карта цела")
+
+
+func test_prevent_loss_rejected_before_roll_and_when_nothing_left() -> void:
+	var ef: EncounterFlow = _wounded([{"id": "bandages", "exhausted": false}], [], 0)
+	assert_false(ef.play_prevent_loss("p", 0), "терять нечего — карту не жжём")
+	ef._gs.current_encounter.erase("resolution")
+	assert_false(ef.play_prevent_loss("p", 0), "до броска потеря неизвестна")
+
+
+func test_prevent_loss_does_not_overprevent_across_cards() -> void:
+	# Две пары бинтов на потерю 3: первая снимает 2, вторая — только оставшуюся 1.
+	var ef: EncounterFlow = _wounded(
+		[{"id": "bandages", "exhausted": false}, {"id": "bandages", "exhausted": false}], [], 3
+	)
+	assert_true(ef.play_prevent_loss("p", 0))
+	assert_true(ef.play_prevent_loss("p", 0), "вторая (сдвинулась на индекс 0)")
+	assert_eq(int(ef._gs.current_encounter.get("prevented_hp", 0)), 3, "ровно потеря, не больше")
+	ef._commit_combat("p")
+	assert_eq(int(ef._gs.players["p"]["hp"]), 5)
+
+
+func test_whiskey_prevents_sanity_loss() -> void:
+	var ef: EncounterFlow = _wounded([{"id": "whiskey", "exhausted": false}], [], 0, 2)
+	assert_true(ef.play_prevent_loss("p", 0), "виски — по рассудку")
+	ef._commit_combat("p")
+	assert_eq(int(ef._gs.players["p"]["sanity"]), 5, "рассудок цел")
+
+
+func test_totem_is_exhausted_not_discarded_and_covers_only_owner() -> void:
+	# Оберег: без цены, oncePerRound, без площадной цели — за соседа сыграть нельзя,
+	# за себя — раз в раунд (карта истощается, а не сбрасывается).
+	var ef: EncounterFlow = _wounded(
+		[{"id": "protective_totem", "exhausted": false}],
+		[{"id": "protective_totem", "exhausted": false}],
+		2
+	)
+	assert_false(ef.play_prevent_loss("q", 0), "чужого оберег не прикрывает")
+	assert_true(ef.play_prevent_loss("p", 0), "свой — да")
+	var it: Dictionary = ef._gs.players["p"]["items"][0]
+	assert_true(bool(it.get("exhausted", false)), "истощён до конца раунда")
+	assert_false(ef.play_prevent_loss("p", 0), "второй раз в раунд — нет")
+
+
+func test_jewelry_from_while_owned_spends_focus() -> void:
+	# Зачарованные украшения: узел в whileOwned, цена — фокус, карта остаётся.
+	var ef: EncounterFlow = _wounded([{"id": "enchanted_jewelry", "exhausted": false}], [], 0, 2)
+	ef._gs.players["p"]["concentration"] = 1
+	assert_true(ef.play_prevent_loss("p", 0))
+	assert_eq(int(ef._gs.players["p"]["concentration"]), 0, "фокус потрачен")
+	assert_eq((ef._gs.players["p"]["items"] as Array).size(), 1, "карта не сброшена")
+	ef._gs.players["p"]["concentration"] = 0
+	assert_false(ef.play_prevent_loss("p", 0), "без фокуса — нечем платить")

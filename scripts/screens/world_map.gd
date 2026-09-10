@@ -586,6 +586,9 @@ func _card_applicable_now(pcard: Dictionary) -> bool:
 	# Боевой триггер карты (on:combatEncounter, напр. Handcuffs: фокус→победа) — у неё
 	# нет check-mod, но в бою она применима, если предикат/оплата проходят. Проверяем
 	# первым: триггер не зависит от active_check (шага Воли/Силы).
+	# То же — предотвращение потери (бинты): в окне «бросок сделан, потеря ещё не
+	# списана» карта играется за раненого на моей клетке, за себя или соседа,
+	# даже в ЧУЖОЙ ход. Обе реакции проверяет combat_trigger_ready.
 	if GameState.combat_trigger_ready(int(pcard.get("item_index", -1))):
 		return true
 	# current_check, а не active_check: в Расплате проверка лежит в per-player слоте,

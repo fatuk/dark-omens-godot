@@ -129,7 +129,8 @@ func _act_choose_effect(d: Dictionary) -> void:
 func _act_activate_card(d: Dictionary) -> void:
 	var pid: String = String(d.get("pid", ""))
 	var idx: int = int(d.get("index", -1))
-	if not _encounter.try_combat_trigger(pid, idx):
+	# Та же цепочка реакций, что в GameState.activate_card у хоста.
+	if not _encounter.try_combat_trigger(pid, idx) and not _encounter.play_prevent_loss(pid, idx):
 		_check.activate(pid, idx)  # единая активная проверка (встреча/магазин/бой)
 
 
