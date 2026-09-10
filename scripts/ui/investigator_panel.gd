@@ -9,6 +9,13 @@ extends CanvasLayer
 const _PREFS_SECTION := "player"
 const _DATA_PATH := "res://data/investigators.json"
 
+# Слои: обычно HUD лежит под всеми модалками (10) и в бою тонул под затемнением
+# боевой модалки (82). В бою поднимаем панель над ней — сыщик видит свои статы и
+# дотягивается до кнопок (чат, рука), не глядя сквозь backdrop. Остальные модалки
+# (проверка карты 86, Порог 87) — выше, их окно по-прежнему поверх панели.
+const _LAYER_HUD := 10
+const _LAYER_OVER_COMBAT := 83
+
 # ── Геометрия (display-px). Тюнить под ассеты. ────────────────────────────────
 const BAR_H := 248.0  # высота полосы
 const _FRAME_PATCH_H := 300  # 9-slice торцы рамки (лево/право — не растягиваются)
@@ -274,6 +281,7 @@ func _refresh_identity() -> void:
 ## Живые HP/рассудок из GameState (cur/max + заливка баров). Атрибуты остаются
 ## базовыми (из _inv_data). Пока не в игре — оставляем базовые значения.
 func _refresh_live() -> void:
+	_refresh_layer()
 	var p: Dictionary = GameState.my_player()
 	if p.is_empty() or not is_instance_valid(_info_bar):
 		return
@@ -291,6 +299,15 @@ func _refresh_live() -> void:
 		int(p.get("sanity_max", 0))
 	)
 	_info_bar.set_live_skill_mods(p.get("skill_mods", {}))
+
+
+# В моём бою — над боевой модалкой, иначе обычный слой HUD.
+func _refresh_layer() -> void:
+	var in_combat: bool = (
+		GameState.is_my_encounter_turn()
+		and String(GameState.current_encounter.get("kind", "")) == "combat"
+	)
+	layer = _LAYER_OVER_COMBAT if in_combat else _LAYER_HUD
 
 
 # ── Загрузка данных сыщика ────────────────────────────────────────────────────
