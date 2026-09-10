@@ -104,8 +104,10 @@ class MockGS:
 	func _is_host() -> bool:
 		return true
 
+	var current_pid: String = "p"
+
 	func _current_pid() -> String:
-		return "p"
+		return current_pid
 
 	func _name_of(pid: String) -> String:
 		return pid
@@ -347,3 +349,58 @@ func test_legacy_string_instance_can_be_marked() -> void:
 	assert_true(inst is Dictionary, "нормализован в словарь")
 	assert_true(bool((inst as Dictionary).get("fought", false)))
 	assert_eq(ef._unfought_indices("loc"), [1], "второй ещё не бит")
+
+
+# ── Несколько сыщиков на одной клетке с монстрами ────────────────────────────
+#
+# Фаза встреч идёт по сыщикам по очереди (PhaseController.advance_encounter_turn
+# → begin_turn для каждого). Каждый обязан драться с каждым монстром клетки —
+# пометки «уже дрался» принадлежат ХОДУ, а не монстру: begin_turn следующего
+# сыщика их снимает. Здоровье монстра при этом общее: второй сыщик бьёт то, что
+# осталось после первого, а поверженного первым не видит вовсе.
+
+
+func _arena_two(mons: Array) -> EncounterFlow:
+	var ef: EncounterFlow = _arena(mons)
+	ef._gs.players["q"] = {"location": "loc", "hp": 5, "sanity": 5, "items": []}
+	return ef
+
+
+func test_second_investigator_fights_survivor_with_remaining_health() -> void:
+	var ef: EncounterFlow = _arena_two([{"id": "ghoul", "health": 3}])
+	# Первый сыщик проиграл: гуль ранен до 1 и помечен.
+	ef.begin_turn()
+	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": 1, "health_after": 1}
+	ef._commit_combat("p")
+	assert_false(ef.continue_encounter_turn("p"), "ход первого завершён")
+	# Ход второго: пометка первого ему не мешает, а гуль встречает его раненым.
+	ef._gs.current_pid = "q"
+	ef.begin_turn()
+	assert_eq(String(ef._gs.current_encounter.get("kind", "")), "combat", "второй тоже дерётся")
+	assert_eq(int(ef._gs.current_encounter.get("health", -1)), 1, "здоровье общее — гуль ранен")
+	assert_false(
+		bool((ef._gs.monsters["loc"][0] as Dictionary).get("fought", false)),
+		"пометка первого сыщика снята на ходу второго"
+	)
+
+
+func test_second_investigator_does_not_see_defeated_monster() -> void:
+	var ef: EncounterFlow = _arena_two(
+		[{"id": "ghoul", "health": 1}, {"id": "cultist", "health": 1}]
+	)
+	# Первый выбрал культиста и победил — тот снят.
+	ef.begin_turn()
+	ef.host_apply_choose("p", "combat:1")
+	ef._gs.current_encounter["resolution"] = {"won": true, "hp_loss": 0, "health_after": 0}
+	ef._commit_combat("p")
+	assert_true(ef.continue_encounter_turn("p"), "у первого остался гуль")
+	# Первому — гуль; сдадимся ему и завершим ход.
+	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": 1, "health_after": 1}
+	ef._commit_combat("p")
+	assert_false(ef.continue_encounter_turn("p"))
+	# Второму достаётся только гуль: выбора нет, бой сразу, культиста уже нет.
+	ef._gs.current_pid = "q"
+	ef.begin_turn()
+	assert_true((ef._gs.encounter_choices as Array).is_empty(), "один монстр — без выбора")
+	assert_eq(String(ef._gs.current_encounter.get("monsterId", "")), "ghoul")
+	assert_eq((ef._gs.monsters["loc"] as Array).size(), 1, "поверженный первым не воскрес")
