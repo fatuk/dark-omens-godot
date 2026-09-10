@@ -1,3 +1,4 @@
+class_name InvestigatorPanel
 extends CanvasLayer
 
 ## Всегда-видимая нижняя HUD-панель сыщика на карте: круглый аватар во фрейме +

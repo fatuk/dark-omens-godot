@@ -8,6 +8,7 @@ extends CanvasLayer
 const _C_STEP_WILL := Color(0.4, 0.7, 0.9)  # синий — шаг Воли (ужас)
 
 @onready var _root: Control = $Root
+@onready var _center: CenterContainer = $Root/Center
 @onready var _panel: PanelContainer = %Panel
 @onready var _vbox: VBoxContainer = %VBox
 
@@ -22,6 +23,9 @@ var _last_nonce: int = 0  # метка последнего отрисованн
 
 func _ready() -> void:
 	UIStyle.style_modal_panel(_panel)
+	# В бою панель сыщика поднята над затемнением (InvestigatorPanel._LAYER_OVER_COMBAT)
+	# — центруем окно по оставшемуся свободному месту над ней, а не по всему экрану.
+	_center.offset_bottom = -InvestigatorPanel.BAR_H
 	GameState.state_changed.connect(_refresh)
 	_refresh()
 
