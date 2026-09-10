@@ -10,7 +10,7 @@ extends RefCounted
 ##
 ## Синкаемый стейт (gates/entities/monsters/monster_bag/monster_surge/doom/
 ## omens_step) ОСТАЁТСЯ полями GameState — модуль мутирует его через _gs. Доступ к
-## стейту/услугам — через _gs: _gs._is_host(), _gs._load_locations(),
+## стейту/услугам — через _gs: _gs._is_host(), _gs.map,
 ## _gs._current_pid(), _gs.players, _gs._campaign, _gs._fill_shop_reserve(),
 ## _gs._mystery.try_mystery_hook(). Создаётся в GameState (поле _board).
 
@@ -154,11 +154,8 @@ func open_gate(loc_id: String = "", color: String = "") -> String:
 func _reset_gate_deck() -> void:
 	_gs.gate_deck = []
 	_gs.gate_discard = []
-	var locations: Array = _gs._load_locations()
-	for i: int in range(locations.size()):
-		var l: Dictionary = locations[i]
-		var did: String = String(l.get("id", ""))
-		if not did.is_empty() and not String(l.get("gateColor", "")).is_empty():
+	for did: String in _gs.map.ids():
+		if not _gs.map.gate_color(did).is_empty():
 			_gs.gate_deck.append(did)
 	(_gs.gate_deck as Array).shuffle()
 
@@ -192,13 +189,8 @@ func _gate_to_discard(loc_id: String) -> void:
 ## Каноничный цвет врат локации (из data/locations.json → gateColor). Локация
 ## без поля (не гейт-спейс) → "green" как безопасный фолбэк.
 func _gate_color_for(loc_id: String) -> String:
-	var locations: Array = _gs._load_locations()
-	for i: int in range(locations.size()):
-		var l: Dictionary = locations[i]
-		if String(l.get("id", "")) == loc_id:
-			var c: String = String(l.get("gateColor", ""))
-			return c if not c.is_empty() else "green"
-	return "green"
+	var c: String = _gs.map.gate_color(loc_id)
+	return c if not c.is_empty() else "green"
 
 
 ## Закрыть врата на локации активного игрока (эффект closeGate финальной стадии
@@ -295,7 +287,7 @@ func monster_choices() -> Array:
 						"toughness": tough,
 						"health": int(inst.get("health", tough)) if inst is Dictionary else tough,
 						"loc": loc,
-						"loc_name": loc_name_key(loc),
+						"loc_name": _gs.map.name_key(loc),
 					}
 				)
 			)
@@ -311,17 +303,8 @@ func space_choices() -> Array:
 		var loc: String = String(loc_v)
 		var n: int = (_gs.monsters[loc] as Array).size()
 		if n > 0:
-			out.append({"ref": loc, "name": loc_name_key(loc), "count": n})
+			out.append({"ref": loc, "name": _gs.map.name_key(loc), "count": n})
 	return out
-
-
-## Ключ перевода имени локации (нет в данных — сам id, как в SupplyModal).
-func loc_name_key(loc_id: String) -> String:
-	for l_v: Variant in _gs._load_locations():
-		var l: Dictionary = l_v
-		if String(l.get("id", "")) == loc_id:
-			return String(l.get("name", loc_id))
-	return loc_id
 
 
 ## Снять КОНКРЕТНЫЙ экземпляр монстра по ref "loc#idx" (выбранный игроком, chosenMonster).
@@ -553,10 +536,8 @@ func place_clue() -> void:
 		GameConsole.warn("[Улика] жетоны кончились — выкладывать нечего")
 		return
 	var candidates: Array = []
-	var locations: Array = _gs._load_locations()
-	for i: int in range(locations.size()):
-		var lid: String = String(locations[i].get("id", ""))
-		if lid.is_empty() or not (_gs.clue_deck as Array).has(lid):
+	for lid: String in _gs.map.ids():
+		if not (_gs.clue_deck as Array).has(lid):
 			continue
 		var arr: Array = _gs.entities.get(lid, [])
 		if not (arr as Array).has("clue"):
@@ -577,11 +558,7 @@ func place_eldritch_token() -> void:
 	if not _gs._is_host():
 		return
 	var candidates: Array = []
-	var locations: Array = _gs._load_locations()
-	for i: int in range(locations.size()):
-		var lid: String = String(locations[i].get("id", ""))
-		if lid.is_empty():
-			continue
+	for lid: String in _gs.map.ids():
 		var arr: Array = _gs.entities.get(lid, [])
 		if not (arr as Array).has("eldritch_token"):
 			candidates.append(lid)
@@ -715,10 +692,7 @@ func remove_rumor_at(loc_id: String) -> void:
 func place_rumor() -> void:
 	if not _gs._is_host():
 		return
-	var locations: Array = _gs._load_locations()
-	if locations.is_empty():
-		return
-	var lid: String = String(locations[randi() % locations.size()].get("id", ""))
+	var lid: String = _gs.map.random_id()
 	if lid.is_empty():
 		return
 	var cell: Array = _gs.entities.get(lid, [])

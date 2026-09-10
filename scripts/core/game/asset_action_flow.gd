@@ -324,7 +324,7 @@ func _ctx(pid: String) -> Dictionary:
 		"monster_choices": _gs._board.monster_choices(),  # chosenMonster
 		"space_choices": _gs._board.space_choices(),  # chosenSpace
 		"other_pids": _gs._target.other_pids(pid),  # chosenInvestigator
-		"locations": _gs._load_locations(),  # move — куда шагать
+		"locations": _gs.map.all(),  # move — куда шагать
 	}
 
 

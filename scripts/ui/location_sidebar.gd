@@ -468,7 +468,7 @@ func _refresh_actions() -> void:
 	_trade_btn.visible = _can_trade()
 	_shop_btn.visible = GameState.can_shop(_loc_id)
 	var can_ticket: bool = GameState.can_buy_ticket(_loc_id)
-	var avail: Array = GameState.available_ticket_types(_loc_id)
+	var avail: Array = GameState.map.ticket_types(_loc_id)
 	_buy_train_btn.visible = can_ticket and avail.has("train")
 	_buy_ship_btn.visible = can_ticket and avail.has("ship")
 

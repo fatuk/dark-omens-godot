@@ -257,20 +257,12 @@ static func _gate_row(loc_id: String) -> Control:
 
 
 static func _gate_color(loc_id: String) -> String:
-	for l_v: Variant in GameState.call("_load_locations"):
-		var l: Dictionary = l_v
-		if String(l.get("id", "")) == loc_id:
-			return String(l.get("gateColor", ""))
-	return ""
+	return GameState.map.gate_color(loc_id)
 
 
 # Ключ перевода имени локации; нет в данных (номерной спейс без записи) — сам id.
 static func _loc_name(loc_id: String) -> String:
-	for l_v: Variant in GameState.call("_load_locations"):
-		var l: Dictionary = l_v
-		if String(l.get("id", "")) == loc_id:
-			return String(l.get("name", loc_id))
-	return loc_id
+	return GameState.map.name_key(loc_id)
 
 
 # Миниатюра карты актива — GameCard в полный рост, ужатый через scale. Тап по ней

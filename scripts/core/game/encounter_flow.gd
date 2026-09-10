@@ -1172,16 +1172,14 @@ func _build_request(
 # Локализованное игровое имя ("Аркхэм") + реальный прообраз ("Уэнэм, Массачусетс")
 # по id локации. Матч по `id`, а не `name` — name теперь translation key.
 func _location_info(loc_id: String) -> Dictionary:
-	var locations: Array = _gs._load_locations()
-	for i in range(locations.size()):
-		var loc: Dictionary = locations[i]
-		if String(loc.get("id", "")) == loc_id:
-			return {
-				"id": loc_id,
-				"name": tr(String(loc.get("name", loc_id))),
-				"flavor": tr(String(loc.get("realWorldLocation", ""))),
-				"type": String(loc.get("type", "city")),
-			}
+	var loc: Dictionary = _gs.map.by_id(loc_id)
+	if not loc.is_empty():
+		return {
+			"id": loc_id,
+			"name": tr(String(loc.get("name", loc_id))),
+			"flavor": tr(String(loc.get("realWorldLocation", ""))),
+			"type": String(loc.get("type", "city")),
+		}
 	return {"id": loc_id, "name": loc_id, "flavor": "", "type": "city"}
 
 

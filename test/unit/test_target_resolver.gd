@@ -22,8 +22,11 @@ class MockGameState:
 	func _name_of(pid: String) -> String:
 		return pid
 
-	func _load_locations() -> Array:
-		return locations
+	# Граф локаций из тестового списка — пересобирается на каждое чтение, чтобы
+	# `_gs.locations = [...]` в тесте подхватывалось без setup-хуков.
+	var map: LocationGraph:
+		get:
+			return LocationGraph.new(locations)
 
 
 func before_each() -> void:

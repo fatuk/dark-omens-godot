@@ -816,7 +816,7 @@ func _condition_entries() -> Array:
 
 func _location_entries() -> Array:
 	var out: Array = []
-	for l_v: Variant in GameState.locations():
+	for l_v: Variant in GameState.map.all():
 		var l: Dictionary = l_v
 		var lid: String = String(l.get("id", ""))
 		out.append({"id": lid, "label": tr(String(l.get("nameKey", lid))), "kind": "location"})

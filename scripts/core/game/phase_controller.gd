@@ -156,7 +156,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			# Билет продаётся только в городе; тип — по дорогам города
 			# (payload {"type":"train"|"ship"}): train → ж/д, ship → корабль.
 			var tkt_type: String = String(payload.get("type", ""))
-			if not _gs.available_ticket_types(String(p.get("location", ""))).has(tkt_type):
+			if not _gs.map.ticket_types(String(p.get("location", ""))).has(tkt_type):
 				GameConsole.warn(
 					"[Game] %s — билет «%s» здесь не продаётся" % [_gs._name_of(pid), tkt_type]
 				)
@@ -225,7 +225,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			# оплачены билетами (train/ship). Списываем ровно израсходованное.
 			var here_travel: String = String(p.get("location", ""))
 			var plan: Dictionary = TravelPlanner.cost_to(
-				_gs._load_locations(),
+				_gs.map.all(),
 				here_travel,
 				dest,
 				int(p.get("train_tickets", 0)),
@@ -252,7 +252,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			# при БРОСКЕ кубов: тратит действие сразу, поэтому отмена покупки не
 			# вернёт возможность снова пойти в магазин. Сами товары выдаются позже
 			# (host_apply_shop_grant по кнопке «Купить»).
-			if _gs.location_type(String(p.get("location", ""))) != "city":
+			if not _gs.map.is_city(String(p.get("location", ""))):
 				GameConsole.warn("[Магазин] %s не в городе" % _gs._name_of(pid))
 				return false
 			p["actions_left"] = int(p["actions_left"]) - 1
@@ -347,7 +347,7 @@ func _announce_action_feed(pid: String, action_type: String, payload: Dictionary
 	match action_type:
 		GameActions.TRAVEL:
 			var dest: String = String(payload.get("to", ""))
-			_gs.announce_action(pid, GameActions.TRAVEL, {"place": _gs.loc_name_key(dest)})
+			_gs.announce_action(pid, GameActions.TRAVEL, {"place": _gs.map.name_key(dest)})
 		GameActions.CONDITION_ACTION:
 			var cid: String = String(payload.get("condition", ""))
 			_gs.announce_action(
@@ -463,7 +463,7 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 	var p: Dictionary = _gs.players[pid]
 	if not (p.get("actions_used", []) as Array).has(GameActions.ACQUIRE_ASSETS):
 		return false
-	if _gs.location_type(String(p.get("location", ""))) != "city":
+	if not _gs.map.is_city(String(p.get("location", ""))):
 		return false
 	# Валидируем покупку по авторитетным данным хоста, а не по доверию клиенту:
 	# успехи считаем только из активной проверки магазина (иначе монеты неизвестны).
@@ -573,7 +573,7 @@ func host_apply_shop_debt(pid: String) -> bool:
 	if _gs._current_pid() != pid:
 		return false
 	var p: Dictionary = _gs.players[pid]
-	if _gs.location_type(String(p.get("location", ""))) != "city":
+	if not _gs.map.is_city(String(p.get("location", ""))):
 		return false
 	var conds: Array = p.get("conditions", [])
 	if conds.has("debt"):
@@ -890,11 +890,7 @@ func can_travel(pid: String, dest: String) -> bool:
 	return not (
 		TravelPlanner
 		. cost_to(
-			_gs._load_locations(),
-			here,
-			dest,
-			int(p.get("train_tickets", 0)),
-			int(p.get("ship_tickets", 0))
+			_gs.map.all(), here, dest, int(p.get("train_tickets", 0)), int(p.get("ship_tickets", 0))
 		)
 		. is_empty()
 	)

@@ -135,25 +135,24 @@ class MockGameState:
 	func _name_of(pid: String) -> String:
 		return pid
 
-	func location_type(loc: String) -> String:
-		return String(loc_types.get(loc, ""))
-
-	func _load_locations() -> Array:
-		return locations
-
-	func available_ticket_types(loc_id: String) -> Array:
-		if String(loc_types.get(loc_id, "")) != "city":
-			return []
-		var types: Array = []
-		for loc in locations:
-			if String((loc as Dictionary).get("id", "")) != loc_id:
-				continue
-			for c in (loc as Dictionary).get("connections", []):
-				var t: String = String((c as Dictionary).get("type", ""))
-				if (t == "train" or t == "ship") and not types.has(t):
-					types.append(t)
-			break
-		return types
+	# Граф локаций: тесты задают связи через `locations`, а тип — отдельно через
+	# `loc_types` (часто без записи в locations). Сливаем в одну картину на каждое
+	# чтение, чтобы присваивания в тесте подхватывались без setup-хуков.
+	var map: LocationGraph:
+		get:
+			var merged: Array = []
+			var seen: Dictionary = {}
+			for l_v: Variant in locations:
+				var l: Dictionary = (l_v as Dictionary).duplicate()
+				var lid: String = String(l.get("id", ""))
+				if loc_types.has(lid):
+					l["type"] = loc_types[lid]
+				seen[lid] = true
+				merged.append(l)
+			for lid_v: Variant in loc_types:
+				if not seen.has(lid_v):
+					merged.append({"id": lid_v, "type": loc_types[lid_v], "connections": []})
+			return LocationGraph.new(merged)
 
 	func _refill_shop_reserve(_a: Array) -> void:
 		pass
@@ -166,9 +165,6 @@ class MockGameState:
 
 	func _emit_changed() -> void:
 		pass
-
-	func loc_name_key(loc_id: String) -> String:
-		return loc_id
 
 	func announce_action(_pid: String, _action_id: String, _params: Dictionary = {}) -> void:
 		pass

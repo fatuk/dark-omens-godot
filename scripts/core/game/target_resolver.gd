@@ -7,7 +7,7 @@ extends RefCounted
 ## игрока выбранному. Зовётся из GameState._apply_board_effect.
 ##
 ## Доступ к стейту — через _gs: _gs.players, _gs.turn_order, _gs._current_pid(),
-## _gs._name_of(), _gs._load_locations(). Создаётся в GameState (поле _target).
+## _gs._name_of(), _gs.map. Создаётся в GameState (поле _target).
 
 const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
@@ -144,12 +144,7 @@ func _pids_on_loc_type(loc_type: String) -> Array:
 func _loc_type_of(loc_id: String) -> String:
 	if loc_id.is_empty():
 		return ""
-	var locations: Array = _gs._load_locations()
-	for i in range(locations.size()):
-		var loc: Dictionary = locations[i]
-		if String(loc.get("id", "")) == loc_id:
-			return String(loc.get("type", ""))
-	return ""
+	return _gs.map.type_of(loc_id)
 
 
 # Передача от активного игрока выбранному: giveClue — улики (сколько есть, до n);

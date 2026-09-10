@@ -169,10 +169,7 @@ func solve_encounter_at(loc: String) -> bool:
 
 # Случайная локация (id) или "" — нет локаций.
 func _pick_location() -> String:
-	var locs: Array = _gs._load_locations()
-	if (locs as Array).is_empty():
-		return ""
-	return String((locs[randi() % locs.size()] as Dictionary).get("id", ""))
+	return _gs.map.random_id()
 
 
 # Случайная локация + метка слуха на ней (для encounter-Слуха).

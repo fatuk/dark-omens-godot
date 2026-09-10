@@ -19,7 +19,7 @@ func before_each() -> void:
 	GameState._nm = autofree(HostStub.new())
 	# Пул строится из ВСЕХ локаций карты — подставляем фикстуру A/B/C вместо реальной
 	# locations.json. campaign.ancientOne.clues задаёт только КОНТЕНТ (ClueCatalog).
-	GameState._locations_cache = [{"id": "A"}, {"id": "B"}, {"id": "C"}]
+	GameState.map = LocationGraph.new([{"id": "A"}, {"id": "B"}, {"id": "C"}])
 	GameState.campaign = {
 		"ancientOne":
 		{
@@ -41,7 +41,7 @@ func after_each() -> void:
 	GameState.campaign = {}
 	GameState.players = {}
 	GameState.entities = {}
-	GameState._locations_cache = []  # сброс фикстуры — другие тесты грузят реальную
+	GameState.map = LocationGraph.new()  # сброс фикстуры — другие тесты грузят реальную
 	GameState._reset_clue_deck()
 
 

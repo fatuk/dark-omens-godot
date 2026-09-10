@@ -52,8 +52,11 @@ class MockGS:
 	func _is_host() -> bool:
 		return true
 
-	func _load_locations() -> Array:
-		return locations
+	# Граф локаций из тестового списка — пересобирается на каждое чтение, чтобы
+	# `_gs.locations = [...]` в тесте подхватывалось без setup-хуков.
+	var map: LocationGraph:
+		get:
+			return LocationGraph.new(locations)
 
 	# Зеркало GameState._apply_board_effect (минимум): advanceDoom с учётом _times (repeat).
 	func _apply_board_effect(node: Dictionary) -> void:

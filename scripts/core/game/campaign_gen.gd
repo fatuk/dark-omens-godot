@@ -172,7 +172,7 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 
 # Тело запроса /campaign/assemble: локации, размер партии, язык, Древний.
 func _build_request(player_count: int, ancient_one: String) -> Dictionary:
-	var locations: Array = _gs._load_locations()
+	var locations: Array = _gs.map.all()
 	var locs: Array = []
 	for i in range(locations.size()):
 		var loc: Dictionary = locations[i]

@@ -371,7 +371,7 @@ func _apply_background() -> void:
 	var tex: Texture2D = _world_texture(world)
 	if tex == null:
 		var loc: String = String(GameState.my_player().get("location", ""))
-		tex = _bg_texture(GameState.location_type(loc))
+		tex = _bg_texture(GameState.map.type_of(loc))
 	if _bg.texture != tex:
 		_bg.texture = tex
 

@@ -112,9 +112,9 @@ var players: Dictionary = {}
 
 var _nm: Node = null
 
-# Кэш data/locations.json — для имени/типа локации в запросе встречи и
-# проверки связности при travel. Лениво загружается через _load_locations().
-var _locations_cache: Array = []
+## Граф локаций поля (data/locations.json): тип/имя/врата/билеты по id — для
+## подсистем (_gs.map) и UI (GameState.map). Read-only, лениво читает файл.
+var map: LocationGraph = LocationGraph.new()
 
 # Активная карта Мифов. {} — фаза не mythos или карта уже разрешена.
 var current_mythos: Dictionary = {}
@@ -400,9 +400,8 @@ func _ensure_clue_deck() -> void:
 	if clue_deck_built:
 		return
 	clue_deck.clear()
-	for loc: Variant in _load_locations():
-		var lid: String = String((loc as Dictionary).get("id", ""))
-		if not lid.is_empty() and not clue_deck.has(lid):
+	for lid: String in map.ids():
+		if not clue_deck.has(lid):
 			clue_deck.append(lid)
 	clue_deck_built = true
 
@@ -1067,7 +1066,7 @@ func travel_cost_to(dest: String) -> Dictionary:
 		return {}
 	var me: Dictionary = my_player()
 	return TravelPlanner.cost_to(
-		_load_locations(),
+		map.all(),
 		String(me.get("location", "")),
 		dest,
 		int(me.get("train_tickets", 0)),
@@ -1088,14 +1087,14 @@ func can_shop(loc_id: String) -> bool:
 		return false
 	if (me.get("actions_used", []) as Array).has(GameActions.ACQUIRE_ASSETS):
 		return false
-	if location_type(loc_id) != "city":
+	if not map.is_city(loc_id):
 		return false
 	return String(me.get("location", "")) == loc_id
 
 
 ## Можно ли купить билет в loc_id прямо сейчас (для кнопок сайдбара). Условия как у
 ## магазина: мой ход, мой текущий город, есть действие, buy_ticket ещё не сделан в
-## этом раунде. Конкретные типы билетов — available_ticket_types(loc_id).
+## этом раунде. Конкретные типы билетов — map.ticket_types(loc_id).
 func can_buy_ticket(loc_id: String) -> bool:
 	if loc_id.is_empty() or not is_my_turn():
 		return false
@@ -1109,7 +1108,7 @@ func can_buy_ticket(loc_id: String) -> bool:
 	# Потолок: на руках максимум MAX_TICKETS билетов (ж/д + корабль).
 	if int(me.get("train_tickets", 0)) + int(me.get("ship_tickets", 0)) >= MAX_TICKETS:
 		return false
-	return not available_ticket_types(loc_id).is_empty()
+	return not map.ticket_types(loc_id).is_empty()
 
 
 ## Хост: заполнить витрину магазина до SHOP_RESERVE_SIZE случайными ассетами.
@@ -1206,14 +1205,6 @@ func _draw_shop_assets(n: int) -> void:
 		shop_reserve.append(String(asset_deck.pop_back()))
 
 
-## Тип локации по id (city|wilderness|sea), "" если не найдена.
-func location_type(loc_id: String) -> String:
-	for loc in _load_locations():
-		if String((loc as Dictionary).get("id", "")) == loc_id:
-			return String((loc as Dictionary).get("type", ""))
-	return ""
-
-
 ## Карты-Слухи (Ongoing Rumor), что сейчас в игре — для UI (сайдбар Тайны). Каждая
 ## несёт tokens (таймер) и rumorLocation (портал). [] — слухов нет.
 func rumors_in_play() -> Array:
@@ -1222,34 +1213,6 @@ func rumors_in_play() -> Array:
 		if _rumor.is_rumor(c_v as Dictionary):
 			out.append(c_v)
 	return out
-
-
-## i18n-ключ игрового имени локации (LOC_*_NAME) по id; fallback — сам id. Для ленты
-## действий: ключ шлём в announce_action, клиент сам tr() в своей локали.
-func loc_name_key(loc_id: String) -> String:
-	for loc in _load_locations():
-		if String((loc as Dictionary).get("id", "")) == loc_id:
-			return String((loc as Dictionary).get("name", loc_id))
-	return loc_id
-
-
-## Какие билеты можно купить в локации (по типам исходящих дорог). Билеты продаются
-## ТОЛЬКО в городах: дорога type "train" → ж/д билет ("train"), "ship" → билет на
-## корабль ("ship"). Возвращает подмножество ["train","ship"] (пусто — не город или
-## нет таких дорог). Источник для UI (кнопки в сайдбаре) и валидации buy_ticket.
-func available_ticket_types(loc_id: String) -> Array:
-	if location_type(loc_id) != "city":
-		return []
-	var types: Array = []
-	for loc in _load_locations():
-		if String((loc as Dictionary).get("id", "")) != loc_id:
-			continue
-		for c in (loc as Dictionary).get("connections", []):
-			var t: String = String((c as Dictionary).get("type", ""))
-			if (t == "train" or t == "ship") and not types.has(t):
-				types.append(t)
-		break
-	return types
 
 
 # ── Уход игрока ──────────────────────────────────────────────────────────────
@@ -1548,11 +1511,6 @@ func is_my_turn() -> bool:
 ## Для UI — вместо лазанья в приватный _cond.
 func player_has_constraint(pid: String, verb: String) -> bool:
 	return _cond.player_has_constraint(pid, verb)
-
-
-## Публичный список локаций (data/locations.json, кэш). Для UI — вместо _load_locations.
-func locations() -> Array:
-	return _load_locations()
 
 
 # ── Debug (только dev-сборка + хост) ──────────────────────────────────────────
@@ -1918,15 +1876,3 @@ func _clear_pregame_fields() -> void:
 	monster_surge = 0
 	encounter_choices = []
 	active = false
-
-
-# ── Helpers для подмодулей ───────────────────────────────────────────────────
-
-
-## Лениво загружает data/locations.json и кэширует. Используется travel-flow
-## (проверка связности, имя/тип в запросе встречи) и CampaignGen (список
-## локаций в запросе библии).
-func _load_locations() -> Array:
-	if _locations_cache.is_empty():
-		_locations_cache = DataLoader.load_array("res://data/locations.json")
-	return _locations_cache

@@ -39,7 +39,7 @@ static func card_payload(loc: String) -> Dictionary:
 	var d: Dictionary = by_location(loc)
 	var desc: String = String(d.get("description", ""))
 	if desc.strip_edges().is_empty():
-		desc = TranslationServer.translate(GameState.loc_name_key(loc))
+		desc = TranslationServer.translate(GameState.map.name_key(loc))
 	var payload: Dictionary = {
 		"id": loc,
 		"title": d.get("title", ""),

@@ -125,12 +125,7 @@ func _refresh_rumors() -> void:
 # Локализованное имя локации по её id (data/locations.json). Возвращает id,
 # если локация не найдена в каталоге.
 func _localized_loc(loc_id: String) -> String:
-	var locations: Array = GameState.locations()
-	for i in range(locations.size()):
-		var loc: Dictionary = locations[i]
-		if String(loc.get("id", "")) == loc_id:
-			return tr(String(loc.get("name", loc_id)))
-	return loc_id
+	return tr(GameState.map.name_key(loc_id))
 
 
 # ── Анимация выезда ───────────────────────────────────────────────────────────
