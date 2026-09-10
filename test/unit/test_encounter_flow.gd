@@ -418,8 +418,14 @@ func _wounded(items_p: Array, items_q: Array, hp_loss: int, sanity_loss: int = 0
 		"location": "loc", "hp": 5, "sanity": 5, "items": items_q, "concentration": 1
 	}
 	ef.begin_turn()
-	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": hp_loss, "health_after": 3}
-	ef._gs.current_encounter["sanity_loss"] = sanity_loss
+	# Состояние ровно как в игре после броска Силы: Воля заморожена (enc.will и
+	# sanity_loss), Сила брошена с 0 успехов (active_check.rolled), resolution ещё
+	# НЕТ — она появится только при «Завершить». hp_loss = урон монстра.
+	var enc: Dictionary = ef._gs.current_encounter
+	enc["combat"] = {"damage": hp_loss}
+	enc["will"] = {"dice": [], "successes": 0}
+	enc["sanity_loss"] = sanity_loss
+	ef._gs.active_check = {"owner": "combat", "rolled": true, "successes": 0, "dice": [1]}
 	return ef
 
 
@@ -451,8 +457,19 @@ func test_prevent_loss_rejected_from_another_location() -> void:
 func test_prevent_loss_rejected_before_roll_and_when_nothing_left() -> void:
 	var ef: EncounterFlow = _wounded([{"id": "bandages", "exhausted": false}], [], 0)
 	assert_false(ef.play_prevent_loss("p", 0), "терять нечего — карту не жжём")
-	ef._gs.current_encounter.erase("resolution")
-	assert_false(ef.play_prevent_loss("p", 0), "до броска потеря неизвестна")
+	ef._gs.current_encounter["combat"] = {"damage": 2}
+	ef._gs.active_check["rolled"] = false
+	assert_false(ef.play_prevent_loss("p", 0), "до броска Силы потеря неизвестна")
+	ef._gs.active_check["rolled"] = true
+	assert_true(ef.play_prevent_loss("p", 0), "после броска — окно открыто")
+
+
+func test_prevent_loss_window_also_after_resolution_fixed() -> void:
+	# Итог уже зафиксирован (триггер карты, победа по ужасу) — окно тоже открыто.
+	var ef: EncounterFlow = _wounded([{"id": "bandages", "exhausted": false}], [], 0)
+	ef._gs.active_check = {}
+	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": 2, "health_after": 3}
+	assert_true(ef.play_prevent_loss("p", 0), "по зафиксированной resolution")
 
 
 func test_prevent_loss_does_not_overprevent_across_cards() -> void:

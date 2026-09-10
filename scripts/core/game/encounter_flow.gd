@@ -829,7 +829,7 @@ func prevent_loss_node_ready(helper_pid: String, item_index: int) -> Dictionary:
 	if _gs.phase != Phases.ENCOUNTER or not _gs.players.has(helper_pid):
 		return {}
 	var enc: Dictionary = _gs.current_encounter
-	if String(enc.get("kind", "")) != "combat" or not enc.has("resolution"):
+	if String(enc.get("kind", "")) != "combat" or not _loss_known(enc):
 		return {}
 	var victim_pid: String = _gs._current_pid()
 	if not _gs.players.has(victim_pid):
@@ -911,11 +911,32 @@ func play_prevent_loss(helper_pid: String, item_index: int) -> bool:
 	return true
 
 
+## Потеря уже известна? Итог боя фиксируется в enc.resolution только при
+## «Завершить»; до этого — после броска Силы — он живёт в active_check. Окно
+## предотвращения открывается именно с броска: игрок видит «−2 здоровья», а
+## списания ещё не было. Проверяется и на клиенте (веер) — active_check синкается.
+func _loss_known(enc: Dictionary) -> bool:
+	if enc.has("resolution"):
+		return true
+	var c: Dictionary = _gs.active_check
+	return (
+		enc.has("will") and String(c.get("owner", "")) == "combat" and bool(c.get("rolled", false))
+	)
+
+
+## Итог боя для окна предотвращения: зафиксированный, а до фиксации — считанный
+## с текущего броска Силы (чистая функция, ничего не пишет).
+func _pending_resolution(enc: Dictionary) -> Dictionary:
+	if enc.has("resolution"):
+		return enc["resolution"]
+	return _combat_resolution(enc, _gs.active_check, _gs._current_pid())
+
+
 ## Сколько ещё не предотвращено: потеря по итогу боя минус уже сыгранные карты.
 func _remaining_loss(enc: Dictionary, stat: String) -> int:
 	if stat == "sanity":
 		return maxi(0, int(enc.get("sanity_loss", 0)) - int(enc.get("prevented_sanity", 0)))
-	var r: Dictionary = enc.get("resolution", {})
+	var r: Dictionary = _pending_resolution(enc)
 	return maxi(0, int(r.get("hp_loss", 0)) - int(enc.get("prevented_hp", 0)))
 
 
