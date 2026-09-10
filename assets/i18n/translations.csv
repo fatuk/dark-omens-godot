@@ -668,6 +668,7 @@ SKILL_WILL,Воля,Will
 ENCOUNTER_TITLE,Встреча,Encounter
 ENCOUNTER_GENERATING,Готовим встречу…,Preparing an encounter…
 ENCOUNTER_CHOICE_TITLE,Выберите встречу,Choose an encounter
+ENCOUNTER_CHOICE_COMBAT_ORDER,С кем сражаться первым?,Whom to fight first?
 ENCOUNTER_CHOICE_GENERAL,Общая встреча,General encounter
 ENCOUNTER_CHOICE_LOCAL,Локационная встреча,Location encounter
 ENCOUNTER_CHOICE_RESEARCH,Исследование (улика),Research (clue)

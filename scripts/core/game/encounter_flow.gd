@@ -137,9 +137,9 @@ func begin_turn() -> void:
 		return
 	var loc: String = String(_gs.players[pid].get("location", ""))
 	if not (_gs.monsters.get(loc, []) as Array).is_empty():
-		# Монстры на клетке — встреча с монстром всегда первой.
-		_gs.encounter_choices = []
-		_begin_combat(pid)
+		# Монстры на клетке — бой обязателен и с КАЖДЫМ, в порядке сыщика.
+		_clear_fought(loc)
+		_next_combat_or_choice(pid)
 		return
 	_begin_noncombat(pid)
 
@@ -178,17 +178,80 @@ func continue_encounter_turn(pid: String) -> bool:
 	var enc: Dictionary = _gs.current_encounter
 	if String(enc.get("kind", "")) != "combat":
 		return false  # не-боевая встреча отыграна — ход дальше
-	# Монстр выжил (не повержен) — ход сыщика заканчивается, монстр остаётся.
-	if not bool((enc.get("resolution", {}) as Dictionary).get("won", false)):
-		return false
-	# Монстр повержен (снят в _commit_combat). Ещё монстры на клетке?
+	# Бой отыгран — повержен монстр или выжил, неважно: правило требует драться
+	# с КАЖДЫМ монстром клетки. Выживший помечен в _commit_combat и повторно не
+	# предлагается; очередь решает, что дальше.
+	return _next_combat_or_choice(pid)
+
+
+## Хост: следующий шаг боевой очереди на клетке сыщика. Возвращает true, если ход
+## ПРОДОЛЖАЕТСЯ (настроен бой, выбор порядка или не-боевая встреча), false —
+## ход завершается.
+##
+## Правило настолки: сыщик дерётся с каждым монстром своей клетки, порядок
+## выбирает сам; поражение не освобождает от остальных. Встречу в локации он
+## получает только если после боёв монстров на клетке не осталось — выживший
+## монстр «запирает» локацию.
+func _next_combat_or_choice(pid: String) -> bool:
 	var loc: String = String(_gs.players[pid].get("location", ""))
-	if not (_gs.monsters.get(loc, []) as Array).is_empty():
-		_begin_combat(pid)  # следующий монстр — тот же игрок
+	var pending: Array = _unfought_indices(loc)
+	if pending.is_empty():
+		if not (_gs.monsters.get(loc, []) as Array).is_empty():
+			GameConsole.log(
+				"[Бой] %s: все бои отыграны, монстры остались — ход завершён" % _gs._name_of(pid)
+			)
+			return false
+		_begin_noncombat(pid)  # клетка чиста — обычная встреча
 		return true
-	# Все монстры повержены — теперь выбор не-боевой встречи.
-	_begin_noncombat(pid)
+	if pending.size() == 1:
+		_gs.encounter_choices = []
+		_begin_combat(pid, int(pending[0]))
+		return true
+	# Несколько ещё не битых — сыщик выбирает, с кем драться первым. Варианты
+	# едут тем же каналом, что выбор типа встречи: "combat:<индекс на клетке>".
+	var choices: Array = []
+	for i_v: Variant in pending:
+		choices.append("combat:%d" % int(i_v))
+	_gs.encounter_choices = choices
+	_gs.current_encounter = {}
+	GameConsole.log("[Бой] %s выбирает порядок: %d монстров" % [_gs._name_of(pid), pending.size()])
+	_gs._broadcast_sync()
+	_gs._emit_changed()
 	return true
+
+
+## Индексы монстров клетки, с которыми в этом ходу ещё не дрались.
+func _unfought_indices(loc: String) -> Array:
+	var out: Array = []
+	var mons: Array = _gs.monsters.get(loc, [])
+	for i in range(mons.size()):
+		var inst_v: Variant = mons[i]
+		if inst_v is Dictionary and bool((inst_v as Dictionary).get("fought", false)):
+			continue
+		out.append(i)
+	return out
+
+
+## Новый ход встречи — пометки прошлого хода снимаем, иначе монстр, выживший в
+## прошлый раз, считался бы «уже битым» и сегодня.
+func _clear_fought(loc: String) -> void:
+	var mons: Array = _gs.monsters.get(loc, [])
+	for i in range(mons.size()):
+		if mons[i] is Dictionary:
+			(mons[i] as Dictionary).erase("fought")
+
+
+## Пометить экземпляр «в этом ходу бой был». Легаси-строку нормализуем в словарь,
+## иначе пометку некуда положить.
+func _mark_fought(loc: String, idx: int) -> void:
+	var mons: Array = _gs.monsters.get(loc, [])
+	if idx < 0 or idx >= mons.size():
+		return
+	var inst_v: Variant = mons[idx]
+	var inst: Dictionary = inst_v if inst_v is Dictionary else {"id": String(inst_v)}
+	inst["fought"] = true
+	mons[idx] = inst
+	_gs.monsters[loc] = mons
 
 
 ## Хост: игрок выбрал тип встречи — генерируем её. combat (бой) — пока заглушка.
@@ -202,7 +265,9 @@ func host_apply_choose(pid: String, kind: String) -> bool:
 		return false
 	_gs.encounter_choices = []
 	GameConsole.log("[Game] %s выбрал встречу: %s" % [_gs._name_of(pid), kind])
-	if kind == "combat":
+	if kind.begins_with("combat:"):
+		_begin_combat(pid, int(kind.substr(7)))  # порядок боёв — выбор сыщика
+	elif kind == "combat":
 		_begin_combat(pid)
 	elif kind == "eldritch":
 		_begin_eldritch_move(pid)
@@ -328,7 +393,7 @@ func _commit_rumor(_pid: String) -> void:
 
 
 # Хост: собрать боевую «карту» по первому монстру на локации игрока.
-func _begin_combat(pid: String) -> void:
+func _begin_combat(pid: String, idx: int = 0) -> void:
 	if not _gs._is_host():
 		return
 	var loc: String = String(_gs.players[pid].get("location", ""))
@@ -336,9 +401,11 @@ func _begin_combat(pid: String) -> void:
 	if (mons as Array).is_empty():
 		generate("general")  # монстра нет — обычная встреча (страховка)
 		return
+	if idx < 0 or idx >= mons.size():
+		idx = 0  # битый индекс (монстр снят между выбором и боем) — первый
 	# Экземпляр может быть {id, health} (новый формат) или просто id-строкой
 	# (легаси из старой сессии) — читаем устойчиво.
-	var inst_v: Variant = mons[0]  # сражаемся с первым монстром локации
+	var inst_v: Variant = mons[idx]
 	var mid: String = String(inst_v.get("id", "")) if inst_v is Dictionary else String(inst_v)
 	var inst_health: int = (
 		int((inst_v as Dictionary).get("health", -1)) if inst_v is Dictionary else -1
@@ -363,6 +430,7 @@ func _begin_combat(pid: String) -> void:
 		"horror": m.get("horror", {}),
 		"toughness": tough,  # изначальная стойкость (для шкалы)
 		"health": cur,  # текущее здоровье экземпляра
+		"monsterIndex": idx,  # какой именно экземпляр на клетке — по нему снимаем/лечим
 	}
 	_gs.announce_action(pid, "combat", {"monster": String(m.get("nameKey", mid))})  # лента: бой
 	_start_combat_will(pid)  # проверка Воли (pre-roll) — окно активации карт до броска
@@ -731,12 +799,14 @@ func _commit_combat(pid: String) -> void:
 		p["hp"] = maxi(0, int(p.get("hp", 0)) - hp_loss)
 	ActionFeed.announce_deltas(_gs, pid, before_combat, p)  # лента: урон/рассудок от боя
 	var loc: String = String(p.get("location", ""))
+	var idx: int = int(enc.get("monsterIndex", 0))
 	if bool(r.get("won", false)):
-		_remove_monster_instance(loc, 0)
+		_remove_monster_instance(loc, idx)
 		_gs._board.return_monster_to_bag(String(enc.get("monsterId", "")))  # монстр умер → в мешок
 		_gs._rumor.notify_monster_defeated(loc)  # Слух с solve=monsterDefeated развеян
 	else:
-		_set_monster_health(loc, 0, int(r.get("health_after", 0)))
+		_set_monster_health(loc, idx, int(r.get("health_after", 0)))
+		_mark_fought(loc, idx)  # выжил — но повторно в этом ходу не предлагается
 	_gs._check.clear()  # проверка боя завершена — снять active_check
 
 
@@ -1174,8 +1244,12 @@ func _count_all_entities(tag: String) -> int:
 	return n
 
 
-# Стойкость первого монстра на локации (для when/repeat по монстру). −1 — монстра нет.
+# Стойкость ТЕКУЩЕГО противника (в бою — по current_encounter, иначе первого
+# монстра локации) для when/repeat по монстру. −1 — монстра нет.
 func _active_monster_toughness(loc: String) -> int:
+	var enc: Dictionary = _gs.current_encounter
+	if String(enc.get("kind", "")) == "combat" and enc.has("toughness"):
+		return int(enc["toughness"])
 	var mons: Array = _gs.monsters.get(loc, [])
 	if (mons as Array).is_empty():
 		return -1

@@ -51,9 +51,37 @@ func test_combat_resolution_reduces_damage_with_owned_asset() -> void:
 class MockCheck:
 	extends RefCounted
 	var cleared: bool = false
+	var started: Array = []
 
 	func clear() -> void:
 		cleared = true
+
+	func start(kind: String, pid: String, skill: String, mod: int, ctx: String) -> void:
+		started.append({"kind": kind, "pid": pid, "skill": skill, "mod": mod, "ctx": ctx})
+
+
+# Стабы подсистем, которых касается бой: размер партии (стойкость), мешок
+# монстров (повержённый возвращается), Слухи (гибель монстра их развеивает).
+class MockCampaign:
+	extends RefCounted
+
+	func balance_player_count() -> int:
+		return 1
+
+
+class MockBoard:
+	extends RefCounted
+	var bagged: Array = []
+
+	func return_monster_to_bag(mid: String) -> void:
+		bagged.append(mid)
+
+
+class MockRumor:
+	extends RefCounted
+
+	func notify_monster_defeated(_loc: String) -> void:
+		pass
 
 
 class MockGS:
@@ -62,7 +90,16 @@ class MockGS:
 	var players: Dictionary = {}
 	var current_encounter: Dictionary = {}
 	var encounter_discard: Array = []
+	var encounter_choices: Array = []
+	var monsters: Dictionary = {}
+	var entities: Dictionary = {}
+	var gates: Dictionary = {}
+	var campaign: Dictionary = {}
+	var active_check: Dictionary = {}
 	var _check := MockCheck.new()
+	var _campaign := MockCampaign.new()
+	var _board := MockBoard.new()
+	var _rumor := MockRumor.new()
 
 	func _is_host() -> bool:
 		return true
@@ -203,3 +240,110 @@ func test_debug_assign_rejects_unknown_kind_and_player() -> void:
 	assert_string_contains(
 		DebugGrant.assign_encounter(gs, "nobody", "gate", ""), "нет игрока", "нет такого игрока"
 	)
+
+
+# ── Бой со всеми монстрами клетки, порядок — выбор сыщика ────────────────────
+
+
+# Клетка "loc" с монстрами; сыщик "p" стоит на ней.
+func _arena(mons: Array) -> EncounterFlow:
+	var gs: MockGS = autofree(MockGS.new())
+	gs.players["p"] = {"location": "loc", "hp": 5, "sanity": 5, "items": []}
+	gs.monsters = {"loc": mons}
+	return EncounterFlow.new(gs)
+
+
+func test_one_monster_fights_immediately() -> void:
+	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 2}])
+	ef.begin_turn()
+	assert_eq(String(ef._gs.current_encounter.get("kind", "")), "combat", "бой начат сразу")
+	assert_eq(int(ef._gs.current_encounter.get("monsterIndex", -1)), 0)
+	assert_true((ef._gs.encounter_choices as Array).is_empty(), "выбирать не из чего")
+
+
+func test_two_monsters_offer_order_choice() -> void:
+	# Два монстра — сыщик выбирает, с кем драться первым; бой ещё не начат.
+	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 2}, {"id": "cultist", "health": 1}])
+	ef.begin_turn()
+	assert_eq(ef._gs.encounter_choices, ["combat:0", "combat:1"], "варианты — индексы на клетке")
+	assert_true(ef._gs.current_encounter.is_empty(), "до выбора боя нет")
+
+
+func test_choose_combat_index_fights_that_monster() -> void:
+	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 2}, {"id": "cultist", "health": 1}])
+	ef.begin_turn()
+	assert_true(ef.host_apply_choose("p", "combat:1"), "выбор принят")
+	assert_eq(
+		String(ef._gs.current_encounter.get("monsterId", "")), "cultist", "дерёмся с выбранным"
+	)
+	assert_eq(int(ef._gs.current_encounter.get("monsterIndex", -1)), 1)
+	assert_true((ef._gs.encounter_choices as Array).is_empty(), "выбор потреблён")
+
+
+func test_lost_fight_continues_to_next_monster() -> void:
+	# Правило: поражение не освобождает от остальных. Проиграли культисту (idx 1) —
+	# он помечен, а очередь сама ведёт к гулю: он единственный небитый, выбора нет.
+	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 2}, {"id": "cultist", "health": 1}])
+	ef.begin_turn()
+	ef.host_apply_choose("p", "combat:1")
+	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": 1, "health_after": 1}
+	ef._commit_combat("p")
+	assert_true(
+		bool((ef._gs.monsters["loc"][1] as Dictionary).get("fought", false)), "выживший помечен"
+	)
+	assert_eq((ef._gs.monsters["loc"] as Array).size(), 2, "никто не снят")
+	assert_true(ef.continue_encounter_turn("p"), "ход продолжается")
+	assert_eq(String(ef._gs.current_encounter.get("monsterId", "")), "ghoul", "следующий — гуль")
+	assert_eq(int(ef._gs.current_encounter.get("monsterIndex", -1)), 0)
+
+
+func test_won_fight_removes_the_right_instance() -> void:
+	# Победа над ВТОРЫМ монстром снимает второго, а не первого (раньше индекс
+	# был прибит к нулю).
+	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 2}, {"id": "cultist", "health": 1}])
+	ef.begin_turn()
+	ef.host_apply_choose("p", "combat:1")
+	ef._gs.current_encounter["resolution"] = {"won": true, "hp_loss": 0, "health_after": 0}
+	ef._commit_combat("p")
+	var left: Array = ef._gs.monsters["loc"]
+	assert_eq(left.size(), 1, "снят один")
+	assert_eq(String((left[0] as Dictionary).get("id", "")), "ghoul", "остался гуль")
+	assert_eq(ef._gs._board.bagged, ["cultist"], "культист вернулся в мешок")
+
+
+func test_all_fought_with_survivor_ends_turn() -> void:
+	# Единственный монстр выжил — бои исчерпаны, но клетка занята: встречи в
+	# локации не будет, ход завершается.
+	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 3}])
+	ef.begin_turn()
+	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": 2, "health_after": 2}
+	ef._commit_combat("p")
+	assert_false(ef.continue_encounter_turn("p"), "ход завершён — выживший запирает локацию")
+	assert_eq((ef._gs.monsters["loc"] as Array).size(), 1, "монстр остался")
+	assert_eq(
+		int((ef._gs.monsters["loc"][0] as Dictionary).get("health", 0)), 2, "здоровье сохранено"
+	)
+
+
+func test_new_turn_clears_fought_marks() -> void:
+	# Пометка «уже дрался» живёт один ход: на следующем с выжившим дерёмся снова.
+	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 2, "fought": true}])
+	ef.begin_turn()
+	assert_false(
+		bool((ef._gs.monsters["loc"][0] as Dictionary).get("fought", false)), "пометка снята"
+	)
+	assert_eq(String(ef._gs.current_encounter.get("kind", "")), "combat", "и бой начат")
+
+
+func test_legacy_string_instance_can_be_marked() -> void:
+	# Старый формат экземпляра — голая строка id; пометку в неё не положить,
+	# поэтому проигрыш нормализует её в словарь.
+	var ef: EncounterFlow = _arena(["ghoul", "cultist"])
+	ef.begin_turn()
+	ef.host_apply_choose("p", "combat:0")
+	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": 0, "health_after": 1}
+	ef._commit_combat("p")
+	var inst: Variant = ef._gs.monsters["loc"][0]
+	assert_true(inst is Dictionary, "нормализован в словарь")
+	assert_true(bool((inst as Dictionary).get("fought", false)))
+	assert_eq(ef._unfought_indices("loc"), [1], "второй ещё не бит")
