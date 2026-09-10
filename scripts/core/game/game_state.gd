@@ -2138,6 +2138,46 @@ func _resolve_count(node: Dictionary, verb: String) -> int:
 	return int(node.get("amount", node.get("count", 1)))
 
 
+# Выдать артефакт сыщику. Пустой id — случайный из доступных, `want_trait` сужает
+## («Получите 1 Книгу-артефакт»).
+##
+## Артефакт УНИКАЛЕН: копия одна на партию. Поэтому исключаем занятые по ВСЕМУ
+## столу, а не только по рукам получателя, — иначе двое сыщиков носили бы один
+## «Некрономикон». Свободных не осталось → тихо ничего, как у пустой колоды.
+func _grant_artifact(pid: String, artifact_id: String = "", want_trait: String = "") -> void:
+	if not _is_host() or not players.has(pid):
+		return
+	var taken: Dictionary = {}
+	for p_v: Variant in players.values():
+		for it_v: Variant in (p_v as Dictionary).get("items", []):
+			taken[AssetCatalog.entry_id(it_v)] = true
+	var aid: String = artifact_id
+	if aid.is_empty():
+		aid = ArtifactCatalog.pick_free(taken, want_trait)
+		if aid.is_empty():
+			GameConsole.log("[Артефакт] свободных не осталось")
+			return
+	elif taken.has(aid) or not ArtifactCatalog.has(aid):
+		GameConsole.log("[Артефакт] «%s» недоступен" % aid)
+		return
+	var p: Dictionary = players[pid]
+	var items: Array = p.get("items", [])
+	items.append({"id": aid, "kind": "artifact", "exhausted": false})
+	p["items"] = items
+	GameConsole.log("[Артефакт] %s получил «%s»" % [_name_of(pid), aid])
+
+
+# Порог стойкости для целей по всему полю: "testResult" — число успехов проверки,
+# число — оно само, поля нет — берём всех (999).
+func _max_toughness(node: Dictionary) -> int:
+	var raw: Variant = node.get("maxToughness", null)
+	if raw == null:
+		return 999
+	if String(raw) == "testResult":
+		return int(node.get("_successes", 0))
+	return int(raw)
+
+
 # Один проход board-verb'а (без учёта _times — его разворачивает _apply_board_effect).
 func _apply_board_verb(node: Dictionary, verb: String) -> void:
 	var n: int = _resolve_count(node, verb)
@@ -2237,12 +2277,16 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 		"discardMonster":
 			if node.has("_target_monster"):
 				_board.discard_monster_ref(String(node.get("_target_monster", "")))  # выбранный
+			elif String(node.get("target", "")) == "eachMonster":
+				_board.remove_monsters_by_toughness_everywhere(false, _max_toughness(node))
 			elif String(node.get("maxToughness", "")) == "testResult":
 				_board.remove_monsters_by_toughness(false, int(node.get("_successes", 0)))
 			else:
 				_board.remove_monster_at_active(false, n)  # снять без боя
 		"defeatMonster":
-			if String(node.get("maxToughness", "")) == "testResult":
+			if String(node.get("target", "")) == "eachMonster":
+				_board.remove_monsters_by_toughness_everywhere(true, _max_toughness(node))
+			elif String(node.get("maxToughness", "")) == "testResult":
 				_board.remove_monsters_by_toughness(true, int(node.get("_successes", 0)))
 			else:
 				_board.remove_monster_at_active(true, n)  # победить (вернуть id в мешок)
@@ -2269,7 +2313,20 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			var spell_pid: String = String(node.get("_anchor_pid", ""))
 			if spell_pid.is_empty() or not players.has(spell_pid):
 				spell_pid = _current_pid()
-			_spell.grant_spell(spell_pid, String(node.get("spell", "")))
+			# count — «возьмите 2 заклинания» (Некрономикон). Пустой spell — случайное
+			# из доступного пула, это уже умеет grant_spell.
+			for _s in range(maxi(1, n)):
+				_spell.grant_spell(spell_pid, String(node.get("spell", "")))
+		"gainArtifact":
+			# Как и заклинание, артефакт получает ЯКОРНЫЙ сыщик (тот, от которого
+			# идёт эффект), а не «текущий по ходу»: в фазе Мифов это разные люди.
+			var art_pid: String = String(node.get("_anchor_pid", ""))
+			if art_pid.is_empty() or not players.has(art_pid):
+				art_pid = _current_pid()
+			for _a in range(maxi(1, n)):
+				_grant_artifact(
+					art_pid, String(node.get("artifact", "")), String(node.get("trait", ""))
+				)
 		_:
 			GameConsole.log("[Эффект] %s — пока не поддержано движком" % verb)
 

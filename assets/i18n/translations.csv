@@ -1483,6 +1483,7 @@ OUTCOME_DEFEAT_BODY,"Часы рока пробили полночь. Печат
 OUTCOME_TO_MENU,В главное меню,To main menu
 ,,
 TRAIT_SPELL,Заклинание,Spell
+TRAIT_ARTIFACT,Артефакт,Artifact
 ,,
 SPELL_SHRIVELING_NAME,Иссушение,Shrivelling
 SPELL_SHRIVELING_ABILITY,Действие: проверьте Знание. При успехе нанесите 2 урона монстру на вашей локации.,"Action: test Lore. If you pass, deal 2 damage to a monster on your space."
@@ -1664,3 +1665,96 @@ PICK_MONSTER_DISCARD,Какого монстра убрать с поля?,Remov
 PICK_MONSTER_DAMAGE,Какого монстра ранить?,Damage which monster?
 PICK_SPACE_DAMAGE,Выберите локацию — достанется всем монстрам там,Choose a space — every monster there is hit
 PICK_DESTINATION,Куда переместиться?,Move where?
+
+ARTIFACT_KEY_TO_CARCOSA_NAME,Ключ от Каркозы,Key to Carcosa
+ARTIFACT_KEY_TO_CARCOSA_ABILITY,"Раз в раунд вы можете потратить 1 рассудок, чтобы перебросить любое количество кубиков в проверке.","Once per round, you may spend 1 Sanity to reroll any number of dice when resolving a test."
+ARTIFACT_KING_IN_YELLOW_NAME,Король в жёлтом,King In Yellow
+ARTIFACT_KING_IN_YELLOW_ABILITY,"Получите +2 ко всем навыкам, если у вас есть состояние «Порча». Расплата: Получите состояние «Порча».",Gain +2 to all skills if you have a Blight Condition. Reckoning: Gain a Blight Condition.
+ARTIFACT_TATTERED_CLOAK_NAME,Истрёпанный плащ,Tattered Cloak
+ARTIFACT_TATTERED_CLOAK_ABILITY,"Вы можете тратить на 1 рассудок меньше, оплачивая эффект. Если эффект заставляет вас потерять рассудок, потеряйте на 1 рассудок меньше.","You may spend 1 fewer Sanity to pay for an effect. If an effect would cause you to lose Sanity, lose 1 fewer Sanity instead."
+ARTIFACT_MASK_OF_STHENELUS_NAME,Маска Сфенела,Mask of Sthenelus
+ARTIFACT_MASK_OF_STHENELUS_ABILITY,"Действие: Вы можете потратить 1 жетон улучшения или ухудшения, чтобы улучшить 1 навык на свой выбор или получить состояние «Талант».",Action: You may spend 1 Improvement or Impairment token to improve 1 skill of your choice or gain 1 Talent Condition.
+ARTIFACT_TRUE_MAGICK_NAME,Истинная магия,True Magick
+ARTIFACT_TRUE_MAGICK_ABILITY,"Получите +5 Знания при чтении заклинаний. Если эффект заклинания заставляет вас потратить или потерять рассудок, вы можете потратить или потерять на 1 рассудок меньше.","Gain +5 Lore when resolving Spell effects. If you would spend or lose Sanity as part of a Spell effect, you may spend or lose 1 fewer Sanity as part of that effect."
+ARTIFACT_HEMISPHERE_MAP_NAME,Карта полушария,Hemisphere Map
+ARTIFACT_HEMISPHERE_MAP_ABILITY,Раз в раунд в фазе действий вы можете переместиться в соседнюю локацию.,"Once per round, during the Action Phase, you may move to an adjacent space."
+ARTIFACT_BLACK_FAN_NAME,Чёрный веер,Black Fan
+ARTIFACT_BLACK_FAN_ABILITY,"Получите +2 Влияния и +2 Наблюдательности. Вы можете добавить 2 успеха к результату проверки, выполняя действие «Приобрести имущество».",Gain +2 Influence and +2 Observation. You may add 2 successes to your test result when performing an Acquire Assets action.
+ARTIFACT_BLACK_BOOK_NAME,Чёрная книга,Black Book
+ARTIFACT_BLACK_BOOK_ABILITY,"Получите +2 ко всем навыкам, если у вас есть состояние «Тёмный договор». Действие: Вы можете получить состояние «Тёмный договор», чтобы сбросить любое количество других состояний и все свои жетоны знамения.",Gain +2 to all skills if you have a Dark Pact Condition. Action: You may gain a Dark Pact Condition to discard any number of other Conditions and all of your Eldritch tokens.
+ARTIFACT_SHINING_TRAPEZOHEDRON_NAME,Сияющий трапецоэдр,Shining Trapezohedron
+ARTIFACT_SHINING_TRAPEZOHEDRON_ABILITY,Действие: Выберите 1 монстра в любой локации и бросьте 1 кубик. При 5 или 6 сбросьте этого монстра. При 1–4 переместите его в вашу локацию.,"Action: Choose 1 Monster on any space and roll 1 die. On a 5 or 6, discard that Monster. On a 1–4, move that Monster to your space."
+ARTIFACT_BOOK_OF_THE_DEAD_NAME,Книга мёртвых,Book of the Dead
+ARTIFACT_BOOK_OF_THE_DEAD_ABILITY,"Получите +2 Знания и +2 Воли. Каждый раз, когда монстр побеждён, получите 1 улику.","Gain +2 Lore and +2 Will. Whenever a Monster is defeated, gain 1 Clue."
+ARTIFACT_SCALES_OF_THOTH_NAME,Весы Тота,Scales of Thoth
+ARTIFACT_SCALES_OF_THOTH_ABILITY,"Получите +2 ко всем навыкам, если ваши здоровье и рассудок равны. Расплата: Потеряйте 1 здоровье и/или 1 рассудок.",Gain +2 to all skills if your Health and Sanity are equal. Reckoning: Lose 1 Health and/or 1 Sanity.
+ARTIFACT_TWIN_SCEPTERS_NAME,Парные скипетры,Twin Scepters
+ARTIFACT_TWIN_SCEPTERS_ABILITY,Получите +4 Силы в боевых контактах. Получите +4 Знания при чтении заклинаний.,Gain +4 Strength during Combat Encounters. Gain +4 Lore when resolving Spell effects.
+ARTIFACT_MASK_OF_THE_WATCHER_NAME,Маска Наблюдателя,Mask of the Watcher
+ARTIFACT_MASK_OF_THE_WATCHER_ABILITY,"Уменьшите ужас встречаемых вами монстров до 1. Пройдя проверку Воли в ходе боевого контакта, получите 1 сосредоточение.","Reduce the horror of Monsters you encounter to 1. When you pass a Will test during a Combat Encounter, gain 1 Focus."
+ARTIFACT_KHOPESH_OF_THE_ABYSS_NAME,Хопеш бездны,Khopesh of the Abyss
+ARTIFACT_KHOPESH_OF_THE_ABYSS_ABILITY,"Получите +5 Силы в боевых контактах. Раз в раунд, победив монстра в ходе боевого контакта, вы можете переместиться в ближайшую локацию с монстром.","Gain +5 Strength during Combat Encounters. Once per round, when you defeat a Monster during a Combat Encounter, you may move to the nearest space containing a Monster."
+ARTIFACT_DRAGON_IDOL_NAME,Идол дракона,Dragon Idol
+ARTIFACT_DRAGON_IDOL_ABILITY,"Действие: Вы теряете 1 рассудок, а 1 монстр в вашей или соседней локации теряет 2 здоровья. Вы можете потратить 1 рассудок, чтобы перебросить любое количество кубиков в проверке Силы в ходе боевого контакта.",Action: You lose 1 Sanity and 1 Monster on your space or an adjacent space loses 2 Health. You may spend 1 Sanity to reroll any number of dice when resolving a Strength test during a Combat Encounter.
+ARTIFACT_BONE_PIPES_NAME,Костяная свирель,Bone Pipes
+ARTIFACT_BONE_PIPES_ABILITY,"Действие: Пройдите проверку Воли. При успехе можете потратить 1 рассудок, чтобы выбрать 1 монстра в вашей или соседней локации. Выбранный монстр теряет 2 здоровья или перемещается на 1 локацию.","Action: Test Will. If you pass, you may spend 1 Sanity to choose 1 Monster on your space or an adjacent space. The chosen Monster loses 2 Health or moves 1 space."
+ARTIFACT_HEART_OF_WINTER_NAME,Сердце зимы,Heart of Winter
+ARTIFACT_HEART_OF_WINTER_ABILITY,"Вы не можете получить состояние «Переохлаждение» против своей воли. Получите +2 ко всем навыкам, если у вас есть состояние «Переохлаждение».",You cannot gain a Hypothermia Condition unless you choose to. Gain +2 to all skills if you have a Hypothermia Condition.
+ARTIFACT_HYPERBOREAN_CRYSTAL_NAME,Гиперборейский кристалл,Hyperborean Crystal
+ARTIFACT_HYPERBOREAN_CRYSTAL_ABILITY,"Вы можете сбросить 1 заклинание, чтобы перебросить любое количество кубиков в проверке — кроме проверок при чтении заклинаний. Расплата: Возьмите 1 заклинание.",You may discard 1 Spell to reroll any number of dice when resolving a test except when resolving a Spell effect. Reckoning: Gain 1 Spell.
+ARTIFACT_ALIEN_DEVICE_NAME,Инопланетное устройство,Alien Device
+ARTIFACT_ALIEN_DEVICE_ABILITY,"Получите +3 Знания при чтении заклинаний. Вы можете потратить 1 рассудок, чтобы перебросить любое количество кубиков в проверке при чтении заклинания.",Gain +3 Lore when resolving Spell effects. You may spend 1 Sanity to reroll any number of dice when resolving a test as part of a Spell effect.
+ARTIFACT_LIVRE_DIVON_NAME,Livre d’Ivon,Livre d'Ivon
+ARTIFACT_LIVRE_DIVON_ABILITY,"Действие: Пройдите проверку Знания−1. При успехе можете потратить 1 рассудок, чтобы переместиться в любую локацию на свой выбор.","Action: Test Lore−1. If you pass, you may spend 1 Sanity to move to any space of your choice."
+ARTIFACT_PNAKOTIC_MANUSCRIPTS_NAME,Пнакотические рукописи,Pnakotic Manuscripts
+ARTIFACT_PNAKOTIC_MANUSCRIPTS_ABILITY,"Получите +1 Знания и +1 Воли. Действие: Если вы находитесь в локации с вратами, получите 1 улику.","Gain +1 Lore and +1 Will. Action: If you are on a space containing a Gate, gain 1 Clue."
+ARTIFACT_CRYSTAL_ELDER_THINGS_NAME,Кристалл Старцев,Crystal of the Elder Things
+ARTIFACT_CRYSTAL_ELDER_THINGS_ABILITY,Текстовые эффекты карт мифов не могут отнять у вас здоровье или рассудок.,Mythos card text effects cannot cause you to lose Health or Sanity.
+ARTIFACT_DHOL_CHANTS_NAME,Песнопения Дхол,Dhol Chants
+ARTIFACT_DHOL_CHANTS_ABILITY,"В ходе боевого контакта вы можете пройти проверку Знания. При успехе можете потратить 1 рассудок, чтобы бросить 3 дополнительных кубика в проверке Силы в этом контакте.","When resolving a Combat Encounter, you may test Lore. If you pass, you may spend 1 Sanity to roll 3 additional dice when resolving the Strength test during that encounter."
+ARTIFACT_ELTDOWN_SHARDS_NAME,Элтдаунские черепки,Eltdown Shards
+ARTIFACT_ELTDOWN_SHARDS_ABILITY,"Действие: Пройдите проверку Знания. При успехе можете потратить 1 рассудок, чтобы сбросить выбранного вами монстра со стойкостью 3 или меньше в любой локации.","Action: Test Lore. If you pass, you may spend 1 Sanity to discard 1 Monster of your choice with toughness 3 or less on any space."
+ARTIFACT_SATCHEL_OF_THE_VOID_NAME,Сума пустоты,Satchel of the Void
+ARTIFACT_SATCHEL_OF_THE_VOID_ABILITY,"Вы не можете получить состояние «Потерян во времени и пространстве» против своей воли. Действие: Посмотрите верхние врата в стопке врат. Если их цвет совпадает с текущим знамением, получите 1 улику.",You cannot gain a Lost in Time and Space Condition unless you choose to. Action: Look at the top Gate in the Gate stack. Gain 1 Clue if that Gate corresponds to the current Omen.
+ARTIFACT_MILK_SHUB_NIGGURATH_NAME,Молоко Шуб-Ниггурат,Milk of Shub-Niggurath
+ARTIFACT_MILK_SHUB_NIGGURATH_ABILITY,"Действие: Пройдите проверку Знания. При успехе можете потратить 1 рассудок, чтобы полностью восстановить здоровье и дважды улучшить Силу; затем на вас нападает монстр!","Action: Test Lore. If you pass, you may spend 1 Sanity to recover all Health and improve Strength twice; then a Monster ambushes you!"
+ARTIFACT_MASSA_DI_REQUIEM_NAME,Massa di Requiem per Shuggay,Massa di Requiem per Shuggay
+ARTIFACT_MASSA_DI_REQUIEM_ABILITY,"Действие: Пройдите проверку Знания−1. При успехе можете потратить 1 рассудок, чтобы сбросить 1 монстра в выбранной вами локации с вратами. Расплата: Бросьте 1 кубик. При 1 продвиньте рок на 1.","Action: Test Lore−1. If you pass, you may spend 1 Sanity to discard 1 Monster on a space of your choice containing a Gate. Reckoning: Roll 1 die. On a 1, advance Doom by 1."
+ARTIFACT_ELIXIR_OF_LIFE_NAME,Эликсир жизни,Elixir of Life
+ARTIFACT_ELIXIR_OF_LIFE_ABILITY,"Действие: Пройдите проверку Знания. При успехе можете потратить 1 рассудок, чтобы полностью восстановить здоровье и сбросить все состояния «Болезнь», «Травма» и «Безумие».","Action: Test Lore. If you pass, you may spend 1 Sanity to recover all Health and discard all Illness, Injury, and Madness Conditions."
+ARTIFACT_ZANTHU_TABLETS_NAME,Таблички Занту,Zanthu Tablets
+ARTIFACT_ZANTHU_TABLETS_ABILITY,"Получите +3 Знания при чтении заклинаний. Действие: Пройдите проверку Знания. При успехе можете потратить 1 рассудок, чтобы взять 2 заклинания, затем сбросьте 1 заклинание.","Gain +3 Lore when resolving Spell effects. Action: Test Lore. If you pass, you may spend 1 Sanity to gain 2 Spells, then discard 1 Spell."
+ARTIFACT_SWORD_YHA_TALLA_NAME,Меч И’ха-Талла,Sword of Y'ha-Talla
+ARTIFACT_SWORD_YHA_TALLA_ABILITY,"Получите +2 Воли и +3 Силы в боевых контактах. Если вы победили монстра в ходе боевого контакта, получите 1 улику.","Gain +2 Will and +3 Strength during Combat Encounters. If you defeat a Monster during a Combat Encounter, gain 1 Clue."
+ARTIFACT_SERPENT_CROWN_NAME,Змеиная корона,Serpent Crown
+ARTIFACT_SERPENT_CROWN_ABILITY,"Действие: Пройдите проверку Знания−1. При успехе можете потратить 1 рассудок, чтобы взять 1 случайного «Союзника» из колоды. Расплата: Сбросьте 1 «Союзника».","Action: Test Lore−1. If you pass, you may spend 1 Sanity to gain 1 random Ally Asset from the deck. Reckoning: Discard 1 Ally Asset."
+ARTIFACT_CURSED_SPHERE_NAME,Проклятая сфера,Cursed Sphere
+ARTIFACT_CURSED_SPHERE_ABILITY,Получите +2 ко всем навыкам. Расплата: Бросьте 1 кубик. При 1 или 2 получите состояние «Проклятие».,"Gain +2 to all skills. Reckoning: Roll 1 die. On a 1 or 2, gain a Cursed Condition."
+ARTIFACT_GLASS_OF_MORTLAN_NAME,Стекло Мортлана,Glass of Mortlan
+ARTIFACT_GLASS_OF_MORTLAN_ABILITY,"Каждая шестёрка, выпавшая вам при чтении заклинания, считается за 2 успеха. Вы можете предотвратить потерю 1 рассудка при чтении заклинания.",Each 6 you roll when resolving a Spell effect counts as 2 successes. You may prevent the loss of 1 Sanity when resolving your Spell effects.
+ARTIFACT_GROTESQUE_STATUE_NAME,Причудливая статуя,Grotesque Statue
+ARTIFACT_GROTESQUE_STATUE_ABILITY,"Взяв эту карту из колоды, получите 5 улик. Раз в раунд вы можете потратить 1 улику, чтобы предотвратить все потери рассудка от одного эффекта.","When you gain this card from the deck, gain 5 Clues. Once per round, you may spend 1 Clue to prevent all Sanity loss from a single effect."
+ARTIFACT_MIGO_BRAIN_CASE_NAME,Мозговой цилиндр Ми-Го,Mi-go Brain Case
+ARTIFACT_MIGO_BRAIN_CASE_ABILITY,"Действие: Вы и другой сыщик можете обменяться имуществом. Кроме того, он может переместиться в вашу локацию: если он сделал это, переместитесь в покинутую им локацию.","Action: You and another investigator may trade possessions. In addition, he may move to your space; if he does, move to his previous space."
+ARTIFACT_LIGHTNING_GUN_NAME,Молниемёт,Lightning Gun
+ARTIFACT_LIGHTNING_GUN_ABILITY,Получите +6 Силы в боевых контактах. Действие: Вы и каждый монстр в вашей локации теряете по 1 здоровью.,Gain +6 Strength when resolving Combat Encounters. Action: You and each Monster on your space lose 1 Health.
+ARTIFACT_SWORD_SAINT_JEROME_NAME,Меч святого Иеронима,Sword of Saint Jerome
+ARTIFACT_SWORD_SAINT_JEROME_ABILITY,"Получите +2 Воли и +5 Силы в боевых контактах. Если вы победили монстра в ходе боевого контакта, восстановите 1 рассудок.","Gain +2 Will and +5 Strength when resolving Combat Encounters. If you defeat a Monster during a Combat Encounter, recover 1 Sanity."
+ARTIFACT_CULTES_DES_GOULES_NAME,Cultes des Goules,Cultes des Goules
+ARTIFACT_CULTES_DES_GOULES_ABILITY,"Действие: Пройдите проверку Знания. При успехе можете потратить 1 рассудок, чтобы получить 2 улики.","Action: Test Lore. If you pass, you may spend 1 Sanity to gain 2 Clues."
+ARTIFACT_DE_VERMIS_MYSTERIIS_NAME,De Vermis Mysteriis,De Vermis Mysteriis
+ARTIFACT_DE_VERMIS_MYSTERIIS_ABILITY,"Действие: Пройдите проверку Знания. При успехе можете потратить 1 рассудок, чтобы улучшить 1 навык на свой выбор.","Action: Test Lore. If you pass, you may spend 1 Sanity to improve 1 skill of your choice."
+ARTIFACT_NECRONOMICON_NAME,«Некрономикон»,Necronomicon
+ARTIFACT_NECRONOMICON_ABILITY,"Действие: Пройдите проверку Знания. При успехе можете потратить 1 рассудок, чтобы взять 2 заклинания.","Action: Test Lore. If you pass, you may spend 1 Sanity to gain 2 Spells."
+ARTIFACT_PALLID_MASK_NAME,Бледная маска,Pallid Mask
+ARTIFACT_PALLID_MASK_ABILITY,"В фазе контактов вы можете выбрать контакт, как если бы в вашей локации не было монстров.","During the Encounter Phase, you may choose an encounter as if there are no Monsters on your space."
+ARTIFACT_RUBY_OF_RLYEH_NAME,Рубин Р’льеха,Ruby of R'lyeh
+ARTIFACT_RUBY_OF_RLYEH_ABILITY,"Раз в раунд в фазе действий вы можете потратить 1 рассудок, чтобы выполнить 1 дополнительное действие.","Once per round, during the Action Phase, you may spend 1 Sanity and perform 1 additional action."
+ARTIFACT_SILVER_KEY_NAME,Серебряный ключ,The Silver Key
+ARTIFACT_SILVER_KEY_ABILITY,"Раз в раунд, оплачивая эффект, вы можете потратить на 1 улику меньше, чем требуется. Проходя проверку в ходе контакта в Ином мире, вы можете перебросить 1 кубик.","Once per round, you may spend 1 less Clue to pay for an effect. You may reroll 1 die when resolving a test during an Other World Encounter."
+ARTIFACT_FLUTE_OUTER_GODS_NAME,Флейта Внешних богов,Flute of the Outer Gods
+ARTIFACT_FLUTE_OUTER_GODS_ABILITY,"Действие: Потратьте 2 здоровья и 2 рассудка, чтобы победить всех монстров в своей локации.",Action: Spend 2 Health and 2 Sanity to defeat all Monsters on your space.
+ARTIFACT_GATE_BOX_NAME,Шкатулка врат,Gate Box
+ARTIFACT_GATE_BOX_ABILITY,"Сыщики в вашей локации бросают 1 дополнительный кубик, проходя проверки в ходе контактов в Иных мирах. Если вы закрыли врата в ходе контакта в Ином мире, получите 1 улику.","Investigators on your space roll 1 additional die when resolving tests during Other World Encounters. If you close a Gate during an Other World Encounter, gain 1 Clue."
+ARTIFACT_TKA_HALOT_NAME,T’tka Halot,T'tka Halot
+ARTIFACT_TKA_HALOT_ABILITY,"Действие: Пройдите проверку Знания. При успехе можете потратить 1 рассудок, чтобы выбранный вами монстр в вашей локации потерял 3 здоровья.","Action: Test Lore. If you pass, you may spend 1 Sanity to choose 1 Monster on your space to lose 3 Health."

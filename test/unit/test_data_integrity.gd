@@ -123,3 +123,36 @@ func test_investigator_starting_refs_resolve() -> void:
 			):
 				bad.append("%s: предмет %s" % [iid, item_id])
 	assert_eq(bad, [], "нерезолвящиеся стартовые наборы сыщиков: %s" % str(bad))
+
+
+func test_artifact_text_keys_are_translated() -> void:
+	# Ключи каталогов приезжают из CMS в translations.csv, а рантайм читает БИНАРНЫЕ
+	# .translation. Забыли переимпортировать — на карте вместо названия торчит
+	# ARTIFACT_NECRONOMICON_NAME, и заметно это только за столом.
+	var missing: Array = []
+	for a_v: Variant in ArtifactCatalog.all():
+		var a: Dictionary = a_v
+		for field: String in ["nameKey", "abilityKey"]:
+			var key: String = String(a.get(field, ""))
+			if key.is_empty() or tr(key) == key:
+				missing.append(key if not key.is_empty() else String(a.get("id", "")))
+	assert_eq(missing, [], "непереведённые ключи артефактов: %s" % str(missing))
+
+
+func test_artifact_trait_subtitle_is_translated() -> void:
+	assert_ne(tr("TRAIT_ARTIFACT"), "TRAIT_ARTIFACT", "подзаголовок карты артефакта переведён")
+
+
+func test_location_text_keys_are_translated() -> void:
+	# Тексты локаций (название/реальное место/описание) с 2026-09-10 живут в CMS,
+	# а граф остаётся в data/locations.json. Значит связь «ключ в файле ↔ строка в
+	# корпусе» держится только на совпадении имён: разъедутся — игрок увидит на
+	# карте LOC_12_NAME. Тест ловит и это, и забытый переимпорт .translation.
+	var missing: Array = []
+	for l_v: Variant in DataLoader.load_array("res://data/locations.json"):
+		var l: Dictionary = l_v
+		for field: String in ["name", "realWorldLocation", "description"]:
+			var key: String = String(l.get(field, ""))
+			if key.is_empty() or tr(key) == key:
+				missing.append(key if not key.is_empty() else String(l.get("id", "")))
+	assert_eq(missing, [], "непереведённые ключи локаций: %s" % str(missing))

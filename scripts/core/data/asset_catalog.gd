@@ -3,6 +3,10 @@ extends RefCounted
 
 ## Статичный каталог имущества (data/assets.json). Зеркало MonsterCatalog.
 ## Поля записи: id, nameKey, set, cost, traits[], skill?, tags?, abilityKey, effect.
+##
+## ФАЙЛ ГЕНЕРИРУЕТСЯ ИЗ CMS (relay scripts/export-game-content.ts), править
+## его руками бессмысленно — следующий экспорт затрёт. Источник правды —
+## админка. См. data/README.md.
 
 const PATH := "res://data/assets.json"
 
@@ -30,10 +34,20 @@ static func all() -> Array:
 	return _list
 
 
+## Запись по id. Не нашлось среди активов — ищем среди АРТЕФАКТОВ.
+##
+## Это единственный шов между двумя каталогами, и он намеренно здесь. Владение
+## артефактом ничем не отличается от владения активом: пассивы проверок, слот
+## action, боевые скидки и веер карт обязаны видеть его так же. Всё это ходит
+## через by_id — значит работает без правок. А колода и витрина ходят через
+## all(), который остаётся ЧИСТО активным: иначе артефакты утекли бы в магазин
+## и в случайную выдачу gainAsset.
 static func by_id(id: String) -> Dictionary:
 	if _by_id.is_empty():
 		_load()
-	return _by_id.get(id, {})
+	if _by_id.has(id):
+		return _by_id[id]
+	return ArtifactCatalog.by_id(id)
 
 
 ## Программа Расплаты актива (effect.onReckoning) по id. [] — нет. Зовётся шагом
@@ -116,7 +130,11 @@ static func deck_for_items(items: Array) -> Array:
 		var a: Dictionary = by_id(aid)
 		if a.is_empty():
 			continue
-		var p: Dictionary = card_payload(a)
+		# Артефакт рисуется своей рубашкой (нет цены, подзаголовок «Артефакт»),
+		# но живёт в том же веере: для игрока это такая же карта на руках.
+		var p: Dictionary = (
+			ArtifactCatalog.card_payload(a) if ArtifactCatalog.has(aid) else card_payload(a)
+		)
 		p["id"] = aid
 		p["item_index"] = i  # индекс в player.items — для активации карты
 		if it is Dictionary:

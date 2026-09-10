@@ -1,0 +1,1383 @@
+[
+	{
+		"id": "key_to_carcosa",
+		"nameKey": "ARTIFACT_KEY_TO_CARCOSA_NAME",
+		"abilityKey": "ARTIFACT_KEY_TO_CARCOSA_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"trinket",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"all": true,
+					"cost": {
+						"spend": "sanity",
+						"amount": 1
+					},
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "king_in_yellow",
+		"nameKey": "ARTIFACT_KING_IN_YELLOW_NAME",
+		"abilityKey": "ARTIFACT_KING_IN_YELLOW_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "all",
+					"amount": 2,
+					"when": {
+						"kind": "hasCondition",
+						"condition": "blight"
+					}
+				}
+			],
+			"onReckoning": [
+				{
+					"do": "gainCondition",
+					"condition": "blight"
+				}
+			]
+		}
+	},
+	{
+		"id": "tattered_cloak",
+		"nameKey": "ARTIFACT_TATTERED_CLOAK_NAME",
+		"abilityKey": "ARTIFACT_TATTERED_CLOAK_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {}
+	},
+	{
+		"id": "mask_of_sthenelus",
+		"nameKey": "ARTIFACT_MASK_OF_STHENELUS_NAME",
+		"abilityKey": "ARTIFACT_MASK_OF_STHENELUS_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical",
+			"relic"
+		],
+		"effect": {}
+	},
+	{
+		"id": "true_magick",
+		"nameKey": "ARTIFACT_TRUE_MAGICK_NAME",
+		"abilityKey": "ARTIFACT_TRUE_MAGICK_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 5,
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "hemisphere_map",
+		"nameKey": "ARTIFACT_HEMISPHERE_MAP_NAME",
+		"abilityKey": "ARTIFACT_HEMISPHERE_MAP_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item"
+		],
+		"effect": {
+			"action": [
+				{
+					"do": "move",
+					"steps": 1,
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "black_fan",
+		"nameKey": "ARTIFACT_BLACK_FAN_NAME",
+		"abilityKey": "ARTIFACT_BLACK_FAN_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "influence",
+					"amount": 2
+				},
+				{
+					"do": "improveSkill",
+					"skill": "observation",
+					"amount": 2
+				},
+				{
+					"do": "addSuccesses",
+					"amount": 2,
+					"context": "acquireAssets"
+				}
+			]
+		}
+	},
+	{
+		"id": "black_book",
+		"nameKey": "ARTIFACT_BLACK_BOOK_NAME",
+		"abilityKey": "ARTIFACT_BLACK_BOOK_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "all",
+					"amount": 2,
+					"when": {
+						"kind": "hasCondition",
+						"condition": "darkPact"
+					}
+				}
+			],
+			"action": [
+				{
+					"do": "loseCondition",
+					"count": "any",
+					"card": {
+						"other": true
+					},
+					"cost": {
+						"gainCondition": "darkPact"
+					}
+				}
+			]
+		}
+	},
+	{
+		"id": "shining_trapezohedron",
+		"nameKey": "ARTIFACT_SHINING_TRAPEZOHEDRON_NAME",
+		"abilityKey": "ARTIFACT_SHINING_TRAPEZOHEDRON_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"action": [
+				{
+					"dieRoll": [
+						{
+							"on": "5-6",
+							"then": [
+								{
+									"do": "discardMonster",
+									"target": "chosenMonster"
+								}
+							]
+						},
+						{
+							"on": "1-4",
+							"then": [
+								{
+									"do": "moveMonster",
+									"target": "chosenMonster",
+									"to": "self"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "book_of_the_dead",
+		"nameKey": "ARTIFACT_BOOK_OF_THE_DEAD_NAME",
+		"abilityKey": "ARTIFACT_BOOK_OF_THE_DEAD_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"relic",
+			"tome"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 2
+				},
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 2
+				}
+			],
+			"triggered": [
+				{
+					"on": "defeatMonster",
+					"do": [
+						{
+							"do": "gainClue",
+							"count": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "scales_of_thoth",
+		"nameKey": "ARTIFACT_SCALES_OF_THOTH_NAME",
+		"abilityKey": "ARTIFACT_SCALES_OF_THOTH_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical",
+			"relic"
+		],
+		"effect": {
+			"onReckoning": [
+				{
+					"choice": [
+						{
+							"do": "loseHealth",
+							"amount": 1
+						},
+						{
+							"do": "loseSanity",
+							"amount": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "twin_scepters",
+		"nameKey": "ARTIFACT_TWIN_SCEPTERS_NAME",
+		"abilityKey": "ARTIFACT_TWIN_SCEPTERS_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical",
+			"relic"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 4,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 4,
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "mask_of_the_watcher",
+		"nameKey": "ARTIFACT_MASK_OF_THE_WATCHER_NAME",
+		"abilityKey": "ARTIFACT_MASK_OF_THE_WATCHER_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "reduceMonsterHorror",
+					"amount": 9,
+					"min": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "khopesh_of_the_abyss",
+		"nameKey": "ARTIFACT_KHOPESH_OF_THE_ABYSS_NAME",
+		"abilityKey": "ARTIFACT_KHOPESH_OF_THE_ABYSS_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical",
+			"relic",
+			"weapon"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 5,
+					"context": "combatEncounter"
+				}
+			],
+			"triggered": [
+				{
+					"on": "defeatMonster",
+					"do": [
+						{
+							"do": "move",
+							"toward": [
+								"monster"
+							],
+							"steps": 1,
+							"limit": "oncePerRound"
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "dragon_idol",
+		"nameKey": "ARTIFACT_DRAGON_IDOL_NAME",
+		"abilityKey": "ARTIFACT_DRAGON_IDOL_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical",
+			"relic"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"all": true,
+					"skill": "strength",
+					"context": "combatEncounter",
+					"cost": {
+						"spend": "sanity",
+						"amount": 1
+					}
+				}
+			],
+			"action": [
+				{
+					"group": [
+						{
+							"do": "loseSanity",
+							"amount": 1
+						},
+						{
+							"do": "damageMonster",
+							"amount": 2,
+							"target": "chosenMonster"
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "bone_pipes",
+		"nameKey": "ARTIFACT_BONE_PIPES_NAME",
+		"abilityKey": "ARTIFACT_BONE_PIPES_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"action": [
+				{
+					"test": "will",
+					"onPass": [
+						{
+							"choice": [
+								{
+									"do": "damageMonster",
+									"amount": 2,
+									"target": "chosenMonster"
+								},
+								{
+									"do": "moveMonster",
+									"target": "chosenMonster",
+									"steps": 1
+								}
+							],
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			]
+		}
+	},
+	{
+		"id": "heart_of_winter",
+		"nameKey": "ARTIFACT_HEART_OF_WINTER_NAME",
+		"abilityKey": "ARTIFACT_HEART_OF_WINTER_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "immuneTo",
+					"status": "hypothermia"
+				},
+				{
+					"do": "improveSkill",
+					"skill": "all",
+					"amount": 2,
+					"when": {
+						"kind": "hasCondition",
+						"condition": "hypothermia"
+					}
+				}
+			]
+		}
+	},
+	{
+		"id": "hyperborean_crystal",
+		"nameKey": "ARTIFACT_HYPERBOREAN_CRYSTAL_NAME",
+		"abilityKey": "ARTIFACT_HYPERBOREAN_CRYSTAL_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"all": true,
+					"cost": {
+						"spend": "spell",
+						"amount": 1
+					}
+				}
+			],
+			"onReckoning": [
+				{
+					"do": "gainSpell",
+					"count": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "alien_device",
+		"nameKey": "ARTIFACT_ALIEN_DEVICE_NAME",
+		"abilityKey": "ARTIFACT_ALIEN_DEVICE_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 3,
+					"context": "spellEffect"
+				},
+				{
+					"do": "rerollDice",
+					"all": true,
+					"context": "spellEffect",
+					"cost": {
+						"spend": "sanity",
+						"amount": 1
+					}
+				}
+			]
+		}
+	},
+	{
+		"id": "livre_divon",
+		"nameKey": "ARTIFACT_LIVRE_DIVON_NAME",
+		"abilityKey": "ARTIFACT_LIVRE_DIVON_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"action": [
+				{
+					"test": "lore",
+					"modifier": -1,
+					"onPass": [
+						{
+							"do": "move",
+							"to": "chosen",
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			]
+		}
+	},
+	{
+		"id": "pnakotic_manuscripts",
+		"nameKey": "ARTIFACT_PNAKOTIC_MANUSCRIPTS_NAME",
+		"abilityKey": "ARTIFACT_PNAKOTIC_MANUSCRIPTS_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1
+				},
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				}
+			],
+			"action": [
+				{
+					"do": "gainClue",
+					"count": 1,
+					"when": {
+						"kind": "onGateSpace"
+					}
+				}
+			]
+		}
+	},
+	{
+		"id": "crystal_elder_things",
+		"nameKey": "ARTIFACT_CRYSTAL_ELDER_THINGS_NAME",
+		"abilityKey": "ARTIFACT_CRYSTAL_ELDER_THINGS_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item"
+		],
+		"effect": {}
+	},
+	{
+		"id": "dhol_chants",
+		"nameKey": "ARTIFACT_DHOL_CHANTS_NAME",
+		"abilityKey": "ARTIFACT_DHOL_CHANTS_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"triggered": [
+				{
+					"on": "combatEncounter",
+					"do": [
+						{
+							"test": "lore",
+							"onPass": [
+								{
+									"do": "rollAdditionalDice",
+									"count": 3,
+									"skill": "strength",
+									"context": "combatEncounter",
+									"cost": {
+										"spend": "sanity",
+										"amount": 1
+									}
+								}
+							],
+							"onFail": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "eltdown_shards",
+		"nameKey": "ARTIFACT_ELTDOWN_SHARDS_NAME",
+		"abilityKey": "ARTIFACT_ELTDOWN_SHARDS_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"action": [
+				{
+					"test": "lore",
+					"onPass": [
+						{
+							"do": "discardMonster",
+							"target": "chosenMonster",
+							"maxToughness": 3,
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			]
+		}
+	},
+	{
+		"id": "satchel_of_the_void",
+		"nameKey": "ARTIFACT_SATCHEL_OF_THE_VOID_NAME",
+		"abilityKey": "ARTIFACT_SATCHEL_OF_THE_VOID_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "immuneTo",
+					"status": "lostInTimeAndSpace"
+				}
+			],
+			"action": [
+				{
+					"do": "lookAtGates",
+					"count": 1
+				}
+			]
+		}
+	},
+	{
+		"id": "milk_shub_niggurath",
+		"nameKey": "ARTIFACT_MILK_SHUB_NIGGURATH_NAME",
+		"abilityKey": "ARTIFACT_MILK_SHUB_NIGGURATH_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"elixir"
+		],
+		"effect": {
+			"action": [
+				{
+					"test": "lore",
+					"onPass": [
+						{
+							"group": [
+								{
+									"do": "healHealth",
+									"amount": 99
+								},
+								{
+									"do": "improveSkill",
+									"skill": "strength",
+									"amount": 2
+								},
+								{
+									"do": "spawnMonster",
+									"where": "self"
+								}
+							],
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			]
+		}
+	},
+	{
+		"id": "massa_di_requiem",
+		"nameKey": "ARTIFACT_MASSA_DI_REQUIEM_NAME",
+		"abilityKey": "ARTIFACT_MASSA_DI_REQUIEM_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"action": [
+				{
+					"test": "lore",
+					"modifier": -1,
+					"onPass": [
+						{
+							"do": "discardMonster",
+							"target": "chosenMonster",
+							"where": "gate",
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			],
+			"onReckoning": [
+				{
+					"dieRoll": [
+						{
+							"on": "1",
+							"then": [
+								{
+									"do": "advanceDoom",
+									"amount": 1
+								}
+							]
+						},
+						{
+							"on": "2-6",
+							"then": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "elixir_of_life",
+		"nameKey": "ARTIFACT_ELIXIR_OF_LIFE_NAME",
+		"abilityKey": "ARTIFACT_ELIXIR_OF_LIFE_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"elixir"
+		],
+		"effect": {
+			"action": [
+				{
+					"test": "lore",
+					"onPass": [
+						{
+							"group": [
+								{
+									"do": "healHealth",
+									"amount": 99
+								},
+								{
+									"do": "loseCondition",
+									"kind": [
+										"illness",
+										"injury",
+										"madness"
+									],
+									"count": "any"
+								}
+							],
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			]
+		}
+	},
+	{
+		"id": "zanthu_tablets",
+		"nameKey": "ARTIFACT_ZANTHU_TABLETS_NAME",
+		"abilityKey": "ARTIFACT_ZANTHU_TABLETS_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 3,
+					"context": "spellEffect"
+				}
+			],
+			"action": [
+				{
+					"test": "lore",
+					"onPass": [
+						{
+							"group": [
+								{
+									"do": "gainSpell",
+									"count": 2
+								},
+								{
+									"do": "loseSpell",
+									"count": 1
+								}
+							],
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			]
+		}
+	},
+	{
+		"id": "sword_yha_talla",
+		"nameKey": "ARTIFACT_SWORD_YHA_TALLA_NAME",
+		"abilityKey": "ARTIFACT_SWORD_YHA_TALLA_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"weapon",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 2,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 3,
+					"context": "combatEncounter"
+				}
+			],
+			"triggered": [
+				{
+					"on": "defeatMonster",
+					"do": [
+						{
+							"do": "gainClue",
+							"count": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "serpent_crown",
+		"nameKey": "ARTIFACT_SERPENT_CROWN_NAME",
+		"abilityKey": "ARTIFACT_SERPENT_CROWN_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"action": [
+				{
+					"test": "lore",
+					"modifier": -1,
+					"onPass": [
+						{
+							"do": "gainAsset",
+							"trait": "ally",
+							"from": "deck",
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			],
+			"onReckoning": [
+				{
+					"do": "loseAsset",
+					"trait": "ally"
+				}
+			]
+		}
+	},
+	{
+		"id": "cursed_sphere",
+		"nameKey": "ARTIFACT_CURSED_SPHERE_NAME",
+		"abilityKey": "ARTIFACT_CURSED_SPHERE_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "all",
+					"amount": 2
+				}
+			],
+			"onReckoning": [
+				{
+					"dieRoll": [
+						{
+							"on": "1-2",
+							"then": [
+								{
+									"do": "gainCondition",
+									"condition": "cursed"
+								}
+							]
+						},
+						{
+							"on": "3-6",
+							"then": []
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "glass_of_mortlan",
+		"nameKey": "ARTIFACT_GLASS_OF_MORTLAN_NAME",
+		"abilityKey": "ARTIFACT_GLASS_OF_MORTLAN_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "convertDie",
+					"on": "6",
+					"successes": 2,
+					"context": "spellEffect"
+				},
+				{
+					"do": "preventLoss",
+					"stat": "sanity",
+					"amount": 1,
+					"context": "spellEffect"
+				}
+			]
+		}
+	},
+	{
+		"id": "grotesque_statue",
+		"nameKey": "ARTIFACT_GROTESQUE_STATUE_NAME",
+		"abilityKey": "ARTIFACT_GROTESQUE_STATUE_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item"
+		],
+		"effect": {
+			"onGain": [
+				{
+					"do": "gainClue",
+					"count": 5
+				}
+			],
+			"whileOwned": [
+				{
+					"do": "preventLoss",
+					"stat": "sanity",
+					"all": true,
+					"cost": {
+						"spend": "clue",
+						"amount": 1
+					},
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "migo_brain_case",
+		"nameKey": "ARTIFACT_MIGO_BRAIN_CASE_NAME",
+		"abilityKey": "ARTIFACT_MIGO_BRAIN_CASE_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical",
+			"teamwork"
+		],
+		"effect": {}
+	},
+	{
+		"id": "lightning_gun",
+		"nameKey": "ARTIFACT_LIGHTNING_GUN_NAME",
+		"abilityKey": "ARTIFACT_LIGHTNING_GUN_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"weapon",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 6,
+					"context": "combatEncounter"
+				}
+			],
+			"action": [
+				{
+					"group": [
+						{
+							"do": "loseHealth",
+							"amount": 1
+						},
+						{
+							"do": "damageMonster",
+							"amount": 1,
+							"target": "eachMonsterOnSpace"
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "sword_saint_jerome",
+		"nameKey": "ARTIFACT_SWORD_SAINT_JEROME_NAME",
+		"abilityKey": "ARTIFACT_SWORD_SAINT_JEROME_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"weapon",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 2,
+					"context": "combatEncounter"
+				},
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 5,
+					"context": "combatEncounter"
+				}
+			],
+			"triggered": [
+				{
+					"on": "defeatMonster",
+					"do": [
+						{
+							"do": "healSanity",
+							"amount": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "cultes_des_goules",
+		"nameKey": "ARTIFACT_CULTES_DES_GOULES_NAME",
+		"abilityKey": "ARTIFACT_CULTES_DES_GOULES_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"action": [
+				{
+					"test": "lore",
+					"onPass": [
+						{
+							"do": "gainClue",
+							"count": 2,
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			]
+		}
+	},
+	{
+		"id": "de_vermis_mysteriis",
+		"nameKey": "ARTIFACT_DE_VERMIS_MYSTERIIS_NAME",
+		"abilityKey": "ARTIFACT_DE_VERMIS_MYSTERIIS_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"action": [
+				{
+					"test": "lore",
+					"onPass": [
+						{
+							"do": "improveSkill",
+							"skill": "choice",
+							"amount": 1,
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			]
+		}
+	},
+	{
+		"id": "necronomicon",
+		"nameKey": "ARTIFACT_NECRONOMICON_NAME",
+		"abilityKey": "ARTIFACT_NECRONOMICON_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"action": [
+				{
+					"test": "lore",
+					"onPass": [
+						{
+							"do": "gainSpell",
+							"count": 2,
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			]
+		}
+	},
+	{
+		"id": "pallid_mask",
+		"nameKey": "ARTIFACT_PALLID_MASK_NAME",
+		"abilityKey": "ARTIFACT_PALLID_MASK_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {}
+	},
+	{
+		"id": "ruby_of_rlyeh",
+		"nameKey": "ARTIFACT_RUBY_OF_RLYEH_NAME",
+		"abilityKey": "ARTIFACT_RUBY_OF_RLYEH_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"action": [
+				{
+					"do": "extraAction",
+					"count": 1,
+					"cost": {
+						"spend": "sanity",
+						"amount": 1
+					},
+					"limit": "oncePerRound"
+				}
+			]
+		}
+	},
+	{
+		"id": "silver_key",
+		"nameKey": "ARTIFACT_SILVER_KEY_NAME",
+		"abilityKey": "ARTIFACT_SILVER_KEY_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"context": "otherWorldEncounter"
+				}
+			]
+		}
+	},
+	{
+		"id": "flute_outer_gods",
+		"nameKey": "ARTIFACT_FLUTE_OUTER_GODS_NAME",
+		"abilityKey": "ARTIFACT_FLUTE_OUTER_GODS_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"action": [
+				{
+					"group": [
+						{
+							"do": "loseHealth",
+							"amount": 2
+						},
+						{
+							"do": "loseSanity",
+							"amount": 2
+						},
+						{
+							"do": "defeatMonster",
+							"target": "eachMonsterOnSpace"
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "gate_box",
+		"nameKey": "ARTIFACT_GATE_BOX_NAME",
+		"abilityKey": "ARTIFACT_GATE_BOX_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"magical"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "rollAdditionalDice",
+					"count": 1,
+					"context": "otherWorldEncounter"
+				}
+			],
+			"triggered": [
+				{
+					"on": "closeGate",
+					"do": [
+						{
+							"do": "gainClue",
+							"count": 1
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		"id": "tka_halot",
+		"nameKey": "ARTIFACT_TKA_HALOT_NAME",
+		"abilityKey": "ARTIFACT_TKA_HALOT_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"item",
+			"tome"
+		],
+		"effect": {
+			"action": [
+				{
+					"test": "lore",
+					"onPass": [
+						{
+							"do": "damageMonster",
+							"amount": 3,
+							"target": "chosenMonster",
+							"cost": {
+								"spend": "sanity",
+								"amount": 1
+							}
+						}
+					],
+					"onFail": []
+				}
+			]
+		}
+	}
+]
