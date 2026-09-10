@@ -182,4 +182,4 @@ func _on_next() -> void:
 		_refresh()
 		return
 	_next_btn.disabled = true  # защита от двойного клика / двойного relay
-	GameState.resolve_mythos()
+	GameState.act(RelayActions.RESOLVE_MYTHOS)

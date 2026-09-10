@@ -1,7 +1,7 @@
 extends CanvasLayer
 
 ## Модалка выбора типа встречи. Видна активному игроку в фазе encounter, пока
-## GameState.encounter_choices непусто. Кнопка → GameState.choose_encounter(kind),
+## GameState.encounter_choices непусто. Кнопка → act(CHOOSE_ENCOUNTER, {kind}),
 ## после чего хост генерирует встречу выбранного вида и эта модалка скрывается
 ## (encounter_choices очищается), уступая место окну встречи.
 
@@ -66,7 +66,9 @@ func _build(choices: Array) -> void:
 		btn.text = _monster_label(kind) if combat_order else String(_KIND_KEYS.get(kind, kind))
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		UIStyle.style_button(btn)
-		btn.pressed.connect(func() -> void: GameState.choose_encounter(kind))
+		btn.pressed.connect(
+			func() -> void: GameState.act(RelayActions.CHOOSE_ENCOUNTER, {"kind": kind})
+		)
 		_vbox.add_child(btn)
 
 

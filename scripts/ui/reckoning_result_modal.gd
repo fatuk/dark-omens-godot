@@ -4,7 +4,7 @@ extends CanvasLayer
 ## Показывает владельцу его запись из GameState.reckoning_results[pid]: какое
 ## состояние перевернулось (заголовок), имя выпавшего оборота и художественный текст
 ## (самоописательный — мех-эффект уже в прозе). Кнопка закрывает → хост убирает
-## запись (dismiss_reckoning_result). Per-player: каждый видит свой результат.
+## запись (DISMISS_RECKONING). Per-player: каждый видит свой результат.
 
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
@@ -74,4 +74,4 @@ func _build(r: Dictionary) -> void:
 func _on_ok() -> void:
 	UIStyle.modal_set_visible(_root, _panel, false)  # скрыть сразу, не ждать синка
 	_sig = ""
-	GameState.dismiss_reckoning_result()
+	GameState.act(RelayActions.DISMISS_RECKONING)

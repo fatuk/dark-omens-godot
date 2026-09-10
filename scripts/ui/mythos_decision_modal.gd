@@ -2,7 +2,7 @@ extends CanvasLayer
 
 ## Модалка выбора: заголовок, подсказка и кнопка на каждый вариант. Показывается
 ## сыщику, чьего ответа сейчас ждёт ход (GameState.mythos_decision.pid == мой).
-## Клик → GameState.decide_mythos(index).
+## Клик → act(MYTHOS_DECIDE, {index}).
 ##
 ## Канал mythos_decision общий (имя историческое): вопрос задаёт и forEach-проход
 ## Мифов (будит корутину MythosFlow), и программа актива (AssetActionFlow) —
@@ -162,4 +162,4 @@ func _option_label(opt: Dictionary, kind: String) -> String:
 func _on_pick(index: int) -> void:
 	UIStyle.modal_set_visible(_root, _panel, false)  # скрыть сразу, не ждать синка
 	_sig = ""
-	GameState.decide_mythos(index)
+	GameState.act(RelayActions.MYTHOS_DECIDE, {"index": index})

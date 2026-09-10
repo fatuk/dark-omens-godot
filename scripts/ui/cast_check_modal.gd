@@ -218,21 +218,21 @@ func _on_roll() -> void:
 	if _rolled():
 		# Повторное нажатие после броска = «перебросить все кубы» (Талисман).
 		if _reroll_all_available():
-			GameState.reroll_all_dice()
+			GameState.act(RelayActions.REROLL_ALL)
 		return
 	_roll_btn.disabled = true  # хост катит и пришлёт active_check синком
-	GameState.spell_cast_roll()
+	GameState.act(RelayActions.SPELL_CAST_ROLL)
 
 
 func _on_die_clicked(index: int) -> void:
 	if not GameState.can_reroll_now():
 		return
-	GameState.reroll_die(index)  # маршрутится по owner="spell" → spell_cast_reroll
+	GameState.reroll_die(index)  # маршрутится по owner="spell" → SPELL_CAST_REROLL
 
 
 func _on_apply() -> void:
 	_apply_btn.disabled = true
-	GameState.spell_cast_apply()  # резолв; расплату покажет cast_result_modal
+	GameState.act(RelayActions.SPELL_CAST_APPLY)  # резолв; расплату покажет cast_result_modal
 
 
 func _update_buttons() -> void:

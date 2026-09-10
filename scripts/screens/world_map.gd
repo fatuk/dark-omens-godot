@@ -314,7 +314,7 @@ func _animate_moves(moves: Array, list: Array) -> void:
 		# Своя фишка доехала — сообщаем хосту: он держал передачу хода до этого
 		# момента, чтобы следующий игрок не начинал ход поверх летящей фишки.
 		if String(m.pid) == me:
-			GameState.travel_arrived()
+			GameState.act(RelayActions.TRAVEL_ARRIVED)
 	_travelling = false
 	_map_layer.set_investigators(list)
 	_map_layer.set_active_investigator(_active_turn_pid())
@@ -462,15 +462,15 @@ func _build_hand_carousel() -> void:
 				# В параллельной Расплате проверка лежит в per-player слоте, а не в
 				# active_check — там свой маршрут, иначе карта молча не сработает.
 				if GameState.my_player().has("reckoning_pending"):
-					GameState.reckoning_activate_card(idx)
+					GameState.act(RelayActions.RECKONING_ACTIVATE_CARD, {"index": idx})
 				else:
-					GameState.activate_card(idx)
+					GameState.act(RelayActions.ACTIVATE_CARD, {"index": idx})
 				return
 			# Glamour во время активной проверки → применить пассив-ауру (как актив);
 			# иначе (Ritual/Incantation/glamour вне проверки) → каст.
 			var sid: String = String((it as Dictionary).get("id", ""))
 			if SpellCatalog.is_glamour(sid) and not GameState.active_check.is_empty():
-				GameState.activate_card(idx)
+				GameState.act(RelayActions.ACTIVATE_CARD, {"index": idx})
 			else:
 				GameState.cast_spell(idx)
 	)
@@ -992,7 +992,7 @@ func _on_shop_requested() -> void:
 	if has_node("ShopModal"):
 		return
 	GameState.ensure_shop_reserve()  # дотянуть витрину, если пуста (без полного сброса)
-	GameState.shop_open()  # старт pre-roll проверки Влияния (карты активируются до броска)
+	GameState.act(RelayActions.SHOP_OPEN)  # старт pre-roll проверки Влияния (карты активируются до броска)
 	var modal := _SHOP_MODAL.instantiate()
 	modal.name = "ShopModal"
 	add_child(modal)

@@ -9,7 +9,7 @@ extends CanvasLayer
 ##   есть resolution → кубики, исход, кнопка «Завершить».
 ##
 ## Бросок проверки и эффекты onSuccess/onFailure — авторитетно у хоста
-## (GameState.resolve_encounter); окно лишь показывает синкнутый результат.
+## (act RESOLVE_ENCOUNTER); окно лишь показывает синкнутый результат.
 
 @onready var _root: Control = $Root
 @onready var _panel: Control = %Panel  # карточка ФИКС-размера (не растёт под контент)
@@ -520,7 +520,7 @@ func _show_loading() -> void:
 
 
 # Интерактивный выбор: подсказка + кнопка на каждую ветку pending_choice.options.
-# Клик → GameState.choose_effect(index); хост запишет выбор и доиграет коммит.
+# Клик → act(CHOOSE_EFFECT, {index}); хост запишет выбор и доиграет коммит.
 func _show_choice(card: Dictionary) -> void:
 	_ensure_stage_opaque()
 	var pending: Dictionary = card.get("pending_choice", {})
@@ -579,7 +579,7 @@ func _clear_choice() -> void:
 
 func _on_choice_pressed(index: int) -> void:
 	_clear_choice()  # блокируем повторные клики до синка от хоста
-	GameState.choose_effect(index)
+	GameState.act(RelayActions.CHOOSE_EFFECT, {"index": index})
 
 
 func _show_card(card: Dictionary) -> void:
@@ -728,11 +728,11 @@ func _on_roll_pressed() -> void:
 	# Повторное нажатие после броска = «перебросить все кубы» (Счастливый талисман).
 	if _chk_rolled():
 		if _reroll_all_available():
-			GameState.reroll_all_dice()  # хост перебросит провальные и пришлёт синком
+			GameState.act(RelayActions.REROLL_ALL)  # хост перебросит провальные и пришлёт синком
 		return
 	_revealed = false  # свежая проверка — провал снова можно скрыть до решения
 	_roll_btn.disabled = true  # хост разрешит встречу и пришлёт результат синком
-	GameState.resolve_encounter()
+	GameState.act(RelayActions.RESOLVE_ENCOUNTER)
 
 
 func _on_die_clicked(index: int) -> void:
@@ -871,9 +871,9 @@ func _on_finish_pressed() -> void:
 		return
 	if _is_branching(card):
 		if int(card.get("stage", 0)) == 0 and _chk_rolled():
-			GameState.advance_encounter_stage()
+			GameState.act(RelayActions.ADVANCE_STAGE)
 			return
-	GameState.finish_encounter()
+	GameState.act(RelayActions.FINISH_ENCOUNTER)
 
 
 # Доступны ли перебросы: есть фокус ИЛИ бесплатные перебросы от карт, и проверка

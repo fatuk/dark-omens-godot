@@ -3,7 +3,7 @@ extends CanvasLayer
 ## Боевая встреча. Видна активному игроку, когда current_encounter.kind ==
 ## "combat". Бой одноразовый: один бросок = две проверки — сначала ВОЛЯ
 ## (выдержать ужас), затем СИЛА (одолеть монстра). Итог — победа или нет.
-## Раундов и отступления нет. Бой авторитетно у хоста (resolve_encounter).
+## Раундов и отступления нет. Бой авторитетно у хоста (RESOLVE_ENCOUNTER).
 
 const _C_STEP_WILL := Color(0.4, 0.7, 0.9)  # синий — шаг Воли (ужас)
 
@@ -76,22 +76,31 @@ func _build(card: Dictionary) -> void:
 	_vbox.add_child(btns)
 	# «Перебросить все кубы» (Счастливый талисман) — отдельной кнопкой, пока доступен.
 	if _reroll_all_available():
-		btns.add_child(_button("ENCOUNTER_REROLL_ALL", func() -> void: GameState.reroll_all_dice()))
+		btns.add_child(
+			_button("ENCOUNTER_REROLL_ALL", func() -> void: GameState.act(RelayActions.REROLL_ALL))
+		)
 	# Кнопка по 4 состояниям: «Бросить Волю» → «Дальше» (заморозить Волю, окно карт на
 	# Силу) → «Бросить Силу» → «Завершить».
 	var has_will: bool = card.has("will")
 	var rolled: bool = bool(_chk().get("rolled", false))
 	if done:
-		btns.add_child(_button("BTN_FINISH_BIG", func() -> void: GameState.finish_encounter()))
+		btns.add_child(
+			_button("BTN_FINISH_BIG", func() -> void: GameState.act(RelayActions.FINISH_ENCOUNTER))
+		)
 	elif not has_will:
 		var k1: String = "ENCOUNTER_CONTINUE" if rolled else "COMBAT_ROLL_WILL"
-		btns.add_child(_button(k1, func() -> void: GameState.resolve_encounter()))
+		btns.add_child(_button(k1, func() -> void: GameState.act(RelayActions.RESOLVE_ENCOUNTER)))
 	elif not rolled:
 		btns.add_child(
-			_button("COMBAT_ROLL_STRENGTH", func() -> void: GameState.resolve_encounter())
+			_button(
+				"COMBAT_ROLL_STRENGTH",
+				func() -> void: GameState.act(RelayActions.RESOLVE_ENCOUNTER)
+			)
 		)
 	else:
-		btns.add_child(_button("BTN_FINISH_BIG", func() -> void: GameState.finish_encounter()))
+		btns.add_child(
+			_button("BTN_FINISH_BIG", func() -> void: GameState.act(RelayActions.FINISH_ENCOUNTER))
+		)
 
 
 # Переброс выбранного куба: заряженным жетоном (concentration/clue) или авто-приоритетом.

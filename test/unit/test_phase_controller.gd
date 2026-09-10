@@ -780,7 +780,7 @@ func test_shop_grant_rejects_without_active_shop_check() -> void:
 #
 # Любой актив стоит одну монету, как потраченный ресурс. За заход в магазин
 # продать можно ровно один: флаг живёт на active_check, а он создаётся заново
-# каждым shop_open.
+# каждым SHOP_OPEN.
 
 
 func _shopper_with(items: Array) -> void:

@@ -201,11 +201,11 @@ func _update(dying: String) -> void:
 func _on_reroll() -> void:
 	var dying: String = _dying_pid()
 	if not dying.is_empty():
-		GameState.death_save_reroll(dying)
+		GameState.act(RelayActions.DEATH_SAVE_REROLL, {"dying": dying})
 
 
 func _on_accept() -> void:
 	# Без disabled-гарда: apply идемпотентен (пустой слот → no-op), а модалка может
 	# заново открыться (мифос снова уронил стат) — тогда кнопку нельзя оставлять
 	# заблокированной, иначе повторный Порог не принять.
-	GameState.death_save_apply()
+	GameState.act(RelayActions.DEATH_SAVE_APPLY)

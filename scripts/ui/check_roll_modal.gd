@@ -271,15 +271,15 @@ func _on_roll() -> void:
 	if _rolled():
 		if _reroll_all_available():
 			if _reck_mode():
-				GameState.reckoning_reroll_all()
+				GameState.act(RelayActions.RECKONING_REROLL_ALL)
 			else:
-				GameState.reroll_all_dice()
+				GameState.act(RelayActions.REROLL_ALL)
 		return
 	_roll_btn.disabled = true
 	if _reck_mode():
-		GameState.reckoning_check_roll()
+		GameState.act(RelayActions.RECKONING_ROLL)
 	else:
-		GameState.check_roll()
+		GameState.act(RelayActions.CHECK_ROLL)
 
 
 func _on_die_clicked(index: int) -> void:
@@ -294,9 +294,9 @@ func _on_die_clicked(index: int) -> void:
 func _on_apply() -> void:
 	_apply_btn.disabled = true
 	if _reck_mode():
-		GameState.reckoning_check_apply()
+		GameState.act(RelayActions.RECKONING_APPLY)
 	else:
-		GameState.resolve_pending_check()
+		GameState.act(RelayActions.RESOLVE_PENDING_CHECK)
 
 
 func _update_buttons() -> void:

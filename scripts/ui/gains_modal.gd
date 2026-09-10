@@ -5,7 +5,7 @@ extends CanvasLayer
 ## Потери и полученные состояния сюда НЕ попадают: они остаются лентой над фишкой.
 ##
 ## Источник — синкаемое players[me].gains (копит ActionFeed.collect_gains). Кнопка
-## стирает запись через GameState.dismiss_gains(), поэтому окно не всплывает
+## стирает запись через act(DISMISS_GAINS), поэтому окно не всплывает
 ## повторно на следующем синке. Строится кодом, монтируется из world_map.
 
 # Ширина окна. Без неё панель ужималась по содержимому — на паре жетонов выходило
@@ -123,7 +123,7 @@ func _fill(gains: Dictionary) -> void:
 	var btn := UIStyle.button("GAINS_OK", UIColors.ACCENT)
 	btn.name = "OkBtn"
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn.pressed.connect(GameState.dismiss_gains)
+	btn.pressed.connect(func() -> void: GameState.act(RelayActions.DISMISS_GAINS))
 	_box.add_child(btn)
 
 

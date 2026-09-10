@@ -208,7 +208,7 @@ func _refresh() -> void:
 
 
 func _on_place_clue() -> void:
-	GameState.ghost_place_clue()
+	GameState.act(RelayActions.GHOST_PLACE_CLUE)
 
 
 func _on_show_mysteries() -> void:

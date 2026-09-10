@@ -84,16 +84,9 @@ func _campaign_id() -> String:
 ## Игрок нажал «Прочитал» в модалке мифа — отмечаем ЕГО. Не-хост шлёт хосту свой
 ## user_id, хост копит отметки; карта резолвится только когда отметились все
 ## подключённые (mark_read). Раньше любой игрок закрывал миф всем.
-func resolve() -> void:
-	if _gs._is_host():
-		mark_read(_gs._nm.my_user_id)
-	else:
-		_gs._nm.relay_all({"action": RelayActions.RESOLVE_MYTHOS, "pid": _gs._nm.my_user_id})
-
-
 ## Хост: отметить сыщика pid прочитавшим текущую карту мифа. Когда отметились ВСЕ
 ## подключённые — очищаем отметки и применяем эффекты (_apply_resolve). Вызывается
-## из resolve() (сам хост) и из relay-роутера (не-хост прислал свой pid).
+## из relay-роутера (RESOLVE_MYTHOS: хост — через act(), не-хост — через relay).
 func mark_read(pid: String) -> void:
 	if not _gs._is_host():
 		return

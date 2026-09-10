@@ -49,7 +49,7 @@ var active_check: Dictionary = {}
 
 # Промпт «какие триггер-заклинания скастить» (напр. при отдыхе): { pid, event,
 # options:[{index, id}] }. {} — промпта нет. Решает
-# только владелец pid (cast_trigger_spells). См. SpellFlow.prompt_trigger.
+# только владелец pid (CAST_TRIGGER_SPELLS). См. SpellFlow.prompt_trigger.
 var pending_spell_cast: Dictionary = {}
 
 # Каст «в процессе» (интерактивный бросок): {pid, item_index, spell_id, subtype,
@@ -67,12 +67,12 @@ var pending_check: Dictionary = {}
 # Результат последнего каста для модалки расплаты: { pid, spell, back, text (flavor-
 # ключ оборота), successes, outcome:{health,sanity,clues,conditions,discarded} }.
 # {} — нет. Модалку показывает владелец pid и сам её
-# закрывает (dismiss_cast_result). Не привязан к ходу. См. SpellFlow.resolve_cast.
+# закрывает (DISMISS_CAST_RESULT). Не привязан к ходу. См. SpellFlow.resolve_cast.
 var last_cast_result: Dictionary = {}
 
 # Результаты флипа состояний на Расплате, per-player, для модалки: {pid: {cid, back,
 # name, text}}. Заполняет ConditionFlow._flip_condition; показывает владельцу pid,
-# он же закрывает (dismiss_reckoning_result).
+# он же закрывает (DISMISS_RECKONING).
 var reckoning_results: Dictionary = {}
 
 # Идёт ли ПАРАЛЛЕЛЬНЫЙ тир сыщиков Расплаты (все резолвят одновременно). true между
@@ -208,7 +208,7 @@ var monster_bag: Array = []
 var monster_surge: int = 0
 
 # Доступные типы встречи активного игрока в фазе encounter. Непусто
-# → клиент показывает модалку выбора; выбор шлётся choose_encounter, после чего
+# → клиент показывает модалку выбора; выбор шлётся CHOOSE_ENCOUNTER, после чего
 # хост генерирует встречу выбранного kind. Очищается после выбора/смены хода.
 # Элементы ∈ "general" | "research" | "gate" | "combat".
 var encounter_choices: Array = []
@@ -730,76 +730,29 @@ func start_game(players_init: Array) -> void:
 # ── Хост: обработка действия (своего или чужого через game_action) ──────────
 
 
-## Применить действие. Если ты НЕ хост, отправит запрос хосту через relay.
+## Единая точка входа host-авторитетных команд ОТ ЛИЦА локального игрока (UI зовёт
+## её напрямую: GameState.act(RelayActions.FINISH_ENCOUNTER)). Хост применяет через
+## тот же реестр RelayRouter, которым принимает чужие relay-сообщения; клиент шлёт
+## хосту ровно то же сообщение. Одна реализация на оба пути: раньше у каждой команды
+## было по два тела (host-ветка и relay-ветка), и они разъезжались.
+## payload — поля сообщения кроме action/pid (die, index, kind, …), см. адаптеры
+## RelayRouter. Транзиентные широковещалки (chat/feed) сюда не ходят.
+func act(action: String, payload: Dictionary = {}) -> void:
+	if not _relay_actions.has(action):
+		push_error("[GameState] act: неизвестное relay-действие «%s»" % action)
+		return
+	var msg: Dictionary = payload.duplicate()
+	msg["action"] = action
+	msg["pid"] = _nm.my_user_id
+	if _is_host():
+		(_relay_actions[action] as Callable).call(msg)
+	else:
+		_nm.relay_all(msg)
+
+
+## Игровое действие фазы действий (travel/rest/acquire_assets/…). Сахар над act().
 func perform_action(action_type: String, payload: Dictionary = {}) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_phase.host_apply_action(my_pid, action_type, payload)
-	else:
-		(
-			_nm
-			. relay_all(
-				{
-					"action": RelayActions.ACTION,
-					"type": action_type,
-					"pid": my_pid,
-					"payload": payload,
-				}
-			)
-		)
-
-
-## Клиент переехавшего сообщает хосту, что анимация полёта фишки доиграна:
-## только после этого (плюс пауза) хост передаёт ход. Зовётся из world_map по
-## окончании play_travel; повторные вызовы хост игнорирует.
-func travel_arrived() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_phase.host_apply_travel_arrived(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.TRAVEL_ARRIVED, "pid": my_pid})
-
-
-# ── Encounter (фасады) ────────────────────────────────────────────────────────
-
-
-## Игрок отмечает «встреча завершена» — передаёт ход следующему / в Mythos.
-func finish_encounter() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_phase.host_apply_finish_encounter(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.FINISH_ENCOUNTER, "pid": my_pid})
-
-
-## Активный игрок бросает проверку встречи. Хост катит результат (эффекты
-## применяются при завершении встречи — между броском и финишем можно перебрасывать).
-func resolve_encounter() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_encounter.host_apply_resolve(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.RESOLVE_ENCOUNTER, "pid": my_pid})
-
-
-## Активный игрок перебрасывает ОДИН выбранный куб проверки. currency — явная
-## валюта (перетащили жетон) или "" = авто-приоритет (тап по кубу).
-func reroll_encounter(die_index: int, currency: String = "") -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_encounter.host_apply_reroll(my_pid, die_index, currency)
-	else:
-		(
-			_nm
-			. relay_all(
-				{
-					"action": RelayActions.REROLL_ENCOUNTER,
-					"pid": my_pid,
-					"die": die_index,
-					"currency": currency,
-				}
-			)
-		)
+	act(RelayActions.ACTION, {"type": action_type, "payload": payload})
 
 
 ## Тап по кубу — переброс. Если игрок «закинул» жетон (pending_reroll_currency),
@@ -809,7 +762,7 @@ func reroll_die(die_index: int) -> void:
 	# Приоритет: если заряжен +1 (addToDie) и куб можно улучшить (< 6) — кладём +1
 	# на этот куб, а не перебрасываем. Игрок зарядил карту осознанно; сперва тратим её.
 	if _check.die_can_add(_nm.my_user_id, die_index, active_check):
-		_add_die(die_index)
+		act(RelayActions.ADD_DIE, {"die": die_index})
 		return
 	# Гард ДО списания заряда: клик по НЕперебрасываемому кубу (успех по порогу
 	# проверки / вне диапазона / ещё не брошено) не должен «съедать» заряженный жетон
@@ -820,15 +773,15 @@ func reroll_die(die_index: int) -> void:
 	pending_reroll_currency = ""  # потребили намерение (один жетон = один переброс)
 	if cur.is_empty():
 		cur = "free"  # без жетона — только бесплатный переброс от карт
-	var chk_owner: String = String(active_check.get("owner", ""))
-	if chk_owner == "shop":
-		shop_reroll(die_index, cur)
-	elif chk_owner == "spell":
-		spell_cast_reroll(die_index, cur)
-	elif chk_owner == "effectCheck":
-		check_reroll(die_index, cur)
-	else:
-		reroll_encounter(die_index, cur)
+	var relay: String = RelayActions.REROLL_ENCOUNTER
+	match String(active_check.get("owner", "")):
+		"shop":
+			relay = RelayActions.SHOP_REROLL
+		"spell":
+			relay = RelayActions.SPELL_CAST_REROLL
+		"effectCheck":
+			relay = RelayActions.CHECK_REROLL
+	act(relay, {"die": die_index, "currency": cur})
 
 
 ## UI: «зарядить» валюту переброса (закинули жетон на проверку) и перерисовать —
@@ -846,25 +799,6 @@ func can_reroll_now() -> bool:
 		return false
 	var free: int = int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0))
 	return free > 0 or not pending_reroll_currency.is_empty()
-
-
-# Приватный фасад: положить +1 (addToDie) на куб активной проверки. Хост применяет
-# сразу; клиент шлёт намерение. Зовётся из reroll_die (приоритет тапа над рероллом).
-func _add_die(die_index: int) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_check.add_die(my_pid, die_index)
-	else:
-		_nm.relay_all({"action": RelayActions.ADD_DIE, "pid": my_pid, "die": die_index})
-
-
-# То же для проверки Расплаты (per-player слот).
-func _reckoning_add_die(die_index: int) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_check.add_die(my_pid, die_index, _reckoning_slot(my_pid))
-	else:
-		_nm.relay_all({"action": RelayActions.RECKONING_ADD_DIE, "pid": my_pid, "die": die_index})
 
 
 ## Есть ли незаряженный +1 (addToDie) — куб можно улучшить тапом. reckoning=true —
@@ -885,37 +819,6 @@ func has_reroll_resource() -> bool:
 	return free > 0 or int(me.get("concentration", 0)) > 0 or int(me.get("clues", 0)) > 0
 
 
-## Активный игрок выбрал тип встречи (general/research/gate/combat). Хост
-## генерирует встречу выбранного kind.
-func choose_encounter(kind: String) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_encounter.host_apply_choose(my_pid, kind)
-	else:
-		_nm.relay_all({"action": RelayActions.CHOOSE_ENCOUNTER, "pid": my_pid, "kind": kind})
-
-
-## Активный игрок переходит к следующей стадии gate-встречи (после успеха).
-func advance_encounter_stage() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_encounter.host_apply_advance_stage(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.ADVANCE_STAGE, "pid": my_pid})
-
-
-## Активный игрок выбрал ветку интерактивного choice в эффектах встречи (index —
-## номер ветки в pending_choice.options). Хост записывает выбор и доигрывает.
-func choose_effect(index: int) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_phase.host_apply_effect_choice(my_pid, index)
-	else:
-		_nm.relay_all({"action": RelayActions.CHOOSE_EFFECT, "pid": my_pid, "index": index})
-
-
-## Активный игрок активирует карту руки (item_index в player.items) во время
-## проверки встречи — её способность правит текущий бросок. Хост применяет.
 ## Применим ли боевой триггер карты (on:combatEncounter, напр. Handcuffs) ПРЯМО
 ## СЕЙЧАС — для веера: показать карту играбельной, хотя у неё нет check-mod. Read-only.
 func combat_trigger_ready(item_index: int) -> bool:
@@ -932,24 +835,9 @@ func can_play_asset(item_index: int) -> bool:
 	return _asset_action.can_play(_nm.my_user_id, item_index)
 
 
-func activate_card(item_index: int) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		# Реакции карты по приоритету: боевой триггер (Handcuffs: фокус→победа) →
-		# предотвращение потери (бинты, в т.ч. за соседа в ЕГО ход) → обычный
-		# check-mod (бафф навыка/переброс) в активную проверку.
-		if (
-			not _encounter.try_combat_trigger(my_pid, item_index)
-			and not _encounter.play_prevent_loss(my_pid, item_index)
-		):
-			_check.activate(my_pid, item_index)  # единая активная проверка (встреча/магазин/бой)
-	else:
-		_nm.relay_all({"action": RelayActions.ACTIVATE_CARD, "pid": my_pid, "index": item_index})
-
-
 ## UI: каст заклинания из веера. Ritual → действие cast_spell (тратит действие,
-## обычный action-роутинг); Incantation → контекстный (combat), хост-локально или
-## через relay (game_cast_incantation).
+## обычный action-роутинг); Glamour/Incantation → контекстный каст (CAST_GLAMOUR /
+## CAST_INCANTATION), без траты действия.
 func cast_spell(item_index: int) -> void:
 	var items: Array = my_player().get("items", [])
 	if item_index < 0 or item_index >= items.size():
@@ -961,105 +849,13 @@ func cast_spell(item_index: int) -> void:
 	if subtype == "ritual":
 		perform_action(GameActions.CAST_SPELL, {"item": item_index})
 		return
-	var my_pid: String = _nm.my_user_id
-	if subtype == "glamour":
-		# Каст glamour (exhaust): начинаем spell-проверку (модалка), игрок бросает и
-		# применяет. Аура применяется отдельно (тап по glamour во время чужой проверки
-		# → activate_card, см. world_map).
-		if _is_host():
-			if _spell.begin_glamour(my_pid, item_index):
-				_broadcast_sync()
-				_emit_changed()
-		else:
-			_nm.relay_all({"action": RelayActions.CAST_GLAMOUR, "pid": my_pid, "index": item_index})
-		return
-	if _is_host():  # incantation — вложенная проверка поверх боя
-		if _spell.begin_incantation(my_pid, item_index):
-			_broadcast_sync()
-			_emit_changed()
-	else:
-		_nm.relay_all({"action": RelayActions.CAST_INCANTATION, "pid": my_pid, "index": item_index})
-
-
-## Бросок spell-проверки текущего каста (кнопка «Бросить кубы»). _check.roll синкает сам.
-func spell_cast_roll() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_spell.roll_cast(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.SPELL_CAST_ROLL, "pid": my_pid})
-
-
-## Переброс куба spell-проверки при касте. currency — явная валюта (жетон) или "".
-func spell_cast_reroll(die_index: int, currency: String = "") -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_check.reroll(my_pid, die_index, currency)  # синкает сам
-	else:
-		(
-			_nm
-			. relay_all(
-				{
-					"action": RelayActions.SPELL_CAST_REROLL,
-					"pid": my_pid,
-					"die": die_index,
-					"currency": currency,
-				}
-			)
-		)
-
-
-## Применить каст («Применить»): резолв фронта+оборота по броску, снятие проверки,
-## освобождение хода (ritual). Дальше расплату показывает cast_result_modal.
-func spell_cast_apply() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		if _spell.apply_cast(my_pid):
-			_broadcast_sync()
-			_emit_changed()
-	else:
-		_nm.relay_all({"action": RelayActions.SPELL_CAST_APPLY, "pid": my_pid})
-
-
-## Бросок ожидающей видимой проверки test-узла (кнопка «Бросить»). _check.roll синкает сам.
-func check_roll() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_check.roll(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.CHECK_ROLL, "pid": my_pid})
-
-
-## Переброс куба ожидающей видимой проверки. currency — явная валюта (жетон) или "".
-func check_reroll(die_index: int, currency: String = "") -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_check.reroll(my_pid, die_index, currency)  # синкает сам
-	else:
-		(
-			_nm
-			. relay_all(
-				{
-					"action": RelayActions.CHECK_REROLL,
-					"pid": my_pid,
-					"die": die_index,
-					"currency": currency,
-				}
-			)
-		)
-
-
-## Применить ожидающую видимую проверку («Применить»): по броску active_check.passed →
-## resolve_pending_check диспетчит по pending_check.driver в *.resolve_*_check, тот пишет
-## decisions[path] и переигрывает программу (применяя onPass/onFail). Хост-авторитетно.
-func resolve_pending_check() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		if _resolve_pending_check_host(my_pid):
-			_broadcast_sync()
-			_emit_changed()
-	else:
-		_nm.relay_all({"action": RelayActions.RESOLVE_PENDING_CHECK, "pid": my_pid})
+	# Glamour (exhaust): начинаем spell-проверку (модалка), игрок бросает и применяет.
+	# Аура применяется отдельно (тап по glamour во время чужой проверки →
+	# ACTIVATE_CARD, см. world_map). Incantation — вложенная проверка поверх боя.
+	var relay: String = (
+		RelayActions.CAST_GLAMOUR if subtype == "glamour" else RelayActions.CAST_INCANTATION
+	)
+	act(relay, {"index": item_index})
 
 
 ## Хост: разрешить ожидающую проверку — прочитать passed и диспетчить в драйвер по
@@ -1104,21 +900,12 @@ func _reckoning_slot(pid: String) -> Dictionary:
 	return (players.get(pid, {}) as Dictionary).get("reckoning_check", {})
 
 
-## Бросок СВОЕЙ проверки Расплаты (кнопка «Бросить» в параллельной Расплате).
-func reckoning_check_roll() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_check.roll(my_pid, _reckoning_slot(my_pid))  # _sync внутри
-	else:
-		_nm.relay_all({"action": RelayActions.RECKONING_ROLL, "pid": my_pid})
-
-
 ## Переброс куба своей проверки Расплаты (тап по кубу). Маршрут валюты как reroll_die.
 func reckoning_reroll_die(die_index: int) -> void:
 	var my_pid: String = _nm.my_user_id
 	# Приоритет +1 (addToDie), как в reroll_die.
 	if _check.die_can_add(my_pid, die_index, _reckoning_slot(my_pid)):
-		_reckoning_add_die(die_index)
+		act(RelayActions.RECKONING_ADD_DIE, {"die": die_index})
 		return
 	# Тот же гард, что и в reroll_die: не тратим заряд жетона на клик по
 	# неперебрасываемому кубу своей проверки Расплаты (успех по порогу / вне диапазона).
@@ -1128,26 +915,7 @@ func reckoning_reroll_die(die_index: int) -> void:
 	pending_reroll_currency = ""
 	if cur.is_empty():
 		cur = "free"
-	if _is_host():
-		_check.reroll(my_pid, die_index, cur, _reckoning_slot(my_pid))  # _sync внутри
-	else:
-		_nm.relay_all(
-			{
-				"action": RelayActions.RECKONING_REROLL,
-				"pid": my_pid,
-				"die": die_index,
-				"currency": cur
-			}
-		)
-
-
-## Перебросить ВСЕ кубы своей проверки Расплаты (карты «перебрось сколько угодно»).
-func reckoning_reroll_all() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_check.reroll_all(my_pid, _reckoning_slot(my_pid))  # _sync внутри
-	else:
-		_nm.relay_all({"action": RelayActions.RECKONING_REROLL_ALL, "pid": my_pid})
+	act(RelayActions.RECKONING_REROLL, {"die": die_index, "currency": cur})
 
 
 ## Можно ли перебросить куб СВОЕЙ проверки Расплаты сейчас (бесплатный/жетон).
@@ -1167,42 +935,6 @@ func current_check() -> Dictionary:
 	return r if not r.is_empty() else active_check
 
 
-## Карта из веера на СВОЮ проверку Расплаты. Без этого маршрута активация уходила
-## в CheckFlow.activate с пустым active_check и молча ничего не делала — карты
-## (напр. «Кроличья лапка») в Расплате не срабатывали.
-func reckoning_activate_card(item_index: int) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		host_apply_reckoning_activate_card(my_pid, item_index)
-	else:
-		(
-			_nm
-			. relay_all(
-				{
-					"action": RelayActions.RECKONING_ACTIVATE_CARD,
-					"pid": my_pid,
-					"index": item_index,
-				}
-			)
-		)
-
-
-## Хост: применить карту к проверке Расплаты игрока pid (см. relay-router).
-func host_apply_reckoning_activate_card(pid: String, item_index: int) -> void:
-	_check.activate(pid, item_index, _reckoning_slot(pid))  # _sync внутри
-
-
-## Применить СВОЮ проверку Расплаты («Применить»): будит её корутину результатом.
-func reckoning_check_apply() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		if _reckoning_apply_host(my_pid):
-			_broadcast_sync()
-			_emit_changed()
-	else:
-		_nm.relay_all({"action": RelayActions.RECKONING_APPLY, "pid": my_pid})
-
-
 ## Хост: применить проверку Расплаты игрока — прочитать passed и разбудить его корутину
 ## (она чистит per-player слоты и переигрывает программу состояния).
 func _reckoning_apply_host(pid: String) -> bool:
@@ -1214,49 +946,6 @@ func _reckoning_apply_host(pid: String) -> bool:
 		c = _reckoning_slot(pid)
 	effect_check_applied.emit(pid, bool(c.get("passed", false)))
 	return true
-
-
-# ── Спас-бросок на Пороге (слот players[pid].death_save_check) ─────────────────
-
-
-## Сосед (я) тратит 1 ресурс на переброс кубика в спас-броске умирающего dying_pid.
-func death_save_reroll(dying_pid: String) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_death.reroll_by_resource(my_pid, dying_pid, 0)  # _broadcast_sync внутри
-	else:
-		_nm.relay_all({"action": RelayActions.DEATH_SAVE_REROLL, "pid": my_pid, "dying": dying_pid})
-
-
-## Умирающий (я) принимает свой спас-бросок → выжил на 1 + шрам либо смерть.
-func death_save_apply() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_death.apply(my_pid)  # _broadcast_sync внутри при survive/death
-	else:
-		_nm.relay_all({"action": RelayActions.DEATH_SAVE_APPLY, "pid": my_pid})
-
-
-# Хост-обёртки relay-адаптеров (RelayRouter зовёт с pid отправителя).
-func _death_reroll_host(ally_pid: String, dying_pid: String) -> void:
-	_death.reroll_by_resource(ally_pid, dying_pid, 0)
-
-
-func _death_apply_host(pid: String) -> void:
-	_death.apply(pid)
-
-
-## Тень (я) выкладывает улику — акт раунда (ляжет случайно после ближайшего Мифа).
-func ghost_place_clue() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_death.ghost_place_clue(my_pid)  # _broadcast_sync внутри
-	else:
-		_nm.relay_all({"action": RelayActions.GHOST_PLACE_CLUE, "pid": my_pid})
-
-
-func _ghost_place_clue_host(pid: String) -> void:
-	_death.ghost_place_clue(pid)
 
 
 # ── Чат (Dark Souls-style): транзиентный broadcast, НЕ часть snapshot ──────────
@@ -1297,28 +986,6 @@ func announce_action(pid: String, action_id: String, params: Dictionary = {}) ->
 # ActionFeed.announce_deltas(self, pid, before, after).
 
 
-## Активный игрок подтвердил выбор триггер-заклинаний (item-индексы) в промпте
-## pending_spell_cast (напр. при отдыхе): хост кастует только выбранные и чистит
-## промпт. Пустой список — «ничего не кастить» (промпт всё равно закрывается).
-func cast_trigger_spells(indices: Array) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_phase.host_apply_cast_trigger_spells(my_pid, indices)
-	else:
-		_nm.relay_all(
-			{"action": RelayActions.CAST_TRIGGER_SPELLS, "pid": my_pid, "spells": indices}
-		)
-
-
-## Владелец результата каста закрыл модалку расплаты — хост чистит last_cast_result.
-func dismiss_cast_result() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_host_dismiss_cast_result(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.DISMISS_CAST_RESULT, "pid": my_pid})
-
-
 # Хост: очистить результат каста, если его закрыл владелец (pid совпал).
 func _host_dismiss_cast_result(pid: String) -> void:
 	if String(last_cast_result.get("pid", "")) != pid:
@@ -1326,17 +993,6 @@ func _host_dismiss_cast_result(pid: String) -> void:
 	last_cast_result = {}
 	_broadcast_sync()
 	_emit_changed()
-
-
-## Игрок закрыл модалку результата флипа состояния — хост убирает его запись.
-## Окно «вы получили» закрыто — стираем накопленное (мифы/Расплата выдают молча,
-## поэтому показываем сводку; см. ActionFeed.collect_gains).
-func dismiss_gains() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_host_dismiss_gains(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.DISMISS_GAINS, "pid": my_pid})
 
 
 # Хост: стереть сводку приобретений игрока (по закрытию модалки).
@@ -1350,14 +1006,6 @@ func _host_dismiss_gains(pid: String) -> void:
 	_broadcast_and_emit()
 
 
-func dismiss_reckoning_result() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_host_dismiss_reckoning(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.DISMISS_RECKONING, "pid": my_pid})
-
-
 # Хост: убрать запись результата флипа игрока (по закрытию модалки).
 func _host_dismiss_reckoning(pid: String) -> void:
 	if not reckoning_results.has(pid):
@@ -1367,28 +1015,6 @@ func _host_dismiss_reckoning(pid: String) -> void:
 	_emit_changed()
 
 
-## Активный игрок перебрасывает ВСЕ провальные кубы разом — эффект карты
-## «перебросить сколько угодно кубов» (Счастливый талисман). Бесплатно (одно
-## использование на активацию такой карты). Работает в любой проверке.
-func reroll_all_dice() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_check.reroll_all(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.REROLL_ALL, "pid": my_pid})
-
-
-# ── Travel (фасады) ───────────────────────────────────────────────────────────
-
-
-## Переместиться в связанную локацию dest (расходует действие).
-func travel(dest: String) -> void:
-	perform_action(GameActions.TRAVEL, {"to": dest})
-
-
-## Может ли локальный игрок переместиться в dest прямо сейчас (для UI сайдбара).
-## Дополнительно к чистой связности проверяет, что сейчас мой ход в action-фазе
-## и не израсходован travel в этом раунде.
 ## Доступно ли спец-действие сыщика: мой ход, есть действие, в раунде ещё не
 ## использовал, и у сыщика вообще есть способность (data/investigators.json).
 func can_use_ability() -> bool:
@@ -1420,12 +1046,9 @@ func _convert_vitality_max(me: Dictionary) -> int:
 	return maxi(mini(maxi(0, hp - 1), san_room), mini(maxi(0, san - 1), hp_room))
 
 
-## Способность сыщика локального игрока ({} — нет): name/text для подписи кнопки.
-func my_ability() -> Dictionary:
-	return Investigators.ability(String(my_player().get("investigator", "")))
-
-
-func can_travel_to(dest: String) -> bool:
+# Может ли локальный игрок переместиться в dest прямо сейчас: мой ход в action-фазе,
+# есть действие, travel в этом раунде не израсходован, дорога есть (PhaseController).
+func _can_travel_to(dest: String) -> bool:
 	if not is_my_turn():
 		return false
 	var me: Dictionary = my_player()
@@ -1440,7 +1063,7 @@ func can_travel_to(dest: String) -> bool:
 ## Стоимость перемещения локального игрока в dest: {train, ship, path} либо {},
 ## если недостижим / не мой ход. Для сайдбара — показать маршрут и «потратить …».
 func travel_cost_to(dest: String) -> Dictionary:
-	if not can_travel_to(dest):
+	if not _can_travel_to(dest):
 		return {}
 	var me: Dictionary = my_player()
 	return TravelPlanner.cost_to(
@@ -1487,106 +1110,6 @@ func can_buy_ticket(loc_id: String) -> bool:
 	if int(me.get("train_tickets", 0)) + int(me.get("ship_tickets", 0)) >= MAX_TICKETS:
 		return false
 	return not available_ticket_types(loc_id).is_empty()
-
-
-## Купить билет типа ticket_type ("train"|"ship") — действие хосту.
-func buy_ticket(ticket_type: String) -> void:
-	perform_action(GameActions.BUY_TICKET, {"type": ticket_type})
-
-
-## Открытие магазина — старт проверки Влияния в pre-roll состоянии (БЕЗ траты
-## действия), чтобы карты руки можно было активировать до броска. Действие
-## тратится только на «Бросить кубы» (shop_begin → acquire_assets).
-func shop_open() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_check.start("shop", my_pid, "influence", 0, "acquireAssets")
-		_broadcast_sync()
-		_emit_changed()
-	else:
-		_nm.relay_all({"action": RelayActions.SHOP_OPEN, "pid": my_pid})
-
-
-## Бросок кубов = совершение действия «acquire_assets» (раз за раунд). Тратит
-## действие сразу — отмена покупки уже не вернёт поход в магазин в этом раунде.
-func shop_begin() -> void:
-	perform_action(GameActions.ACQUIRE_ASSETS, {})
-
-
-## Выдать купленные ассеты (по «Купить»). Действие уже потрачено на броске.
-func shop_grant(assets: Array) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_phase.host_apply_shop_grant(my_pid, assets)
-	else:
-		_nm.relay_all({"action": RelayActions.SHOP_GRANT, "pid": my_pid, "assets": assets})
-
-
-## Закрытие магазина — снимает отложенную передачу хода (если магазин был
-## последним действием, ход уйдёт только сейчас). Безопасно вызывать всегда.
-func shop_close() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_phase.host_apply_shop_close(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.SHOP_CLOSE, "pid": my_pid})
-
-
-## Взять долг — вешает состояние «Долг» (без дублей).
-func shop_take_debt() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_phase.host_apply_shop_debt(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.SHOP_DEBT, "pid": my_pid})
-
-
-## Потратить ресурс в магазине — +1 монета (успех). Только если ресурс есть.
-func shop_spend_resource() -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_phase.host_apply_shop_spend_resource(my_pid)
-	else:
-		_nm.relay_all({"action": RelayActions.SHOP_SPEND_RESOURCE, "pid": my_pid})
-
-
-## Продать актив в магазине — карта уходит из имущества, +1 монета. Не больше
-## одного актива за заход (гард — на стороне хоста).
-func shop_sell_asset(item_index: int) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_phase.host_apply_shop_sell_asset(my_pid, item_index)
-	else:
-		(
-			_nm
-			. relay_all(
-				{
-					"action": RelayActions.SHOP_SELL_ASSET,
-					"pid": my_pid,
-					"item": item_index,
-				}
-			)
-		)
-
-
-## Переброс куба магазина (die_index) — через общий механизм проверки (бесплатные
-## от карт → концентрация → улика). Хост авторитетно правит active_check.
-func shop_reroll(die_index: int, currency: String = "") -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_check.reroll(my_pid, die_index, currency)
-	else:
-		(
-			_nm
-			. relay_all(
-				{
-					"action": RelayActions.SHOP_REROLL,
-					"pid": my_pid,
-					"die": die_index,
-					"currency": currency,
-				}
-			)
-		)
 
 
 ## Хост: заполнить витрину магазина до SHOP_RESERVE_SIZE случайными ассетами.
@@ -1727,24 +1250,6 @@ func available_ticket_types(loc_id: String) -> Array:
 				types.append(t)
 		break
 	return types
-
-
-# ── Mythos (фасад) ───────────────────────────────────────────────────────────
-
-
-## Любой игрок подтверждает «Дальше» в модалке мифа. Делегат в MythosFlow.
-func resolve_mythos() -> void:
-	_mythos.resolve()
-
-
-## Сыщик выбрал ветку в forEach-проходе Мифов (index — номер в mythos_decision.options).
-## Хост разблокирует ожидающую корутину MythosFlow; не-хост релеит хосту.
-func decide_mythos(index: int) -> void:
-	var my_pid: String = _nm.my_user_id
-	if _is_host():
-		_phase.host_apply_mythos_decision(my_pid, index)
-	else:
-		_nm.relay_all({"action": RelayActions.MYTHOS_DECIDE, "pid": my_pid, "index": index})
 
 
 # ── Уход игрока ──────────────────────────────────────────────────────────────
@@ -1946,7 +1451,7 @@ func _broadcast_and_emit() -> void:
 
 func _build_action_registry() -> void:
 	_relay_router = RelayRouter.new()
-	_relay_router.setup(self, _phase, _encounter, _spell, _check, _mythos)
+	_relay_router.setup(self, _phase, _encounter, _spell, _check, _mythos, _death)
 	_relay_actions = _relay_router.build_registry()
 
 	# pid-владельческие = все действия реестра, КРОМЕ безадресных: RESOLVE_MYTHOS
@@ -2084,12 +1589,12 @@ func is_my_encounter_turn() -> bool:
 		active
 		and phase == Phases.ENCOUNTER
 		and _current_pid() == _nm.my_user_id
-		and not have_finished_encounter()
+		and not _have_finished_encounter()
 	)
 
 
-## Узнать, я ли уже завершил встречу (только для phase=encounter).
-func have_finished_encounter() -> bool:
+# Я ли уже завершил встречу (только для phase=encounter).
+func _have_finished_encounter() -> bool:
 	if not players.has(_nm.my_user_id):
 		return false
 	return bool(players[_nm.my_user_id].get("encounter_done", false))
@@ -2355,11 +1860,6 @@ func prewarm_campaign() -> void:
 ## Мистерия текущего акта ({} если кампания/тайны ещё не готовы) — для UI.
 func current_mystery() -> Dictionary:
 	return _campaign.current_mystery()
-
-
-## Текущий акт (1–3) — по индексу активной Тайны. Делегат в CampaignGen.
-func current_act() -> int:
-	return _campaign.current_act()
 
 
 ## Хост: сброс перед новой игрой. Зовётся из lobby при входе в свежее лобби —

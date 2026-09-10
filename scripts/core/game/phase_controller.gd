@@ -365,7 +365,7 @@ func _announce_action_feed(pid: String, action_type: String, payload: Dictionary
 ## Хост: игрок подтвердил выбор триггер-заклинаний в промпте отдыха (item-индексы;
 ## пустой список — «ничего не кастить»). Резолвим выбранные касты (SpellFlow чистит
 ## pending_spell_cast) и, если отдых был последним действием, передаём отложенный
-## ход (как закрытие магазина). Зовётся из GameState.cast_trigger_spells и relay.
+## ход (как закрытие магазина). Зовётся из relay-router (CAST_TRIGGER_SPELLS).
 func host_apply_cast_trigger_spells(pid: String, indices: Array) -> bool:
 	if not _gs._spell.host_apply_trigger_spells(pid, indices):
 		return false
@@ -615,7 +615,7 @@ func host_apply_shop_spend_resource(pid: String) -> bool:
 ## Хост: продать актив в магазине — карта уходит из имущества (в сброс он
 ## выводится, а не хранится), взамен +1 монета в общий котёл с ресурсами.
 ## Не больше ОДНОГО актива за заход: флаг живёт на active_check, а он создаётся
-## заново каждым shop_open — отдельный сброс счётчика не нужен.
+## заново каждым SHOP_OPEN — отдельный сброс счётчика не нужен.
 func host_apply_shop_sell_asset(pid: String, item_index: int) -> bool:
 	if not _gs.players.has(pid):
 		return false
@@ -646,11 +646,11 @@ func host_apply_shop_sell_asset(pid: String, item_index: int) -> bool:
 
 
 # Переброс куба магазина теперь идёт через единый CheckFlow.reroll (active_check):
-# бесплатные перебросы от карт → концентрация → улика. См. GameState.shop_reroll.
+# бесплатные перебросы от карт → концентрация → улика. См. relay-router (SHOP_REROLL).
 
 
 ## Хост: игрок завершил встречу — отметить и передать ход дальше.
-## Возвращает true при успехе. Зовётся из GameState.finish_encounter и из
+## Возвращает true при успехе. Зовётся из relay-router (FINISH_ENCOUNTER) и из
 ## relay-router на game_finish_encounter.
 func host_apply_finish_encounter(pid: String) -> bool:
 	if _gs.phase != Phases.ENCOUNTER:
@@ -668,7 +668,7 @@ func host_apply_finish_encounter(pid: String) -> bool:
 
 ## Хост: игрок выбрал ветку интерактивного choice в эффектах встречи. Записываем
 ## решение и переигрываем коммит (если выбор закрыл паузу — ход идёт дальше).
-## Зовётся из GameState.choose_effect и relay-router на game_choose_effect.
+## Зовётся из relay-router (CHOOSE_EFFECT).
 func host_apply_effect_choice(pid: String, index: int) -> bool:
 	if _gs.phase != Phases.ENCOUNTER or not _gs.players.has(pid):
 		return false
@@ -682,7 +682,7 @@ func host_apply_effect_choice(pid: String, index: int) -> bool:
 ## Хост: сыщик сделал выбор в модалке решения. Канал mythos_decision общий: его
 ## заводит и forEach-проход Мифов, и программа актива (выбор монстра/локации), —
 ## кого будить, говорит md.driver. Клампим индекс к числу веток.
-## Зовётся из GameState.decide_mythos и relay-router на game_mythos_decide.
+## Зовётся из relay-router (MYTHOS_DECIDE).
 ## Выбор ЗА отсутствующего игрока — СЛУЧАЙНОЙ опцией, а не первой. Первая — это
 ## всегда одна и та же ветка карты: исход ушедшего был бы предсказуем, а заодно
 ## появлялся бы эксплойт «выйти, чтобы получить нужную ветку». Зовётся из

@@ -4,7 +4,7 @@ extends CanvasLayer
 ## какой оборот выпал: название заклинания (заголовок), художественный текст
 ## расплаты (flavor-ключ оборота) и ЧИСТЫЙ итог рубашки (−здоровье/−рассудок/−улики,
 ## новые состояния, сброс — либо «обошлось», если итог пуст). Кнопка закрывает и
-## чистит результат (GameState.dismiss_cast_result). Не привязана к ходу — видна и
+## чистит результат (act DISMISS_CAST_RESULT). Не привязана к ходу — видна и
 ## после того, как каст завершил ход игрока. См. SpellFlow.resolve_cast.
 
 @onready var _root: Control = $Root
@@ -93,4 +93,4 @@ func _outcome_lines(outcome: Dictionary) -> Array:
 func _on_ok() -> void:
 	UIStyle.modal_set_visible(_root, _panel, false)  # скрыть сразу, не ждать синка
 	_sig = ""
-	GameState.dismiss_cast_result()
+	GameState.act(RelayActions.DISMISS_CAST_RESULT)

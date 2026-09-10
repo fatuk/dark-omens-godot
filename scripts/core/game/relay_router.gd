@@ -1,10 +1,11 @@
 class_name RelayRouter
 extends RefCounted
 
-## Роутер host-авторитетных relay-действий (вынесено из game_state.gd — тот упирался в
-## лимит строк). Каждый _act_* — тонкий адаптер (data) → host-логика соответствующего
-## модуля; тела перенесены дословно. Диспетчер остаётся в GameState._on_relay_received:
-## он зовёт build_registry()[action].call(data) под гардом _is_host().
+## Роутер host-авторитетных relay-действий: ЕДИНСТВЕННАЯ реализация каждой команды.
+## Каждый _act_* — тонкий адаптер (data) → host-логика соответствующего модуля. Сюда
+## приходят и чужие relay-сообщения (GameState._on_relay_received под гардом
+## _is_host()), и собственные команды хоста (GameState.act строит то же сообщение
+## с pid=свой) — путей два, тело одно.
 ##
 ## Флоу держим типизированно (без warnings). Методы самого GameState (реколнинг-слот,
 ## late_join, dismiss, broadcast) — через _gs.call(): они приватные, класснейма у
@@ -16,6 +17,7 @@ var _encounter: EncounterFlow
 var _spell: SpellFlow
 var _check: CheckFlow
 var _mythos: MythosFlow
+var _death: DeathSaveFlow
 
 
 func setup(
@@ -24,7 +26,8 @@ func setup(
 	encounter: EncounterFlow,
 	spell: SpellFlow,
 	check: CheckFlow,
-	mythos: MythosFlow
+	mythos: MythosFlow,
+	death: DeathSaveFlow
 ) -> void:
 	_gs = gs
 	_phase = phase
@@ -32,6 +35,7 @@ func setup(
 	_spell = spell
 	_check = check
 	_mythos = mythos
+	_death = death
 
 
 ## Карта {relay-действие: адаптер}. GameState хранит её в _relay_actions и выводит из
@@ -92,8 +96,12 @@ func _act_action(d: Dictionary) -> void:
 	)
 
 
+## Карта из веера на СВОЮ проверку Расплаты (per-player слот). Без этого маршрута
+## активация уходила в CheckFlow.activate с пустым active_check и молча ничего не
+## делала — карты (напр. «Кроличья лапка») в Расплате не срабатывали.
 func _act_reckoning_activate_card(d: Dictionary) -> void:
-	_gs.host_apply_reckoning_activate_card(String(d.get("pid", "")), int(d.get("index", -1)))
+	var rp: String = String(d.get("pid", ""))
+	_check.activate(rp, int(d.get("index", -1)), _slot(rp))  # _sync внутри
 
 
 func _act_travel_arrived(d: Dictionary) -> void:
@@ -126,10 +134,12 @@ func _act_choose_effect(d: Dictionary) -> void:
 	_phase.host_apply_effect_choice(String(d.get("pid", "")), int(d.get("index", -1)))
 
 
+## Карта руки в активную проверку. Реакции по приоритету: боевой триггер (Handcuffs:
+## фокус→победа) → предотвращение потери (бинты, в т.ч. за соседа в ЕГО ход) →
+## обычный check-mod (бафф навыка/переброс) в единую активную проверку.
 func _act_activate_card(d: Dictionary) -> void:
 	var pid: String = String(d.get("pid", ""))
 	var idx: int = int(d.get("index", -1))
-	# Та же цепочка реакций, что в GameState.activate_card у хоста.
 	if not _encounter.try_combat_trigger(pid, idx) and not _encounter.play_prevent_loss(pid, idx):
 		_check.activate(pid, idx)  # единая активная проверка (встреча/магазин/бой)
 
@@ -199,16 +209,19 @@ func _act_reckoning_apply(d: Dictionary) -> void:
 		_gs.call("_broadcast_and_emit")
 
 
+## Сосед (pid) тратит 1 ресурс на переброс кубика в спас-броске умирающего dying.
 func _act_death_save_reroll(d: Dictionary) -> void:
-	_gs.call("_death_reroll_host", String(d.get("pid", "")), String(d.get("dying", "")))
+	_death.reroll_by_resource(String(d.get("pid", "")), String(d.get("dying", "")), 0)
 
 
+## Умирающий принимает свой спас-бросок → выжил на 1 + шрам либо смерть.
 func _act_death_save_apply(d: Dictionary) -> void:
-	_gs.call("_death_apply_host", String(d.get("pid", "")))
+	_death.apply(String(d.get("pid", "")))
 
 
+## Тень выкладывает улику — акт раунда (ляжет случайно после ближайшего Мифа).
 func _act_ghost_place_clue(d: Dictionary) -> void:
-	_gs.call("_ghost_place_clue_host", String(d.get("pid", "")))
+	_death.ghost_place_clue(String(d.get("pid", "")))
 
 
 func _act_cast_trigger_spells(d: Dictionary) -> void:
@@ -247,6 +260,9 @@ func _act_shop_sell_asset(d: Dictionary) -> void:
 	_phase.host_apply_shop_sell_asset(String(d.get("pid", "")), int(d.get("item", -1)))
 
 
+## Открытие магазина — старт проверки Влияния в pre-roll состоянии (БЕЗ траты
+## действия), чтобы карты руки можно было активировать до броска. Действие тратится
+## только на «Бросить кубы» (GameActions.ACQUIRE_ASSETS).
 func _act_shop_open(d: Dictionary) -> void:
 	_check.start("shop", String(d.get("pid", "")), "influence", 0, "acquireAssets")
 	_gs.call("_broadcast_and_emit")

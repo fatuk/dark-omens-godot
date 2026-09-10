@@ -3,7 +3,7 @@ extends CanvasLayer
 ## Модалка «какие из триггер-заклинаний скастить» (напр. при отдыхе). Видна
 ## владельцу промпта GameState.pending_spell_cast в его ход. По умолчанию все
 ## заклинания отмечены; снять галку — не кастить именно его. «Скастить» →
-## GameState.cast_trigger_spells(выбранные item-индексы): хост резолвит выбранные,
+## act(CAST_TRIGGER_SPELLS, {spells: выбранные item-индексы}): хост резолвит выбранные,
 ## чистит промпт — модалка скрывается. Пустой выбор — ничего не кастить (отдых
 ## завершается, ход уходит если это было последнее действие). См.
 ## SpellFlow.prompt_trigger / PhaseController.host_apply_cast_trigger_spells.
@@ -82,4 +82,4 @@ func _on_confirm() -> void:
 			chosen.append(int(entry["index"]))
 	UIStyle.modal_set_visible(_root, _panel, false)  # скрыть сразу, не ждать синка
 	_sig = ""
-	GameState.cast_trigger_spells(chosen)
+	GameState.act(RelayActions.CAST_TRIGGER_SPELLS, {"spells": chosen})

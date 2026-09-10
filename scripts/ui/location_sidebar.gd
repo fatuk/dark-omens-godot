@@ -320,7 +320,7 @@ func _make_buy_ticket_btn(label_key: String, ticket_type: String) -> Button:
 	btn.visible = false
 	btn.pressed.connect(
 		func() -> void:
-			GameState.buy_ticket(ticket_type)
+			GameState.perform_action(GameActions.BUY_TICKET, {"type": ticket_type})
 			close_panel()  # как и перемещение: сыграли действие — уходим с карты
 	)
 	return btn
@@ -476,7 +476,7 @@ func _refresh_actions() -> void:
 func _on_travel_pressed() -> void:
 	if _loc_id.is_empty():
 		return
-	GameState.travel(_loc_id)
+	GameState.perform_action(GameActions.TRAVEL, {"to": _loc_id})
 	close_panel()  # не заслоняем карту, пока фишка летит к новой локации
 
 

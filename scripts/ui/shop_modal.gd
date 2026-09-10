@@ -189,7 +189,7 @@ func open() -> void:
 
 
 func _close() -> void:
-	GameState.shop_close()
+	GameState.act(RelayActions.SHOP_CLOSE)
 	queue_free()
 
 
@@ -854,10 +854,10 @@ func _pool() -> Dictionary:
 func _on_roll() -> void:
 	if _rolled():
 		if _reroll_all_available():
-			GameState.reroll_all_dice()
+			GameState.act(RelayActions.REROLL_ALL)
 		return
 	_roll_btn.disabled = true
-	GameState.shop_begin()
+	GameState.perform_action(GameActions.ACQUIRE_ASSETS, {})
 
 
 func _on_take_debt() -> void:
@@ -865,7 +865,7 @@ func _on_take_debt() -> void:
 		return
 	_debt_taken = true
 	_debt_btn.disabled = true
-	GameState.shop_take_debt()
+	GameState.act(RelayActions.SHOP_DEBT)
 	_refresh()
 
 
@@ -874,7 +874,7 @@ func _on_take_debt() -> void:
 func _on_spend_resource() -> void:
 	if int(GameState.my_player().get("resources", 0)) <= 0:
 		return
-	GameState.shop_spend_resource()
+	GameState.act(RelayActions.SHOP_SPEND_RESOURCE)
 	_refresh()
 
 
@@ -901,7 +901,7 @@ func _on_buy() -> void:
 		var e: Dictionary = e_v
 		if _selected.has(e.id):
 			_fly_out(e)
-	GameState.shop_grant(_selected.keys())
+	GameState.act(RelayActions.SHOP_GRANT, {"assets": _selected.keys()})
 	await get_tree().create_timer(0.32).timeout
 	_close()
 
@@ -1054,5 +1054,5 @@ func _fill_sell_panel() -> void:
 
 func _on_sell_asset(item_index: int) -> void:
 	_sell_panel.visible = false
-	GameState.shop_sell_asset(item_index)
+	GameState.act(RelayActions.SHOP_SELL_ASSET, {"item": item_index})
 	_refresh()

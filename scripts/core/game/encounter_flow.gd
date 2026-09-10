@@ -517,7 +517,7 @@ func _resolve_combat(pid: String) -> bool:
 		return true
 
 	# ── Шаг 2: СИЛА (атака) ── Сила стартована в pre-roll («Дальше»). Первое нажатие —
-	# бросок; затем «Завершить» (finish_encounter → _commit_combat) фиксирует итог.
+	# бросок; затем «Завершить» (FINISH_ENCOUNTER → _commit_combat) фиксирует итог.
 	if not bool(c.get("rolled", false)):
 		return _gs._check.roll(pid)
 	return false  # Сила брошена — дальше «Завершить»
@@ -617,8 +617,7 @@ func _compute_choices(pid: String) -> Array:
 
 ## Хост: разрешить встречу активного игрока — катит проверку, применяет
 ## onSuccess/onFailure, кладёт результат в current_encounter.resolution и
-## рассылает синком. Зовётся из GameState.resolve_encounter (фасад) или
-## напрямую из relay-router при game_resolve_encounter.
+## рассылает синком. Зовётся из relay-router (RESOLVE_ENCOUNTER).
 func host_apply_resolve(pid: String) -> bool:
 	if _gs.phase != Phases.ENCOUNTER or not _gs.players.has(pid):
 		return false
@@ -668,7 +667,7 @@ func _gate_node(card: Dictionary, stage: int) -> Dictionary:
 ## Хост: после первой проверки врат перейти ко второй. В отличие от линейной
 ## модели, переход происходит при ЛЮБОМ исходе первой проверки — успех ведёт в
 ## ветку success, провал — в ветку failure (обе дают вторую проверку).
-## Зовётся из GameState.advance_encounter_stage / relay-router.
+## Зовётся из relay-router (ADVANCE_STAGE).
 func host_apply_advance_stage(pid: String) -> bool:
 	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid:
 		return false
@@ -1040,7 +1039,7 @@ func _combat_trigger_node(asset: Dictionary) -> Dictionary:
 
 ## Хост: переброс ОДНОГО выбранного куба (die_index) активной проверки. currency —
 ## явная валюта (жетон) или "" = авто-приоритет. Куб должен быть провальным.
-## Доступен, пока встреча не зафиксирована. Зовётся из GameState.reroll_encounter /
+## Доступен, пока встреча не зафиксирована. Зовётся из relay-router (REROLL_ENCOUNTER) /
 ## relay-router. Возвращает true при перебросе.
 func host_apply_reroll(pid: String, die_index: int, currency: String = "") -> bool:
 	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid or not _gs.players.has(pid):
