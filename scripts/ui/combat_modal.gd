@@ -23,6 +23,7 @@ const _FS_BIG := 44  # ужас/урон
 const _FS_HP := 40  # здоровье/стойкость
 const _FS_HITS := 20  # успехи
 const _FS_ABILITY := 15
+const _FS_LOSS := 22  # «−2 Рассудок» под лотком
 const _PULSE_PERIOD := 0.9  # сек на полупериод пульса
 
 @onready var _root: Control = $Root
@@ -116,8 +117,6 @@ func _build(card: Dictionary) -> void:
 				int(c.get("reroll_index", -1))
 			)
 			_last_will = wd.duplicate()
-			_will_line(int(c.get("successes", 0)), card)
-			_reroll_hint(can)
 		else:  # до броска Воли — полный пул с пометками
 			var wp: Dictionary = _will_pool(card)
 			_will_tray.set_pool_marks(int(wp["bonus"]), int(wp["blocked"]))
@@ -132,8 +131,6 @@ func _build(card: Dictionary) -> void:
 			var sd: Array = s.get("dice", [])
 			_configure_tray(_str_tray, sd, _last_str, false)
 			_last_str = sd.duplicate()
-			var r: Dictionary = card["resolution"]
-			_str_line(int(s.get("successes", 0)), int(r.get("dealt", 0)), int(r.get("hp_loss", 0)))
 		elif rolled:  # Сила брошена (живая) — превью исхода, можно перебрасывать
 			var sd: Array = c.get("dice", [])
 			_configure_tray(
@@ -145,10 +142,6 @@ func _build(card: Dictionary) -> void:
 				int(c.get("reroll_index", -1))
 			)
 			_last_str = sd.duplicate()
-			var hits: int = int(c.get("successes", 0))
-			var dmg: int = int((card.get("combat", {}) as Dictionary).get("damage", 0))
-			_str_line(hits, hits, maxi(0, dmg - hits))
-			_reroll_hint(can)
 		else:  # pre-roll Силы — окно карт усиления (оружие +Сила до броска)
 			var sp: Dictionary = _str_pool(card)
 			_str_tray.set_pool_marks(int(sp["bonus"]), int(sp["blocked"]))
@@ -158,20 +151,8 @@ func _build(card: Dictionary) -> void:
 			)
 			_last_str = []
 
-	# ── Итог: финальный (done) или превью по активной Силе ──
-	if done or (str_step and rolled):
-		var won: bool
-		if done:
-			won = bool((card["resolution"] as Dictionary).get("won", false))
-		else:
-			won = maxi(0, int(card.get("health", 0)) - int(c.get("successes", 0))) <= 0
-		_vbox.add_child(
-			_lbl(
-				tr("COMBAT_WIN" if won else "COMBAT_LOSS"),
-				18,
-				UIColors.SUCCESS if won else UIColors.DANGER
-			)
-		)
+	# ── Что будет с сыщиком, если принять расклад: потери по итогу шагов ──
+	_loss_lines(card, str_step, done)
 
 	# ── Кнопки ──
 	var btns := HBoxContainer.new()
@@ -302,17 +283,19 @@ func _update_art(card: Dictionary, str_step: bool, done: bool) -> void:
 	var horror: Dictionary = card.get("horror", {})
 	# enc.health — здоровье монстра НА СТАРТЕ боя; после атаки показываем итоговое
 	# (resolution.health_after), т.к. эффекты применяются только при завершении.
-	var res: Dictionary = card.get("resolution", {})
-	var mon_health: int = (
-		int(res.get("health_after", card.get("health", 0)))
-		if not res.is_empty()
-		else int(card.get("health", 0))
-	)
-	(_art.get_node("Hp") as Label).text = "%d/%d" % [mon_health, int(card.get("toughness", 0))]
 	# Успехи каждого шага: замороженные (will / resolution.strength) либо живые из
 	# активной проверки; до броска — нет (-1 → пусто).
+	var res: Dictionary = card.get("resolution", {})
 	var c: Dictionary = _chk()
 	var live: int = int(c.get("successes", 0)) if bool(c.get("rolled", false)) else -1
+	# Здоровье монстра: на старте боя; на шаге Силы — превью после удара (успехи бьют
+	# стойкость), по итогу — зафиксированное. Итог боя виден прямо на карте.
+	var mon_health: int = int(card.get("health", 0))
+	if not res.is_empty():
+		mon_health = int(res.get("health_after", mon_health))
+	elif str_step and live >= 0:
+		mon_health = maxi(0, mon_health - live)
+	(_art.get_node("Hp") as Label).text = "%d/%d" % [mon_health, int(card.get("toughness", 0))]
 	var will_hits: int = (
 		int((card["will"] as Dictionary).get("successes", 0)) if card.has("will") else live
 	)
@@ -452,12 +435,6 @@ func _chk() -> Dictionary:
 	return c if String(c.get("owner", "")) == "combat" else {}
 
 
-# Бесплатные перебросы от активированных карт (allowance − использовано).
-func _free_rerolls() -> int:
-	var c: Dictionary = _chk()
-	return maxi(0, int(c.get("reroll_allowance", 0)) - int(c.get("rerolls_used", 0)))
-
-
 # Доступен ли переброс: карта (бесплатно) / концентрация / улика, пока бой не зафиксирован.
 func _can_reroll() -> bool:
 	if bool(GameState.current_encounter.get("committed", false)):
@@ -475,41 +452,35 @@ func _reroll_all_available() -> bool:
 	return int(c.get("reroll_all_allowance", 0)) - int(c.get("reroll_all_used", 0)) > 0
 
 
-# ── Строки под лотком ─────────────────────────────────────────────────────────
+# ── Потери сыщика под лотком ──────────────────────────────────────────────────
 
 
-# Под кубами Воли: успехи + потеря рассудка (max(0, horror.damage − успехи)).
-func _will_line(succ: int, card: Dictionary) -> void:
-	var hd: int = int((card.get("horror", {}) as Dictionary).get("damage", 0))
-	var sl: int = maxi(0, hd - succ)
-	var line: String = "%s: %d" % [tr("ENCOUNTER_SUCCESSES"), succ]
-	if sl > 0:
-		line += " · −%d %s" % [sl, tr("COMBAT_SANITY")]
-	_vbox.add_child(_lbl(line, 13, UIColors.TEXT))
-
-
-# Под кубами Силы: успехи + урон стойкости + потеря здоровья.
-func _str_line(succ: int, dealt: int, hp_loss: int) -> void:
-	var line: String = (
-		"%s: %d · %s −%d" % [tr("ENCOUNTER_SUCCESSES"), succ, tr("SIDEBAR_TOUGHNESS"), dealt]
-	)
+# Только последствия для сыщика при принятии текущего расклада: −N рассудка после
+# броска Воли (и дальше, пока бой не закрыт), −N здоровья после броска Силы. За
+# вычетом уже предотвращённого картами (бинты/виски). Без потерь — строки нет.
+func _loss_lines(card: Dictionary, str_step: bool, done: bool) -> void:
+	var c: Dictionary = _chk()
+	var rolled: bool = bool(c.get("rolled", false))
+	var sanity_loss: int = -1
+	if card.has("will"):
+		sanity_loss = int(card.get("sanity_loss", 0))
+	elif rolled:
+		var hd: int = int((card.get("horror", {}) as Dictionary).get("damage", 0))
+		sanity_loss = maxi(0, hd - int(c.get("successes", 0)))
+	if sanity_loss > 0:
+		sanity_loss = maxi(0, sanity_loss - int(card.get("prevented_sanity", 0)))
+	var hp_loss: int = -1
+	if done:
+		hp_loss = int((card["resolution"] as Dictionary).get("hp_loss", 0))
+	elif str_step and rolled:
+		var dmg: int = int((card.get("combat", {}) as Dictionary).get("damage", 0))
+		hp_loss = maxi(0, dmg - int(c.get("successes", 0)))
 	if hp_loss > 0:
-		line += " · −%d %s" % [hp_loss, tr("COMBAT_HEALTH")]
-	_vbox.add_child(_lbl(line, 13, UIColors.DANGER if hp_loss > 0 else UIColors.TEXT))
-
-
-# Подсказка о перебросе живого шага: карта (бесплатно) → концентрация → улика.
-func _reroll_hint(can: bool) -> void:
-	# can → готовы к перебросу (бесплатно или заряжен жетон) → нажать куб. Иначе, если
-	# есть концентрация/улика — подсказать перетащить жетон.
-	var free: int = _free_rerolls()
-	var txt: String = ""
-	if can:
-		txt = (tr("ENCOUNTER_REROLL_FREE") % free) if free > 0 else tr("ENCOUNTER_REROLL_TAP")
-	elif GameState.dice.has_resource():
-		txt = tr("ENCOUNTER_REROLL_DRAG")
-	if not txt.is_empty():
-		_vbox.add_child(_lbl(txt, 11, UIColors.MUTED))
+		hp_loss = maxi(0, hp_loss - int(card.get("prevented_hp", 0)))
+	if sanity_loss > 0:
+		_vbox.add_child(_lbl("−%d %s" % [sanity_loss, tr("COMBAT_SANITY")], _FS_LOSS, _C_WILL))
+	if hp_loss > 0:
+		_vbox.add_child(_lbl("−%d %s" % [hp_loss, tr("COMBAT_HEALTH")], _FS_LOSS, _C_STR))
 
 
 # ── Хелперы ───────────────────────────────────────────────────────────────────
