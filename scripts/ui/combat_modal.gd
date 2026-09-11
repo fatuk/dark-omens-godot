@@ -10,17 +10,14 @@ extends CanvasLayer
 ## снизу), под ним ОДИН лоток кубов активного шага и одна кнопка. Шаги идут
 ## подряд: бросок Воли → «Применить» (заморозка, окно карт на Силу) → бросок
 ## Силы → «Завершить». Какой шаг идёт — подсказывает пульс числа: синий ужас
-## на Воле, красный урон на Силе. Статы сыщика не дублируем: панель сыщика в
-## бою поднята над затемнением (InvestigatorPanel).
+## на Воле, красный урон на Силе. Статы сыщика в окне не дублируем — они на
+## панели сыщика под затемнением, как у любой другой модалки.
 
 const _C_WILL := Color(0.4, 0.7, 0.9)  # синий — шаг Воли (ужас)
 const _C_STR := Color(0.90, 0.25, 0.20)  # красный — шаг Силы (урон)
 const _C_HITS := UIColors.SUCCESS  # успехи броска, гасящие число монстра
 
-# Арт монстра @2× 1200×992; рисуем 540×446 (та же пропорция) — с лотком, строками
-# итога и кнопкой окно должно уместиться в свободное место над панелью сыщика (832 px
-# при 1080p), не наезжая на неё.
-const _ART_SIZE := Vector2(540, 446)
+const _ART_SIZE := Vector2(600, 496)  # арт монстра @2× 1200×992 → 1×
 const _ART_PAD := 14.0  # инсет чисел от края арта
 const _FS_BIG := 44  # ужас/урон
 const _FS_HP := 40  # здоровье/стойкость
@@ -29,7 +26,6 @@ const _FS_ABILITY := 15
 const _PULSE_PERIOD := 0.9  # сек на полупериод пульса
 
 @onready var _root: Control = $Root
-@onready var _center: CenterContainer = $Root/Center
 @onready var _panel: PanelContainer = %Panel
 @onready var _vbox: VBoxContainer = %VBox
 
@@ -50,9 +46,6 @@ var _pulse_on: Label = null  # какое число пульсирует сей
 func _ready() -> void:
 	UIStyle.style_modal_panel(_panel)
 	_panel.custom_minimum_size.x = _ART_SIZE.x + 160.0
-	# В бою панель сыщика поднята над затемнением (InvestigatorPanel._LAYER_OVER_COMBAT)
-	# — центруем окно по оставшемуся свободному месту над ней, а не по всему экрану.
-	_center.offset_bottom = -InvestigatorPanel.BAR_H
 	GameState.state_changed.connect(_refresh)
 	_refresh()
 
