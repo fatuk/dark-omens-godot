@@ -15,7 +15,7 @@ extends CanvasLayer
 
 const _C_WILL := Color(0.4, 0.7, 0.9)  # синий — шаг Воли (ужас)
 const _C_STR := Color(0.90, 0.25, 0.20)  # красный — шаг Силы (урон)
-const _C_MOD := UIColors.SUCCESS  # модификатор монстра рядом с числом
+const _C_HITS := UIColors.SUCCESS  # успехи броска, гасящие число монстра
 
 # Арт монстра @2× 1200×992; рисуем 540×446 (та же пропорция) — с лотком, строками
 # итога и кнопкой окно должно уместиться в свободное место над панелью сыщика (832 px
@@ -24,7 +24,7 @@ const _ART_SIZE := Vector2(540, 446)
 const _ART_PAD := 14.0  # инсет чисел от края арта
 const _FS_BIG := 44  # ужас/урон
 const _FS_HP := 40  # здоровье/стойкость
-const _FS_MOD := 20  # модификатор
+const _FS_HITS := 20  # успехи
 const _FS_ABILITY := 15
 const _PULSE_PERIOD := 0.9  # сек на полупериод пульса
 
@@ -247,7 +247,7 @@ func _ensure_art(card: Dictionary) -> Control:
 	frame.add_child(hp)
 
 	# Ужас (шаг Воли) — слева снизу; урон (шаг Силы) — справа снизу. Число крупно,
-	# модификатор монстра мелко рядом (видно, почему кубов мало).
+	# успехи броска мелко зелёным рядом — они и гасят это число (3 −2 = потеря 1).
 	frame.add_child(_stat_block("Horror", _C_WILL, false))
 	frame.add_child(_stat_block("Damage", _C_STR, true))
 
@@ -266,7 +266,7 @@ func _ensure_art(card: Dictionary) -> Control:
 	return frame
 
 
-# Блок «число + модификатор» в нижнем углу арта. right — правый угол (урон).
+# Блок «число монстра − успехи» в нижнем углу арта. right — правый угол (урон).
 func _stat_block(node_name: String, color: Color, right: bool) -> HBoxContainer:
 	var box := HBoxContainer.new()
 	box.name = node_name
@@ -284,10 +284,10 @@ func _stat_block(node_name: String, color: Color, right: bool) -> HBoxContainer:
 		box.offset_left = _ART_PAD
 	var num := _overlay_lbl("Value", _FS_BIG, color, HORIZONTAL_ALIGNMENT_CENTER)
 	num.resized.connect(func() -> void: num.pivot_offset = num.size / 2.0)  # пульс из центра
-	var mod := _overlay_lbl("Mod", _FS_MOD, _C_MOD, HORIZONTAL_ALIGNMENT_LEFT)
-	mod.size_flags_vertical = Control.SIZE_SHRINK_END
+	var hits := _overlay_lbl("Hits", _FS_HITS, _C_HITS, HORIZONTAL_ALIGNMENT_LEFT)
+	hits.size_flags_vertical = Control.SIZE_SHRINK_END
 	box.add_child(num)
-	box.add_child(mod)
+	box.add_child(hits)
 	return box
 
 
@@ -316,8 +316,20 @@ func _update_art(card: Dictionary, str_step: bool, done: bool) -> void:
 		else int(card.get("health", 0))
 	)
 	(_art.get_node("Hp") as Label).text = "%d/%d" % [mon_health, int(card.get("toughness", 0))]
-	_set_stat(_art.get_node("Horror"), horror)
-	_set_stat(_art.get_node("Damage"), combat)
+	# Успехи каждого шага: замороженные (will / resolution.strength) либо живые из
+	# активной проверки; до броска — нет (-1 → пусто).
+	var c: Dictionary = _chk()
+	var live: int = int(c.get("successes", 0)) if bool(c.get("rolled", false)) else -1
+	var will_hits: int = (
+		int((card["will"] as Dictionary).get("successes", 0)) if card.has("will") else live
+	)
+	var str_hits: int = -1
+	if done:
+		str_hits = int((res.get("strength", {}) as Dictionary).get("successes", 0))
+	elif str_step:
+		str_hits = live
+	_set_stat(_art.get_node("Horror"), horror, will_hits)
+	_set_stat(_art.get_node("Damage"), combat, str_hits)
 	var ab: Label = _art.get_node("Ability")
 	var key: String = String(card.get("abilityKey", ""))
 	ab.text = tr(key) if not key.is_empty() else ""
@@ -331,12 +343,9 @@ func _update_art(card: Dictionary, str_step: bool, done: bool) -> void:
 		_set_pulse(_art.get_node("Horror/Value"))
 
 
-func _set_stat(box: HBoxContainer, test: Dictionary) -> void:
+func _set_stat(box: HBoxContainer, test: Dictionary, hits: int) -> void:
 	(box.get_node("Value") as Label).text = str(int(test.get("damage", 0)))
-	var mod: int = int(test.get("modifier", 0))
-	(box.get_node("Mod") as Label).text = (
-		"" if mod == 0 else "%s%d" % ["+" if mod > 0 else "−", absi(mod)]
-	)
+	(box.get_node("Hits") as Label).text = "" if hits < 0 else "−%d" % hits
 
 
 # Пульс числа активного шага: плавное дыхание масштаба и яркости. Тот же target —
