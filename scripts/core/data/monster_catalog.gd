@@ -54,6 +54,15 @@ static func by_id(id: String) -> Dictionary:
 	return _by_id.get(id, {})
 
 
+## Арт монстра по конвенции имени файла: assets/monsters/<Id Capitalized>.png
+## (id "star_spawn" → "Star Spawn.png"), @2× как все карты. Нет файла → null.
+static func card_art(id: String) -> Texture2D:
+	if id.is_empty():
+		return null
+	var path: String = "res://assets/monsters/%s.png" % id.capitalize()
+	return load(path) if ResourceLoader.exists(path) else null
+
+
 ## Только эпик-монстры (спавнятся по имени, не из общего пула).
 static func epics() -> Array:
 	var out: Array = []

@@ -4,25 +4,52 @@ extends CanvasLayer
 ## "combat". Бой одноразовый: один бросок = две проверки — сначала ВОЛЯ
 ## (выдержать ужас), затем СИЛА (одолеть монстра). Итог — победа или нет.
 ## Раундов и отступления нет. Бой авторитетно у хоста (RESOLVE_ENCOUNTER).
+##
+## Вид — карта монстра: крупный арт с наложенными числами (здоровье/стойкость
+## сверху справа, ужас слева снизу, урон справа снизу, способность по центру
+## снизу), под ним ОДИН лоток кубов активного шага и одна кнопка. Шаги идут
+## подряд: бросок Воли → «Применить» (заморозка, окно карт на Силу) → бросок
+## Силы → «Завершить». Какой шаг идёт — подсказывает пульс числа: синий ужас
+## на Воле, красный урон на Силе. Статы сыщика не дублируем: панель сыщика в
+## бою поднята над затемнением (InvestigatorPanel).
 
-const _C_STEP_WILL := Color(0.4, 0.7, 0.9)  # синий — шаг Воли (ужас)
+const _C_WILL := Color(0.4, 0.7, 0.9)  # синий — шаг Воли (ужас)
+const _C_STR := Color(0.90, 0.25, 0.20)  # красный — шаг Силы (урон)
+const _C_MOD := UIColors.SUCCESS  # модификатор монстра рядом с числом
+
+# Арт монстра @2× 1200×992; рисуем 540×446 (та же пропорция) — с лотком, строками
+# итога и кнопкой окно должно уместиться в свободное место над панелью сыщика (832 px
+# при 1080p), не наезжая на неё.
+const _ART_SIZE := Vector2(540, 446)
+const _ART_PAD := 14.0  # инсет чисел от края арта
+const _FS_BIG := 44  # ужас/урон
+const _FS_HP := 40  # здоровье/стойкость
+const _FS_MOD := 20  # модификатор
+const _FS_ABILITY := 13
+const _PULSE_PERIOD := 0.9  # сек на полупериод пульса
 
 @onready var _root: Control = $Root
 @onready var _center: CenterContainer = $Root/Center
 @onready var _panel: PanelContainer = %Panel
 @onready var _vbox: VBoxContainer = %VBox
 
-# Персистентные лотки кубов (Воля/Сила) — переживают пересборку _vbox, чтобы спин
-# не рвался. _last_* — история бросков (спин только на свежем результате).
+# Персистентные узлы — переживают пересборку _vbox на каждом синке, чтобы не рвать
+# спин кубов и пульс числа. Лотки Воли/Силы отдельные: у каждого своя история
+# бросков (спин только на свежем результате).
+var _art: Control  # карта монстра с наложенными числами (см. _ensure_art)
+var _art_for: String = ""  # id монстра, под которого собран _art
 var _will_tray: DiceTray
 var _str_tray: DiceTray
 var _last_will: Array = []
 var _last_str: Array = []
 var _last_nonce: int = 0  # метка последнего отрисованного переброса активного шага
+var _pulse_tw: Tween = null
+var _pulse_on: Label = null  # какое число пульсирует сейчас (null — никакое)
 
 
 func _ready() -> void:
 	UIStyle.style_modal_panel(_panel)
+	_panel.custom_minimum_size.x = _ART_SIZE.x + 160.0
 	# В бою панель сыщика поднята над затемнением (InvestigatorPanel._LAYER_OVER_COMBAT)
 	# — центруем окно по оставшемуся свободному месту над ней, а не по всему экрану.
 	_center.offset_bottom = -InvestigatorPanel.BAR_H
@@ -31,10 +58,10 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
-	# Персистентные лотки, отвязанные при последней пересборке (_build) и не
-	# подвешенные обратно — шаг Силы пропущен на defeatOnHorror/defeatByTrigger —
-	# не удалятся с модалкой: нода без родителя не входит в дерево. Чистим вручную.
-	for t in [_will_tray, _str_tray]:
+	# Персистентные ноды, отвязанные при последней пересборке (_build) и не
+	# подвешенные обратно, не удалятся с модалкой: нода без родителя не входит в
+	# дерево. Чистим вручную.
+	for t in [_will_tray, _str_tray, _art]:
 		if is_instance_valid(t) and t.get_parent() == null:
 			t.free()
 
@@ -46,33 +73,110 @@ func _refresh() -> void:
 	UIStyle.modal_set_visible(_root, _panel, show_it)
 	if show_it:
 		_build(card)
+	else:
+		_set_pulse(null)
 
 
 func _build(card: Dictionary) -> void:
-	# Сохранить персистентные лотки от удаления при пересборке колонок.
-	for t in [_will_tray, _str_tray]:
+	# Сохранить персистентные ноды от удаления при пересборке.
+	for t in [_will_tray, _str_tray, _art]:
 		if is_instance_valid(t) and t.get_parent() != null:
 			t.get_parent().remove_child(t)
 	for c in _vbox.get_children():
 		c.queue_free()
 
+	var c: Dictionary = _chk()  # активная проверка боя (Воля или Сила)
+	var has_will: bool = card.has("will")  # Воля заморожена → идёт шаг Силы
 	var done: bool = card.has("resolution")
+	var rolled: bool = bool(c.get("rolled", false))
+	var can: bool = _can_reroll()
 	# Свежий бой (Волю ещё не катили, проверка не брошена) — сброс истории спина.
-	if not card.has("will") and not bool(_chk().get("rolled", false)):
+	if not has_will and not rolled:
 		_last_will = []
 		_last_str = []
+	# Шаг Силы есть, если монстр не повержен на шаге 1 (defeatOnPass / триггер карты).
+	var skip_str: bool = (
+		bool(card.get("defeated_on_horror", false)) or bool(card.get("defeated_by_trigger", false))
+	)
+	var str_step: bool = has_will and not skip_str
 
 	_vbox.add_child(UIStyle.modal_title(String(card.get("monsterName", "ENCOUNTER_TITLE"))))
+	_vbox.add_child(_ensure_art(card))
+	_update_art(card, str_step, done)
 
-	var cols := HBoxContainer.new()
-	cols.name = "Columns"
-	cols.add_theme_constant_override("separation", 20)
-	cols.alignment = BoxContainer.ALIGNMENT_CENTER
-	_vbox.add_child(cols)
-	cols.add_child(_player_col())
-	cols.add_child(_center_col(card))
-	cols.add_child(_monster_col(card))
+	# ── Лоток активного шага ──
+	if not has_will:
+		_will_tray = _ensure_tray(_will_tray)
+		_vbox.add_child(_will_tray)
+		if rolled:  # Воля брошена (живая) — можно перебрасывать
+			var wd: Array = c.get("dice", [])
+			_configure_tray(
+				_will_tray,
+				wd,
+				_last_will,
+				can,
+				int(c.get("reroll_nonce", 0)),
+				int(c.get("reroll_index", -1))
+			)
+			_last_will = wd.duplicate()
+			_will_line(int(c.get("successes", 0)), card)
+			_reroll_hint(can)
+		else:  # до броска Воли — полный пул с пометками
+			var wp: Dictionary = _will_pool(card)
+			_will_tray.set_pool_marks(int(wp["bonus"]), int(wp["blocked"]))
+			_will_tray.show_pending(
+				int(wp["pool"]), String((card.get("horror", {}) as Dictionary).get("skill", "will"))
+			)
+	elif str_step:
+		_str_tray = _ensure_tray(_str_tray)
+		_vbox.add_child(_str_tray)
+		if done:  # зафиксированный итог Силы
+			var s: Dictionary = (card["resolution"] as Dictionary).get("strength", {})
+			var sd: Array = s.get("dice", [])
+			_configure_tray(_str_tray, sd, _last_str, false)
+			_last_str = sd.duplicate()
+			var r: Dictionary = card["resolution"]
+			_str_line(int(s.get("successes", 0)), int(r.get("dealt", 0)), int(r.get("hp_loss", 0)))
+		elif rolled:  # Сила брошена (живая) — превью исхода, можно перебрасывать
+			var sd: Array = c.get("dice", [])
+			_configure_tray(
+				_str_tray,
+				sd,
+				_last_str,
+				can,
+				int(c.get("reroll_nonce", 0)),
+				int(c.get("reroll_index", -1))
+			)
+			_last_str = sd.duplicate()
+			var hits: int = int(c.get("successes", 0))
+			var dmg: int = int((card.get("combat", {}) as Dictionary).get("damage", 0))
+			_str_line(hits, hits, maxi(0, dmg - hits))
+			_reroll_hint(can)
+		else:  # pre-roll Силы — окно карт усиления (оружие +Сила до броска)
+			var sp: Dictionary = _str_pool(card)
+			_str_tray.set_pool_marks(int(sp["bonus"]), int(sp["blocked"]))
+			_str_tray.show_pending(
+				int(sp["pool"]),
+				String((card.get("combat", {}) as Dictionary).get("skill", "strength"))
+			)
+			_last_str = []
 
+	# ── Итог: финальный (done) или превью по активной Силе ──
+	if done or (str_step and rolled):
+		var won: bool
+		if done:
+			won = bool((card["resolution"] as Dictionary).get("won", false))
+		else:
+			won = maxi(0, int(card.get("health", 0)) - int(c.get("successes", 0))) <= 0
+		_vbox.add_child(
+			_lbl(
+				tr("COMBAT_WIN" if won else "COMBAT_LOSS"),
+				18,
+				UIColors.SUCCESS if won else UIColors.DANGER
+			)
+		)
+
+	# ── Кнопки ──
 	var btns := HBoxContainer.new()
 	btns.name = "Buttons"
 	btns.add_theme_constant_override("separation", 12)
@@ -83,28 +187,186 @@ func _build(card: Dictionary) -> void:
 		btns.add_child(
 			_button("ENCOUNTER_REROLL_ALL", func() -> void: GameState.act(RelayActions.REROLL_ALL))
 		)
-	# Кнопка по 4 состояниям: «Бросить Волю» → «Дальше» (заморозить Волю, окно карт на
-	# Силу) → «Бросить Силу» → «Завершить».
-	var has_will: bool = card.has("will")
-	var rolled: bool = bool(_chk().get("rolled", false))
-	if done:
+	# Одна кнопка по состоянию: «Бросить кубы» (Воля) → «Применить» (заморозить Волю,
+	# сразу шаг Силы в pre-roll) → «Бросить кубы» (Сила) → «Завершить».
+	if done or (str_step and rolled):
 		btns.add_child(
 			_button("BTN_FINISH_BIG", func() -> void: GameState.act(RelayActions.FINISH_ENCOUNTER))
-		)
-	elif not has_will:
-		var k1: String = "ENCOUNTER_CONTINUE" if rolled else "COMBAT_ROLL_WILL"
-		btns.add_child(_button(k1, func() -> void: GameState.act(RelayActions.RESOLVE_ENCOUNTER)))
-	elif not rolled:
-		btns.add_child(
-			_button(
-				"COMBAT_ROLL_STRENGTH",
-				func() -> void: GameState.act(RelayActions.RESOLVE_ENCOUNTER)
-			)
 		)
 	else:
-		btns.add_child(
-			_button("BTN_FINISH_BIG", func() -> void: GameState.act(RelayActions.FINISH_ENCOUNTER))
-		)
+		var key: String = "CAST_APPLY" if (not has_will and rolled) else "COMBAT_ROLL"
+		btns.add_child(_button(key, func() -> void: GameState.act(RelayActions.RESOLVE_ENCOUNTER)))
+
+
+# ── Карта монстра ─────────────────────────────────────────────────────────────
+
+
+# Арт с наложенными числами. Собирается один раз на монстра (id) и переиспользуется
+# между синками — иначе пульс перезапускался бы на каждом перебросе.
+func _ensure_art(card: Dictionary) -> Control:
+	var mid: String = String(card.get("monsterId", ""))
+	if is_instance_valid(_art) and _art_for == mid:
+		return _art
+	if is_instance_valid(_art):
+		_set_pulse(null)
+		_art.free()
+	_art_for = mid
+
+	var frame := Control.new()
+	frame.name = "MonsterCard"
+	frame.custom_minimum_size = _ART_SIZE
+	frame.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	frame.clip_contents = true
+
+	var tex: Texture2D = MonsterCatalog.card_art(mid)
+	var bg := ColorRect.new()  # подложка: под артом с прозрачностью и вместо него
+	bg.name = "ArtBg"
+	bg.color = UIColors.ART_BG
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(bg)
+	if tex != null:
+		var art := TextureRect.new()
+		art.name = "Art"
+		art.texture = tex
+		art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		frame.add_child(art)
+	# Виньетка снизу — числа и текст способности читаются поверх любого арта.
+	var shade := ColorRect.new()
+	shade.name = "Shade"
+	shade.color = Color(0, 0, 0, 0.45)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	shade.offset_top = -96
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(shade)
+
+	# Здоровье / стойкость — сверху справа.
+	var hp := _overlay_lbl("Hp", _FS_HP, UIColors.TEXT, HORIZONTAL_ALIGNMENT_RIGHT)
+	hp.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	hp.offset_left = _ART_PAD
+	hp.offset_right = -_ART_PAD
+	hp.offset_top = _ART_PAD
+	frame.add_child(hp)
+
+	# Ужас (шаг Воли) — слева снизу; урон (шаг Силы) — справа снизу. Число крупно,
+	# модификатор монстра мелко рядом (видно, почему кубов мало).
+	frame.add_child(_stat_block("Horror", _C_WILL, false))
+	frame.add_child(_stat_block("Damage", _C_STR, true))
+
+	# Способность монстра — по центру снизу, между числами.
+	var ab := _overlay_lbl("Ability", _FS_ABILITY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	ab.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	ab.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	ab.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	ab.offset_left = 120
+	ab.offset_right = -120
+	ab.offset_top = -80
+	ab.offset_bottom = -_ART_PAD
+	frame.add_child(ab)
+
+	_art = frame
+	return frame
+
+
+# Блок «число + модификатор» в нижнем углу арта. right — правый угол (урон).
+func _stat_block(node_name: String, color: Color, right: bool) -> HBoxContainer:
+	var box := HBoxContainer.new()
+	box.name = node_name
+	box.add_theme_constant_override("separation", 4)
+	box.alignment = BoxContainer.ALIGNMENT_END if right else BoxContainer.ALIGNMENT_BEGIN
+	box.set_anchors_and_offsets_preset(
+		Control.PRESET_BOTTOM_RIGHT if right else Control.PRESET_BOTTOM_LEFT
+	)
+	box.grow_horizontal = Control.GROW_DIRECTION_BEGIN if right else Control.GROW_DIRECTION_END
+	box.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	box.offset_bottom = -_ART_PAD + 6
+	if right:
+		box.offset_right = -_ART_PAD
+	else:
+		box.offset_left = _ART_PAD
+	var num := _overlay_lbl("Value", _FS_BIG, color, HORIZONTAL_ALIGNMENT_CENTER)
+	num.resized.connect(func() -> void: num.pivot_offset = num.size / 2.0)  # пульс из центра
+	var mod := _overlay_lbl("Mod", _FS_MOD, _C_MOD, HORIZONTAL_ALIGNMENT_LEFT)
+	mod.size_flags_vertical = Control.SIZE_SHRINK_END
+	box.add_child(num)
+	box.add_child(mod)
+	return box
+
+
+# Подпись поверх арта: с тенью, чтобы читалась на любом фоне; клики — сквозь.
+func _overlay_lbl(node_name: String, fs: int, color: Color, align: HorizontalAlignment) -> Label:
+	var l := _lbl("", fs, color, align)
+	l.name = node_name
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+	l.add_theme_constant_override("shadow_offset_x", 2)
+	l.add_theme_constant_override("shadow_offset_y", 2)
+	l.add_theme_constant_override("shadow_outline_size", 4)
+	return l
+
+
+# Живые значения на карте + какой из шагов пульсирует.
+func _update_art(card: Dictionary, str_step: bool, done: bool) -> void:
+	var combat: Dictionary = card.get("combat", {})
+	var horror: Dictionary = card.get("horror", {})
+	# enc.health — здоровье монстра НА СТАРТЕ боя; после атаки показываем итоговое
+	# (resolution.health_after), т.к. эффекты применяются только при завершении.
+	var res: Dictionary = card.get("resolution", {})
+	var mon_health: int = (
+		int(res.get("health_after", card.get("health", 0)))
+		if not res.is_empty()
+		else int(card.get("health", 0))
+	)
+	(_art.get_node("Hp") as Label).text = "%d/%d" % [mon_health, int(card.get("toughness", 0))]
+	_set_stat(_art.get_node("Horror"), horror)
+	_set_stat(_art.get_node("Damage"), combat)
+	var ab: Label = _art.get_node("Ability")
+	var key: String = String(card.get("abilityKey", ""))
+	ab.text = tr(key) if not key.is_empty() else ""
+
+	# Пульс: шаг Воли — ужас (синий), шаг Силы — урон (красный), итог — тишина.
+	if done:
+		_set_pulse(null)
+	elif str_step:
+		_set_pulse(_art.get_node("Damage/Value"))
+	else:
+		_set_pulse(_art.get_node("Horror/Value"))
+
+
+func _set_stat(box: HBoxContainer, test: Dictionary) -> void:
+	(box.get_node("Value") as Label).text = str(int(test.get("damage", 0)))
+	var mod: int = int(test.get("modifier", 0))
+	(box.get_node("Mod") as Label).text = (
+		"" if mod == 0 else "%s%d" % ["+" if mod > 0 else "−", absi(mod)]
+	)
+
+
+# Пульс числа активного шага: плавное дыхание масштаба и яркости. Тот же target —
+# не перезапускаем (иначе на каждом синке дёргалось бы с нуля).
+func _set_pulse(target: Label) -> void:
+	if target == _pulse_on and (target == null or (_pulse_tw != null and _pulse_tw.is_valid())):
+		return
+	if _pulse_tw != null and _pulse_tw.is_valid():
+		_pulse_tw.kill()
+	_pulse_tw = null
+	if is_instance_valid(_pulse_on):
+		_pulse_on.scale = Vector2.ONE
+		_pulse_on.modulate = Color.WHITE
+	_pulse_on = target
+	if target == null:
+		return
+	_pulse_tw = target.create_tween().set_loops()
+	_pulse_tw.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_pulse_tw.tween_property(target, "scale", Vector2(1.18, 1.18), _PULSE_PERIOD)
+	_pulse_tw.parallel().tween_property(target, "modulate", Color(1.35, 1.35, 1.35), _PULSE_PERIOD)
+	_pulse_tw.tween_property(target, "scale", Vector2.ONE, _PULSE_PERIOD)
+	_pulse_tw.parallel().tween_property(target, "modulate", Color.WHITE, _PULSE_PERIOD)
+
+
+# ── Кубы ──────────────────────────────────────────────────────────────────────
 
 
 # Переброс выбранного куба: заряженным жетоном (concentration/clue) или авто-приоритетом.
@@ -112,8 +374,7 @@ func _on_die_clicked(index: int) -> void:
 	GameState.dice.tap(index)
 
 
-# Лоток создаётся лениво и переиспользуется (персистентный — переживает пересборку
-# колонок). Только активный ряд (Воля до Силы, либо Сила) кликабелен.
+# Лоток создаётся лениво и переиспользуется (персистентный — переживает пересборку).
 func _ensure_tray(t: DiceTray) -> DiceTray:
 	if is_instance_valid(t):
 		return t
@@ -178,21 +439,6 @@ func _pool(skill: String, modifier: int) -> Dictionary:
 	return Dice.pool_breakdown(base, mods, modifier, extra)
 
 
-# Локализованное имя навыка: "will" → «Воля», "influence" → «Влияние» и т.д.
-func _skill_name(skill: String) -> String:
-	return tr("SKILL_" + skill.to_upper())
-
-
-# Подпись шага: «Шаг N: <Навык> ±M» (модификатор монстра — видно, почему кубов мало).
-func _step_label(step_key: String, test: Dictionary, default_skill: String) -> String:
-	var skill: String = String(test.get("skill", default_skill))
-	var txt: String = tr(step_key) % _skill_name(skill)
-	var mod: int = int(test.get("modifier", 0))
-	if mod != 0:
-		txt += "  %s%d" % ["+" if mod > 0 else "−", absi(mod)]
-	return txt
-
-
 func _will_pool(card: Dictionary) -> Dictionary:
 	var h: Dictionary = card.get("horror", {})
 	return _pool(String(h.get("skill", "will")), int(h.get("modifier", 0)))
@@ -201,146 +447,6 @@ func _will_pool(card: Dictionary) -> Dictionary:
 func _str_pool(card: Dictionary) -> Dictionary:
 	var c: Dictionary = card.get("combat", {})
 	return _pool(String(c.get("skill", "strength")), int(c.get("modifier", 0)))
-
-
-# ── Колонки ───────────────────────────────────────────────────────────────────
-
-
-func _player_col() -> VBoxContainer:
-	var p: Dictionary = GameState.my_player()
-	var col := VBoxContainer.new()
-	col.name = "PlayerColumn"
-	col.add_theme_constant_override("separation", 4)
-	col.custom_minimum_size = Vector2(190, 0)
-	col.add_child(_lbl(String(p.get("name", "?")), 16, UIColors.TEXT))
-	col.add_child(
-		_lbl(
-			"%s: %d / %d" % [tr("COMBAT_HEALTH"), int(p.get("hp", 0)), int(p.get("hp_max", 0))],
-			13,
-			UIColors.SUCCESS
-		)
-	)
-	col.add_child(
-		_lbl(
-			(
-				"%s: %d / %d"
-				% [tr("COMBAT_SANITY"), int(p.get("sanity", 0)), int(p.get("sanity_max", 0))]
-			),
-			13,
-			_C_STEP_WILL
-		)
-	)
-	return col
-
-
-func _center_col(card: Dictionary) -> VBoxContainer:
-	var col := VBoxContainer.new()
-	col.name = "CenterColumn"
-	col.add_theme_constant_override("separation", 6)
-	col.custom_minimum_size = Vector2(260, 0)
-
-	var c: Dictionary = _chk()  # активная проверка боя (Воля или Сила)
-	var has_will: bool = card.has("will")  # Воля заморожена → идёт шаг Силы
-	var done: bool = card.has("resolution")
-	var rolled: bool = bool(c.get("rolled", false))
-	var can: bool = _can_reroll()
-
-	# Шаг 1 — проверка ужаса (обычно Воля, но монстр может тестировать иной навык,
-	# напр. Влияние) — подпись по РЕАЛЬНОМУ навыку + модификатор монстра.
-	col.add_child(
-		_lbl(_step_label("COMBAT_STEP1", card.get("horror", {}), "will"), 15, _C_STEP_WILL)
-	)
-	_will_tray = _ensure_tray(_will_tray)
-	col.add_child(_will_tray)
-	if has_will:  # заморожен снимок — не кликабелен
-		var wd: Array = (card["will"] as Dictionary).get("dice", [])
-		_configure_tray(_will_tray, wd, _last_will, false)
-		_last_will = wd.duplicate()
-		_will_line(col, int((card["will"] as Dictionary).get("successes", 0)), card)
-	elif rolled:  # Воля брошена (живая) — можно перебрасывать
-		var wd: Array = c.get("dice", [])
-		_configure_tray(
-			_will_tray,
-			wd,
-			_last_will,
-			can,
-			int(c.get("reroll_nonce", 0)),
-			int(c.get("reroll_index", -1))
-		)
-		_last_will = wd.duplicate()
-		_will_line(col, int(c.get("successes", 0)), card)
-		_reroll_hint(col, can)
-	else:  # до броска Воли — полный пул с пометками
-		var wp: Dictionary = _will_pool(card)
-		_will_tray.set_pool_marks(int(wp["bonus"]), int(wp["blocked"]))
-		_will_tray.show_pending(
-			int(wp["pool"]), String((card.get("horror", {}) as Dictionary).get("skill", "will"))
-		)
-		_last_will = []
-
-	# Шаг 2 — атака (обычно Сила). Пропускаем, если монстр повержен на шаге 1 (спец-
-	# способность defeatOnPass — напр. Crazed Mob от пройденной проверки Влияния).
-	if (
-		has_will
-		and not bool(card.get("defeated_on_horror", false))
-		and not bool(card.get("defeated_by_trigger", false))
-	):
-		col.add_child(
-			_lbl(
-				_step_label("COMBAT_STEP2", card.get("combat", {}), "strength"), 15, UIColors.ACCENT
-			)
-		)
-		_str_tray = _ensure_tray(_str_tray)
-		col.add_child(_str_tray)
-		if done:  # зафиксированный итог Силы
-			var s: Dictionary = (card["resolution"] as Dictionary).get("strength", {})
-			var sd: Array = s.get("dice", [])
-			_configure_tray(_str_tray, sd, _last_str, false)
-			_last_str = sd.duplicate()
-			var r: Dictionary = card["resolution"]
-			_str_line(
-				col, int(s.get("successes", 0)), int(r.get("dealt", 0)), int(r.get("hp_loss", 0))
-			)
-		elif rolled:  # Сила брошена (живая) — превью исхода, можно перебрасывать
-			var sd: Array = c.get("dice", [])
-			_configure_tray(
-				_str_tray,
-				sd,
-				_last_str,
-				can,
-				int(c.get("reroll_nonce", 0)),
-				int(c.get("reroll_index", -1))
-			)
-			_last_str = sd.duplicate()
-			var hits: int = int(c.get("successes", 0))
-			var dmg: int = int((card.get("combat", {}) as Dictionary).get("damage", 0))
-			_str_line(col, hits, hits, maxi(0, dmg - hits))
-			_reroll_hint(col, can)
-		else:
-			var sp: Dictionary = _str_pool(card)
-			_str_tray.set_pool_marks(int(sp["bonus"]), int(sp["blocked"]))
-			_str_tray.show_pending(
-				int(sp["pool"]),
-				String((card.get("combat", {}) as Dictionary).get("skill", "strength"))
-			)
-			_last_str = []
-
-	# Итог: финальный (done) или превью по активной Силе.
-	if done or (has_will and rolled):
-		var won: bool
-		if done:
-			won = bool((card["resolution"] as Dictionary).get("won", false))
-		else:
-			won = maxi(0, int(card.get("health", 0)) - int(c.get("successes", 0))) <= 0
-		col.add_child(
-			_lbl(
-				tr("COMBAT_WIN" if won else "COMBAT_LOSS"),
-				18,
-				UIColors.SUCCESS if won else UIColors.DANGER,
-				HORIZONTAL_ALIGNMENT_CENTER
-			)
-		)
-	return col
 
 
 # Активная проверка боя (active_check, если владелец — бой; иначе пусто).
@@ -372,31 +478,31 @@ func _reroll_all_available() -> bool:
 	return int(c.get("reroll_all_allowance", 0)) - int(c.get("reroll_all_used", 0)) > 0
 
 
-# Строка под кубами Воли: успехи + потеря рассудка (max(0, horror.damage − успехи)).
-func _will_line(col: VBoxContainer, succ: int, card: Dictionary) -> void:
+# ── Строки под лотком ─────────────────────────────────────────────────────────
+
+
+# Под кубами Воли: успехи + потеря рассудка (max(0, horror.damage − успехи)).
+func _will_line(succ: int, card: Dictionary) -> void:
 	var hd: int = int((card.get("horror", {}) as Dictionary).get("damage", 0))
 	var sl: int = maxi(0, hd - succ)
 	var line: String = "%s: %d" % [tr("ENCOUNTER_SUCCESSES"), succ]
 	if sl > 0:
 		line += " · −%d %s" % [sl, tr("COMBAT_SANITY")]
-	col.add_child(_lbl(line, 12, UIColors.TEXT))
+	_vbox.add_child(_lbl(line, 13, UIColors.TEXT))
 
 
-# Строка под кубами Силы: успехи + урон стойкости + потеря здоровья.
-func _str_line(col: VBoxContainer, succ: int, dealt: int, hp_loss: int) -> void:
-	col.add_child(
-		_lbl(
-			"%s: %d · %s −%d" % [tr("ENCOUNTER_SUCCESSES"), succ, tr("SIDEBAR_TOUGHNESS"), dealt],
-			12,
-			UIColors.TEXT
-		)
+# Под кубами Силы: успехи + урон стойкости + потеря здоровья.
+func _str_line(succ: int, dealt: int, hp_loss: int) -> void:
+	var line: String = (
+		"%s: %d · %s −%d" % [tr("ENCOUNTER_SUCCESSES"), succ, tr("SIDEBAR_TOUGHNESS"), dealt]
 	)
 	if hp_loss > 0:
-		col.add_child(_lbl("−%d %s" % [hp_loss, tr("COMBAT_HEALTH")], 12, UIColors.DANGER))
+		line += " · −%d %s" % [hp_loss, tr("COMBAT_HEALTH")]
+	_vbox.add_child(_lbl(line, 13, UIColors.DANGER if hp_loss > 0 else UIColors.TEXT))
 
 
 # Подсказка о перебросе живого шага: карта (бесплатно) → концентрация → улика.
-func _reroll_hint(col: VBoxContainer, can: bool) -> void:
+func _reroll_hint(can: bool) -> void:
 	# can → готовы к перебросу (бесплатно или заряжен жетон) → нажать куб. Иначе, если
 	# есть концентрация/улика — подсказать перетащить жетон.
 	var free: int = _free_rerolls()
@@ -406,60 +512,14 @@ func _reroll_hint(col: VBoxContainer, can: bool) -> void:
 	elif GameState.dice.has_resource():
 		txt = tr("ENCOUNTER_REROLL_DRAG")
 	if not txt.is_empty():
-		col.add_child(_lbl(txt, 11, UIColors.MUTED))
-
-
-func _monster_col(card: Dictionary) -> VBoxContainer:
-	var col := VBoxContainer.new()
-	col.name = "MonsterColumn"
-	col.add_theme_constant_override("separation", 4)
-	col.custom_minimum_size = Vector2(190, 0)
-	var combat: Dictionary = card.get("combat", {})
-	var horror: Dictionary = card.get("horror", {})
-	# enc.health — здоровье монстра НА СТАРТЕ боя; после атаки показываем итоговое
-	# (resolution.health_after), т.к. эффекты применяются только при завершении.
-	var res: Dictionary = card.get("resolution", {})
-	var mon_health: int = (
-		int(res.get("health_after", card.get("health", 0)))
-		if not res.is_empty()
-		else int(card.get("health", 0))
-	)
-	col.add_child(
-		_lbl(
-			"%s: %d / %d" % [tr("SIDEBAR_TOUGHNESS"), mon_health, int(card.get("toughness", 0))],
-			14,
-			UIColors.WARNING
-		)
-	)
-	col.add_child(
-		_lbl(
-			(
-				"%s: %d · %s: %d"
-				% [
-					tr("COMBAT_MDMG"),
-					int(combat.get("damage", 0)),
-					tr("SIDEBAR_HORROR"),
-					int(horror.get("damage", 0))
-				]
-			),
-			12,
-			UIColors.TEXT
-		)
-	)
-	var ab: String = String(card.get("abilityKey", ""))
-	if not ab.is_empty():
-		var al := _lbl(ab, 11, UIColors.MUTED)  # ключ перевода способности
-		al.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		al.custom_minimum_size = Vector2(190, 0)
-		col.add_child(al)
-	return col
+		_vbox.add_child(_lbl(txt, 11, UIColors.MUTED))
 
 
 # ── Хелперы ───────────────────────────────────────────────────────────────────
 
 
 func _lbl(
-	text: String, size: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT
+	text: String, size: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_CENTER
 ) -> Label:
 	var l := Label.new()
 	l.name = "Label"
