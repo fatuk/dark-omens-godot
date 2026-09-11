@@ -232,7 +232,7 @@ func _ensure_art(card: Dictionary) -> Control:
 		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		frame.add_child(art)
 	# Здоровье / стойкость — сверху справа.
-	var hp := _overlay_lbl("Hp", _FS_HP, UIColors.TEXT, HORIZONTAL_ALIGNMENT_RIGHT)
+	var hp := _overlay_lbl("Hp", _FS_HP, UIColors.WARNING, HORIZONTAL_ALIGNMENT_RIGHT)
 	hp.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	hp.offset_left = _ART_PAD
 	hp.offset_right = -_ART_PAD
