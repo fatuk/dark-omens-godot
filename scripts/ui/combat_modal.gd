@@ -25,7 +25,7 @@ const _ART_PAD := 14.0  # инсет чисел от края арта
 const _FS_BIG := 44  # ужас/урон
 const _FS_HP := 40  # здоровье/стойкость
 const _FS_MOD := 20  # модификатор
-const _FS_ABILITY := 13
+const _FS_ABILITY := 15
 const _PULSE_PERIOD := 0.9  # сек на полупериод пульса
 
 @onready var _root: Control = $Root
@@ -100,7 +100,11 @@ func _build(card: Dictionary) -> void:
 	)
 	var str_step: bool = has_will and not skip_str
 
-	_vbox.add_child(UIStyle.modal_title(String(card.get("monsterName", "ENCOUNTER_TITLE"))))
+	_vbox.add_child(
+		UIStyle.ornate_title(
+			String(card.get("monsterName", "ENCOUNTER_TITLE")), UIStyle.MODAL_FS_TITLE
+		)
+	)
 	_vbox.add_child(_ensure_art(card))
 	_update_art(card, str_step, done)
 
@@ -234,15 +238,6 @@ func _ensure_art(card: Dictionary) -> Control:
 		art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		frame.add_child(art)
-	# Виньетка снизу — числа и текст способности читаются поверх любого арта.
-	var shade := ColorRect.new()
-	shade.name = "Shade"
-	shade.color = Color(0, 0, 0, 0.45)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	shade.offset_top = -96
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	frame.add_child(shade)
-
 	# Здоровье / стойкость — сверху справа.
 	var hp := _overlay_lbl("Hp", _FS_HP, UIColors.TEXT, HORIZONTAL_ALIGNMENT_RIGHT)
 	hp.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
@@ -296,15 +291,15 @@ func _stat_block(node_name: String, color: Color, right: bool) -> HBoxContainer:
 	return box
 
 
-# Подпись поверх арта: с тенью, чтобы читалась на любом фоне; клики — сквозь.
+# Подпись поверх арта: чёрная тень со сдвигом 1px, чтобы читалась на любом фоне
+# без затемнения самого арта; клики — сквозь.
 func _overlay_lbl(node_name: String, fs: int, color: Color, align: HorizontalAlignment) -> Label:
 	var l := _lbl("", fs, color, align)
 	l.name = node_name
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
-	l.add_theme_constant_override("shadow_offset_x", 2)
-	l.add_theme_constant_override("shadow_offset_y", 2)
-	l.add_theme_constant_override("shadow_outline_size", 4)
+	l.add_theme_color_override("font_shadow_color", Color.BLACK)
+	l.add_theme_constant_override("shadow_offset_x", 1)
+	l.add_theme_constant_override("shadow_offset_y", 1)
 	return l
 
 
