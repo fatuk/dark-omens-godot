@@ -4,9 +4,10 @@ extends CanvasLayer
 ## ВЕЕР РУКИ (HandCarousel) — те же дуга, подъём активной карты, секции, стрелки,
 ## анимация, что у имущества/заклинаний. Кормит веер секциями:
 ##   этап TEMPLATE — одна секция шаблонов (карта = шаблон с «____» вместо слотов);
-##   этап NOUN     — 8 секций-категорий существительных (◄ ► листают категории).
+##   этап NOUN     — секции-категории существительных (◄ ► листают категории).
+## Порядок секций — из словаря (Messages.phrase_categories / noun_categories).
 ## «Разыгранная» карта (chat_card_played) двигает этап; на последнем слоте — отправка
-## (GameState.send_chat). По центру экрана — живое превью собираемой фразы (наведённое
+## (GameState.send_chat); шаблон без слотов («Да», «Мой ход») уходит сразу. По центру экрана — живое превью собираемой фразы (наведённое
 ## слово текущего слота в [скобках]). Монтируется из world_map.
 
 enum { STAGE_TEMPLATE, STAGE_NOUN }
@@ -154,27 +155,31 @@ func _locale() -> String:
 
 func _set_template_sections() -> void:
 	var sections: Array = []
-	for cat: String in Messages.PHRASE_CATEGORY_ORDER:
+	for cat: String in Messages.phrase_categories():
 		var items: Array = []
 		for p_v: Variant in Messages.phrases_in(cat):
 			var pid: String = String((p_v as Dictionary).get("id", ""))
 			items.append(
 				{"kind": "chat", "id": pid, "frame": _CARD_FRAME, "message": _template_label(pid)}
 			)
-		sections.append({"title": Messages.phrase_category_title(cat, _locale()), "items": items})
+		if not items.is_empty():
+			sections.append(
+				{"title": Messages.phrase_category_title(cat, _locale()), "items": items}
+			)
 	_fan.set_sections(sections)
 
 
 func _set_noun_sections() -> void:
 	var sections: Array = []
-	for cat: String in Messages.CATEGORY_ORDER:
+	for cat: String in Messages.noun_categories():
 		var items: Array = []
 		for n_v: Variant in Messages.nouns_in(cat):
 			var nid: String = String((n_v as Dictionary).get("id", ""))
 			items.append(
 				{"kind": "chat", "id": nid, "frame": _CARD_FRAME, "message": _noun_word(nid)}
 			)
-		sections.append({"title": Messages.category_title(cat, _locale()), "items": items})
+		if not items.is_empty():
+			sections.append({"title": Messages.category_title(cat, _locale()), "items": items})
 	_fan.set_sections(sections)
 
 
@@ -198,6 +203,10 @@ func _on_played(id: String) -> void:
 		_slot_count = Messages.slots(id)
 		_picked = []
 		_slot_idx = 0
+		if _slot_count == 0:  # готовая реплика — слов не выбираем
+			GameState.send_chat(_phrase_id, [])
+			close()
+			return
 		_stage = STAGE_NOUN
 		_focus_id = ""
 		_set_noun_sections()
@@ -238,11 +247,16 @@ func _compose_preview() -> String:
 			return _template_label(_focus_id)
 		return tr("CHAT_PICK_TEMPLATE")
 	var words: Array = []
+	var first_id: String = ""  # слово первого слота (выбранное или наведённое) — для числа
 	for i: int in range(_slot_count):
 		if i < _picked.size() and not String(_picked[i]).is_empty():
 			words.append(_noun_word(String(_picked[i])))
+			if i == 0:
+				first_id = String(_picked[i])
 		elif i == _slot_idx and not _focus_id.is_empty():
 			words.append("[%s]" % _noun_word(_focus_id))
+			if i == 0:
+				first_id = _focus_id
 		else:
 			words.append("____")
-	return Messages.fill(_phrase_id, words, _locale())
+	return Messages.fill(_phrase_id, words, _locale(), Messages.is_plural(first_id, _locale()))
