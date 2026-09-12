@@ -971,6 +971,15 @@ func _refresh() -> void:
 	if is_instance_valid(_buy_btn):
 		_buy_btn.visible = rolled
 		_buy_btn.disabled = _selected.is_empty()
+	# Ряд кнопок: пока все пять были видимы, HBox вырос до суммы их ширин и остался
+	# таким после скрытия (size не ужимается сам) — одиночная кнопка центрировалась
+	# в широком ряду и уезжала вправо от кубов. Возвращаем ряду заданную долю сцены.
+	if is_instance_valid(_roll_btn) and is_instance_valid(_stage):
+		var row: Control = _roll_btn.get_parent()
+		for e_v: Variant in _chrome:
+			if (e_v as Dictionary).get("node") == row:
+				var e: Dictionary = e_v
+				row.size = Vector2(e.fw * _stage.size.x, e.fh * _stage.size.y)
 	# Недоступные НЕ затемняем (доступность покажем иначе позже). Тёплый тинт выбора +
 	# яркость наведения — в _card_albedo (общий источник, чтобы не конфликтовали).
 	for e_v: Variant in _cards:
