@@ -943,6 +943,13 @@ func _refresh() -> void:
 	# (остаётся лишь как «Перебросить все», пока доступен Талисман), появляются
 	# способы добрать монет и «Купить».
 	var rolled: bool = _rolled()
+	# Одна кнопка до броска — натуральной ширины по центру, не во весь ряд; после
+	# броска ряд из нескольких делит ширину поровну.
+	for b_v: Variant in [_roll_btn, _debt_btn, _res_btn, _sell_btn, _buy_btn]:
+		if is_instance_valid(b_v):
+			(b_v as Control).size_flags_horizontal = (
+				Control.SIZE_EXPAND_FILL if rolled else Control.SIZE_SHRINK_CENTER
+			)
 	if is_instance_valid(_roll_btn):
 		if rolled and _reroll_all_available():
 			_roll_btn.text = "ENCOUNTER_REROLL_ALL"
