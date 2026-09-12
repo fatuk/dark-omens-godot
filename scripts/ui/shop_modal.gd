@@ -303,7 +303,8 @@ func _build() -> void:
 	# В _chrome НЕ кладём: ширина ряда зависит от числа кубов — центрируем отдельно
 	# по контенту (_center_dice_row), иначе при переполнении бокса ряд уезжает вбок.
 
-	# ── Кнопки: долг · бросок · купить ──
+	# ── Кнопки: до броска — «бросок»; после — долг · ресурс · продажа · купить
+	# (видимость по состоянию — в _refresh) ──
 	var btns := HBoxContainer.new()
 	btns.name = "Buttons"
 	btns.add_theme_constant_override("separation", 24)
@@ -937,23 +938,31 @@ func _refresh() -> void:
 	var coins: int = _coins()
 	if is_instance_valid(_coins_lbl):
 		_coins_lbl.text = "%s: %d" % [tr("SHOP_COINS"), coins]
+	# Два состояния ряда кнопок. До броска — только «Бросить кубы»: пока кубов нет,
+	# долг/ресурс/продажа не к чему прикладывать. После броска «Бросить» уходит
+	# (остаётся лишь как «Перебросить все», пока доступен Талисман), появляются
+	# способы добрать монет и «Купить».
+	var rolled: bool = _rolled()
 	if is_instance_valid(_roll_btn):
-		if _rolled() and _reroll_all_available():
+		if rolled and _reroll_all_available():
 			_roll_btn.text = "ENCOUNTER_REROLL_ALL"
+			_roll_btn.visible = true
 			_roll_btn.disabled = false
 		else:
 			_roll_btn.text = "SHOP_ROLL"
-			_roll_btn.disabled = _rolled()
+			_roll_btn.visible = not rolled
+			_roll_btn.disabled = rolled
 	if is_instance_valid(_debt_btn):
-		_debt_btn.visible = not _has_debt()
+		_debt_btn.visible = rolled and not _has_debt()
 	if is_instance_valid(_res_btn):
-		_res_btn.visible = int(GameState.my_player().get("resources", 0)) > 0
+		_res_btn.visible = rolled and int(GameState.my_player().get("resources", 0)) > 0
 	if is_instance_valid(_sell_btn):
 		# Прячем, а не блокируем: без активов или после продажи кнопке делать нечего.
-		_sell_btn.visible = not _asset_sold() and not _my_assets().is_empty()
+		_sell_btn.visible = rolled and not _asset_sold() and not _my_assets().is_empty()
 		if not _sell_btn.visible and is_instance_valid(_sell_panel):
 			_sell_panel.visible = false
 	if is_instance_valid(_buy_btn):
+		_buy_btn.visible = rolled
 		_buy_btn.disabled = _selected.is_empty()
 	# Недоступные НЕ затемняем (доступность покажем иначе позже). Тёплый тинт выбора +
 	# яркость наведения — в _card_albedo (общий источник, чтобы не конфликтовали).
