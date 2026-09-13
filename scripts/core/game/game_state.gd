@@ -1642,6 +1642,8 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 				GameConsole.log("[Финал] поражение партии (эффект)")
 		"discardAllClues":
 			_board.discard_all_clues()
+		"discardBoardClue":  # ближайшая к действующему сыщику улика на поле
+			_board.discard_nearest_clue(String(players.get(_current_pid(), {}).get("location", "")))
 		"discardAllGates":
 			_board.discard_all_gates()
 		"discardGate":

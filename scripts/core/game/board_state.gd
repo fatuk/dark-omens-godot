@@ -650,6 +650,34 @@ func discard_all_clues() -> int:
 	return removed
 
 
+## Снять ОДНУ улику с ближайшей к from_loc клетки (BFS по дорогам, свою клетку
+## считаем расстоянием 0; при равном расстоянии — первая в порядке обхода).
+## Возвращает id клетки, "" — улик на поле нет / from_loc не в графе. Verb
+## discardBoardClue («сбросьте ближайшую улику на игровом поле», Студент-
+## исследователь). Ключ улики уйдёт в сброс через _reconcile_board_clue_ids.
+func discard_nearest_clue(from_loc: String) -> String:
+	if not _gs._is_host() or from_loc.is_empty():
+		return ""
+	var queue: Array = [from_loc]
+	var seen: Dictionary = {from_loc: true}
+	while not queue.is_empty():
+		var loc: String = String(queue.pop_front())
+		var arr: Array = _gs.entities.get(loc, [])
+		if (arr as Array).has("clue"):
+			arr.erase("clue")
+			if (arr as Array).is_empty():
+				_gs.entities.erase(loc)
+			else:
+				_gs.entities[loc] = arr
+			GameConsole.log("[Эффект] сброшена ближайшая улика: %s" % loc)
+			return loc
+		for nb: Variant in _gs.map.neighbors(loc):
+			if not seen.has(nb):
+				seen[nb] = true
+				queue.append(nb)
+	return ""
+
+
 ## Закрыть/убрать ВСЕ открытые врата (синкаемое gates). Возвращает число убранных. Для
 ## эффектов Слухов вроде «сбросить все врата» (Devourer of Stars, The White Ship).
 func discard_all_gates() -> int:

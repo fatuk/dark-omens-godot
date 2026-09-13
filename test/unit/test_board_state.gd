@@ -392,6 +392,31 @@ func test_discard_all_clues() -> void:
 	assert_eq(_gs.entities["c"], ["monster"], "монстр не тронут")
 
 
+func test_discard_nearest_clue_bfs_from_own_space() -> void:
+	# Граф a—b—c—d: сыщик на a; улики на c и d → снимается ближайшая (c), d цела.
+	_gs.locations = [
+		{"id": "a", "connections": [{"to": "b"}]},
+		{"id": "b", "connections": [{"to": "a"}, {"to": "c"}]},
+		{"id": "c", "connections": [{"to": "b"}, {"to": "d"}]},
+		{"id": "d", "connections": [{"to": "c"}]},
+	]
+	_gs.entities = {"c": ["clue", "monster"], "d": ["clue"]}
+	assert_eq(_board.discard_nearest_clue("a"), "c", "ближайшая по дорогам — c")
+	assert_eq(_gs.entities["c"], ["monster"], "с c снята одна улика, монстр остался")
+	assert_eq(_gs.entities["d"], ["clue"], "дальняя не тронута")
+	# Своя клетка — расстояние 0: улика под ногами уходит первой.
+	_gs.entities["a"] = ["clue"]
+	assert_eq(_board.discard_nearest_clue("a"), "a")
+	assert_false(_gs.entities.has("a"), "локация только с уликой — очищена")
+
+
+func test_discard_nearest_clue_none_on_board() -> void:
+	_gs.locations = [{"id": "a", "connections": []}]
+	_gs.entities = {"a": ["monster"]}
+	assert_eq(_board.discard_nearest_clue("a"), "", "улик нет — ничего не снято")
+	assert_eq(_gs.entities["a"], ["monster"])
+
+
 func test_discard_all_gates() -> void:
 	_gs.gates = {"g1": "green", "g2": "red", "g3": "blue"}
 	var removed: int = _board.discard_all_gates()

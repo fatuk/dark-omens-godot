@@ -1043,6 +1043,12 @@
       "targets": null,
       "describeKey": "VERB_DISCARD_ALL_CLUES"
     },
+    "discardBoardClue": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_DISCARD_BOARD_CLUE"
+    },
     "discardAllGates": {
       "kind": "board",
       "params": [],

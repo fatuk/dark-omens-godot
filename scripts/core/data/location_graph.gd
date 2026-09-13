@@ -81,6 +81,17 @@ func ticket_types(loc_id: String) -> Array:
 	return types
 
 
+## id соседей по дорогам любого типа (пусто — нет записи/связей). Для поиска
+## «ближайшего» по графу: BFS по этим рёбрам, без учёта билетов.
+func neighbors(loc_id: String) -> Array:
+	var out: Array = []
+	for c: Variant in by_id(loc_id).get("connections", []):
+		var to: String = String((c as Dictionary).get("to", ""))
+		if not to.is_empty() and not out.has(to):
+			out.append(to)
+	return out
+
+
 ## Случайный id ("" — локаций нет). Для Слухов и жетонов Древнего.
 func random_id() -> String:
 	_ensure()
