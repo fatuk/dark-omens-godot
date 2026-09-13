@@ -1052,10 +1052,11 @@ func _on_chat_received(pid: String, phrase_id: String, noun_ids: Array) -> void:
 
 
 # Лента действий: то же облачко над фишкой, текст — из ActionLog по id (рендер в своей локали).
-# СВОИ действия себе НЕ показываем (это лента для ДРУГИХ — что делают остальные); написанный
-# руками чат автор по-прежнему видит (отдельный путь _on_chat_received).
+# СВОИ действия себе НЕ показываем (это лента для ДРУГИХ — что делают остальные), кроме
+# записей с self:true (исход скрытого броска и т.п.); написанный руками чат автор
+# по-прежнему видит (отдельный путь _on_chat_received).
 func _on_action_announced(pid: String, action_id: String, params: Dictionary) -> void:
-	if pid == GameState.local_pid():
+	if pid == GameState.local_pid() and not ActionLog.shows_self(action_id):
 		return
 	var text: String = ActionLog.render(action_id, params, I18n.get_locale())
 	if text.strip_edges().is_empty():

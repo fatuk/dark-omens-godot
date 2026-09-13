@@ -237,8 +237,16 @@ func _step() -> void:
 		return
 
 	# Программа отыграна целиком — коммитим.
+	var before: Dictionary = _gs.players[pid]
 	_gs.players[pid] = dup
 	_log(pid, String(asset.get("id", "")), res)
+	# Исход — в ленту: скрытые броски d6 (dieRoll тихий, модалки нет — иначе игрок
+	# не видит, что выпало) и дельты сыщика (+улика и т.п.) для остальных.
+	for path_v: Variant in _run.get("rolls", {}) as Dictionary:
+		var rec: Array = _run["rolls"][path_v]
+		if not rec.is_empty():
+			_gs.announce_action(pid, "die_roll", {"value": str(int(rec[0]))})
+	ActionFeed.announce_deltas(_gs, pid, before, dup)
 	var consumed: bool = false
 	for node_v: Variant in res.get("board", []):
 		var node: Dictionary = node_v

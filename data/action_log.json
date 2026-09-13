@@ -17,7 +17,8 @@
 			"No investigator name — the bubble floats over the actor's pin, so who is already obvious (Dark Souls feel).",
 			"Third person, terse, atmospheric.",
 			"Proper-noun params appear as NOMINATIVE appositions set off by punctuation (ellipsis / period), e.g. ru 'Держит путь… {place}.' — this stays grammatically valid for any RU name regardless of gender/case, matching the grammar-invariant design of the chat dictionary.",
-			"ids stay in English (stable code identifiers); only en/ru are human-readable."
+			"ids stay in English (stable code identifiers); only en/ru are human-readable.",
+			"By default the actor does NOT see their own bubble (the feed is for OTHERS; the actor sees the effect in their HUD). Entries with `self: true` are shown to the actor as well — outcomes of hidden rolls (die_roll) and board effects they cannot otherwise see (board_clue_lost)."
 		]
 	},
 	"actions": [
@@ -170,6 +171,18 @@
 			"id": "spent_resource",
 			"en": "Spends a resource. −{amount}.",
 			"ru": "Тратит ресурс. −{amount}."
+		},
+		{
+			"id": "die_roll",
+			"self": true,
+			"en": "Rolls a die… {value}.",
+			"ru": "Бросает кубик… {value}."
+		},
+		{
+			"id": "board_clue_lost",
+			"self": true,
+			"en": "A clue is lost — {place}.",
+			"ru": "Улика потеряна… {place}."
 		}
 	]
 }

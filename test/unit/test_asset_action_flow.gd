@@ -93,6 +93,12 @@ class MockGameState:
 	func _apply_board_effect(node: Dictionary) -> void:
 		board_effects.append(node)
 
+	# Лента исходов (die_roll / дельты сыщика) — копим, чтобы проверять видимость броска.
+	var feed: Array = []
+
+	func announce_action(pid: String, action_id: String, params: Dictionary = {}) -> void:
+		feed.append({"pid": pid, "id": action_id, "params": params})
+
 	func _broadcast_sync() -> void:
 		pass
 
@@ -318,3 +324,32 @@ func test_cannot_play_exhausted_card() -> void:
 	_gs._board.monsters = [_monster("arkham#0", "arkham")]
 	(_gs.players["p"]["items"] as Array).append({"id": _MONSTER_HUNTER, "exhausted": true})
 	assert_false(_flow.can_play("p", 0), "истощённую карту играть нельзя")
+
+
+# ── Лента исходов: скрытый бросок виден игроку ────────────────────────────────
+
+
+func test_die_roll_outcome_announced_to_feed() -> void:
+	# dieRoll тихий (без модалки), поэтому выпавшая грань уходит в ленту как die_roll
+	# (запись self:true — видна и самому), а прирост улики — как got_clue.
+	_add_player("p")
+	var found_roll: bool = false
+	var found_clue: bool = false
+	for _i in range(60):  # d6 случайный — крутим, пока не выпадут 5–6 (+улика)
+		_gs.feed = []
+		_gs.players["p"]["items"] = [{"id": "research_student", "exhausted": false}]
+		_gs.players["p"]["actions_left"] = 2
+		_gs.players["p"]["actions_used"] = []
+		_flow.play("p", 0)
+		for e_v: Variant in _gs.feed:
+			var e: Dictionary = e_v
+			if String(e["id"]) == "die_roll":
+				found_roll = true
+				var v: int = int(String(e["params"]["value"]))
+				assert_true(v >= 1 and v <= 6, "грань d6 в ленте")
+			if String(e["id"]) == "got_clue":
+				found_clue = true
+		if found_clue:
+			break
+	assert_true(found_roll, "бросок объявлен в ленту")
+	assert_true(found_clue, "прирост улики объявлен в ленту")

@@ -1643,7 +1643,12 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 		"discardAllClues":
 			_board.discard_all_clues()
 		"discardBoardClue":  # ближайшая к действующему сыщику улика на поле
-			_board.discard_nearest_clue(String(players.get(_current_pid(), {}).get("location", "")))
+			var apid: String = String(node.get("_anchor_pid", _current_pid()))
+			var lost: String = _board.discard_nearest_clue(
+				String(players.get(apid, {}).get("location", ""))
+			)
+			if not lost.is_empty():
+				announce_action(apid, "board_clue_lost", {"place": map.name_key(lost)})
 		"discardAllGates":
 			_board.discard_all_gates()
 		"discardGate":

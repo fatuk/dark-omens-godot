@@ -21,6 +21,14 @@ static func entry(id: String) -> Dictionary:
 	return _entries.get(id, {})
 
 
+## Показывать ли облачко и самому действующему. По умолчанию лента — для ДРУГИХ
+## (свой эффект игрок видит в HUD), но исход скрытого броска (die_roll) или
+## событие на поле (board_clue_lost) он иначе не увидит — такие записи помечены
+## `self: true` в словаре.
+static func shows_self(id: String) -> bool:
+	return bool(entry(id).get("self", false))
+
+
 ## Итоговый локализованный текст действия: шаблон[locale] с подстановкой params.
 ## params — {placeholder: value}; value — i18n-ключ (переводим) или готовая строка.
 ## Неизвестное действие → "" (облачко не рисуем).
