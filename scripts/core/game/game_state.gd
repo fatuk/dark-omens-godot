@@ -1648,7 +1648,12 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 				String(players.get(apid, {}).get("location", ""))
 			)
 			if not lost.is_empty():
-				announce_action(apid, "board_clue_lost", {"place": map.name_key(lost)})
+				var ev := {"id": "board_clue_lost", "params": {"place": map.name_key(lost)}}
+				announce_action(apid, ev["id"], ev["params"])
+				# Исход — и в узел: прогон актива соберёт его в окно результата.
+				var evs: Array = node.get("_events", [])
+				evs.append(ev)
+				node["_events"] = evs
 		"discardAllGates":
 			_board.discard_all_gates()
 		"discardGate":

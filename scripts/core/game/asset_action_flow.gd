@@ -242,12 +242,15 @@ func _step() -> void:
 	_log(pid, String(asset.get("id", "")), res)
 	# Исход — в ленту: скрытые броски d6 (dieRoll тихий, модалки нет — иначе игрок
 	# не видит, что выпало) и дельты сыщика (+улика и т.п.) для остальных.
+	var rolls: Array = []
 	for path_v: Variant in _run.get("rolls", {}) as Dictionary:
 		var rec: Array = _run["rolls"][path_v]
 		if not rec.is_empty():
+			rolls.append(int(rec[0]))
 			_gs.announce_action(pid, "die_roll", {"value": str(int(rec[0]))})
 	ActionFeed.announce_deltas(_gs, pid, before, dup)
 	var consumed: bool = false
+	var board_events: Array = []  # что сделали board-verb'ы (они пишут node._events)
 	for node_v: Variant in res.get("board", []):
 		var node: Dictionary = node_v
 		if String(node.get("do", "")) == "discardCard":
@@ -255,6 +258,12 @@ func _step() -> void:
 		else:
 			node["_anchor_pid"] = pid  # относительные цели — от этого сыщика
 			_gs._apply_board_effect(node)
+			board_events.append_array(node.get("_events", []))
+	# Розыгрыш по действию — явное окно результата владельцу (карта, кубы, исход).
+	if String(_run.get("slot", "")) == "action":
+		ActionFeed.collect_card_result(
+			_gs, pid, String(asset.get("id", "")), before, _gs.players[pid], rolls, board_events
+		)
 	if String(_run.get("slot", "")) == "onGain":
 		_finish_grant(pid, String(_run.get("id", "")), consumed)
 	else:

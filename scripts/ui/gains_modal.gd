@@ -4,6 +4,10 @@ extends CanvasLayer
 ## выдача проходит молча, и понять, что именно пришло, было неоткуда.
 ## Потери и полученные состояния сюда НЕ попадают: они остаются лентой над фишкой.
 ##
+## Второй режим — РЕЗУЛЬТАТ РОЗЫГРЫША карты (gains.card): заголовок — имя карты,
+## сама карта, лоток с выпавшими кубами (тихий dieRoll иначе невидим), строки
+## событий (урон, потеря улики на поле…) и «ничего не произошло», если пусто.
+##
 ## Источник — синкаемое players[me].gains (копит ActionFeed.collect_gains). Кнопка
 ## стирает запись через act(DISMISS_GAINS), поэтому окно не всплывает
 ## повторно на следующем синке. Строится кодом, монтируется из world_map.
@@ -91,10 +95,27 @@ func _fill(gains: Dictionary) -> void:
 		_box.remove_child(c)
 		c.queue_free()
 
-	var title := UIStyle.modal_title("GAINS_TITLE")
+	var src: String = String(gains.get("card", ""))  # режим «результат розыгрыша»
+	var title := UIStyle.modal_title(
+		String(AssetCatalog.by_id(src).get("nameKey", src)) if not src.is_empty() else "GAINS_TITLE"
+	)
 	title.name = "Title"
 	_box.add_child(title)
 	UIStyle.separator(_box)
+
+	if not src.is_empty():
+		var src_row := HBoxContainer.new()
+		src_row.name = "Source"
+		src_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		src_row.add_child(_card_node(src))
+		_box.add_child(src_row)
+	var rolls: Array = gains.get("rolls", [])
+	if not rolls.is_empty():
+		var tray := DiceTray.new()
+		tray.name = "Rolls"
+		tray.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		_box.add_child(tray)
+		tray.play_roll(rolls, false, false)  # спин — игрок видит, что выпало
 
 	var cards: Array = gains.get("items", [])
 	if not cards.is_empty():
@@ -120,7 +141,35 @@ func _fill(gains: Dictionary) -> void:
 	if tokens.get_child_count() > 0:
 		_box.add_child(tokens)
 
-	var btn := UIStyle.button("GAINS_OK", UIColors.ACCENT)
+	# События (урон, состояние, улика с поля…) — строками из словаря ленты.
+	var events: Array = gains.get("events", [])
+	for e_v: Variant in events:
+		var e: Dictionary = e_v
+		var text: String = ActionLog.render(
+			String(e.get("id", "")), e.get("params", {}), I18n.get_locale()
+		)
+		if text.is_empty():
+			continue
+		var line := UIStyle.label(
+			text, UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER
+		)
+		line.name = "Event"
+		line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_box.add_child(line)
+	# Розыгрыш без последствий — сказать явно, а не показывать пустое окно.
+	if (
+		not src.is_empty()
+		and cards.is_empty()
+		and tokens.get_child_count() == 0
+		and events.is_empty()
+	):
+		var none := UIStyle.label(
+			"GAINS_NOTHING", UIStyle.MODAL_FS_BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+		)
+		none.name = "Nothing"
+		_box.add_child(none)
+
+	var btn := UIStyle.button("GAINS_OK" if src.is_empty() else "BTN_OK", UIColors.ACCENT)
 	btn.name = "OkBtn"
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.pressed.connect(func() -> void: GameState.act(RelayActions.DISMISS_GAINS))

@@ -70,6 +70,39 @@ static func collect_gains(gs: Node, pid: String, before: Dictionary, after: Dict
 	p["gains"] = acc
 
 
+## Хост: результат РОЗЫГРЫША карты (актив с тихим dieRoll и т.п.) — в то же окно
+## «вы получили», но с карточкой, выпавшими кубами и событиями на поле, чтобы игрок
+## явно увидел, что дал розыгрыш (в т.ч. «ничего»). Показывается всегда, даже без
+## приобретений — в отличие от collect_gains. Затирает накопленное: розыгрыш — свой акт.
+static func collect_card_result(
+	gs: Node,
+	pid: String,
+	card_id: String,
+	before: Dictionary,
+	after: Dictionary,
+	rolls: Array,
+	events: Array
+) -> void:
+	if not gs._is_host() or not gs.players.has(pid):
+		return
+	var rec: Dictionary = gains_summary(before, after)
+	rec["card"] = card_id
+	rec["rolls"] = rolls
+	# События сыщика (урон/состояния — их gains_summary не считает) + события поля.
+	var evs: Array = delta_events(before, after)
+	for e_v: Variant in events:
+		evs.append(e_v)
+	var kept: Array = []
+	for e_v: Variant in evs:
+		var e: Dictionary = e_v
+		# Приросты жетонов уже показаны рядом иконок — строкой не дублируем.
+		if not String(e.get("id", "")).begins_with("got_"):
+			kept.append(e)
+	rec["events"] = kept
+	var p: Dictionary = gs.players[pid]
+	p["gains"] = rec
+
+
 ## Приобретения игрока по diff'у — для модалки «вы получили» (мифы/Расплата, где
 ## выдача проходит молча). ТОЛЬКО прирост: потери и полученные состояния остаются
 ## лентой над фишкой. Пусто — показывать нечего.
