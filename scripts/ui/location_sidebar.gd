@@ -194,10 +194,10 @@ func _build_header() -> void:
 	UIStyle.style_modal_close_button(_close_btn)
 	_close_btn.anchor_left = 1.0
 	_close_btn.anchor_right = 1.0
-	_close_btn.offset_left = -17.0
-	_close_btn.offset_top = -18.0
-	_close_btn.offset_right = 31.0
-	_close_btn.offset_bottom = 30.0
+	_close_btn.offset_left = -2.0
+	_close_btn.offset_top = -30.0
+	_close_btn.offset_right = 46.0
+	_close_btn.offset_bottom = 18.0
 	_close_btn.pressed.connect(_on_close_pressed)
 	header.add_child(_close_btn)
 
