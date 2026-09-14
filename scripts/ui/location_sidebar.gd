@@ -186,6 +186,21 @@ func _build_header() -> void:
 	header.add_child(title_row)
 	_title_lbl = title_row.get_node("Title")
 
+	# Крестик закрытия — стандартный модальный, в правом верхнем углу панели. Смещения
+	# меньше, чем у UIStyle.modal_header: панель прижата к верху экрана, и крестик
+	# «за рамкой» уезжал бы за край окна.
+	_close_btn = Button.new()
+	_close_btn.name = "CloseBtn"
+	UIStyle.style_modal_close_button(_close_btn)
+	_close_btn.anchor_left = 1.0
+	_close_btn.anchor_right = 1.0
+	_close_btn.offset_left = -17.0
+	_close_btn.offset_top = -18.0
+	_close_btn.offset_right = 31.0
+	_close_btn.offset_bottom = 30.0
+	_close_btn.pressed.connect(_on_close_pressed)
+	header.add_child(_close_btn)
+
 
 # Ужимает шрифт заголовка так, чтобы название влезало между шевронами по ширине
 # панели (длинные вроде «К северо-востоку от Гавайев» иначе вылезали за рамку).
@@ -301,12 +316,6 @@ func _build_actions() -> void:
 			close_panel()  # магазин занимает весь экран — панель под ним не нужна
 	)
 	shop_row.add_child(_shop_btn)
-
-	_close_btn = UIStyle.button("SIDEBAR_BTN_CLOSE")
-	_close_btn.name = "CloseBtn"
-	_close_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_close_btn.pressed.connect(_on_close_pressed)
-	shop_row.add_child(_close_btn)
 
 	_buy_train_btn = _make_buy_ticket_btn("SIDEBAR_BTN_TICKET_TRAIN", "train")
 	_buy_ship_btn = _make_buy_ticket_btn("SIDEBAR_BTN_TICKET_SHIP", "ship")
