@@ -197,6 +197,7 @@ func _card_node(entry: Variant) -> Control:
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.set_card(payload)
 	slot.add_child(card)
+	CardPreview.attach_hover(slot, payload)  # миниатюру не прочитать — наведение
 	return slot
 
 

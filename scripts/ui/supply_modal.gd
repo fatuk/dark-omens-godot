@@ -298,4 +298,5 @@ static func _asset_card(asset_id: String, host: Node) -> Control:
 			if event is InputEventMouseButton and (event as InputEventMouseButton).pressed:
 				CardPreview.show_card(host, payload)
 	)
+	CardPreview.attach_hover(slot, payload)  # и по наведению — как в остальных окнах
 	return slot

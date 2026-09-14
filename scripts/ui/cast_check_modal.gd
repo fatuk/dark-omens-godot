@@ -104,8 +104,10 @@ func _build(cs: Dictionary) -> void:
 	var card := GameCard.new()
 	card.name = "SpellCard"
 	card.custom_minimum_size = _CARD_MIN
-	card.set_card(SpellCatalog.card_payload(spell))
+	var spell_payload: Dictionary = SpellCatalog.card_payload(spell)
+	card.set_card(spell_payload)
 	card_row.add_child(card)
+	CardPreview.attach_hover(card, spell_payload)
 
 	# Кубы spell-проверки.
 	_dice_box = HBoxContainer.new()
