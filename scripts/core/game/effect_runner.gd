@@ -169,6 +169,16 @@ static func _run_node(
 	):
 		_run_choice(_skill_choice_node(node), player, logs, board, ctx, flow, path)
 		return
+	# optional («можете …») в интерактивном прогоне — выбор «сделать / пропустить»
+	# тем же трактом пауз, что choice: ветка с cost показывает цену и отсекается,
+	# если платить нечем. Без interactive (фон, Расплата) — как раньше, применяем.
+	if (
+		bool(node.get("optional", false))
+		and not node.has("choice")
+		and bool(flow.get("interactive", false))
+	):
+		_run_choice(_optional_choice_node(node), player, logs, board, ctx, flow, path)
+		return
 	if node.has("choice"):
 		# repeat у choice → N независимых выборов подряд (под-путь с индексом повтора);
 		# каждый — своя пауза/решение. Без repeat — один выбор (прежний путь).
@@ -294,7 +304,7 @@ static func _run_choice(
 	var decisions: Dictionary = flow.get("decisions", {})
 	if decisions.has(path):
 		var idx: int = clampi(int(decisions[path]), 0, branches.size() - 1)
-		_charge_cost(branches[idx], player, logs)
+		_charge_cost(branches[idx], player, logs, board)
 		_run_node(branches[idx], player, logs, board, ctx, flow, path + "/c" + str(idx))
 		return
 	# Ветка с cost (spend/amount) доступна только если игрок может заплатить — гейт
@@ -307,7 +317,7 @@ static func _run_choice(
 	# Если cost ничего не отсёк — пауза как раньше (даже на одной ветке).
 	if (affordable as Array).size() < branches.size() and (affordable as Array).size() <= 1:
 		var bk: int = int(affordable[0]) if not (affordable as Array).is_empty() else 0
-		_charge_cost(branches[bk], player, logs)
+		_charge_cost(branches[bk], player, logs, board)
 		_run_node(branches[bk], player, logs, board, ctx, flow, path + "/c" + str(bk))
 		return
 	# Несколько доступных → пауза; опции несут флаг доступности (_affordable) для модалки.
@@ -335,10 +345,15 @@ static func _can_afford(branch: Variant, player: Dictionary) -> bool:
 
 
 # Списать стоимость выбранной ветки: spend-ресурс ЛИБО сброс состояния категории.
-static func _charge_cost(branch: Variant, player: Dictionary, logs: Array) -> void:
+static func _charge_cost(branch: Variant, player: Dictionary, logs: Array, board: Array) -> void:
 	if not (branch is Dictionary):
 		return
 	var cost: Dictionary = (branch as Dictionary).get("cost", {})
+	# discardSelf — сброс карты-носителя: сам runner носителя не знает, отдаём
+	# board-узлом discardCard — его читает прогон актива (consumed) / состояния.
+	if bool(cost.get("discardSelf", false)):
+		board.append({"do": "discardCard"})
+		logs.append("карта сброшена как цена")
 	var spend: String = String(cost.get("spend", ""))
 	if not spend.is_empty():
 		var amt: int = int(cost.get("amount", 1))
@@ -500,6 +515,32 @@ static func _run_action(
 			return
 		player["location"] = String(vdec[path])
 		logs.append("перемещение")
+		return
+	# gainAsset from:"reserve" — «возьмите карту с витрины»: сыщик выбирает из
+	# текущей витрины (ctx.reserve), карта уходит с витрины (board-узел takeFromReserve
+	# читает прогон актива). Витрина пуста / нет ctx — деградация к случайной выдаче.
+	if (
+		verb == "gainAsset"
+		and String(node.get("from", "")) == "reserve"
+		and interactive
+		and not (ctx.get("reserve", []) as Array).is_empty()
+	):
+		var rdec: Dictionary = flow.get("decisions", {})
+		if not rdec.has(path):
+			var ropts: Array = []
+			for aid_v: Variant in ctx.get("reserve", []):
+				var a: Dictionary = AssetCatalog.by_id(String(aid_v))
+				ropts.append(
+					{"ref": String(aid_v), "name": String(a.get("nameKey", String(aid_v)))}
+				)
+			flow["pending"] = {"kind": "asset", "path": path, "options": ropts, "verb": verb}
+			return
+		var taken: String = String(rdec[path])
+		var ritems: Array = player.get("items", [])
+		ritems.append({"id": taken, "exhausted": false})
+		player["items"] = ritems
+		board.append({"do": "takeFromReserve", "id": taken})
+		logs.append("взят с витрины актив «%s»" % taken)
 		return
 	# (1) Игровой verb к ПЕРЕДАННОМУ игроку: самонаправленный, либо легаси-режим
 	#     (мифос/хуки сами разворачивают target по игрокам и зовут run без flow —
@@ -753,6 +794,14 @@ static func _apply_player_verb(
 
 
 # ── Хелперы ───────────────────────────────────────────────────────────────────
+
+
+## Узел optional:true → choice из двух веток: сам узел (без флага) и «пропустить»
+## (verb text с меткой DECISION_SKIP — ничего не делает, модалка покажет подпись).
+static func _optional_choice_node(node: Dictionary) -> Dictionary:
+	var take: Dictionary = node.duplicate(true)
+	take.erase("optional")
+	return {"choice": [take, {"do": "text", "text": "DECISION_SKIP"}]}
 
 
 ## Узел skill:"choice" → choice из пяти копий узла, по одной на навык. Прочие поля

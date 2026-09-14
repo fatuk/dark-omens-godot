@@ -166,7 +166,7 @@ func resolve_decision(pid: String, index: int) -> void:
 	if index >= 0 and index < (opts as Array).size():
 		var opt: Dictionary = opts[index]
 		match kind:
-			"monster", "space", "destination":
+			"monster", "space", "destination", "asset":
 				value = String(opt.get("ref", ""))
 			"target":
 				value = String(opt.get("pid", ""))
@@ -200,7 +200,8 @@ func _step() -> void:
 	_run["rolls"] = flow.get("rolls", {})
 
 	var pending: Dictionary = res.get("pending", {})
-	var kind: String = String(pending.get("kind", ""))
+	# Пауза без kind — обычный choice (ветки в options), как у Мифов/встреч.
+	var kind: String = String(pending.get("kind", "choice" if pending.has("options") else ""))
 	if kind == "check":
 		_hold()
 		_run["check_started"] = true
@@ -255,24 +256,90 @@ func _step() -> void:
 		var node: Dictionary = node_v
 		if String(node.get("do", "")) == "discardCard":
 			consumed = true  # услуга: сработала и сбрасывается — в инвентарь не идёт
+		elif String(node.get("do", "")) == "takeFromReserve":
+			# Карта взята с витрины (gainAsset from:reserve) — снять её оттуда и
+			# дотянуть витрину; из колоды она тоже выбывает.
+			_take_from_supply(String(node.get("id", "")))
+			_gs._refill_shop_reserve([String(node.get("id", ""))])
 		else:
 			node["_anchor_pid"] = pid  # относительные цели — от этого сыщика
 			_gs._apply_board_effect(node)
 			board_events.append_array(node.get("_events", []))
+	var slot: String = String(_run.get("slot", ""))
 	# Розыгрыш по действию — явное окно результата владельцу (карта, кубы, исход).
-	if String(_run.get("slot", "")) == "action":
+	if slot == "action":
 		ActionFeed.collect_card_result(
 			_gs, pid, String(asset.get("id", "")), before, _gs.players[pid], rolls, board_events
 		)
-	if String(_run.get("slot", "")) == "onGain":
+	if slot == "onGain":
 		_finish_grant(pid, String(_run.get("id", "")), consumed)
-	else:
+	elif consumed:
+		# discardCard в программе / cost.discardSelf выбранной ветки — карта уходит.
+		_discard_at(pid, _index_of(pid, String(_run.get("id", ""))))
+	elif slot == "action":
 		_pay(pid, int(_run.get("index", -1)), program)
+	# triggered без сброса — карту не истощаем: триггер не действие.
 	_finish_run()
+
+
+# Индекс карты id в руке pid (-1 — нет).
+func _index_of(pid: String, id: String) -> int:
+	var items: Array = _gs.players.get(pid, {}).get("items", [])
+	for i in range(items.size()):
+		if AssetCatalog.entry_id(items[i]) == id:
+			return i
+	return -1
 
 
 # Завершение прогона: чистим состояние, отпускаем ход (если держали) и берём
 # следующую выдачу из очереди.
+# ── Публичное: событийные триггеры (effect.triggered, on:<событие>) ──────────
+
+
+## Хост: событие event у сыщика pid (rest / focus / defeatMonster / closeGate /
+## gainClueResearch / spendClue / researchResolved / encounterResolved) — каждая
+## карта в руке с triggered.on == event встаёт в очередь прогона (по одной, как
+## выдачи). Программа с проверкой/выбором ставит ход на удержание (asset_acting) —
+## снимает release_asset_turn. Боевой триггер (combatEncounter) — отдельный путь
+## в EncounterFlow. true — хоть одна карта поставлена.
+func fire_triggered(pid: String, event: String) -> bool:
+	if not _gs._is_host() or not _gs.players.has(pid):
+		return false
+	var items: Array = _gs.players[pid].get("items", [])
+	var any: bool = false
+	for i in range(items.size()):
+		var asset: Dictionary = AssetCatalog.by_id(AssetCatalog.entry_id(items[i]))
+		for t_v: Variant in (asset.get("effect", {}) as Dictionary).get("triggered", []):
+			var t: Dictionary = t_v
+			if String(t.get("on", "")) != event:
+				continue
+			var program: Array = t.get("do", [])
+			if program.is_empty():
+				continue
+			_grants.append(
+				{
+					"pid": pid,
+					"id": String(asset.get("id", "")),
+					"slot": "triggered",
+					"program": program
+				}
+			)
+			any = true
+	if any:
+		_pump()
+	return any
+
+
+## Идёт ли прогон (или ждёт очередь) у сыщика pid — держать ли ему ход.
+func is_busy(pid: String) -> bool:
+	if String(_run.get("pid", "")) == pid:
+		return true
+	for g_v: Variant in _grants:
+		if String((g_v as Dictionary).get("pid", "")) == pid:
+			return true
+	return false
+
+
 func _finish_run() -> void:
 	var pid: String = String(_run.get("pid", ""))
 	var held: bool = bool(_run.get("held", false))
@@ -285,7 +352,7 @@ func _finish_run() -> void:
 		_gs.mythos_decision = {}
 	if had_check:
 		_gs._check.clear()  # чужую активную проверку (магазин/встреча) не трогаем
-	if held and slot == "action":
+	if held and (slot == "action" or slot == "triggered"):
 		_gs._phase.release_asset_turn(pid)
 	_sync()
 	_pump()
@@ -318,6 +385,25 @@ func _pump() -> void:
 	if not _gs.players.has(pid):
 		_pump()
 		return
+	if String(g.get("slot", "")) == "triggered":
+		# Карта могла уйти, пока ждала очереди (сброшена предыдущим триггером) —
+		# тогда срабатывать нечему.
+		var idx: int = _index_of(pid, String(g.get("id", "")))
+		if idx < 0:
+			_pump()
+			return
+		_run = {
+			"pid": pid,
+			"slot": "triggered",
+			"index": idx,
+			"id": String(g.get("id", "")),
+			"program": g.get("program", []),
+			"decisions": {},
+			"rolls": {},
+			"held": false,
+		}
+		_step()
+		return
 	_run = {
 		"pid": pid,
 		"slot": "onGain",
@@ -342,20 +428,24 @@ func _ctx(pid: String) -> Dictionary:
 		"space_choices": _gs._board.space_choices(),  # chosenSpace
 		"other_pids": _gs._target.other_pids(pid),  # chosenInvestigator
 		"locations": _gs.map.all(),  # move — куда шагать
+		"reserve": (_gs.shop_reserve as Array).duplicate(),  # gainAsset from:reserve
 	}
 
 
 # Карточка каталога текущего прогона: для action — по индексу в руке, для onGain
 # карты в руке ещё нет, поэтому по id.
 func _asset_of_run(pid: String) -> Dictionary:
-	if String(_run.get("slot", "")) == "onGain":
-		return AssetCatalog.by_id(String(_run.get("id", "")))
+	if String(_run.get("slot", "")) != "action":
+		return AssetCatalog.by_id(String(_run.get("id", "")))  # onGain/triggered — по id
 	return asset_at(pid, int(_run.get("index", -1)))
 
 
 func _program_of_run(asset: Dictionary) -> Array:
-	if String(_run.get("slot", "")) == "onGain":
-		return _on_gain(asset)
+	match String(_run.get("slot", "")):
+		"onGain":
+			return _on_gain(asset)
+		"triggered":
+			return _run.get("program", [])
 	return AssetCatalog.standalone_action(asset)
 
 
@@ -379,6 +469,12 @@ func _prompt_key(kind: String, verb: String) -> String:
 # Прогон встал на вопросе к игроку — отмечаем, что ход придётся отпускать явно.
 func _hold() -> void:
 	_run["held"] = true
+	# Триггер запускает не действие игрока, а событие — флаг удержания хода ставим
+	# сами (у действия актива его ставит PhaseController по PLAY_WAITING).
+	if String(_run.get("slot", "")) == "triggered":
+		var pid: String = String(_run.get("pid", ""))
+		if _gs.players.has(pid):
+			_gs.players[pid]["asset_acting"] = true
 
 
 func _sync() -> void:
@@ -400,6 +496,18 @@ func _pay(pid: String, index: int, program: Array) -> void:
 			p["items"] = items
 			return
 	(items[index] as Dictionary)["exhausted"] = true
+
+
+func _discard_at(pid: String, index: int) -> void:
+	var p: Dictionary = _gs.players[pid]
+	var items: Array = p.get("items", [])
+	if index < 0 or index >= items.size():
+		return
+	GameConsole.log(
+		"[Актив] %s — «%s» сброшен" % [_gs._name_of(pid), AssetCatalog.entry_id(items[index])]
+	)
+	items.remove_at(index)
+	p["items"] = items
 
 
 func _log(pid: String, card_id: String, res: Dictionary) -> void:

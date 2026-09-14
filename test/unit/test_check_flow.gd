@@ -14,12 +14,23 @@ var _cf: CheckFlow
 
 
 # Мок GameState: CheckFlow обращается к active_check, players, _name_of и _sync.
+# Заглушка AssetActionFlow: событийные триггеры активов только копим.
+class StubAssetTriggers:
+	extends RefCounted
+	var fired: Array = []
+
+	func fire_triggered(pid: String, event: String) -> bool:
+		fired.append({"pid": pid, "event": event})
+		return false
+
+
 class MockGameState:
 	extends Node
 	var players: Dictionary = {}
 	var active_check: Dictionary = {}
 	var _check_stack: Array = []
 	var sync_count: int = 0
+	var _asset_action: StubAssetTriggers = StubAssetTriggers.new()  # spendClue-триггер при переброске за улику
 
 	func _name_of(pid: String) -> String:
 		return pid

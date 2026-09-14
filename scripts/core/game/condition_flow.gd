@@ -313,6 +313,18 @@ func fire_triggered(pid: String, event: String, flow: Dictionary = {}) -> Array:
 	return no_recover
 
 
+# Контекст проверки состояния — по его виду, чтобы пассивы активов с context
+# illnessInjuryEffect (Медицинский журнал, Обезболивающее) / madnessEffect
+# (Психоаналитик) прикладывались; прочие виды — общий conditionAction.
+func _check_context(cond_id: String) -> String:
+	match String(Conditions.get_def(cond_id).get("kind", "")):
+		"illness", "injury":
+			return "illnessInjuryEffect"
+		"madness":
+			return "madnessEffect"
+	return "conditionAction"
+
+
 ## Хост: локальное действие состояния (action-слот, напр. Detained: проверка Влияния
 ## → сброс). true — состояние держится и имеет action. Разрешено даже при cannotAct.
 func host_run_condition_action(pid: String, cond_id: String, flow: Dictionary = {}) -> bool:
@@ -390,7 +402,7 @@ func _run_action_program(pid: String) -> void:
 			pid,
 			String(pending.get("skill", "influence")),
 			int(pending.get("modifier", 0)),
-			"conditionAction"
+			_check_context(cid)
 		)
 		_gs.pending_check = {
 			"pid": pid,

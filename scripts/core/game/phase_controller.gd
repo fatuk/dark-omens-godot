@@ -185,6 +185,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				return false
 			p["concentration"] = int(p.get("concentration", 0)) + 1
 			p["actions_left"] = int(p["actions_left"]) - 1
+			_gs._asset_action.fire_triggered(pid, "focus")  # Памятный сувенир и т.п.
 		GameActions.TAKE_RESOURCE:
 			# Потолок ресурсов — как у концентрации; при максимуме действие не тратим.
 			if int(p.get("resources", 0)) >= _gs.MAX_RESOURCES:
@@ -216,6 +217,9 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			if _gs._spell.prompt_trigger(pid, "onRest"):
 				p["spell_prompt"] = true
 			p["actions_left"] = int(p["actions_left"]) - 1
+			# Активы с triggered on:rest (Библия, Медицинский журнал, Фолиант…) — после
+			# лечения; прогон с проверкой держит ход сам (asset_acting).
+			_gs._asset_action.fire_triggered(pid, "rest")
 		GameActions.TRAVEL:
 			var dest: String = String(payload.get("to", ""))
 			if not can_travel(pid, dest):
@@ -528,7 +532,14 @@ func release_asset_turn(pid: String) -> void:
 	var p: Dictionary = _gs.players[pid]
 	var was_acting: bool = bool(p.get("asset_acting", false))
 	p["asset_acting"] = false
-	if was_acting and int(p.get("actions_left", 0)) == 0:
+	if not was_acting:
+		return
+	# Триггер по итогу встречи держал завершение встречи — доводим его теперь
+	# (коммит уже сделан, повторно не применится; триггеры второй раз не стреляют).
+	if _gs.phase == Phases.ENCOUNTER and _gs._current_pid() == pid:
+		_commit_and_advance(pid)
+		return
+	if int(p.get("actions_left", 0)) == 0:
 		_advance_turn_delayed()
 
 
@@ -720,10 +731,21 @@ func host_apply_mythos_decision(pid: String, index: int) -> void:
 func _commit_and_advance(pid: String) -> bool:
 	# Применяем итоговые эффекты встречи ЗДЕСЬ (не при броске) — чтобы между
 	# броском и завершением был доступен переброс за концентрацию.
+	var gates_before: int = (_gs.gates as Dictionary).size()
+	var clues_before: int = int(_gs.players[pid].get("clues", 0))
 	_gs._encounter._commit_outcome(pid)
 
 	# Интерактивный choice не разрешён — ход замирает, ждём выбора игрока.
 	if not bool(_gs.current_encounter.get("committed", false)):
+		_gs._broadcast_sync()
+		_gs._emit_changed()
+		return true
+
+	# Событийные триггеры активов по итогу встречи (один раз на встречу): победа над
+	# монстром, закрытые врата, исследование, любая встреча. Прогон с проверкой/
+	# выбором держит ход (asset_acting) — сюда вернёмся из release_asset_turn.
+	_fire_encounter_triggers(pid, gates_before, clues_before)
+	if bool(_gs.players[pid].get("asset_acting", false)):
 		_gs._broadcast_sync()
 		_gs._emit_changed()
 		return true
@@ -743,6 +765,25 @@ func _commit_and_advance(pid: String) -> bool:
 	_gs._broadcast_sync()
 	_gs._emit_changed()
 	return true
+
+
+# Триггеры активов по итогу встречи pid — ровно один раз на встречу (флаг в enc).
+func _fire_encounter_triggers(pid: String, gates_before: int, clues_before: int) -> void:
+	var enc: Dictionary = _gs.current_encounter
+	if enc.is_empty() or bool(enc.get("_triggers_fired", false)):
+		return
+	enc["_triggers_fired"] = true
+	var kind: String = String(enc.get("kind", ""))
+	var p: Dictionary = _gs.players[pid]
+	if kind == "combat" and bool((enc.get("resolution", {}) as Dictionary).get("won", false)):
+		_gs._asset_action.fire_triggered(pid, "defeatMonster")
+	if (_gs.gates as Dictionary).size() < gates_before:
+		_gs._asset_action.fire_triggered(pid, "closeGate")
+	if kind == "research":
+		if int(p.get("clues", 0)) > clues_before:
+			_gs._asset_action.fire_triggered(pid, "gainClueResearch")
+		_gs._asset_action.fire_triggered(pid, "researchResolved")
+	_gs._asset_action.fire_triggered(pid, "encounterResolved")
 
 
 # ── Поток фаз ────────────────────────────────────────────────────────────────

@@ -95,6 +95,16 @@ class StubDeath:
 		pass
 
 
+# Заглушка AssetActionFlow: событийные триггеры активов только копим.
+class StubAssetTriggers:
+	extends RefCounted
+	var fired: Array = []
+
+	func fire_triggered(pid: String, event: String) -> bool:
+		fired.append({"pid": pid, "event": event})
+		return false
+
+
 class MockGameState:
 	extends Node
 	signal phase_changed(phase: String)
@@ -120,6 +130,7 @@ class MockGameState:
 	var _encounter: StubFlow
 	var _spell: StubSpell
 	var _death: StubDeath
+	var _asset_action: StubAssetTriggers = StubAssetTriggers.new()  # fire_triggered (rest/focus/встречи)
 
 	func _init() -> void:
 		_cond = StubCond.new()

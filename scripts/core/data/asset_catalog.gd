@@ -326,20 +326,34 @@ const _SUPPORTED_VERBS := [
 	"defeatMonster",
 ]
 
+# События, по которым движок стреляет triggered активов: боевой — EncounterFlow,
+# остальные — AssetActionFlow.fire_triggered из PhaseController/CheckFlow.
+const SUPPORTED_EVENTS: Array = [
+	"combatEncounter",
+	"rest",
+	"focus",
+	"defeatMonster",
+	"closeGate",
+	"gainClueResearch",
+	"researchResolved",
+	"encounterResolved",
+	"spendClue",
+]
+
 
 ## Полностью ли поддержаны ВСЕ эффекты карты — для фильтра пула выдачи (магазин /
-## случайный gainAsset). Слото-осознанно: triggered с on!=combatEncounter и onReckoning
-## НЕ срабатывают → карта не поддержана; verb'ы в поддержанных слотах (whileOwned/action/
-## onGain/боевой триггер) должны быть в _SUPPORTED_VERBS. Самоподдерживающийся: реализуем
-## verb или событийный слот → карта включается САМА, без ручных пометок.
+## случайный gainAsset). Слото-осознанно: triggered с событием вне SUPPORTED_EVENTS и
+## onReckoning НЕ срабатывают → карта не поддержана; verb'ы в поддержанных слотах
+## (whileOwned/action/onGain/triggered) должны быть в _SUPPORTED_VERBS.
+## Самоподдерживающийся: реализуем verb или событие → карта включается САМА.
 static func is_supported(a: Dictionary) -> bool:
 	var eff: Dictionary = a.get("effect", {})
 	if not (eff.get("onReckoning", []) as Array).is_empty():
 		return false
 	for t_v: Variant in eff.get("triggered", []):
 		var t: Dictionary = t_v
-		if String(t.get("on", "")) != "combatEncounter":
-			return false  # не-боевой триггер пока не диспатчится
+		if not SUPPORTED_EVENTS.has(String(t.get("on", ""))):
+			return false  # событие никто не вызывает
 		if not _verbs_supported(t.get("do", [])):
 			return false
 	for slot: String in ["whileOwned", "action", "onGain"]:

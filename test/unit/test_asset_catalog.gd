@@ -46,9 +46,13 @@ func test_is_supported_classifies_cards() -> void:
 	assert_false(
 		AssetCatalog.is_supported(AssetCatalog.by_id("bandages")), "preventLoss — не поддержана"
 	)
-	assert_false(
+	assert_true(
 		AssetCatalog.is_supported(AssetCatalog.by_id("arcane_tome")),
-		"triggered on:rest не диспатчится — не поддержана"
+		"triggered on:rest диспатчится (AssetActionFlow.fire_triggered) — поддержана"
+	)
+	assert_false(
+		AssetCatalog.is_supported({"effect": {"triggered": [{"on": "castSpell", "do": []}]}}),
+		"событие, которого никто не вызывает — не поддержана"
 	)
 
 
@@ -56,8 +60,8 @@ func test_supported_ids_excludes_unsupported() -> void:
 	var ids: Array = AssetCatalog.supported_ids()
 	assert_has(ids, "arcane_scholar")
 	assert_does_not_have(ids, "bandages")
-	assert_does_not_have(ids, "arcane_tome")
-	assert_true(ids.size() > 120, "большинство карт (131) поддержано: %d" % ids.size())
+	assert_has(ids, "arcane_tome")
+	assert_true(ids.size() > 120, "большинство карт поддержано: %d" % ids.size())
 
 
 # ── fits_check: подходит ли карта конкретной проверке ──────────────────────────

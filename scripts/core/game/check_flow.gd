@@ -189,6 +189,7 @@ func reroll(pid: String, die_index: int, currency: String = "", c: Dictionary = 
 			p["concentration"] = foc - 1
 		"clue":
 			p["clues"] = clues - 1
+			_gs._asset_action.fire_triggered(pid, "spendClue")  # Фотоаппарат: улика назад
 	# Монотонная метка переброса: даёт UI отличить «перебросил, выпало ТО ЖЕ значение»
 	# от «ничего не нажалось». Без неё переброс в ту же грань не анимируется и клик
 	# выглядит смазанным/съеденным (фокус потрачен, куб не дёрнулся).

@@ -99,6 +99,10 @@ class MockGameState:
 	func announce_action(pid: String, action_id: String, params: Dictionary = {}) -> void:
 		feed.append({"pid": pid, "id": action_id, "params": params})
 
+	func _refill_shop_reserve(bought: Array) -> void:
+		for b_v: Variant in bought:
+			shop_reserve.erase(String(b_v))
+
 	func _broadcast_sync() -> void:
 		pass
 
@@ -353,3 +357,92 @@ func test_die_roll_outcome_announced_to_feed() -> void:
 			break
 	assert_true(found_roll, "бросок объявлен в ленту")
 	assert_true(found_clue, "прирост улики объявлен в ленту")
+
+
+# ── Событийные триггеры (effect.triggered, on:<событие>) ─────────────────────
+
+
+func test_triggered_rest_instant_effect() -> void:
+	# Библия короля Якова: on:rest → +1 рассудок; карта не истощается (триггер — не действие).
+	_add_player("p")
+	_gs.players["p"]["items"] = [{"id": "king_james_bible", "exhausted": false}]
+	_gs.players["p"]["sanity"] = 3
+	assert_true(_flow.fire_triggered("p", "rest"), "карта поставлена")
+	assert_eq(int(_gs.players["p"]["sanity"]), 4, "+1 рассудок")
+	assert_false(bool(_gs.players["p"]["items"][0].get("exhausted", false)), "не истощена")
+	assert_false(bool(_gs.players["p"].get("asset_acting", false)), "мгновенно — ход не держим")
+
+
+func test_triggered_ignores_other_events() -> void:
+	_add_player("p")
+	_gs.players["p"]["items"] = [{"id": "king_james_bible", "exhausted": false}]
+	assert_false(_flow.fire_triggered("p", "focus"), "у Библии нет on:focus")
+
+
+func test_triggered_with_check_holds_turn_until_resolved() -> void:
+	# Тайный фолиант: on:rest → проверка Знания → gainSpell. Прогон встаёт на проверке,
+	# ход держится (asset_acting); ответ → заклинание (board) и ход отпущен.
+	_add_player("p")
+	_gs.players["p"]["items"] = [{"id": "arcane_tome", "exhausted": false}]
+	_flow.fire_triggered("p", "rest")
+	assert_eq(String(_gs._check.started.get("skill", "")), "lore", "проверка Знания стартовала")
+	assert_true(bool(_gs.players["p"].get("asset_acting", false)), "ход удержан")
+	assert_true(_flow.is_busy("p"))
+	_flow.resolve_check("p", String(_gs.pending_check.get("path", "")), true)
+	var verbs: Array = []
+	for n_v: Variant in _gs.board_effects:
+		verbs.append(String((n_v as Dictionary).get("do", "")))
+	assert_true(verbs.has("gainSpell"), "успех → заклинание")
+	assert_eq(_gs._phase.released, ["p"], "ход отпущен")
+	assert_false(_flow.is_busy("p"))
+
+
+func test_optional_node_becomes_skip_choice_and_discard_self_cost() -> void:
+	# Свежие фрукты: «можете сбросить карту, чтобы +1 здоровье» (optional + discardSelf)
+	# и всегда +1 рассудок. Модалка: ветка / пропустить.
+	_add_player("p")
+	_gs.players["p"]["items"] = [{"id": "fresh_fruit", "exhausted": false}]
+	_gs.players["p"]["hp"] = 3
+	_gs.players["p"]["sanity"] = 3
+	_flow.fire_triggered("p", "rest")
+	var md: Dictionary = _gs.mythos_decision
+	assert_eq(String(md.get("kind", "")), "choice", "выбор: сделать / пропустить")
+	assert_eq((md.get("options", []) as Array).size(), 2)
+	# Пропустить → здоровье не тронуто, карта на месте, рассудок +1.
+	_flow.resolve_decision("p", 1)
+	assert_eq(int(_gs.players["p"]["hp"]), 3)
+	assert_eq(int(_gs.players["p"]["sanity"]), 4)
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "карта не сброшена")
+	# Снова отдых: взять ветку → +1 здоровье и карта сброшена как цена.
+	_gs.mythos_decision = {}
+	_flow.fire_triggered("p", "rest")
+	_flow.resolve_decision("p", 0)
+	assert_eq(int(_gs.players["p"]["hp"]), 4, "+1 здоровье")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "фрукты съедены (discardSelf)")
+
+
+func test_gain_asset_from_reserve_lets_player_pick() -> void:
+	# Форточник: 5–6 → взять карту с витрины по выбору. Куб случайный — крутим до 5–6.
+	_add_player("p")
+	_gs.shop_reserve = ["axe", "lantern"]
+	_gs.asset_deck = ["axe", "lantern", "dynamite"]
+	var picked: bool = false
+	for _i in range(80):
+		_gs.players["p"]["items"] = [{"id": "cat_burglar", "exhausted": false}]
+		_gs.players["p"]["actions_left"] = 2
+		_gs.mythos_decision = {}
+		_gs.shop_reserve = ["axe", "lantern"]
+		_flow.play("p", 0)
+		if String(_gs.mythos_decision.get("kind", "")) == "asset":
+			var opts: Array = _gs.mythos_decision.get("options", [])
+			assert_eq(opts.size(), 2, "варианты — вся витрина")
+			_flow.resolve_decision("p", 1)  # lantern
+			var ids: Array = []
+			for it_v: Variant in _gs.players["p"]["items"]:
+				ids.append(AssetCatalog.entry_id(it_v))
+			assert_true(ids.has("lantern"), "фонарь в руке")
+			assert_false((_gs.shop_reserve as Array).has("lantern"), "с витрины снят")
+			assert_false((_gs.asset_deck as Array).has("lantern"), "и из колоды выбыл")
+			picked = true
+			break
+	assert_true(picked, "за 80 бросков 5–6 не выпало — крайне маловероятно")

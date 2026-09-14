@@ -125,6 +125,8 @@ func _default_prompt_key(kind: String) -> String:
 			return "PICK_SPACE_DAMAGE"
 		"destination":
 			return "PICK_DESTINATION"
+		"asset":
+			return "PICK_RESERVE_ASSET"
 		"target":
 			return "MYTHOS_CHOOSE_TARGET"
 		_:
@@ -151,7 +153,7 @@ func _option_label(opt: Dictionary, kind: String) -> String:
 				tr("SPACE_CHOICE_LABEL")
 				% [tr(String(opt.get("name", "?"))), int(opt.get("count", 0))]
 			)
-		"destination":
+		"destination", "asset":
 			return tr(String(opt.get("name", "?")))
 		"target":
 			return String(opt.get("name", "?"))
