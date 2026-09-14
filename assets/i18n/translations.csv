@@ -10,6 +10,7 @@ SETTINGS_FX_OLD_FILM,Эффект старой плёнки,Old film effect
 SETTINGS_TURN_NOTIFY,Баннер «Ваш ход»,«Your turn» banner
 SETTINGS_SHOW_FPS,Показывать FPS,Show FPS
 TURN_BANNER_YOURS,Ваш ход,Your turn
+TURN_BANNER_OTHER,Ходит %s,%s’s turn
 SETTINGS_RESOLUTION,Разрешение,Resolution
 SETTINGS_SERVER,Сервер,Server
 SETTINGS_VOLUME_MUSIC,Музыка,Music

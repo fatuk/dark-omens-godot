@@ -11,8 +11,11 @@ const _SLIDE: float = 26.0  # с какой высоты выезжает
 
 var _anchor: Control
 var _bar: PanelContainer
+var _label: Label
 var _was_awaiting: bool = false
 var _pending: bool = false  # ход мой, но экран занят модалкой — ждём её закрытия
+var _pending_text: String = ""  # что показать, когда экран освободится
+var _intro_done: bool = false  # стартовый баннер «чей ход» показан
 var _tween: Tween
 
 
@@ -24,6 +27,9 @@ func _ready() -> void:
 	set_process(false)  # включаем только на время ожидания закрытия модалок
 	# Текущее состояние — БЕЗ показа: первый переход в «ждут меня» покажет баннер.
 	_was_awaiting = _awaiting_me()
+	# Кроме старта партии / входа в комнату: тут сразу говорим, чей ход, — иначе
+	# первый игрок не видит «Ваш ход», а остальные не знают, кого ждут.
+	_show_intro()
 
 
 func _build() -> void:
@@ -55,12 +61,10 @@ func _build() -> void:
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bar.add_child(margin)
 
-	var label := UIStyle.label(
-		"TURN_BANNER_YOURS", 60, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
-	)
-	label.name = "Label"
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	margin.add_child(label)
+	_label = UIStyle.label("TURN_BANNER_YOURS", 60, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_label.name = "Label"
+	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	margin.add_child(_label)
 
 	_reposition()
 
@@ -102,18 +106,46 @@ func _awaiting_me() -> bool:
 
 func _refresh() -> void:
 	var now: bool = _awaiting_me()
-	if now and not _was_awaiting and SettingsStore.turn_notify:
-		# Поверх открытого окна не лезем: миф, встреча, «вы получили» и прочие
-		# модалки игрок сначала закрывает — баннер ждёт освободившийся экран.
-		if UIStyle.any_modal_open():
-			_pending = true
-			set_process(true)
-		else:
-			_show_banner()
-	if not now:
+	if not _intro_done:
+		# Состояние могло прийти позже _ready (реконнект) — стартовый баннер отсюда.
+		_show_intro()
+	elif now and not _was_awaiting and SettingsStore.turn_notify:
+		_queue_banner(tr("TURN_BANNER_YOURS"))
+	if not now and _pending_text == tr("TURN_BANNER_YOURS"):
 		_pending = false  # ждать больше нечего: ход уже не мой
 		set_process(false)
 	_was_awaiting = now
+
+
+# Старт партии / вход в комнату: «Ваш ход» или «Ходит <имя>» — один раз, как только
+# известно, чей ход (фаза действий/встреч и текущий сыщик есть).
+func _show_intro() -> void:
+	if _intro_done or not GameState.active:
+		return
+	if GameState.phase != Phases.ACTION and GameState.phase != Phases.ENCOUNTER:
+		return
+	var pid: String = GameState._current_pid()
+	if pid.is_empty() or not GameState.players.has(pid):
+		return
+	_intro_done = true
+	if not SettingsStore.turn_notify:
+		return
+	if pid == GameState.local_pid():
+		_queue_banner(tr("TURN_BANNER_YOURS"))
+	else:
+		var inv_id: String = String(GameState.players[pid].get("investigator", ""))
+		_queue_banner(tr("TURN_BANNER_OTHER") % Investigators.display_name(inv_id))
+
+
+# Показать сейчас или, если экран занят окном (миф, встреча, «вы получили»…),
+# после его закрытия — игрок сначала закрывает модалку, баннер ждёт.
+func _queue_banner(text: String) -> void:
+	_pending_text = text
+	if UIStyle.any_modal_open():
+		_pending = true
+		set_process(true)
+	else:
+		_show_banner()
 
 
 # Крутится ТОЛЬКО пока баннер ждёт закрытия модалок (см. _refresh): закрытие окна
@@ -126,13 +158,14 @@ func _process(_delta: float) -> void:
 		return
 	_pending = false
 	set_process(false)
-	if _awaiting_me() and SettingsStore.turn_notify:
+	if SettingsStore.turn_notify and (_pending_text != tr("TURN_BANNER_YOURS") or _awaiting_me()):
 		_show_banner()
 
 
 func _show_banner() -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
+	_label.text = _pending_text if not _pending_text.is_empty() else tr("TURN_BANNER_YOURS")
 	_reposition()
 	var top: float = _top_y()
 	_bar.modulate.a = 0.0
