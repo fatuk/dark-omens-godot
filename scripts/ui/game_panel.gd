@@ -16,6 +16,9 @@ const _PLAYER_RUNES: int = 5  # рун в кадре при смене имен�
 # зовутся на каждом _refresh_game_panel, а не только когда текст изменился).
 var _phase_text: String = ""
 var _player_text: String = ""
+var _pulse_mine: bool = false  # имя пульсирует — ход мой
+var _pulse_tw: Tween = null
+const _PULSE_PERIOD: float = 0.75
 
 ## Клик по орбу раунда — для открытия сайдбара текущей Мистерии.
 signal round_clicked
@@ -103,6 +106,30 @@ func set_player(text: String) -> void:
 		return
 	_player_text = text
 	UIStyle.rune_scramble(_player, text, _PLAYER_RUNES)
+
+
+## Пульс имени, когда ходит САМ игрок (на его экране): чтобы «твой ход» бросалось
+## в глаза и на панели, а не только баннером. Остальным — статичное имя (кого ждут,
+## им показывает ореол на карте).
+func set_turn_mine(mine: bool) -> void:
+	if mine == _pulse_mine:
+		return
+	_pulse_mine = mine
+	if _pulse_tw != null and _pulse_tw.is_valid():
+		_pulse_tw.kill()
+	_pulse_tw = null
+	_player.scale = Vector2.ONE
+	_player.modulate = Color.WHITE
+	if not mine:
+		return
+	_player.pivot_offset = _player.size * 0.5
+	_pulse_tw = _player.create_tween().set_loops()
+	_pulse_tw.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_pulse_tw.tween_callback(func() -> void: _player.pivot_offset = _player.size * 0.5)
+	_pulse_tw.tween_property(_player, "scale", Vector2(1.08, 1.08), _PULSE_PERIOD)
+	_pulse_tw.parallel().tween_property(_player, "modulate", Color(1.4, 1.4, 1.4), _PULSE_PERIOD)
+	_pulse_tw.tween_property(_player, "scale", Vector2.ONE, _PULSE_PERIOD)
+	_pulse_tw.parallel().tween_property(_player, "modulate", Color.WHITE, _PULSE_PERIOD)
 
 
 func set_doom(filled: int) -> void:

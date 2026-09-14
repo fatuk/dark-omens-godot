@@ -235,12 +235,23 @@ func _snap_camera_to_pixel() -> void:
 func _refresh_game_panel() -> void:
 	_game_panel.set_phase(_phase_label_for(GameState.phase))
 	_game_panel.set_player(_current_player_name())
+	_game_panel.set_turn_mine(_is_my_turn())
 	# Число делений трека = порог Рока Древнего (doomClock); иначе трек 12 делений
 	# показывал бы doom≥12 всегда «полным». Фолбэк 12 — пока библия не готова.
 	_game_panel.set_max_doom(int(GameState.campaign.get("doomClock", 12)))
 	_game_panel.set_doom(GameState.doom)
 	_game_panel.set_omens_step(float(GameState.omens_step))
 	_game_panel.set_info(_to_roman(GameState.round_num))
+
+
+# Ход мой: партия идёт, фаза действий/встреч и текущий — я.
+func _is_my_turn() -> bool:
+	if not GameState.active:
+		return false
+	if GameState.phase != Phases.ACTION and GameState.phase != Phases.ENCOUNTER:
+		return false
+	var pid: String = GameState._current_pid()
+	return not pid.is_empty() and pid == GameState.local_pid()
 
 
 # Чей сейчас ход — для пометки на карте и плашки. Пусто, если партия не идёт или
