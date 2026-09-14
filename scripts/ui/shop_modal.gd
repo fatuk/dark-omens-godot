@@ -20,6 +20,11 @@ extends CanvasLayer
 ## привязана к вписанному прямоугольнику арта (_stage) — тянется под любой экран.
 
 const _BG := preload("res://assets/shop/shop-bg.png")
+# Медальон с X в арте (доли арта): центр ≈ (0.964, 0.045), радиус ≈ 75 px из 3092×2034.
+const _CLOSE_FX := 0.940
+const _CLOSE_FY := 0.008
+const _CLOSE_FW := 0.0485
+const _CLOSE_FH := 0.0740
 const _FLAME_SHADER := preload("res://assets/shaders/flame_glow.gdshader")
 
 # Живые огни поверх нарисованных (лампа слева, свеча справа): доля центра/размера
@@ -270,17 +275,48 @@ func _build() -> void:
 	_stage.add_child(sub)
 	_chrome.append({"node": sub, "fx": 0.2, "fy": 0.100, "fw": 0.6, "fh": 0.04})
 
-	# Крестик закрытия — поверх нарисованного X в арте.
-	var close := Button.new()
+	# Крестик закрытия — сам медальон с X, нарисованный в арте: хит-контрол ровно по
+	# нему, а наведение подсвечивает его же фрагментом арта аддитивно (+ лёгкий наезд).
+	var close := Control.new()
 	close.name = "Close"
-	close.text = "✕"
-	close.flat = true
-	close.add_theme_font_size_override("font_size", 22)
-	close.add_theme_color_override("font_color", UIColors.MUTED)
+	close.mouse_filter = Control.MOUSE_FILTER_STOP
 	close.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	close.pressed.connect(_close)
 	_stage.add_child(close)
-	_chrome.append({"node": close, "fx": 0.945, "fy": 0.02, "fw": 0.045, "fh": 0.06})
+	_chrome.append(
+		{"node": close, "fx": _CLOSE_FX, "fy": _CLOSE_FY, "fw": _CLOSE_FW, "fh": _CLOSE_FH}
+	)
+	var glow := TextureRect.new()
+	glow.name = "Glow"
+	var atlas := AtlasTexture.new()
+	atlas.atlas = _BG
+	atlas.region = Rect2(
+		_CLOSE_FX * _BG.get_width(),
+		_CLOSE_FY * _BG.get_height(),
+		_CLOSE_FW * _BG.get_width(),
+		_CLOSE_FH * _BG.get_height()
+	)
+	glow.texture = atlas
+	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	glow.stretch_mode = TextureRect.STRETCH_SCALE
+	glow.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	glow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var add_mat := CanvasItemMaterial.new()
+	add_mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	glow.material = add_mat
+	glow.modulate.a = 0.0
+	close.add_child(glow)
+	close.mouse_entered.connect(_hover_close.bind(close, glow, true))
+	close.mouse_exited.connect(_hover_close.bind(close, glow, false))
+	close.gui_input.connect(
+		func(ev: InputEvent) -> void:
+			if (
+				ev is InputEventMouseButton
+				and (ev as InputEventMouseButton).pressed
+				and (ev as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT
+			):
+				_close()
+	)
 
 	# ── Карточки на мате ──
 	var offer: Array = _offer()
@@ -711,6 +747,17 @@ func _update_hit_rect(e: Dictionary) -> void:
 
 
 # ── Наведение: подъём, приближение и поворот к камере ─────────────────────────
+
+
+# Наведение на медальон закрытия: аддитивная подсветка его же фрагментом арта и
+# наезд из центра; уход — обратно.
+func _hover_close(close: Control, glow: TextureRect, on: bool) -> void:
+	close.pivot_offset = close.size * 0.5
+	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
+		Tween.EASE_OUT
+	)
+	tw.tween_property(glow, "modulate:a", 0.5 if on else 0.0, 0.15)
+	tw.tween_property(close, "scale", Vector2.ONE * (1.08 if on else 1.0), 0.15)
 
 
 func _hover_card(entry: Dictionary, on: bool) -> void:
