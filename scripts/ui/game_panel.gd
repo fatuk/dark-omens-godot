@@ -18,7 +18,9 @@ var _phase_text: String = ""
 var _player_text: String = ""
 var _pulse_mine: bool = false  # имя пульсирует — ход мой
 var _pulse_tw: Tween = null
+var _pulse_base: Variant = null  # исходный цвет имени (Color), снимаем при первом пульсе
 const _PULSE_PERIOD: float = 0.75
+const _PULSE_COLOR := UIColors.READY  # зелёный в тон орбам панели; янтарь сливался с плашкой
 
 ## Клик по орбу раунда — для открытия сайдбара текущей Мистерии.
 signal round_clicked
@@ -109,8 +111,9 @@ func set_player(text: String) -> void:
 
 
 ## Пульс имени, когда ходит САМ игрок (на его экране): чтобы «твой ход» бросалось
-## в глаза и на панели, а не только баннером. Остальным — статичное имя (кого ждут,
-## им показывает ореол на карте).
+## в глаза и на панели, а не только баннером. Пульс цветом — базовый цвет ↔ зелёный
+## (размер не трогаем, чтобы не дёргать раскладку панели). Остальным — статичное
+## имя (кого ждут, им показывает ореол на карте).
 func set_turn_mine(mine: bool) -> void:
 	if mine == _pulse_mine:
 		return
@@ -118,18 +121,19 @@ func set_turn_mine(mine: bool) -> void:
 	if _pulse_tw != null and _pulse_tw.is_valid():
 		_pulse_tw.kill()
 	_pulse_tw = null
-	_player.scale = Vector2.ONE
-	_player.modulate = Color.WHITE
+	if _pulse_base == null:
+		_pulse_base = _player.get_theme_color("font_color")
+	_player.add_theme_color_override("font_color", _pulse_base)
 	if not mine:
 		return
-	_player.pivot_offset = _player.size * 0.5
 	_pulse_tw = _player.create_tween().set_loops()
 	_pulse_tw.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_pulse_tw.tween_callback(func() -> void: _player.pivot_offset = _player.size * 0.5)
-	_pulse_tw.tween_property(_player, "scale", Vector2(1.08, 1.08), _PULSE_PERIOD)
-	_pulse_tw.parallel().tween_property(_player, "modulate", Color(1.4, 1.4, 1.4), _PULSE_PERIOD)
-	_pulse_tw.tween_property(_player, "scale", Vector2.ONE, _PULSE_PERIOD)
-	_pulse_tw.parallel().tween_property(_player, "modulate", Color.WHITE, _PULSE_PERIOD)
+	_pulse_tw.tween_method(_set_name_color, _pulse_base as Color, _PULSE_COLOR, _PULSE_PERIOD)
+	_pulse_tw.tween_method(_set_name_color, _PULSE_COLOR, _pulse_base as Color, _PULSE_PERIOD)
+
+
+func _set_name_color(c: Color) -> void:
+	_player.add_theme_color_override("font_color", c)
 
 
 func set_doom(filled: int) -> void:
