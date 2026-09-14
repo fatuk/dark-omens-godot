@@ -307,21 +307,24 @@ func _build() -> void:
 	)
 	var glow := TextureRect.new()
 	glow.name = "Glow"
-	var atlas := AtlasTexture.new()
-	atlas.atlas = _BG
-	atlas.region = Rect2(
-		_CLOSE_FX * _BG.get_width(),
-		_CLOSE_FY * _BG.get_height(),
-		_CLOSE_FW * _BG.get_width(),
-		_CLOSE_FH * _BG.get_height()
+	# Фрагмент вырезаем в отдельную текстуру (не AtlasTexture): у атласа UV в шейдере
+	# идут в координатах всего арта, и круглая маска по UV промахивалась бы.
+	var piece: Image = _BG.get_image().get_region(
+		Rect2i(
+			int(_CLOSE_FX * _BG.get_width()),
+			int(_CLOSE_FY * _BG.get_height()),
+			int(_CLOSE_FW * _BG.get_width()),
+			int(_CLOSE_FH * _BG.get_height())
+		)
 	)
-	glow.texture = atlas
+	glow.texture = ImageTexture.create_from_image(piece)
 	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	glow.stretch_mode = TextureRect.STRETCH_SCALE
 	glow.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	glow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# Аддитивно и с круглой маской: прямоугольный фрагмент арта иначе светил бы краями.
+	# Аддитивно и с круглой маской (UV 0..1 своей текстуры): прямоугольный фрагмент
+	# арта иначе светил бы краями.
 	var glow_sh := Shader.new()
 	glow_sh.code = _GLOW_SHADER
 	var glow_mat := ShaderMaterial.new()
