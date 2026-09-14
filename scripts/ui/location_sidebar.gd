@@ -78,6 +78,7 @@ var _pending_data: Dictionary = {}  # инфа локации, ждущая по
 var _title_lbl: Label = null
 var _caption: Label = null
 var _close_btn: Button = null
+var _image_hover: Panel = null  # рамка-подсветка картинки по наведению
 var _image_box: Control = null
 var _image: TextureRect = null
 var _travel_btn: Button = null
@@ -277,6 +278,22 @@ func _build_image_box() -> void:
 	frame.stretch_mode = TextureRect.STRETCH_SCALE
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(frame)
+
+	# Подсветка-рамка по наведению — знак, что картинка кликабельна (галерея).
+	# Поверх орнаментной рамки, гаснет уходом курсора; без арта не зажигается.
+	_image_hover = Panel.new()
+	_image_hover.name = "HoverFrame"
+	_image_hover.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_image_hover.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var hsb := StyleBoxFlat.new()
+	hsb.draw_center = false
+	hsb.border_color = UIColors.ACCENT
+	hsb.set_border_width_all(2)
+	_image_hover.add_theme_stylebox_override("panel", hsb)
+	_image_hover.modulate.a = 0.0
+	box.add_child(_image_hover)
+	_image.mouse_entered.connect(func() -> void: _fade_image_hover(_image.texture != null))
+	_image.mouse_exited.connect(func() -> void: _fade_image_hover(false))
 
 	_vbox.add_child(box)
 
@@ -675,6 +692,10 @@ func _on_close_pressed() -> void:
 
 
 # Клик по картинке локации → открыть галерею (только если для локации есть арт).
+func _fade_image_hover(on: bool) -> void:
+	_image_hover.create_tween().tween_property(_image_hover, "modulate:a", 1.0 if on else 0.0, 0.12)
+
+
 func _on_image_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
@@ -701,9 +722,16 @@ func _animate(hide_panel: bool) -> void:
 	var dur: float = ANIM_TIME_CLOSE if hide_panel else ANIM_TIME
 	_tween.tween_property(_panel, "offset_left", off_left, dur)
 	_tween.tween_property(_panel, "offset_right", off_right, dur)
+	if hide_panel:
+		# Уехав за край, панель прячется совсем: её мягкая тень (SHADOW_SIZE +
+		# SHADOW_GROW) иначе торчит из-за края экрана.
+		_tween.chain().tween_callback(func() -> void: _panel.visible = _is_open)
+	else:
+		_panel.visible = true
 
 
 func _apply_offsets(hide_panel: bool) -> void:
+	_panel.visible = not hide_panel  # спрятанная — невидима (тень не торчит из-за края)
 	if hide_panel:
 		_panel.offset_left = 0.0
 		_panel.offset_right = _panel_width
