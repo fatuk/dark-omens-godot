@@ -253,8 +253,15 @@ func _show_rest_alloc(res: int, hp_room: int, san_room: int) -> void:
 	)
 	box.add_child(confirm)
 	modal.set_content(box)
+	# Ход ушёл (передача, смена фазы), пока игрок выбирал — модалка отменяется:
+	# отдых задним числом не сыграть, а висеть поверх встречи ей незачем.
+	var guard := func() -> void:
+		if not GameState.is_my_turn() or int(GameState.my_player().get("actions_left", 0)) <= 0:
+			modal.close()
+	GameState.state_changed.connect(guard)
 	modal.closed.connect(
 		func() -> void:
+			GameState.state_changed.disconnect(guard)
 			if confirmed["v"]:
 				_do_rest({"res_hp": int(state["hp"]), "res_san": int(state["san"])})
 	)
@@ -284,9 +291,12 @@ func _on_resource() -> void:
 
 
 func _refresh() -> void:
-	# Панель ВСЕГДА видна; кнопки активны только в мой ход фазы action.
-	var my_turn: bool = GameState.is_my_turn()
+	# Панель ВСЕГДА видна; кнопки активны только в мой ход фазы action — и пока есть
+	# действия: после последнего хост держит паузу TURN_DELAY перед передачей хода,
+	# и в это окно кнопки уже не должны отзываться (иначе «Отдых» открывал модалку
+	# поверх начавшейся встречи).
 	var me: Dictionary = GameState.my_player()
+	var my_turn: bool = GameState.is_my_turn() and int(me.get("actions_left", 0)) > 0
 	# Тень не ходит/не покупает/не ездит — прячем всю панель действий целиком.
 	_root.visible = not bool(me.get(PlayerKeys.DEAD, false))
 	if not _root.visible:
