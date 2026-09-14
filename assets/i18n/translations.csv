@@ -861,6 +861,46 @@ VERB_DRAW_MYTHOS,карта Мифов,draw a Mythos
 VERB_MYSTERY_PROGRESS,прогресс Тайны,Mystery progress
 VERB_ADD_SUCCESSES,+{amount} к успехам,+{amount} success(es)
 VERB_SUCCESS_THRESHOLD,успех на {value}+,success on {value}+
+VERB_FLIP_CARD,перевернуть карту,flip the card
+VERB_DISCARD_CARD,сбросить карту,discard the card
+VERB_LOSE_ASSET,сбросить активы ×{count},discard {count} Asset(s)
+VERB_LOSE_ARTIFACT,сбросить артефакты ×{count},discard {count} Artifact(s)
+VERB_GAIN_TICKET,+{count} билет,+{count} ticket(s)
+VERB_LOSE_TICKET,−{count} билет,−{count} ticket(s)
+VERB_EXTRA_ACTION,+{count} действие,+{count} action(s)
+VERB_LOSE_IMPROVEMENT,снять улучшение навыка,lose a skill improvement
+VERB_DISCARD_GATE,сбросить врата,discard a Gate
+VERB_DRAW_CARD,взять карту,draw a card
+VERB_REROLL_DICE,перебросить кубы,reroll dice
+VERB_ROLL_ADDITIONAL_DICE,дополнительные кубы,additional dice
+VERB_ADD_TO_DIE,+{amount} к кубу,+{amount} to a die
+VERB_CONVERT_DIE,грань {on} считается успехом,{on} counts as a success
+VERB_REDUCE_MONSTER_DAMAGE,урон монстра −{amount},Monster damage −{amount}
+VERB_REDUCE_MONSTER_HORROR,ужас монстра −{amount},Monster horror −{amount}
+VERB_SET_DOOM,рок = {amount},Doom = {amount}
+VERB_LOSE_GAME,поражение,lose the game
+VERB_DISCARD_ALL_CLUES,сбросить все улики,discard all Clues
+VERB_DISCARD_BOARD_CLUE,снять ближайшую улику с поля,discard the nearest Clue on the board
+VERB_DISCARD_ALL_GATES,сбросить все врата,discard all Gates
+VERB_DISCARD_ELDRITCH_TOKEN,снять жетоны Знамения ×{amount},discard {amount} Eldritch token(s)
+VERB_PREVENT_LOSS,предотвратить потерю {amount},prevent {amount} loss
+VERB_DEFEAT_MONSTER,победить монстра,defeat a Monster
+VERB_GIVE_ASSET,передать актив,give an Asset
+VERB_GIVE_CLUE,передать улику,give a Clue
+VERB_SUBSTITUTE_SKILL,{toSkill} вместо {fromSkill},{toSkill} instead of {fromSkill}
+VERB_SUBSTITUTE_RESOURCE,{toResource} вместо {fromResource},{toResource} instead of {fromResource}
+VERB_ENHANCE_REROLL,усиленный переброс,enhanced reroll
+VERB_REROLL_MATCHING,перебросить совпавшие кубы,reroll matching dice
+VERB_MIN_DICE,не меньше {count} кубов,at least {count} dice
+VERB_IMMUNE_TO,иммунитет: {status},immune to {status}
+VERB_PROTECT_RESOURCE,защита ресурса,protect a resource
+VERB_LOOK_AT_GATES,взглянуть на врата ×{count},look at {count} Gate(s)
+VERB_REORDER_GATES,переложить врата,reorder Gates
+VERB_CANNOT_MOVE,нельзя перемещаться,cannot move
+VERB_CANNOT_ACT,нельзя действовать,cannot act
+VERB_CANNOT_RECOVER,нельзя восстанавливать,cannot recover
+VERB_REMOVE_FROM_BOARD,убран с поля,removed from the board
+VERB_IMMUNE_TO_EFFECTS,невосприимчив к эффектам,immune to effects
 RECK_WAIT,Расплата: ждём других сыщиков…,Reckoning: waiting for other investigators…
 CHOICE_SPEND_CLUE,Потратить 1 улику,Spend 1 Clue
 MON_AVIAN_THRALL_NAME,Пернатый прислужник,Avian Thrall

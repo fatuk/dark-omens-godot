@@ -128,12 +128,43 @@ func _reckon_condition_interactive(
 			decisions[String(pending.get("path", ""))] = passed
 			continue
 		if not pending.is_empty():
-			GameConsole.warn("[Расплата] выбор в onReckoning состояния не поддержан — пропуск")
+			# Выбор (optional flipCard у Righteous/Funding, choice) — модалка решения
+			# через общий канал mythos_decision; параллельные Расплаты ждут очереди.
+			decisions[String(pending.get("path", ""))] = await _await_reckon_decision(
+				pid, pending, String(def.get("name", ""))
+			)
+			continue
 		_gs.players[pid] = dup  # коммит мутаций сыщика
 		_apply_reckon_output(pid, cid, def, ctx, res, {})
 		ActionFeed.announce_deltas(_gs, pid, recon_before, _gs.players.get(pid, {}))  # лента Расплаты
 		ActionFeed.collect_gains(_gs, pid, recon_before, _gs.players.get(pid, {}))
 		return
+
+
+# Выбор сыщика в onReckoning состояния через общий канал mythos_decision (driver по
+# умолчанию → host_apply_mythos_decision пишет picked и будит mythos_decided). Канал
+# один, а Расплаты сыщиков идут параллельно: занят — ждём, пока владелец решит.
+# Владелец ждал сигнала раньше нас, поэтому при emit он возобновляется первым и
+# успевает освободить канал до нашей проверки. Отвалившийся сыщик — выбор за него
+# случайный (GameState._on_player_left → host_apply_absent_decision).
+func _await_reckon_decision(pid: String, pending: Dictionary, title_key: String) -> int:
+	while bool(_gs.mythos_decision.get("active", false)):
+		await _gs.mythos_decided
+	_gs.mythos_decision = {
+		"active": true,
+		"pid": pid,
+		"path": String(pending.get("path", "")),
+		"options": pending.get("options", []),
+		"by": "self",
+		"kind": String(pending.get("kind", "choice")),
+		"title_key": title_key,  # заголовок — имя состояния, чтобы было ясно, о чём выбор
+	}
+	_gs._broadcast_sync()
+	_gs._emit_changed()
+	var pre: Variant = (_gs.mythos_decision as Dictionary).get("picked", null)
+	var idx: int = int(pre) if pre != null else int(await _gs.mythos_decided)
+	_gs.mythos_decision = {}
+	return idx
 
 
 # Ждём применения СВОЕЙ проверки Расплаты: общий сигнал effect_check_applied(pid, passed)

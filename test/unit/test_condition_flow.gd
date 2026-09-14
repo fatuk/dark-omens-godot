@@ -53,7 +53,9 @@ class StubPhase:
 class MockGameState:
 	extends Node
 	signal effect_check_applied(pid: String, passed: bool)  # будит интерактивную Расплату
+	signal mythos_decided(index: int)  # будит выбор в onReckoning (канал mythos_decision)
 	var players: Dictionary = {}
+	var mythos_decision: Dictionary = {}
 	var board_effects: Array = []
 	var reckoning_results: Dictionary = {}
 	var host: bool = true
@@ -490,3 +492,43 @@ func test_reckon_condition_interactive_pass_no_flip() -> void:
 	_cond.reckon_condition("p", "amnesia", {}, true)
 	_gs.effect_check_applied.emit("p", true)  # успех → ветки onPass нет, флипа нет
 	assert_true(_front_active("p", "amnesia"), "успех → состояние осталось активным лицом")
+
+
+# righteous: onReckoning flipCard optional:true → в интерактивной Расплате это выбор
+# «перевернуть / пропустить» через канал mythos_decision (раньше optional молча
+# применялся всегда, а после появления optional-choice — молча пропускался).
+func test_reckon_condition_interactive_optional_pends_decision() -> void:
+	_add_player("p", {"conditions": ["righteous"]})
+	_cond.reckon_condition("p", "righteous", {}, true)
+	var md: Dictionary = _gs.mythos_decision
+	assert_true(bool(md.get("active", false)), "модалка решения выставлена")
+	assert_eq(String(md.get("pid", "")), "p", "решение — сыщика Расплаты")
+	assert_eq((md.get("options", []) as Array).size(), 2, "перевернуть / пропустить")
+	assert_true(_front_active("p", "righteous"), "до ответа ничего не применено")
+	_gs.mythos_decided.emit(0)  # перевернуть
+	assert_false(_front_active("p", "righteous"), "выбор «перевернуть» → флип")
+	assert_false(bool(_gs.mythos_decision.get("active", false)), "канал освобождён")
+
+
+func test_reckon_condition_interactive_optional_skip_keeps_front() -> void:
+	_add_player("p", {"conditions": ["righteous"]})
+	_cond.reckon_condition("p", "righteous", {}, true)
+	_gs.mythos_decided.emit(1)  # пропустить
+	assert_true(_front_active("p", "righteous"), "пропуск → состояние осталось лицом")
+	assert_false(bool(_gs.mythos_decision.get("active", false)), "канал освобождён")
+
+
+# Канал mythos_decision один на всех, Расплаты параллельны: второй сыщик ждёт, пока
+# первый решит, и только потом получает свою модалку.
+func test_reckon_condition_interactive_decisions_are_serialized() -> void:
+	_add_player("a", {"conditions": ["righteous"]})
+	_add_player("b", {"conditions": ["funding"]})
+	_cond.reckon_condition("a", "righteous", {}, true)
+	_cond.reckon_condition("b", "funding", {}, true)
+	assert_eq(String(_gs.mythos_decision.get("pid", "")), "a", "первым решает a")
+	_gs.mythos_decided.emit(1)  # a пропускает → канал переходит к b
+	assert_eq(String(_gs.mythos_decision.get("pid", "")), "b", "затем модалка у b")
+	_gs.mythos_decided.emit(0)  # b переворачивает
+	assert_false(_front_active("b", "funding"), "b перевернул")
+	assert_true(_front_active("a", "righteous"), "a остался лицом")
+	assert_false(bool(_gs.mythos_decision.get("active", false)), "канал свободен")
