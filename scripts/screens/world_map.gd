@@ -1074,6 +1074,9 @@ func _build_campaign_gate() -> void:
 	layer.layer = 90
 	layer.visible = false
 	add_child(layer)
+	# В реестр открытых окон (учёт по visible): баннер «Ваш ход» и прочие ждут,
+	# пока интро (Древний / Тайна) не закроют, а не лезут поверх него.
+	UIStyle.mark_modal(layer, true)
 
 	var backdrop := ColorRect.new()
 	backdrop.name = "Backdrop"
