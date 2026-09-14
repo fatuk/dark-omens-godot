@@ -19,7 +19,7 @@ var _player_text: String = ""
 var _pulse_mine: bool = false  # имя пульсирует — ход мой
 var _pulse_tw: Tween = null
 const _PULSE_PERIOD: float = 0.75
-const _PULSE_OUTLINE: int = 4  # толщина светящейся обводки имени
+const _PULSE_GLOW_SIZE: int = 5  # ширина ореола (shadow_outline) вокруг имени
 const _PULSE_GLOW := Color(1.0, 0.95, 0.75, 0.85)  # тёплый светлый ореол вокруг чёрных букв
 
 ## Клик по орбу раунда — для открытия сайдбара текущей Мистерии.
@@ -113,8 +113,9 @@ func set_player(text: String) -> void:
 ## Пульс имени, когда ходит САМ игрок (на его экране): чтобы «твой ход» бросалось
 ## в глаза и на панели, а не только баннером. Текст на золотой плашке читается
 ## только чёрным (светлый/янтарный/зелёный сливаются), поэтому сам цвет не трогаем —
-## дышит светлая обводка вокруг букв. Остальным — статичное имя (кого ждут, им
-## показывает ореол на карте).
+## дышит светлый ореол СНАРУЖИ букв: тело букв держит чёрная обводка 1 px, а ореол —
+## расширенная тень (shadow_outline) под ней. Обычный светлый outline съедал тело
+## тонких букв. Остальным — статичное имя (кого ждут, им показывает ореол на карте).
 func set_turn_mine(mine: bool) -> void:
 	if mine == _pulse_mine:
 		return
@@ -124,8 +125,11 @@ func set_turn_mine(mine: bool) -> void:
 	_pulse_tw = null
 	if not mine:
 		_player.add_theme_constant_override("outline_size", 0)
+		_player.add_theme_constant_override("shadow_outline_size", 0)
 		return
-	_player.add_theme_constant_override("outline_size", _PULSE_OUTLINE)
+	_player.add_theme_constant_override("outline_size", 1)
+	_player.add_theme_color_override("font_outline_color", Color.BLACK)
+	_player.add_theme_constant_override("shadow_outline_size", _PULSE_GLOW_SIZE)
 	var off := Color(_PULSE_GLOW, 0.0)
 	_set_name_glow(off)
 	_pulse_tw = _player.create_tween().set_loops()
@@ -135,7 +139,7 @@ func set_turn_mine(mine: bool) -> void:
 
 
 func _set_name_glow(c: Color) -> void:
-	_player.add_theme_color_override("font_outline_color", c)
+	_player.add_theme_color_override("font_shadow_color", c)
 
 
 func set_doom(filled: int) -> void:
