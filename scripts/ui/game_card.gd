@@ -120,6 +120,7 @@ var _title: Label
 var _sub: Label
 var _desc: Label
 var _desc_offset: float = 0.0  # текущий сдвиг описания вверх (px), 0..overflow
+var _scroll_src: Control = null  # чужой контрол, чьё наведение крутит описание (просмотр)
 var _art: TextureRect
 var _art_fill: ColorRect
 var _glyph: Label
@@ -342,6 +343,14 @@ func _apply_desc_offset() -> void:
 	_desc.offset_bottom = _DESC_LABEL_H - _desc_offset
 
 
+## Крутить описание по наведению на ДРУГОЙ контрол (миниатюру, с которой открыт
+## крупный просмотр): курсор над миниатюрой, а читают крупную копию, — вертикаль
+## курсора в миниатюре и задаёт направление, тем же законом, что на самой карте.
+func drive_desc_scroll_from(src: Control) -> void:
+	_scroll_src = src
+	set_process(true)
+
+
 # Позиция курсора по вертикали в зоне (клампится к её высоте): t=0 (верх) → вверх,
 # t=0.5 (центр) → стоп, t=1 (низ) → вниз. Скорость линейна по отклонению от центра.
 # Высоту текста берём по числу перенесённых строк (ScrollContainer её не считал).
@@ -364,7 +373,11 @@ func _process(delta: float) -> void:
 			_desc_offset = 0.0
 			_apply_desc_offset()
 		return  # текст влезает — скроллить нечего
-	var t: float = clampf(zone.get_local_mouse_position().y / zh, 0.0, 1.0)
+	var t: float
+	if is_instance_valid(_scroll_src) and _scroll_src.size.y > 0.0:
+		t = clampf(_scroll_src.get_local_mouse_position().y / _scroll_src.size.y, 0.0, 1.0)
+	else:
+		t = clampf(zone.get_local_mouse_position().y / zh, 0.0, 1.0)
 	var dir: float = (t - 0.5) * 2.0  # [-1..1]: <0 вверх, >0 вниз; линейно к краям
 	if absf(dir) < _DESC_SCROLL_DEADZONE:
 		return  # около центра — стоп

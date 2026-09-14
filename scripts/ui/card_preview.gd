@@ -29,6 +29,7 @@ static var HOVER_DELAY: float = 0.25  # сек наведения до пока�
 static var HOVER_BACKDROP_ALPHA: float = 0.55  # затемнение под hover-просмотром
 
 var _hover: bool = false  # режим наведения: мышь не перехватываем, клик не закрывает
+var _hover_src: Control = null  # миниатюра, с которой открыт просмотр — крутит описание
 
 var _root: ColorRect
 var _wrap: Control
@@ -36,10 +37,13 @@ var _payload: Dictionary = {}  # что показываем — для пере
 
 
 ## Показать карту. parent — узел, к которому цеплять слой (обычно экран карты).
-static func show_card(parent: Node, payload: Dictionary, hover: bool = false) -> CardPreview:
+static func show_card(
+	parent: Node, payload: Dictionary, hover: bool = false, src: Control = null
+) -> CardPreview:
 	var pv := CardPreview.new()
 	pv.name = "CardPreview"
 	pv._hover = hover
+	pv._hover_src = src
 	parent.add_child(pv)
 	pv.set_card(payload)
 	return pv
@@ -71,7 +75,7 @@ static func _hover_begin(ctrl: Control, payload: Dictionary, st: Dictionary) -> 
 	var parent: Node = ctrl.get_tree().current_scene
 	if parent == null:
 		parent = ctrl.get_tree().root
-	st["pv"] = show_card(parent, payload, true)
+	st["pv"] = show_card(parent, payload, true, ctrl)
 
 
 static func _hover_end(st: Dictionary) -> void:
@@ -162,6 +166,10 @@ func _rebuild() -> void:
 	card.set_font_scale(full_w / HandCarousel.CARD_W)
 	card.set_card(_payload)
 	_wrap.add_child(card)
+	# Длинное описание: в hover-режиме курсор стоит на миниатюре — её вертикаль и
+	# крутит текст крупной копии (верх → вверх, низ → вниз, как в веере руки).
+	if _hover and is_instance_valid(_hover_src):
+		card.drive_desc_scroll_from(_hover_src)
 
 
 func close() -> void:
