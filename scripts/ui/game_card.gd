@@ -109,6 +109,7 @@ const _DESC_BOTTOM_PAD := 4.0  # нижний запас, чтобы после�
 # их через set_font_scale(), чтобы пропорция текста к карте совпадала с веером.
 const FS_COST := 20
 const FS_TITLE := 14
+const FS_TITLE_MIN_RATIO := 0.6  # длинный заголовок ужимаем не ниже 60% базы
 const FS_SUB := 9
 const FS_DESC := 12
 const FS_GLYPH := 40
@@ -131,6 +132,7 @@ var _smoke: ColorRect  # клубящийся дым в окне карты-со
 
 func _init() -> void:
 	_build()
+	resized.connect(_fit_title)  # ширина плашки известна только после раскладки
 
 
 func _build() -> void:
@@ -281,6 +283,7 @@ func set_card(d: Dictionary) -> void:
 		_cost.text = str(d["cost"])
 	_title.text = String(d.get("title", ""))
 	_title.visible = not is_msg
+	_fit_title()
 	_sub.text = String(d.get("subtitle", ""))
 	_sub.visible = (not is_msg) and not _sub.text.is_empty()
 	_desc.text = String(d.get("desc", ""))
@@ -411,6 +414,28 @@ func _zone(zname: String, r: Rect2) -> Control:
 	return c
 
 
+# Длинный заголовок («Ритуал Серебряных сумерек») в плашку не влезает и клипуется —
+# ужимаем шрифт, пока не влезет (не ниже FS_TITLE_MIN_RATIO базы). Меряем по ширине
+# зоны заголовка от размера карты (лейбл сам ещё может быть не разложен) — зовём
+# при смене текста, масштаба шрифта и размера карты.
+func _fit_title() -> void:
+	if not is_instance_valid(_title) or _title.text.is_empty():
+		return
+	var avail: float = size.x * Z_TITLE.size.x
+	if avail <= 0.0:
+		return
+	var font: Font = _title.get_theme_font("font")
+	var fs_max: int = _fs(FS_TITLE)
+	var fs_min: int = maxi(1, int(round(float(fs_max) * FS_TITLE_MIN_RATIO)))
+	var fs: int = fs_max
+	while (
+		fs > fs_min
+		and font.get_string_size(tr(_title.text), HORIZONTAL_ALIGNMENT_CENTER, -1.0, fs).x > avail
+	):
+		fs -= 1
+	_title.add_theme_font_size_override("font_size", fs)
+
+
 # Размер шрифта = база × текущий масштаб контента (округлённо).
 func _fs(base: int) -> int:
 	return int(round(float(base) * _font_scale))
@@ -425,6 +450,7 @@ func set_font_scale(s: float) -> void:
 	_font_scale = s
 	_cost.add_theme_font_size_override("font_size", _fs(FS_COST))
 	_title.add_theme_font_size_override("font_size", _fs(FS_TITLE))
+	_fit_title()
 	_sub.add_theme_font_size_override("font_size", _fs(FS_SUB))
 	_desc.add_theme_font_size_override("font_size", _fs(FS_DESC))
 	_glyph.add_theme_font_size_override("font_size", _fs(FS_GLYPH))
