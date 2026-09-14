@@ -135,6 +135,10 @@ func _ready() -> void:
 	_refresh_gates()
 	_refresh_entities()
 	_refresh_campaign_gate()
+	# Старт партии / повторный вход в комнату — камера сразу на своём сыщике, а не
+	# на центре мира. Локация может прийти позже первого кадра (синк) — ждём её.
+	if not _center_on_me():
+		GameState.state_changed.connect(_center_on_me_once)
 
 	# Сайдбар закрылся — снимаем подсветку с карты
 	_sidebar.closed.connect(func() -> void: _map_layer.set_selected(""))
@@ -755,6 +759,26 @@ func _run_focus_queue() -> void:
 		await _pan_camera_to(p)
 		await get_tree().create_timer(0.4).timeout
 	_focus_busy = false
+
+
+# Мгновенно поставить камеру на локацию своего сыщика (без твина). false — локации
+# ещё нет (состояние не пришло).
+func _center_on_me() -> bool:
+	var loc: String = String(GameState.my_player().get(PlayerKeys.LOCATION, ""))
+	if loc.is_empty() or not is_instance_valid(_map_layer):
+		return false
+	var p: Vector2 = _map_layer.loc_world_pos(loc)
+	if p == Vector2.INF:
+		return false
+	_inertia_velocity = Vector2.ZERO
+	_camera.position = Vector2(p.x, _clamp_cam_y(p.y))
+	_apply_bounds()
+	return true
+
+
+func _center_on_me_once() -> void:
+	if _center_on_me():
+		GameState.state_changed.disconnect(_center_on_me_once)
 
 
 # Плавно ведёт камеру к мировой точке (по кратчайшему пути с учётом wrap по X).
