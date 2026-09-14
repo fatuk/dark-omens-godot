@@ -25,6 +25,26 @@ const _CLOSE_FX := 0.940
 const _CLOSE_FY := 0.008
 const _CLOSE_FW := 0.0485
 const _CLOSE_FH := 0.0740
+# Подсветка медальона: аддитивно, альфа гасится к краю вписанного круга.
+const _GLOW_SHADER := """
+shader_type canvas_item;
+render_mode blend_add;
+uniform float feather = 0.10;
+void fragment() {
+	float r = length(UV - vec2(0.5)) * 2.0;
+	COLOR.a *= 1.0 - smoothstep(1.0 - feather, 1.0, r);
+}
+"""
+
+
+# Control с круглой зоной попадания (вписанный круг) — для медальона закрытия.
+class RoundHit:
+	extends Control
+
+	func _has_point(point: Vector2) -> bool:
+		return (point - size * 0.5).length() <= minf(size.x, size.y) * 0.5
+
+
 const _FLAME_SHADER := preload("res://assets/shaders/flame_glow.gdshader")
 
 # Живые огни поверх нарисованных (лампа слева, свеча справа): доля центра/размера
@@ -277,7 +297,7 @@ func _build() -> void:
 
 	# Крестик закрытия — сам медальон с X, нарисованный в арте: хит-контрол ровно по
 	# нему, а наведение подсвечивает его же фрагментом арта аддитивно (+ лёгкий наезд).
-	var close := Control.new()
+	var close := RoundHit.new()  # медальон круглый — и хит, и подсветка по кругу
 	close.name = "Close"
 	close.mouse_filter = Control.MOUSE_FILTER_STOP
 	close.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -301,9 +321,12 @@ func _build() -> void:
 	glow.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	glow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var add_mat := CanvasItemMaterial.new()
-	add_mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	glow.material = add_mat
+	# Аддитивно и с круглой маской: прямоугольный фрагмент арта иначе светил бы краями.
+	var glow_sh := Shader.new()
+	glow_sh.code = _GLOW_SHADER
+	var glow_mat := ShaderMaterial.new()
+	glow_mat.shader = glow_sh
+	glow.material = glow_mat
 	glow.modulate.a = 0.0
 	close.add_child(glow)
 	close.mouse_entered.connect(_hover_close.bind(close, glow, true))
