@@ -717,8 +717,14 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 	if bool(entry.get("buying", false)):
 		return
 	entry["hovering"] = on
+	var card: GameCard = entry.card
 	if on:
 		_play_hover_sfx()  # шуршание карты — как в веере
+		# Карта живёт в off-screen SubViewport и мыши не видит — описание крутит
+		# вертикаль курсора над хит-контролом (верх → вверх, низ → вниз, как в веере).
+		card.drive_desc_scroll_from(entry.hit)
+	else:
+		card.stop_desc_scroll()
 	var mesh: MeshInstance3D = entry.mesh
 	var rest_pos: Vector3 = entry.get("rest_pos", mesh.position)
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
