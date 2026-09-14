@@ -1708,6 +1708,7 @@ PICK_MONSTER_DAMAGE,Какого монстра ранить?,Damage which monst
 PICK_SPACE_DAMAGE,Выберите локацию — достанется всем монстрам там,Choose a space — every monster there is hit
 PICK_DESTINATION,Куда переместиться?,Move where?
 PICK_RESERVE_ASSET,Выберите карту с витрины:,Choose a card from the reserve:
+RECKONING_DECISION_PROMPT,Расплата: решите судьбу карты,Reckoning: decide the fate of the card
 DECISION_SKIP,Пропустить,Skip
 
 ARTIFACT_KEY_TO_CARCOSA_NAME,???? ?? ???????,Key to Carcosa

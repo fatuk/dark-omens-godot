@@ -131,7 +131,7 @@ func _reckon_condition_interactive(
 			# Выбор (optional flipCard у Righteous/Funding, choice) — модалка решения
 			# через общий канал mythos_decision; параллельные Расплаты ждут очереди.
 			decisions[String(pending.get("path", ""))] = await _await_reckon_decision(
-				pid, pending, String(def.get("name", ""))
+				pid, pending, String(def.get("name", "")), Conditions.card_payload(cid)
 			)
 			continue
 		_gs.players[pid] = dup  # коммит мутаций сыщика
@@ -147,7 +147,9 @@ func _reckon_condition_interactive(
 # Владелец ждал сигнала раньше нас, поэтому при emit он возобновляется первым и
 # успевает освободить канал до нашей проверки. Отвалившийся сыщик — выбор за него
 # случайный (GameState._on_player_left → host_apply_absent_decision).
-func _await_reckon_decision(pid: String, pending: Dictionary, title_key: String) -> int:
+func _await_reckon_decision(
+	pid: String, pending: Dictionary, title_key: String, subject: Dictionary
+) -> int:
 	while bool(_gs.mythos_decision.get("active", false)):
 		await _gs.mythos_decided
 	_gs.mythos_decision = {
@@ -158,6 +160,8 @@ func _await_reckon_decision(pid: String, pending: Dictionary, title_key: String)
 		"by": "self",
 		"kind": String(pending.get("kind", "choice")),
 		"title_key": title_key,  # заголовок — имя состояния, чтобы было ясно, о чём выбор
+		"subject": subject,  # сама карта — что именно предлагают перевернуть
+		"prompt_key": "RECKONING_DECISION_PROMPT",
 	}
 	_gs._broadcast_sync()
 	_gs._emit_changed()

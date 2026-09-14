@@ -17,6 +17,7 @@ extends CanvasLayer
 
 const _SCROLL_AFTER: int = 8  # столько кнопок ещё влезает без прокрутки
 const _LIST_MAX_H: float = 420.0  # высота прокручиваемого списка вариантов
+const _CARD_MIN := Vector2(290, 459)  # карта-предмет выбора (как в модалке проверки)
 
 var _sig: String = ""  # подпись текущего выбора — чтобы не пересобирать UI зря
 
@@ -50,6 +51,7 @@ func _refresh() -> void:
 				"path": d.get("path", ""),
 				"title": d.get("title_key", ""),
 				"prompt": d.get("prompt_key", ""),
+				"subject": d.get("subject", {}),
 				"options": d.get("options", []),
 			}
 		)
@@ -86,6 +88,20 @@ func _build(options: Array) -> void:
 	prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	prompt.add_theme_color_override("font_color", UIColors.MUTED)
 	_vbox.add_child(prompt)
+
+	# Карта-предмет выбора (subject, payload GameCard) — напр. состояние, которое
+	# предлагают перевернуть в Расплате: без неё игрок не видит, о чём речь.
+	var subject: Dictionary = d.get("subject", {})
+	if not subject.is_empty():
+		var card_row := HBoxContainer.new()
+		card_row.name = "CardRow"
+		card_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		var card := GameCard.new()
+		card.name = "SubjectCard"
+		card.custom_minimum_size = _CARD_MIN
+		card.set_card(subject)
+		card_row.add_child(card)
+		_vbox.add_child(card_row)
 
 	# Вариантов бывает много (Частный рейс — вся карта), поэтому длинный список
 	# кладём в прокрутку: заголовок и подсказка остаются на месте.
