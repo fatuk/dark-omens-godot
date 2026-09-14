@@ -96,18 +96,17 @@ static func open(parent: Node) -> void:
 		var key: String = t[0]
 		var btn := UIStyle.button(String(t[1]))
 		btn.name = "Tab_" + key
-		btn.pressed.connect(func() -> void: _select(key, body, buttons, parent))
+		btn.pressed.connect(func() -> void: _select(key, body, buttons))
 		tabs.add_child(btn)
 		buttons.append({"key": key, "btn": btn})
 
-	_select("assets", body, buttons, parent)
+	_select("assets", body, buttons)
 	modal.set_content(box)
 	modal.open()
 
 
-# Переключить вкладку: подсветить кнопку и перерисовать тело. host — узел под
-# крупный просмотр карты (слой просмотра живёт над модалкой, а не внутри неё).
-static func _select(key: String, body: VBoxContainer, buttons: Array, host: Node) -> void:
+# Переключить вкладку: подсветить кнопку и перерисовать тело.
+static func _select(key: String, body: VBoxContainer, buttons: Array) -> void:
 	for b_v: Variant in buttons:
 		var b: Dictionary = b_v
 		var on: bool = String(b["key"]) == key
@@ -117,7 +116,7 @@ static func _select(key: String, body: VBoxContainer, buttons: Array, host: Node
 		c.queue_free()
 	match key:
 		"assets":
-			_fill_assets(body, host)
+			_fill_assets(body)
 		"gates":
 			_fill_gates(body)
 		"clues":
@@ -129,7 +128,7 @@ static func _select(key: String, body: VBoxContainer, buttons: Array, host: Node
 # ── Вкладки ───────────────────────────────────────────────────────────────────
 
 
-static func _fill_assets(body: VBoxContainer, host: Node) -> void:
+static func _fill_assets(body: VBoxContainer) -> void:
 	var discard: Array = GameState.asset_discard_ids()
 	body.add_child(_counts(GameState.asset_deck.size(), discard.size()))
 	var flow := HFlowContainer.new()
@@ -137,7 +136,7 @@ static func _fill_assets(body: VBoxContainer, host: Node) -> void:
 	flow.add_theme_constant_override("h_separation", int(_CARD_GAP))
 	flow.add_theme_constant_override("v_separation", int(_CARD_GAP))
 	for aid_v: Variant in discard:
-		flow.add_child(_asset_card(String(aid_v), host))
+		flow.add_child(_asset_card(String(aid_v)))
 	flow.resized.connect(func() -> void: _fit_cards(flow))
 	body.add_child(_scroll(flow, discard.is_empty()))
 
@@ -267,7 +266,7 @@ static func _loc_name(loc_id: String) -> String:
 
 # Миниатюра карты актива — GameCard в полный рост, ужатый через scale. Тап по ней
 # открывает крупный просмотр: в миниатюре текст способности всё равно не прочитать.
-static func _asset_card(asset_id: String, host: Node) -> Control:
+static func _asset_card(asset_id: String) -> Control:
 	var full_w: float = _CARD_FULL_H * GameCard.ASPECT
 	# Ведём размер от ШИРИНЫ (треть списка), высота идёт следом по пропорции карты.
 	var scale_f: float = _initial_card_width() / full_w
@@ -293,10 +292,5 @@ static func _asset_card(asset_id: String, host: Node) -> Control:
 	)
 	card.set_card(payload)
 	slot.add_child(card)
-	slot.gui_input.connect(
-		func(event: InputEvent) -> void:
-			if event is InputEventMouseButton and (event as InputEventMouseButton).pressed:
-				CardPreview.show_card(host, payload)
-	)
-	CardPreview.attach_hover(slot, payload)  # и по наведению — как в остальных окнах
+	CardPreview.attach_click(slot, payload)  # крупный просмотр по клику, как везде
 	return slot

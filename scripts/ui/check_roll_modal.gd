@@ -149,7 +149,7 @@ func _build(pc: Dictionary) -> void:
 		card.custom_minimum_size = _CARD_MIN
 		card.set_card(subject)
 		card_row.add_child(card)
-		CardPreview.attach_hover(card, subject)
+		CardPreview.attach_click(card, subject)
 
 	# Кубы проверки.
 	_dice_box = HBoxContainer.new()

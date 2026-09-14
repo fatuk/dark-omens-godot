@@ -107,7 +107,7 @@ func _build(cs: Dictionary) -> void:
 	var spell_payload: Dictionary = SpellCatalog.card_payload(spell)
 	card.set_card(spell_payload)
 	card_row.add_child(card)
-	CardPreview.attach_hover(card, spell_payload)
+	CardPreview.attach_click(card, spell_payload)
 
 	# Кубы spell-проверки.
 	_dice_box = HBoxContainer.new()

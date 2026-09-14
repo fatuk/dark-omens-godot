@@ -101,7 +101,7 @@ func _build(options: Array) -> void:
 		card.custom_minimum_size = _CARD_MIN
 		card.set_card(subject)
 		card_row.add_child(card)
-		CardPreview.attach_hover(card, subject)
+		CardPreview.attach_click(card, subject)
 		_vbox.add_child(card_row)
 
 	# Вариантов бывает много (Частный рейс — вся карта), поэтому длинный список

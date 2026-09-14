@@ -11,10 +11,9 @@ extends CanvasLayer
 ##
 ##   CardPreview.show_card(world_map, AssetCatalog.card_payload(asset))
 ##
-## Второй режим — ПО НАВЕДЕНИЮ (attach_hover): миниатюра в модалке (окно «вы получили»,
-## решение, проверка) при наведении показывает крупную копию, уход курсора — прячет.
-## Слой мышь не перехватывает (иначе сам бы отнял наведение у миниатюры и замигал),
-## затемнение слабее, ESC не нужен.
+## Миниатюры в окнах (в т.ч. «вы получили», решение, проверка) открывают его по
+## клику — attach_click; по наведению не увеличиваем (единый жест с колодами сброса).
+## Описание крупной карты крутится наведением на неё (свой скролл GameCard).
 
 const GROUP: StringName = &"card_preview"  # живые слои — для панели тюнинга
 const _LAYER: int = 120  # выше модалок (ModalDialog — 90) и подсказок
@@ -25,65 +24,39 @@ const _BUILD_H: float = 520.0  # строим в каноничном росте
 static var MARGIN_V: float = 48.0  # запас сверху и снизу
 static var MAX_H: float = 630.0  # выше карту не растягиваем — станет мылом
 static var BACKDROP_ALPHA: float = 0.7  # затемнение экрана под картой
-static var HOVER_DELAY: float = 0.25  # сек наведения до показа — чтобы не мигало при пролёте
-static var HOVER_BACKDROP_ALPHA: float = 0.55  # затемнение под hover-просмотром
-
-var _hover: bool = false  # режим наведения: мышь не перехватываем, клик не закрывает
-var _hover_src: Control = null  # миниатюра, с которой открыт просмотр — крутит описание
-
 var _root: ColorRect
 var _wrap: Control
 var _payload: Dictionary = {}  # что показываем — для пересборки при правке тюнинга
 
 
 ## Показать карту. parent — узел, к которому цеплять слой (обычно экран карты).
-static func show_card(
-	parent: Node, payload: Dictionary, hover: bool = false, src: Control = null
-) -> CardPreview:
+static func show_card(parent: Node, payload: Dictionary) -> CardPreview:
 	var pv := CardPreview.new()
 	pv.name = "CardPreview"
-	pv._hover = hover
-	pv._hover_src = src
 	parent.add_child(pv)
 	pv.set_card(payload)
 	return pv
 
 
-## Миниатюра ctrl → крупный просмотр payload при наведении (после HOVER_DELAY), уход
-## курсора / скрытие / удаление ctrl — закрыть. IGNORE-контрол переводим в PASS,
-## иначе наведение до него не доходит.
-static func attach_hover(ctrl: Control, payload: Dictionary) -> void:
+## Миниатюра ctrl → крупный просмотр payload по клику (ЛКМ). IGNORE-контрол
+## переводим в STOP, иначе клик до него не доходит; курсор — «рука».
+static func attach_click(ctrl: Control, payload: Dictionary) -> void:
 	if ctrl.mouse_filter == Control.MOUSE_FILTER_IGNORE:
-		ctrl.mouse_filter = Control.MOUSE_FILTER_PASS
-	var st: Dictionary = {"over": false, "pv": null}
-	ctrl.mouse_entered.connect(_hover_begin.bind(ctrl, payload, st))
-	ctrl.mouse_exited.connect(_hover_end.bind(st))
-	ctrl.visibility_changed.connect(
-		func() -> void:
-			if not ctrl.is_visible_in_tree():
-				_hover_end(st)
+		ctrl.mouse_filter = Control.MOUSE_FILTER_STOP
+	ctrl.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	ctrl.gui_input.connect(
+		func(event: InputEvent) -> void:
+			if (
+				event is InputEventMouseButton
+				and (event as InputEventMouseButton).pressed
+				and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT
+			):
+				var parent: Node = ctrl.get_tree().current_scene
+				if parent == null:
+					parent = ctrl.get_tree().root
+				show_card(parent, payload)
+				ctrl.accept_event()  # клик по миниатюре — не в окно под ней
 	)
-	ctrl.tree_exiting.connect(_hover_end.bind(st))
-
-
-static func _hover_begin(ctrl: Control, payload: Dictionary, st: Dictionary) -> void:
-	st["over"] = true
-	await ctrl.get_tree().create_timer(HOVER_DELAY).timeout
-	# Пока ждали: курсор ушёл, контрол пропал или просмотр уже висит — не показываем.
-	if not bool(st.get("over", false)) or not is_instance_valid(ctrl) or st.get("pv") != null:
-		return
-	var parent: Node = ctrl.get_tree().current_scene
-	if parent == null:
-		parent = ctrl.get_tree().root
-	st["pv"] = show_card(parent, payload, true, ctrl)
-
-
-static func _hover_end(st: Dictionary) -> void:
-	st["over"] = false
-	var pv: Variant = st.get("pv")
-	if pv is CardPreview and is_instance_valid(pv):
-		(pv as CardPreview).close()
-	st["pv"] = null
 
 
 func _ready() -> void:
@@ -93,13 +66,10 @@ func _ready() -> void:
 
 	_root = ColorRect.new()
 	_root.name = "Root"
-	_root.color = Color(0, 0, 0, HOVER_BACKDROP_ALPHA if _hover else BACKDROP_ALPHA)
+	_root.color = Color(0, 0, 0, BACKDROP_ALPHA)
 	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	if _hover:
-		_root.mouse_filter = Control.MOUSE_FILTER_IGNORE  # наведение остаётся у миниатюры
-	else:
-		_root.mouse_filter = Control.MOUSE_FILTER_STOP  # клик мимо карты — тоже закрытие
-		_root.gui_input.connect(_on_input)
+	_root.mouse_filter = Control.MOUSE_FILTER_STOP  # клик мимо карты — тоже закрытие
+	_root.gui_input.connect(_on_input)
 	UIStyle.keep_own_backdrop(_root)  # тут затемнение своё, глубже общего для модалок
 	add_child(_root)
 
@@ -116,8 +86,6 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if _hover:
-		return  # закрывается уходом курсора, ESC оставляем окну под просмотром
 	if event is InputEventKey and event.pressed and not (event as InputEventKey).echo:
 		if (event as InputEventKey).keycode == KEY_ESCAPE:
 			close()
@@ -142,7 +110,7 @@ func refresh_tuning() -> void:
 
 # Собрать карту по текущим размерам. Появление играет тот, кто зовёт.
 func _rebuild() -> void:
-	_root.color = Color(0, 0, 0, HOVER_BACKDROP_ALPHA if _hover else BACKDROP_ALPHA)
+	_root.color = Color(0, 0, 0, BACKDROP_ALPHA)
 	for c in _wrap.get_children():
 		_wrap.remove_child(c)
 		c.queue_free()
@@ -159,17 +127,15 @@ func _rebuild() -> void:
 	card.size = Vector2(full_w, _BUILD_H)
 	card.pivot_offset = Vector2.ZERO
 	card.scale = Vector2(scale_f, scale_f)
-	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# PASS: клик по карте уходит в Root (закрытие), а наведение на неё крутит длинное
+	# описание своим скроллом GameCard.
+	card.mouse_filter = Control.MOUSE_FILTER_PASS
 	# Размеры шрифтов в GameCard откалиброваны под карту веера (CARD_W). Строим шире
 	# эталона — значит и шрифт тянем во столько же раз, иначе текст на крупной карте
 	# выйдет мельче, чем на той же карте в руке.
 	card.set_font_scale(full_w / HandCarousel.CARD_W)
 	card.set_card(_payload)
 	_wrap.add_child(card)
-	# Длинное описание: в hover-режиме курсор стоит на миниатюре — её вертикаль и
-	# крутит текст крупной копии (верх → вверх, низ → вниз, как в веере руки).
-	if _hover and is_instance_valid(_hover_src):
-		card.drive_desc_scroll_from(_hover_src)
 
 
 func close() -> void:
