@@ -368,7 +368,8 @@ func _on_start_pressed() -> void:
 	# game_sync от хоста уйдёт раньше, чем не-хосты получат start_game и
 	# переключатся на world_map (WebSocket FIFO).
 	GameState.start_game(_build_players_init())
-	_nm.relay_all({"action": "start_game"})
+	# lang — локаль хоста: реле пишет её в хронику партии (история потом на языке партии).
+	_nm.relay_all({"action": "start_game", "lang": I18n.get_locale()})
 	SceneManager.go("world_map")
 
 
