@@ -76,6 +76,15 @@ class MockBoard:
 	func return_monster_to_bag(mid: String) -> void:
 		bagged.append(mid)
 
+	func count_gates_of_color(_c: String) -> int:
+		return 0
+
+	func current_omen_color() -> String:
+		return "green"
+
+	func monster_choices() -> Array:
+		return []
+
 
 class MockRumor:
 	extends RefCounted
@@ -96,6 +105,9 @@ class MockGS:
 	var gates: Dictionary = {}
 	var campaign: Dictionary = {}
 	var active_check: Dictionary = {}
+	var turn_order: Array = ["p"]
+	var map: RefCounted = null  # MockMap — граф локаций для move (ставит тест)
+	var board_effects: Array = []  # что ушло в _apply_board_effect
 	var _check := MockCheck.new()
 	var _campaign := MockCampaign.new()
 	var _board := MockBoard.new()
@@ -120,6 +132,9 @@ class MockGS:
 
 	func announce_action(_pid: String, _id: String, _params: Dictionary = {}) -> void:
 		pass
+
+	func _apply_board_effect(node: Dictionary) -> void:
+		board_effects.append(node)
 
 
 func _combat_ctx(tough: int, focus: int) -> EncounterFlow:
@@ -658,3 +673,87 @@ func test_dice_face_matches() -> void:
 	assert_true(Dice.face_matches("1", 1))
 	assert_true(Dice.face_matches("1,2", 2))
 	assert_false(Dice.face_matches("1,2", 3))
+
+
+# ── move в эффектах встречи: выбор назначения через pending_choice ──
+# Юггот «Перелёт на крыльях»: onSuccess [move, gainClue, closeGate]. Раньше в ctx
+# встречи не было графа локаций, и move молча пропадал.
+
+
+class MockMap:
+	extends RefCounted
+	var _locs: Array = [
+		{"id": "A", "name": "LOC_A", "connections": ["B"]},
+		{"id": "B", "name": "LOC_B", "connections": ["A", "C"]},
+		{"id": "C", "name": "LOC_C", "connections": ["B"]},
+	]
+
+	func all() -> Array:
+		return _locs
+
+	func by_id(id: String) -> Dictionary:
+		for l_v: Variant in _locs:
+			if String((l_v as Dictionary).get("id", "")) == id:
+				return l_v
+		return {}
+
+	func type_of(_id: String) -> String:
+		return "city"
+
+
+func _move_ctx() -> EncounterFlow:
+	var gs: MockGS = autofree(MockGS.new())
+	gs.map = MockMap.new()
+	gs.players["p"] = {"items": [], "location": "A", "clues": 0, "investigator": ""}
+	gs.turn_order = ["p"]
+	gs.current_encounter = {
+		"kind": "general",
+		"onSuccess": [{"do": "move"}, {"do": "gainClue", "count": 1}],
+		"onFailure": [],
+	}
+	gs.active_check = {"passed": true, "rolled": true, "successes": 1, "dice": [5]}
+	return EncounterFlow.new(gs)
+
+
+func test_encounter_move_pends_destination_then_moves() -> void:
+	var ef: EncounterFlow = _move_ctx()
+	ef._commit_outcome("p")
+	var enc: Dictionary = ef._gs.current_encounter
+	var pending: Dictionary = enc.get("pending_choice", {})
+	assert_eq(String(pending.get("kind", "")), "destination", "move → выбор назначения")
+	var refs: Array = []
+	for o_v: Variant in pending.get("options", []):
+		refs.append(String((o_v as Dictionary).get("ref", "")))
+	assert_true(
+		refs.has("B") and refs.has("C"), "без amount — куда угодно, кроме себя: %s" % str(refs)
+	)
+	assert_false(bool(enc.get("committed", false)), "ход замер до решения")
+	assert_eq(String(ef._gs.players["p"]["location"]), "A", "до решения сыщик на месте")
+	# Выбор C
+	var idx: int = refs.find("C")
+	assert_true(ef.record_effect_choice("p", idx), "выбор записан")
+	ef._commit_outcome("p")
+	assert_true(bool(ef._gs.current_encounter.get("committed", false)), "коммит доигран")
+	assert_eq(String(ef._gs.players["p"]["location"]), "C", "сыщик перемещён")
+	assert_eq(int(ef._gs.players["p"]["clues"]), 1, "остальные эффекты ветки применились")
+
+
+func test_encounter_move_then_close_gate_closes_origin() -> void:
+	var ef: EncounterFlow = _move_ctx()
+	ef._gs.current_encounter["onSuccess"] = [{"do": "move"}, {"do": "closeGate"}]
+	ef._commit_outcome("p")
+	var pending: Dictionary = ef._gs.current_encounter["pending_choice"]
+	var idx: int = -1
+	var opts: Array = pending["options"]
+	for i in range(opts.size()):
+		if String((opts[i] as Dictionary)["ref"]) == "C":
+			idx = i
+	ef.record_effect_choice("p", idx)
+	ef._commit_outcome("p")
+	var closed: Array = (ef._gs as MockGS).board_effects
+	assert_eq(closed.size(), 1, "один board-эффект (closeGate)")
+	assert_eq(String((closed[0] as Dictionary)["do"]), "closeGate")
+	assert_eq(
+		String((closed[0] as Dictionary)["_origin_loc"]), "A", "врата закрываются на исходной A"
+	)
+	assert_eq(String(ef._gs.players["p"]["location"]), "C", "а сыщик уже в C")

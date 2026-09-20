@@ -1313,6 +1313,7 @@ func _run_effect_slot(effects: Array, pid: String, slot: String) -> bool:
 		"slot": slot + "/",
 	}
 	var clues_before: int = int(dup.get("clues", 0))
+	var origin_loc: String = String(dup.get("location", ""))  # до move в этой же ветке
 	var res: Dictionary = _EffectRunner.run(effects, dup, _effect_ctx(pid), flow)
 	enc["effect_rolls"] = flow.get("rolls", {})  # сохранить записанные броски
 	var pending: Dictionary = res.get("pending", {})
@@ -1343,7 +1344,9 @@ func _run_effect_slot(effects: Array, pid: String, slot: String) -> bool:
 		enc["_clues_gained"] = int(dup.get("clues", 0)) - clues_before
 	var board: Array = res.get("board", [])
 	for i in range(board.size()):
-		_gs._apply_board_effect(board[i] as Dictionary)
+		var bnode: Dictionary = board[i]
+		bnode["_origin_loc"] = origin_loc  # closeGate после move — врата исходной клетки
+		_gs._apply_board_effect(bnode)
 	var logs: Array = res.get("logs", [])
 	for i in range(logs.size()):
 		GameConsole.log("[Эффект] %s" % String(logs[i]))
@@ -1379,12 +1382,13 @@ func record_effect_choice(pid: String, index: int) -> bool:
 	var options: Array = pending.get("options", [])
 	if index < 0 or index >= (options as Array).size():
 		return false
-	# choice → индекс ветки; target → id сыщика; monster → ref монстра (читает _run_action).
+	# choice → индекс ветки; target → id сыщика; monster/space/destination/asset → ref
+	# (монстр, локация, куда идти, карта с витрины — читает _run_action).
 	var value: Variant = index
 	var kind: String = String(pending.get("kind", "choice"))
 	if kind == "target":
 		value = String((options[index] as Dictionary).get("pid", ""))
-	elif kind == "monster":
+	elif kind in ["monster", "space", "destination", "asset"]:
 		value = String((options[index] as Dictionary).get("ref", ""))
 	var dec: Dictionary = enc.get("effect_decisions", {})
 	dec[String(pending.get("path", ""))] = value
@@ -1431,6 +1435,7 @@ func _effect_ctx(pid: String) -> Dictionary:
 		ctx["monster_toughness"] = tough
 	ctx["other_pids"] = _other_investigators(pid)
 	ctx["monster_choices"] = _gs._board.monster_choices()  # для chosenMonster
+	ctx["locations"] = _gs.map.all()  # move — сыщик выбирает, куда (Юггот «Перелёт»)
 	return ctx
 
 

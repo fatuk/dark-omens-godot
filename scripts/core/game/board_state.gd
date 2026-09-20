@@ -196,12 +196,18 @@ func _gate_color_for(loc_id: String) -> String:
 ## Закрыть врата на локации активного игрока (эффект closeGate финальной стадии
 ## gate-встречи). Врата привязаны к месту, где сыщик прошёл Иной мир.
 func close_gate_at_active_player() -> void:
-	if not _gs._is_host():
-		return
 	var pid: String = _gs._current_pid()
 	if pid.is_empty():
 		return
-	var loc: String = String(_gs.players.get(pid, {}).get("location", ""))
+	close_gate_at(String(_gs.players.get(pid, {}).get("location", "")), pid)
+
+
+## Закрыть врата на локации loc от имени сыщика pid (хуки Тайны/Слуха — по нему).
+## Отдельно от «у активного сыщика»: встреча за вратами может сначала переместить
+## сыщика (move), а закрыть надо врата, ИЗ которых он пришёл.
+func close_gate_at(loc: String, pid: String) -> void:
+	if not _gs._is_host():
+		return
 	if _gs.gates.has(loc):
 		var color: String = String(_gs.gates[loc])
 		_gs.gates.erase(loc)

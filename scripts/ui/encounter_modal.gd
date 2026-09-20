@@ -26,6 +26,9 @@ var _place: Label  # где мы: имя Иного мира в верхней �
 var _dice_holder: VBoxContainer
 # Контейнер кнопок интерактивного выбора (choice в эффектах) — создаётся кодом.
 var _choice_holder: VBoxContainer
+const _CHOICE_GRID_AFTER: int = 8  # больше вариантов — сетка в прокрутке
+const _CHOICE_GRID_MAX_H: float = 300.0  # высота прокрутки сетки
+const _CHOICE_GRID_BTN_W: float = 210.0  # ширина кнопки в сетке
 var _tray: DiceTray  # единый лоток, создаётся лениво и переиспользуется
 var _last_dice: Array = []  # последний показанный бросок (спин — только на свежем)
 var _last_nonce: int = 0  # метка последнего отрисованного переброса (CheckFlow.reroll_nonce)
@@ -78,7 +81,7 @@ const _PLACE_TOP_FRAC: float = 0.018
 # Рамка запечена в арт и у миров нарисована по-своему: у Юггота «глаз» опущен, и
 # на общей высоте подпись садилась прямо на него. Мир, которого тут нет, берёт
 # общую высоту — новый арт достаточно положить в папку, как и раньше.
-const _PLACE_TOP_BY_WORLD := {"Yuggoth": 0.055}
+const _PLACE_TOP_BY_WORLD := {"Yuggoth": 0.033}
 
 var _bg: TextureRect  # арт-фон карточки (меняем текстуру по типу локации)
 
@@ -532,17 +535,42 @@ func _show_choice(card: Dictionary) -> void:
 	_hide_dice()
 	_clear_choice()
 	var options: Array = pending.get("options", [])
+	# Много коротких вариантов (перемещение «куда угодно» — вся карта) — компактной
+	# сеткой в прокрутке, иначе столбец кнопок вылезает за карточку. Ветки эффектов
+	# с длинными описаниями — столбцом на всю ширину, как раньше.
+	var grid: bool = options.size() > _CHOICE_GRID_AFTER
+	var list: Container
+	if grid:
+		var flow := HFlowContainer.new()
+		flow.name = "ChoiceGrid"
+		flow.alignment = FlowContainer.ALIGNMENT_CENTER
+		flow.add_theme_constant_override("h_separation", 6)
+		flow.add_theme_constant_override("v_separation", 6)
+		flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var scroll := ScrollContainer.new()
+		scroll.name = "ChoiceScroll"
+		scroll.custom_minimum_size.y = _CHOICE_GRID_MAX_H
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		scroll.add_child(flow)
+		_choice_holder.add_child(scroll)
+		list = flow
+	else:
+		list = _choice_holder
 	for i in range(options.size()):
 		var b: Variant = options[i]
 		var btn := Button.new()
 		btn.name = "ChoiceBtn%d" % i
 		btn.text = _choice_label(b if b is Dictionary else {}, kind)
 		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		if grid:
+			btn.custom_minimum_size.x = _CHOICE_GRID_BTN_W
+		else:
+			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		UIStyle.style_button(btn)
 		var idx: int = i
 		btn.pressed.connect(func() -> void: _on_choice_pressed(idx))
-		_choice_holder.add_child(btn)
+		list.add_child(btn)
 	_choice_holder.visible = true
 
 
@@ -553,6 +581,12 @@ func _choose_prompt_key(kind: String) -> String:
 			return "ENCOUNTER_CHOOSE_MONSTER"
 		"target":
 			return "ENCOUNTER_CHOOSE_TARGET"
+		"destination":
+			return "PICK_DESTINATION"
+		"space":
+			return "PICK_SPACE_DAMAGE"
+		"asset":
+			return "PICK_RESERVE_ASSET"
 		_:
 			return "ENCOUNTER_CHOOSE"
 
@@ -565,6 +599,13 @@ func _choice_label(opt: Dictionary, kind: String) -> String:
 			return tr("MONSTER_CHOICE_LABEL") % [nm, int(opt.get("toughness", 1))]
 		"target":
 			return String(opt.get("name", "?"))
+		"destination", "asset":
+			return tr(String(opt.get("name", "?")))
+		"space":
+			return (
+				tr("SPACE_CHOICE_LABEL")
+				% [tr(String(opt.get("name", "?"))), int(opt.get("count", 0))]
+			)
 		_:
 			return EffectManifest.describe(opt)
 

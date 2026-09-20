@@ -1579,7 +1579,14 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			for _i: int in n:
 				_board.open_gate(gate_loc)
 		"closeGate":
-			_board.close_gate_at_active_player()
+			# _origin_loc — где сыщик стоял до эффектов ветки: если та же ветка его
+			# переместила (move), закрываются врата исходной клетки, а не новой.
+			if node.has("_origin_loc"):
+				_board.close_gate_at(
+					String(node["_origin_loc"]), String(node.get("_anchor_pid", _current_pid()))
+				)
+			else:
+				_board.close_gate_at_active_player()
 		"spawnMonster":
 			# where: "self" — монстр в локации активного/якорного сыщика (встреча «появляется
 			# монстр»); "<locId>" — в конкретной; пусто — из случайных врат (как было).
