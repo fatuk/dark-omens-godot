@@ -17,7 +17,10 @@ extends RefCounted
 ##     epic:bool,                      # опц.: эпик-монстр (спавнится по имени)
 ##     resist: "physical"|"magical",   # опц.: сопротивление урону типа (получает вдвое)
 ##     horror:{ skill, modifier:int, damage:int },   # проверка рассудка
-##     combat:{ skill, modifier:int, damage:int },    # проверка боя
+##       horror.defeatOnPass:true        — пройденный тест ужаса побеждает монстра (Crazed Mob)
+##       horror.damageWithSuccesses:true — успехи теста ужаса ранят монстра (Призрак)
+##     combat:{ skill, modifier:int, damage:int },    # проверка боя; skill "none" — атаки нет,
+##                                                    # бой кончается шагом ужаса (Призрак)
 ##     ability:{ trigger, textKey }
 ##   }
 ## skill ∈ "will" | "lore" | "influence" | "observation" | "strength" |

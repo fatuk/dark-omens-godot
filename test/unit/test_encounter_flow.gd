@@ -545,3 +545,59 @@ func test_jewelry_from_while_owned_spends_focus() -> void:
 	assert_eq((ef._gs.players["p"]["items"] as Array).size(), 1, "карта не сброшена")
 	ef._gs.players["p"]["concentration"] = 0
 	assert_false(ef.play_prevent_loss("p", 0), "без фокуса — нечем платить")
+
+
+# ── Призрак: успехи Воли ранят монстра, атаки (Силы) нет ──
+# horror.damageWithSuccesses + combat.skill "none": итог боя фиксируется сразу после
+# шага Воли, сыщик урона не получает, резист (physical) урон Волей не режет.
+
+
+func _ghost_ctx(health: int, will_succ: int, dice: Array) -> EncounterFlow:
+	var gs: MockGS = autofree(MockGS.new())
+	gs.players["p"] = {"items": [], "sanity": 5}
+	gs.current_encounter = {
+		"kind": "combat",
+		"monsterId": "ghost",
+		"toughness": 2,
+		"health": health,
+		"horror": {"skill": "will", "modifier": -1, "damage": 2, "damageWithSuccesses": true},
+		"combat": {"skill": "none", "modifier": 0, "damage": 0},
+	}
+	gs.active_check = {
+		"rolled": true, "successes": will_succ, "dice": dice, "passed": will_succ > 0
+	}
+	return EncounterFlow.new(gs)
+
+
+func test_ghost_will_successes_damage_monster_and_end_combat() -> void:
+	var ef: EncounterFlow = _ghost_ctx(2, 2, [5, 6])
+	assert_true(ef._resolve_combat("p"), "шаг Воли принят")
+	var enc: Dictionary = ef._gs.current_encounter
+	assert_true(enc.has("resolution"), "атаки нет — итог сразу")
+	assert_true(bool(enc["no_strength_step"]), "шаг Силы помечен пропущенным")
+	var r: Dictionary = enc["resolution"]
+	assert_eq(int(r["dealt"]), 2, "2 успеха Воли → −2 (резист не режет)")
+	assert_eq(int(r["health_after"]), 0, "2 − 2 = 0")
+	assert_true(bool(r["won"]), "монстр повержен")
+	assert_eq(int(r["hp_loss"]), 0, "атаки нет — сыщик цел")
+	assert_true((ef._gs._check as MockCheck).cleared, "проверка Силы не стартует")
+
+
+func test_ghost_zero_successes_keeps_monster() -> void:
+	var ef: EncounterFlow = _ghost_ctx(2, 0, [1, 2])
+	ef._resolve_combat("p")
+	var r: Dictionary = ef._gs.current_encounter["resolution"]
+	assert_false(bool(r["won"]), "0 успехов — монстр стоит")
+	assert_eq(int(r["health_after"]), 2, "здоровье не тронуто")
+	assert_eq(int(ef._gs.current_encounter["sanity_loss"]), 2, "ужас 2 − 0 успехов = −2 рассудка")
+
+
+func test_will_damage_adds_to_strength_resolution() -> void:
+	# Гипотетический монстр с damageWithSuccesses И атакой: урон Волей суммируется
+	# с уроном Силы (после резиста).
+	var enc: Dictionary = {
+		"monsterId": "ghoul", "health": 4, "combat": {"damage": 1}, "will_dealt": 1
+	}
+	var res: Dictionary = _ef._combat_resolution(enc, {"successes": 2, "dice": [5, 5]}, "p")
+	assert_eq(int(res["dealt"]), 3, "2 Силы + 1 Волей")
+	assert_eq(int(res["health_after"]), 1, "4 − 3 = 1")

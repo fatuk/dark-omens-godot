@@ -88,9 +88,12 @@ func _build(card: Dictionary) -> void:
 	if not has_will and not rolled:
 		_last_will = []
 		_last_str = []
-	# Шаг Силы есть, если монстр не повержен на шаге 1 (defeatOnPass / триггер карты).
+	# Шаг Силы есть, если монстр не повержен на шаге 1 (defeatOnPass / триггер карты)
+	# и у него вообще есть атака (Призрак: combat.skill none → бой кончается Волей).
 	var skip_str: bool = (
-		bool(card.get("defeated_on_horror", false)) or bool(card.get("defeated_by_trigger", false))
+		bool(card.get("defeated_on_horror", false))
+		or bool(card.get("defeated_by_trigger", false))
+		or bool(card.get("no_strength_step", false))
 	)
 	var str_step: bool = has_will and not skip_str
 
@@ -291,10 +294,13 @@ func _update_art(card: Dictionary, str_step: bool, done: bool) -> void:
 	# Здоровье монстра: на старте боя; на шаге Силы — превью после удара (успехи бьют
 	# стойкость), по итогу — зафиксированное. Итог боя виден прямо на карте.
 	var mon_health: int = int(card.get("health", 0))
+	var will_damages: bool = bool(horror.get("damageWithSuccesses", false))
 	if not res.is_empty():
 		mon_health = int(res.get("health_after", mon_health))
 	elif str_step and live >= 0:
-		mon_health = maxi(0, mon_health - live)
+		mon_health = maxi(0, mon_health - live - int(card.get("will_dealt", 0)))
+	elif will_damages and not card.has("will") and live >= 0:
+		mon_health = maxi(0, mon_health - live)  # превью: успехи Воли бьют стойкость
 	(_art.get_node("Hp") as Label).text = "%d/%d" % [mon_health, int(card.get("toughness", 0))]
 	var will_hits: int = (
 		int((card["will"] as Dictionary).get("successes", 0)) if card.has("will") else live

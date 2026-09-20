@@ -472,6 +472,10 @@ func _resolve_combat(pid: String) -> bool:
 		var w_succ: int = int(c.get("successes", 0))
 		enc["will"] = {"dice": (c.get("dice", []) as Array).duplicate(), "successes": w_succ}
 		enc["sanity_loss"] = _sanity_loss_for(enc, pid, w_succ)
+		# Спец-способность: успехи проверки ужаса ранят монстра (Призрак — «отнимаете
+		# здоровье, равное результату»). Урон не физический — резист не режет.
+		if bool(horror.get("damageWithSuccesses", false)):
+			enc["will_dealt"] = w_succ
 		# Спец-способность монстра: пройденный horror-тест (Crazed Mob — Влияние)
 		# сразу побеждает монстра — шаг атаки (Сила) пропускаем.
 		if bool(c.get("passed", false)) and bool(horror.get("defeatOnPass", false)):
@@ -491,6 +495,29 @@ func _resolve_combat(pid: String) -> bool:
 			_gs._emit_changed()
 			return true
 		var cb: Dictionary = enc.get("combat", {})
+		# Монстр без атаки (combat.skill "none" — Призрак): шага Силы нет, итог боя —
+		# сразу по урону от Воли; сыщик урона не получает.
+		if String(cb.get("skill", "strength")) == "none":
+			var will_dealt: int = int(enc.get("will_dealt", 0))
+			var left: int = maxi(0, int(enc.get("health", 0)) - will_dealt)
+			enc["no_strength_step"] = true
+			enc["resolution"] = {
+				"won": left <= 0,
+				"strength": {"dice": [], "successes": 0},
+				"hp_loss": 0,
+				"dealt": will_dealt,
+				"health_after": left,
+			}
+			_gs._check.clear()
+			GameConsole.log(
+				(
+					"[Бой] %s · Воля %d → монстру −%d (здоровье %d), атаки нет"
+					% [_gs._name_of(pid), w_succ, will_dealt, left]
+				)
+			)
+			_gs._broadcast_sync()
+			_gs._emit_changed()
+			return true
 		_gs._check.start(
 			"combat",
 			pid,
@@ -523,7 +550,10 @@ func _combat_resolution(enc: Dictionary, c: Dictionary, pid: String) -> Dictiona
 	# Боевой урон — ФИЗИЧЕСКИЙ: монстр с physical-резистом получает вдвое меньше.
 	# (hp_loss игрока — от СЫРОГО броска: защита не зависит от резиста монстра.)
 	var m: Dictionary = MonsterCatalog.by_id(String(enc.get("monsterId", "")))
-	var dealt: int = MonsterCatalog.apply_resistance(m, hits, "physical")
+	# + урон от успехов Воли (damageWithSuccesses), он резистом не режется.
+	var dealt: int = (
+		MonsterCatalog.apply_resistance(m, hits, "physical") + int(enc.get("will_dealt", 0))
+	)
 	var health_after: int = maxi(0, int(enc.get("health", 0)) - dealt)
 	# Пассивная защита от урона (Fishing Net и т.п., whileOwned) — авто, урон монстра
 	# по сыщику снижается ДО вычитания успехов Силы (пол min).
