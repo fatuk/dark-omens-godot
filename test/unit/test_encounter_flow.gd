@@ -601,3 +601,60 @@ func test_will_damage_adds_to_strength_resolution() -> void:
 	var res: Dictionary = _ef._combat_resolution(enc, {"successes": 2, "dice": [5, 5]}, "p")
 	assert_eq(int(res["dealt"]), 3, "2 Силы + 1 Волей")
 	assert_eq(int(res["health_after"]), 1, "4 − 3 = 1")
+
+
+# ── Кубик способности (horror.defeatOnDie) и монстры без ужаса (horror.skill none) ──
+
+
+func test_defeat_on_die_wins_when_face_matches() -> void:
+	seed(7)
+	var won := 0
+	var lost := 0
+	for _i in range(60):
+		var gs: MockGS = autofree(MockGS.new())
+		gs.players["p"] = {"items": [], "sanity": 5}
+		gs.current_encounter = {
+			"kind": "combat",
+			"monsterId": "colour_out_of_space",
+			"toughness": 2,
+			"health": 2,
+			"horror": {"skill": "will", "modifier": 0, "damage": 2, "defeatOnDie": "5-6"},
+			"combat": {"skill": "none", "modifier": 0, "damage": 0},
+		}
+		gs.active_check = {"rolled": true, "successes": 1, "dice": [5], "passed": true}
+		var ef := EncounterFlow.new(gs)
+		ef._resolve_combat("p")
+		var enc: Dictionary = gs.current_encounter
+		var die: int = int(enc["ability_die"])
+		var r: Dictionary = enc["resolution"]
+		if die >= 5:
+			assert_true(bool(r["won"]), "грань %d → повержен" % die)
+			won += 1
+		else:
+			assert_false(bool(r["won"]), "грань %d → уцелел (атаки нет — итог сразу)" % die)
+			lost += 1
+	assert_gt(won, 0, "за 60 бросков хоть раз выпало 5-6")
+	assert_gt(lost, 0, "за 60 бросков хоть раз выпало 1-4")
+
+
+func test_no_horror_step_starts_strength_immediately() -> void:
+	var gs: MockGS = autofree(MockGS.new())
+	gs.players["p"] = {"items": [], "location": "L1", "sanity": 5}
+	gs.monsters["L1"] = [{"id": "riot", "health": 3}]
+	var ef := EncounterFlow.new(gs)
+	ef._begin_combat("p", 0)
+	var enc: Dictionary = gs.current_encounter
+	assert_true(bool(enc.get("no_horror_step", false)), "ужаса нет — шаг Воли пропущен")
+	assert_eq(int((enc["will"] as Dictionary)["successes"]), 0, "Воля заморожена пустой")
+	assert_eq(int(enc["sanity_loss"]), 0, "рассудок не теряется")
+	var st: Dictionary = (gs._check as MockCheck).started[0]
+	assert_eq(String(st["skill"]), "strength", "сразу стартует проверка Силы")
+
+
+func test_dice_face_matches() -> void:
+	assert_true(Dice.face_matches("5-6", 5))
+	assert_true(Dice.face_matches("5-6", 6))
+	assert_false(Dice.face_matches("5-6", 4))
+	assert_true(Dice.face_matches("1", 1))
+	assert_true(Dice.face_matches("1,2", 2))
+	assert_false(Dice.face_matches("1,2", 3))

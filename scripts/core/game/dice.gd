@@ -18,6 +18,22 @@ static func roll_one() -> int:
 	return randi() % SIDES + 1
 
 
+## Попадает ли грань die в описание граней faces: "5-6" (диапазон), "1" (одна),
+## "1,2" (список). Формат тот же, что у dieRoll.on в Effect-DSL.
+static func face_matches(faces: String, die: int) -> bool:
+	for part_v: Variant in faces.split(","):
+		var part: String = String(part_v).strip_edges()
+		if part.is_empty():
+			continue
+		if "-" in part:
+			var lo_hi: PackedStringArray = part.split("-")
+			if lo_hi.size() == 2 and die >= int(lo_hi[0]) and die <= int(lo_hi[1]):
+				return true
+		elif int(part) == die:
+			return true
+	return false
+
+
 ## Бросить n кубов → массив значений.
 static func roll(n: int) -> Array:
 	var out: Array = []

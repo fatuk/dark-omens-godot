@@ -305,8 +305,12 @@ func _update_art(card: Dictionary, str_step: bool, done: bool) -> void:
 	var will_hits: int = (
 		int((card["will"] as Dictionary).get("successes", 0)) if card.has("will") else live
 	)
+	if bool(card.get("no_horror_step", false)):
+		will_hits = -1  # ужаса нет — пустая клетка, не «−0»
 	var str_hits: int = -1
-	if done:
+	if bool(card.get("no_strength_step", false)):
+		str_hits = -1  # атаки не было — пустая клетка, не «−0»
+	elif done:
 		str_hits = int((res.get("strength", {}) as Dictionary).get("successes", 0))
 	elif str_step:
 		str_hits = live
@@ -487,6 +491,19 @@ func _loss_lines(card: Dictionary, str_step: bool, done: bool) -> void:
 		_vbox.add_child(_lbl("−%d %s" % [sanity_loss, tr("COMBAT_SANITY")], _FS_LOSS, _C_WILL))
 	if hp_loss > 0:
 		_vbox.add_child(_lbl("−%d %s" % [hp_loss, tr("COMBAT_HEALTH")], _FS_LOSS, _C_STR))
+	# Кубик способности (defeatOnDie): что выпало и чем кончилось.
+	if card.has("ability_die"):
+		var won: bool = bool(card.get("defeated_on_horror", false))
+		_vbox.add_child(
+			_lbl(
+				(
+					tr("COMBAT_ABILITY_DIE_WON" if won else "COMBAT_ABILITY_DIE_LOST")
+					% int(card["ability_die"])
+				),
+				_FS_LOSS,
+				UIColors.SUCCESS if won else UIColors.MUTED
+			)
+		)
 
 
 # ── Хелперы ───────────────────────────────────────────────────────────────────

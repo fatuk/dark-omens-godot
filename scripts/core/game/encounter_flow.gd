@@ -433,7 +433,23 @@ func _begin_combat(pid: String, idx: int = 0) -> void:
 		"monsterIndex": idx,  # какой именно экземпляр на клетке — по нему снимаем/лечим
 	}
 	_gs.announce_action(pid, "combat", {"monster": String(m.get("nameKey", mid))})  # лента: бой
-	_start_combat_will(pid)  # проверка Воли (pre-roll) — окно активации карт до броска
+	if String((m.get("horror", {}) as Dictionary).get("skill", "will")) == "none":
+		# Монстр без ужаса (Riot, Tick Tock Men, Child of the Goat): шага Воли нет —
+		# Волю «замораживаем» пустой и сразу открываем pre-roll Силы.
+		var enc: Dictionary = _gs.current_encounter
+		enc["will"] = {"dice": [], "successes": 0}
+		enc["sanity_loss"] = 0
+		enc["no_horror_step"] = true
+		var cb0: Dictionary = m.get("combat", {})
+		_gs._check.start(
+			"combat",
+			pid,
+			String(cb0.get("skill", "strength")),
+			int(cb0.get("modifier", 0)),
+			"combatEncounter"
+		)
+	else:
+		_start_combat_will(pid)  # проверка Воли (pre-roll) — окно активации карт до броска
 	GameConsole.log("[Бой] %s vs %s (здоровье %d/%d)" % [_gs._name_of(pid), mid, cur, tough])
 	_gs._broadcast_sync()
 	_gs._emit_changed()
@@ -476,6 +492,29 @@ func _resolve_combat(pid: String) -> bool:
 		# здоровье, равное результату»). Урон не физический — резист не режет.
 		if bool(horror.get("damageWithSuccesses", false)):
 			enc["will_dealt"] = w_succ
+		# Спец-способность: после проверки ужаса бросок кубика, на гранях faces монстр
+		# побеждён (Цвет иных миров — «5-6»). Кубик виден в ленте и на карте боя.
+		var faces: String = String(horror.get("defeatOnDie", ""))
+		if not faces.is_empty():
+			var die: int = Dice.roll_one()
+			enc["ability_die"] = die
+			_gs.announce_action(pid, "die_roll", {"value": str(die)})
+			if Dice.face_matches(faces, die):
+				enc["defeated_on_horror"] = true
+				enc["resolution"] = {
+					"won": true,
+					"strength": {"dice": [], "successes": 0},
+					"hp_loss": 0,
+					"dealt": int(enc.get("toughness", 0)),
+					"health_after": 0,
+				}
+				_gs._check.clear()
+				GameConsole.log(
+					"[Бой] %s · кубик способности %d → монстр повержен" % [_gs._name_of(pid), die]
+				)
+				_gs._broadcast_sync()
+				_gs._emit_changed()
+				return true
 		# Спец-способность монстра: пройденный horror-тест (Crazed Mob — Влияние)
 		# сразу побеждает монстра — шаг атаки (Сила) пропускаем.
 		if bool(c.get("passed", false)) and bool(horror.get("defeatOnPass", false)):

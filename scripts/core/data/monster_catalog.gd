@@ -19,6 +19,9 @@ extends RefCounted
 ##     horror:{ skill, modifier:int, damage:int },   # проверка рассудка
 ##       horror.defeatOnPass:true        — пройденный тест ужаса побеждает монстра (Crazed Mob)
 ##       horror.damageWithSuccesses:true — успехи теста ужаса ранят монстра (Призрак)
+##       horror.defeatOnDie:"5-6"        — после теста ужаса кубик; на этих гранях монстр
+##                                         побеждён (Цвет иных миров)
+##       horror.skill "none"             — теста ужаса нет, бой начинается с шага Силы
 ##     combat:{ skill, modifier:int, damage:int },    # проверка боя; skill "none" — атаки нет,
 ##                                                    # бой кончается шагом ужаса (Призрак)
 ##     ability:{ trigger, textKey }

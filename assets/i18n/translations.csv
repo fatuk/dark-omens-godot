@@ -702,6 +702,8 @@ COMBAT_WILL,Шаг 1: Воля,Step 1: Will
 COMBAT_STEP1,Шаг 1: %s,Step 1: %s
 COMBAT_STEP2,Шаг 2: %s,Step 2: %s
 COMBAT_WILL_HINT,Успехи блокируют урон по рассудку,Successes block Sanity damage
+COMBAT_ABILITY_DIE_WON,Кубик способности: %d — монстр повержен,Ability die: %d — the monster is defeated
+COMBAT_ABILITY_DIE_LOST,Кубик способности: %d — монстр уцелел,Ability die: %d — the monster endures
 COMBAT_STRENGTH,Шаг 2: Сила,Step 2: Strength
 COMBAT_STRENGTH_HINT,Успехи бьют монстра и гасят урон по вам,Successes hit the monster and reduce damage to you
 COMBAT_WIN,Монстр повержен!,Monster defeated!
