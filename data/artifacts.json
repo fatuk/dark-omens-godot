@@ -21,7 +21,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "king_in_yellow",
@@ -51,7 +52,8 @@
 					"condition": "blight"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "tattered_cloak",
@@ -63,7 +65,8 @@
 			"item",
 			"magical"
 		],
-		"effect": {}
+		"effect": {},
+		"hasImage": false
 	},
 	{
 		"id": "mask_of_sthenelus",
@@ -76,7 +79,8 @@
 			"magical",
 			"relic"
 		],
-		"effect": {}
+		"effect": {},
+		"hasImage": false
 	},
 	{
 		"id": "true_magick",
@@ -97,7 +101,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "hemisphere_map",
@@ -116,7 +121,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "black_fan",
@@ -146,7 +152,8 @@
 					"context": "acquireAssets"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "black_book",
@@ -182,7 +189,8 @@
 					}
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "shining_trapezohedron",
@@ -220,7 +228,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "book_of_the_dead",
@@ -257,7 +266,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "scales_of_thoth",
@@ -285,7 +295,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "twin_scepters",
@@ -313,7 +324,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "mask_of_the_watcher",
@@ -333,7 +345,8 @@
 					"min": 1
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "khopesh_of_the_abyss",
@@ -371,7 +384,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "dragon_idol",
@@ -412,7 +426,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "bone_pipes",
@@ -451,7 +466,8 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "heart_of_winter",
@@ -478,7 +494,8 @@
 					}
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "hyperborean_crystal",
@@ -507,7 +524,8 @@
 					"count": 1
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "alien_device",
@@ -536,7 +554,8 @@
 					}
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "livre_divon",
@@ -566,7 +585,8 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "pnakotic_manuscripts",
@@ -600,7 +620,8 @@
 					}
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "crystal_elder_things",
@@ -611,7 +632,8 @@
 		"traits": [
 			"item"
 		],
-		"effect": {}
+		"effect": {},
+		"hasImage": false
 	},
 	{
 		"id": "dhol_chants",
@@ -647,7 +669,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "eltdown_shards",
@@ -677,7 +700,8 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "satchel_of_the_void",
@@ -702,7 +726,8 @@
 					"count": 1
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "milk_shub_niggurath",
@@ -744,7 +769,8 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "massa_di_requiem",
@@ -794,7 +820,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "elixir_of_life",
@@ -836,7 +863,8 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "zanthu_tablets",
@@ -881,7 +909,8 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "sword_yha_talla",
@@ -920,7 +949,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "serpent_crown",
@@ -957,7 +987,8 @@
 					"trait": "ally"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "cursed_sphere",
@@ -996,7 +1027,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "glass_of_mortlan",
@@ -1023,7 +1055,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "grotesque_statue",
@@ -1053,7 +1086,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "migo_brain_case",
@@ -1066,7 +1100,8 @@
 			"magical",
 			"teamwork"
 		],
-		"effect": {}
+		"effect": {},
+		"hasImage": false
 	},
 	{
 		"id": "lightning_gun",
@@ -1103,7 +1138,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "sword_saint_jerome",
@@ -1142,7 +1178,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "cultes_des_goules",
@@ -1171,7 +1208,8 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "de_vermis_mysteriis",
@@ -1201,7 +1239,8 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "necronomicon",
@@ -1230,7 +1269,8 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "pallid_mask",
@@ -1242,7 +1282,8 @@
 			"item",
 			"magical"
 		],
-		"effect": {}
+		"effect": {},
+		"hasImage": false
 	},
 	{
 		"id": "ruby_of_rlyeh",
@@ -1266,7 +1307,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "silver_key",
@@ -1286,7 +1328,8 @@
 					"context": "otherWorldEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "flute_outer_gods",
@@ -1317,7 +1360,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "gate_box",
@@ -1348,7 +1392,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "tka_halot",
@@ -1378,6 +1423,7 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"hasImage": false
 	}
 ]

@@ -20,7 +20,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "38_revolver",
@@ -43,7 +44,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "45_automatic",
@@ -66,7 +68,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "agency_quarantine",
@@ -89,7 +92,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "arcane_manuscripts",
@@ -112,7 +116,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "arcane_scholar",
@@ -138,7 +143,8 @@
 					"skill": "lore"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "arcane_tome",
@@ -177,7 +183,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "axe",
@@ -211,7 +218,8 @@
 					}
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "bandages",
@@ -236,7 +244,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "bull_whip",
@@ -265,7 +274,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "carbine_rifle",
@@ -290,7 +300,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "cat_burglar",
@@ -333,7 +344,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "charter_flight",
@@ -355,7 +367,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "delivery_service",
@@ -381,7 +394,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "double_barreled_shotgun",
@@ -411,7 +425,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "dynamite",
@@ -438,7 +453,8 @@
 					}
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "fine_clothes",
@@ -459,7 +475,8 @@
 					"context": "acquireAssets"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "fishing_net",
@@ -485,7 +502,8 @@
 					"min": 1
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "hired_muscle",
@@ -511,7 +529,8 @@
 					"skill": "strength"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "holy_cross",
@@ -533,7 +552,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "holy_water",
@@ -578,7 +598,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "kerosene",
@@ -604,7 +625,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "king_james_bible",
@@ -638,7 +660,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "lodge_researcher",
@@ -666,7 +689,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "lucky_cigarette_case",
@@ -689,7 +713,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "lucky_rabbits_foot",
@@ -714,7 +739,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "personal_assistant",
@@ -740,7 +766,8 @@
 					"skill": "influence"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "pocket_watch",
@@ -759,7 +786,8 @@
 					"status": "delayed"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "private_care",
@@ -785,7 +813,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "private_investigator",
@@ -811,7 +840,8 @@
 					"skill": "observation"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "protective_amulet",
@@ -833,7 +863,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "puzzle_box",
@@ -867,7 +898,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "sanctuary",
@@ -889,7 +921,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "silver_twilight_ritual",
@@ -911,7 +944,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "spirit_dagger",
@@ -941,7 +975,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "urban_guide",
@@ -966,7 +1001,8 @@
 					"context": "anyTest"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "vatican_missionary",
@@ -992,7 +1028,8 @@
 					"skill": "will"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "whiskey",
@@ -1017,7 +1054,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "wireless_report",
@@ -1042,7 +1080,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "witch_doctor",
@@ -1075,7 +1114,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "45_colt_revolver",
@@ -1100,7 +1140,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "appeal_to_the_council",
@@ -1127,7 +1168,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "bodyguard",
@@ -1153,7 +1195,8 @@
 					"min": 1
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "conspiracy_theorist",
@@ -1197,7 +1240,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "elder_sign",
@@ -1224,7 +1268,8 @@
 					"min": 1
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "enchanted_blade",
@@ -1254,7 +1299,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "fresh_fruit",
@@ -1286,7 +1332,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "intelligence_report",
@@ -1308,7 +1355,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "lantern",
@@ -1333,7 +1381,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "lucky_ring",
@@ -1357,7 +1406,8 @@
 					"context": "anyTest"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "mystic_bounty_hunter",
@@ -1385,7 +1435,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "police_assistance",
@@ -1407,7 +1458,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "police_ledger",
@@ -1441,7 +1493,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "research_student",
@@ -1473,7 +1526,7 @@
 							"on": "1",
 							"then": [
 								{
-									"do": "discardCard"
+									"do": "discardBoardClue"
 								}
 							]
 						},
@@ -1484,7 +1537,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "syndicate_agent",
@@ -1512,7 +1566,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "tear_gas",
@@ -1543,7 +1598,8 @@
 					"min": 1
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"id": "astronomy_guidebook",
@@ -1572,7 +1628,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "blunderbuss",
@@ -1609,7 +1666,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "courier_needed",
@@ -1632,7 +1690,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "cultists_journal",
@@ -1662,7 +1721,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "gamblers_dice",
@@ -1693,7 +1753,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "genealogy_research",
@@ -1727,7 +1788,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "investment",
@@ -1754,7 +1816,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "map_of_the_ley_lines",
@@ -1793,7 +1856,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "mineralogy_research",
@@ -1827,7 +1891,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "monster_hunter",
@@ -1859,7 +1924,8 @@
 					"target": "chosenMonster"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "newspaper_report",
@@ -1890,7 +1956,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "patrolling_the_streets",
@@ -1919,7 +1986,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "profane_tome",
@@ -1941,7 +2009,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "search_the_archives",
@@ -1964,7 +2033,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "secret_page",
@@ -1992,7 +2062,8 @@
 					"do": "gainSpell"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "tome_of_horrors",
@@ -2020,7 +2091,8 @@
 					"min": 1
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "agent_of_secrets",
@@ -2051,7 +2123,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "arcane_blade",
@@ -2081,7 +2154,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "consecration",
@@ -2103,7 +2177,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "expedition_guide",
@@ -2123,7 +2198,8 @@
 					"context": "anyTest"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "expedition_map",
@@ -2147,7 +2223,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "gruesome_talisman",
@@ -2169,7 +2246,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "handcuffs",
@@ -2202,7 +2280,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "holy_spear",
@@ -2227,7 +2306,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "lavish_feast",
@@ -2253,7 +2333,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "medical_journal",
@@ -2287,7 +2368,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "museum_curator",
@@ -2318,7 +2400,8 @@
 					"trait": "relic"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "mysterious_tome",
@@ -2339,7 +2422,8 @@
 					"context": "anyTest"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "opus_arcana",
@@ -2367,7 +2451,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "ritual_dagger",
@@ -2403,7 +2488,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "specialized_training",
@@ -2437,7 +2523,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "tome_of_secrets",
@@ -2470,7 +2557,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "25_automatic",
@@ -2492,7 +2580,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "arcane_assistant",
@@ -2513,7 +2602,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "assassination",
@@ -2536,7 +2626,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "chief_inspector",
@@ -2563,7 +2654,8 @@
 					"context": "researchEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "enchanted_cane",
@@ -2587,7 +2679,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "esteemed_author",
@@ -2618,7 +2711,8 @@
 					"trait": "tome"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "fine_jewelry",
@@ -2641,7 +2735,8 @@
 					"context": "acquireAssets"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "flamethrower",
@@ -2669,7 +2764,8 @@
 					"min": 1
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "lodge_disciple",
@@ -2700,7 +2796,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "lodge_physician",
@@ -2733,7 +2830,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "occult_text",
@@ -2756,7 +2854,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "rumor_mill",
@@ -2778,7 +2877,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "security_squad",
@@ -2799,7 +2899,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "specialist",
@@ -2829,7 +2930,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "three_card_monte",
@@ -2864,7 +2966,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "tommy_gun",
@@ -2887,7 +2990,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "32_colt_pocket",
@@ -2916,7 +3020,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "ancient_tome",
@@ -2946,7 +3051,8 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "ankh",
@@ -2975,7 +3081,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "arcane_scroll",
@@ -2998,7 +3105,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "book_of_spells",
@@ -3032,7 +3140,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "curiosity_shoppe",
@@ -3053,7 +3162,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "enchanted_dagger",
@@ -3077,7 +3187,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "lucky_talisman",
@@ -3103,7 +3214,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "magick_shoppe",
@@ -3130,7 +3242,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "magnifying_glass",
@@ -3160,7 +3273,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "psychoanalyst",
@@ -3193,7 +3307,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "ritual_candles",
@@ -3229,7 +3344,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "scribes_journal",
@@ -3253,7 +3369,8 @@
 					"resource": "spell"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "sledgehammer",
@@ -3280,7 +3397,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "treasure_hunter",
@@ -3311,7 +3429,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "ward_evil",
@@ -3333,7 +3452,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "agency_stakeout",
@@ -3360,7 +3480,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "arcane_sutra",
@@ -3390,7 +3511,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "forbidden_secrets",
@@ -3413,7 +3535,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "gatling_gun",
@@ -3443,7 +3566,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "grisly_totem",
@@ -3482,7 +3606,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "lodge_hunter",
@@ -3513,7 +3638,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "mauser_c96",
@@ -3542,7 +3668,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "mission_briefing",
@@ -3574,7 +3701,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "mystic_scroll",
@@ -3595,7 +3723,8 @@
 					"skill": "lore"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "news_report",
@@ -3618,7 +3747,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "occult_scripture",
@@ -3650,7 +3780,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "painkillers",
@@ -3672,7 +3803,8 @@
 					"context": "illnessInjuryEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "private_flight",
@@ -3693,7 +3825,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "silver_twilight_host",
@@ -3723,7 +3856,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "training_regimen",
@@ -3745,7 +3879,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "winchester_rifle",
@@ -3770,7 +3905,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "alchemical_concoction",
@@ -3797,7 +3933,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "arcanist",
@@ -3829,7 +3966,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "camera",
@@ -3853,7 +3991,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "divination",
@@ -3878,7 +4017,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "dream_box",
@@ -3907,7 +4047,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "dream_diary",
@@ -3942,7 +4083,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "enchanted_bow",
@@ -3976,7 +4118,8 @@
 					"target": "chosenMonster"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "forbidden_text",
@@ -4004,7 +4147,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "hitman",
@@ -4032,7 +4176,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "night_classes",
@@ -4059,7 +4204,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "occult_grimoire",
@@ -4087,7 +4233,8 @@
 					"min": 1
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "otherworld_codex",
@@ -4114,7 +4261,8 @@
 					"amount": 1
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "police_raid",
@@ -4137,7 +4285,8 @@
 					"do": "discardCard"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "seek_the_truth",
@@ -4162,7 +4311,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "skeleton_keys",
@@ -4185,7 +4335,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "willful_aristocrat",
@@ -4216,7 +4367,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "ancient_manuscript",
@@ -4256,7 +4408,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "astute_researcher",
@@ -4285,7 +4438,8 @@
 					"trait": "task"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "blessed_blade",
@@ -4316,7 +4470,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "chainsaw",
@@ -4345,7 +4500,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "enchanted_jewelry",
@@ -4372,7 +4528,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "experts_blade",
@@ -4402,7 +4559,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "grim_lexicon",
@@ -4429,7 +4587,8 @@
 					"min": 1
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "grotesque_compendium",
@@ -4458,7 +4617,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "museum_director",
@@ -4484,7 +4644,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "mystic_tome",
@@ -4520,7 +4681,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "occult_tablet",
@@ -4566,7 +4728,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "protective_totem",
@@ -4590,7 +4753,8 @@
 					"optional": true
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "scroll_of_secrets",
@@ -4619,7 +4783,8 @@
 					"context": "spellEffect"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "timeworn_brand",
@@ -4651,7 +4816,8 @@
 					"context": "combatEncounter"
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "treasured_memento",
@@ -4675,7 +4841,8 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	},
 	{
 		"id": "vampiric_talisman",
@@ -4710,6 +4877,7 @@
 					]
 				}
 			]
-		}
+		},
+		"hasImage": false
 	}
 ]

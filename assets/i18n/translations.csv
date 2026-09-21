@@ -1714,8 +1714,8 @@ PICK_RESERVE_ASSET,Выберите карту с витрины:,Choose a card 
 RECKONING_DECISION_PROMPT,Расплата: решите судьбу карты,Reckoning: decide the fate of the card
 DECISION_SKIP,Пропустить,Skip
 
-ARTIFACT_KEY_TO_CARCOSA_NAME,???? ?? ???????,Key to Carcosa
-ARTIFACT_KEY_TO_CARCOSA_ABILITY,"??? ? ????? ?? ?????? ????????? 1 ????????, ????? ??????????? ????? ?????????? ??????? ? ????????.","Once per round, you may spend 1 Sanity to reroll any number of dice when resolving a test."
+ARTIFACT_KEY_TO_CARCOSA_NAME,Ключ к Каркозе,Key to Carcosa
+ARTIFACT_KEY_TO_CARCOSA_ABILITY,"Один раз за раунд вы можете потратить 1 единицу Рассудка, чтобы перебросить любое количество кубиков при прохождении проверки.","Once per round, you may spend 1 Sanity to reroll any number of dice when resolving a test."
 ARTIFACT_KING_IN_YELLOW_NAME,Король в жёлтом,King In Yellow
 ARTIFACT_KING_IN_YELLOW_ABILITY,"Получите +2 ко всем навыкам, если у вас есть состояние «Порча». Расплата: Получите состояние «Порча».",Gain +2 to all skills if you have a Blight Condition. Reckoning: Gain a Blight Condition.
 ARTIFACT_TATTERED_CLOAK_NAME,Истрёпанный плащ,Tattered Cloak

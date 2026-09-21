@@ -23,7 +23,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Colby Banks",
@@ -49,7 +50,8 @@
 			"observation": 3,
 			"strength": 4,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Harold Perkins",
@@ -78,7 +80,8 @@
 			"observation": 4,
 			"strength": 2,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Nadia Blackwood",
@@ -104,7 +107,8 @@
 			"observation": 4,
 			"strength": 3,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Elena Kostas",
@@ -130,7 +134,8 @@
 			"observation": 1,
 			"strength": 3,
 			"will": 4
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Vivienne Marchetti",
@@ -157,7 +162,8 @@
 			"observation": 3,
 			"strength": 1,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Maxwell Thorne",
@@ -186,7 +192,8 @@
 			"observation": 2,
 			"strength": 2,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Clara Ashby",
@@ -216,7 +223,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 1
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Nora Quinn",
@@ -238,7 +246,8 @@
 			"observation": 4,
 			"strength": 1,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Ruth Adler",
@@ -261,7 +270,8 @@
 			"observation": 3,
 			"strength": 1,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Ada Fairfax",
@@ -288,7 +298,8 @@
 			"observation": 4,
 			"strength": 2,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Mai Nguyen",
@@ -314,7 +325,8 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Betty Cross",
@@ -340,7 +352,8 @@
 			"observation": 2,
 			"strength": 4,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Nick Stone",
@@ -366,7 +379,8 @@
 			"observation": 4,
 			"strength": 2,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Silas Graves",
@@ -392,7 +406,8 @@
 			"observation": 2,
 			"strength": 3,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Cordelia Frost",
@@ -419,7 +434,8 @@
 			"observation": 3,
 			"strength": 1,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Rosa Delgado",
@@ -448,7 +464,8 @@
 			"observation": 1,
 			"strength": 3,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Hobo Cal",
@@ -474,7 +491,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Frank Donnelly",
@@ -500,7 +518,8 @@
 			"observation": 1,
 			"strength": 4,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Danny Kilroy",
@@ -526,7 +545,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Tavita Lebeau",
@@ -555,7 +575,8 @@
 			"observation": 4,
 			"strength": 1,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Alfred Bramwell",
@@ -581,7 +602,8 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Celeste Dubois",
@@ -610,7 +632,8 @@
 			"observation": 2,
 			"strength": 2,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Arthur Pennington",
@@ -639,7 +662,8 @@
 			"observation": 2,
 			"strength": 1,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Nellie Fox",
@@ -665,7 +689,8 @@
 			"observation": 4,
 			"strength": 2,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Greta Sterling",
@@ -691,7 +716,8 @@
 			"observation": 2,
 			"strength": 2,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Nick Ryan",
@@ -717,7 +743,8 @@
 			"observation": 2,
 			"strength": 3,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Mei Lin",
@@ -761,7 +788,8 @@
 					"repeat": 1
 				}
 			]
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Al Dobbs",
@@ -790,7 +818,8 @@
 			"observation": 2,
 			"strength": 3,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Miles Barrow",
@@ -820,7 +849,8 @@
 			"observation": 2,
 			"strength": 2,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Daphne Vale",
@@ -852,7 +882,8 @@
 			"observation": 2,
 			"strength": 3,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Beatrix Kingsley",
@@ -878,7 +909,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Walter Briggs",
@@ -904,7 +936,8 @@
 			"observation": 2,
 			"strength": 4,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Casey Mercer",
@@ -933,7 +966,8 @@
 			"observation": 1,
 			"strength": 2,
 			"will": 4
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Gordon Pike",
@@ -959,7 +993,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Chester Holloway",
@@ -985,7 +1020,8 @@
 			"observation": 2,
 			"strength": 3,
 			"will": 1
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Clive Ashton",
@@ -1011,7 +1047,8 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 4
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Father Ignatius",
@@ -1038,7 +1075,8 @@
 			"observation": 1,
 			"strength": 2,
 			"will": 4
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Frank Delaney",
@@ -1064,7 +1102,8 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Ngozi Eze",
@@ -1090,7 +1129,8 @@
 			"observation": 2,
 			"strength": 2,
 			"will": 4
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Frank Dalton",
@@ -1119,7 +1159,8 @@
 			"observation": 2,
 			"strength": 4,
 			"will": 4
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Marcus Bell",
@@ -1151,7 +1192,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 1
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Nora Whitby",
@@ -1177,7 +1219,8 @@
 			"observation": 4,
 			"strength": 1,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Iris Bellamy",
@@ -1203,7 +1246,8 @@
 			"observation": 2,
 			"strength": 1,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Dale Corwin",
@@ -1230,7 +1274,8 @@
 			"observation": 4,
 			"strength": 2,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Buck Tanner",
@@ -1256,7 +1301,8 @@
 			"observation": 3,
 			"strength": 4,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Sly Bracken",
@@ -1282,7 +1328,8 @@
 			"observation": 3,
 			"strength": 4,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Evelyn Hart",
@@ -1308,7 +1355,8 @@
 			"observation": 2,
 			"strength": 2,
 			"will": 4
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Henry Wu",
@@ -1334,7 +1382,8 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 4
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Esther Ravel",
@@ -1363,7 +1412,8 @@
 			"observation": 2,
 			"strength": 2,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Rory Kell",
@@ -1392,7 +1442,8 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Simone Ardent",
@@ -1421,7 +1472,8 @@
 			"observation": 3,
 			"strength": 1,
 			"will": 4
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Percival Stane",
@@ -1451,7 +1503,8 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 3
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Vince Cutter",
@@ -1477,7 +1530,8 @@
 			"observation": 4,
 			"strength": 3,
 			"will": 2
-		}
+		},
+		"hasImage": true
 	},
 	{
 		"name": "Sister Cecilia",
@@ -1509,6 +1563,7 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 4
-		}
+		},
+		"hasImage": true
 	}
 ]
