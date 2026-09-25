@@ -302,6 +302,7 @@ func _ts() -> String:
 
 const _COMMANDS := [
 	{"text": "give", "hint": "актив/заклинание в руку"},
+	{"text": "clue", "hint": "улика в руку"},
 	{"text": "spawn", "hint": "монстр на локации"},
 	{"text": "gate", "hint": "открыть врата"},
 	{"text": "cond", "hint": "наложить состояние"},
@@ -350,6 +351,10 @@ func _candidates(toks: Array, arg_index: int, editing: String) -> Array:
 			)
 		"cond", "condition":
 			return _players_cands() if arg_index == 1 else _as_cands(_condition_entries())
+		"clue":
+			if arg_index == 1:
+				return _players_cands()
+			return _location_cands() if editing.begins_with("@") else []
 		"enc", "encounter":
 			if arg_index == 1:
 				return _players_cands()
@@ -517,6 +522,8 @@ func _on_command_submitted(text: String) -> void:
 			_cmd_list(args)
 		"give":
 			_cmd_give(args)
+		"clue":
+			_cmd_clue(args)
 		"spawn", "mon":
 			_cmd_spawn(args)
 		"gate":
@@ -552,6 +559,7 @@ func _grab_input_focus() -> void:
 func _cmd_help() -> void:
 	self.log("Команды debug-консоли (только хост, dev-сборка):")
 	self.log("  give <игрок> <карта>        — актив или заклинание в руку")
+	self.log("  clue <игрок> [@локация] [n] — улика в руку: конкретная (@) или n случайных")
 	self.log("  spawn <монстр> [@локация]   — монстр на локации (по умолч. — твоя)")
 	self.log("  gate [@локация] [цвет]      — открыть врата (+1 монстр)")
 	self.log("  cond <игрок> <состояние>    — наложить состояние")
@@ -620,6 +628,23 @@ func _cmd_give(args: Array) -> void:
 		self.log(GameState.debug_exec("give_spell", pid, String(hit["id"])))
 	else:
 		self.log(GameState.debug_exec("give_asset", pid, String(hit["id"])))
+
+
+# clue <игрок> [@локация] [n]: с @локацией — именно эта улика Древнего (ключ уходит
+# из колоды/сброса), без неё — n анонимных, идентичность вытянется из колоды при синке.
+func _cmd_clue(args: Array) -> void:
+	if args.is_empty():
+		err("clue <игрок> [@локация] [n]")
+		return
+	var loc: String = _pop_location(args)
+	var pid: String = _resolve_pid(String(args[0]))
+	if pid.is_empty():
+		err("не нашёл игрока «%s» (см. `who`)" % args[0])
+		return
+	var n: int = 1
+	if args.size() > 1 and String(args[1]).is_valid_int():
+		n = int(args[1])
+	self.log(GameState.debug_exec("clue", pid, loc, str(n)))
 
 
 func _cmd_spawn(args: Array) -> void:

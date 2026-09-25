@@ -1418,7 +1418,7 @@ func player_has_constraint(pid: String, verb: String) -> bool:
 # Единая точка для GameConsole. Разбор команд/резолв id — на стороне консоли, сюда
 # приходит op + готовые id. Мутации (DebugGrant) идут ТЕМ ЖЕ хост-путём, что геймплей,
 # и синкают всем; гейт двойной (релиз ИЛИ не-хост → no-op). op: mypid | give_asset |
-# give_spell | spawn | gate | condition.
+# give_spell | clue | spawn | gate | condition | encounter.
 func debug_exec(op: String, a: String = "", b: String = "", c: String = "") -> String:
 	if op == "mypid":
 		return _nm.my_user_id
@@ -1435,6 +1435,8 @@ func debug_exec(op: String, a: String = "", b: String = "", c: String = "") -> S
 			return DebugGrant.open_gate(self, a, b)
 		"condition":
 			return DebugGrant.gain_condition(self, a, b)
+		"clue":  # a=игрок, b=локация ("" — анонимные), c=число
+			return DebugGrant.give_clue(self, a, b, maxi(1, int(c)))
 		"encounter":  # a=игрок, b=вид, c=мир (для gate)
 			return DebugGrant.assign_encounter(self, a, b, c)
 		_:

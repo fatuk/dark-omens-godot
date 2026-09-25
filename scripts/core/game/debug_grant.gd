@@ -85,6 +85,42 @@ static func assign_encounter(gs: Node, pid: String, kind: String, world: String)
 	return "следующая встреча %s: %s%s" % [String(gs.call("_name_of", pid)), kind, where]
 
 
+# Улики в руку. Без локации — n анонимных: идентичности сами вытянутся из колоды
+# при синке (_reconcile_clue_identities). С локацией — ровно эта улика: ключ уходит
+# из колоды/сброса игроку; если он уже на поле или в чьей-то руке — отказ, улики
+# уникальны на партию.
+static func give_clue(gs: Node, pid: String, loc: String, n: int) -> String:
+	var players: Dictionary = gs.get("players")
+	if not players.has(pid):
+		return "нет игрока «%s»" % pid
+	var p: Dictionary = players[pid]
+	var who: String = String(gs.call("_name_of", pid))
+	if loc.is_empty():
+		var cnt: int = clampi(n, 1, 20)
+		p[PlayerKeys.CLUES] = int(p.get(PlayerKeys.CLUES, 0)) + cnt
+		players[pid] = p
+		gs.call("_broadcast_and_emit")
+		return "улик +%d → %s" % [cnt, who]
+	if not (gs.get("map").call("ids") as Array).has(loc):
+		return "нет локации «%s»" % loc
+	gs.call("_ensure_clue_deck")
+	var deck: Array = gs.get("clue_deck")
+	var discard: Array = gs.get("clue_discard")
+	if deck.has(loc):
+		deck.erase(loc)
+	elif discard.has(loc):
+		discard.erase(loc)
+	else:
+		return "улика «%s» уже в игре — на поле или в руках" % loc
+	var ids: Array = p.get(PlayerKeys.CLUE_IDS, [])
+	ids.append(loc)
+	p[PlayerKeys.CLUE_IDS] = ids
+	p[PlayerKeys.CLUES] = int(p.get(PlayerKeys.CLUES, 0)) + 1
+	players[pid] = p
+	gs.call("_broadcast_and_emit")
+	return "улика «%s» → %s" % [loc, who]
+
+
 static func gain_condition(gs: Node, pid: String, cid: String) -> String:
 	if not (gs.get("players") as Dictionary).has(pid):
 		return "нет игрока «%s»" % pid
