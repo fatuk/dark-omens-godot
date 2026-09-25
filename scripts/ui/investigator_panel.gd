@@ -39,14 +39,14 @@ const _AVATAR_FRAME: Texture2D = preload("res://assets/investigator-panel/avatar
 ## static var, а не const: тюнинг-панель (Ctrl+M) крутит их вживую через GROUP /
 ## refresh_turn_glow; найденное значение запекается сюда в default.
 const GROUP := "investigator_panel"
-static var GLOW_R: float = 0.35  # цвет ореола (зелёный)
-static var GLOW_G: float = 0.85
-static var GLOW_B: float = 0.45
-static var GLOW_ALPHA: float = 0.6  # яркость у самого кольца
-static var GLOW_SPREAD: float = 1.35  # во сколько раз ореол крупнее аватарки
-static var GLOW_FALLOFF: float = 1.6  # крутизна затухания наружу (1 — линейно)
-static var GLOW_PULSE_SPEED: float = 2.0  # скорость дыхания, рад/с
-static var GLOW_PULSE_AMOUNT: float = 0.35  # глубина дыхания (0 — ровное свечение)
+static var GLOW_R: float = 0.52  # цвет ореола (зелёный)
+static var GLOW_G: float = 0.83
+static var GLOW_B: float = 0.35
+static var GLOW_ALPHA: float = 0.66  # яркость у самого кольца
+static var GLOW_SPREAD: float = 1.2  # во сколько раз ореол крупнее аватарки
+static var GLOW_FALLOFF: float = 3.15  # крутизна затухания наружу (1 — линейно)
+static var GLOW_PULSE_SPEED: float = 2.2  # скорость дыхания, рад/с
+static var GLOW_PULSE_AMOUNT: float = 0.72  # глубина дыхания (0 — ровное свечение)
 
 
 ## Тюнинг-панель: положить значение в static-поле по имени (GLOW_R … GLOW_PULSE_AMOUNT).
