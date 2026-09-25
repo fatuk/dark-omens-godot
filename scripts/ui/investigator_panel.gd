@@ -1,3 +1,4 @@
+class_name InvestigatorPanel
 extends CanvasLayer
 
 ## Всегда-видимая нижняя HUD-панель сыщика на карте: круглый аватар во фрейме +
@@ -31,6 +32,63 @@ const _FRAME_TEX: Texture2D = preload(
 	"res://assets/investigator-panel/investigator-panel-frame.png"
 )
 const _AVATAR_FRAME: Texture2D = preload("res://assets/investigator-panel/avatar-round-frame.png")
+
+## Ореол «твой ход» вокруг аватарки: мягкое зелёное свечение с дыханием ПОД
+## портретом и кольцом (наружу от кольца). Показывается только на экране того,
+## кто ходит, — остальным «кого ждут» подсказывает ореол пина на карте.
+## static var, а не const: тюнинг-панель (Ctrl+M) крутит их вживую через GROUP /
+## refresh_turn_glow; найденное значение запекается сюда в default.
+const GROUP := "investigator_panel"
+static var GLOW_R: float = 0.35  # цвет ореола (зелёный)
+static var GLOW_G: float = 0.85
+static var GLOW_B: float = 0.45
+static var GLOW_ALPHA: float = 0.6  # яркость у самого кольца
+static var GLOW_SPREAD: float = 1.35  # во сколько раз ореол крупнее аватарки
+static var GLOW_FALLOFF: float = 1.6  # крутизна затухания наружу (1 — линейно)
+static var GLOW_PULSE_SPEED: float = 2.0  # скорость дыхания, рад/с
+static var GLOW_PULSE_AMOUNT: float = 0.35  # глубина дыхания (0 — ровное свечение)
+
+
+## Тюнинг-панель: положить значение в static-поле по имени (GLOW_R … GLOW_PULSE_AMOUNT).
+static func set_glow_param(field: String, v: float) -> void:
+	match field:
+		"GLOW_R":
+			GLOW_R = v
+		"GLOW_G":
+			GLOW_G = v
+		"GLOW_B":
+			GLOW_B = v
+		"GLOW_ALPHA":
+			GLOW_ALPHA = v
+		"GLOW_SPREAD":
+			GLOW_SPREAD = v
+		"GLOW_FALLOFF":
+			GLOW_FALLOFF = v
+		"GLOW_PULSE_SPEED":
+			GLOW_PULSE_SPEED = v
+		"GLOW_PULSE_AMOUNT":
+			GLOW_PULSE_AMOUNT = v
+		_:
+			push_warning("[InvestigatorPanel] неизвестный параметр ореола «%s»" % field)
+
+
+# Радиальный ореол: сплошной внутри края аватарки (edge = 1/spread по радиусу, его
+# всё равно закрывает портрет с кольцом), затухание к краю квадрата, дыхание по TIME.
+const _TURN_GLOW_SHADER := """
+shader_type canvas_item;
+uniform vec4 glow;
+uniform float edge;
+uniform float falloff;
+uniform float pulse_speed;
+uniform float pulse_amount;
+void fragment() {
+	float d = length(UV - vec2(0.5)) * 2.0;
+	float a = 1.0 - smoothstep(edge, 1.0, d);
+	a = pow(a, falloff);
+	a *= (1.0 - pulse_amount) + pulse_amount * (0.5 + 0.5 * sin(TIME * pulse_speed));
+	COLOR = vec4(glow.rgb, glow.a * a);
+}
+"""
 
 # Круглая маска портрета: отсекаем фрагменты вне вписанного круга.
 const _CIRCLE_MASK_SHADER := """
@@ -66,6 +124,8 @@ var _inv_name: String = ""
 var _inv_data: Dictionary = {}
 var _info_bar: InfoBar
 var _portrait: TextureRect
+var _turn_glow: ColorRect  # ореол «твой ход» под аватаркой (см. GROUP)
+var _turn_glow_mat: ShaderMaterial
 var _name_label: Label
 var _occ_label: Label
 
@@ -80,6 +140,7 @@ func _ready() -> void:
 	# переподключение). _refresh_identity пересобирает только при смене сыщика.
 	GameState.state_changed.connect(_refresh_identity)
 	GameState.state_changed.connect(_refresh_live)
+	add_to_group(GROUP)
 	_refresh_live()
 
 
@@ -158,6 +219,19 @@ func _build_avatar() -> Control:
 	holder.mouse_filter = Control.MOUSE_FILTER_STOP
 	holder.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	holder.gui_input.connect(_on_avatar_input)
+
+	# Ореол хода — самым нижним слоем холдера: под портретом, тенью и кольцом.
+	_turn_glow = ColorRect.new()
+	_turn_glow.name = "TurnGlow"
+	_turn_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_turn_glow.visible = false
+	_turn_glow_mat = ShaderMaterial.new()
+	var glow_sh := Shader.new()
+	glow_sh.code = _TURN_GLOW_SHADER
+	_turn_glow_mat.shader = glow_sh
+	_turn_glow.material = _turn_glow_mat
+	holder.add_child(_turn_glow)
+	refresh_turn_glow()
 
 	# Портрет заполняет весь холдер с круговой маской; кольцо-фрейм сверху прячет
 	# края портрета — т.е. портрет лежит ПОД фреймом аватарки.
@@ -280,6 +354,16 @@ func _refresh_live() -> void:
 	# Тень — не живой сыщик: прячем HP/рассудок/атрибуты, портрет делаем ч/б.
 	var ghost: bool = bool(p.get(PlayerKeys.DEAD, false))
 	_info_bar.visible = not ghost
+	# Ореол хода: только когда ходит САМ игрок (действия И встречи — это всё его
+	# ход; GameState.is_my_turn() смотрит лишь фазу действий); Тени ходить нечем.
+	if is_instance_valid(_turn_glow):
+		var my_phase: bool = GameState.phase == Phases.ACTION or GameState.phase == Phases.ENCOUNTER
+		_turn_glow.visible = (
+			GameState.active
+			and my_phase
+			and GameState._current_pid() == GameState.local_pid()
+			and not ghost
+		)
 	if is_instance_valid(_portrait) and _portrait.material is ShaderMaterial:
 		(_portrait.material as ShaderMaterial).set_shader_parameter("dead", 1.0 if ghost else 0.0)
 	if ghost:
@@ -291,6 +375,24 @@ func _refresh_live() -> void:
 		int(p.get("sanity_max", 0))
 	)
 	_info_bar.set_live_skill_mods(p.get("skill_mods", {}))
+
+
+## Переприменить геометрию и параметры ореола из static-полей. Зовётся при сборке
+## и из тюнинг-панели, когда подвинули ползунок (по группе GROUP).
+func refresh_turn_glow() -> void:
+	if not is_instance_valid(_turn_glow):
+		return
+	var m: float = _AVATAR_D * (GLOW_SPREAD - 1.0) * 0.5  # вынос за край аватарки
+	_turn_glow.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_turn_glow.offset_left = -m
+	_turn_glow.offset_top = -m
+	_turn_glow.offset_right = m
+	_turn_glow.offset_bottom = m
+	_turn_glow_mat.set_shader_parameter("glow", Vector4(GLOW_R, GLOW_G, GLOW_B, GLOW_ALPHA))
+	_turn_glow_mat.set_shader_parameter("edge", 1.0 / GLOW_SPREAD)
+	_turn_glow_mat.set_shader_parameter("falloff", GLOW_FALLOFF)
+	_turn_glow_mat.set_shader_parameter("pulse_speed", GLOW_PULSE_SPEED)
+	_turn_glow_mat.set_shader_parameter("pulse_amount", GLOW_PULSE_AMOUNT)
 
 
 # ── Загрузка данных сыщика ────────────────────────────────────────────────────

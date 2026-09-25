@@ -1435,6 +1435,79 @@ func _build_specs() -> Array:
 			"default": InvestigatorPin.AWAY_ALPHA,
 			"set": _set_pin_away_alpha
 		},
+		{"section": "ПАНЕЛЬ СЫЩИКА · ОРЕОЛ ХОДА"},
+		{
+			"key": "ipanel_glow_r",
+			"label": "Цвет · R",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": InvestigatorPanel.GLOW_R,
+			"set": _ipanel_glow_setter("GLOW_R")
+		},
+		{
+			"key": "ipanel_glow_g",
+			"label": "Цвет · G",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": InvestigatorPanel.GLOW_G,
+			"set": _ipanel_glow_setter("GLOW_G")
+		},
+		{
+			"key": "ipanel_glow_b",
+			"label": "Цвет · B",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": InvestigatorPanel.GLOW_B,
+			"set": _ipanel_glow_setter("GLOW_B")
+		},
+		{
+			"key": "ipanel_glow_alpha",
+			"label": "Яркость",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": InvestigatorPanel.GLOW_ALPHA,
+			"set": _ipanel_glow_setter("GLOW_ALPHA")
+		},
+		{
+			"key": "ipanel_glow_spread",
+			"label": "Размах",
+			"min": 1.05,
+			"max": 2.0,
+			"step": 0.01,
+			"default": InvestigatorPanel.GLOW_SPREAD,
+			"set": _ipanel_glow_setter("GLOW_SPREAD")
+		},
+		{
+			"key": "ipanel_glow_falloff",
+			"label": "Крутизна затухания",
+			"min": 0.3,
+			"max": 4.0,
+			"step": 0.05,
+			"default": InvestigatorPanel.GLOW_FALLOFF,
+			"set": _ipanel_glow_setter("GLOW_FALLOFF")
+		},
+		{
+			"key": "ipanel_glow_pulse_speed",
+			"label": "Скорость пульсации",
+			"min": 0.0,
+			"max": 8.0,
+			"step": 0.1,
+			"default": InvestigatorPanel.GLOW_PULSE_SPEED,
+			"set": _ipanel_glow_setter("GLOW_PULSE_SPEED")
+		},
+		{
+			"key": "ipanel_glow_pulse_amount",
+			"label": "Глубина пульсации",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": InvestigatorPanel.GLOW_PULSE_AMOUNT,
+			"set": _ipanel_glow_setter("GLOW_PULSE_AMOUNT")
+		},
 		{"section": "КАРТА · ПАНОРАМИРОВАНИЕ"},
 		{
 			"key": "map_friction",
@@ -2680,3 +2753,12 @@ func _set_pin_away_alpha(v: float) -> void:
 	InvestigatorPin.AWAY_ALPHA = v
 	for m: Node in get_tree().get_nodes_in_group("map_layer"):
 		m.call("refresh_away")
+
+
+# Ореол хода на панели сыщика: один сеттер-фабрика на все static-поля
+# InvestigatorPanel.GLOW_* — панель сама кладёт значение по имени и переприменяет.
+func _ipanel_glow_setter(field: String) -> Callable:
+	return func(v: float) -> void:
+		InvestigatorPanel.set_glow_param(field, v)
+		for p: Node in get_tree().get_nodes_in_group(InvestigatorPanel.GROUP):
+			p.call("refresh_turn_glow")
