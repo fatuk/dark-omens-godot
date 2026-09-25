@@ -631,6 +631,7 @@ func _show_card(card: Dictionary) -> void:
 	_roll_btn.visible = true
 	_roll_btn.disabled = false
 	_outcome.visible = false
+	_outcome.text = ""  # иначе _on_roll_settled покажет исход ПРОШЛОЙ встречи
 	_outcome_shown = false  # исход ещё не показан — сброс фейд-флага
 	_finish_btn.visible = false
 	var test_c: Dictionary = card.get("test", {})
@@ -661,6 +662,7 @@ func _show_outcome(card: Dictionary) -> void:
 	# цветом: зелёный успех / красный провал. Появление — плавным фейдом.
 	if hide_fail:
 		_outcome.visible = false
+		_outcome.text = ""  # стёрто: _on_roll_settled проявляет лейбл по непустому тексту
 		_outcome_shown = false
 	else:
 		_outcome.text = _outcome_text(card, passed)
@@ -727,6 +729,7 @@ func _show_gate(card: Dictionary) -> void:
 	# Исход — продолжением под основным текстом узла, своим цветом (как _show_outcome).
 	if hide_fail:
 		_outcome.visible = false
+		_outcome.text = ""  # стёрто: _on_roll_settled проявляет лейбл по непустому тексту
 		_outcome_shown = false
 	else:
 		_outcome.text = _outcome_text(node, passed)
