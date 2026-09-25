@@ -7,7 +7,10 @@ extends Control
 ## в одном месте, и обе колоды обновятся.
 ##
 ## API: set_card({cost, title, subtitle?, desc, art? : Texture2D, art_color?, glyph?,
-##                frame? : Texture2D})  — frame: полно-артовая рамка (карта Концентрации).
+##                frame? : Texture2D, layout? : "clue"})
+##   frame  — полно-артовая рамка (карта Концентрации, улика);
+##   layout — "clue": раскладка улики (заголовок с шевронами, подзаголовок, описание
+##            по тёмному окну на всю карту) вместо плашек рамки актива.
 
 const FRAME_TEX: Texture2D = preload("res://assets/cards/asset/card-frame.png")
 
@@ -81,11 +84,21 @@ const Z_MSG := Rect2(0.130, 0.640, 0.740, 0.270)
 # Затухает к краям (мягкая маска), чтобы не перекрыть орнамент-кант рамки.
 const Z_SMOKE := Rect2(0.075, 0.075, 0.850, 0.520)
 
+# Карта-улика (layout "clue"): рамка cards/clue/card-frame.png — тёмное окно во всю
+# карту, без плашек. Заголовок (имя локации) с шевронами сверху, под ним подзаголовок
+# (имя улики) крупным текстом, ниже описание светлым по тёмному. Зоны — доли рамки.
+const Z_CLUE_TITLE := Rect2(0.080, 0.105, 0.840, 0.095)
+const Z_CLUE_SUB := Rect2(0.100, 0.208, 0.800, 0.055)
+const Z_CLUE_DESC := Rect2(0.115, 0.280, 0.770, 0.545)
+
 const C_COST_TXT := UIColors.ACCENT  # янтарь — как заголовок
 const C_TITLE_TXT := UIColors.ACCENT  # янтарь на синей плашке
 const C_SUB_TXT := Color(0.62, 0.72, 0.82)  # приглушённый голубой — трейт
 const C_DESC_TXT := Color(0, 0, 0)  # чёрный — на пергаменте
 const C_MSG_TXT := Color(0.12, 0.09, 0.06)  # тёмная тушь — фраза на пергаменте карты-сообщения
+const C_CLUE_TITLE := UIColors.TEXT  # имя локации — светлый камень по тёмному окну
+const C_CLUE_SUB := Color(0.62, 0.80, 0.66)  # имя улики — приглушённый зелёный
+const C_CLUE_DESC := Color(0.88, 0.85, 0.78)  # описание — светлый пергамент
 
 # Параметры дыма карты-сообщения — static (дефолт + правятся в панели тюнинга Ctrl+M).
 # Сеттер панели пишет их и дёргает refresh_smoke() у живых карт (группа "smoke_card").
@@ -114,7 +127,16 @@ const FS_SUB := 9
 const FS_DESC := 12
 const FS_GLYPH := 40
 const FS_MSG := 21
+const FS_CLUE_TITLE := 17
+const FS_CLUE_SUB := 12
+const FS_CLUE_DESC := 11  # описание улики: с этой базы ужимается по высоте окна
+# Описание улики ужимаем, чтобы влезло целиком; ниже этой доли базы не идём —
+# дальше читать нельзя, пусть лучше крутится как обычно.
+const FS_CLUE_DESC_MIN_RATIO := 0.7
+const _ORNATE_BASE_FS := 28.0  # размер, под который нарисованы шевроны UIStyle.ornate_title
+const _ORNATE_SEP := 14.0  # их отступ от текста при базовом размере
 var _font_scale: float = 1.0
+var _layout: String = ""  # "" — карта актива/жетона; "clue" — улика
 
 var _cost: Label
 var _title: Label
@@ -128,6 +150,10 @@ var _glyph: Label
 var _frame: TextureRect
 var _message: Label  # карта-сообщение (chat): одна центрированная фраза в плашке
 var _smoke: ColorRect  # клубящийся дым в окне карты-сообщения (поверх рамки)
+var _desc_zone: Control  # зона описания — у улики переезжает в Z_CLUE_DESC
+var _clue_title_box: HBoxContainer  # заголовок улики с шевронами (UIStyle.ornate_title)
+var _clue_title: Label
+var _clue_sub: Label
 
 
 func _init() -> void:
@@ -227,6 +253,7 @@ func _build() -> void:
 	# Зона/лейбл — IGNORE, чтобы наведение ловила сама карта (self).
 	var desc_zone := _zone("Desc", Z_DESC)
 	desc_zone.clip_contents = true
+	_desc_zone = desc_zone
 	_desc = Label.new()
 	_desc.name = "DescLabel"
 	_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -262,6 +289,24 @@ func _build() -> void:
 	_message.visible = false
 	msg_zone.add_child(_message)
 
+	# Улика: заголовок с шевронами и подзаголовок — свои зоны поверх тёмного окна
+	# рамки улики. Описание — общий _desc, его зона переезжает в set_card.
+	var ct_zone := _zone("ClueTitle", Z_CLUE_TITLE)
+	_clue_title_box = UIStyle.ornate_title("", _fs(FS_CLUE_TITLE), C_CLUE_TITLE)
+	_clue_title_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_clue_title_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clue_title_box.visible = false
+	ct_zone.add_child(_clue_title_box)
+	_clue_title = _clue_title_box.get_node("Title") as Label
+	_clue_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Без clip_text: в HBox лейбл с клипом схлопывается в ноль; ширину держит _fit_clue_title.
+	var cs_zone := _zone("ClueSub", Z_CLUE_SUB)
+	_clue_sub = _centered_label("ClueSubtitle", _fs(FS_CLUE_SUB), C_CLUE_SUB)
+	_clue_sub.clip_text = true
+	_clue_sub.visible = false
+	cs_zone.add_child(_clue_sub)
+	resized.connect(_fit_clue)
+
 	mouse_entered.connect(_on_desc_hover_start)
 	mouse_exited.connect(_on_desc_hover_end)
 	set_process(false)  # покадровый скролл включается только под курсором
@@ -276,18 +321,33 @@ func set_card(d: Dictionary) -> void:
 	_message.visible = is_msg
 	_message.text = String(d.get("message", ""))
 	_smoke.visible = is_msg  # клубящийся дым в окне только у карт-сообщений
+	_layout = String(d.get("layout", ""))
+	var is_clue: bool = _layout == "clue"
 
 	# Стоимость — герб-компас; для жетонов/карт без цены поле не задаём → герб скрыт.
 	_cost.visible = (not is_msg) and d.has("cost")
 	if _cost.visible:
 		_cost.text = str(d["cost"])
+	# Заголовок/подзаголовок: у улики — свои зоны (шевроны + крупный подзаголовок),
+	# плашечные лейблы актива прячем; иначе наоборот.
 	_title.text = String(d.get("title", ""))
-	_title.visible = not is_msg
+	_title.visible = not is_msg and not is_clue
 	_fit_title()
 	_sub.text = String(d.get("subtitle", ""))
-	_sub.visible = (not is_msg) and not _sub.text.is_empty()
+	_sub.visible = (not is_msg) and (not is_clue) and not _sub.text.is_empty()
+	_clue_title.text = _title.text
+	_clue_title_box.visible = is_clue
+	_clue_sub.text = _sub.text
+	_clue_sub.visible = is_clue and not _clue_sub.text.is_empty()
+	# Описание: у улики зона — тёмное окно на всю карту, текст светлый и ужат по
+	# высоте; у актива — пергамент рамки, чёрный, базовый размер.
+	_set_zone_rect(_desc_zone, Z_CLUE_DESC if is_clue else Z_DESC)
+	_desc.add_theme_color_override("font_color", C_CLUE_DESC if is_clue else C_DESC_TXT)
+	if not is_clue:
+		_desc.add_theme_font_size_override("font_size", _fs(FS_DESC))  # после улики — базовый
 	_desc.text = String(d.get("desc", ""))
 	_desc.visible = not is_msg
+	_fit_clue()
 	_on_desc_hover_end()  # новый текст — гасим скролл и возвращаем к началу
 
 	# Кастомная рамка (frame): ПОЛНО-артовая карта (арт+рамка+пергамент единым
@@ -401,6 +461,14 @@ func _process(delta: float) -> void:
 func _zone(zname: String, r: Rect2) -> Control:
 	var c := Control.new()
 	c.name = zname
+	_set_zone_rect(c, r)
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(c)
+	return c
+
+
+# Переякорить зону на другую долю рамки (описание улики живёт в другом месте).
+func _set_zone_rect(c: Control, r: Rect2) -> void:
 	c.anchor_left = r.position.x
 	c.anchor_top = r.position.y
 	c.anchor_right = r.position.x + r.size.x
@@ -409,9 +477,76 @@ func _zone(zname: String, r: Rect2) -> Control:
 	c.offset_top = 0.0
 	c.offset_right = 0.0
 	c.offset_bottom = 0.0
-	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(c)
-	return c
+
+
+# Раскладка улики под текущий размер карты: заголовок с шевронами ужать в зону,
+# описание — по высоте окна. Для прочих карт — no-op.
+func _fit_clue() -> void:
+	if _layout != "clue":
+		return
+	_fit_clue_title()
+	_fit_clue_desc()
+
+
+# Шевроны UIStyle.ornate_title нарисованы под модальный размер (28 px): масштабируем
+# их и отступ пропорционально шрифту, а шрифт ужимаем, пока имя локации не влезет.
+func _fit_clue_title() -> void:
+	if not is_instance_valid(_clue_title) or _clue_title.text.is_empty():
+		return
+	var zone_w: float = size.x * Z_CLUE_TITLE.size.x
+	if zone_w <= 0.0:
+		return
+	var font: Font = _clue_title.get_theme_font("font")
+	var fs_max: int = _fs(FS_CLUE_TITLE)
+	var fs_min: int = maxi(1, int(round(float(fs_max) * FS_TITLE_MIN_RATIO)))
+	var chev_l := _clue_title_box.get_node("ChevronL") as TextureRect
+	var chev_r := _clue_title_box.get_node("ChevronR") as TextureRect
+	var fs: int = fs_max
+	while true:
+		var k: float = float(fs) / _ORNATE_BASE_FS
+		var chev_w: float = chev_l.texture.get_size().x * 0.25 * k
+		var avail: float = zone_w - 2.0 * (chev_w + _ORNATE_SEP * k)
+		var need: float = (
+			font.get_string_size(_clue_title.text, HORIZONTAL_ALIGNMENT_CENTER, -1.0, fs).x
+		)
+		if need <= avail or fs <= fs_min:
+			chev_l.custom_minimum_size = chev_l.texture.get_size() * 0.25 * k
+			chev_r.custom_minimum_size = chev_r.texture.get_size() * 0.25 * k
+			_clue_title_box.add_theme_constant_override("separation", int(round(_ORNATE_SEP * k)))
+			break
+		fs -= 1
+	_clue_title.add_theme_font_size_override("font_size", fs)
+
+
+# Описание улики: подобрать размер шрифта, при котором весь текст влезает в окно
+# (меряем перенос по ширине зоны). Не влезает и на минимуме — остаётся минимум,
+# дальше работает обычная прокрутка курсором (_process).
+func _fit_clue_desc() -> void:
+	if not is_instance_valid(_desc) or _desc.text.is_empty():
+		return
+	var w: float = size.x * Z_CLUE_DESC.size.x
+	var h: float = size.y * Z_CLUE_DESC.size.y
+	if w <= 0.0 or h <= 0.0:
+		return
+	var font: Font = _desc.get_theme_font("font")
+	var spacing: float = float(_desc.get_theme_constant("line_spacing"))
+	var fs_max: int = _fs(FS_CLUE_DESC)
+	var fs_min: int = maxi(1, int(round(float(fs_max) * FS_CLUE_DESC_MIN_RATIO)))
+	var fs: int = fs_max
+	while fs > fs_min:
+		var sz: Vector2 = font.get_multiline_string_size(
+			_desc.text,
+			HORIZONTAL_ALIGNMENT_CENTER,
+			w,
+			fs,
+			-1,
+			TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND
+		)
+		var lines: float = maxf(1.0, roundf(sz.y / font.get_height(fs)))
+		if sz.y + spacing * lines + _DESC_BOTTOM_PAD <= h:
+			break
+		fs -= 1
+	_desc.add_theme_font_size_override("font_size", fs)
 
 
 # Длинный заголовок («Ритуал Серебряных сумерек») в плашку не влезает и клипуется —
@@ -455,6 +590,9 @@ func set_font_scale(s: float) -> void:
 	_desc.add_theme_font_size_override("font_size", _fs(FS_DESC))
 	_glyph.add_theme_font_size_override("font_size", _fs(FS_GLYPH))
 	_message.add_theme_font_size_override("font_size", _fs(FS_MSG))
+	_clue_title.add_theme_font_size_override("font_size", _fs(FS_CLUE_TITLE))
+	_clue_sub.add_theme_font_size_override("font_size", _fs(FS_CLUE_SUB))
+	_fit_clue()
 
 
 func _centered_label(lname: String, font_px: int, color: Color) -> Label:

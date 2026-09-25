@@ -8,6 +8,7 @@ extends Node2D
 # что MapLayer рисует маркеры.
 
 const _CONCENTRATION_FRAME: Texture2D = preload("res://assets/cards/concentration/card-frame.png")
+const _CLUE_FRAME: Texture2D = preload("res://assets/cards/clue/card-frame.png")
 
 # Зум подобран под эталонную карту (MapLayer.REF_TILE_W). Ассет крупнее — те же
 # числа показали бы во столько же раз меньший кусок мира, поэтому делим на
@@ -645,8 +646,9 @@ func _hand_tokens_section() -> Array:
 
 
 # Payload карты-улики: дженерик-жетон переброса (глиф + подсказка «на куб»); при
-# наличии идентичности (loc из clue_ids) накладываем контент Древнего из ClueCatalog —
-# тайтл улики и описание (нет описания → имя локации), опц. арт вместо глифа.
+# наличии идентичности (loc из clue_ids) — карта улики на своей рамке (layout
+# "clue"): заголовок — имя локации, подзаголовок — имя улики, описание — текст
+# Древнего из ClueCatalog (нет описания → имя локации).
 func _clue_token_payload(loc: String) -> Dictionary:
 	var p: Dictionary = {
 		"kind": "token",
@@ -658,13 +660,12 @@ func _clue_token_payload(loc: String) -> Dictionary:
 	if loc.is_empty():
 		return p
 	var cp: Dictionary = ClueCatalog.card_payload(loc)
-	var title: String = String(cp.get("title", ""))
-	if not title.strip_edges().is_empty():
-		p["title"] = title
+	p["frame"] = _CLUE_FRAME
+	p["layout"] = "clue"
+	p["title"] = tr(GameState.map.name_key(loc))
+	p["subtitle"] = String(cp.get("title", ""))
 	p["desc"] = String(cp.get("desc", ""))  # описание улики или имя локации
-	if cp.has("art"):
-		p["art"] = cp["art"]
-		p.erase("glyph")  # есть арт → без глифа-заглушки
+	p.erase("glyph")  # рамка улики полно-артовая — глиф-заглушка не нужен
 	return p
 
 
