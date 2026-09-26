@@ -623,16 +623,27 @@ static func _apply_player_verb(
 			player["hp"] = maxi(0, int(player.get("hp", 0)) - n)
 			logs.append("−%d здоровья" % n)
 		"healHealth":
-			player["hp"] = mini(int(player.get("hp_max", 0)), int(player.get("hp", 0)) + n)
-			logs.append("+%d здоровья" % n)
+			# all:true — до максимума («полное лечение» в больнице), явно, а не amount 99.
+			var hp_max: int = int(player.get("hp_max", 0))
+			var hp_to: int = (
+				hp_max
+				if bool(node.get("all", false))
+				else mini(hp_max, int(player.get("hp", 0)) + n)
+			)
+			logs.append("+%d здоровья" % maxi(0, hp_to - int(player.get("hp", 0))))
+			player["hp"] = hp_to
 		"loseSanity":
 			player["sanity"] = maxi(0, int(player.get("sanity", 0)) - n)
 			logs.append("−%d рассудка" % n)
 		"healSanity":
-			player["sanity"] = mini(
-				int(player.get("sanity_max", 0)), int(player.get("sanity", 0)) + n
+			var san_max: int = int(player.get("sanity_max", 0))
+			var san_to: int = (
+				san_max
+				if bool(node.get("all", false))
+				else mini(san_max, int(player.get("sanity", 0)) + n)
 			)
-			logs.append("+%d рассудка" % n)
+			logs.append("+%d рассудка" % maxi(0, san_to - int(player.get("sanity", 0))))
+			player["sanity"] = san_to
 		"gainClue":
 			player["clues"] = int(player.get("clues", 0)) + n
 			logs.append("+%d улик" % n)

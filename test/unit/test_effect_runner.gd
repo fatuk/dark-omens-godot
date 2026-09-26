@@ -820,3 +820,10 @@ func test_lose_artifact_without_any_is_noop() -> void:
 	p["items"] = [{"id": "18_derringer", "exhausted": false}]
 	EffectRunner.run([{"do": "loseArtifact"}], p)
 	assert_eq((p["items"] as Array).size(), 1, "нечего сбрасывать — инвентарь цел")
+
+
+func test_heal_all_restores_to_max() -> void:
+	var p := {"hp": 2, "hp_max": 7, "sanity": 1, "sanity_max": 5}
+	EffectRunner.run([{"do": "healHealth", "all": true}, {"do": "healSanity", "all": true}], p)
+	assert_eq(int(p["hp"]), 7, "healHealth all → до максимума")
+	assert_eq(int(p["sanity"]), 5, "healSanity all → до максимума")
