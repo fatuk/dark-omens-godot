@@ -1,13 +1,14 @@
-# Качалка листов карт из сохранения Tabletop Simulator (референсы Eldritch Horror).
+# Качалка картинок из сохранения Tabletop Simulator (референсы Eldritch Horror):
+# листы колод, планшеты сыщиков и Древних, жетоны и тайлы.
 #
-#   make            — скачать все листы (make -j8 -k: параллельно, не останавливаться на ошибке)
-#   make manifest   — только пересобрать targets.mk + manifest.csv
+#   make            — скачать всё (make -j8: параллельно)
+#   make manifest   — только пересобрать targets.mk + манифесты
 #   make clean      — удалить скачанное и сгенерированное
 #
 # Переменные (переопределяются из корневого Makefile или руками):
 #   JSON  — сохранение TTS (по умолчанию — воркшоп-мод из папки TTS)
 #   OUT   — куда складывать (по умолчанию EH_decks рядом)
-#   CACHE — кэш картинок TTS: если URL умер, лист берётся оттуда
+#   CACHE — кэш картинок TTS: если URL умер, картинка берётся оттуда
 #
 # Рецепты написаны под sh/curl/stat; на Windows корневой Makefile уводит их в Git Bash.
 
@@ -33,24 +34,29 @@ all: targets.mk
 -include targets.mk
 
 download: $(IMAGES)
-	@have=$$(find "$(OUT)" -type f -name '*.jpg' 2>/dev/null | wc -l); 	echo "Готово: $$have из $(words $(IMAGES)) листов в $(OUT), манифест в manifest.csv"; 	if [ -s failed.txt ]; then 	  echo "Не скачались $$(wc -l < failed.txt) (список в failed.txt) — повторный make decks докачает только их:"; 	  sed 's/^/  /' failed.txt; 	fi
+	@have=$$(find "$(OUT)" -type f \( -name '*.jpg' -o -name '*.png' \) 2>/dev/null | wc -l); \
+	echo "Готово: $$have из $(words $(IMAGES)) картинок в $(OUT); манифесты: manifest.csv (колоды), manifest_sheets.csv (планшеты/жетоны)"; \
+	if [ -s failed.txt ]; then \
+	  echo "Не скачались $$(wc -l < failed.txt) (список в failed.txt) — повторный make decks докачает только их:"; \
+	  sed 's/^/  /' failed.txt; \
+	fi
 
 # Путь к JSON бывает с пробелами («My Games») — пререквизитом его не сделать: make режет
 # список по пробелам. Поэтому targets.mk пересобирается по явному `make manifest` или
 # когда его ещё нет; JSON проверяем внутри рецепта.
-targets.mk manifest.csv: gen_targets.py
+targets.mk manifest.csv manifest_sheets.csv: gen_targets.py
 	@test -f "$(JSON)" || { echo "нет сохранения TTS: $(JSON)"; exit 1; }
 	$(PY) gen_targets.py "$(JSON)" "$(OUT)"
 
 manifest:
-	@rm -f targets.mk manifest.csv
+	@rm -f targets.mk manifest.csv manifest_sheets.csv
 	@$(MAKE) --no-print-directory targets.mk
 
-# Скачать лист. Порядок: прямой URL → для Google Drive повтор с confirm=t (большие файлы
-# отдают страницу подтверждения) → кэш TTS под любым из возможных имён → в failed.txt.
+# Скачать картинку. Порядок: прямой URL → для Google Drive повтор с confirm=t (большие
+# файлы отдают страницу подтверждения) → кэш TTS под любым из возможных имён → в failed.txt.
 # Успех = файл больше MIN_BYTES и не начинается с '<' (HTML).
 # Провал НЕ роняет make: файла нет, строка в failed.txt, следующий запуск попробует снова
-# (приватные листы на Google Drive недоступны без входа в аккаунт — это ожидаемо).
+# (приватные файлы на Google Drive недоступны без входа в аккаунт — это ожидаемо).
 $(IMAGES):
 	@mkdir -p "$(@D)"
 	@ok=0; \
@@ -61,11 +67,11 @@ $(IMAGES):
 	elif echo "$(URL)" | grep -q 'drive.google.com' && fetch "$(URL)&confirm=t"; then ok=1; \
 	else \
 	  for c in $(CACHE_NAMES); do \
-	    if [ -f "$(CACHE)/$$c" ]; then cp "$(CACHE)/$$c" "$@"; echo "[CACHE] $@"; ok=2; break; fi; \
+	    if [ -f "$(CACHE)/$$c" ]; then cp "$(CACHE)/$$c" "$@"; echo "[CACHE] $(@F)"; ok=2; break; fi; \
 	  done; \
 	fi; \
-	if [ "$$ok" = 1 ]; then echo "[OK]    $@"; \
+	if [ "$$ok" = 1 ]; then echo "[OK]    $(@F)"; \
 	elif [ "$$ok" = 0 ]; then rm -f "$@"; echo "$(@F)  <-  $(URL)" >> failed.txt; echo "[FAIL]  $(@F)"; fi
 
 clean:
-	rm -rf "$(OUT)" targets.mk manifest.csv failed.txt
+	rm -rf "$(OUT)" targets.mk manifest.csv manifest_sheets.csv failed.txt

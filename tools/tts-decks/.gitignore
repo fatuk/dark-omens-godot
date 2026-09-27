@@ -1,5 +1,6 @@
 # Генерируется gen_targets.py / скачивается make
 targets.mk
 manifest.csv
+manifest_sheets.csv
 failed.txt
 EH_decks/
