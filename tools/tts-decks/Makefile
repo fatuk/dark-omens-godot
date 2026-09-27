@@ -26,21 +26,20 @@ MIN_BYTES := 5000   # меньше — заглушка imgur «removed» или
 .PHONY: all manifest download clean
 
 all: targets.mk
+	@rm -f failed.txt  # список провалов — за ЭТОТ прогон, а не накопленный
 	@$(MAKE) --no-print-directory download
 
 # Второй проход: targets.mk уже есть, include подхватывает IMAGES и per-target URL/CACHE_NAMES.
 -include targets.mk
 
 download: $(IMAGES)
-	@echo "Готово: $(words $(IMAGES)) файлов в $(OUT), манифест в manifest.csv"
-	@if [ -s failed.txt ]; then echo "Не скачались (см. failed.txt): $$(wc -l < failed.txt)"; fi
+	@have=$$(find "$(OUT)" -type f -name '*.jpg' 2>/dev/null | wc -l); 	echo "Готово: $$have из $(words $(IMAGES)) листов в $(OUT), манифест в manifest.csv"; 	if [ -s failed.txt ]; then 	  echo "Не скачались $$(wc -l < failed.txt) (список в failed.txt) — повторный make decks докачает только их:"; 	  sed 's/^/  /' failed.txt; 	fi
 
 # Путь к JSON бывает с пробелами («My Games») — пререквизитом его не сделать: make режет
 # список по пробелам. Поэтому targets.mk пересобирается по явному `make manifest` или
 # когда его ещё нет; JSON проверяем внутри рецепта.
 targets.mk manifest.csv: gen_targets.py
 	@test -f "$(JSON)" || { echo "нет сохранения TTS: $(JSON)"; exit 1; }
-	@rm -f failed.txt
 	$(PY) gen_targets.py "$(JSON)" "$(OUT)"
 
 manifest:
@@ -50,6 +49,8 @@ manifest:
 # Скачать лист. Порядок: прямой URL → для Google Drive повтор с confirm=t (большие файлы
 # отдают страницу подтверждения) → кэш TTS под любым из возможных имён → в failed.txt.
 # Успех = файл больше MIN_BYTES и не начинается с '<' (HTML).
+# Провал НЕ роняет make: файла нет, строка в failed.txt, следующий запуск попробует снова
+# (приватные листы на Google Drive недоступны без входа в аккаунт — это ожидаемо).
 $(IMAGES):
 	@mkdir -p "$(@D)"
 	@ok=0; \
@@ -64,7 +65,7 @@ $(IMAGES):
 	  done; \
 	fi; \
 	if [ "$$ok" = 1 ]; then echo "[OK]    $@"; \
-	elif [ "$$ok" = 0 ]; then rm -f "$@"; echo "$@  <-  $(URL)" >> failed.txt; echo "[FAIL]  $@  <-  $(URL)"; exit 1; fi
+	elif [ "$$ok" = 0 ]; then rm -f "$@"; echo "$(@F)  <-  $(URL)" >> failed.txt; echo "[FAIL]  $(@F)"; fi
 
 clean:
 	rm -rf "$(OUT)" targets.mk manifest.csv failed.txt
