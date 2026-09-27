@@ -1,0 +1,5 @@
+# Генерируется gen_targets.py / скачивается make
+targets.mk
+manifest.csv
+failed.txt
+EH_decks/
