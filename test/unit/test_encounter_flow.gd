@@ -1,6 +1,6 @@
 extends GutTest
 
-## Юнит-тест боевой резолюции (EncounterFlow._combat_resolution) — чистый расчёт
+## Юнит-тест боевой резолюции (CombatFlow.resolution) — чистый расчёт
 ## урона по монстру. Фокус: ФИЗИЧЕСКОЕ сопротивление — монстр с physical-резистом
 ## получает вдвое меньше боевого урона (успехов Силы), но защита игрока (hp_loss)
 ## считается от СЫРОГО броска. Плюс пассивная митигация урона (reduceMonsterDamage)
@@ -17,7 +17,7 @@ func before_each() -> void:
 
 func test_combat_resolution_no_resist() -> void:
 	var enc: Dictionary = {"monsterId": "ghoul", "health": 3, "combat": {"damage": 2}}
-	var res: Dictionary = _ef._combat_resolution(enc, {"successes": 2, "dice": [5, 5]}, "p")
+	var res: Dictionary = _ef.combat.resolution(enc, {"successes": 2, "dice": [5, 5]}, "p")
 	assert_eq(int(res["dealt"]), 2, "без резиста — весь урон по монстру")
 	assert_eq(int(res["health_after"]), 1, "3 − 2 = 1")
 
@@ -26,7 +26,7 @@ func test_combat_resolution_physical_resist_halves() -> void:
 	# ghost = physical-резист → 4 успеха Силы наносят 2 монстру; защита игрока
 	# (hp_loss) считается от сырых 4.
 	var enc: Dictionary = {"monsterId": "ghost", "health": 3, "combat": {"damage": 3}}
-	var res: Dictionary = _ef._combat_resolution(enc, {"successes": 4, "dice": [5, 5, 6, 6]}, "p")
+	var res: Dictionary = _ef.combat.resolution(enc, {"successes": 4, "dice": [5, 5, 6, 6]}, "p")
 	assert_eq(int(res["dealt"]), 2, "physical-резист: 4 → 2 по монстру")
 	assert_eq(int(res["health_after"]), 1, "3 − 2 = 1")
 	assert_eq(int(res["hp_loss"]), 0, "hp_loss от сырого броска: max(0, 3 − 4) = 0")
@@ -39,11 +39,11 @@ func test_combat_resolution_reduces_damage_with_owned_asset() -> void:
 	gs.players["p"] = {"items": [{"id": "fishing_net", "exhausted": false}]}
 	var ef: EncounterFlow = EncounterFlow.new(autofree(gs))
 	var enc: Dictionary = {"monsterId": "ghoul", "health": 3, "combat": {"damage": 3}}
-	var res: Dictionary = ef._combat_resolution(enc, {"successes": 1, "dice": [5]}, "p")
+	var res: Dictionary = ef.combat.resolution(enc, {"successes": 1, "dice": [5]}, "p")
 	assert_eq(int(res["hp_loss"]), 1, "урон 3 − 1(fishing_net) = 2, минус 1 успех = 1")
 
 
-# ── Боевой триггер карты (try_combat_trigger): Handcuffs — фокус → победа ──
+# ── Боевой триггер карты (CombatFlow.try_trigger): Handcuffs — фокус → победа ──
 # Использует РЕАЛЬНЫЙ актив "handcuffs" из data/assets.json (effect.triggered,
 # on:combatEncounter → defeatMonster when monsterToughnessAtMost:2, cost spend:focus).
 
@@ -146,7 +146,7 @@ func _combat_ctx(tough: int, focus: int) -> EncounterFlow:
 
 func test_combat_trigger_defeats_weak_monster_spends_focus() -> void:
 	var ef: EncounterFlow = _combat_ctx(2, 1)  # стойкость 2 ≤ 2, фокус 1
-	assert_true(ef.try_combat_trigger("p", 0), "Handcuffs применён")
+	assert_true(ef.combat.try_trigger("p", 0), "Handcuffs применён")
 	var enc: Dictionary = ef._gs.current_encounter
 	assert_true(bool(enc.get("defeated_by_trigger", false)), "монстр помечен повержённым")
 	assert_true(
@@ -158,7 +158,7 @@ func test_combat_trigger_defeats_weak_monster_spends_focus() -> void:
 
 func test_combat_trigger_rejects_tough_monster() -> void:
 	var ef: EncounterFlow = _combat_ctx(3, 5)  # стойкость 3 > 2 → не подходит
-	assert_false(ef.try_combat_trigger("p", 0), "крепкий монстр — триггер не применяется")
+	assert_false(ef.combat.try_trigger("p", 0), "крепкий монстр — триггер не применяется")
 	assert_eq(
 		int(ef._gs.players["p"]["concentration"]), 5, "фокус не потрачен (карта пойдёт в check-mod)"
 	)
@@ -166,14 +166,14 @@ func test_combat_trigger_rejects_tough_monster() -> void:
 
 func test_combat_trigger_rejects_without_focus() -> void:
 	var ef: EncounterFlow = _combat_ctx(2, 0)  # нечем платить
-	assert_false(ef.try_combat_trigger("p", 0), "нет фокуса — триггер не применяется")
+	assert_false(ef.combat.try_trigger("p", 0), "нет фокуса — триггер не применяется")
 	assert_false(ef._gs.current_encounter.has("resolution"), "резолюция не выставлена")
 
 
 func test_combat_trigger_false_outside_combat() -> void:
 	var ef: EncounterFlow = _combat_ctx(2, 1)
 	ef._gs.current_encounter["kind"] = "general"  # не бой
-	assert_false(ef.try_combat_trigger("p", 0), "вне боя — false (роутер пробует check-mod)")
+	assert_false(ef.combat.try_trigger("p", 0), "вне боя — false (роутер пробует check-mod)")
 
 
 # ── Сброс встреч ──────────────────────────────────────────────────────────────
@@ -304,7 +304,7 @@ func test_lost_fight_continues_to_next_monster() -> void:
 	ef.begin_turn()
 	ef.host_apply_choose("p", "combat:1")
 	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": 1, "health_after": 1}
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	assert_true(
 		bool((ef._gs.monsters["loc"][1] as Dictionary).get("fought", false)), "выживший помечен"
 	)
@@ -321,7 +321,7 @@ func test_won_fight_removes_the_right_instance() -> void:
 	ef.begin_turn()
 	ef.host_apply_choose("p", "combat:1")
 	ef._gs.current_encounter["resolution"] = {"won": true, "hp_loss": 0, "health_after": 0}
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	var left: Array = ef._gs.monsters["loc"]
 	assert_eq(left.size(), 1, "снят один")
 	assert_eq(String((left[0] as Dictionary).get("id", "")), "ghoul", "остался гуль")
@@ -334,7 +334,7 @@ func test_all_fought_with_survivor_ends_turn() -> void:
 	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 3}])
 	ef.begin_turn()
 	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": 2, "health_after": 2}
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	assert_false(ef.continue_encounter_turn("p"), "ход завершён — выживший запирает локацию")
 	assert_eq((ef._gs.monsters["loc"] as Array).size(), 1, "монстр остался")
 	assert_eq(
@@ -359,11 +359,11 @@ func test_legacy_string_instance_can_be_marked() -> void:
 	ef.begin_turn()
 	ef.host_apply_choose("p", "combat:0")
 	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": 0, "health_after": 1}
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	var inst: Variant = ef._gs.monsters["loc"][0]
 	assert_true(inst is Dictionary, "нормализован в словарь")
 	assert_true(bool((inst as Dictionary).get("fought", false)))
-	assert_eq(ef._unfought_indices("loc"), [1], "второй ещё не бит")
+	assert_eq(ef.combat.unfought_indices("loc"), [1], "второй ещё не бит")
 
 
 # ── Несколько сыщиков на одной клетке с монстрами ────────────────────────────
@@ -386,7 +386,7 @@ func test_second_investigator_fights_survivor_with_remaining_health() -> void:
 	# Первый сыщик проиграл: гуль ранен до 1 и помечен.
 	ef.begin_turn()
 	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": 1, "health_after": 1}
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	assert_false(ef.continue_encounter_turn("p"), "ход первого завершён")
 	# Ход второго: пометка первого ему не мешает, а гуль встречает его раненым.
 	ef._gs.cur_pid = "q"
@@ -407,11 +407,11 @@ func test_second_investigator_does_not_see_defeated_monster() -> void:
 	ef.begin_turn()
 	ef.host_apply_choose("p", "combat:1")
 	ef._gs.current_encounter["resolution"] = {"won": true, "hp_loss": 0, "health_after": 0}
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	assert_true(ef.continue_encounter_turn("p"), "у первого остался гуль")
 	# Первому — гуль; сдадимся ему и завершим ход.
 	ef._gs.current_encounter["resolution"] = {"won": false, "hp_loss": 1, "health_after": 1}
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	assert_false(ef.continue_encounter_turn("p"))
 	# Второму достаётся только гуль: выбора нет, бой сразу, культиста уже нет.
 	ef._gs.cur_pid = "q"
@@ -449,7 +449,7 @@ func test_bandages_prevent_own_damage() -> void:
 	assert_true(ef.play_prevent_loss("p", 0), "бинты сыграны")
 	assert_eq(int(ef._gs.current_encounter.get("prevented_hp", 0)), 2, "предотвращено 2 из 3")
 	assert_true((ef._gs.players["p"]["items"] as Array).is_empty(), "бинты сброшены")
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	assert_eq(int(ef._gs.players["p"]["hp"]), 4, "списана только оставшаяся 1")
 
 
@@ -458,7 +458,7 @@ func test_neighbour_bandages_prevent_damage_in_others_turn() -> void:
 	var ef: EncounterFlow = _wounded([], [{"id": "bandages", "exhausted": false}], 2)
 	assert_true(ef.play_prevent_loss("q", 0), "сосед прикрыл")
 	assert_true((ef._gs.players["q"]["items"] as Array).is_empty(), "бинты соседа сброшены")
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	assert_eq(int(ef._gs.players["p"]["hp"]), 5, "раненый не потерял ничего")
 
 
@@ -495,14 +495,14 @@ func test_prevent_loss_does_not_overprevent_across_cards() -> void:
 	assert_true(ef.play_prevent_loss("p", 0))
 	assert_true(ef.play_prevent_loss("p", 0), "вторая (сдвинулась на индекс 0)")
 	assert_eq(int(ef._gs.current_encounter.get("prevented_hp", 0)), 3, "ровно потеря, не больше")
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	assert_eq(int(ef._gs.players["p"]["hp"]), 5)
 
 
 func test_whiskey_prevents_sanity_loss() -> void:
 	var ef: EncounterFlow = _wounded([{"id": "whiskey", "exhausted": false}], [], 0, 2)
 	assert_true(ef.play_prevent_loss("p", 0), "виски — по рассудку")
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	assert_eq(int(ef._gs.players["p"]["sanity"]), 5, "рассудок цел")
 
 
@@ -525,7 +525,7 @@ func test_whiskey_window_opens_with_will_roll_before_freeze() -> void:
 	ef._gs.active_check = {"owner": "combat", "rolled": false}
 	assert_eq(ef._remaining_loss(enc, "sanity"), 0, "терять больше нечего")
 	ef._gs.active_check = {"owner": "combat", "rolled": true, "successes": 0, "dice": [1]}
-	ef._commit_combat("p")
+	ef.combat.commit("p")
 	assert_eq(int(ef._gs.players["p"]["sanity"]), 5, "рассудок цел")
 
 
@@ -586,7 +586,7 @@ func _ghost_ctx(health: int, will_succ: int, dice: Array) -> EncounterFlow:
 
 func test_ghost_will_successes_damage_monster_and_end_combat() -> void:
 	var ef: EncounterFlow = _ghost_ctx(2, 2, [5, 6])
-	assert_true(ef._resolve_combat("p"), "шаг Воли принят")
+	assert_true(ef.combat.resolve("p"), "шаг Воли принят")
 	var enc: Dictionary = ef._gs.current_encounter
 	assert_true(enc.has("resolution"), "атаки нет — итог сразу")
 	assert_true(bool(enc["no_strength_step"]), "шаг Силы помечен пропущенным")
@@ -600,7 +600,7 @@ func test_ghost_will_successes_damage_monster_and_end_combat() -> void:
 
 func test_ghost_zero_successes_keeps_monster() -> void:
 	var ef: EncounterFlow = _ghost_ctx(2, 0, [1, 2])
-	ef._resolve_combat("p")
+	ef.combat.resolve("p")
 	var r: Dictionary = ef._gs.current_encounter["resolution"]
 	assert_false(bool(r["won"]), "0 успехов — монстр стоит")
 	assert_eq(int(r["health_after"]), 2, "здоровье не тронуто")
@@ -613,7 +613,7 @@ func test_will_damage_adds_to_strength_resolution() -> void:
 	var enc: Dictionary = {
 		"monsterId": "ghoul", "health": 4, "combat": {"damage": 1}, "will_dealt": 1
 	}
-	var res: Dictionary = _ef._combat_resolution(enc, {"successes": 2, "dice": [5, 5]}, "p")
+	var res: Dictionary = _ef.combat.resolution(enc, {"successes": 2, "dice": [5, 5]}, "p")
 	assert_eq(int(res["dealt"]), 3, "2 Силы + 1 Волей")
 	assert_eq(int(res["health_after"]), 1, "4 − 3 = 1")
 
@@ -638,7 +638,7 @@ func test_defeat_on_die_wins_when_face_matches() -> void:
 		}
 		gs.active_check = {"rolled": true, "successes": 1, "dice": [5], "passed": true}
 		var ef := EncounterFlow.new(gs)
-		ef._resolve_combat("p")
+		ef.combat.resolve("p")
 		var enc: Dictionary = gs.current_encounter
 		var die: int = int(enc["ability_die"])
 		var r: Dictionary = enc["resolution"]

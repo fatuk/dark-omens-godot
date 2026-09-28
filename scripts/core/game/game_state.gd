@@ -780,7 +780,7 @@ func perform_action(action_type: String, payload: Dictionary = {}) -> void:
 func combat_trigger_ready(item_index: int) -> bool:
 	var me: String = _nm.my_user_id
 	return (
-		not _encounter.combat_trigger_node_ready(me, item_index).is_empty()
+		not _encounter.combat.trigger_node_ready(me, item_index).is_empty()
 		or not _encounter.prevent_loss_node_ready(me, item_index).is_empty()
 	)
 

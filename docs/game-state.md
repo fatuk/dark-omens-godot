@@ -141,7 +141,8 @@ GameState создаёт модули в `_ready` и делегирует им �
 | Поле | Класс | Отвечает за |
 |------|-------|-------------|
 | `_phase` | PhaseController | фазы хода, `host_apply_action`, магазин-грант, Refresh |
-| `_encounter` | EncounterFlow | встречи + бой (две проверки) |
+| `_encounter` | EncounterFlow | встречи: генерация, проверка, эффекты, окно preventLoss |
+| `_encounter.combat` | CombatFlow | бой: очередь монстров клетки, Воля → Сила, фиксация, боевые триггеры карт |
 | `_check` | CheckFlow | активная проверка (пул/бросок/переброс/+1), стек вложенных |
 | `_cond` | ConditionFlow | состояния, held-ограничения, выдача активов |
 | `_spell` | SpellFlow | касты (incantation/glamour), результат каста |
