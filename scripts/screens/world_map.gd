@@ -251,7 +251,7 @@ func _active_turn_pid() -> String:
 		return ""
 	if GameState.phase != Phases.ACTION and GameState.phase != Phases.ENCOUNTER:
 		return ""
-	var pid: String = GameState._current_pid()
+	var pid: String = GameState.current_pid()
 	# Свой ход себе не подсвечиваем: игрок и так знает, что ходит — ему про это
 	# говорят баннер «Ваш ход» и доступные действия. Ореол нужен ОСТАЛЬНЫМ, чтобы
 	# видеть, кого ждут; на своей же карточке он был бы лишним шумом.
@@ -860,9 +860,9 @@ func _phase_label_for(p: String) -> String:
 func _current_player_name() -> String:
 	if GameState.phase != Phases.ACTION and GameState.phase != Phases.ENCOUNTER:
 		return ""
-	# _current_pid() bounds-safe: при гибели всех / переходе фаз current_idx может
+	# current_pid() bounds-safe: при гибели всех / переходе фаз current_idx может
 	# оказаться за пределами turn_order — раньше был out-of-bounds краш.
-	var pid: String = GameState._current_pid()
+	var pid: String = GameState.current_pid()
 	if pid.is_empty() or not GameState.players.has(pid):
 		return ""
 	var inv_id: String = GameState.players[pid].get("investigator", "???")
@@ -893,7 +893,7 @@ func _process(delta: float) -> void:
 # ему, а не карте мира (иначе скролл проваливается в зум карты).
 func _fan_open() -> bool:
 	for fan: Node in get_tree().get_nodes_in_group("hand_carousel"):
-		if fan.has_method("is_open") and fan.call("is_open"):
+		if fan.has_method("is_open") and fan.is_open():
 			return true
 	return false
 

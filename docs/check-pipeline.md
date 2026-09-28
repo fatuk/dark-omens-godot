@@ -461,7 +461,7 @@ _begin_combat → строит карту монстра → _start_combat_will
 
 ## 8. Сеть (хост-авторитетность)
 
-Каждый фасад в `GameState` проверяет `_is_host()`:
+Каждый фасад в `GameState` проверяет `is_host()`:
 
 ```
 Игрок-клиент:  GameState.<facade>()  → _nm.relay_all({action:"game_…", pid, …})
@@ -469,8 +469,8 @@ _begin_combat → строит карту монстра → _start_combat_will
 Хост:          relay-router (_handle_relay) ──┐
 Хост напрямую: GameState.<facade>() ──────────┴→ host_apply_* / _check.*  → мутация
                                                   → _check._sync():
-                                                       _broadcast_sync()  (рассылка снапшота)
-                                                       _emit_changed()    (локальный сигнал)
+                                                       broadcast_sync()  (рассылка снапшота)
+                                                       emit_changed()    (локальный сигнал)
 Клиенты:       _apply_snapshot(data)  → active_check = data.active_check
                → state_changed → UI перерисовывается
 ```
@@ -487,7 +487,7 @@ _begin_combat → строит карту монстра → _start_combat_will
 | `game_shop_open`          | `_check.start("shop", …)`               |
 | `game_shop_reroll`        | `_check.reroll`                         |
 
-`active_check` входит в снапшот (`_broadcast_sync`, поле `"active_check"`) и
+`active_check` входит в снапшот (`broadcast_sync`, поле `"active_check"`) и
 восстанавливается в `_apply_snapshot`.
 
 ---

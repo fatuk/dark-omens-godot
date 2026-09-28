@@ -11,7 +11,7 @@ var _gs: MockGameState
 var _ds: DeathSaveFlow
 
 
-# Мок GameState: DeathSaveFlow/CheckFlow обращаются к players, _check, _sync, _name_of.
+# Мок GameState: DeathSaveFlow/CheckFlow обращаются к players, _check, _sync, name_of.
 class MockGameState:
 	extends Node
 	var players: Dictionary = {}
@@ -35,17 +35,17 @@ class MockGameState:
 		cache["resources"] = int(cache["resources"]) + int(payload.get("resources", 0))
 		_ghost_caches[loc] = cache
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
 	# Смерть НЕ в свой ход — _die не трогает phase/_phase (см. advance-ветку).
-	func _current_pid() -> String:
+	func current_pid() -> String:
 		return ""
 
-	func _broadcast_sync() -> void:
+	func broadcast_sync() -> void:
 		sync_count += 1
 
-	func _emit_changed() -> void:
+	func emit_changed() -> void:
 		pass
 
 

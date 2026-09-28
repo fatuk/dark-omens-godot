@@ -5,7 +5,7 @@ extends RefCounted
 ## перед новой игрой, актуальный акт, текущая мистерия.
 ##
 ## GameState владеет публичными полями (campaign, campaign_pending) — они
-## синкаются всем игрокам через _broadcast_sync/_apply_snapshot. CampaignGen
+## синкаются всем игрокам через broadcast_sync/_apply_snapshot. CampaignGen
 ## владеет host-only состоянием (эпоха генерации, зерно из модалки) и логикой
 ## генерации/сводки/анализа. Запись в _gs.campaign/_gs.campaign_pending —
 ## сознательная: при успехе мы обязаны попасть в синк, и удобнее писать
@@ -57,7 +57,7 @@ func balance_player_count() -> int:
 ## зерно из set_seed; без зерна (промоут в хосты) — Древний на выбор модели,
 ## размер партии по составу лобби.
 func prewarm() -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	if _gs.campaign_pending or not _gs.campaign.is_empty():
 		return  # генерация уже идёт либо библия уже готова
@@ -79,7 +79,7 @@ func start_generation(player_count: int, ancient_one: String) -> void:
 ## Зовётся из GameState.reset_pregame, который дополнительно чистит мифос,
 ## встречу, префетчи и active.
 func reset() -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	_epoch += 1
 	_gs.campaign = {}
@@ -113,7 +113,7 @@ func current_mystery() -> Dictionary:
 # Один цикл сборки сценарной библии (детерминированно из CMS, быстро). Корутина — вызывается без
 # await. Эпоха защищает от устаревших результатов.
 func _start_generation(player_count: int, ancient_one: String) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	_epoch += 1
 	var epoch: int = _epoch
@@ -124,7 +124,7 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 	_gs.mystery_progress = 0
 	_gs.mystery_claimed = []
 	_gs.outcome = ""
-	_gs._emit_changed()
+	_gs.emit_changed()
 
 	var api: Node = _gs.get_node_or_null("/root/ContentApi")
 	if api == null:
@@ -132,8 +132,8 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 		if epoch == _epoch:
 			_gs.campaign_pending = false
 			if _gs.active:
-				_gs._broadcast_sync()
-			_gs._emit_changed()
+				_gs.broadcast_sync()
+			_gs.emit_changed()
 		return
 
 	var req: Dictionary = _build_request(player_count, ancient_one)
@@ -163,11 +163,11 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 		GameConsole.warn("[Game] Сборка кампании не удалась: %s" % String(res.get("error", "")))
 	_gs.campaign_pending = false
 	# Броадкаст только если игра уже идёт; библию, прогретую ещё в лобби,
-	# разошлёт _broadcast_sync() из start_game.
+	# разошлёт broadcast_sync() из start_game.
 	if _gs.active:
 		_gs._mystery.apply_mystery_on_enter()  # onEnter первой Тайны, если партия уже идёт (до синка)
-		_gs._broadcast_sync()
-	_gs._emit_changed()
+		_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Тело запроса /campaign/assemble: локации, размер партии, язык, Древний.
@@ -195,7 +195,7 @@ func _build_request(player_count: int, ancient_one: String) -> Dictionary:
 	var req: Dictionary = {
 		"locations": locs,
 		"playerCount": maxi(1, player_count),
-		"language": _gs._relay_language(),
+		"language": _gs.relay_language(),
 	}
 	# Древний задан в модалке создания комнаты — иначе модель придумывает сама.
 	if not ancient_one.is_empty():

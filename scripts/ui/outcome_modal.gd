@@ -92,5 +92,5 @@ func _refresh() -> void:
 func _go_menu() -> void:
 	var nm: Node = get_node_or_null("/root/NetworkManager")
 	if nm:
-		nm.call("leave_room")
+		nm.leave_room()
 	SceneManager.go("main_menu")

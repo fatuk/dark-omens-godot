@@ -60,7 +60,7 @@ func open(pid: String, stat: String) -> String:
 
 
 ## Хост: открыть Порог всем игрокам на 0 HP/SAN (живым, без активного спаса).
-## Централизованный триггер — зовётся из _broadcast_sync после любой мутации.
+## Централизованный триггер — зовётся из broadcast_sync после любой мутации.
 ## HP приоритетнее (если оба в 0 — сперва Сила-Порог, рассудок поймает следующий свип).
 ## Возвращает число открытых спасов/мгновенных смертей.
 func sweep() -> int:
@@ -129,8 +129,8 @@ func _survive(pid: String, stat: String) -> void:
 	mods[skill] = clampi(int(mods.get(skill, 0)) - 1, -SCAR_CAP, SCAR_CAP)
 	p[PlayerKeys.SKILL_MODS] = mods
 	p[PlayerKeys.DEATH_GRACE] = true
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 ## Хост: снять grace-иммунитет со всех (в начале раунда — урон уже «повторный»).
@@ -171,15 +171,15 @@ func _die(pid: String) -> void:
 	if _all_dead() and String(_gs.outcome).is_empty():
 		_gs.outcome = "defeat"
 		GameConsole.log("[Смерть] Все сыщики погибли — поражение")
-	elif _gs._current_pid() == pid:
+	elif _gs.current_pid() == pid:
 		# Погиб в СВОЙ ход — прокручиваем ход дальше, иначе застрянет на Тени
 		# (current_idx на ней; skip_disconnected срабатывает только на advance).
 		if _gs.phase == Phases.ACTION:
 			_gs._phase.advance_action_turn()
 		elif _gs.phase == Phases.ENCOUNTER:
 			_gs._phase.advance_encounter_turn()
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 ## Хост: Тень выкладывает улику — акт раунда. Гард: игрок — Тень (dead), есть бюджет,
@@ -196,8 +196,8 @@ func ghost_place_clue(pid: String) -> bool:
 	p[PlayerKeys.GHOST_ACTED] = true
 	p[PlayerKeys.GHOST_CLUE_BUDGET] = int(p.get(PlayerKeys.GHOST_CLUE_BUDGET, 0)) - 1
 	_pending_ghost_clues += 1
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 

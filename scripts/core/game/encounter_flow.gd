@@ -48,9 +48,9 @@ func debug_assigned(pid: String) -> Dictionary:
 ## встречу, и разослать её. Корутина: вызывается без await (fire-and-forget)
 ## из encounter-флоу.
 func generate(kind: String = "general", site_specific: bool = false) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
-	var pid: String = _gs._current_pid()
+	var pid: String = _gs.current_pid()
 	if pid.is_empty() or not _gs.players.has(pid):
 		return
 
@@ -61,7 +61,7 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 		_forced.erase(pid)
 		kind = String(forced.get("kind", kind))
 		site_specific = bool(forced.get("siteSpecific", site_specific))
-		GameConsole.log("[Debug] встреча «%s» для %s" % [kind, _gs._name_of(pid)])
+		GameConsole.log("[Debug] встреча «%s» для %s" % [kind, _gs.name_of(pid)])
 
 	# Лента действий: тип не-боевой встречи (бой → _begin_combat, eldritch → _begin_eldritch_move).
 	var feed_id: String = {"research": "research", "gate": "gate", "mystery": "mystery"}.get(
@@ -74,8 +74,8 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 	var token: int = _gen_token
 
 	_gs.current_encounter = {}  # состояние «загрузка»
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 	var api: Node = _gs.get_node_or_null("/root/ContentApi")
 	if api == null:
@@ -83,8 +83,8 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 		if token == _gen_token:
 			_gs.current_encounter = _fallback_card()
 			_start_check_for_encounter(pid)
-			_gs._broadcast_sync()
-			_gs._emit_changed()
+			_gs.broadcast_sync()
+			_gs.emit_changed()
 		return
 
 	var req: Dictionary = _build_request(_gs.players[pid], kind, site_specific)
@@ -96,7 +96,7 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 	# Захватываем раунд — после долгого await тот же игрок может оказаться
 	# уже в новом раунде с новой встречей, и старый ответ нельзя писать.
 	var captured_round: int = _gs.round_num
-	GameConsole.log("[Game] Генерация встречи для %s..." % _gs._name_of(pid))
+	GameConsole.log("[Game] Генерация встречи для %s..." % _gs.name_of(pid))
 	@warning_ignore("unsafe_method_access")
 	var res: Dictionary = await api.draw_encounter(req)
 
@@ -105,11 +105,7 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 		return
 	# Проверяем, что за время await ничего не сменилось: фаза, активный
 	# игрок и раунд. Старый ответ — в мусор.
-	if (
-		_gs.phase != Phases.ENCOUNTER
-		or _gs._current_pid() != pid
-		or _gs.round_num != captured_round
-	):
+	if _gs.phase != Phases.ENCOUNTER or _gs.current_pid() != pid or _gs.round_num != captured_round:
 		return
 
 	var encs: Array = res.get("encounters", [])
@@ -121,8 +117,8 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 		_gs.current_encounter = _fallback_card()
 		GameConsole.warn("[Game] Генерация встречи не удалась: %s" % String(res.get("error", "")))
 	_start_check_for_encounter(pid)
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 ## Хост: начать ход встречи активного игрока. Если на клетке есть монстры —
@@ -130,9 +126,9 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 ## (см. continue_encounter_turn). Когда монстров нет — обычный выбор/генерация
 ## не-боевой встречи.
 func begin_turn() -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
-	var pid: String = _gs._current_pid()
+	var pid: String = _gs.current_pid()
 	if pid.is_empty() or not _gs.players.has(pid):
 		return
 	var loc: String = String(_gs.players[pid].get("location", ""))
@@ -161,9 +157,9 @@ func _begin_noncombat(pid: String) -> void:
 	else:
 		_gs.encounter_choices = choices
 		_gs.current_encounter = {}
-		GameConsole.log("[Game] %s выбирает тип встречи: %s" % [_gs._name_of(pid), str(choices)])
-		_gs._broadcast_sync()
-		_gs._emit_changed()
+		GameConsole.log("[Game] %s выбирает тип встречи: %s" % [_gs.name_of(pid), str(choices)])
+		_gs.broadcast_sync()
+		_gs.emit_changed()
 
 
 ## Хост: после завершения встречи решает — продолжить ход того же игрока или
@@ -198,7 +194,7 @@ func _next_combat_or_choice(pid: String) -> bool:
 	if pending.is_empty():
 		if not (_gs.monsters.get(loc, []) as Array).is_empty():
 			GameConsole.log(
-				"[Бой] %s: все бои отыграны, монстры остались — ход завершён" % _gs._name_of(pid)
+				"[Бой] %s: все бои отыграны, монстры остались — ход завершён" % _gs.name_of(pid)
 			)
 			return false
 		_begin_noncombat(pid)  # клетка чиста — обычная встреча
@@ -214,9 +210,9 @@ func _next_combat_or_choice(pid: String) -> bool:
 		choices.append("combat:%d" % int(i_v))
 	_gs.encounter_choices = choices
 	_gs.current_encounter = {}
-	GameConsole.log("[Бой] %s выбирает порядок: %d монстров" % [_gs._name_of(pid), pending.size()])
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	GameConsole.log("[Бой] %s выбирает порядок: %d монстров" % [_gs.name_of(pid), pending.size()])
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -256,7 +252,7 @@ func _mark_fought(loc: String, idx: int) -> void:
 
 ## Хост: игрок выбрал тип встречи — генерируем её. combat (бой) — пока заглушка.
 func host_apply_choose(pid: String, kind: String) -> bool:
-	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid:
+	if _gs.phase != Phases.ENCOUNTER or _gs.current_pid() != pid:
 		return false
 	if (
 		(_gs.encounter_choices as Array).is_empty()
@@ -264,7 +260,7 @@ func host_apply_choose(pid: String, kind: String) -> bool:
 	):
 		return false
 	_gs.encounter_choices = []
-	GameConsole.log("[Game] %s выбрал встречу: %s" % [_gs._name_of(pid), kind])
+	GameConsole.log("[Game] %s выбрал встречу: %s" % [_gs.name_of(pid), kind])
 	if kind.begins_with("combat:"):
 		_begin_combat(pid, int(kind.substr(7)))  # порядок боёв — выбор сыщика
 	elif kind == "combat":
@@ -311,14 +307,14 @@ func _collect_belongings(pid: String) -> void:
 	GameConsole.log(
 		(
 			"[Game] %s забрал вещи павшего (предметов %d, улик %d, ресурсов %d)"
-			% [_gs._name_of(pid), got_items.size(), clue_ids.size(), res]
+			% [_gs.name_of(pid), got_items.size(), clue_ids.size(), res]
 		)
 	)
 	_gs.players[pid]["encounter_done"] = true
 	# Лента: «+N ресурс / +N улик» (предметы-активы объявляет host_grant_asset сам).
 	ActionFeed.announce_deltas(_gs, pid, before, _gs.players[pid])
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	_gs._phase.advance_encounter_turn()
 
 
@@ -327,7 +323,7 @@ func _collect_belongings(pid: String) -> void:
 # (_commit_eldritch) списывается cost и применяется effect (жетон на карту Тайны);
 # для Азатота заодно снимается board-жетон с клетки. Тексты локализуем сразу.
 func _begin_eldritch_move(pid: String) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var loc: String = String(_gs.players[pid].get("location", ""))
 	# Применимый encounter-хук набора (cost/test/effect — из данных карточки).
@@ -349,16 +345,16 @@ func _begin_eldritch_move(pid: String) -> void:
 	}
 	_gs.announce_action(pid, "eldritch")  # лента: изучает знамения места
 	_start_check_for_encounter(pid)
-	GameConsole.log("[Знамение] %s изучает место, чтобы связать его с Тайной" % _gs._name_of(pid))
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	GameConsole.log("[Знамение] %s изучает место, чтобы связать его с Тайной" % _gs.name_of(pid))
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Хост: встреча-решение Слуха (solve=encounter) на клетке слуха. Имя/текст — с карты
 # Слуха, проверка — из rumor.solve.test (дефолт Знание). На успехе (_commit_rumor) Слух
 # развеивается. Без хука/cost (cost — следующая итерация); сейчас — навыковая проверка.
 func _begin_rumor_encounter(pid: String) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var loc: String = String(_gs.players[pid].get("location", ""))
 	var card: Dictionary = _gs._rumor.encounter_card_for(loc)
@@ -377,9 +373,9 @@ func _begin_rumor_encounter(pid: String) -> void:
 	}
 	_gs.announce_action(pid, "research")  # лента: «ищет улики» (ближайшее по смыслу)
 	_start_check_for_encounter(pid)
-	GameConsole.log("[Слух] %s разыгрывает встречу-решение на %s" % [_gs._name_of(pid), loc])
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	GameConsole.log("[Слух] %s разыгрывает встречу-решение на %s" % [_gs.name_of(pid), loc])
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Итог встречи-решения Слуха: успех — развеять Слух на его локации; провал — ничего.
@@ -394,7 +390,7 @@ func _commit_rumor(_pid: String) -> void:
 
 # Хост: собрать боевую «карту» по первому монстру на локации игрока.
 func _begin_combat(pid: String, idx: int = 0) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var loc: String = String(_gs.players[pid].get("location", ""))
 	var mons: Array = _gs.monsters.get(loc, [])
@@ -450,9 +446,9 @@ func _begin_combat(pid: String, idx: int = 0) -> void:
 		)
 	else:
 		_start_combat_will(pid)  # проверка Воли (pre-roll) — окно активации карт до броска
-	GameConsole.log("[Бой] %s vs %s (здоровье %d/%d)" % [_gs._name_of(pid), mid, cur, tough])
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	GameConsole.log("[Бой] %s vs %s (здоровье %d/%d)" % [_gs.name_of(pid), mid, cur, tough])
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Старт проверки ВОЛИ боя (pre-roll, контекст combatEncounter) — единый механизм
@@ -510,10 +506,10 @@ func _resolve_combat(pid: String) -> bool:
 				}
 				_gs._check.clear()
 				GameConsole.log(
-					"[Бой] %s · кубик способности %d → монстр повержен" % [_gs._name_of(pid), die]
+					"[Бой] %s · кубик способности %d → монстр повержен" % [_gs.name_of(pid), die]
 				)
-				_gs._broadcast_sync()
-				_gs._emit_changed()
+				_gs.broadcast_sync()
+				_gs.emit_changed()
 				return true
 		# Спец-способность монстра: пройденный horror-тест (Crazed Mob — Влияние)
 		# сразу побеждает монстра — шаг атаки (Сила) пропускаем.
@@ -528,10 +524,10 @@ func _resolve_combat(pid: String) -> bool:
 			}
 			_gs._check.clear()  # шага Силы нет
 			GameConsole.log(
-				"[Бой] %s · прошёл проверку → монстр повержен (без боя)" % _gs._name_of(pid)
+				"[Бой] %s · прошёл проверку → монстр повержен (без боя)" % _gs.name_of(pid)
 			)
-			_gs._broadcast_sync()
-			_gs._emit_changed()
+			_gs.broadcast_sync()
+			_gs.emit_changed()
 			return true
 		var cb: Dictionary = enc.get("combat", {})
 		# Монстр без атаки (combat.skill "none" — Призрак): шага Силы нет, итог боя —
@@ -551,11 +547,11 @@ func _resolve_combat(pid: String) -> bool:
 			GameConsole.log(
 				(
 					"[Бой] %s · Воля %d → монстру −%d (здоровье %d), атаки нет"
-					% [_gs._name_of(pid), w_succ, will_dealt, left]
+					% [_gs.name_of(pid), w_succ, will_dealt, left]
 				)
 			)
-			_gs._broadcast_sync()
-			_gs._emit_changed()
+			_gs.broadcast_sync()
+			_gs.emit_changed()
 			return true
 		_gs._check.start(
 			"combat",
@@ -567,11 +563,11 @@ func _resolve_combat(pid: String) -> bool:
 		GameConsole.log(
 			(
 				"[Бой] %s · Воля %d · рассудок −%d"
-				% [_gs._name_of(pid), w_succ, int(enc["sanity_loss"])]
+				% [_gs.name_of(pid), w_succ, int(enc["sanity_loss"])]
 			)
 		)
-		_gs._broadcast_sync()
-		_gs._emit_changed()
+		_gs.broadcast_sync()
+		_gs.emit_changed()
 		return true
 
 	# ── Шаг 2: СИЛА (атака) ── Сила стартована в pre-roll («Дальше»). Первое нажатие —
@@ -682,7 +678,7 @@ func _compute_choices(pid: String) -> Array:
 func host_apply_resolve(pid: String) -> bool:
 	if _gs.phase != Phases.ENCOUNTER or not _gs.players.has(pid):
 		return false
-	if _gs._current_pid() != pid:
+	if _gs.current_pid() != pid:
 		return false
 	if _gs.current_encounter.is_empty():
 		return false  # карта ещё генерится
@@ -705,7 +701,7 @@ func host_apply_resolve(pid: String) -> bool:
 			(
 				"[Game] %s · проверка %s · успехов: %d"
 				% [
-					_gs._name_of(pid),
+					_gs.name_of(pid),
 					"пройдена" if _gs.active_check.get("passed", false) else "провалена",
 					int(_gs.active_check.get("successes", 0)),
 				]
@@ -730,7 +726,7 @@ func _gate_node(card: Dictionary, stage: int) -> Dictionary:
 ## ветку success, провал — в ветку failure (обе дают вторую проверку).
 ## Зовётся из relay-router (ADVANCE_STAGE).
 func host_apply_advance_stage(pid: String) -> bool:
-	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid:
+	if _gs.phase != Phases.ENCOUNTER or _gs.current_pid() != pid:
 		return false
 	var k: String = String(_gs.current_encounter.get("kind", ""))
 	if k != "gate" and k != "mystery":
@@ -745,9 +741,9 @@ func host_apply_advance_stage(pid: String) -> bool:
 	# Вторая проверка — новая (свои модификаторы/перебросы/истощение). _start
 	# перетирает active_check проверкой стадии 2 (pre-roll).
 	_start_check_for_encounter(pid)
-	GameConsole.log("[Game] %s · врата, ветка → %s" % [_gs._name_of(pid), branch])
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	GameConsole.log("[Game] %s · врата, ветка → %s" % [_gs.name_of(pid), branch])
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -906,7 +902,7 @@ func prevent_loss_node_ready(helper_pid: String, item_index: int) -> Dictionary:
 	var enc: Dictionary = _gs.current_encounter
 	if String(enc.get("kind", "")) != "combat":
 		return {}
-	var victim_pid: String = _gs._current_pid()
+	var victim_pid: String = _gs.current_pid()
 	if not _gs.players.has(victim_pid):
 		return {}
 	var helper: Dictionary = _gs.players[helper_pid]
@@ -939,7 +935,7 @@ func prevent_loss_node_ready(helper_pid: String, item_index: int) -> Dictionary:
 
 ## Хост: разыграть карту preventLoss. true — потеря уменьшена (и карта оплачена).
 func play_prevent_loss(helper_pid: String, item_index: int) -> bool:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return false
 	var node: Dictionary = prevent_loss_node_ready(helper_pid, item_index)
 	if node.is_empty():
@@ -974,16 +970,16 @@ func play_prevent_loss(helper_pid: String, item_index: int) -> bool:
 	_gs.announce_action(
 		helper_pid,
 		"prevent_loss",
-		{"card": card_name, "amount": amount, "target": _gs._name_of(_gs._current_pid())}
+		{"card": card_name, "amount": amount, "target": _gs.name_of(_gs.current_pid())}
 	)
 	GameConsole.log(
 		(
 			"[Бой] %s разыграл «%s»: −%d к потере %s у %s"
-			% [_gs._name_of(helper_pid), card_name, amount, stat, _gs._name_of(_gs._current_pid())]
+			% [_gs.name_of(helper_pid), card_name, amount, stat, _gs.name_of(_gs.current_pid())]
 		)
 	)
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -1020,7 +1016,7 @@ func _sanity_loss_for(enc: Dictionary, pid: String, will_successes: int) -> int:
 func _pending_resolution(enc: Dictionary) -> Dictionary:
 	if enc.has("resolution"):
 		return enc["resolution"]
-	return _combat_resolution(enc, _gs.active_check, _gs._current_pid())
+	return _combat_resolution(enc, _gs.active_check, _gs.current_pid())
 
 
 ## Сколько ещё не предотвращено: потеря по итогу шага минус уже сыгранные карты.
@@ -1030,7 +1026,7 @@ func _remaining_loss(enc: Dictionary, stat: String) -> int:
 		var loss: int = int(enc.get("sanity_loss", 0))
 		if not enc.has("will"):
 			loss = _sanity_loss_for(
-				enc, _gs._current_pid(), int(_gs.active_check.get("successes", 0))
+				enc, _gs.current_pid(), int(_gs.active_check.get("successes", 0))
 			)
 		return maxi(0, loss - int(enc.get("prevented_sanity", 0)))
 	var r: Dictionary = _pending_resolution(enc)
@@ -1055,7 +1051,7 @@ func _prevent_loss_node(asset: Dictionary) -> Dictionary:
 ## триггера / монстр крепче / нечем платить) → роутер пробует обычный check-mod
 ## (CheckFlow.activate). Зовётся из GameState.activate_card / relay-router.
 func try_combat_trigger(pid: String, item_index: int) -> bool:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return false
 	var node: Dictionary = combat_trigger_node_ready(pid, item_index)
 	if node.is_empty():
@@ -1077,9 +1073,9 @@ func try_combat_trigger(pid: String, item_index: int) -> bool:
 		"health_after": 0,
 	}
 	_gs._check.clear()  # шага Силы не будет
-	GameConsole.log("[Бой] %s · карта-триггер → монстр повержен (без боя)" % _gs._name_of(pid))
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	GameConsole.log("[Бой] %s · карта-триггер → монстр повержен (без боя)" % _gs.name_of(pid))
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -1088,7 +1084,7 @@ func try_combat_trigger(pid: String, item_index: int) -> bool:
 ## и для подсветки карты в веере (любой клиент), и для try_combat_trigger перед
 ## применением. БЕЗ host-гарда: это логическая применимость, авторитет — у вызывателя.
 func combat_trigger_node_ready(pid: String, item_index: int) -> Dictionary:
-	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid or not _gs.players.has(pid):
+	if _gs.phase != Phases.ENCOUNTER or _gs.current_pid() != pid or not _gs.players.has(pid):
 		return {}
 	var enc: Dictionary = _gs.current_encounter
 	if (
@@ -1140,7 +1136,7 @@ func _combat_trigger_node(asset: Dictionary) -> Dictionary:
 ## Доступен, пока встреча не зафиксирована. Зовётся из relay-router (REROLL_ENCOUNTER) /
 ## relay-router. Возвращает true при перебросе.
 func host_apply_reroll(pid: String, die_index: int, currency: String = "") -> bool:
-	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid or not _gs.players.has(pid):
+	if _gs.phase != Phases.ENCOUNTER or _gs.current_pid() != pid or not _gs.players.has(pid):
 		return false
 	var enc: Dictionary = _gs.current_encounter
 	if enc.is_empty() or bool(enc.get("committed", false)):
@@ -1176,7 +1172,7 @@ func _commit_eldritch(pid: String) -> void:
 	GameConsole.log(
 		(
 			"[Знамение] %s связал место с Тайной (на карте: %d)"
-			% [_gs._name_of(pid), _gs.mystery_tokens_on_card]
+			% [_gs.name_of(pid), _gs.mystery_tokens_on_card]
 		)
 	)
 
@@ -1253,7 +1249,7 @@ func _build_request(
 		"realLocation": real_loc,
 		"conditions": [],
 		"count": 1,
-		"language": _gs._relay_language(),
+		"language": _gs.relay_language(),
 		"siteSpecific": site_specific,
 		# Сброс встреч: карточки, уже сыгранные в этой партии, реле повторно не выдаст.
 		"exclude": _gs.encounter_discard,
@@ -1361,7 +1357,7 @@ func _run_effect_slot(effects: Array, pid: String, slot: String) -> bool:
 	for i in range(board.size()):
 		var bnode: Dictionary = board[i]
 		bnode["_origin_loc"] = origin_loc  # closeGate после move — врата исходной клетки
-		_gs._apply_board_effect(bnode)
+		_gs.apply_board_effect(bnode)
 	var logs: Array = res.get("logs", [])
 	for i in range(logs.size()):
 		GameConsole.log("[Эффект] %s" % String(logs[i]))
@@ -1379,7 +1375,7 @@ func _apply_research_clue_removal(pid: String, kind: String) -> void:
 	if gained > 0:
 		var loc: String = String(_gs.players[pid].get("location", ""))
 		_remove_clues_at(loc, gained)
-		# Идентичность: улика(и) с жетонов этой локации → на руки сыщику (до _broadcast_sync).
+		# Идентичность: улика(и) с жетонов этой локации → на руки сыщику (до broadcast_sync).
 		_gs._collect_board_clues(pid, loc, gained)
 	enc["_clues_removed"] = true
 
@@ -1388,7 +1384,7 @@ func _apply_research_clue_removal(pid: String, kind: String) -> void:
 ## решение принято (далее зовущий переигрывает _commit_outcome). Зовётся из
 ## PhaseController.host_apply_effect_choice.
 func record_effect_choice(pid: String, index: int) -> bool:
-	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid:
+	if _gs.phase != Phases.ENCOUNTER or _gs.current_pid() != pid:
 		return false
 	var enc: Dictionary = _gs.current_encounter
 	var pending: Dictionary = enc.get("pending_choice", {})
@@ -1416,7 +1412,7 @@ func record_effect_choice(pid: String, index: int) -> bool:
 ## GameState.resolve_pending_check) и переиграть исход. Возвращает основную проверку
 ## встречи из стека (pop) и переигрывает _commit_outcome через _commit_and_advance.
 func resolve_encounter_check(pid: String, path: String, passed: bool) -> bool:
-	if _gs.phase != Phases.ENCOUNTER or _gs._current_pid() != pid:
+	if _gs.phase != Phases.ENCOUNTER or _gs.current_pid() != pid:
 		return false
 	if String(_gs.pending_check.get("driver", "")) != "encounter":
 		return false
@@ -1464,7 +1460,7 @@ func _other_investigators(active_pid: String) -> Array:
 			continue
 		if not bool(_gs.players[pid].get("connected", true)):
 			continue
-		out.append({"pid": pid, "name": _gs._name_of(pid)})
+		out.append({"pid": pid, "name": _gs.name_of(pid)})
 	return out
 
 

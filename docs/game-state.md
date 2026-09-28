@@ -15,7 +15,7 @@ GameState совмещает четыре обязанности:
 
 1. **Авторитетный стейт** — сериализуемые поля (раунд, фаза, игроки, врата, монстры,
    проверки, Тайны, кампания…). Единственный источник правды на **хосте**.
-2. **Синк** — рассылка стейта клиентам (`_broadcast_sync`) и приём (`_apply_snapshot`).
+2. **Синк** — рассылка стейта клиентам (`broadcast_sync`) и приём (`_apply_snapshot`).
 3. **Маршрутизация relay** — приём действий от клиентов, их валидация и применение
    на хосте (`_on_relay_received` → `RelayRouter`).
 4. **Публичные фасады** — точка входа для UI: `perform_action`, `shop_open`,
@@ -41,7 +41,7 @@ GameState совмещает четыре обязанности:
   через `host_apply_*` в модулях.
 - После мутации хост рассылает полный снапшот; клиенты его принимают.
 
-Хост-фасад проверяет `_is_host()`: на хосте — применяет напрямую, у клиента — шлёт
+Хост-фасад проверяет `is_host()`: на хосте — применяет напрямую, у клиента — шлёт
 намерение.
 
 ---
@@ -55,7 +55,7 @@ GameState совмещает четыре обязанности:
 добавляется в ОДНОМ месте**:
 
 ```gdscript
-func _broadcast_sync() -> void:            # только хост
+func broadcast_sync() -> void:            # только хост
     var payload := {"action": RelayActions.SYNC, "mythos_index": _mythos.index}
     for f in _SYNC_FIELDS: payload[f] = get(f)
     _nm.relay_all(payload)
@@ -63,7 +63,7 @@ func _broadcast_sync() -> void:            # только хост
 func _apply_snapshot(data) -> void:         # клиент (и хост при реджойне с сервера)
     for f in _SYNC_FIELDS: set(f, data.get(f, get(f)))   # set() коэрсит тип (JSON float → int)
     _mythos.index = int(data.get("mythos_index", 0))
-    _emit_changed(); phase_changed.emit(phase)
+    emit_changed(); phase_changed.emit(phase)
 ```
 
 - **`set()` коэрсит** значение под тип поля — по сети JSON-числа приходят как float,
@@ -106,7 +106,7 @@ func _apply_snapshot(data) -> void:         # клиент (и хост при �
   ([relay_router.gd](../scripts/core/game/relay_router.gd)) — ~34 тонких адаптера
   `_act_*`, каждый `(data) → module.host_apply_*`. Диспетчер (`_on_relay_received`)
   остаётся в GameState.
-- Адаптер зовётся **только на хосте** (`_is_host()`); не-хост доходит до диспетчера,
+- Адаптер зовётся **только на хосте** (`is_host()`); не-хост доходит до диспетчера,
   но Callable не выполняет.
 
 ### 4.2 Граница доверия (pid-ownership)

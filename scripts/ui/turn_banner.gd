@@ -124,7 +124,7 @@ func _show_intro() -> void:
 		return
 	if GameState.phase != Phases.ACTION and GameState.phase != Phases.ENCOUNTER:
 		return
-	var pid: String = GameState._current_pid()
+	var pid: String = GameState.current_pid()
 	if pid.is_empty() or not GameState.players.has(pid):
 		return
 	_intro_done = true

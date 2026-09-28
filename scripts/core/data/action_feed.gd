@@ -52,7 +52,7 @@ static func delta_events(before: Dictionary, after: Dictionary) -> Array:
 ## «вы получили» и очистит по кнопке. Копим, а не перетираем: один миф может
 ## выдать несколько эффектов подряд, окно должно быть одно.
 static func collect_gains(gs: Node, pid: String, before: Dictionary, after: Dictionary) -> void:
-	if not gs._is_host() or not gs.players.has(pid):
+	if not gs.is_host() or not gs.players.has(pid):
 		return
 	var got: Dictionary = gains_summary(before, after)
 	if got.is_empty():
@@ -83,7 +83,7 @@ static func collect_card_result(
 	rolls: Array,
 	events: Array
 ) -> void:
-	if not gs._is_host() or not gs.players.has(pid):
+	if not gs.is_host() or not gs.players.has(pid):
 		return
 	var rec: Dictionary = gains_summary(before, after)
 	rec["card"] = card_id
@@ -155,10 +155,10 @@ static func _item_key(it: Variant) -> String:
 	return String(it)
 
 
-## Хост: применить diff как ленту исходов. gs — GameState (зовём его _is_host() и
+## Хост: применить diff как ленту исходов. gs — GameState (зовём его is_host() и
 ## announce_action). Не-хост / нет изменений → ничего.
 static func announce_deltas(gs: Node, pid: String, before: Dictionary, after: Dictionary) -> void:
-	if not gs._is_host():
+	if not gs.is_host():
 		return
 	for e_v: Variant in delta_events(before, after):
 		var e: Dictionary = e_v

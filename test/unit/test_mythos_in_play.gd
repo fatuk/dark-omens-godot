@@ -42,13 +42,13 @@ class MockGS:
 	func _init() -> void:
 		_rumor = RumorFlow.new(self)
 
-	func _is_host() -> bool:
+	func is_host() -> bool:
 		return host
 
-	func _broadcast_sync() -> void:
+	func broadcast_sync() -> void:
 		pass
 
-	func _emit_changed() -> void:
+	func emit_changed() -> void:
 		pass
 
 

@@ -6,7 +6,7 @@ extends GutTest
 ##   • discardEldritchToken where:self снимает жетоны С КАРТЫ; advanceDoom repeat:gatesOnBoard
 ##     считает реальные врата (0 врат → 0 урона);
 ##   • solve_on_gate_close: закрытие врат на локации портала развеивает ИМЕННО тот Слух.
-## _gs — лёгкий мок (board.open_gate / gates / mythos_in_play / _apply_board_effect / doom).
+## _gs — лёгкий мок (board.open_gate / gates / mythos_in_play / apply_board_effect / doom).
 
 
 class MockBoard:
@@ -49,7 +49,7 @@ class MockGS:
 	func _init() -> void:
 		_board = MockBoard.new(self)
 
-	func _is_host() -> bool:
+	func is_host() -> bool:
 		return true
 
 	# Граф локаций из тестового списка — пересобирается на каждое чтение, чтобы
@@ -58,8 +58,8 @@ class MockGS:
 		get:
 			return LocationGraph.new(locations)
 
-	# Зеркало GameState._apply_board_effect (минимум): advanceDoom с учётом _times (repeat).
-	func _apply_board_effect(node: Dictionary) -> void:
+	# Зеркало GameState.apply_board_effect (минимум): advanceDoom с учётом _times (repeat).
+	func apply_board_effect(node: Dictionary) -> void:
 		if String(node.get("do", "")) == "advanceDoom":
 			var per: int = int(node.get("amount", node.get("count", 1)))
 			doom += per * maxi(1, int(node.get("_times", 1)))

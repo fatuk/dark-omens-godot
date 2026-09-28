@@ -10,8 +10,8 @@ extends RefCounted
 ## в нужные моменты цикла.
 ##
 ## GameState владеет полями (round_num, phase, current_idx, turn_order,
-## players, …) — модуль пишет в них напрямую и зовёт _gs._broadcast_sync()/
-## _gs._emit_changed() / _gs.phase_changed.emit().
+## players, …) — модуль пишет в них напрямую и зовёт _gs.broadcast_sync()/
+## _gs.emit_changed() / _gs.phase_changed.emit().
 
 const REST_HEAL_HP: int = 1
 const REST_HEAL_SANITY: int = 1
@@ -60,7 +60,7 @@ func _rest_resources(p: Dictionary, rec: Array, res_hp: int, res_san: int) -> vo
 ## на game_action (для чужого).
 # Исполнить спец-действие сыщика: встроенный вид (ability.kind) либо программа
 # ability.do через общий EffectRunner. Мутации игрока коммитятся сразу, board-эффекты
-# уходят в _apply_board_effect, изменения — в ленту исходов.
+# уходят в apply_board_effect, изменения — в ленту исходов.
 # false — способности нет или ввод невалиден (действие НЕ тратим).
 func _run_investigator_ability(pid: String, p: Dictionary, payload: Dictionary) -> bool:
 	var inv_id: String = String(p.get("investigator", ""))
@@ -84,9 +84,9 @@ func _ability_run_program(pid: String, p: Dictionary, inv_id: String) -> bool:
 	var inv: Dictionary = Investigators.get_data(inv_id)
 	var res: Dictionary = _EffectRunner.run(program, p, {"skills": inv.get("skills", {})})
 	for l_v: Variant in res.get("logs", []):
-		GameConsole.log("[Способность] %s: %s" % [_gs._name_of(pid), String(l_v)])
+		GameConsole.log("[Способность] %s: %s" % [_gs.name_of(pid), String(l_v)])
 	for node_v: Variant in res.get("board", []):
-		_gs._apply_board_effect(node_v as Dictionary)
+		_gs.apply_board_effect(node_v as Dictionary)
 	return true
 
 
@@ -108,7 +108,7 @@ func _ability_convert_vitality(pid: String, p: Dictionary, payload: Dictionary) 
 	p[from] = int(p.get(from, 0)) - amount
 	p[to] = int(p.get(to, 0)) + amount
 	GameConsole.log(
-		"[Способность] %s: %s −%d → %s +%d" % [_gs._name_of(pid), from, amount, to, amount]
+		"[Способность] %s: %s −%d → %s +%d" % [_gs.name_of(pid), from, amount, to, amount]
 	)
 	return true
 
@@ -117,8 +117,8 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	if _gs.phase != Phases.ACTION:
 		GameConsole.warn("[Game] Действие вне фазы action отклонено")
 		return false
-	if _gs._current_pid() != pid:
-		GameConsole.warn("[Game] %s ходит вне очереди" % _gs._name_of(pid))
+	if _gs.current_pid() != pid:
+		GameConsole.warn("[Game] %s ходит вне очереди" % _gs.name_of(pid))
 		return false
 	if not _gs.players.has(pid):
 		return false
@@ -134,7 +134,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 		and action_type != GameActions.CONDITION_ACTION
 		and _gs._cond.player_has_constraint(pid, "cannotAct")
 	):
-		GameConsole.warn("[Game] %s не может действовать (состояние)" % _gs._name_of(pid))
+		GameConsole.warn("[Game] %s не может действовать (состояние)" % _gs.name_of(pid))
 		return false
 
 	# Одно и то же действие нельзя повторять в раунде (pass не в счёт). Каст заклинания
@@ -147,7 +147,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 		and used.has(action_type)
 	):
 		GameConsole.warn(
-			"[Game] %s — «%s» уже использовано в этом раунде" % [_gs._name_of(pid), action_type]
+			"[Game] %s — «%s» уже использовано в этом раунде" % [_gs.name_of(pid), action_type]
 		)
 		return false
 
@@ -158,7 +158,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			var tkt_type: String = String(payload.get("type", ""))
 			if not _gs.map.ticket_types(String(p.get("location", ""))).has(tkt_type):
 				GameConsole.warn(
-					"[Game] %s — билет «%s» здесь не продаётся" % [_gs._name_of(pid), tkt_type]
+					"[Game] %s — билет «%s» здесь не продаётся" % [_gs.name_of(pid), tkt_type]
 				)
 				return false
 			# Потолок билетов на руках (ж/д + корабль), как в EH.
@@ -166,7 +166,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				GameConsole.warn(
 					(
 						"[Game] %s — нельзя держать больше %d билетов"
-						% [_gs._name_of(pid), _gs.MAX_TICKETS]
+						% [_gs.name_of(pid), _gs.MAX_TICKETS]
 					)
 				)
 				return false
@@ -179,7 +179,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				GameConsole.warn(
 					(
 						"[Game] %s — нельзя держать больше %d концентрации"
-						% [_gs._name_of(pid), _gs.MAX_CONCENTRATION]
+						% [_gs.name_of(pid), _gs.MAX_CONCENTRATION]
 					)
 				)
 				return false
@@ -192,7 +192,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				GameConsole.warn(
 					(
 						"[Game] %s — нельзя держать больше %d ресурсов"
-						% [_gs._name_of(pid), _gs.MAX_RESOURCES]
+						% [_gs.name_of(pid), _gs.MAX_RESOURCES]
 					)
 				)
 				return false
@@ -223,7 +223,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 		GameActions.TRAVEL:
 			var dest: String = String(payload.get("to", ""))
 			if not can_travel(pid, dest):
-				GameConsole.warn("[Game] %s — недопустимое перемещение" % _gs._name_of(pid))
+				GameConsole.warn("[Game] %s — недопустимое перемещение" % _gs.name_of(pid))
 				return false
 			# Стоимость и путь по планировщику: базовый хоп бесплатен, доп. хопы
 			# оплачены билетами (train/ship). Списываем ровно израсходованное.
@@ -257,11 +257,11 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			# вернёт возможность снова пойти в магазин. Сами товары выдаются позже
 			# (host_apply_shop_grant по кнопке «Купить»).
 			if not _gs.map.is_city(String(p.get("location", ""))):
-				GameConsole.warn("[Магазин] %s не в городе" % _gs._name_of(pid))
+				GameConsole.warn("[Магазин] %s не в городе" % _gs.name_of(pid))
 				return false
 			p["actions_left"] = int(p["actions_left"]) - 1
 			p["shopping"] = true  # не передаём ход, пока магазин открыт
-			GameConsole.log("[Магазин] %s пошёл за покупками" % _gs._name_of(pid))
+			GameConsole.log("[Магазин] %s пошёл за покупками" % _gs.name_of(pid))
 			# Бросок Влияния — через единую проверку (CheckFlow). Проверка уже
 			# стартована при открытии магазина (pre-roll, с учётом активированных
 			# карт); страховка — если её нет, стартуем здесь. Монеты = успехи.
@@ -280,9 +280,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			elif _gs._cond.host_run_condition_action(pid, cond_id):
 				p["actions_left"] = int(p["actions_left"]) - 1
 			else:
-				GameConsole.warn(
-					"[Game] %s — нет локального действия состояния" % _gs._name_of(pid)
-				)
+				GameConsole.warn("[Game] %s — нет локального действия состояния" % _gs.name_of(pid))
 				return false
 		GameActions.ASSET_ACTION:
 			# Самостоятельное действие актива (карточка с тегом "action"). Прогон встал
@@ -291,7 +289,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			var asset_idx: int = int(payload.get("item", -1))
 			var played: int = _gs._asset_action.play(pid, asset_idx)
 			if played == AssetActionFlow.PLAY_INVALID:
-				GameConsole.warn("[Game] %s — у актива нет действия" % _gs._name_of(pid))
+				GameConsole.warn("[Game] %s — у актива нет действия" % _gs.name_of(pid))
 				return false
 			if played == AssetActionFlow.PLAY_WAITING:
 				p["asset_acting"] = true
@@ -301,7 +299,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			# программа без видимой проверки. Общие гейты (фаза, очередь, «раз в раунд»,
 			# cannotAct) уже отработали выше — здесь только исполнение.
 			if not _run_investigator_ability(pid, p, payload):
-				GameConsole.warn("[Game] %s — нет спец-действия сыщика" % _gs._name_of(pid))
+				GameConsole.warn("[Game] %s — нет спец-действия сыщика" % _gs.name_of(pid))
 				return false
 			p["actions_left"] = int(p["actions_left"]) - 1
 		GameActions.CAST_SPELL:
@@ -310,7 +308,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			# (apply_cast → release_cast_turn). casting держит ход до применения, как
 			# shopping для магазина. false — карта невалидна (действие не тратим).
 			if not _gs._spell.begin_ritual(pid, int(payload.get("item", -1))):
-				GameConsole.warn("[Заклинание] %s — нельзя прочитать" % _gs._name_of(pid))
+				GameConsole.warn("[Заклинание] %s — нельзя прочитать" % _gs.name_of(pid))
 				return false
 			p["casting"] = true
 			p["actions_left"] = int(p["actions_left"]) - 1
@@ -330,7 +328,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	GameConsole.log(
 		(
 			"[Game] %s · %s · осталось действий: %d"
-			% [_gs._name_of(pid), action_type, int(p["actions_left"])]
+			% [_gs.name_of(pid), action_type, int(p["actions_left"])]
 		)
 	)
 	# Пока игрок в магазине (модалка открыта) или висит промпт выбора заклинаний
@@ -339,8 +337,8 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	if _turn_can_advance(p):
 		_advance_turn_delayed()
 
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -377,8 +375,8 @@ func host_apply_cast_trigger_spells(pid: String, indices: Array) -> bool:
 	p.erase("spell_prompt")
 	if int(p.get("actions_left", 0)) == 0 and not bool(p.get("shopping", false)):
 		_advance_turn_delayed()
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -396,7 +394,7 @@ func _apply_trade(pid: String, payload: Dictionary) -> bool:
 		return false  # Тень не торгует (ни как инициатор, ни как партнёр)
 	if String(me.get("location", "")) != String(ally.get("location", "")):
 		GameConsole.warn(
-			"[Обмен] %s и %s не на одной локации" % [_gs._name_of(pid), _gs._name_of(partner)]
+			"[Обмен] %s и %s не на одной локации" % [_gs.name_of(pid), _gs.name_of(partner)]
 		)
 		return false
 	var give: Array = payload.get("give", [])
@@ -436,8 +434,8 @@ func _apply_trade(pid: String, payload: Dictionary) -> bool:
 			(
 				"[Обмен] %s ↔ %s: отдал %d предм./%d улик, взял %d предм./%d улик"
 				% [
-					_gs._name_of(pid),
-					_gs._name_of(partner),
+					_gs.name_of(pid),
+					_gs.name_of(partner),
 					out_items.size(),
 					give_clues,
 					in_items.size(),
@@ -489,7 +487,7 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 		var a: Dictionary = AssetCatalog.by_id(aid)
 		if a.is_empty() or not reserve.has(aid):
 			GameConsole.log(
-				"[Магазин] %s: товар %s не на витрине — отказ" % [_gs._name_of(pid), aid]
+				"[Магазин] %s: товар %s не на витрине — отказ" % [_gs.name_of(pid), aid]
 			)
 			return false
 		total_cost += int(a.get("cost", 0))
@@ -497,7 +495,7 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 		GameConsole.log(
 			(
 				"[Магазин] %s: не хватает монет (%d > %d) — отказ"
-				% [_gs._name_of(pid), total_cost, coins]
+				% [_gs.name_of(pid), total_cost, coins]
 			)
 		)
 		return false
@@ -505,10 +503,10 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 		_gs._cond.host_grant_asset(pid, String(aid_v))  # исполнит onGain (сервисы срабатывают и сбрасываются)
 	_gs._refill_shop_reserve(assets)  # купленные → заменить новыми
 	GameConsole.log(
-		"[Магазин] %s купил %d товар(ов) за %d" % [_gs._name_of(pid), assets.size(), total_cost]
+		"[Магазин] %s купил %d товар(ов) за %d" % [_gs.name_of(pid), assets.size(), total_cost]
 	)
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -536,7 +534,7 @@ func release_asset_turn(pid: String) -> void:
 		return
 	# Триггер по итогу встречи держал завершение встречи — доводим его теперь
 	# (коммит уже сделан, повторно не применится; триггеры второй раз не стреляют).
-	if _gs.phase == Phases.ENCOUNTER and _gs._current_pid() == pid:
+	if _gs.phase == Phases.ENCOUNTER and _gs.current_pid() == pid:
 		_commit_and_advance(pid)
 		return
 	if int(p.get("actions_left", 0)) == 0:
@@ -570,8 +568,8 @@ func host_apply_shop_close(pid: String) -> bool:
 	p["shopping"] = false
 	if was_shopping and int(p.get("actions_left", 0)) == 0:
 		_advance_turn_delayed()
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -581,20 +579,20 @@ func host_apply_shop_close(pid: String) -> bool:
 func host_apply_shop_debt(pid: String) -> bool:
 	if not _gs.players.has(pid):
 		return false
-	if _gs._current_pid() != pid:
+	if _gs.current_pid() != pid:
 		return false
 	var p: Dictionary = _gs.players[pid]
 	if not _gs.map.is_city(String(p.get("location", ""))):
 		return false
 	var conds: Array = p.get("conditions", [])
 	if conds.has("debt"):
-		GameConsole.log("[Магазин] %s уже имеет «Долг»" % _gs._name_of(pid))
+		GameConsole.log("[Магазин] %s уже имеет «Долг»" % _gs.name_of(pid))
 		return false
 	conds.append("debt")
 	p["conditions"] = conds
-	GameConsole.log("[Магазин] %s взял Долг" % _gs._name_of(pid))
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	GameConsole.log("[Магазин] %s взял Долг" % _gs.name_of(pid))
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -617,9 +615,9 @@ func host_apply_shop_spend_resource(pid: String) -> bool:
 	_gs.active_check["shop_resource_coins"] = (
 		int(_gs.active_check.get("shop_resource_coins", 0)) + 1
 	)
-	GameConsole.log("[Магазин] %s потратил ресурс (+1 монета)" % _gs._name_of(pid))
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	GameConsole.log("[Магазин] %s потратил ресурс (+1 монета)" % _gs.name_of(pid))
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -650,9 +648,9 @@ func host_apply_shop_sell_asset(pid: String, item_index: int) -> bool:
 	c["shop_asset_sold"] = true
 	c["shop_resource_coins"] = int(c.get("shop_resource_coins", 0)) + 1
 	_gs.active_check = c
-	GameConsole.log("[Магазин] %s продал «%s» (+1 монета)" % [_gs._name_of(pid), entry])
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	GameConsole.log("[Магазин] %s продал «%s» (+1 монета)" % [_gs.name_of(pid), entry])
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -671,8 +669,8 @@ func host_apply_finish_encounter(pid: String) -> bool:
 	if _gs.players[pid].get("encounter_done", false):
 		return false
 	# Встречи проходят по очереди — только активный игрок может завершить.
-	if _gs._current_pid() != pid:
-		GameConsole.warn("[Game] %s завершает встречу не в свой ход" % _gs._name_of(pid))
+	if _gs.current_pid() != pid:
+		GameConsole.warn("[Game] %s завершает встречу не в свой ход" % _gs.name_of(pid))
 		return false
 	return _commit_and_advance(pid)
 
@@ -683,7 +681,7 @@ func host_apply_finish_encounter(pid: String) -> bool:
 func host_apply_effect_choice(pid: String, index: int) -> bool:
 	if _gs.phase != Phases.ENCOUNTER or not _gs.players.has(pid):
 		return false
-	if _gs._current_pid() != pid:
+	if _gs.current_pid() != pid:
 		return false
 	if not _gs._encounter.record_effect_choice(pid, index):
 		return false
@@ -705,7 +703,7 @@ func host_apply_absent_decision(pid: String) -> void:
 	GameConsole.log(
 		(
 			"[Game] выбор за отсутствующего %s: вариант %d из %d"
-			% [_gs._name_of(pid), pick + 1, maxi(n, 1)]
+			% [_gs.name_of(pid), pick + 1, maxi(n, 1)]
 		)
 	)
 	host_apply_mythos_decision(pid, pick)
@@ -737,8 +735,8 @@ func _commit_and_advance(pid: String) -> bool:
 
 	# Интерактивный choice не разрешён — ход замирает, ждём выбора игрока.
 	if not bool(_gs.current_encounter.get("committed", false)):
-		_gs._broadcast_sync()
-		_gs._emit_changed()
+		_gs.broadcast_sync()
+		_gs.emit_changed()
 		return true
 
 	# Событийные триггеры активов по итогу встречи (один раз на встречу): победа над
@@ -746,24 +744,24 @@ func _commit_and_advance(pid: String) -> bool:
 	# выбором держит ход (asset_acting) — сюда вернёмся из release_asset_turn.
 	_fire_encounter_triggers(pid, gates_before, clues_before)
 	if bool(_gs.players[pid].get("asset_acting", false)):
-		_gs._broadcast_sync()
-		_gs._emit_changed()
+		_gs.broadcast_sync()
+		_gs.emit_changed()
 		return true
 
 	# Бой может продолжиться (ещё монстры на клетке) или перейти к выбору не-боевой
 	# встречи — тогда ход того же игрока НЕ завершаем.
 	if _gs._encounter.continue_encounter_turn(pid):
-		_gs._broadcast_sync()
-		_gs._emit_changed()
+		_gs.broadcast_sync()
+		_gs.emit_changed()
 		return true
 
 	_gs.players[pid]["encounter_done"] = true
-	GameConsole.log("[Game] %s завершил встречу" % _gs._name_of(pid))
+	GameConsole.log("[Game] %s завершил встречу" % _gs.name_of(pid))
 
 	advance_encounter_turn()
 
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	return true
 
 
@@ -825,8 +823,8 @@ func host_apply_travel_arrived(pid: String) -> void:
 	_gs.players[pid] = p
 	if _turn_can_advance(p):
 		_advance_turn_delayed(TRAVEL_ARRIVE_DELAY)
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Страховка от зависшего хода: клиент мог отвалиться, не доиграв анимацию.
@@ -836,7 +834,7 @@ func _watch_travel_anim(pid: String) -> void:
 		return
 	await _gs.get_tree().create_timer(TRAVEL_ANIM_TIMEOUT).timeout
 	if _gs.players.has(pid) and bool(_gs.players[pid].get(PlayerKeys.TRAVEL_ANIM, false)):
-		GameConsole.warn("[Game] %s: не дождались конца анимации переезда" % _gs._name_of(pid))
+		GameConsole.warn("[Game] %s: не дождались конца анимации переезда" % _gs.name_of(pid))
 		host_apply_travel_arrived(pid)
 
 
@@ -848,8 +846,8 @@ func _advance_turn_delayed(delay: float = TURN_DELAY) -> void:
 	if delay > 0.0 and _gs.is_inside_tree():
 		await _gs.get_tree().create_timer(delay).timeout
 		advance_action_turn()
-		_gs._broadcast_sync()
-		_gs._emit_changed()
+		_gs.broadcast_sync()
+		_gs.emit_changed()
 	else:
 		advance_action_turn()
 
@@ -866,7 +864,7 @@ func enter_encounter() -> void:
 	if not skip_disconnected():
 		_gs._mythos.enter_phase()
 		return
-	GameConsole.log("[Game] Фаза: встречи · ход: %s" % _gs._name_of(_gs._current_pid()))
+	GameConsole.log("[Game] Фаза: встречи · ход: %s" % _gs.name_of(_gs.current_pid()))
 	_gs.phase_changed.emit(_gs.phase)
 	_gs._encounter.begin_turn()
 
@@ -878,7 +876,7 @@ func advance_encounter_turn() -> void:
 	if not skip_disconnected():
 		_gs._mythos.enter_phase()
 	else:
-		GameConsole.log("[Game] Встреча: ход → %s" % _gs._name_of(_gs._current_pid()))
+		GameConsole.log("[Game] Встреча: ход → %s" % _gs.name_of(_gs.current_pid()))
 		_gs._encounter.begin_turn()
 
 
@@ -897,7 +895,7 @@ func start_new_round() -> void:
 		_gs._refresh_items(_gs.players[pid])  # снять истощение активов (Refresh-шаг)
 	_gs._death.clear_grace()  # новый раунд — снять иммунитет выживших на Пороге
 	skip_disconnected()  # начинаем раунд с первого подключённого игрока
-	GameConsole.log("[Game] Раунд %d · ход: %s" % [_gs.round_num, _gs._name_of(_gs._current_pid())])
+	GameConsole.log("[Game] Раунд %d · ход: %s" % [_gs.round_num, _gs.name_of(_gs.current_pid())])
 	_gs.phase_changed.emit(_gs.phase)
 
 

@@ -67,7 +67,7 @@ class MockGameState:
 		_mystery = StubMystery.new()
 		_rumor = RumorFlow.new(self)
 
-	func _is_host() -> bool:
+	func is_host() -> bool:
 		return host
 
 	# Граф локаций из тестового списка — пересобирается на каждое чтение, чтобы
@@ -76,7 +76,7 @@ class MockGameState:
 		get:
 			return LocationGraph.new(locations)
 
-	func _current_pid() -> String:
+	func current_pid() -> String:
 		return String(turn_order[current_idx]) if current_idx < turn_order.size() else ""
 
 	func _fill_shop_reserve() -> void:

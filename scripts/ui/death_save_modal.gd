@@ -172,7 +172,7 @@ func _update(dying: String) -> void:
 	var stat: String = String(c.get("death_stat", PlayerKeys.HP))
 	var kind: String = tr("DEATH_KIND_BODY") if stat == PlayerKeys.HP else tr("DEATH_KIND_MIND")
 	if is_instance_valid(_sub):
-		_sub.text = tr("DEATH_SUBTITLE") % [GameState._name_of(dying), kind]
+		_sub.text = tr("DEATH_SUBTITLE") % [GameState.name_of(dying), kind]
 	var passed: bool = bool(c.get("passed", false))
 	if is_instance_valid(_status):
 		_status.text = tr("DEATH_HOLDS") if passed else tr("DEATH_PULLS")

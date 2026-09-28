@@ -68,13 +68,13 @@ class MockGameState:
 		_check = StubCheck.new(self)
 		_phase = StubPhase.new()
 
-	func _is_host() -> bool:
+	func is_host() -> bool:
 		return host
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
-	func _apply_board_effect(node: Dictionary) -> void:
+	func apply_board_effect(node: Dictionary) -> void:
 		board_effects.append(node)
 
 

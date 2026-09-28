@@ -93,13 +93,13 @@ class MockGameState:
 	var active_check: Dictionary = {}
 	var _check_stack: Array = []
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
-	func _broadcast_sync() -> void:
+	func broadcast_sync() -> void:
 		pass
 
-	func _emit_changed() -> void:
+	func emit_changed() -> void:
 		pass
 
 

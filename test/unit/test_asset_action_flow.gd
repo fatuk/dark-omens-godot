@@ -78,7 +78,7 @@ class MockGameState:
 	var _check := StubCheck.new()
 	var _phase := StubPhase.new()
 
-	func _is_host() -> bool:
+	func is_host() -> bool:
 		return host
 
 	# Граф локаций из тестового списка — пересобирается на каждое чтение, чтобы
@@ -87,10 +87,10 @@ class MockGameState:
 		get:
 			return LocationGraph.new(locations)
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
-	func _apply_board_effect(node: Dictionary) -> void:
+	func apply_board_effect(node: Dictionary) -> void:
 		board_effects.append(node)
 
 	# Лента исходов (die_roll / дельты сыщика) — копим, чтобы проверять видимость броска.
@@ -103,10 +103,10 @@ class MockGameState:
 		for b_v: Variant in bought:
 			shop_reserve.erase(String(b_v))
 
-	func _broadcast_sync() -> void:
+	func broadcast_sync() -> void:
 		pass
 
-	func _emit_changed() -> void:
+	func emit_changed() -> void:
 		pass
 
 

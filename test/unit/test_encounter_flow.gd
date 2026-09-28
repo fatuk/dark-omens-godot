@@ -107,33 +107,33 @@ class MockGS:
 	var active_check: Dictionary = {}
 	var turn_order: Array = ["p"]
 	var map: RefCounted = null  # MockMap — граф локаций для move (ставит тест)
-	var board_effects: Array = []  # что ушло в _apply_board_effect
+	var board_effects: Array = []  # что ушло в apply_board_effect
 	var _check := MockCheck.new()
 	var _campaign := MockCampaign.new()
 	var _board := MockBoard.new()
 	var _rumor := MockRumor.new()
 
-	func _is_host() -> bool:
+	func is_host() -> bool:
 		return true
 
-	var current_pid: String = "p"
+	var cur_pid: String = "p"  # чей сейчас ход (мок current_pid())
 
-	func _current_pid() -> String:
-		return current_pid
+	func current_pid() -> String:
+		return cur_pid
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
-	func _broadcast_sync() -> void:
+	func broadcast_sync() -> void:
 		pass
 
-	func _emit_changed() -> void:
+	func emit_changed() -> void:
 		pass
 
 	func announce_action(_pid: String, _id: String, _params: Dictionary = {}) -> void:
 		pass
 
-	func _apply_board_effect(node: Dictionary) -> void:
+	func apply_board_effect(node: Dictionary) -> void:
 		board_effects.append(node)
 
 
@@ -212,7 +212,7 @@ class MockGSDebug:
 	var players: Dictionary = {}
 	var _encounter: EncounterFlow
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
 
@@ -389,7 +389,7 @@ func test_second_investigator_fights_survivor_with_remaining_health() -> void:
 	ef._commit_combat("p")
 	assert_false(ef.continue_encounter_turn("p"), "ход первого завершён")
 	# Ход второго: пометка первого ему не мешает, а гуль встречает его раненым.
-	ef._gs.current_pid = "q"
+	ef._gs.cur_pid = "q"
 	ef.begin_turn()
 	assert_eq(String(ef._gs.current_encounter.get("kind", "")), "combat", "второй тоже дерётся")
 	assert_eq(int(ef._gs.current_encounter.get("health", -1)), 1, "здоровье общее — гуль ранен")
@@ -414,7 +414,7 @@ func test_second_investigator_does_not_see_defeated_monster() -> void:
 	ef._commit_combat("p")
 	assert_false(ef.continue_encounter_turn("p"))
 	# Второму достаётся только гуль: выбора нет, бой сразу, культиста уже нет.
-	ef._gs.current_pid = "q"
+	ef._gs.cur_pid = "q"
 	ef.begin_turn()
 	assert_true((ef._gs.encounter_choices as Array).is_empty(), "один монстр — без выбора")
 	assert_eq(String(ef._gs.current_encounter.get("monsterId", "")), "ghoul")

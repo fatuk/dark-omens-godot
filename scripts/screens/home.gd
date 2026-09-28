@@ -65,7 +65,7 @@ func _on_play_pressed() -> void:
 func _on_settings_pressed() -> void:
 	if is_instance_valid(_settings_dialog):
 		# Повторный клик по «Настройки» — отмена (откат live-preview + закрытие).
-		_settings_dialog.call("_on_cancel")
+		_settings_dialog._on_cancel()
 		return
 	_settings_dialog = _SETTINGS_DIALOG.instantiate()
 	_settings_dialog.show_server_url = true

@@ -60,16 +60,16 @@ class MockGameState:
 		_board = StubBoard.new()
 		_board.gs = self
 
-	func _is_host() -> bool:
+	func is_host() -> bool:
 		return host
 
-	func _current_pid() -> String:
+	func current_pid() -> String:
 		return String(turn_order[current_idx]) if current_idx < turn_order.size() else ""
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
-	func _apply_board_effect(node: Dictionary) -> void:
+	func apply_board_effect(node: Dictionary) -> void:
 		board_effects.append(node)
 
 

@@ -10,8 +10,8 @@ extends RefCounted
 ##
 ## Синкаемый стейт (gates/entities/monsters/monster_bag/monster_surge/doom/
 ## omens_step) ОСТАЁТСЯ полями GameState — модуль мутирует его через _gs. Доступ к
-## стейту/услугам — через _gs: _gs._is_host(), _gs.map,
-## _gs._current_pid(), _gs.players, _gs._campaign, _gs._fill_shop_reserve(),
+## стейту/услугам — через _gs: _gs.is_host(), _gs.map,
+## _gs.current_pid(), _gs.players, _gs._campaign, _gs._fill_shop_reserve(),
 ## _gs._mystery.try_mystery_hook(). Создаётся в GameState (поле _board).
 
 var _gs: Node
@@ -86,9 +86,9 @@ func reference_amount(field: String) -> int:
 
 
 ## Хост: начальная раскладка поля. Открыть врата (каждые → 1 монстр), разложить
-## улики (≤1 на локацию), записать Наплыв. Зовётся из start_game до _broadcast_sync.
+## улики (≤1 на локацию), записать Наплыв. Зовётся из start_game до broadcast_sync.
 func setup_board(player_count: int) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	_gs.gates = {}
 	_gs.entities = {}
@@ -122,7 +122,7 @@ func setup_board(player_count: int) -> void:
 ## Открыть врата. Возвращает локацию, где врата открылись ("" — не удалось: не хост
 ## либо нет свободной гейт-локации). Возврат нужен RumorFlow (привязка портала Слуха).
 func open_gate(loc_id: String = "", color: String = "") -> String:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return ""
 	var lid: String = loc_id
 	if lid.is_empty():
@@ -196,7 +196,7 @@ func _gate_color_for(loc_id: String) -> String:
 ## Закрыть врата на локации активного игрока (эффект closeGate финальной стадии
 ## gate-встречи). Врата привязаны к месту, где сыщик прошёл Иной мир.
 func close_gate_at_active_player() -> void:
-	var pid: String = _gs._current_pid()
+	var pid: String = _gs.current_pid()
 	if pid.is_empty():
 		return
 	close_gate_at(String(_gs.players.get(pid, {}).get("location", "")), pid)
@@ -206,7 +206,7 @@ func close_gate_at_active_player() -> void:
 ## Отдельно от «у активного сыщика»: встреча за вратами может сначала переместить
 ## сыщика (move), а закрыть надо врата, ИЗ которых он пришёл.
 func close_gate_at(loc: String, pid: String) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	if _gs.gates.has(loc):
 		var color: String = String(_gs.gates[loc])
@@ -223,7 +223,7 @@ func close_gate_at(loc: String, pid: String) -> void:
 ## Экземпляр хранит здоровье ({id, health}); смерть вернёт id в мешок. Мешок
 ## пуст → спауна нет (как пустой котёл монстров в EH).
 func _spawn_monster(loc_id: String) -> void:
-	if not _gs._is_host() or loc_id.is_empty():
+	if not _gs.is_host() or loc_id.is_empty():
 		return
 	if _gs.monster_bag.is_empty():
 		GameConsole.warn("[Спаун] мешок монстров пуст — спаун пропущен")
@@ -259,7 +259,7 @@ func spawn_monster_at(loc_id: String) -> void:
 ## Вернуть монстра в «мешок» (после гибели/снятия с поля). Культист всегда в
 ## мешке (его не вынимали) — не дублируем.
 func return_monster_to_bag(mid: String) -> void:
-	if not _gs._is_host() or mid.is_empty() or mid == "cultist":
+	if not _gs.is_host() or mid.is_empty() or mid == "cultist":
 		return
 	_gs.monster_bag.append(mid)
 
@@ -317,7 +317,7 @@ func space_choices() -> Array:
 ## Снять КОНКРЕТНЫЙ экземпляр монстра по ref "loc#idx" (выбранный игроком, chosenMonster).
 ## id возвращается в мешок. Зовётся board-verb'ом discardMonster с _target_monster.
 func discard_monster_ref(ref: String) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var parts: PackedStringArray = ref.split("#")
 	if parts.size() != 2:
@@ -341,7 +341,7 @@ func discard_monster_ref(ref: String) -> void:
 ## Переставить КОНКРЕТНЫЙ экземпляр монстра (ref "loc#idx") в локацию dest. Здоровье и
 ## прочее состояние экземпляра сохраняются. Зовётся board-verb'ом moveMonster.
 func move_monster_ref(ref: String, dest: String) -> void:
-	if not _gs._is_host() or dest.is_empty():
+	if not _gs.is_host() or dest.is_empty():
 		return
 	var parts: PackedStringArray = ref.split("#")
 	if parts.size() != 2:
@@ -366,7 +366,7 @@ func move_monster_ref(ref: String, dest: String) -> void:
 
 ## Локация активного игрока ("" — нет активного). Для board-verb'ов, бьющих «здесь».
 func _active_loc() -> String:
-	var pid: String = _gs._current_pid()
+	var pid: String = _gs.current_pid()
 	if pid.is_empty() or not _gs.players.has(pid):
 		return ""
 	return String(_gs.players[pid].get("location", ""))
@@ -374,7 +374,7 @@ func _active_loc() -> String:
 
 ## Снять до n монстров с локации активного игрока (id → в мешок). defeated — для лога.
 func remove_monster_at_active(defeated: bool, n: int) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var loc: String = _active_loc()
 	if loc.is_empty():
@@ -400,7 +400,7 @@ func remove_monster_at_active(defeated: bool, n: int) -> void:
 ## Снять с локации активного игрока всех монстров со стойкостью ≤ max_t (id → в
 ## мешок). Для эффектов «по стойкости» (Poison Mist/Banishment/Binding). defeated — лог.
 func remove_monsters_by_toughness(defeated: bool, max_t: int) -> void:
-	if not _gs._is_host() or max_t < 1:
+	if not _gs.is_host() or max_t < 1:
 		return
 	var loc: String = _active_loc()
 	if loc.is_empty():
@@ -435,7 +435,7 @@ func remove_monsters_by_toughness(defeated: bool, max_t: int) -> void:
 ## стойкостью 1 с игрового поля». Отдельно от версии «на моей клетке» —
 ## у карточек это две разные механики, и путать область нельзя.
 func remove_monsters_by_toughness_everywhere(defeated: bool, max_t: int) -> void:
-	if not _gs._is_host() or max_t < 1:
+	if not _gs.is_host() or max_t < 1:
 		return
 	var balance_pc: int = _gs._campaign.balance_player_count()
 	var removed: int = 0
@@ -469,7 +469,7 @@ func remove_monsters_by_toughness_everywhere(defeated: bool, max_t: int) -> void
 
 ## Нанести amount урона первому монстру на локации активного игрока; гибель → снять.
 func damage_monster_at_active(amount: int) -> void:
-	if not _gs._is_host() or amount <= 0:
+	if not _gs.is_host() or amount <= 0:
 		return
 	_damage_at(_active_loc(), 0, amount)
 
@@ -477,7 +477,7 @@ func damage_monster_at_active(amount: int) -> void:
 ## Нанести урон КАЖДОМУ монстру на локации активного игрока (Dynamite: «каждый
 ## монстр на вашей локации теряет 3 здоровья»).
 func damage_monsters_at_active(amount: int) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	damage_monsters_at(_active_loc(), amount)
 
@@ -485,7 +485,7 @@ func damage_monsters_at_active(amount: int) -> void:
 ## Нанести урон КОНКРЕТНОМУ монстру по ref "loc#idx" — выбранному игроком
 ## (damageMonster target:chosenMonster: Assassination, Monster Hunter, Enchanted Bow).
 func damage_monster_ref(ref: String, amount: int) -> void:
-	if not _gs._is_host() or amount <= 0:
+	if not _gs.is_host() or amount <= 0:
 		return
 	var parts: PackedStringArray = ref.split("#")
 	if parts.size() != 2:
@@ -496,7 +496,7 @@ func damage_monster_ref(ref: String, amount: int) -> void:
 ## Нанести урон КАЖДОМУ монстру выбранной локации (damageMonster target:chosenSpace:
 ## Agency Quarantine, Police Raid). Идём с конца — павшие удаляются по индексу.
 func damage_monsters_at(loc: String, amount: int) -> void:
-	if not _gs._is_host() or amount <= 0 or loc.is_empty():
+	if not _gs.is_host() or amount <= 0 or loc.is_empty():
 		return
 	var n: int = (_gs.monsters.get(loc, []) as Array).size()
 	for i in range(n - 1, -1, -1):
@@ -537,7 +537,7 @@ func _damage_at(loc: String, idx: int, amount: int) -> void:
 
 ## Снять врата: на локации активного игрока, иначе случайные открытые.
 func discard_gate() -> void:
-	if not _gs._is_host() or _gs.gates.is_empty():
+	if not _gs.is_host() or _gs.gates.is_empty():
 		return
 	var loc: String = _active_loc()
 	if not _gs.gates.has(loc):
@@ -549,7 +549,7 @@ func discard_gate() -> void:
 
 ## Монстр из мифа: спаун на случайных открытых вратах; если врат нет — открыть.
 func spawn_monster_from_gate() -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	if _gs.gates.is_empty():
 		open_gate()
@@ -560,7 +560,7 @@ func spawn_monster_from_gate() -> void:
 
 ## Положить улику на случайную локацию без улики (≤1 улика на локацию).
 func place_clue() -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	# Жетон улики привязан к своей локации (ключ = локация), поэтому выложить можно
 	# только туда, чей ключ ЕЩЁ В КОЛОДЕ. Колода пуста — замешиваем сброс; пусты обе
@@ -588,7 +588,7 @@ func place_clue() -> void:
 ## Положить жетон Знамения (Eldritch) на случайную локацию без такого жетона
 ## (≤1 на локацию — иначе их не отличить визуально и нечего «снимать» встречей).
 func place_eldritch_token() -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var candidates: Array = []
 	for lid: String in _gs.map.ids():
@@ -609,7 +609,7 @@ func place_eldritch_token() -> void:
 ## совпадают на клетке — единый повод для встречи (encounterAtEldritchToken).
 ## Зовётся из placeEldritchToken с where:"marked" (обычно из onEnter Тайны).
 func place_eldritch_token_on_marked(n: int) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var locs: Array = _gs._campaign.current_mystery().get("locations", [])
 	var placed: int = 0
@@ -631,7 +631,7 @@ func place_eldritch_token_on_marked(n: int) -> void:
 ## Положить жетон Знамения на КОНКРЕТНУЮ локацию по id (≤1 на клетку). Нет id /
 ## уже есть жетон — no-op. Зовётся из placeEldritchToken с where:"<locationId>".
 func place_eldritch_token_at(loc_id: String) -> void:
-	if not _gs._is_host() or loc_id.is_empty():
+	if not _gs.is_host() or loc_id.is_empty():
 		return
 	var arr: Array = _gs.entities.get(loc_id, [])
 	if (arr as Array).has("eldritch_token"):
@@ -645,7 +645,7 @@ func place_eldritch_token_at(loc_id: String) -> void:
 ## разгадке Тайны: доска чистится целиком, следующая Тайна раскладывает свои через
 ## onEnter. Возвращает число снятых жетонов.
 func clear_eldritch_tokens() -> int:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return 0
 	var removed: int = 0
 	for lid: String in _gs.entities.keys():
@@ -666,7 +666,7 @@ func clear_eldritch_tokens() -> int:
 ## Снять ВСЕ улики с поля (синкаемое entities). Возвращает число снятых. Для эффектов
 ## Слухов вроде «сбросить все улики на поле» (Lost Knowledge).
 func discard_all_clues() -> int:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return 0
 	var removed: int = 0
 	for lid: String in _gs.entities.keys():
@@ -689,7 +689,7 @@ func discard_all_clues() -> int:
 ## discardBoardClue («сбросьте ближайшую улику на игровом поле», Студент-
 ## исследователь). Ключ улики уйдёт в сброс через _reconcile_board_clue_ids.
 func discard_nearest_clue(from_loc: String) -> String:
-	if not _gs._is_host() or from_loc.is_empty():
+	if not _gs.is_host() or from_loc.is_empty():
 		return ""
 	var queue: Array = [from_loc]
 	var seen: Dictionary = {from_loc: true}
@@ -714,7 +714,7 @@ func discard_nearest_clue(from_loc: String) -> String:
 ## Закрыть/убрать ВСЕ открытые врата (синкаемое gates). Возвращает число убранных. Для
 ## эффектов Слухов вроде «сбросить все врата» (Devourer of Stars, The White Ship).
 func discard_all_gates() -> int:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return 0
 	var removed: int = (_gs.gates as Dictionary).size()
 	for loc_v: Variant in (_gs.gates as Dictionary).keys():
@@ -728,7 +728,7 @@ func discard_all_gates() -> int:
 ## Положить метку слуха на КОНКРЕТНУЮ локацию (для Слуха с solve=encounter — куда идти
 ## развеивать). Идемпотентно. Отдельная иконка "rumor" (не путать с eldritch_token Тайны).
 func place_rumor_at(loc_id: String) -> void:
-	if not _gs._is_host() or loc_id.is_empty():
+	if not _gs.is_host() or loc_id.is_empty():
 		return
 	var arr: Array = _gs.entities.get(loc_id, [])
 	if not (arr as Array).has("rumor"):
@@ -738,7 +738,7 @@ func place_rumor_at(loc_id: String) -> void:
 
 ## Снять метку слуха с локации (после развеивания encounter-Слуха).
 func remove_rumor_at(loc_id: String) -> void:
-	if not _gs._is_host() or loc_id.is_empty():
+	if not _gs.is_host() or loc_id.is_empty():
 		return
 	var arr: Array = _gs.entities.get(loc_id, [])
 	if (arr as Array).has("rumor"):
@@ -751,7 +751,7 @@ func remove_rumor_at(loc_id: String) -> void:
 
 ## Положить слух на случайную локацию.
 func place_rumor() -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var lid: String = _gs.map.random_id()
 	if lid.is_empty():
@@ -765,7 +765,7 @@ func place_rumor() -> void:
 ## Наплыв монстров: из каждых врат цвета текущего омена лезет monster_surge
 ## монстров; если таких врат нет — открываются одни новые врата (= 1 монстр).
 func monster_surge() -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var color: String = current_omen_color()
 	var matched: Array = []

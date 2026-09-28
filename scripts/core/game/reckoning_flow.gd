@@ -28,19 +28,19 @@ func _init(gs: Node) -> void:
 
 ## Полный шаг Расплаты (или только mythosInPlay при scope). Host-only, корутина.
 func run_reckoning(scope: String = "") -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	GameConsole.log("[Расплата] начало (%s)" % ("full" if scope.is_empty() else scope))
 	if scope == "mythosInPlay":
 		_reckon_mythos_in_play()
-		_gs._broadcast_sync()
-		_gs._emit_changed()
+		_gs.broadcast_sync()
+		_gs.emit_changed()
 		return
 	_reckon_ancient()
 	_reckon_mythos_in_play()
 	_reckon_monsters()
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	await _reckon_investigators()
 
 
@@ -92,7 +92,7 @@ func _run_card_reckoning(card: Dictionary) -> bool:
 		if String((node_v as Dictionary).get("do", "")) == "discardCard":
 			discard = true  # сброс ЭТОЙ карты из игры
 		else:
-			_gs._apply_board_effect(node_v as Dictionary)
+			_gs.apply_board_effect(node_v as Dictionary)
 	var label: String = "Миф «%s»" % String(card.get("name", "?"))
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[Расплата:%s] %s" % [label, String(l_v)])
@@ -121,7 +121,7 @@ func _apply_global(prog: Array, label: String) -> void:
 		GameConsole.warn("[Расплата:%s] выбор в глобальной Расплате не поддержан — пропуск" % label)
 		return
 	for node_v: Variant in res.get("board", []):
-		_gs._apply_board_effect(node_v as Dictionary)
+		_gs.apply_board_effect(node_v as Dictionary)
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[Расплата:%s] %s" % [label, String(l_v)])
 
@@ -150,8 +150,8 @@ func _reckon_investigators() -> void:
 	for pid_v: Variant in pids:
 		(_gs.players.get(String(pid_v), {}) as Dictionary).erase("reckoning_done")  # свежий старт
 	_gs.reckoning_active = true
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	for pid_v: Variant in pids:
 		_reckon_investigator(String(pid_v))  # запускаем корутину БЕЗ await — параллельно
 	while _reck_done < _reck_total:
@@ -159,8 +159,8 @@ func _reckon_investigators() -> void:
 	_gs.reckoning_active = false
 	for pid_v: Variant in pids:
 		(_gs.players.get(String(pid_v), {}) as Dictionary).erase("reckoning_done")
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Расплата одного сыщика (своя корутина): его карты в АВТО-порядке (состояния → активы);
@@ -185,8 +185,8 @@ func _reckon_investigator(pid: String) -> void:
 			cards = _filter_valid(pid, cards)
 		if _gs.players.has(pid):
 			(_gs.players[pid] as Dictionary)["reckoning_done"] = true
-		_gs._broadcast_sync()
-		_gs._emit_changed()
+		_gs.broadcast_sync()
+		_gs.emit_changed()
 	_reck_done += 1
 	player_reckoned.emit()
 
@@ -240,8 +240,8 @@ func _resolve_card(pid: String, card: Dictionary) -> void:
 		await _gs._cond.reckon_condition(pid, String(card.get("id", "")), {}, true)
 	else:
 		_reckon_asset(pid, String(card.get("id", "")))
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	await _gs.get_tree().create_timer(_CARD_DELAY).timeout
 
 
@@ -258,6 +258,6 @@ func _reckon_asset(pid: String, aid: String) -> void:
 	ActionFeed.announce_deltas(_gs, pid, before_r, p)  # лента Расплаты (актив)
 	ActionFeed.collect_gains(_gs, pid, before_r, p)  # окно «вы получили»
 	for l_v: Variant in res.get("logs", []):
-		GameConsole.log("[Расплата актив %s] %s · %s" % [aid, _gs._name_of(pid), String(l_v)])
+		GameConsole.log("[Расплата актив %s] %s · %s" % [aid, _gs.name_of(pid), String(l_v)])
 	for node_v: Variant in res.get("board", []):
-		_gs._apply_board_effect(node_v as Dictionary)
+		_gs.apply_board_effect(node_v as Dictionary)

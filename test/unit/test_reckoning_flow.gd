@@ -42,13 +42,13 @@ class MockGS:
 	func _init() -> void:
 		_rumor = RumorFlow.new(self)
 
-	func _is_host() -> bool:
+	func is_host() -> bool:
 		return host
 
-	func _current_pid() -> String:
+	func current_pid() -> String:
 		return ""
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
 	# Граф локаций из тестового списка — пересобирается на каждое чтение, чтобы
@@ -57,18 +57,18 @@ class MockGS:
 		get:
 			return LocationGraph.new(locations)
 
-	func _broadcast_sync() -> void:
+	func broadcast_sync() -> void:
 		pass
 
-	func _emit_changed() -> void:
+	func emit_changed() -> void:
 		pass
 
 	func announce_action(_pid: String, _id: String, _params: Dictionary = {}) -> void:
 		pass
 
-	# Зеркало GameState._apply_board_effect (минимум для теста): адресные — через
+	# Зеркало GameState.apply_board_effect (минимум для теста): адресные — через
 	# TargetResolver; advanceDoom — в счётчик doom.
-	func _apply_board_effect(node: Dictionary) -> void:
+	func apply_board_effect(node: Dictionary) -> void:
 		if _target.is_targeted_effect(node):
 			_target.apply_targeted_effect(node)
 		elif String(node.get("do", "")) == "advanceDoom":

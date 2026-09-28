@@ -4,10 +4,10 @@ extends RefCounted
 ## Подсистема адресных эффектов (target) и передач между сыщиками. Вынесена из
 ## GameState. Игровой verb с целью lead/each/eachOn*/chosenInvestigator применяется
 ## к КАЖДОМУ разрешённому сыщику; give* (giveAsset/giveClue) — передача от активного
-## игрока выбранному. Зовётся из GameState._apply_board_effect.
+## игрока выбранному. Зовётся из GameState.apply_board_effect.
 ##
-## Доступ к стейту — через _gs: _gs.players, _gs.turn_order, _gs._current_pid(),
-## _gs._name_of(), _gs.map. Создаётся в GameState (поле _target).
+## Доступ к стейту — через _gs: _gs.players, _gs.turn_order, _gs.current_pid(),
+## _gs.name_of(), _gs.map. Создаётся в GameState (поле _target).
 
 const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
@@ -48,7 +48,7 @@ func apply_targeted_effect(node: Dictionary) -> void:
 			else:
 				var logs: Array = _EffectRunner.apply_player_verb(verb, node, _gs.players[pid])
 				for log_msg: Variant in logs:
-					GameConsole.log("[Эффект→%s] %s" % [_gs._name_of(pid), String(log_msg)])
+					GameConsole.log("[Эффект→%s] %s" % [_gs.name_of(pid), String(log_msg)])
 
 
 # Список сыщиков-целей по target. lead → ведущий (turn_order[0]); each → все
@@ -79,14 +79,14 @@ func _resolve_targets(node: Dictionary) -> Array:
 		"leftNeighbor":
 			return _neighbor(_anchor_pid(node), -1)
 		_:
-			var a: String = _gs._current_pid()
+			var a: String = _gs.current_pid()
 			return [a] if not a.is_empty() else []
 
 
 # Якорь относительных целей: явный _anchor_pid (ставит forEach-драйвер Мифов) либо
 # активный игрок (встречи). Сосед считается ОТ него.
 func _anchor_pid(node: Dictionary) -> String:
-	return String(node.get("_anchor_pid", _gs._current_pid()))
+	return String(node.get("_anchor_pid", _gs.current_pid()))
 
 
 # Сосед якоря среди подключённых (порядок turn_order, со wrap): dir +1 — по часовой
@@ -111,7 +111,7 @@ func other_pids(exclude_pid: String) -> Array:
 	for pid_v: Variant in _connected_pids():
 		var pid: String = String(pid_v)
 		if pid != exclude_pid:
-			out.append({"pid": pid, "name": _gs._name_of(pid)})
+			out.append({"pid": pid, "name": _gs.name_of(pid)})
 	return out
 
 
@@ -150,7 +150,7 @@ func _loc_type_of(loc_id: String) -> String:
 # Передача от активного игрока выбранному: giveClue — улики (сколько есть, до n);
 # giveAsset — один предмет (с конца стопки). Источник — активный игрок встречи.
 func _apply_give(verb: String, node: Dictionary, target_pid: String) -> void:
-	var src: String = _gs._current_pid()
+	var src: String = _gs.current_pid()
 	if src.is_empty() or not _gs.players.has(src) or src == target_pid:
 		return
 	if verb == "giveClue":
@@ -162,7 +162,7 @@ func _apply_give(verb: String, node: Dictionary, target_pid: String) -> void:
 		_gs.players[src]["clues"] = avail - moved
 		_gs.players[target_pid]["clues"] = int(_gs.players[target_pid].get("clues", 0)) + moved
 		GameConsole.log(
-			"[Эффект] %s → %s: улик %d" % [_gs._name_of(src), _gs._name_of(target_pid), moved]
+			"[Эффект] %s → %s: улик %d" % [_gs.name_of(src), _gs.name_of(target_pid), moved]
 		)
 	elif verb == "giveAsset":
 		var items: Array = _gs.players[src].get("items", [])
@@ -173,4 +173,4 @@ func _apply_give(verb: String, node: Dictionary, target_pid: String) -> void:
 		var titems: Array = _gs.players[target_pid].get("items", [])
 		titems.append(it)
 		_gs.players[target_pid]["items"] = titems
-		GameConsole.log("[Эффект] %s → %s: предмет" % [_gs._name_of(src), _gs._name_of(target_pid)])
+		GameConsole.log("[Эффект] %s → %s: предмет" % [_gs.name_of(src), _gs.name_of(target_pid)])

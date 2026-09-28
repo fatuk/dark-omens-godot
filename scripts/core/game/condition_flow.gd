@@ -7,8 +7,8 @@ extends RefCounted
 ##   • triggered/action состояний (Hypothermia on:rest, Detained escape);
 ##   • выдача активов с исполнением onGain (одноразовые сервисы).
 ##
-## Доступ к игровому стейту — через _gs (GameState): _gs.players, _gs._is_host(),
-## _gs._name_of(), _gs._apply_board_effect(). Создаётся в GameState (поле _cond).
+## Доступ к игровому стейту — через _gs (GameState): _gs.players, _gs.is_host(),
+## _gs.name_of(), _gs.apply_board_effect(). Создаётся в GameState (поле _cond).
 
 const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
@@ -34,7 +34,7 @@ func _init(gs: Node) -> void:
 ## броски ворот (dieRoll/test в onReckoning), flow.outcomes[cid] форсирует исход
 ## flip'а. Пусто → прежнее случайное поведение. Используется тестами.
 func host_resolve_reckoning(flow: Dictionary = {}) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	GameConsole.log("[Расплата] начало")
 	for pid_v: Variant in _gs.players.keys():
@@ -119,8 +119,8 @@ func _reckon_condition_interactive(
 				"path": String(pending.get("path", "")),
 				"subject": Conditions.card_payload(cid),
 			}
-			_gs._broadcast_sync()
-			_gs._emit_changed()
+			_gs.broadcast_sync()
+			_gs.emit_changed()
 			var passed: bool = await _await_my_check(pid)
 			var pp: Dictionary = _gs.players.get(pid, {})
 			pp.erase("reckoning_check")
@@ -163,8 +163,8 @@ func _await_reckon_decision(
 		"subject": subject,  # сама карта — что именно предлагают перевернуть
 		"prompt_key": "RECKONING_DECISION_PROMPT",
 	}
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	var pre: Variant = (_gs.mythos_decision as Dictionary).get("picked", null)
 	var idx: int = int(pre) if pre != null else int(await _gs.mythos_decided)
 	_gs.mythos_decision = {}
@@ -191,7 +191,7 @@ func _apply_reckon_output(
 	pid: String, cid: String, def: Dictionary, ctx: Dictionary, res: Dictionary, flow: Dictionary
 ) -> void:
 	for l_v: Variant in res.get("logs", []):
-		GameConsole.log("[Расплата] %s · %s: %s" % [_gs._name_of(pid), cid, String(l_v)])
+		GameConsole.log("[Расплата] %s · %s: %s" % [_gs.name_of(pid), cid, String(l_v)])
 	for node_v: Variant in res.get("board", []):
 		_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx, flow)
 
@@ -212,7 +212,7 @@ func _apply_reckon_board(
 		"discardCard":
 			_discard_condition(pid, cid)
 		_:
-			_gs._apply_board_effect(node)
+			_gs.apply_board_effect(node)
 
 
 # Перевернуть состояние: вытянуть случайный оборот из СОБСТВЕННЫХ backs состояния
@@ -224,21 +224,21 @@ func _flip_condition(
 	var backs: Array = def.get("backs", [])
 	if (backs as Array).is_empty():
 		_set_flipped(p, cid, "")
-		GameConsole.log("[Расплата] %s · %s перевёрнуто" % [_gs._name_of(pid), cid])
+		GameConsole.log("[Расплата] %s · %s перевёрнуто" % [_gs.name_of(pid), cid])
 		return
 	var back: Dictionary = _pick_back(backs, cid, flow)
 	var bid: String = String(back.get("id", ""))
 	_set_reckoning_result(pid, cid, back)  # для модалки результата флипа игрока
 	var res: Dictionary = _EffectRunner.run(back.get("effect", []), p, ctx, flow)
 	for l_v: Variant in res.get("logs", []):
-		GameConsole.log("[Расплата] %s · исход «%s»: %s" % [_gs._name_of(pid), bid, String(l_v)])
+		GameConsole.log("[Расплата] %s · исход «%s»: %s" % [_gs.name_of(pid), bid, String(l_v)])
 	for node_v: Variant in res.get("board", []):
-		_gs._apply_board_effect(node_v as Dictionary)
+		_gs.apply_board_effect(node_v as Dictionary)
 	if String(back.get("then", "flip")) == "discard":
 		_discard_condition(pid, cid)
 	else:
 		_set_flipped(p, cid, bid)
-		GameConsole.log("[Расплата] %s · %s → «%s»" % [_gs._name_of(pid), cid, bid])
+		GameConsole.log("[Расплата] %s · %s → «%s»" % [_gs.name_of(pid), cid, bid])
 
 
 # Выбор оборота: форс через flow.outcomes[cid] по id (детерминизм/тесты/replay),
@@ -275,7 +275,7 @@ func _discard_condition(pid: String, cid: String) -> void:
 	conds.erase(cid)
 	p["conditions"] = conds
 	(p.get("conditions_flipped", {}) as Dictionary).erase(cid)
-	GameConsole.log("[Расплата] %s · %s сброшено" % [_gs._name_of(pid), cid])
+	GameConsole.log("[Расплата] %s · %s сброшено" % [_gs.name_of(pid), cid])
 
 
 # ── whileHeld-ограничения состояний ───────────────────────────────────────────
@@ -322,7 +322,7 @@ func player_success_threshold(pid: String) -> int:
 ## (dieRoll/test → flipCard/discardCard и т.п.) исполняет через интерпретатор.
 func fire_triggered(pid: String, event: String, flow: Dictionary = {}) -> Array:
 	var no_recover: Array = []
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return no_recover
 	var p: Dictionary = _gs.players.get(pid, {})
 	var conds: Array = (p.get("conditions", []) as Array).duplicate()
@@ -363,7 +363,7 @@ func _check_context(cond_id: String) -> String:
 ## Хост: локальное действие состояния (action-слот, напр. Detained: проверка Влияния
 ## → сброс). true — состояние держится и имеет action. Разрешено даже при cannotAct.
 func host_run_condition_action(pid: String, cond_id: String, flow: Dictionary = {}) -> bool:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return false
 	if not (_gs.players.get(pid, {}).get("conditions", []) as Array).has(cond_id):
 		return false
@@ -384,7 +384,7 @@ func host_run_condition_action(pid: String, cond_id: String, flow: Dictionary = 
 ## phase_controller (release_condition_turn). true — действие запущено (у него есть
 ## test-узел); false — действия с проверкой нет (вызывающий пробует синхронный путь).
 func begin_action(pid: String, cond_id: String) -> bool:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return false
 	if not (_gs.players.get(pid, {}).get("conditions", []) as Array).has(cond_id):
 		return false
@@ -402,7 +402,7 @@ func begin_action(pid: String, cond_id: String) -> bool:
 ## Пишет решение и ПЕРЕИГРЫВАЕТ программу: та либо пендит следующую проверку, либо
 ## завершается (применяя onPass/onFail). path — узел проверки, passed — результат.
 func resolve_action_check(pid: String, path: String, passed: bool) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	if _action_run.is_empty() or String(_action_run.get("pid", "")) != pid:
 		return
@@ -449,10 +449,10 @@ func _run_action_program(pid: String) -> void:
 	# Завершено: коммит мутаций игрока + board-эффекты над носителем cid.
 	_gs.players[pid] = dup
 	for l_v: Variant in res.get("logs", []):
-		GameConsole.log("[Действие] %s · %s: %s" % [_gs._name_of(pid), cid, String(l_v)])
+		GameConsole.log("[Действие] %s · %s: %s" % [_gs.name_of(pid), cid, String(l_v)])
 	for node_v: Variant in res.get("board", []):
 		_apply_reckon_board(pid, cid, def, node_v as Dictionary, {}, {})
-	GameConsole.log("[Действие] %s · %s — завершено" % [_gs._name_of(pid), cid])
+	GameConsole.log("[Действие] %s · %s — завершено" % [_gs.name_of(pid), cid])
 	_action_run = {}
 	_gs.pending_check = {}
 	_gs._check.clear()
@@ -481,7 +481,7 @@ func _run_carrier_program(
 	var p: Dictionary = _gs.players.get(pid, {})
 	var res: Dictionary = _EffectRunner.run(program, p, ctx, flow)
 	for l_v: Variant in res.get("logs", []):
-		GameConsole.log("[%s] %s · %s: %s" % [tag, _gs._name_of(pid), cid, String(l_v)])
+		GameConsole.log("[%s] %s · %s: %s" % [tag, _gs.name_of(pid), cid, String(l_v)])
 	for node_v: Variant in res.get("board", []):
 		_apply_reckon_board(pid, cid, def, node_v as Dictionary, ctx, flow)
 

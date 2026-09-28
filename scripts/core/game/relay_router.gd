@@ -4,12 +4,14 @@ extends RefCounted
 ## Роутер host-авторитетных relay-действий: ЕДИНСТВЕННАЯ реализация каждой команды.
 ## Каждый _act_* — тонкий адаптер (data) → host-логика соответствующего модуля. Сюда
 ## приходят и чужие relay-сообщения (GameState._on_relay_received под гардом
-## _is_host()), и собственные команды хоста (GameState.act строит то же сообщение
+## is_host()), и собственные команды хоста (GameState.act строит то же сообщение
 ## с pid=свой) — путей два, тело одно.
 ##
 ## Флоу держим типизированно (без warnings). Методы самого GameState (реколнинг-слот,
-## late_join, dismiss, broadcast) — через _gs.call(): они приватные, класснейма у
-## GameState нет. Транзиентные широковещалки (sync/chat/feed) — НЕ здесь (рендер у всех).
+## late_join, dismiss, broadcast) — публичный контракт GameState, зовём напрямую;
+## _gs типизирован как Node (класснейма у автолоада нет), так что опечатку в имени
+## компилятор пока не ловит. Транзиентные широковещалки (sync/chat/feed) — НЕ здесь
+## (рендер у всех).
 
 var _gs: Node
 var _phase: PhaseController
@@ -146,12 +148,12 @@ func _act_activate_card(d: Dictionary) -> void:
 
 func _act_cast_incantation(d: Dictionary) -> void:
 	if _spell.begin_incantation(String(d.get("pid", "")), int(d.get("index", -1))):
-		_gs.call("_broadcast_and_emit")
+		_gs.broadcast_and_emit()
 
 
 func _act_cast_glamour(d: Dictionary) -> void:
 	if _spell.begin_glamour(String(d.get("pid", "")), int(d.get("index", -1))):
-		_gs.call("_broadcast_and_emit")
+		_gs.broadcast_and_emit()
 
 
 func _act_spell_cast_roll(d: Dictionary) -> void:
@@ -164,7 +166,7 @@ func _act_spell_cast_reroll(d: Dictionary) -> void:
 
 func _act_spell_cast_apply(d: Dictionary) -> void:
 	if _spell.apply_cast(String(d.get("pid", ""))):
-		_gs.call("_broadcast_and_emit")
+		_gs.broadcast_and_emit()
 
 
 func _act_check_roll(d: Dictionary) -> void:
@@ -180,8 +182,8 @@ func _act_add_die(d: Dictionary) -> void:
 
 
 func _act_resolve_pending_check(d: Dictionary) -> void:
-	if bool(_gs.call("_resolve_pending_check_host", String(d.get("pid", "")))):
-		_gs.call("_broadcast_and_emit")
+	if _gs.resolve_pending_check_host(String(d.get("pid", ""))):
+		_gs.broadcast_and_emit()
 
 
 func _act_reckoning_roll(d: Dictionary) -> void:
@@ -205,8 +207,8 @@ func _act_reckoning_reroll_all(d: Dictionary) -> void:
 
 
 func _act_reckoning_apply(d: Dictionary) -> void:
-	if bool(_gs.call("_reckoning_apply_host", String(d.get("pid", "")))):
-		_gs.call("_broadcast_and_emit")
+	if _gs.reckoning_apply_host(String(d.get("pid", ""))):
+		_gs.broadcast_and_emit()
 
 
 ## Сосед (pid) тратит 1 ресурс на переброс кубика в спас-броске умирающего dying.
@@ -229,15 +231,15 @@ func _act_cast_trigger_spells(d: Dictionary) -> void:
 
 
 func _act_dismiss_cast_result(d: Dictionary) -> void:
-	_gs.call("_host_dismiss_cast_result", String(d.get("pid", "")))
+	_gs.host_dismiss_cast_result(String(d.get("pid", "")))
 
 
 func _act_dismiss_reckoning(d: Dictionary) -> void:
-	_gs.call("_host_dismiss_reckoning", String(d.get("pid", "")))
+	_gs.host_dismiss_reckoning(String(d.get("pid", "")))
 
 
 func _act_dismiss_gains(d: Dictionary) -> void:
-	_gs.call("_host_dismiss_gains", String(d.get("pid", "")))
+	_gs.host_dismiss_gains(String(d.get("pid", "")))
 
 
 func _act_shop_grant(d: Dictionary) -> void:
@@ -265,7 +267,7 @@ func _act_shop_sell_asset(d: Dictionary) -> void:
 ## только на «Бросить кубы» (GameActions.ACQUIRE_ASSETS).
 func _act_shop_open(d: Dictionary) -> void:
 	_check.start("shop", String(d.get("pid", "")), "influence", 0, "acquireAssets")
-	_gs.call("_broadcast_and_emit")
+	_gs.broadcast_and_emit()
 
 
 func _act_shop_reroll(d: Dictionary) -> void:
@@ -286,10 +288,10 @@ func _act_mythos_decide(d: Dictionary) -> void:
 
 func _act_late_join(d: Dictionary) -> void:
 	# Поздний игрок выбрал сыщика в лобби уже идущей партии — подключаем участником.
-	if bool(_gs.get("active")):
-		_gs.call("_handle_late_join", d)
+	if _gs.get("active"):
+		_gs.handle_late_join(d)
 
 
 # Слот проверки Расплаты игрока (players[pid].reckoning_check) — из GameState.
 func _slot(pid: String) -> Dictionary:
-	return _gs.call("_reckoning_slot", pid)
+	return _gs.reckoning_slot(pid)

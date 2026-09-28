@@ -387,7 +387,7 @@ func activate(pid: String, item_index: int, c: Dictionary = {}) -> bool:
 				it["exhausted"] = true  # мгновенный эффект — истощаем сразу, как раньше
 
 	var card_id: String = String(glamour.get("id", "")) if is_glam else String(asset.get("id", ""))
-	GameConsole.log("[Карта] %s применил «%s»" % [_gs._name_of(pid), card_id])
+	GameConsole.log("[Карта] %s применил «%s»" % [_gs.name_of(pid), card_id])
 	_sync()
 	return true
 
@@ -489,7 +489,7 @@ func reroll_all(pid: String, c: Dictionary = {}) -> bool:
 	_set_roll(c, base)
 	c["reroll_all_used"] = int(c.get("reroll_all_used", 0)) + 1
 	_settle_reroll_debt(pid, c, "reroll_all_debt")
-	GameConsole.log("[Переброс] %s · перебросил все кубы" % _gs._name_of(pid))
+	GameConsole.log("[Переброс] %s · перебросил все кубы" % _gs.name_of(pid))
 	_sync()
 	return true
 
@@ -556,5 +556,5 @@ func _find_substitute(p: Dictionary, res: String, amt: int) -> Dictionary:
 
 
 func _sync() -> void:
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()

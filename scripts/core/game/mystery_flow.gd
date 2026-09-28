@@ -11,9 +11,9 @@ extends RefCounted
 ## mystery_tokens_on_card/outcome) ОСТАЁТСЯ полями GameState — модуль мутирует его через
 ## _gs. Дедуп onEnter (_on_enter_applied_idx) — хост-локальный, живёт в самом модуле.
 ## Источник данных Тайн — _gs._campaign.current_mystery().
-## Доступ к стейту/услугам — через _gs: _gs.players, _gs._current_pid(), _gs._name_of(),
-## _gs._is_host(), _gs._campaign, _gs._board.current_omen_color(), _gs.entities,
-## _gs.campaign, _gs.doom, _gs._apply_board_effect(). Создаётся в GameState (поле _mystery).
+## Доступ к стейту/услугам — через _gs: _gs.players, _gs.current_pid(), _gs.name_of(),
+## _gs.is_host(), _gs._campaign, _gs._board.current_omen_color(), _gs.entities,
+## _gs.campaign, _gs.doom, _gs.apply_board_effect(). Создаётся в GameState (поле _mystery).
 
 var _gs: Node
 var _on_enter_applied_idx: int = -1  # дедуп onEnter активной Тайны (хост-локально)
@@ -30,7 +30,7 @@ func _init(gs: Node) -> void:
 # При достижении solveCondition.n активная Тайна решается, индекс ++; на третьей
 # решённой → outcome="victory".
 func apply_mystery_progress() -> void:
-	var pid: String = _gs._current_pid()
+	var pid: String = _gs.current_pid()
 	if pid.is_empty() or not _gs.players.has(pid):
 		return
 	var loc: String = String(_gs.players[pid].get("location", ""))
@@ -43,7 +43,7 @@ func apply_mystery_progress() -> void:
 	GameConsole.log(
 		(
 			"[Тайна] %s зачёл «%s» (%d/%d)"
-			% [_gs._name_of(pid), loc, _gs.mystery_progress, _mystery_target()]
+			% [_gs.name_of(pid), loc, _gs.mystery_progress, _mystery_target()]
 		)
 	)
 	if _gs.mystery_progress >= _mystery_target():
@@ -147,7 +147,7 @@ func mystery_can_pay(hook: Dictionary, pid: String) -> bool:
 
 ## Хост: применить хук — списать cost, применить effect (DSL-узлы). true — применён.
 func mystery_apply_hook(hook: Dictionary, pid: String) -> bool:
-	if not _gs._is_host() or not mystery_can_pay(hook, pid):
+	if not _gs.is_host() or not mystery_can_pay(hook, pid):
 		return false
 	var cost: Dictionary = hook.get("cost", {})
 	if not cost.is_empty():
@@ -156,7 +156,7 @@ func mystery_apply_hook(hook: Dictionary, pid: String) -> bool:
 	for i: int in range(effect.size()):
 		var node: Dictionary = effect[i]
 		if node is Dictionary:
-			_gs._apply_board_effect(node)  # placeEldritchToken where:self → счётчик и т.п.
+			_gs.apply_board_effect(node)  # placeEldritchToken where:self → счётчик и т.п.
 	return true
 
 
@@ -168,7 +168,7 @@ func try_mystery_hook(event: String, ctx: Dictionary, pid: String) -> void:
 	if hook.is_empty() or not mystery_can_pay(hook, pid):
 		return
 	if mystery_apply_hook(hook, pid):
-		GameConsole.log("[Тайна] хук «%s» сработал у %s" % [event, _gs._name_of(pid)])
+		GameConsole.log("[Тайна] хук «%s» сработал у %s" % [event, _gs.name_of(pid)])
 
 
 func _player_resource(pid: String, res: String) -> int:
@@ -186,7 +186,7 @@ func _spend_resource(pid: String, res: String, amt: int) -> void:
 ## Хост: проверка решения Тайны по жетонам на карте. Зовётся в КОНЦЕ Фазы Мифов
 ## (см. MythosFlow). Для прочих kind — no-op.
 func check_mystery_tokens_solve() -> void:
-	if not _gs._is_host() or not _gs.outcome.is_empty():
+	if not _gs.is_host() or not _gs.outcome.is_empty():
 		return
 	if mystery_kind() != "tokensOnCard":
 		return
@@ -204,7 +204,7 @@ func check_mystery_tokens_solve() -> void:
 ## Знамения). Зовётся при активации Тайны — на старте кампании и после решения
 ## предыдущей. onEnter протаскивается в сводку библии (CampaignGen._summary).
 func apply_mystery_on_enter() -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var m: Dictionary = _gs._campaign.current_mystery()
 	# Библия ещё не готова → выходим без отметки гарда (повторим, когда придёт).
@@ -215,7 +215,7 @@ func apply_mystery_on_enter() -> void:
 	for i: int in range(on_enter.size()):
 		var node: Dictionary = on_enter[i]
 		if node is Dictionary:
-			_gs._apply_board_effect(node)
+			_gs.apply_board_effect(node)
 
 
 # Активная Тайна решена: переходим к следующей или фиксируем победу.

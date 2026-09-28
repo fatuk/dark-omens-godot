@@ -98,7 +98,7 @@ func _build() -> void:
 func _watching_pid() -> String:
 	if not GameState.active or GameState.phase != Phases.ENCOUNTER:
 		return ""
-	var pid: String = GameState._current_pid()
+	var pid: String = GameState.current_pid()
 	if pid.is_empty() or pid == NetworkManager.my_user_id:
 		return ""  # моя встреча — её показывает обычная модалка встречи
 	return pid
@@ -154,7 +154,7 @@ func _refresh() -> void:
 
 	var nm: String = String(card.get("name", "")).strip_edges()
 	_title.text = nm if not nm.is_empty() else tr("ENCOUNTER_TITLE")
-	_who.text = "%s — встреча" % GameState._name_of(pid)
+	_who.text = "%s — встреча" % GameState.name_of(pid)
 	_text.text = String(node.get("mainText", "")).strip_edges()
 
 	if rolled:

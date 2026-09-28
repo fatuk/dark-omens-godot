@@ -125,6 +125,6 @@ func _quit_game() -> void:
 	# сразу промоутил нового хоста (иначе обрыв уводит хоста в 12с grace).
 	var nm: Node = get_node_or_null("/root/NetworkManager")
 	if nm and nm.has_method("leave_and_quit"):
-		nm.call("leave_and_quit")
+		nm.leave_and_quit()
 	else:
 		get_tree().quit()

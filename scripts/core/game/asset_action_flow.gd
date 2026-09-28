@@ -93,7 +93,7 @@ static func _needs_monster(node: Variant) -> bool:
 ## Хост: сыграть действие актива. PLAY_INVALID — играть нечего (действие не тратим),
 ## PLAY_DONE — отыграно целиком, PLAY_WAITING — ждём проверку/выбор, ход держим.
 func play(pid: String, index: int) -> int:
-	if not _gs._is_host() or not can_play(pid, index):
+	if not _gs.is_host() or not can_play(pid, index):
 		return PLAY_INVALID
 	if AssetCatalog.standalone_action(asset_at(pid, index)).is_empty():
 		return PLAY_INVALID
@@ -120,7 +120,7 @@ func play(pid: String, index: int) -> int:
 ## discardCard) срабатывает и НЕ попадает в инвентарь; прочие — добавляются как
 ## {id, exhausted:false}. Единая точка получения актива (магазин и пр.).
 func grant(pid: String, asset_id: String) -> void:
-	if not _gs._is_host() or not _gs.players.has(pid):
+	if not _gs.is_host() or not _gs.players.has(pid):
 		return
 	var asset: Dictionary = AssetCatalog.by_id(asset_id)
 	if asset.is_empty():
@@ -147,7 +147,7 @@ func _take_from_supply(asset_id: String) -> void:
 
 ## Хост: разрешена видимая проверка программы (диспетч из resolve_pending_check).
 func resolve_check(pid: String, path: String, passed: bool) -> void:
-	if not _gs._is_host() or _run.is_empty() or String(_run.get("pid", "")) != pid:
+	if not _gs.is_host() or _run.is_empty() or String(_run.get("pid", "")) != pid:
 		return
 	(_run["decisions"] as Dictionary)[path] = passed
 	_step()
@@ -157,7 +157,7 @@ func resolve_check(pid: String, path: String, passed: bool) -> void:
 ## Что записать решением, зависит от вида: ref монстра или локации, pid сыщика,
 ## иначе — индекс ветки (так же разбирает выбор MythosFlow).
 func resolve_decision(pid: String, index: int) -> void:
-	if not _gs._is_host() or _run.is_empty() or String(_run.get("pid", "")) != pid:
+	if not _gs.is_host() or _run.is_empty() or String(_run.get("pid", "")) != pid:
 		return
 	var md: Dictionary = _gs.mythos_decision
 	var opts: Array = md.get("options", [])
@@ -263,7 +263,7 @@ func _step() -> void:
 			_gs._refill_shop_reserve([String(node.get("id", ""))])
 		else:
 			node["_anchor_pid"] = pid  # относительные цели — от этого сыщика
-			_gs._apply_board_effect(node)
+			_gs.apply_board_effect(node)
 			board_events.append_array(node.get("_events", []))
 	var slot: String = String(_run.get("slot", ""))
 	# Розыгрыш по действию — явное окно результата владельцу (карта, кубы, исход).
@@ -303,7 +303,7 @@ func _index_of(pid: String, id: String) -> int:
 ## снимает release_asset_turn. Боевой триггер (combatEncounter) — отдельный путь
 ## в EncounterFlow. true — хоть одна карта поставлена.
 func fire_triggered(pid: String, event: String) -> bool:
-	if not _gs._is_host() or not _gs.players.has(pid):
+	if not _gs.is_host() or not _gs.players.has(pid):
 		return false
 	var items: Array = _gs.players[pid].get("items", [])
 	var any: bool = false
@@ -362,7 +362,7 @@ func _finish_run() -> void:
 func _finish_grant(pid: String, asset_id: String, consumed: bool) -> void:
 	if consumed:
 		GameConsole.log(
-			"[Актив] %s — услуга «%s» применена и сброшена" % [_gs._name_of(pid), asset_id]
+			"[Актив] %s — услуга «%s» применена и сброшена" % [_gs.name_of(pid), asset_id]
 		)
 		return
 	_put_in_hand(pid, asset_id)
@@ -373,7 +373,7 @@ func _put_in_hand(pid: String, asset_id: String) -> void:
 	var items: Array = p.get("items", [])
 	items.append({"id": asset_id, "exhausted": false})
 	p["items"] = items
-	GameConsole.log("[Актив] %s получил «%s»" % [_gs._name_of(pid), asset_id])
+	GameConsole.log("[Актив] %s получил «%s»" % [_gs.name_of(pid), asset_id])
 
 
 # Взять следующую выдачу из очереди (если прогон не идёт).
@@ -478,8 +478,8 @@ func _hold() -> void:
 
 
 func _sync() -> void:
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Оплата действия: cost.discardSelf снимает карту из инвентаря; иначе — истощаем до
@@ -504,7 +504,7 @@ func _discard_at(pid: String, index: int) -> void:
 	if index < 0 or index >= items.size():
 		return
 	GameConsole.log(
-		"[Актив] %s — «%s» сброшен" % [_gs._name_of(pid), AssetCatalog.entry_id(items[index])]
+		"[Актив] %s — «%s» сброшен" % [_gs.name_of(pid), AssetCatalog.entry_id(items[index])]
 	)
 	items.remove_at(index)
 	p["items"] = items
@@ -512,4 +512,4 @@ func _discard_at(pid: String, index: int) -> void:
 
 func _log(pid: String, card_id: String, res: Dictionary) -> void:
 	for l_v: Variant in res.get("logs", []):
-		GameConsole.log("[Актив] %s · %s: %s" % [_gs._name_of(pid), card_id, String(l_v)])
+		GameConsole.log("[Актив] %s · %s: %s" % [_gs.name_of(pid), card_id, String(l_v)])

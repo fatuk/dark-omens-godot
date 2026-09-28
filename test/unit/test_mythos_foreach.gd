@@ -41,13 +41,13 @@ class MockGS:
 
 	signal mythos_decided(idx: int)
 
-	func _is_host() -> bool:
+	func is_host() -> bool:
 		return true
 
-	func _current_pid() -> String:
+	func current_pid() -> String:
 		return String(turn_order[current_idx]) if current_idx < turn_order.size() else ""
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
 	# Граф локаций из тестового списка — пересобирается на каждое чтение, чтобы
@@ -56,17 +56,17 @@ class MockGS:
 		get:
 			return LocationGraph.new(locations)
 
-	func _broadcast_sync() -> void:
+	func broadcast_sync() -> void:
 		pass
 
-	func _emit_changed() -> void:
+	func emit_changed() -> void:
 		pass
 
 	func announce_action(_pid: String, _id: String, _params: Dictionary = {}) -> void:
 		pass
 
-	# Зеркало GameState._apply_board_effect: адресные эффекты — через TargetResolver.
-	func _apply_board_effect(node: Dictionary) -> void:
+	# Зеркало GameState.apply_board_effect: адресные эффекты — через TargetResolver.
+	func apply_board_effect(node: Dictionary) -> void:
 		if _target.is_targeted_effect(node):
 			_target.apply_targeted_effect(node)
 

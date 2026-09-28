@@ -8,7 +8,7 @@ extends RefCounted
 ##
 ## Owner — GameState (autoload). MythosFlow читает/пишет публичные поля
 ## GameState напрямую (current_mythos/players/doom/omens_step/phase…),
-## зовёт _gs._broadcast_sync() и _gs._emit_changed() для рассылки и сигналов
+## зовёт _gs.broadcast_sync() и _gs.emit_changed() для рассылки и сигналов
 ## стейта, _gs._phase.start_new_round() — для перехода фазы. Это сознательная
 ## близкая связь: модуль владеет своими данными (deck/index), но не своим
 ## жизненным циклом.
@@ -17,7 +17,7 @@ const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
 # Колода и позиция — host-only. Колода восстанавливается по campaign.id из
 # снапшота при реджойне хоста (см. restore_deck), индекс синкается через
-# game_sync (см. GameState._broadcast_sync / _apply_snapshot).
+# game_sync (см. GameState.broadcast_sync / _apply_snapshot).
 var deck: Array = []
 var index: int = 0
 
@@ -40,7 +40,7 @@ func enter_phase() -> void:
 	_gs.current_encounter = {}
 	GameConsole.log("[Game] Фаза Мифов")
 	_gs.phase_changed.emit(_gs.phase)
-	if _gs._is_host():
+	if _gs.is_host():
 		# Две поломки, которые раньше были навсегда: обе лечатся здесь, потому
 		# что фаза Мифов — единственное место, куда партия приходит регулярно.
 		#
@@ -56,14 +56,14 @@ func enter_phase() -> void:
 		elif deck.is_empty():
 			await restore_deck(_campaign_id())
 		_draw_card()
-		_gs._broadcast_sync()
-	_gs._emit_changed()
+		_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 ## Перезапустить сборку кампании, если она не идёт прямо сейчас. Стабы без
 ## CampaignGen (тесты) — тихо ничего.
 func _retry_campaign() -> void:
-	if bool(_gs.get("campaign_pending")):
+	if _gs.get("campaign_pending"):
 		return
 	var gen: Variant = _gs.get("_campaign")
 	if gen == null or not gen.has_method("start_generation"):
@@ -88,7 +88,7 @@ func _campaign_id() -> String:
 ## подключённые — очищаем отметки и применяем эффекты (_apply_resolve). Вызывается
 ## из relay-роутера (RESOLVE_MYTHOS: хост — через act(), не-хост — через relay).
 func mark_read(pid: String) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	if _gs.phase != Phases.MYTHOS or _gs.current_mythos.is_empty():
 		return
@@ -100,15 +100,15 @@ func mark_read(pid: String) -> void:
 		_gs.mythos_read = []
 		_apply_resolve()
 	else:
-		_gs._broadcast_sync()  # обновляем прогресс «X/N» в модалках остальных
-		_gs._emit_changed()
+		_gs.broadcast_sync()  # обновляем прогресс «X/N» в модалках остальных
+		_gs.emit_changed()
 
 
 ## Хост: сыщик отключился. Если карта мифа открыта и ждали именно его «Прочитал»,
 ## а все оставшиеся подключённые уже отметились — резолвим (иначе миф зависнет,
 ## ожидая ответа от того, кого уже нет).
 func on_player_left() -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	if _gs.phase != Phases.MYTHOS or _gs.current_mythos.is_empty():
 		return
@@ -188,10 +188,10 @@ func _apply_resolve() -> void:
 	# чтобы её Расплата участвовала, если onReveal сам триггерит шаг Расплаты
 	# (resolveReckoning scope:mythosInPlay — «resolve each Mythos card in play»).
 	_register_in_play(card)
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 	# Эффекты — последовательно, с ожиданием анимации каждого. Дум от омена
-	# считается внутри шага омена (до открытия новых врат) — см. _apply_board_effect.
+	# считается внутри шага омена (до открытия новых врат) — см. apply_board_effect.
 	# Узел resolveReckoning внутри запускает корутину Расплаты (ReckoningFlow).
 	await _apply_effects(effects)
 	# Триггер Расплаты в onReckoning (legacy) → шаг Расплаты тем же путём.
@@ -202,8 +202,8 @@ func _apply_resolve() -> void:
 	_gs._mystery.check_mystery_tokens_solve()
 	_gs._death.flush_ghost_clues()  # отложенные улики Теней ложатся после Мифа
 	_gs._phase.start_new_round()
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Регистрирует карту как «в игре» (ongoing), если у неё есть whileInPlay или
@@ -281,18 +281,18 @@ func _apply_effects(effects: Array) -> void:
 				ActionFeed.announce_deltas(_gs, uid, before, _gs.players[uid])  # лента исходов мифа
 				ActionFeed.collect_gains(_gs, uid, before, _gs.players[uid])  # окно «вы получили»
 				for log_msg in res.get("logs", []):
-					GameConsole.log("[Mythos→%s] %s" % [_gs._name_of(uid), String(log_msg)])
+					GameConsole.log("[Mythos→%s] %s" % [_gs.name_of(uid), String(log_msg)])
 		else:
 			var dummy: Dictionary = {}
 			var res: Dictionary = _EffectRunner.run([eff], dummy)
 			for node in res.get("board", []):
-				_gs._apply_board_effect(node)
+				_gs.apply_board_effect(node)
 				verb = String(node.get("do", verb))  # реальный verb board-узла
 			for log_msg in res.get("logs", []):
 				GameConsole.log("[Mythos] %s" % String(log_msg))
 		# Рассылаем результат этого эффекта и ждём его анимацию перед следующим.
-		_gs._broadcast_sync()
-		_gs._emit_changed()
+		_gs.broadcast_sync()
+		_gs.emit_changed()
 		await _gs.get_tree().create_timer(_effect_delay(verb)).timeout
 
 
@@ -317,7 +317,7 @@ func _effect_delay(verb: String) -> float:
 # гоняем под-программу `do` интерактивно: выбор делает сам сыщик. Host-only,
 # корутина (ждёт решения каждого сыщика).
 func _run_for_each(node: Dictionary) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var sub: Array = node.get("do", [])
 	if (sub as Array).is_empty():
@@ -327,8 +327,8 @@ func _run_for_each(node: Dictionary) -> void:
 		await _run_player_subprogram(String(pids[i]), sub)
 	# Подчищаем выбор (на случай ранней очистки/дисконнекта) и синкаем.
 	_gs.mythos_decision = {}
-	_gs._broadcast_sync()
-	_gs._emit_changed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Сыщики forEach-прохода: подключённые в порядке turn_order (Ведущий = turn_order[0]
@@ -349,7 +349,7 @@ func _other_pids(active_pid: String) -> Array:
 			continue
 		if bool(_gs.players[p].get("dead", false)):
 			continue  # Тень нельзя выбрать как «другого сыщика»
-		out.append({"pid": p, "name": _gs._name_of(p)})
+		out.append({"pid": p, "name": _gs.name_of(p)})
 	return out
 
 
@@ -391,11 +391,11 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 			for node_v: Variant in res.get("board", []):
 				var bnode: Dictionary = node_v
 				bnode["_anchor_pid"] = pid  # относительные цели — от этого сыщика
-				_gs._apply_board_effect(bnode)
+				_gs.apply_board_effect(bnode)
 			for log_msg: Variant in res.get("logs", []):
-				GameConsole.log("[Mythos→%s] %s" % [_gs._name_of(pid), String(log_msg)])
-			_gs._broadcast_sync()
-			_gs._emit_changed()
+				GameConsole.log("[Mythos→%s] %s" % [_gs.name_of(pid), String(log_msg)])
+			_gs.broadcast_sync()
+			_gs.emit_changed()
 			await _gs.get_tree().create_timer(_DELAY_DEFAULT).timeout
 			return
 		# Видимая проверка test: общая модалка проверки (CheckFlow), не модалка выбора.
@@ -413,8 +413,8 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 				"path": String(pending.get("path", "")),
 				"subject": {},
 			}
-			_gs._broadcast_sync()
-			_gs._emit_changed()
+			_gs.broadcast_sync()
+			_gs.emit_changed()
 			var passed: bool = await _await_check(pid)
 			_gs.pending_check = {}
 			_gs._check.clear()
@@ -429,8 +429,8 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 			"by": String(pending.get("by", "self")),
 			"kind": String(pending.get("kind", "choice")),  # choice | target | monster
 		}
-		_gs._broadcast_sync()
-		_gs._emit_changed()
+		_gs.broadcast_sync()
+		_gs.emit_changed()
 		# Решение: для target/monster пишем ref/pid выбранной опции, иначе — индекс ветки.
 		var idx: int = await _await_decision()
 		var pkind: String = String(pending.get("kind", "choice"))

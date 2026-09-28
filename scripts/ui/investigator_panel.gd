@@ -361,7 +361,7 @@ func _refresh_live() -> void:
 		_turn_glow.visible = (
 			GameState.active
 			and my_phase
-			and GameState._current_pid() == GameState.local_pid()
+			and GameState.current_pid() == GameState.local_pid()
 			and not ghost
 		)
 	if is_instance_valid(_portrait) and _portrait.material is ShaderMaterial:

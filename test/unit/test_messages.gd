@@ -43,7 +43,7 @@ func test_slots_count() -> void:
 
 
 func test_render_zero_slot_phrase() -> void:
-	assert_eq(Messages.render("my_turn", [], "ru"), "Мой ход")
+	assert_eq(Messages.render("your_turn", [], "ru"), "Ходи!")
 	assert_eq(Messages.render("yes", [], "en"), "Yes")
 
 

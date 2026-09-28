@@ -13,8 +13,8 @@ static func give_asset(gs: Node, pid: String, asset_id: String) -> String:
 	if AssetCatalog.by_id(asset_id).is_empty():
 		return "нет актива «%s»" % asset_id
 	(gs.get("_cond") as ConditionFlow).host_grant_asset(pid, asset_id)  # с onGain-эффектами
-	gs.call("_broadcast_and_emit")
-	return "актив «%s» → %s" % [asset_id, String(gs.call("_name_of", pid))]
+	gs.broadcast_and_emit()
+	return "актив «%s» → %s" % [asset_id, String(gs.name_of(pid))]
 
 
 static func give_spell(gs: Node, pid: String, spell_id: String) -> String:
@@ -23,8 +23,8 @@ static func give_spell(gs: Node, pid: String, spell_id: String) -> String:
 	if SpellCatalog.by_id(spell_id).is_empty():
 		return "нет заклинания «%s»" % spell_id
 	(gs.get("_spell") as SpellFlow).grant_spell(pid, spell_id)
-	gs.call("_broadcast_and_emit")
-	return "заклинание «%s» → %s" % [spell_id, String(gs.call("_name_of", pid))]
+	gs.broadcast_and_emit()
+	return "заклинание «%s» → %s" % [spell_id, String(gs.name_of(pid))]
 
 
 # Конкретный монстр на локации — в обход мешка (нужен именно этот id). Стойкость по
@@ -41,7 +41,7 @@ static func spawn_monster(gs: Node, loc_id: String, monster_id: String) -> Strin
 	var arr: Array = monsters.get(loc_id, [])
 	arr.append({"id": monster_id, "health": hp})
 	monsters[loc_id] = arr
-	gs.call("_broadcast_and_emit")
+	gs.broadcast_and_emit()
 	return "монстр «%s» (стойк. %d) на %s" % [monster_id, hp, loc_id]
 
 
@@ -50,7 +50,7 @@ static func open_gate(gs: Node, loc_id: String, color: String) -> String:
 	var opened: String = (gs.get("_board") as BoardState).open_gate(loc_id, color)  # сам спаунит монстра
 	if opened.is_empty():
 		return "врата не открылись (нет свободных гейт-локаций?)"
-	gs.call("_broadcast_and_emit")
+	gs.broadcast_and_emit()
 	return "врата на %s" % opened
 
 
@@ -82,7 +82,7 @@ static func assign_encounter(gs: Node, pid: String, kind: String, world: String)
 		spec["world"] = world
 	(gs.get("_encounter") as EncounterFlow).debug_assign(pid, spec)
 	var where: String = " → %s" % world if not world.is_empty() else ""
-	return "следующая встреча %s: %s%s" % [String(gs.call("_name_of", pid)), kind, where]
+	return "следующая встреча %s: %s%s" % [String(gs.name_of(pid)), kind, where]
 
 
 # Улики в руку. Без локации — n анонимных: идентичности сами вытянутся из колоды
@@ -94,16 +94,16 @@ static func give_clue(gs: Node, pid: String, loc: String, n: int) -> String:
 	if not players.has(pid):
 		return "нет игрока «%s»" % pid
 	var p: Dictionary = players[pid]
-	var who: String = String(gs.call("_name_of", pid))
+	var who: String = String(gs.name_of(pid))
 	if loc.is_empty():
 		var cnt: int = clampi(n, 1, 20)
 		p[PlayerKeys.CLUES] = int(p.get(PlayerKeys.CLUES, 0)) + cnt
 		players[pid] = p
-		gs.call("_broadcast_and_emit")
+		gs.broadcast_and_emit()
 		return "улик +%d → %s" % [cnt, who]
 	if not (gs.get("map").call("ids") as Array).has(loc):
 		return "нет локации «%s»" % loc
-	gs.call("_ensure_clue_deck")
+	gs._ensure_clue_deck()
 	var deck: Array = gs.get("clue_deck")
 	var discard: Array = gs.get("clue_discard")
 	if deck.has(loc):
@@ -117,7 +117,7 @@ static func give_clue(gs: Node, pid: String, loc: String, n: int) -> String:
 	p[PlayerKeys.CLUE_IDS] = ids
 	p[PlayerKeys.CLUES] = int(p.get(PlayerKeys.CLUES, 0)) + 1
 	players[pid] = p
-	gs.call("_broadcast_and_emit")
+	gs.broadcast_and_emit()
 	return "улика «%s» → %s" % [loc, who]
 
 
@@ -129,8 +129,8 @@ static func gain_condition(gs: Node, pid: String, cid: String) -> String:
 	var p: Dictionary = (gs.get("players") as Dictionary)[pid]
 	var conds: Array = p.get("conditions", [])
 	if conds.has(cid):
-		return "%s уже имеет «%s»" % [String(gs.call("_name_of", pid)), cid]
+		return "%s уже имеет «%s»" % [String(gs.name_of(pid)), cid]
 	conds.append(cid)
 	p["conditions"] = conds
-	gs.call("_broadcast_and_emit")
-	return "состояние «%s» → %s" % [cid, String(gs.call("_name_of", pid))]
+	gs.broadcast_and_emit()
+	return "состояние «%s» → %s" % [cid, String(gs.name_of(pid))]

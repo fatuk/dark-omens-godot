@@ -131,7 +131,7 @@ func test_uniqueness_across_deck_board_hand_discard() -> void:
 
 
 func test_not_host_is_noop() -> void:
-	GameState._nm = null  # is_instance_valid(null)==false → _is_host()==false
+	GameState._nm = null  # is_instance_valid(null)==false → is_host()==false
 	GameState._ensure_clue_deck()
 	GameState.players = {"p1": {"clues": 2, "clue_ids": []}}
 	GameState._reconcile_clue_identities()

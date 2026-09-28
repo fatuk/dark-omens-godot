@@ -134,7 +134,7 @@ var mythos_read: Array = []
 var last_mythos: Dictionary = {}
 
 # Открытые врата по локациям. {loc_id: "red"|"green"|"blue"}.
-# Меняется через _apply_board_effect("openGate"). MapLayer.set_gates рендерит
+# Меняется через apply_board_effect("openGate"). MapLayer.set_gates рендерит
 # их визуально на маркерах с вращающейся анимацией.
 var gates: Dictionary = {}
 
@@ -260,8 +260,8 @@ var _death: DeathSaveFlow  # спас-бросок на Пороге (0 HP/SAN),
 var _asset_action: AssetActionFlow  # самостоятельное действие актива (тег "action")
 var _relay_router: RelayRouter  # адаптеры relay-действий (_act_*), см. relay_router.gd
 
-# Реэнтранси-гард централизованного свипа Порога в _broadcast_sync (свип открывает
-# спас и катит кубик → снова зовёт _broadcast_sync; без гарда — рекурсия).
+# Реэнтранси-гард централизованного свипа Порога в broadcast_sync (свип открывает
+# спас и катит кубик → снова зовёт broadcast_sync; без гарда — рекурсия).
 var _sweeping: bool = false
 
 # Реестр host-авторитетных relay-действий: имя → Callable(data) (адаптер RelayRouter).
@@ -306,12 +306,12 @@ func _ready() -> void:
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 
-func _is_host() -> bool:
+func is_host() -> bool:
 	return is_instance_valid(_nm) and _nm.is_host()
 
 
 # Синкаемый стейт: имена полей GameState, у которых ключ снапшота == имя переменной.
-# Единый список для рассылки (_broadcast_sync) и приёма (_apply_snapshot) — новое
+# Единый список для рассылки (broadcast_sync) и приёма (_apply_snapshot) — новое
 # синкаемое поле добавляется в ОДНОМ месте. Особые (ключ ≠ поле) — mythos_index
 # (_mythos.index) — обрабатываются отдельно. Host-only (колода Мифов) сюда НЕ входят.
 const _SYNC_FIELDS: Array[String] = [
@@ -362,8 +362,8 @@ const _SYNC_FIELDS: Array[String] = [
 ]
 
 
-func _broadcast_sync() -> void:
-	if not _is_host():
+func broadcast_sync() -> void:
+	if not is_host():
 		return
 	# Порог: централизованный триггер спас-броска. Урон приходит из многих мест
 	# (эффекты/бой/Миф/Расплата) без единой точки — поэтому ловим 0 HP/SAN здесь,
@@ -381,7 +381,7 @@ func _broadcast_sync() -> void:
 	_nm.relay_all(payload)
 
 
-func _emit_changed() -> void:
+func emit_changed() -> void:
 	state_changed.emit()
 
 
@@ -466,7 +466,7 @@ func _refresh_ghost_upcoming() -> void:
 # Жетон улики лёг на локацию loc → строго берём улику ЭТОЙ локации из пула (если она
 # заведена и доступна). Нет своей улики → жетон анонимный (числовая улика без контента).
 func _claim_board_clue(loc: String) -> void:
-	if not _is_host():
+	if not is_host():
 		return
 	_ensure_clue_deck()
 	if not clue_deck.has(loc):
@@ -478,9 +478,9 @@ func _claim_board_clue(loc: String) -> void:
 
 
 # Исследование: до n улик с жетонов локации loc → на руки игроку (player.clue_ids).
-# Зовётся из encounter_flow ПОСЛЕ снятия жетонов, до _broadcast_sync.
+# Зовётся из encounter_flow ПОСЛЕ снятия жетонов, до broadcast_sync.
 func _collect_board_clues(pid: String, loc: String, n: int) -> void:
-	if not _is_host() or not players.has(pid):
+	if not is_host() or not players.has(pid):
 		return
 	var board: Array = clue_board_ids.get(loc, [])
 	var p: Dictionary = players[pid]
@@ -497,14 +497,14 @@ func _collect_board_clues(pid: String, loc: String, n: int) -> void:
 		clue_board_ids[loc] = board
 
 
-# Сверка идентичностей с числом улик (host, каждый _broadcast_sync). Сначала вернуть
+# Сверка идентичностей с числом улик (host, каждый broadcast_sync). Сначала вернуть
 # в пул ключи «мёртвых» жетонов, затем на каждого игрока: clue_ids < clues → добрать
 # из пула (любую оставшуюся); clue_ids > clues (трата/потеря) → вернуть излишек в пул.
 ## Привязка цитат стоиков к жетонам концентрации: длина concentration_quotes = числу
 ## жетонов. Новый жетон → своя цитата (случайный индекс, назначается ОДИН раз); снятый
 ## — с конца. Так цитата не ре-рандомится на рендере и переживает трату соседних.
 func _reconcile_focus_quotes() -> void:
-	if not _is_host():
+	if not is_host():
 		return
 	for pid: Variant in players:
 		var p: Dictionary = players[pid]
@@ -519,7 +519,7 @@ func _reconcile_focus_quotes() -> void:
 
 
 func _reconcile_clue_identities() -> void:
-	if not _is_host():
+	if not is_host():
 		return
 	_ensure_clue_deck()
 	_reconcile_board_clue_ids()
@@ -605,7 +605,7 @@ func _make_player_dict(
 		PlayerKeys.HP_MAX: hp_max,
 		PlayerKeys.SANITY_MAX: sanity_max,
 		PlayerKeys.CLUES: _starting_token_count(investigator, "clue"),
-		PlayerKeys.CLUE_IDS: [],  # идентичности добираются из пула при сверке (_broadcast_sync)
+		PlayerKeys.CLUE_IDS: [],  # идентичности добираются из пула при сверке (broadcast_sync)
 		PlayerKeys.CONDITIONS: [],
 		PlayerKeys.CONDITIONS_FLIPPED: {},  # {cond_id: outcome_id} — перевёрнутые в расплату
 		PlayerKeys.ITEMS: _starting_items(investigator),
@@ -664,7 +664,7 @@ func _refresh_items(p: Dictionary) -> void:
 ## Вызывается хостом после нажатия «Начать игру».
 ## players_init: [{ pid, user_id, name, investigator, hp_max, sanity_max }, ...]
 func start_game(players_init: Array) -> void:
-	if not _is_host():
+	if not is_host():
 		return
 
 	players.clear()
@@ -707,7 +707,7 @@ func start_game(players_init: Array) -> void:
 	active = true
 
 	GameConsole.log(
-		"[Game] Игра начата · игроков: %d · ход: %s" % [turn_order.size(), _name_of(_current_pid())]
+		"[Game] Игра начата · игроков: %d · ход: %s" % [turn_order.size(), name_of(current_pid())]
 	)
 	# Библия: прогрета в лобби — используем готовую (или дождёмся текущей
 	# генерации); не прогрета — запускаем генерацию сейчас (фолбэк).
@@ -721,8 +721,8 @@ func start_game(players_init: Array) -> void:
 	_reset_clue_deck()  # свежий пул улик Древнего перед раскладкой (соберётся лениво из campaign)
 	_board.setup_board(maxi(1, setup_pc))  # стартовая раскладка: врата+монстры, улики, Наплыв
 	_mystery.apply_mystery_on_enter()  # onEnter первой Тайны (если библия уже готова; иначе при её приходе)
-	_broadcast_sync()
-	_emit_changed()
+	broadcast_sync()
+	emit_changed()
 	phase_changed.emit(phase)
 
 
@@ -743,7 +743,7 @@ func act(action: String, payload: Dictionary = {}) -> void:
 	var msg: Dictionary = payload.duplicate()
 	msg["action"] = action
 	msg["pid"] = _nm.my_user_id
-	if _is_host():
+	if is_host():
 		(_relay_actions[action] as Callable).call(msg)
 	else:
 		_nm.relay_all(msg)
@@ -797,7 +797,7 @@ func cast_spell(item_index: int) -> void:
 ## pending_check.driver. Драйвер сам пишет decisions[path]=passed и ПЕРЕИГРЫВАЕТ свою
 ## программу: если та снова пендит чек — драйвер выставит новые pending_check/active_check;
 ## если завершилась — драйвер их очистит и освободит ход. Поэтому здесь НЕ чистим стейт.
-func _resolve_pending_check_host(pid: String) -> bool:
+func resolve_pending_check_host(pid: String) -> bool:
 	var pc: Dictionary = pending_check
 	if pc.is_empty() or String(pc.get("pid", "")) != pid:
 		return false
@@ -831,19 +831,19 @@ func _resolve_pending_check_host(pid: String) -> bool:
 
 
 # Слот проверки Расплаты игрока (players[pid].reckoning_check) — {} если нет.
-func _reckoning_slot(pid: String) -> Dictionary:
+func reckoning_slot(pid: String) -> Dictionary:
 	return (players.get(pid, {}) as Dictionary).get("reckoning_check", {})
 
 
 ## Хост: применить проверку Расплаты игрока — прочитать passed и разбудить его корутину
 ## (она чистит per-player слоты и переигрывает программу состояния).
-func _reckoning_apply_host(pid: String) -> bool:
-	var c: Dictionary = _reckoning_slot(pid)
+func reckoning_apply_host(pid: String) -> bool:
+	var c: Dictionary = reckoning_slot(pid)
 	if c.is_empty():
 		return false
 	if not bool(c.get("rolled", false)):
 		_check.roll(pid, c)  # страховка: применить без явного броска
-		c = _reckoning_slot(pid)
+		c = reckoning_slot(pid)
 	effect_check_applied.emit(pid, bool(c.get("passed", false)))
 	return true
 
@@ -873,7 +873,7 @@ func send_chat(phrase_id: String, noun_ids: Array) -> void:
 ## хоста-отправителя, поэтому хост ещё и локально эмитит (как send_chat). params —
 ## {placeholder: i18n-ключ}; каждый клиент сам tr() в своей локали.
 func announce_action(pid: String, action_id: String, params: Dictionary = {}) -> void:
-	if not _is_host() or pid.is_empty() or action_id.is_empty():
+	if not is_host() or pid.is_empty() or action_id.is_empty():
 		return
 	_nm.relay_all(
 		{"action": RelayActions.ACTION_FEED, "pid": pid, "id": action_id, "params": params}
@@ -887,32 +887,32 @@ func announce_action(pid: String, action_id: String, params: Dictionary = {}) ->
 
 
 # Хост: очистить результат каста, если его закрыл владелец (pid совпал).
-func _host_dismiss_cast_result(pid: String) -> void:
+func host_dismiss_cast_result(pid: String) -> void:
 	if String(last_cast_result.get("pid", "")) != pid:
 		return
 	last_cast_result = {}
-	_broadcast_sync()
-	_emit_changed()
+	broadcast_sync()
+	emit_changed()
 
 
 # Хост: стереть сводку приобретений игрока (по закрытию модалки).
-func _host_dismiss_gains(pid: String) -> void:
+func host_dismiss_gains(pid: String) -> void:
 	if not players.has(pid):
 		return
 	var p: Dictionary = players[pid]
 	if not p.has("gains"):
 		return
 	p.erase("gains")
-	_broadcast_and_emit()
+	broadcast_and_emit()
 
 
 # Хост: убрать запись результата флипа игрока (по закрытию модалки).
-func _host_dismiss_reckoning(pid: String) -> void:
+func host_dismiss_reckoning(pid: String) -> void:
 	if not reckoning_results.has(pid):
 		return
 	reckoning_results.erase(pid)
-	_broadcast_sync()
-	_emit_changed()
+	broadcast_sync()
+	emit_changed()
 
 
 ## Доступно ли спец-действие сыщика: мой ход, есть действие, в раунде ещё не
@@ -1071,16 +1071,16 @@ func _prune_asset_deck() -> void:
 ## Гарантирует непустую витрину (на случай партий, начатых до появления резерва).
 ## Только дотягивает недостающее — выложенные карты остаются на местах.
 func ensure_shop_reserve() -> void:
-	if not _is_host() or shop_reserve.size() >= SHOP_RESERVE_SIZE:
+	if not is_host() or shop_reserve.size() >= SHOP_RESERVE_SIZE:
 		return
 	_draw_shop_assets(SHOP_RESERVE_SIZE - shop_reserve.size())
-	_broadcast_sync()
-	_emit_changed()
+	broadcast_sync()
+	emit_changed()
 
 
 ## Хост: после покупки убрать купленные id и дотянуть витрину новыми.
 func _refill_shop_reserve(bought: Array) -> void:
-	if not _is_host():
+	if not is_host():
 		return
 	for b: Variant in bought:
 		shop_reserve.erase(String(b))
@@ -1124,7 +1124,7 @@ func rumors_in_play() -> Array:
 # отключённым и при повторном входе возвращается в тот же слот. Только хост
 # двигает стейт и рассылает sync.
 func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -> void:
-	if not active or not _is_host():
+	if not active or not is_host():
 		return
 	# Мог только что стать хостом (старый хост вышел): host-only колода Мифов у
 	# нас пуста — восстанавливаем, иначе следующая вытяжка Мифов выпадет в заглушку.
@@ -1137,7 +1137,7 @@ func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -
 		return
 
 	players[uid]["connected"] = false
-	GameConsole.log("[Game] %s отключился — слот сохранён до возвращения" % _name_of(uid))
+	GameConsole.log("[Game] %s отключился — слот сохранён до возвращения" % name_of(uid))
 
 	# Если отвалился сыщик, чьего выбора ждёт модалка решения (миф или программа
 	# актива) — выбираем за него сами, иначе фаза зависнет навсегда. Случайно, а не
@@ -1165,20 +1165,20 @@ func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -
 
 	# Если отключился игрок, чей сейчас ход — пропускаем его, иначе партия
 	# застрянет на «ходит несуществующий игрок».
-	if _current_pid() == uid:
+	if current_pid() == uid:
 		if phase == Phases.ACTION:
 			_phase.advance_action_turn()
 		elif phase == Phases.ENCOUNTER:
 			_phase.advance_encounter_turn()
 
-	_broadcast_sync()
-	_emit_changed()
+	broadcast_sync()
+	emit_changed()
 
 
 # Игрок (пере)подключился к комнате. Хост возвращает прежнего участника в его
 # слот, а нового игрока с уже выбранным сыщиком — подключает к идущей партии.
 func _on_player_connected(pid: String, info: Dictionary) -> void:
-	if not active or not _is_host():
+	if not active or not is_host():
 		return
 	var uid: String = String(info.get("user_id", ""))
 	if uid.is_empty():
@@ -1186,12 +1186,12 @@ func _on_player_connected(pid: String, info: Dictionary) -> void:
 	if players.has(uid):
 		if not bool(players[uid].get("connected", true)):
 			players[uid]["connected"] = true
-			GameConsole.log("[Game] %s вернулся в игру" % _name_of(uid))
-			_broadcast_sync()
-			_emit_changed()
+			GameConsole.log("[Game] %s вернулся в игру" % name_of(uid))
+			broadcast_sync()
+			emit_changed()
 		return
 	# Новый участник: сыщик уже выбран (relay восстановил из БД) — подключаем
-	# сразу; иначе ждём set_ready после выбора в лобби (_handle_late_join).
+	# сразу; иначе ждём set_ready после выбора в лобби (handle_late_join).
 	var inv: String = String(info.get("investigator", ""))
 	if not inv.is_empty():
 		_add_player_mid_game(uid, String(info.get("name", "???")), inv)
@@ -1199,7 +1199,7 @@ func _on_player_connected(pid: String, info: Dictionary) -> void:
 
 ## Хост: подключить позднего игрока по его set_ready (выбор сыщика в лобби
 ## уже идущей партии). user_id и имя берём из живого списка NetworkManager.
-func _handle_late_join(data: Dictionary) -> void:
+func handle_late_join(data: Dictionary) -> void:
 	var conn_id: String = String(data.get("player_id", ""))
 	var inv: String = String(data.get("investigator", ""))
 	if conn_id.is_empty() or inv.is_empty():
@@ -1245,8 +1245,8 @@ func _add_player_mid_game(uid: String, pname: String, investigator: String) -> v
 	)
 	turn_order.append(uid)
 	GameConsole.log("[Game] %s присоединился к партии (игроков: %d)" % [pname, turn_order.size()])
-	_broadcast_sync()
-	_emit_changed()
+	broadcast_sync()
+	emit_changed()
 
 
 # ── Применить снапшот (от хоста через relay ИЛИ от сервера через joined_room) ─
@@ -1258,14 +1258,14 @@ func _apply_snapshot(data: Dictionary) -> void:
 	for f: String in _SYNC_FIELDS:
 		set(f, data.get(f, get(f)))
 	_mythos.index = int(data.get("mythos_index", 0))
-	_emit_changed()
+	emit_changed()
 	phase_changed.emit(phase)
 
 	# Хост реджойнулся в фазу встреч, а карта в снапшоте — пустая (хост ушёл
 	# в момент await api.draw_encounter, снапшот сохранился в loading-
 	# состоянии). Без перезапуска генерации модалка зависнет на «загрузке».
 	# call_deferred — чтобы не дёргать сеть из коллбэка снапшота.
-	if _is_host() and active and phase == Phases.ENCOUNTER and current_encounter.is_empty():
+	if is_host() and active and phase == Phases.ENCOUNTER and current_encounter.is_empty():
 		GameConsole.log("[Game] Реджойн в фазу встреч с пустой картой — перегенерируем")
 		_encounter.generate.call_deferred()
 
@@ -1281,7 +1281,7 @@ func _apply_snapshot(data: Dictionary) -> void:
 # не-хоста в хосты (старый хост вышел, см. _on_player_left) — у свежего хоста
 # колоды никогда не было. Гард по пустой колоде делает вызов идемпотентным.
 func _ensure_mythos_deck() -> void:
-	if not (_is_host() and active and _mythos.deck.is_empty() and not campaign.is_empty()):
+	if not (is_host() and active and _mythos.deck.is_empty() and not campaign.is_empty()):
 		return
 	var camp_id: String = String(campaign.get("id", ""))
 	if not camp_id.is_empty():
@@ -1304,13 +1304,13 @@ func _sender_uid(from_id: String) -> String:
 # ── Реестр host-авторитетных relay-действий ───────────────────────────────────
 # Каждый _act_* — адаптер (data) → host-логика, перенесённая дословно из ветки
 # match. Диспетчер (_on_relay_received) зовёт _relay_actions[action].call(data) под
-# гардом _is_host(). Транзиентные широковещалки (game_sync/game_chat/game_action_
+# гардом is_host(). Транзиентные широковещалки (game_sync/game_chat/game_action_
 # feed) — НЕ здесь: у них клиентская логика (рендер у всех), см. match.
 
 
-func _broadcast_and_emit() -> void:
-	_broadcast_sync()
-	_emit_changed()
+func broadcast_and_emit() -> void:
+	broadcast_sync()
+	emit_changed()
 
 
 func _build_action_registry() -> void:
@@ -1346,7 +1346,7 @@ func _on_relay_received(from_id: String, data: Dictionary) -> void:
 	# веток match. Логика — в модулях (host_apply_*), не менялась. Не-хост сюда
 	# доходит, но Callable не зовётся (валидирует и применяет только хост).
 	if _relay_actions.has(action):
-		if _is_host():
+		if is_host():
 			(_relay_actions[action] as Callable).call(data)
 		return
 
@@ -1357,7 +1357,7 @@ func _on_relay_received(from_id: String, data: Dictionary) -> void:
 			# с сервера (joined_room.game_state). Хост авторитетен и НИКОГДА не
 			# перезаписывает себя чужим снапшотом; не-хост принимает sync только
 			# от текущего хоста (если его id известен — см. NetworkManager._host_id).
-			if _is_host():
+			if is_host():
 				return
 			var host_id: String = _nm.host_id() if is_instance_valid(_nm) else ""
 			if not host_id.is_empty() and not from_id.is_empty() and from_id != host_id:
@@ -1389,13 +1389,13 @@ func _on_relay_received(from_id: String, data: Dictionary) -> void:
 # ── Сервисное ────────────────────────────────────────────────────────────────
 
 
-func _current_pid() -> String:
+func current_pid() -> String:
 	if current_idx < 0 or current_idx >= turn_order.size():
 		return ""
 	return turn_order[current_idx]
 
 
-func _name_of(pid: String) -> String:
+func name_of(pid: String) -> String:
 	if players.has(pid):
 		return players[pid].get("name", pid)
 	return pid
@@ -1405,7 +1405,7 @@ func _name_of(pid: String) -> String:
 func is_my_turn() -> bool:
 	if bool(my_player().get(PlayerKeys.DEAD, false)):
 		return false  # Тень обычный ход не берёт (страховка к пропуску в phase_controller)
-	return active and phase == Phases.ACTION and _current_pid() == _nm.my_user_id
+	return active and phase == Phases.ACTION and current_pid() == _nm.my_user_id
 
 
 ## Публичный доступ к held-ограничению игрока (whileHeld: removeFromBoard/cannotAct/…).
@@ -1422,7 +1422,7 @@ func player_has_constraint(pid: String, verb: String) -> bool:
 func debug_exec(op: String, a: String = "", b: String = "", c: String = "") -> String:
 	if op == "mypid":
 		return _nm.my_user_id
-	if not (OS.is_debug_build() and _is_host()):
+	if not (OS.is_debug_build() and is_host()):
 		return "debug-выдача только на хосте (dev-сборка)"
 	match op:
 		"give_asset":
@@ -1449,7 +1449,7 @@ func is_my_encounter_turn() -> bool:
 	return (
 		active
 		and phase == Phases.ENCOUNTER
-		and _current_pid() == _nm.my_user_id
+		and current_pid() == _nm.my_user_id
 		and not _have_finished_encounter()
 	)
 
@@ -1477,7 +1477,7 @@ func my_player() -> Dictionary:
 
 ## Текущий язык игры названием для relay ("Russian" / "English"). Используется
 ## EncounterFlow и CampaignGen в теле запроса к ContentApi.
-func _relay_language() -> String:
+func relay_language() -> String:
 	if I18n.get_locale() == "en":
 		return "English"
 	return "Russian"
@@ -1486,7 +1486,7 @@ func _relay_language() -> String:
 ## Эффекты уровня поля (advanceDoom и т.п.) — интерпретатор их не трогает,
 ## применяются здесь, потому что меняют синкаемые поля GameState (doom,
 ## omens_step). Зовётся из EncounterFlow и MythosFlow.
-func _apply_board_effect(node: Dictionary) -> void:
+func apply_board_effect(node: Dictionary) -> void:
 	var verb: String = String(node.get("do", ""))
 	# Адресные эффекты (target lead/each/eachOn*/chosenInvestigator) и передачи
 	# активов/улик — применяются к разрешённым сыщикам, а не к доске.
@@ -1519,7 +1519,7 @@ func _resolve_count(node: Dictionary, verb: String) -> int:
 ## столу, а не только по рукам получателя, — иначе двое сыщиков носили бы один
 ## «Некрономикон». Свободных не осталось → тихо ничего, как у пустой колоды.
 func _grant_artifact(pid: String, artifact_id: String = "", want_trait: String = "") -> void:
-	if not _is_host() or not players.has(pid):
+	if not is_host() or not players.has(pid):
 		return
 	var taken: Dictionary = {}
 	for p_v: Variant in players.values():
@@ -1538,7 +1538,7 @@ func _grant_artifact(pid: String, artifact_id: String = "", want_trait: String =
 	var items: Array = p.get("items", [])
 	items.append({"id": aid, "kind": "artifact", "exhausted": false})
 	p["items"] = items
-	GameConsole.log("[Артефакт] %s получил «%s»" % [_name_of(pid), aid])
+	GameConsole.log("[Артефакт] %s получил «%s»" % [name_of(pid), aid])
 
 
 # Порог стойкости для целей по всему полю: "testResult" — число успехов проверки,
@@ -1552,7 +1552,7 @@ func _max_toughness(node: Dictionary) -> int:
 	return int(raw)
 
 
-# Один проход board-verb'а (без учёта _times — его разворачивает _apply_board_effect).
+# Один проход board-verb'а (без учёта _times — его разворачивает apply_board_effect).
 func _apply_board_verb(node: Dictionary, verb: String) -> void:
 	var n: int = _resolve_count(node, verb)
 	match verb:
@@ -1574,7 +1574,7 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			var gate_where: String = String(node.get("where", ""))
 			var gate_loc: String = ""
 			if gate_where == "self":
-				var apid: String = String(node.get("_anchor_pid", _current_pid()))
+				var apid: String = String(node.get("_anchor_pid", current_pid()))
 				gate_loc = String((players.get(apid, {}) as Dictionary).get("location", ""))
 			elif not gate_where.is_empty():
 				gate_loc = gate_where
@@ -1585,7 +1585,7 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			# переместила (move), закрываются врата исходной клетки, а не новой.
 			if node.has("_origin_loc"):
 				_board.close_gate_at(
-					String(node["_origin_loc"]), String(node.get("_anchor_pid", _current_pid()))
+					String(node["_origin_loc"]), String(node.get("_anchor_pid", current_pid()))
 				)
 			else:
 				_board.close_gate_at_active_player()
@@ -1595,7 +1595,7 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			var mon_where: String = String(node.get("where", ""))
 			var mon_loc: String = ""
 			if mon_where == "self":
-				var apid: String = String(node.get("_anchor_pid", _current_pid()))
+				var apid: String = String(node.get("_anchor_pid", current_pid()))
 				mon_loc = String((players.get(apid, {}) as Dictionary).get("location", ""))
 			elif not mon_where.is_empty():
 				mon_loc = mon_where
@@ -1652,7 +1652,7 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 		"discardAllClues":
 			_board.discard_all_clues()
 		"discardBoardClue":  # ближайшая к действующему сыщику улика на поле
-			var apid: String = String(node.get("_anchor_pid", _current_pid()))
+			var apid: String = String(node.get("_anchor_pid", current_pid()))
 			var lost: String = _board.discard_nearest_clue(
 				String(players.get(apid, {}).get("location", ""))
 			)
@@ -1673,7 +1673,7 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			if node.has("_target_monster"):
 				var dest: String = String(node.get("_target_space", ""))
 				if dest.is_empty():
-					var apid: String = String(node.get("_anchor_pid", _current_pid()))
+					var apid: String = String(node.get("_anchor_pid", current_pid()))
 					dest = String((players.get(apid, {}) as Dictionary).get("location", ""))
 				_board.move_monster_ref(String(node.get("_target_monster", "")), dest)
 		"discardMonster":
@@ -1710,11 +1710,11 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 		"gainSpell":
 			# Заклинание тянет ТОТ сыщик, от которого идёт эффект (_anchor_pid ставит
 			# forEach-подпрограмма мифа), иначе — активный игрок хода. Раньше здесь
-			# всегда стоял _current_pid(): в фазе мифов это последний ходивший, и
+			# всегда стоял current_pid(): в фазе мифов это последний ходивший, и
 			# карта уходила не тому, кто её выбрал.
 			var spell_pid: String = String(node.get("_anchor_pid", ""))
 			if spell_pid.is_empty() or not players.has(spell_pid):
-				spell_pid = _current_pid()
+				spell_pid = current_pid()
 			# count — «возьмите 2 заклинания» (Некрономикон). Пустой spell — случайное
 			# из доступного пула, это уже умеет grant_spell.
 			for _s in range(maxi(1, n)):
@@ -1724,7 +1724,7 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			# идёт эффект), а не «текущий по ходу»: в фазе Мифов это разные люди.
 			var art_pid: String = String(node.get("_anchor_pid", ""))
 			if art_pid.is_empty() or not players.has(art_pid):
-				art_pid = _current_pid()
+				art_pid = current_pid()
 			for _a in range(maxi(1, n)):
 				_grant_artifact(
 					art_pid, String(node.get("artifact", "")), String(node.get("trait", ""))
@@ -1756,7 +1756,7 @@ func current_mystery() -> Dictionary:
 ## генерацию. Чистит собственный state GameState; campaign и мифос — через
 ## модули (там живут их «приватные» поля типа epoch/seed).
 func reset_pregame() -> void:
-	if not _is_host():
+	if not is_host():
 		return
 	_clear_pregame_fields()
 
@@ -1778,7 +1778,7 @@ func reset_session() -> void:
 	campaign = {}
 	campaign_pending = false
 	_reset_clue_deck()  # чистит _clue_pool и _ghost_caches (наследство Теней)
-	_emit_changed()
+	emit_changed()
 
 
 # Общая часть reset_pregame/reset_session — обнуление игровых полей (без players).

@@ -61,7 +61,7 @@ func has_resource() -> bool:
 ## кубы стали кликабельны.
 func charge(currency: String) -> void:
 	pending_currency = currency
-	_gs._emit_changed()
+	_gs.emit_changed()
 
 
 ## Тап по кубу. Приоритет: заряжен +1 (addToDie) и куб < 6 — кладём +1, а не

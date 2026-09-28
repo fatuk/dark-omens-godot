@@ -43,7 +43,7 @@ func solve_kind(card: Dictionary) -> String:
 ## запомнить его локацию. Зовётся из MythosFlow._register_in_play (host-only). Спаун из
 ## onReveal (улики/монстры) применяет MythosFlow ДО этого — отдельным DSL.
 func on_enter(card: Dictionary) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var rumor: Dictionary = card.get("rumor", {})
 	card["tokens"] = maxi(0, int(rumor.get("tokens", 0)))
@@ -91,7 +91,7 @@ func on_enter(card: Dictionary) -> void:
 ## Расплата Слуха: прогнать onReckoning (дефолт — снять 1 жетон); если жетонов стало 0 —
 ## прогнать onExpire и, при solveOnExpire, развеять Слух. Иначе карта остаётся в игре.
 func reckon(card: Dictionary) -> void:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return
 	var rumor: Dictionary = card.get("rumor", {})
 	_run_program(card, rumor.get("onReckoning", _DEFAULT_ON_RECKONING))
@@ -104,7 +104,7 @@ func reckon(card: Dictionary) -> void:
 ## Закрытие врат на loc развеивает Слух с solve=gateClose, чей портал на этой локации.
 ## Зовётся из BoardState.close_gate_at_active_player (host-only).
 func solve_on_gate_close(loc: String, _pid: String) -> void:
-	if not _gs._is_host() or loc.is_empty():
+	if not _gs.is_host() or loc.is_empty():
 		return
 	for c_v: Variant in (_gs.mythos_in_play as Array).duplicate():
 		var card: Dictionary = c_v
@@ -157,7 +157,7 @@ func encounter_test(loc: String) -> Dictionary:
 
 ## Развеять encounter-Слух на loc (после УСПЕХА встречи). true — развеян. Снимает метку.
 func solve_encounter_at(loc: String) -> bool:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return false
 	var card: Dictionary = _encounter_card_at(loc)
 	if card.is_empty():
@@ -186,7 +186,7 @@ func _pick_marked_location() -> String:
 ## Гибель монстра на loc развеивает monsterDefeated-Слух, чья локация == loc. Зовётся из
 ## EncounterFlow._commit_combat при победе сыщика. true — Слух развеян.
 func notify_monster_defeated(loc: String) -> bool:
-	if not _gs._is_host() or loc.is_empty():
+	if not _gs.is_host() or loc.is_empty():
 		return false
 	for c_v: Variant in (_gs.mythos_in_play as Array).duplicate():
 		var card: Dictionary = c_v
@@ -204,7 +204,7 @@ func notify_monster_defeated(loc: String) -> bool:
 
 
 # Прогнать DSL-программу Слуха на «доску». discardEldritchToken where:"self" → снять жетоны
-# С ЭТОЙ карты (card.tokens); прочие board-узлы — через _apply_board_effect (target:each
+# С ЭТОЙ карты (card.tokens); прочие board-узлы — через apply_board_effect (target:each
 # разрулит TargetResolver, _times учитывает repeat). interactive:true — чтобы target:each
 # уходили в board; choice в Расплату Слуха не поддержан (некому выбирать).
 func _run_program(card: Dictionary, prog: Array) -> void:
@@ -228,8 +228,8 @@ func _run_program(card: Dictionary, prog: Array) -> void:
 			GameConsole.log(
 				"[Слух:%s] снят жетон (%d→%d)" % [_name(card), before, int(card["tokens"])]
 			)
-		elif times > 0:  # _apply_board_effect форсит min 1, поэтому 0-повтор гасим тут
-			_gs._apply_board_effect(node)
+		elif times > 0:  # apply_board_effect форсит min 1, поэтому 0-повтор гасим тут
+			_gs.apply_board_effect(node)
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[Слух:%s] %s" % [_name(card), String(l_v)])
 

@@ -10,8 +10,8 @@ extends RefCounted
 ## (successes, dice). Стейт карт — в player.items {id, kind:"spell"}.
 ##
 ## flow.backs[item_index] — форс рубашки (детерминизм/тесты/replay). Доступ к
-## стейту — через _gs: _gs.players, _gs._is_host(), _gs._name_of(),
-## _gs._apply_board_effect(). Создаётся в GameState (поле _spell).
+## стейту — через _gs: _gs.players, _gs.is_host(), _gs.name_of(),
+## _gs.apply_board_effect(). Создаётся в GameState (поле _spell).
 
 const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
@@ -29,7 +29,7 @@ func _init(gs: Node) -> void:
 func resolve_cast(
 	pid: String, item_index: int, successes: int, dice: Array, flow: Dictionary = {}
 ) -> bool:
-	if not _gs._is_host() or not _gs.players.has(pid):
+	if not _gs.is_host() or not _gs.players.has(pid):
 		return false
 	var p: Dictionary = _gs.players[pid]
 	var items: Array = p.get("items", [])
@@ -65,7 +65,7 @@ func resolve_cast(
 	GameConsole.log(
 		(
 			"[Заклинание] %s · «%s» (рубашка %s, успехов %d)"
-			% [_gs._name_of(pid), sid, String(back.get("id", "")), successes]
+			% [_gs.name_of(pid), sid, String(back.get("id", "")), successes]
 		)
 	)
 	if consumed:
@@ -187,7 +187,7 @@ func _begin_check(
 
 # Общая валидация каста: владение + подтип. Возвращает spell ({} — невалидно).
 func _validate_cast(pid: String, item_index: int, subtype: String) -> Dictionary:
-	if not _gs._is_host() or not _gs.players.has(pid):
+	if not _gs.is_host() or not _gs.players.has(pid):
 		return {}
 	var items: Array = (_gs.players[pid] as Dictionary).get("items", [])
 	if item_index < 0 or item_index >= items.size():
@@ -255,7 +255,7 @@ func _lore_roll(p: Dictionary, modifier: int, flow: Dictionary) -> Dictionary:
 ## onPass к себе → рубашка. true — сработало хотя бы одно. Зовётся из игровых хуков
 ## (phase_controller.rest и т.п.). flow.cast/backs — детерминизм/тесты.
 func fire_trigger(pid: String, event: String, flow: Dictionary = {}) -> bool:
-	if not _gs._is_host() or not _gs.players.has(pid):
+	if not _gs.is_host() or not _gs.players.has(pid):
 		return false
 	var p: Dictionary = _gs.players[pid]
 	var items: Array = p.get("items", [])
@@ -289,7 +289,7 @@ func fire_trigger(pid: String, event: String, flow: Dictionary = {}) -> bool:
 ## false (зовущая сторона ничего не делает). Опциональная замена fire_trigger для
 ## событий, где каст должен быть на усмотрение игрока (напр. onRest).
 func prompt_trigger(pid: String, event: String) -> bool:
-	if not _gs._is_host() or not _gs.players.has(pid):
+	if not _gs.is_host() or not _gs.players.has(pid):
 		return false
 	var items: Array = (_gs.players[pid] as Dictionary).get("items", [])
 	var options: Array = []
@@ -314,7 +314,7 @@ func prompt_trigger(pid: String, event: String) -> bool:
 ## убыванию индекса (сброс рубашкой не сдвинет необработанные нижние) и чистит
 ## промпт. flow — детерминизм/тесты. true — промпт был для pid и закрыт.
 func host_apply_trigger_spells(pid: String, indices: Array, flow: Dictionary = {}) -> bool:
-	if not _gs._is_host():
+	if not _gs.is_host():
 		return false
 	var prompt: Dictionary = _gs.pending_spell_cast
 	if prompt.is_empty() or String(prompt.get("pid", "")) != pid:
@@ -345,7 +345,7 @@ func host_apply_trigger_spells(pid: String, indices: Array, flow: Dictionary = {
 ## случайное из каталога. Кладёт карту {id, kind:"spell"} в инвентарь (рубашка не
 ## фиксируется — тянется заново при каждом касте).
 func grant_spell(pid: String, spell_id: String = "") -> void:
-	if not _gs._is_host() or not _gs.players.has(pid):
+	if not _gs.is_host() or not _gs.players.has(pid):
 		return
 	var sid: String = spell_id
 	if sid.is_empty():
@@ -359,7 +359,7 @@ func grant_spell(pid: String, spell_id: String = "") -> void:
 	var items: Array = p.get("items", [])
 	items.append({"id": sid, "kind": "spell"})
 	p["items"] = items
-	GameConsole.log("[Заклинание] %s получил «%s»" % [_gs._name_of(pid), sid])
+	GameConsole.log("[Заклинание] %s получил «%s»" % [_gs.name_of(pid), sid])
 
 
 # Прогон Effect-программы каста: мутирует игрока; discardCard → consumed (сброс
@@ -368,13 +368,13 @@ func _apply_effects(pid: String, program: Array, ctx: Dictionary) -> bool:
 	var p: Dictionary = _gs.players[pid]
 	var res: Dictionary = _EffectRunner.run(program, p, ctx)
 	for l_v: Variant in res.get("logs", []):
-		GameConsole.log("[Заклинание] %s · %s" % [_gs._name_of(pid), String(l_v)])
+		GameConsole.log("[Заклинание] %s · %s" % [_gs.name_of(pid), String(l_v)])
 	var consumed: bool = false
 	for node_v: Variant in res.get("board", []):
 		if String((node_v as Dictionary).get("do", "")) == "discardCard":
 			consumed = true
 		else:
-			_gs._apply_board_effect(node_v as Dictionary)
+			_gs.apply_board_effect(node_v as Dictionary)
 	return consumed
 
 

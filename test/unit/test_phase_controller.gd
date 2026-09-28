@@ -140,10 +140,10 @@ class MockGameState:
 		_spell = StubSpell.new()
 		_death = StubDeath.new()
 
-	func _current_pid() -> String:
+	func current_pid() -> String:
 		return String(turn_order[current_idx]) if current_idx < turn_order.size() else ""
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
 	# Граф локаций: тесты задают связи через `locations`, а тип — отдельно через
@@ -171,10 +171,10 @@ class MockGameState:
 	func _refresh_items(_p: Dictionary) -> void:
 		pass
 
-	func _broadcast_sync() -> void:
+	func broadcast_sync() -> void:
 		sync_count += 1
 
-	func _emit_changed() -> void:
+	func emit_changed() -> void:
 		pass
 
 	func announce_action(_pid: String, _action_id: String, _params: Dictionary = {}) -> void:

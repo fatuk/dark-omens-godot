@@ -16,10 +16,10 @@ class MockGameState:
 	var current_idx: int = 0
 	var locations: Array = []
 
-	func _current_pid() -> String:
+	func current_pid() -> String:
 		return String(turn_order[current_idx]) if current_idx < turn_order.size() else ""
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
 	# Граф локаций из тестового списка — пересобирается на каждое чтение, чтобы

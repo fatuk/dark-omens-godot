@@ -13,7 +13,7 @@ var _gs: MockGameState
 var _cf: CheckFlow
 
 
-# Мок GameState: CheckFlow обращается к active_check, players, _name_of и _sync.
+# Мок GameState: CheckFlow обращается к active_check, players, name_of и _sync.
 # Заглушка AssetActionFlow: событийные триггеры активов только копим.
 class StubAssetTriggers:
 	extends RefCounted
@@ -32,13 +32,13 @@ class MockGameState:
 	var sync_count: int = 0
 	var _asset_action: StubAssetTriggers = StubAssetTriggers.new()  # spendClue-триггер при переброске за улику
 
-	func _name_of(pid: String) -> String:
+	func name_of(pid: String) -> String:
 		return pid
 
-	func _broadcast_sync() -> void:
+	func broadcast_sync() -> void:
 		sync_count += 1
 
-	func _emit_changed() -> void:
+	func emit_changed() -> void:
 		pass
 
 

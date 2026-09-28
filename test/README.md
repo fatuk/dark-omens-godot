@@ -64,7 +64,7 @@ cp -r /tmp/gut/addons/gut <корень проекта>/addons/gut
   переигрывается без ГСЧ. Случайные ветки (`flipCard` через `test`/`dieRoll`,
   triggered-броски) пока не покрыты — для них нужен инъецируемый ГСЧ.
 - **Моки.** `ConditionFlow` обращается к `GameState` только через четыре члена
-  (`players`, `_is_host`, `_name_of`, `_apply_board_effect`) — в тестах это
+  (`players`, `is_host`, `name_of`, `apply_board_effect`) — в тестах это
   минимальный `MockGameState extends Node`.
 - **Реальные данные.** Тесты используют боевые `data/conditions.json` и
   `data/assets.json` (например, `poisoned` → `loseHealth 1`), так что заодно

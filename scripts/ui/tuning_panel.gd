@@ -1714,15 +1714,15 @@ func _set_gal_mx(v: float) -> void:
 # Записать uniform в живой слой рун. Слоя нет (мы не в партии) — тихо выходим.
 func _runes_set(param: String, value: Variant) -> void:
 	for n in get_tree().get_nodes_in_group(DoomRunes.GROUP):
-		n.call("set_param", param, value)
+		n.set_param(param, value)
 
 
 func _runes_set_color(comp: int, v: float) -> void:
 	for n in get_tree().get_nodes_in_group(DoomRunes.GROUP):
-		var c: Variant = n.call("get_param", "tint")
+		var c: Variant = n.get_param("tint")
 		var col: Color = c if c is Color else Color(0.35, 0.85, 0.55, 1.0)
 		col[comp] = v
-		n.call("set_param", "tint", col)
+		n.set_param("tint", col)
 
 
 func _set_runes_amount(v: float) -> void:
@@ -1830,10 +1830,10 @@ func _set_vig_softness(v: float) -> void:
 # Цвет виньетки покомпонентно (тот же приём, что у цвета рун).
 func _vig_set_color(comp: int, v: float) -> void:
 	for n in get_tree().get_nodes_in_group(DoomRunes.GROUP):
-		var c: Variant = n.call("get_param", "vig_color")
+		var c: Variant = n.get_param("vig_color")
 		var col: Color = c if c is Color else Color(0.0, 0.0, 0.0, 1.0)
 		col[comp] = v
-		n.call("set_param", "vig_color", col)
+		n.set_param("vig_color", col)
 
 
 func _set_vig_r(v: float) -> void:
@@ -1896,13 +1896,13 @@ func _set_die_blocked_b(v: float) -> void:
 # Перекрасить пометки пула в живых лотках (без пересборки).
 func _refresh_dice_marks() -> void:
 	for t in get_tree().get_nodes_in_group(DiceTray.GAP_GROUP):
-		t.call("refresh_marks")
+		t.refresh_marks()
 
 
 func _set_die_gap(v: float) -> void:
 	DiceTray.DIE_GAP = v
 	for t in get_tree().get_nodes_in_group(DiceTray.GAP_GROUP):
-		t.call("refresh_gap")
+		t.refresh_gap()
 
 
 func _set_gal_my(v: float) -> void:
@@ -1917,7 +1917,7 @@ func _set_gal_my(v: float) -> void:
 
 func _refresh_card_preview() -> void:
 	for p in get_tree().get_nodes_in_group(CardPreview.GROUP):
-		p.call("refresh_tuning")
+		p.refresh_tuning()
 
 
 func _set_cpv_max_h(v: float) -> void:
@@ -1991,7 +1991,7 @@ func _set_map_zoom_step(v: float) -> void:
 
 func _refresh_map_shadows() -> void:
 	for m in get_tree().get_nodes_in_group("map_layer"):
-		m.call("refresh_shadows")
+		m.refresh_shadows()
 
 
 func _set_shadow_radius(v: float) -> void:
@@ -2019,7 +2019,7 @@ func _set_shadow_spread(v: float) -> void:
 
 func _refresh_turn_glow() -> void:
 	for p: Node in get_tree().get_nodes_in_group(InvestigatorPin.GROUP):
-		p.call("refresh_glow")
+		p.refresh_glow()
 
 
 func _set_turn_glow_alpha(v: float) -> void:
@@ -2047,7 +2047,7 @@ func _set_turn_glow_pulse_amount(v: float) -> void:
 func _set_pin_away_alpha(v: float) -> void:
 	InvestigatorPin.AWAY_ALPHA = v
 	for m: Node in get_tree().get_nodes_in_group("map_layer"):
-		m.call("refresh_away")
+		m.refresh_away()
 
 
 # Ореол хода на панели сыщика: один сеттер-фабрика на все static-поля
@@ -2056,4 +2056,4 @@ func _ipanel_glow_setter(field: String) -> Callable:
 	return func(v: float) -> void:
 		InvestigatorPanel.set_glow_param(field, v)
 		for p: Node in get_tree().get_nodes_in_group(InvestigatorPanel.GROUP):
-			p.call("refresh_turn_glow")
+			p.refresh_turn_glow()
