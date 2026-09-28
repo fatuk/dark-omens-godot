@@ -52,20 +52,17 @@
   "phrases": [
 	{ "id": "yes",         "tier": "functional", "category": "speech", "slots": 0, "en": "Yes",         "ru": "Да" },
 	{ "id": "no",          "tier": "functional", "category": "speech", "slots": 0, "en": "No",          "ru": "Нет" },
-	{ "id": "wait",        "tier": "functional", "category": "speech", "slots": 0, "en": "Wait",        "ru": "Жди" },
-	{ "id": "go",          "tier": "functional", "category": "speech", "slots": 0, "en": "Go",          "ru": "Иди" },
 	{ "id": "help",        "tier": "functional", "category": "speech", "slots": 0, "en": "Help",        "ru": "Помоги" },
 	{ "id": "thanks",      "tier": "functional", "category": "speech", "slots": 0, "en": "Thanks",      "ru": "Спасибо" },
 	{ "id": "sorry",       "tier": "functional", "category": "speech", "slots": 0, "en": "Sorry",       "ru": "Извини" },
-	{ "id": "my_turn",     "tier": "functional", "category": "turn",   "slots": 0, "en": "My turn",     "ru": "Мой ход" },
+	
 	{ "id": "your_turn",   "tier": "functional", "category": "turn",   "slots": 0, "en": "Your turn!",   "ru": "Ходи!" },
-	{ "id": "good_luck",   "tier": "functional", "category": "speech", "slots": 0, "en": "Good luck",   "ru": "Удачи" },
-	{ "id": "well_played", "tier": "functional", "category": "speech", "slots": 0, "en": "Well played", "ru": "Отлично" },
 
 	{ "id": "going",       "tier": "functional", "category": "intent",  "slots": 1, "en": "Going: {noun}",   "ru": "Иду: {noun}" },
 	{ "id": "taking",      "tier": "functional", "category": "intent",  "slots": 1, "en": "Taking: {noun}",  "ru": "Беру: {noun}" },
 	{ "id": "target",      "tier": "functional", "category": "intent",  "slots": 1, "en": "Target: {noun}",  "ru": "Цель: {noun}" },
 	{ "id": "leave",       "tier": "functional", "category": "intent",  "slots": 1, "en": "Leave: {noun}",   "ru": "Оставь: {noun}" },
+	
 	{ "id": "need",        "tier": "functional", "category": "request", "slots": 1, "en": "Need: {noun}",    "ru": "Нужно: {noun}" },
 	{ "id": "have",        "tier": "functional", "category": "request", "slots": 1, "en": "Have: {noun}",    "ru": "Есть: {noun}" },
 	{ "id": "giving",      "tier": "functional", "category": "request", "slots": 1, "en": "Giving: {noun}",  "ru": "Отдам: {noun}" },
@@ -87,6 +84,7 @@
 	{ "id": "noun_comes",       "tier": "flavor", "category": "event", "slots": 1, "en": "{noun} comes",           "en_pl": "{noun} come",           "ru": "Грядёт {noun}",         "ru_pl": "Грядут {noun}" },
 	{ "id": "noun_awakens",     "tier": "flavor", "category": "event", "slots": 1, "en": "{noun} awakens",         "en_pl": "{noun} awaken",         "ru": "Пробуждается {noun}",   "ru_pl": "Пробуждаются {noun}" },
 	{ "id": "noun_stalks_here", "tier": "flavor", "category": "event", "slots": 1, "en": "{noun} stalks here",     "en_pl": "{noun} stalk here",     "ru": "Здесь рыщет {noun}",    "ru_pl": "Здесь рыщут {noun}" },
+	
 	{ "id": "noun_calls",       "tier": "flavor", "category": "sign",  "slots": 1, "en": "{noun} calls",           "en_pl": "{noun} call",           "ru": "{noun} зовёт",          "ru_pl": "{noun} зовут" },
 	{ "id": "noun_watches",     "tier": "flavor", "category": "sign",  "slots": 1, "en": "{noun} watches",         "en_pl": "{noun} watch",          "ru": "{noun} наблюдает",      "ru_pl": "{noun} наблюдают" },
 	{ "id": "noun_knows",       "tier": "flavor", "category": "sign",  "slots": 1, "en": "{noun} knows",           "en_pl": "{noun} know",           "ru": "{noun} знает",          "ru_pl": "{noun} знают" },
