@@ -827,3 +827,51 @@ func test_heal_all_restores_to_max() -> void:
 	EffectRunner.run([{"do": "healHealth", "all": true}, {"do": "healSanity", "all": true}], p)
 	assert_eq(int(p["hp"]), 7, "healHealth all → до максимума")
 	assert_eq(int(p["sanity"]), 5, "healSanity all → до максимума")
+
+
+# ── moveMonster: выбор монстра с фильтрами, затем клетки назначения ──
+
+
+func _monster_ctx() -> Dictionary:
+	return {
+		"monster_choices":
+		[
+			{"ref": "A#0", "name": "M_GHOUL", "toughness": 1, "epic": false},
+			{"ref": "B#0", "name": "M_CTHULHU", "toughness": 5, "epic": true},
+		],
+		"locations": [{"id": "A", "name": "LOC_A"}, {"id": "C", "name": "LOC_C"}],
+	}
+
+
+func test_move_monster_chosen_asks_monster_then_destination() -> void:
+	var node := {
+		"do": "moveMonster", "target": "chosenMonster", "where": "chosen", "excludeEpic": true
+	}
+	var flow := {"interactive": true, "decisions": {}, "rolls": {}, "pending": {}, "slot": "s/"}
+	var p := {}
+	var res: Dictionary = EffectRunner.run([node], p, _monster_ctx(), flow)
+	var pend: Dictionary = res.get("pending", {})
+	assert_eq(String(pend.get("kind", "")), "monster", "сначала — выбор монстра")
+	var refs: Array = []
+	for o_v: Variant in pend.get("options", []):
+		refs.append(String((o_v as Dictionary)["ref"]))
+	assert_eq(refs, ["A#0"], "эпический отфильтрован (excludeEpic)")
+	flow["decisions"][String(pend["path"])] = "A#0"
+	flow["pending"] = {}
+	res = EffectRunner.run([node], p, _monster_ctx(), flow)
+	pend = res.get("pending", {})
+	assert_eq(String(pend.get("kind", "")), "destination", "потом — куда переставить")
+	flow["decisions"][String(pend["path"])] = "C"
+	flow["pending"] = {}
+	res = EffectRunner.run([node], p, _monster_ctx(), flow)
+	assert_true((res.get("pending", {}) as Dictionary).is_empty(), "решения приняты — пауз нет")
+	var board: Array = res.get("board", [])
+	assert_eq(board.size(), 1)
+	assert_eq(String((board[0] as Dictionary)["_target_monster"]), "A#0")
+	assert_eq(String((board[0] as Dictionary)["_target_space"]), "C")
+	# Числовой maxToughness тоже фильтрует варианты («стойкость 3 или меньше»).
+	var dnode := {"do": "discardMonster", "target": "chosenMonster", "maxToughness": 3}
+	var dflow := {"interactive": true, "decisions": {}, "rolls": {}, "pending": {}, "slot": "s/"}
+	res = EffectRunner.run([dnode], {}, _monster_ctx(), dflow)
+	var opts: Array = (res.get("pending", {}) as Dictionary).get("options", [])
+	assert_eq(opts.size(), 1, "Ктулху со стойкостью 5 не предлагается при maxToughness 3")

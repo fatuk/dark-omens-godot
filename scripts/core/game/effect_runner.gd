@@ -397,6 +397,32 @@ static func _move_options(player: Dictionary, ctx: Dictionary, node: Dictionary)
 	return out
 
 
+# Варианты монстра для chosenMonster с фильтрами узла: maxToughness (число — «стойкость
+# N или меньше»; "testResult" здесь не фильтрует) и excludeEpic («кроме эпических»).
+static func _monster_options(node: Dictionary, ctx: Dictionary) -> Array:
+	var raw: Variant = node.get("maxToughness", null)
+	var max_t: int = int(raw) if raw != null and str(raw).is_valid_int() else 999
+	var no_epic: bool = bool(node.get("excludeEpic", false))
+	var out: Array = []
+	for o_v: Variant in ctx.get("monster_choices", []) as Array:
+		var o: Dictionary = o_v
+		if int(o.get("toughness", 0)) > max_t:
+			continue
+		if no_epic and bool(o.get("epic", false)):
+			continue
+		out.append(o)
+	return out
+
+
+# Все клетки карты как варианты назначения (moveMonster where:"chosen").
+static func _all_location_options(ctx: Dictionary) -> Array:
+	var out: Array = []
+	for l_v: Variant in ctx.get("locations", []) as Array:
+		var l: Dictionary = l_v
+		out.append({"ref": String(l.get("id", "")), "name": String(l.get("name", l.get("id", "")))})
+	return out
+
+
 # amount/count узла без подстановки дефолта 1 (для move: «без amount» ≠ «1 шаг»).
 static func _amount_or(node: Dictionary, fallback: int) -> int:
 	return int(node.get("amount", node.get("count", fallback)))
@@ -571,18 +597,28 @@ static func _run_action(
 	if interactive and target == "chosenMonster":
 		var mdec: Dictionary = flow.get("decisions", {})
 		if not mdec.has(path):
-			var mopts: Array = ctx.get("monster_choices", [])
-			if (mopts as Array).is_empty():
-				return  # монстров нет — эффект пропадает
-			flow["pending"] = {
-				"kind": "monster", "path": path, "options": mopts.duplicate(), "verb": verb
-			}
+			var mopts: Array = _monster_options(node, ctx)
+			if mopts.is_empty():
+				return  # подходящих монстров нет — эффект пропадает
+			flow["pending"] = {"kind": "monster", "path": path, "options": mopts, "verb": verb}
 			return
 		var ref: String = String(mdec[path])
 		ctx["chosenMonsterToughness"] = _monster_choice_toughness(ctx, ref)
 		var mnode: Dictionary = node.duplicate(true)
 		mnode["_target_monster"] = ref
-		board.append(mnode)  # GameState снимет именно этого монстра
+		# moveMonster where:"chosen" — второе решение: куда переставить (любая клетка карты).
+		if verb == "moveMonster" and String(node.get("where", "")) == "chosen":
+			var dpath: String = path + "/dest"
+			if not mdec.has(dpath):
+				var dests: Array = _all_location_options(ctx)
+				if dests.is_empty():
+					return
+				flow["pending"] = {
+					"kind": "destination", "path": dpath, "options": dests, "verb": verb
+				}
+				return
+			mnode["_target_space"] = String(mdec[dpath])
+		board.append(mnode)  # GameState снимет/переставит именно этого монстра
 		return
 	# (2c) Интерактивный выбор ЛОКАЦИИ по монстрам (damageMonster target:chosenSpace —
 	#      «выберите локацию, каждый монстр там теряет N»: Agency Quarantine, Police

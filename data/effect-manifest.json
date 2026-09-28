@@ -62,6 +62,12 @@
             "min": 1
           },
           "default": 1
+        },
+        {
+          "name": "all",
+          "type": {
+            "t": "bool"
+          }
         }
       ],
       "targets": "players",
@@ -95,6 +101,12 @@
             "min": 1
           },
           "default": 1
+        },
+        {
+          "name": "all",
+          "type": {
+            "t": "bool"
+          }
         }
       ],
       "targets": "players",
@@ -115,8 +127,10 @@
         {
           "name": "kind",
           "type": {
-            "t": "str"
-          }
+            "t": "ref",
+            "of": "conditionKind"
+          },
+          "required": false
         }
       ],
       "targets": "players",
@@ -136,8 +150,10 @@
         {
           "name": "kind",
           "type": {
-            "t": "str"
-          }
+            "t": "ref",
+            "of": "conditionKind"
+          },
+          "required": false
         },
         {
           "name": "choose",
@@ -202,14 +218,19 @@
         {
           "name": "from",
           "type": {
-            "t": "str"
+            "t": "enum",
+            "values": [
+              "reserve"
+            ]
           }
         },
         {
           "name": "trait",
           "type": {
-            "t": "str"
-          }
+            "t": "ref",
+            "of": "assetTrait"
+          },
+          "required": false
         }
       ],
       "targets": "players",
@@ -236,8 +257,10 @@
         {
           "name": "trait",
           "type": {
-            "t": "str"
-          }
+            "t": "ref",
+            "of": "assetTrait"
+          },
+          "required": false
         }
       ],
       "targets": "players",
@@ -257,8 +280,10 @@
         {
           "name": "trait",
           "type": {
-            "t": "str"
-          }
+            "t": "ref",
+            "of": "spellTrait"
+          },
+          "required": false
         }
       ],
       "targets": "players",
@@ -286,14 +311,18 @@
         {
           "name": "artifact",
           "type": {
-            "t": "str"
-          }
+            "t": "ref",
+            "of": "artifact"
+          },
+          "required": false
         },
         {
           "name": "trait",
           "type": {
-            "t": "str"
-          }
+            "t": "ref",
+            "of": "artifactTrait"
+          },
+          "required": false
         },
         {
           "name": "count",
@@ -321,8 +350,10 @@
         {
           "name": "trait",
           "type": {
-            "t": "str"
-          }
+            "t": "ref",
+            "of": "artifactTrait"
+          },
+          "required": false
         }
       ],
       "targets": "players",
@@ -669,10 +700,39 @@
           "type": {
             "t": "str"
           }
+        },
+        {
+          "name": "excludeEpic",
+          "type": {
+            "t": "bool"
+          }
         }
       ],
       "targets": "oneMonster",
       "describeKey": "VERB_DISCARD_MONSTER"
+    },
+    "moveMonster": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "where",
+          "type": {
+            "t": "enum",
+            "values": [
+              "self",
+              "chosen"
+            ]
+          }
+        },
+        {
+          "name": "excludeEpic",
+          "type": {
+            "t": "bool"
+          }
+        }
+      ],
+      "targets": "oneMonster",
+      "describeKey": "VERB_MOVE_MONSTER"
     },
     "monsterSurge": {
       "kind": "board",
@@ -733,8 +793,10 @@
         {
           "name": "location",
           "type": {
-            "t": "str"
-          }
+            "t": "ref",
+            "of": "location"
+          },
+          "required": false
         }
       ],
       "targets": null,
@@ -1122,8 +1184,10 @@
         {
           "name": "trait",
           "type": {
-            "t": "str"
-          }
+            "t": "ref",
+            "of": "assetTrait"
+          },
+          "required": false
         }
       ],
       "targets": "oneInvestigator",

@@ -1667,6 +1667,15 @@ func _apply_board_verb(node: Dictionary, verb: String) -> void:
 			_board.discard_all_gates()
 		"discardGate":
 			_board.discard_gate()
+		"moveMonster":
+			# Выбранный монстр → к якорному сыщику (where:self; бой — на следующей фазе
+			# встреч, как с любым монстром на клетке) либо в выбранную клетку (_target_space).
+			if node.has("_target_monster"):
+				var dest: String = String(node.get("_target_space", ""))
+				if dest.is_empty():
+					var apid: String = String(node.get("_anchor_pid", _current_pid()))
+					dest = String((players.get(apid, {}) as Dictionary).get("location", ""))
+				_board.move_monster_ref(String(node.get("_target_monster", "")), dest)
 		"discardMonster":
 			if node.has("_target_monster"):
 				_board.discard_monster_ref(String(node.get("_target_monster", "")))  # выбранный

@@ -290,6 +290,7 @@ func monster_choices() -> Array:
 					{
 						"ref": "%s#%d" % [loc, i],
 						"name": String(m.get("nameKey", mid)),
+						"epic": bool(m.get("epic", false)),
 						"toughness": tough,
 						"health": int(inst.get("health", tough)) if inst is Dictionary else tough,
 						"loc": loc,
@@ -335,6 +336,32 @@ func discard_monster_ref(ref: String) -> void:
 		_gs.monsters[loc] = arr
 	return_monster_to_bag(mid)
 	GameConsole.log("[Монстр] сброшен %s (%s)" % [mid, loc])
+
+
+## Переставить КОНКРЕТНЫЙ экземпляр монстра (ref "loc#idx") в локацию dest. Здоровье и
+## прочее состояние экземпляра сохраняются. Зовётся board-verb'ом moveMonster.
+func move_monster_ref(ref: String, dest: String) -> void:
+	if not _gs._is_host() or dest.is_empty():
+		return
+	var parts: PackedStringArray = ref.split("#")
+	if parts.size() != 2:
+		return
+	var loc: String = parts[0]
+	var idx: int = int(parts[1])
+	var arr: Array = _gs.monsters.get(loc, [])
+	if idx < 0 or idx >= (arr as Array).size() or loc == dest:
+		return
+	var inst: Variant = arr[idx]
+	arr.remove_at(idx)
+	if (arr as Array).is_empty():
+		_gs.monsters.erase(loc)
+	else:
+		_gs.monsters[loc] = arr
+	var dst: Array = _gs.monsters.get(dest, [])
+	dst.append(inst)
+	_gs.monsters[dest] = dst
+	var mid: String = String(inst.get("id", "")) if inst is Dictionary else String(inst)
+	GameConsole.log("[Монстр] %s перемещён %s → %s" % [mid, loc, dest])
 
 
 ## Локация активного игрока ("" — нет активного). Для board-verb'ов, бьющих «здесь».

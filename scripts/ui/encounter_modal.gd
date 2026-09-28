@@ -531,7 +531,7 @@ func _show_choice(card: Dictionary) -> void:
 	var pending: Dictionary = card.get("pending_choice", {})
 	var kind: String = String(pending.get("kind", "choice"))  # choice | target | monster
 	_title.text = _title_text(card)
-	_main_text.text = tr(_choose_prompt_key(kind))
+	_main_text.text = tr(_choose_prompt_key(kind, String(pending.get("verb", ""))))
 	for node: Control in [_roll_btn, _dice, _outcome, _finish_btn]:
 		node.visible = false
 	_hide_dice()
@@ -577,14 +577,22 @@ func _show_choice(card: Dictionary) -> void:
 
 
 # Подсказка выбора по виду: монстр (сброс) / сыщик (передача) / ветка эффектов.
-func _choose_prompt_key(kind: String) -> String:
+# Подсказка выбора: по виду решения и глаголу, который его запросил (монстра можно
+# сбросить, ранить или переместить; «куда» — идти самому или отправить монстра).
+func _choose_prompt_key(kind: String, verb: String = "") -> String:
 	match kind:
 		"monster":
-			return "ENCOUNTER_CHOOSE_MONSTER"
+			match verb:
+				"moveMonster":
+					return "ENCOUNTER_CHOOSE_MONSTER_MOVE"
+				"damageMonster":
+					return "ENCOUNTER_CHOOSE_MONSTER_DAMAGE"
+				_:
+					return "ENCOUNTER_CHOOSE_MONSTER"
 		"target":
 			return "ENCOUNTER_CHOOSE_TARGET"
 		"destination":
-			return "PICK_DESTINATION"
+			return "PICK_MONSTER_DESTINATION" if verb == "moveMonster" else "PICK_DESTINATION"
 		"space":
 			return "PICK_SPACE_DAMAGE"
 		"asset":

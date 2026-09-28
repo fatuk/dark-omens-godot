@@ -683,6 +683,8 @@ ENCOUNTER_PROCEED,Вы идёте дальше.,You press on.
 ENCOUNTER_CHOOSE,Сделайте выбор,Make a choice
 ENCOUNTER_CHOOSE_TARGET,Кому передать?,Give to whom?
 ENCOUNTER_CHOOSE_MONSTER,Какого монстра сбросить?,Discard which monster?
+ENCOUNTER_CHOOSE_MONSTER_MOVE,Какого монстра переместить?,Move which monster?
+ENCOUNTER_CHOOSE_MONSTER_DAMAGE,Какому монстру нанести урон?,Damage which monster?
 WORLD_DREAMLANDS,Страна снов,Dreamlands
 WORLD_YUGGOTH,Юггот,Yuggoth
 WORLD_THE_ABYSS,Бездна,The Abyss
@@ -855,6 +857,7 @@ VERB_CLOSE_GATE,закрыть врата,close a Gate
 VERB_SPAWN_MONSTER,монстры ×{count},spawn {count} Monster(s)
 VERB_MONSTER_SURGE,наплыв монстров,monster surge
 VERB_DISCARD_MONSTER,сбросить монстра,discard a Monster
+VERB_MOVE_MONSTER,переместить монстра,move a Monster
 VERB_DAMAGE_MONSTER,монстру −{amount},Monster −{amount}
 VERB_PLACE_CLUE,улики ×{count},place {count} Clue(s)
 VERB_PLACE_ELDRITCH_TOKEN,жетоны Знамения ×{count},place {count} Eldritch token(s)
@@ -1710,6 +1713,7 @@ PICK_MONSTER_DISCARD,Какого монстра убрать с поля?,Remov
 PICK_MONSTER_DAMAGE,Какого монстра ранить?,Damage which monster?
 PICK_SPACE_DAMAGE,Выберите локацию — достанется всем монстрам там,Choose a space — every monster there is hit
 PICK_DESTINATION,Куда переместиться?,Move where?
+PICK_MONSTER_DESTINATION,Куда переместить монстра?,Move the monster where?
 PICK_RESERVE_ASSET,Выберите карту с витрины:,Choose a card from the reserve:
 RECKONING_DECISION_PROMPT,Расплата: решите судьбу карты,Reckoning: decide the fate of the card
 DECISION_SKIP,Пропустить,Skip
