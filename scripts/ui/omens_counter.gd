@@ -10,17 +10,17 @@ extends Control
 ## плавно подкручивается на +0.3 шага, чтобы юзер мог «подсмотреть»
 ## следующий омен. Уход мыши — возвращает на current_step.
 
-# Настройки арта круга — static, чтобы тюнить на лету в дебаг-панели тюнинга
-# (Ctrl+M, секция «КРУГ ЗНАМЕНИЙ») и переживать пересоздание узла.
-static var STEP_DEG: float = 45.0  # градусов между оменами на диске
-static var START_ANGLE_DEG: float = 0.0  # база поворота диска (выравнивает омен под окно)
-static var MASK_RADIUS: float = 46.0  # радиус видимого окошка (canvas-координаты)
-static var MASK_OFFSET_X: float = 0.0  # сдвиг ОКНА-маски от центра компонента (под арт рамки)
-static var MASK_OFFSET_Y: float = 0.0
-static var POS_OFFSET_X: float = 0.0  # сдвиг ВСЕГО виджета на панели (позиция узла)
-static var POS_OFFSET_Y: float = 0.0
-static var DIAL_OFFSET_X: float = 3.5  # сдвиг ВНУТРЕННЕГО диска (_circle) — центровать символ в окне
-static var DIAL_OFFSET_Y: float = -5.5
+# Настройки арта круга — финальные (подобраны в дебаг-панели, секция «КРУГ
+# ЗНАМЕНИЙ» из неё убрана в f77a657), поэтому const.
+const STEP_DEG: float = 45.0  # градусов между оменами на диске
+const START_ANGLE_DEG: float = 0.0  # база поворота диска (выравнивает омен под окно)
+const MASK_RADIUS: float = 46.0  # радиус видимого окошка (canvas-координаты)
+const MASK_OFFSET_X: float = 0.0  # сдвиг ОКНА-маски от центра компонента (под арт рамки)
+const MASK_OFFSET_Y: float = 0.0
+const POS_OFFSET_X: float = 0.0  # сдвиг ВСЕГО виджета на панели (позиция узла)
+const POS_OFFSET_Y: float = 0.0
+const DIAL_OFFSET_X: float = 3.5  # сдвиг ВНУТРЕННЕГО диска (_circle) — центровать символ в окне
+const DIAL_OFFSET_Y: float = -5.5
 const PEEK_AMOUNT: float = 0.3
 const TWEEN_TIME: float = 0.3  # секунды — короткий peek по наведению
 const OMEN_MOVE_TIME: float = 0.3  # фолбэк длительности сдвига (берём длину omen-move.wav)

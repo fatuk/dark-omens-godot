@@ -42,33 +42,31 @@ signal closed
 const CARD_W: float = 186.0
 const CARD_H: float = 294.0
 
-# Тюнинг ПОЛОЖЕНИЯ карт и АНИМАЦИИ — правится вживую в дебаг-панели (Ctrl+M,
-# секция «ВЕЕР КАРТ»). static var, а не const: панель меняет значения без ссылки
-# на конкретный инстанс, а инстанс читает их при перекладке (см. relayout).
-# Дефолты подобраны вживую в дебаг-панели (Ctrl+M, «ВЕЕР КАРТ») — абсолютные px,
-# без множителя S.
-static var SPREAD: float = 5.0  # градусов поворота между соседями
-static var GAP_X: float = 87.0  # горизонтальный шаг (< ширины → нахлёст)
-static var ARC: float = 2.3  # глубина дуги (края ниже центра)
-static var LIFT: float = 9.0  # подъём активной карты
-static var HSCALE: float = 1.56  # увеличение активной карты
-static var PUSH: float = 73.0  # расступание соседей
-static var PIVOT_Y_FRAC: float = 1.10  # центр поворота: доля высоты (ниже карты)
-static var HAND_BELOW: float = -60.0  # насколько якорь веера ниже края экрана (минус = выше)
-static var ANIM: float = 0.28  # длительность перекладки
+# ПОЛОЖЕНИЕ карт и АНИМАЦИЯ — значения финальные (подобраны вживую в дебаг-панели,
+# секция «ВЕЕР КАРТ» из неё убрана в f77a657), поэтому const. Абсолютные px, без
+# множителя S.
+const SPREAD: float = 5.0  # градусов поворота между соседями
+const GAP_X: float = 87.0  # горизонтальный шаг (< ширины → нахлёст)
+const ARC: float = 2.3  # глубина дуги (края ниже центра)
+const LIFT: float = 9.0  # подъём активной карты
+const HSCALE: float = 1.56  # увеличение активной карты
+const PUSH: float = 73.0  # расступание соседей
+const PIVOT_Y_FRAC: float = 1.10  # центр поворота: доля высоты (ниже карты)
+const HAND_BELOW: float = -60.0  # насколько якорь веера ниже края экрана (минус = выше)
+const ANIM: float = 0.28  # длительность перекладки
 
 # Звук перемотки: один файл нарезается на N равных кусков, при каждом шаге играет
-# случайный (+ случайный питч). Тюнится в дебаг-панели. Файл подхватится, как
+# случайный (+ случайный питч). Файл подхватится, как
 # только появится по пути SCROLL_SFX_PATH (пока его нет — перемотка просто молчит).
-static var SCROLL_VARIATIONS: int = 5  # на сколько вариаций нарезан файл
-static var SCROLL_PITCH: float = 0.06  # случайный сдвиг высоты ±
+const SCROLL_VARIATIONS: int = 5  # на сколько вариаций нарезан файл
+const SCROLL_PITCH: float = 0.06  # случайный сдвиг высоты ±
 
 const SCROLL_SFX_PATH := "res://assets/audio/sfx/card-carousel-move.wav"
 
 # Явные сегменты вариаций [start_sec, end_sec] — перемотка играет случайный из
 # них. Посчитаны из самого файла (анализ амплитуды: 7 флипов, границы в тишине).
 # Пусто → равная нарезка на SCROLL_VARIATIONS кусков.
-static var SCROLL_SEGMENTS: Array = [
+const SCROLL_SEGMENTS: Array = [
 	[0.00, 0.14],
 	[0.31, 0.50],
 	[0.65, 0.86],
@@ -98,8 +96,8 @@ const ARROW_TEX_R := "res://assets/ui/nav/R_arrow.png"
 const ARROW_MIN_H := 64.0
 # Расположение шевронов (static — правится в панели тюнинга Ctrl+M). X — отступ от
 # КРАЯ экрана (статично, чтобы не прыгали от ширины веера); Y — сдвиг от центра веера.
-static var ARROW_EDGE_X: float = 394.0
-static var ARROW_Y_OFF: float = 0.0
+const ARROW_EDGE_X: float = 394.0
+const ARROW_Y_OFF: float = 0.0
 # Дёрг стрелки при нажатии (как в пикере сыщиков): наружу и обратно.
 const ARROW_NUDGE_PX := 12.0
 const ARROW_NUDGE_OUT := 0.10
