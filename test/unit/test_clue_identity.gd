@@ -33,7 +33,7 @@ func before_each() -> void:
 	}
 	GameState.players = {}
 	GameState.entities = {}
-	GameState._reset_clue_deck()
+	GameState._board.reset_clue_deck()
 
 
 func after_each() -> void:
@@ -42,28 +42,28 @@ func after_each() -> void:
 	GameState.players = {}
 	GameState.entities = {}
 	GameState.map = LocationGraph.new()  # сброс фикстуры — другие тесты грузят реальную
-	GameState._reset_clue_deck()
+	GameState._board.reset_clue_deck()
 
 
 # ── Пул ───────────────────────────────────────────────────────────────────────
 
 
 func test_pool_builds_from_all_locations() -> void:
-	GameState._ensure_clue_deck()
+	GameState._board.ensure_clue_deck()
 	assert_eq(GameState.clue_deck.size(), 3, "пул = все локации карты (фикстура A/B/C)")
 	assert_true(GameState.clue_deck.has("A") and GameState.clue_deck.has("C"))
 
 
 func test_claim_board_clue_takes_own_location() -> void:
-	GameState._ensure_clue_deck()
-	GameState._claim_board_clue("A")
+	GameState._board.ensure_clue_deck()
+	GameState._board.claim_board_clue("A")
 	assert_false(GameState.clue_deck.has("A"), "A ушла из пула на поле")
 	assert_eq(GameState.clue_board_ids.get("A", []), ["A"], "A на жетоне локации A")
 
 
 func test_claim_unknown_location_is_noop() -> void:
-	GameState._ensure_clue_deck()
-	GameState._claim_board_clue("Z")  # нет улики для Z
+	GameState._board.ensure_clue_deck()
+	GameState._board.claim_board_clue("Z")  # нет улики для Z
 	assert_eq(GameState.clue_deck.size(), 3, "пул не тронут")
 	assert_false(GameState.clue_board_ids.has("Z"))
 
@@ -72,10 +72,10 @@ func test_claim_unknown_location_is_noop() -> void:
 
 
 func test_research_collects_board_clue_to_player() -> void:
-	GameState._ensure_clue_deck()
-	GameState._claim_board_clue("A")
+	GameState._board.ensure_clue_deck()
+	GameState._board.claim_board_clue("A")
 	GameState.players = {"p1": {"clues": 1, "clue_ids": []}}
-	GameState._collect_board_clues("p1", "A", 1)
+	GameState._board.collect_board_clues("p1", "A", 1)
 	assert_eq(GameState.players["p1"]["clue_ids"], ["A"], "улика A на руках у p1")
 	assert_false(GameState.clue_board_ids.has("A"), "жетон A больше не на поле")
 
@@ -84,9 +84,9 @@ func test_research_collects_board_clue_to_player() -> void:
 
 
 func test_reconcile_draws_generic_from_pool() -> void:
-	GameState._ensure_clue_deck()  # пул A,B,C
+	GameState._board.ensure_clue_deck()  # пул A,B,C
 	GameState.players = {"p1": {"clues": 2, "clue_ids": []}}
-	GameState._reconcile_clue_identities()
+	GameState._board.reconcile_clue_identities()
 	var ids: Array = GameState.players["p1"]["clue_ids"]
 	assert_eq(ids.size(), 2, "добрали 2 идентичности под число улик")
 	assert_eq(GameState.clue_deck.size(), 1, "в пуле осталась одна")
@@ -94,31 +94,31 @@ func test_reconcile_draws_generic_from_pool() -> void:
 
 
 func test_reconcile_spent_clue_goes_to_discard() -> void:
-	GameState._ensure_clue_deck()
+	GameState._board.ensure_clue_deck()
 	GameState.clue_deck.erase("A")
 	GameState.clue_deck.erase("B")  # A,B розданы; в колоде только C
 	GameState.players = {"p1": {"clues": 1, "clue_ids": ["A", "B"]}}
-	GameState._reconcile_clue_identities()
+	GameState._board.reconcile_clue_identities()
 	assert_eq(GameState.players["p1"]["clue_ids"].size(), 1, "осталась одна улика")
 	assert_eq(GameState.clue_deck.size(), 1, "колода не пополняется тратой напрямую")
 	assert_eq(GameState.clue_discard.size(), 1, "потраченный ключ ушёл в сброс")
 
 
 func test_reconcile_board_dead_token_goes_to_discard() -> void:
-	GameState._ensure_clue_deck()
-	GameState._claim_board_clue("A")  # A на поле, в колоде B,C
+	GameState._board.ensure_clue_deck()
+	GameState._board.claim_board_clue("A")  # A на поле, в колоде B,C
 	GameState.entities = {}  # жетон сняли не исследованием (напр. discardAllClues)
-	GameState._reconcile_board_clue_ids()
+	GameState._board.reconcile_board_clue_ids()
 	assert_true(GameState.clue_discard.has("A"), "A ушла в сброс")
 	assert_false(GameState.clue_deck.has("A"), "и не вернулась в колоду напрямую")
 	assert_false(GameState.clue_board_ids.has("A"))
 
 
 func test_uniqueness_across_deck_board_hand_discard() -> void:
-	GameState._ensure_clue_deck()
-	GameState._claim_board_clue("A")  # A на поле
+	GameState._board.ensure_clue_deck()
+	GameState._board.claim_board_clue("A")  # A на поле
 	GameState.players = {"p1": {"clues": 1, "clue_ids": []}}
-	GameState._reconcile_clue_identities()  # p1 добирает из остатка (B или C)
+	GameState._board.reconcile_clue_identities()  # p1 добирает из остатка (B или C)
 	var seen: Array = []
 	seen.append_array(GameState.clue_deck)
 	for loc: Variant in GameState.clue_board_ids:
@@ -132,9 +132,9 @@ func test_uniqueness_across_deck_board_hand_discard() -> void:
 
 func test_not_host_is_noop() -> void:
 	GameState._nm = null  # is_instance_valid(null)==false → is_host()==false
-	GameState._ensure_clue_deck()
+	GameState._board.ensure_clue_deck()
 	GameState.players = {"p1": {"clues": 2, "clue_ids": []}}
-	GameState._reconcile_clue_identities()
+	GameState._board.reconcile_clue_identities()
 	assert_eq(GameState.players["p1"]["clue_ids"].size(), 0, "не хост — идентичности не трогаем")
 
 
@@ -189,26 +189,26 @@ func _snapshot_roundtrip() -> void:
 
 
 func test_deck_survives_host_rejoin() -> void:
-	GameState._ensure_clue_deck()
+	GameState._board.ensure_clue_deck()
 	GameState.entities["A"] = ["clue"]  # жетон лежит на поле…
-	GameState._claim_board_clue("A")  # …и несёт ключ улики этой локации
+	GameState._board.claim_board_clue("A")  # …и несёт ключ улики этой локации
 	GameState.players["p"] = {"clues": 1, "clue_ids": []}
-	GameState._reconcile_clue_identities()  # игроку выдали ключ из колоды
+	GameState._board.reconcile_clue_identities()  # игроку выдали ключ из колоды
 	var deck_before: int = GameState.clue_deck.size()
 	assert_eq(deck_before, 1, "3 ключа: один на поле, один на руках, один в колоде")
 
 	_snapshot_roundtrip()
-	GameState._reconcile_clue_identities()  # ближайшая сверка после перезахода
+	GameState._board.reconcile_clue_identities()  # ближайшая сверка после перезахода
 	assert_eq(GameState.clue_deck.size(), deck_before, "колода не пересобирается заново")
 	assert_eq(GameState.clue_board_ids.get("A", []), ["A"], "привязка жетона к ключу цела")
 
 
 func test_spent_clue_reaches_discard_after_rejoin() -> void:
-	GameState._ensure_clue_deck()
+	GameState._board.ensure_clue_deck()
 	GameState.players["p"] = {"clues": 1, "clue_ids": []}
-	GameState._reconcile_clue_identities()
+	GameState._board.reconcile_clue_identities()
 	_snapshot_roundtrip()
 
 	GameState.players["p"]["clues"] = 0  # потратил на переброс
-	GameState._reconcile_clue_identities()
+	GameState._board.reconcile_clue_identities()
 	assert_eq(GameState.clue_discard.size(), 1, "потраченная улика видна в сбросе")

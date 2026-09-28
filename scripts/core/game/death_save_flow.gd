@@ -163,7 +163,7 @@ func _die(pid: String) -> void:
 		or int(payload["resources"]) > 0
 	)
 	if not loc.is_empty() and has_loot:
-		_gs._stash_belongings(loc, payload)
+		_gs._board.stash_belongings(loc, payload)
 	p[PlayerKeys.ITEMS] = []
 	p[PlayerKeys.CLUES] = 0
 	p[PlayerKeys.CLUE_IDS] = []

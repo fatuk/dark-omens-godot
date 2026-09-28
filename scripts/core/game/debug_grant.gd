@@ -86,7 +86,7 @@ static func assign_encounter(gs: Node, pid: String, kind: String, world: String)
 
 
 # Улики в руку. Без локации — n анонимных: идентичности сами вытянутся из колоды
-# при синке (_reconcile_clue_identities). С локацией — ровно эта улика: ключ уходит
+# при синке (BoardState.reconcile_clue_identities). С локацией — ровно эта улика: ключ уходит
 # из колоды/сброса игроку; если он уже на поле или в чьей-то руке — отказ, улики
 # уникальны на партию.
 static func give_clue(gs: Node, pid: String, loc: String, n: int) -> String:
@@ -103,7 +103,7 @@ static func give_clue(gs: Node, pid: String, loc: String, n: int) -> String:
 		return "улик +%d → %s" % [cnt, who]
 	if not (gs.get("map").call("ids") as Array).has(loc):
 		return "нет локации «%s»" % loc
-	gs._ensure_clue_deck()
+	gs._board.ensure_clue_deck()
 	var deck: Array = gs.get("clue_deck")
 	var discard: Array = gs.get("clue_discard")
 	if deck.has(loc):

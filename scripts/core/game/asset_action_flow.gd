@@ -260,7 +260,7 @@ func _step() -> void:
 			# Карта взята с витрины (gainAsset from:reserve) — снять её оттуда и
 			# дотянуть витрину; из колоды она тоже выбывает.
 			_take_from_supply(String(node.get("id", "")))
-			_gs._refill_shop_reserve([String(node.get("id", ""))])
+			_gs._shop.refill([String(node.get("id", ""))])
 		else:
 			node["_anchor_pid"] = pid  # относительные цели — от этого сыщика
 			_gs.apply_board_effect(node)

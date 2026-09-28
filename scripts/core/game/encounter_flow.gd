@@ -239,7 +239,7 @@ func host_apply_choose(pid: String, kind: String) -> bool:
 # без броска, встреча сразу завершается (ход к следующему). «Чистый лут».
 func _collect_belongings(pid: String) -> void:
 	var loc: String = String(_gs.players[pid].get("location", ""))
-	var cache: Dictionary = _gs._take_belongings(loc)
+	var cache: Dictionary = _gs._board.take_belongings(loc)
 	var before: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)  # для ленты исходов
 	var got_items: Array = cache.get("items", [])
 	var p: Dictionary = _gs.players[pid]
@@ -373,7 +373,7 @@ func _compute_choices(pid: String) -> Array:
 	if not _gs._rumor.encounter_location_for(pid).is_empty():
 		out.append("rumor")
 	# Вещи павших сыщиков на этой клетке — можно забрать (без броска, «чистый лут»).
-	if _gs._has_belongings(loc):
+	if _gs._board.has_belongings(loc):
 		out.append("belongings")
 	return out
 
@@ -949,7 +949,7 @@ func _apply_research_clue_removal(pid: String, kind: String) -> void:
 		var loc: String = String(_gs.players[pid].get("location", ""))
 		_remove_clues_at(loc, gained)
 		# Идентичность: улика(и) с жетонов этой локации → на руки сыщику (до broadcast_sync).
-		_gs._collect_board_clues(pid, loc, gained)
+		_gs._board.collect_board_clues(pid, loc, gained)
 	enc["_clues_removed"] = true
 
 

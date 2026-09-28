@@ -17,13 +17,22 @@ class Mock:
 	var outcome: String = ""
 	var _check: CheckFlow
 	var _board: StubBoard
-	var _ghost_caches: Dictionary = {}
 
 	func _init() -> void:
 		_check = CheckFlow.new(self)
 		_board = StubBoard.new()
 
-	func _stash_belongings(loc: String, payload: Dictionary) -> void:
+
+# Заглушка BoardState: считает вызовы place_clue (для flush_ghost_clues).
+class StubBoard:
+	extends RefCounted
+	var placed: int = 0
+	var _ghost_caches: Dictionary = {}  # вещи павших — как в BoardState
+
+	func place_clue() -> void:
+		placed += 1
+
+	func stash_belongings(loc: String, payload: Dictionary) -> void:
 		var cache: Dictionary = _ghost_caches.get(
 			loc, {"items": [], "clue_ids": [], "resources": 0}
 		)
@@ -31,15 +40,6 @@ class Mock:
 		(cache["clue_ids"] as Array).append_array(payload.get("clue_ids", []))
 		cache["resources"] = int(cache["resources"]) + int(payload.get("resources", 0))
 		_ghost_caches[loc] = cache
-
-
-# Заглушка BoardState: считает вызовы place_clue (для flush_ghost_clues).
-class StubBoard:
-	extends RefCounted
-	var placed: int = 0
-
-	func place_clue() -> void:
-		placed += 1
 
 
 func before_each() -> void:
@@ -296,7 +296,7 @@ func test_death_drops_loot_to_cache_and_clears() -> void:
 	_save_slot("hp", false)
 	_gs.players["ally"] = {"investigator": "", "skill_mods": {}, "hp": 6, "sanity": 6}
 	_ds.apply("p")
-	var cache: Dictionary = _gs._ghost_caches.get("arkham", {})
+	var cache: Dictionary = _gs._board._ghost_caches.get("arkham", {})
 	assert_eq((cache.get("items", []) as Array).size(), 1, "предмет в кэше")
 	assert_eq((cache.get("clue_ids", []) as Array).size(), 1, "улика в кэше (не в пул)")
 	assert_eq(int(cache.get("resources", 0)), 2, "ресурсы в кэше")

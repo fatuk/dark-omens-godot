@@ -35,6 +35,19 @@ class StubBoard:
 
 
 # Заглушка TargetResolver: «прочие сыщики» для chosenInvestigator.
+# Витрина: купленная карта обязана уйти из shop_reserve мока.
+class StubShop:
+	extends RefCounted
+	var gs: Node
+
+	func _init(g: Node) -> void:
+		gs = g
+
+	func refill(bought: Array) -> void:
+		for b_v: Variant in bought:
+			(gs.get("shop_reserve") as Array).erase(String(b_v))
+
+
 class StubTarget:
 	extends RefCounted
 
@@ -71,10 +84,7 @@ class Mock:
 	var _target := StubTarget.new()
 	var _check := StubCheck.new()
 	var _phase := StubPhase.new()
-
-	func _refill_shop_reserve(bought: Array) -> void:
-		for b_v: Variant in bought:
-			shop_reserve.erase(String(b_v))
+	var _shop := StubShop.new(self)
 
 
 func before_each() -> void:

@@ -146,7 +146,8 @@ GameState создаёт модули в `_ready` и делегирует им �
 | `_check` | CheckFlow | активная проверка (пул/бросок/переброс/+1), стек вложенных |
 | `_cond` | ConditionFlow | состояния, held-ограничения, выдача активов |
 | `_spell` | SpellFlow | касты (incantation/glamour), результат каста |
-| `_board` | BoardState | врата, монстры, спаун |
+| `_board` | BoardState | врата, монстры, спаун, улики (жетоны + пул идентичностей), вещи павших, board-verbs эффектов (`apply_verb`) |
+| `_shop` | ShopReserve | колода активов и витрина магазина (сброс выводится) |
 | `_mythos` | MythosFlow | колода Мифов (host-only), розыгрыш, решения |
 | `_mystery` | MysteryFlow | цикл Тайн, прогресс, onEnter, финал партии |
 | `_rumor` | RumorFlow | Слухи (ongoing-Мифы с таймером) |

@@ -5,7 +5,8 @@ extends RefCounted
 ##   • трек омена (общий для всех Древних) и дум от сдвига омена;
 ##   • врата (открытие/закрытие/сброс) и их цвета;
 ##   • монстры (спаун из «мешка», урон, снятие, возврат) и Наплыв;
-##   • улики / жетоны Знамения / слухи на локациях;
+##   • улики (жетоны + пул идентичностей) / жетоны Знамения / слухи на локациях;
+##   • вещи павших сыщиков на клетке (host-only кэш);
 ##   • стартовая раскладка кампании (Icon Reference).
 ##
 ##   • board-verbs эффектов (apply_verb): advanceDoom, openGate, spawnMonster, …
@@ -13,10 +14,14 @@ extends RefCounted
 ## Синкаемый стейт (gates/entities/monsters/monster_bag/monster_surge/doom/
 ## omens_step) ОСТАЁТСЯ полями GameState — модуль мутирует его через _gs. Доступ к
 ## стейту/услугам — через _gs: _gs.is_host(), _gs.map,
-## _gs.current_pid(), _gs.players, _gs._campaign, _gs._fill_shop_reserve(),
+## _gs.current_pid(), _gs.players, _gs._campaign, _gs._shop.fill(),
 ## _gs._mystery.try_mystery_hook(). Создаётся в GameState (поле _board).
 
 var _gs: Node
+
+# Вещи павших сыщиков — кэш на месте гибели. {loc_id: {items, clue_ids, resources}}.
+# Host-only, НЕ синкается (host выдаёт при подборе, см. EncounterFlow._collect_belongings).
+var _ghost_caches: Dictionary = {}
 
 
 func _init(gs: Node) -> void:
@@ -95,7 +100,7 @@ func setup_board(player_count: int) -> void:
 	_gs.gates = {}
 	_gs.entities = {}
 	_gs.monsters = {}
-	_gs._fill_shop_reserve()  # стартовая витрина магазина
+	_gs._shop.fill()  # стартовая витрина магазина
 	# Наполняем «мешок» не-эпическими монстрами доступных столу сезонов (по id).
 	_gs.monster_bag = []
 	var pool: Array = SeasonGate.filter_room(MonsterCatalog.non_epic())
@@ -567,7 +572,7 @@ func place_clue() -> void:
 	# Жетон улики привязан к своей локации (ключ = локация), поэтому выложить можно
 	# только туда, чей ключ ЕЩЁ В КОЛОДЕ. Колода пуста — замешиваем сброс; пусты обе
 	# — жетоны кончились, выкладывать нечего.
-	if not _gs._clue_draw_ready():
+	if not clue_draw_ready():
 		GameConsole.warn("[Улика] жетоны кончились — выкладывать нечего")
 		return
 	var candidates: Array = []
@@ -583,7 +588,7 @@ func place_clue() -> void:
 	var cell: Array = _gs.entities.get(pick, [])
 	cell.append("clue")
 	_gs.entities[pick] = cell
-	_gs._claim_board_clue(pick)  # приклеить идентичность улики этой локации (если заведена)
+	claim_board_clue(pick)  # приклеить идентичность улики этой локации (если заведена)
 	GameConsole.log("[Улика] на %s" % pick)
 
 
@@ -689,7 +694,7 @@ func discard_all_clues() -> int:
 ## считаем расстоянием 0; при равном расстоянии — первая в порядке обхода).
 ## Возвращает id клетки, "" — улик на поле нет / from_loc не в графе. Verb
 ## discardBoardClue («сбросьте ближайшую улику на игровом поле», Студент-
-## исследователь). Ключ улики уйдёт в сброс через _reconcile_board_clue_ids.
+## исследователь). Ключ улики уйдёт в сброс через reconcile_board_clue_ids.
 func discard_nearest_clue(from_loc: String) -> String:
 	if not _gs.is_host() or from_loc.is_empty():
 		return ""
@@ -802,14 +807,6 @@ func _resolve_count(node: Dictionary, verb: String) -> int:
 	return int(node.get("amount", node.get("count", 1)))
 
 
-# Выдать артефакт сыщику. Пустой id — случайный из доступных, `want_trait` сужает
-## («Получите 1 Книгу-артефакт»).
-##
-## Артефакт УНИКАЛЕН: копия одна на партию. Поэтому исключаем занятые по ВСЕМУ
-## столу, а не только по рукам получателя, — иначе двое сыщиков носили бы один
-## «Некрономикон». Свободных не осталось → тихо ничего, как у пустой колоды.
-
-
 # Порог стойкости для целей по всему полю: "testResult" — число успехов проверки,
 # число — оно само, поля нет — берём всех (999).
 func _max_toughness(node: Dictionary) -> int:
@@ -821,7 +818,8 @@ func _max_toughness(node: Dictionary) -> int:
 	return int(raw)
 
 
-# Один проход board-verb'а (без учёта _times — его разворачивает apply_board_effect).
+## Один проход board-verb'а (без учёта _times — его разворачивает GameState.apply_board_effect,
+## он же отсеивает адресные эффекты в TargetResolver). Меняет синкаемые поля через _gs.
 func apply_verb(node: Dictionary, verb: String) -> void:
 	var n: int = _resolve_count(node, verb)
 	match verb:
@@ -1002,3 +1000,157 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 				)
 		_:
 			GameConsole.log("[Эффект] %s — пока не поддержано движком" % verb)
+
+
+# ── Улики Древнего: идентичность (host-only) ───────────────────────────────────
+# Аддитивный слой поверх числового player.clues: у каждой улики на руках есть
+# ключ-локация из campaign.ancientOne.clues (→ контент/арт для веера). Пул уникален
+# на партию: ключ улики всегда ровно в одном месте (пул / поле / руки). Раскладку и
+# поиск улик НЕ меняем — только приклеиваем идентичность. Поля clue_deck /
+# clue_discard / clue_board_ids / clue_deck_built — синкаемый стейт GameState.
+
+
+# Ленивая сборка пула идентичности из ВСЕХ локаций карты: каждая улика привязана к
+# локации (до 20). Есть авторский текст Древнего (campaign.ancientOne.clues) → веер
+# покажет его; нет — имя локации (ClueCatalog). Так лишних анонимных улик не бывает,
+# пока не разобраны все локации. Идемпотентно.
+func ensure_clue_deck() -> void:
+	if _gs.clue_deck_built:
+		return
+	_gs.clue_deck.clear()
+	for lid: String in _gs.map.ids():
+		if not _gs.clue_deck.has(lid):
+			_gs.clue_deck.append(lid)
+	_gs.clue_deck_built = true
+
+
+# Сброс пула при старте партии (перед раскладкой). Пересоберётся лениво из campaign.
+func reset_clue_deck() -> void:
+	_gs.clue_deck.clear()
+	_gs.clue_discard.clear()  # иначе сброс прошлой партии утекал в новую
+	_gs.clue_board_ids.clear()
+	_gs.clue_deck_built = false
+	_ghost_caches.clear()  # вещи павших — тоже host-only, сбрасываем на старте партии
+
+
+# Жетон улики лёг на локацию loc → строго берём улику ЭТОЙ локации из пула (если она
+# заведена и доступна). Нет своей улики → жетон анонимный (числовая улика без контента).
+func claim_board_clue(loc: String) -> void:
+	if not _gs.is_host():
+		return
+	ensure_clue_deck()
+	if not _gs.clue_deck.has(loc):
+		return
+	_gs.clue_deck.erase(loc)
+	var arr: Array = _gs.clue_board_ids.get(loc, [])
+	arr.append(loc)
+	_gs.clue_board_ids[loc] = arr
+
+
+# Исследование: до n улик с жетонов локации loc → на руки игроку (player.clue_ids).
+# Зовётся из encounter_flow ПОСЛЕ снятия жетонов, до broadcast_sync.
+func collect_board_clues(pid: String, loc: String, n: int) -> void:
+	if not _gs.is_host() or not _gs.players.has(pid):
+		return
+	var board: Array = _gs.clue_board_ids.get(loc, [])
+	var p: Dictionary = _gs.players[pid]
+	var ids: Array = p.get(PlayerKeys.CLUE_IDS, [])
+	var moved: int = 0
+	while moved < n and not board.is_empty():
+		ids.append(board.pop_back())
+		moved += 1
+	p[PlayerKeys.CLUE_IDS] = ids
+	_gs.players[pid] = p
+	if board.is_empty():
+		_gs.clue_board_ids.erase(loc)
+	else:
+		_gs.clue_board_ids[loc] = board
+
+
+func reconcile_clue_identities() -> void:
+	if not _gs.is_host():
+		return
+	ensure_clue_deck()
+	reconcile_board_clue_ids()
+	for pid: Variant in _gs.players:
+		var p: Dictionary = _gs.players[pid]
+		var want: int = int(p.get(PlayerKeys.CLUES, 0))
+		var ids: Array = p.get(PlayerKeys.CLUE_IDS, [])
+		while ids.size() < want and clue_draw_ready():
+			ids.append(_gs.clue_deck.pop_back())
+		while ids.size() > want:
+			_clue_to_discard(String(ids.pop_back()))  # потрачена/утрачена → в сброс
+		p[PlayerKeys.CLUE_IDS] = ids
+		_gs.players[pid] = p
+
+
+## Есть ли что тянуть: колода пуста → замешиваем сброс. Обе пусты → false.
+func clue_draw_ready() -> bool:
+	ensure_clue_deck()
+	if not _gs.clue_deck.is_empty():
+		return true
+	if _gs.clue_discard.is_empty():
+		return false
+	_gs.clue_deck = _gs.clue_discard.duplicate()
+	_gs.clue_discard = []
+	_gs.clue_deck.shuffle()
+	GameConsole.log("[Улики] колода замешана из сброса: %d" % _gs.clue_deck.size())
+	return true
+
+
+## Ключ улики ушёл из игры (потрачена, утрачена, снесена с поля) → в сброс.
+## Инвариант «ровно в одном месте»: в колоду он вернётся только замешиванием.
+func _clue_to_discard(key: String) -> void:
+	if key.is_empty() or _gs.clue_discard.has(key) or _gs.clue_deck.has(key):
+		return
+	_gs.clue_discard.append(key)
+
+
+# Вернуть в пул ключи улик, чьих жетонов уже нет на поле (сняты не исследованием —
+# напр. discardAllClues Слуха). clue_board_ids приводим к реальному числу "clue".
+func reconcile_board_clue_ids() -> void:
+	for loc: Variant in _gs.clue_board_ids.keys():
+		var on_board: int = 0
+		for e: Variant in _gs.entities.get(loc, []):
+			if String(e) == "clue":
+				on_board += 1
+		var arr: Array = _gs.clue_board_ids[loc]
+		while arr.size() > on_board:
+			# Жетон снесли мимо исследования (discardAllClues Слуха) → ключ в сброс.
+			_clue_to_discard(String(arr.pop_back()))
+		if arr.is_empty():
+			_gs.clue_board_ids.erase(loc)
+		else:
+			_gs.clue_board_ids[loc] = arr
+
+
+# ── Вещи павших сыщиков (Тень: «чистый лут», подбор встречей) ─────────────────
+
+
+# Вещи павшего → кэш на месте гибели (loc). payload = {items, clue_ids, resources}.
+# Несколько павших на одной локации — складываем вместе. Улики несут идентичность
+# (clue_ids, уникальны на партию) → в пул НЕ возвращаются, ждут подбора здесь.
+# Host-only, не синкается (host выдаёт при подборе).
+func stash_belongings(loc: String, payload: Dictionary) -> void:
+	var cache: Dictionary = _ghost_caches.get(loc, {"items": [], "clue_ids": [], "resources": 0})
+	(cache["items"] as Array).append_array(payload.get("items", []))
+	(cache["clue_ids"] as Array).append_array(payload.get("clue_ids", []))
+	cache["resources"] = int(cache["resources"]) + int(payload.get("resources", 0))
+	_ghost_caches[loc] = cache
+
+
+# Забрать вещи с локации (подбор): вернуть и очистить кэш. Пустой payload — если нет.
+func take_belongings(loc: String) -> Dictionary:
+	var cache: Dictionary = _ghost_caches.get(loc, {"items": [], "clue_ids": [], "resources": 0})
+	_ghost_caches.erase(loc)
+	return cache
+
+
+# Есть ли на локации вещи павших (предметы / улики / ресурсы) — для предложения встречи.
+func has_belongings(loc: String) -> bool:
+	var c: Dictionary = _ghost_caches.get(loc, {})
+	return (
+		not (c.get("items", []) as Array).is_empty()
+		or not (c.get("clue_ids", []) as Array).is_empty()
+		or int(c.get("resources", 0)) > 0
+	)

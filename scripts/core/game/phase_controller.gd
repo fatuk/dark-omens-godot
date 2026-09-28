@@ -501,7 +501,7 @@ func host_apply_shop_grant(pid: String, assets: Array) -> bool:
 		return false
 	for aid_v: Variant in assets:
 		_gs._cond.host_grant_asset(pid, String(aid_v))  # исполнит onGain (сервисы срабатывают и сбрасываются)
-	_gs._refill_shop_reserve(assets)  # купленные → заменить новыми
+	_gs._shop.refill(assets)  # купленные → заменить новыми
 	GameConsole.log(
 		"[Магазин] %s купил %d товар(ов) за %d" % [_gs.name_of(pid), assets.size(), total_cost]
 	)
@@ -892,7 +892,7 @@ func start_new_round() -> void:
 		_gs.players[pid]["actions_used"] = []
 		_gs.players[pid]["encounter_done"] = false
 		_gs.players[pid]["ghost_acted_this_round"] = false  # Тень снова может действовать
-		_gs._refresh_items(_gs.players[pid])  # снять истощение активов (Refresh-шаг)
+		_refresh_items(_gs.players[pid])  # снять истощение активов (Refresh-шаг)
 	_gs._death.clear_grace()  # новый раунд — снять иммунитет выживших на Пороге
 	skip_disconnected()  # начинаем раунд с первого подключённого игрока
 	GameConsole.log("[Game] Раунд %d · ход: %s" % [_gs.round_num, _gs.name_of(_gs.current_pid())])
@@ -933,3 +933,11 @@ func can_travel(pid: String, dest: String) -> bool:
 		)
 		. is_empty()
 	)
+
+
+# Снять истощение со всех активов игрока — Refresh-шаг начала раунда. Инстансы
+# в массиве — ссылки, мутируем по месту.
+func _refresh_items(p: Dictionary) -> void:
+	for it_v: Variant in p.get("items", []):
+		if it_v is Dictionary:
+			(it_v as Dictionary)["exhausted"] = false

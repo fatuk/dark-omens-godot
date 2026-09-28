@@ -69,7 +69,7 @@
 | Файл | Роль |
 |------|------|
 | `scripts/core/data/asset_catalog.gd` | `is_supported` / `supported_ids` / `_SUPPORTED_VERBS` |
-| `scripts/core/game/game_state.gd` | `_draw_shop_assets` — фильтр витрины по `is_supported` |
+| `scripts/core/game/shop_reserve.gd` | `_draw` — фильтр витрины по `is_supported` |
 | `scripts/core/game/dice.gd`, `check_flow.gd` | check-mod verb'ы |
 | `scripts/core/game/effect_runner.gd` | player/board verb'ы, immuneTo/protectResource |
 | `scripts/core/game/encounter_flow.gd` | боевая митигация, боевой триггер |

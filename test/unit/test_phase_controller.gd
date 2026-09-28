@@ -40,6 +40,13 @@ class StubCond:
 		granted.append(aid)
 
 
+class StubShop:
+	extends RefCounted
+
+	func refill(_bought: Array) -> void:
+		pass
+
+
 class StubCheck:
 	extends RefCounted
 	var started: Array = []
@@ -126,6 +133,7 @@ class MockGameState:
 	var sync_count: int = 0
 	var _cond: StubCond
 	var _check: StubCheck
+	var _shop := StubShop.new()
 	var _mythos: StubFlow
 	var _encounter: StubFlow
 	var _spell: StubSpell
@@ -164,12 +172,6 @@ class MockGameState:
 				if not seen.has(lid_v):
 					merged.append({"id": lid_v, "type": loc_types[lid_v], "connections": []})
 			return LocationGraph.new(merged)
-
-	func _refill_shop_reserve(_a: Array) -> void:
-		pass
-
-	func _refresh_items(_p: Dictionary) -> void:
-		pass
 
 	func broadcast_sync() -> void:
 		sync_count += 1

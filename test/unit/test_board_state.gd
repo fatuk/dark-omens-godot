@@ -21,6 +21,14 @@ class StubCampaign:
 
 
 # Стаб подсистемы Тайн: close_gate триггерит _gs._mystery.try_mystery_hook.
+class StubShop:
+	extends RefCounted
+	var filled: int = 0
+
+	func fill() -> void:
+		filled += 1
+
+
 class StubMystery:
 	extends RefCounted
 	var hooks: Array = []
@@ -41,31 +49,23 @@ class Mock:
 	var monster_bag: Array = []
 	var gate_deck: Array = []  # колода жетонов врат (см. BoardState._reset_gate_deck)
 	var gate_discard: Array = []
-	var clue_deck: Array = []  # колода ключей улик (см. GameState._clue_draw_ready)
+	var clue_deck: Array = []  # колода ключей улик (см. BoardState.clue_draw_ready)
 	var clue_discard: Array = []
+	var clue_board_ids: Dictionary = {}
+	var clue_deck_built: bool = true  # колоду задаёт тест руками — не пересобирать из map
 	var monster_surge: int = 1
 	var doom: int = 0
 	var omens_step: int = 0
-	var shop_filled: int = 0
 	var mythos_in_play: Array = []
 	var _campaign: StubCampaign
 	var _mystery: StubMystery
 	var _rumor: RumorFlow
+	var _shop := StubShop.new()
 
 	func _init() -> void:
 		_campaign = StubCampaign.new()
 		_mystery = StubMystery.new()
 		_rumor = RumorFlow.new(self)
-
-	# Колода улик: мок отдаёт «есть что тянуть», пока в ней что-то лежит.
-	func _clue_draw_ready() -> bool:
-		return not clue_deck.is_empty()
-
-	func _fill_shop_reserve() -> void:
-		shop_filled += 1
-
-	func _claim_board_clue(_loc: String) -> void:
-		pass  # слой идентичности улик не под тестом board_state
 
 
 func before_each() -> void:
@@ -439,7 +439,7 @@ func test_setup_board_lays_out_gates_clues_and_surge() -> void:
 	assert_eq(_gs.monster_surge, 1, "Наплыв из таблицы")
 	assert_eq(_count_marker("clue"), 2, "разложены улики по таблице")
 	assert_false(_gs.monster_bag.is_empty(), "мешок наполнен не-эпическими монстрами")
-	assert_eq(_gs.shop_filled, 1, "витрина магазина наполнена")
+	assert_eq(_gs._shop.filled, 1, "витрина магазина наполнена")
 
 
 func test_setup_board_non_host_is_noop() -> void:

@@ -184,10 +184,6 @@ var clue_board_ids: Dictionary = {}
 # сверке пересобирал её из всех 36 локаций поверх живой партии.
 var clue_deck_built: bool = false
 
-# Вещи павших сыщиков — кэш на месте гибели (Тень: «чистый лут», подбор встречей).
-# {loc_id: [item-dict,…]}. Host-only, НЕ синкается (host выдаёт при подборе).
-var _ghost_caches: Dictionary = {}
-
 # Монстры по локациям. {loc_id: [{id, health},…]} — экземпляры из
 # MonsterCatalog с текущим здоровьем (урон в бою сохраняется между встречами).
 # Визуально склеиваются с entities (по количеству).
@@ -209,7 +205,7 @@ var monster_surge: int = 0
 var encounter_choices: Array = []
 
 # Витрина магазина — список id выложенных «лицом» ассетов. После
-# покупки купленные заменяются новыми (см. _refill_shop_reserve).
+# покупки купленные заменяются новыми (см. ShopReserve.refill).
 const SHOP_RESERVE_SIZE: int = 4
 var shop_reserve: Array = []
 
@@ -258,6 +254,7 @@ var _target: TargetResolver
 var _spell: SpellFlow
 var _death: DeathSaveFlow  # спас-бросок на Пороге (0 HP/SAN), см. death_save_flow.gd
 var _asset_action: AssetActionFlow  # самостоятельное действие актива (тег "action")
+var _shop: ShopReserve  # колода активов и витрина магазина
 var _relay_router: RelayRouter  # адаптеры relay-действий (_act_*), см. relay_router.gd
 
 # Реэнтранси-гард централизованного свипа Порога в broadcast_sync (свип открывает
@@ -289,6 +286,7 @@ func _ready() -> void:
 	dice = LocalDice.new(self, _check)
 	_cond = ConditionFlow.new(self)
 	_reckoning = ReckoningFlow.new(self)
+	_shop = ShopReserve.new(self)  # до _board: setup_board наполняет витрину
 	_board = BoardState.new(self)
 	_mystery = MysteryFlow.new(self)
 	_rumor = RumorFlow.new(self)
@@ -372,7 +370,7 @@ func broadcast_sync() -> void:
 		_sweeping = true
 		_death.sweep()
 		_sweeping = false
-	_reconcile_clue_identities()  # синхронизируем clue_ids игроков с числом улик до рассылки
+	_board.reconcile_clue_identities()  # clue_ids игроков ⇄ число улик — до рассылки
 	_reconcile_focus_quotes()  # цитаты жетонов концентрации привязаны к жетонам
 	_refresh_ghost_upcoming()  # 3 ближайших Мифа для Теней (host режет host-only колоду)
 	var payload: Dictionary = {"action": RelayActions.SYNC, "mythos_index": _mythos.index}
@@ -406,63 +404,7 @@ func _flush_changed() -> void:
 	state_changed.emit()
 
 
-# ── Улики Древнего: идентичность (host-only) ───────────────────────────────────
-# Аддитивный слой поверх числового player.clues: у каждой улики на руках есть
-# ключ-локация из campaign.ancientOne.clues (→ контент/арт для веера). Пул уникален
-# на партию: ключ улики всегда ровно в одном месте (пул / поле / руки). Раскладку и
-# поиск улик НЕ меняем — только приклеиваем идентичность.
-
-
-# Ленивая сборка пула идентичности из ВСЕХ локаций карты: каждая улика привязана к
-# локации (до 20). Есть авторский текст Древнего (campaign.ancientOne.clues) → веер
-# покажет его; нет — имя локации (ClueCatalog). Так лишних анонимных улик не бывает,
-# пока не разобраны все локации. Идемпотентно.
-func _ensure_clue_deck() -> void:
-	if clue_deck_built:
-		return
-	clue_deck.clear()
-	for lid: String in map.ids():
-		if not clue_deck.has(lid):
-			clue_deck.append(lid)
-	clue_deck_built = true
-
-
-# Сброс пула при старте партии (перед раскладкой). Пересоберётся лениво из campaign.
-func _reset_clue_deck() -> void:
-	clue_deck.clear()
-	clue_discard.clear()  # иначе сброс прошлой партии утекал в новую
-	clue_board_ids.clear()
-	clue_deck_built = false
-	_ghost_caches.clear()  # вещи павших — тоже host-only, сбрасываем на старте партии
-
-
-# Вещи павшего → кэш на месте гибели (loc). payload = {items, clue_ids, resources}.
-# Несколько павших на одной локации — складываем вместе. Улики несут идентичность
-# (clue_ids, уникальны на партию) → в пул НЕ возвращаются, ждут подбора здесь.
-# Host-only, не синкается (host выдаёт при подборе).
-func _stash_belongings(loc: String, payload: Dictionary) -> void:
-	var cache: Dictionary = _ghost_caches.get(loc, {"items": [], "clue_ids": [], "resources": 0})
-	(cache["items"] as Array).append_array(payload.get("items", []))
-	(cache["clue_ids"] as Array).append_array(payload.get("clue_ids", []))
-	cache["resources"] = int(cache["resources"]) + int(payload.get("resources", 0))
-	_ghost_caches[loc] = cache
-
-
-# Забрать вещи с локации (подбор): вернуть и очистить кэш. Пустой payload — если нет.
-func _take_belongings(loc: String) -> Dictionary:
-	var cache: Dictionary = _ghost_caches.get(loc, {"items": [], "clue_ids": [], "resources": 0})
-	_ghost_caches.erase(loc)
-	return cache
-
-
-# Есть ли на локации вещи павших (предметы / улики / ресурсы) — для предложения встречи.
-func _has_belongings(loc: String) -> bool:
-	var c: Dictionary = _ghost_caches.get(loc, {})
-	return (
-		not (c.get("items", []) as Array).is_empty()
-		or not (c.get("clue_ids", []) as Array).is_empty()
-		or int(c.get("resources", 0)) > 0
-	)
+# ── Улики Древнего: сверка идентичностей — в BoardState; здесь цитаты жетонов ──
 
 
 # Host: наполнить ghost_upcoming 3 ближайшими Мифами — только если есть Тень. Колода
@@ -484,40 +426,6 @@ func _refresh_ghost_upcoming() -> void:
 	ghost_upcoming = out
 
 
-# Жетон улики лёг на локацию loc → строго берём улику ЭТОЙ локации из пула (если она
-# заведена и доступна). Нет своей улики → жетон анонимный (числовая улика без контента).
-func _claim_board_clue(loc: String) -> void:
-	if not is_host():
-		return
-	_ensure_clue_deck()
-	if not clue_deck.has(loc):
-		return
-	clue_deck.erase(loc)
-	var arr: Array = clue_board_ids.get(loc, [])
-	arr.append(loc)
-	clue_board_ids[loc] = arr
-
-
-# Исследование: до n улик с жетонов локации loc → на руки игроку (player.clue_ids).
-# Зовётся из encounter_flow ПОСЛЕ снятия жетонов, до broadcast_sync.
-func _collect_board_clues(pid: String, loc: String, n: int) -> void:
-	if not is_host() or not players.has(pid):
-		return
-	var board: Array = clue_board_ids.get(loc, [])
-	var p: Dictionary = players[pid]
-	var ids: Array = p.get(PlayerKeys.CLUE_IDS, [])
-	var moved: int = 0
-	while moved < n and not board.is_empty():
-		ids.append(board.pop_back())
-		moved += 1
-	p[PlayerKeys.CLUE_IDS] = ids
-	players[pid] = p
-	if board.is_empty():
-		clue_board_ids.erase(loc)
-	else:
-		clue_board_ids[loc] = board
-
-
 # Сверка идентичностей с числом улик (host, каждый broadcast_sync). Сначала вернуть
 # в пул ключи «мёртвых» жетонов, затем на каждого игрока: clue_ids < clues → добрать
 # из пула (любую оставшуюся); clue_ids > clues (трата/потеря) → вернуть излишек в пул.
@@ -537,63 +445,6 @@ func _reconcile_focus_quotes() -> void:
 			q.pop_back()
 		p[PlayerKeys.CONCENTRATION_QUOTES] = q
 		players[pid] = p
-
-
-func _reconcile_clue_identities() -> void:
-	if not is_host():
-		return
-	_ensure_clue_deck()
-	_reconcile_board_clue_ids()
-	for pid: Variant in players:
-		var p: Dictionary = players[pid]
-		var want: int = int(p.get(PlayerKeys.CLUES, 0))
-		var ids: Array = p.get(PlayerKeys.CLUE_IDS, [])
-		while ids.size() < want and _clue_draw_ready():
-			ids.append(clue_deck.pop_back())
-		while ids.size() > want:
-			_clue_to_discard(String(ids.pop_back()))  # потрачена/утрачена → в сброс
-		p[PlayerKeys.CLUE_IDS] = ids
-		players[pid] = p
-
-
-## Есть ли что тянуть: колода пуста → замешиваем сброс. Обе пусты → false.
-func _clue_draw_ready() -> bool:
-	_ensure_clue_deck()
-	if not clue_deck.is_empty():
-		return true
-	if clue_discard.is_empty():
-		return false
-	clue_deck = clue_discard.duplicate()
-	clue_discard = []
-	clue_deck.shuffle()
-	GameConsole.log("[Улики] колода замешана из сброса: %d" % clue_deck.size())
-	return true
-
-
-## Ключ улики ушёл из игры (потрачена, утрачена, снесена с поля) → в сброс.
-## Инвариант «ровно в одном месте»: в колоду он вернётся только замешиванием.
-func _clue_to_discard(key: String) -> void:
-	if key.is_empty() or clue_discard.has(key) or clue_deck.has(key):
-		return
-	clue_discard.append(key)
-
-
-# Вернуть в пул ключи улик, чьих жетонов уже нет на поле (сняты не исследованием —
-# напр. discardAllClues Слуха). clue_board_ids приводим к реальному числу "clue".
-func _reconcile_board_clue_ids() -> void:
-	for loc: Variant in clue_board_ids.keys():
-		var on_board: int = 0
-		for e: Variant in entities.get(loc, []):
-			if String(e) == "clue":
-				on_board += 1
-		var arr: Array = clue_board_ids[loc]
-		while arr.size() > on_board:
-			# Жетон снесли мимо исследования (discardAllClues Слуха) → ключ в сброс.
-			_clue_to_discard(String(arr.pop_back()))
-		if arr.is_empty():
-			clue_board_ids.erase(loc)
-		else:
-			clue_board_ids[loc] = arr
 
 
 # Сборка свежей записи игрока — общий шаблон для старта партии и поздних
@@ -671,14 +522,6 @@ func _starting_ticket_count(investigator: String, key: String) -> int:
 	return int(t.get(key, 0))
 
 
-# Снять истощение со всех активов игрока — Refresh-шаг начала раунда. Инстансы
-# в массиве — ссылки, мутируем по месту.
-func _refresh_items(p: Dictionary) -> void:
-	for it_v: Variant in p.get("items", []):
-		if it_v is Dictionary:
-			(it_v as Dictionary)["exhausted"] = false
-
-
 # ── Хост: запуск игры ────────────────────────────────────────────────────────
 
 
@@ -739,7 +582,7 @@ func start_game(players_init: Array) -> void:
 	# библия ещё не готова) — тот же авторитет из CampaignGen. Соло-тест партии на
 	# N раскладывает поле и задаёт Наплыв как на N.
 	var setup_pc: int = int(campaign.get("playerCount", _campaign.balance_player_count()))
-	_reset_clue_deck()  # свежий пул улик Древнего перед раскладкой (соберётся лениво из campaign)
+	_board.reset_clue_deck()  # свежий пул улик Древнего перед раскладкой (соберётся лениво из campaign)
 	_board.setup_board(maxi(1, setup_pc))  # стартовая раскладка: врата+монстры, улики, Наплыв
 	_mystery.apply_mystery_on_enter()  # onEnter первой Тайны (если библия уже готова; иначе при её приходе)
 	broadcast_sync()
@@ -1033,98 +876,14 @@ func can_buy_ticket(loc_id: String) -> bool:
 	return not map.ticket_types(loc_id).is_empty()
 
 
-## Хост: заполнить витрину магазина до SHOP_RESERVE_SIZE случайными ассетами.
-func _fill_shop_reserve() -> void:
-	shop_reserve = []
-	_reset_asset_deck()
-	_draw_shop_assets(SHOP_RESERVE_SIZE)
-
-
-## Сброс активов ВЫВОДИТСЯ, а не хранится: карта уходит от игрока семью разными
-## путями (discardSelf, loseAsset, loseAllPossessions, гибель сыщика…), и любой
-## пропущенный путь означал бы утечку из запаса. Сброс = все поддержанные карты
-## минус колода, витрина и руки — по определению, поэтому протечь не может.
+## Сброс активов для UI запаса (выводится, не хранится). Делегат ShopReserve.
 func asset_discard_ids() -> Array:
-	var taken: Dictionary = _assets_in_play()
-	for a: Variant in asset_deck:
-		taken[String(a)] = true
-	var out: Array = []
-	for aid: Variant in AssetCatalog.available_ids():
-		if not taken.has(String(aid)):
-			out.append(String(aid))
-	return out
+	return _shop.discard_ids()
 
 
-# Карты, которые сейчас НЕ в колоде и не в сбросе: витрина магазина и руки игроков.
-func _assets_in_play() -> Dictionary:
-	var taken: Dictionary = {}
-	for r: Variant in shop_reserve:
-		taken[String(r)] = true
-	for pid: Variant in players:
-		for it: Variant in players[pid].get("items", []) as Array:
-			taken[AssetCatalog.entry_id(it)] = true  # item — инстанс {id,…} или id-строка
-	return taken
-
-
-# Свежая колода: все ПОЛНОСТЬЮ поддержанные карты (с нереализованными эффектами в
-# игру не вводим) за вычетом уже разобранных — стартовые предметы сыщиков выдаются
-# при входе игрока, ДО раскладки поля.
-func _reset_asset_deck() -> void:
-	var taken: Dictionary = _assets_in_play()
-	asset_deck = []
-	for aid: Variant in AssetCatalog.available_ids():
-		if not taken.has(String(aid)):
-			asset_deck.append(String(aid))
-	asset_deck.shuffle()
-
-
-# Убрать из колоды карты, уже оказавшиеся в игре (поздний вход со стартовым
-# предметом): иначе один и тот же актив жил бы и в руке, и в колоде.
-func _prune_asset_deck() -> void:
-	var taken: Dictionary = _assets_in_play()
-	var kept: Array = []
-	for a: Variant in asset_deck:
-		if not taken.has(String(a)):
-			kept.append(String(a))
-	asset_deck = kept
-
-
-## Гарантирует непустую витрину (на случай партий, начатых до появления резерва).
-## Только дотягивает недостающее — выложенные карты остаются на местах.
+## Дотянуть витрину магазина, если она пуста (партии до появления резерва). Делегат.
 func ensure_shop_reserve() -> void:
-	if not is_host() or shop_reserve.size() >= SHOP_RESERVE_SIZE:
-		return
-	_draw_shop_assets(SHOP_RESERVE_SIZE - shop_reserve.size())
-	broadcast_sync()
-	emit_changed()
-
-
-## Хост: после покупки убрать купленные id и дотянуть витрину новыми.
-func _refill_shop_reserve(bought: Array) -> void:
-	if not is_host():
-		return
-	for b: Variant in bought:
-		shop_reserve.erase(String(b))
-	_draw_shop_assets(SHOP_RESERVE_SIZE - shop_reserve.size())
-
-
-## Добавляет n случайных ассетов в витрину. Карты не повторяются: исключаем уже
-## выложенные И уже принадлежащие любому игроку — каждый ассет на поле уникален.
-func _draw_shop_assets(n: int) -> void:
-	if n <= 0:
-		return
-	_prune_asset_deck()
-	for _i: int in n:
-		if asset_deck.is_empty():
-			# Колода кончилась — замешиваем сброс (всё, что не в колоде, витрине и
-			# руках). Пусто и там — вводить в игру больше нечего.
-			asset_deck = asset_discard_ids()
-			asset_deck.shuffle()
-			if asset_deck.is_empty():
-				GameConsole.warn("[Магазин] карты активов кончились")
-				return
-			GameConsole.log("[Активы] колода замешана из сброса: %d" % asset_deck.size())
-		shop_reserve.append(String(asset_deck.pop_back()))
+	_shop.ensure()
 
 
 ## Карты-Слухи (Ongoing Rumor), что сейчас в игре — для UI (сайдбар Тайны). Каждая
@@ -1520,6 +1279,12 @@ func apply_board_effect(node: Dictionary) -> void:
 		_board.apply_verb(node, verb)
 
 
+## Выдать артефакт сыщику. Пустой id — случайный из доступных, `want_trait` сужает
+## («Получите 1 Книгу-артефакт»).
+##
+## Артефакт УНИКАЛЕН: копия одна на партию. Поэтому исключаем занятые по ВСЕМУ
+## столу, а не только по рукам получателя, — иначе двое сыщиков носили бы один
+## «Некрономикон». Свободных не осталось → тихо ничего, как у пустой колоды.
 func grant_artifact(pid: String, artifact_id: String = "", want_trait: String = "") -> void:
 	if not is_host() or not players.has(pid):
 		return
@@ -1587,7 +1352,7 @@ func reset_session() -> void:
 	phase = ""
 	campaign = {}
 	campaign_pending = false
-	_reset_clue_deck()  # чистит _clue_pool и _ghost_caches (наследство Теней)
+	_board.reset_clue_deck()  # чистит пул улик и вещи павших (наследство Теней)
 	emit_changed()
 
 
