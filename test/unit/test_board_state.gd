@@ -8,7 +8,7 @@ extends GutTest
 ## вынимается); одна локация-кандидат → улика/жетон ложатся именно туда. Зависимость
 ## MonsterCatalog реальна — стойкость не фиксируем, проверяем health >= 1.
 
-var _gs: MockGameState
+var _gs: Mock
 var _board: BoardState
 
 
@@ -33,9 +33,8 @@ class StubMystery:
 
 
 # Мок GameState: BoardState мутирует синкаемый стейт через эти поля/методы.
-class MockGameState:
-	extends Node
-	var host: bool = true
+class Mock:
+	extends "res://test/unit/helpers/mock_game_state.gd"
 	var gates: Dictionary = {}
 	var entities: Dictionary = {}
 	var monsters: Dictionary = {}
@@ -47,17 +46,8 @@ class MockGameState:
 	var monster_surge: int = 1
 	var doom: int = 0
 	var omens_step: int = 0
-	var players: Dictionary = {}
-	var turn_order: Array = []
-	var current_idx: int = 0
-	var locations: Array = []
 	var shop_filled: int = 0
 	var mythos_in_play: Array = []
-
-	# Колода улик: мок отдаёт «есть что тянуть», пока в ней что-то лежит.
-	func _clue_draw_ready() -> bool:
-		return not clue_deck.is_empty()
-
 	var _campaign: StubCampaign
 	var _mystery: StubMystery
 	var _rumor: RumorFlow
@@ -67,17 +57,9 @@ class MockGameState:
 		_mystery = StubMystery.new()
 		_rumor = RumorFlow.new(self)
 
-	func is_host() -> bool:
-		return host
-
-	# Граф локаций из тестового списка — пересобирается на каждое чтение, чтобы
-	# `_gs.locations = [...]` в тесте подхватывалось без setup-хуков.
-	var map: LocationGraph:
-		get:
-			return LocationGraph.new(locations)
-
-	func current_pid() -> String:
-		return String(turn_order[current_idx]) if current_idx < turn_order.size() else ""
+	# Колода улик: мок отдаёт «есть что тянуть», пока в ней что-то лежит.
+	func _clue_draw_ready() -> bool:
+		return not clue_deck.is_empty()
 
 	func _fill_shop_reserve() -> void:
 		shop_filled += 1
@@ -87,7 +69,7 @@ class MockGameState:
 
 
 func before_each() -> void:
-	_gs = autofree(MockGameState.new())
+	_gs = autofree(Mock.new())
 	_board = BoardState.new(_gs)
 
 

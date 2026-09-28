@@ -17,7 +17,7 @@ const _ASSASSINATION: String = "assassination"  # услуга: onGain → damag
 const _MONSTER_HUNTER: String = "monster_hunter"  # действие: damageMonster chosenMonster
 const _CHARTER: String = "charter_flight"  # услуга: onGain → move на 2 локации
 
-var _gs: MockGameState
+var _gs: Mock
 var _flow: AssetActionFlow
 
 
@@ -63,55 +63,22 @@ class StubPhase:
 		released.append(pid)
 
 
-class MockGameState:
-	extends Node
-	var players: Dictionary = {}
-	var board_effects: Array = []
-	var host: bool = true
-	var pending_check: Dictionary = {}
-	var mythos_decision: Dictionary = {}
+class Mock:
+	extends "res://test/unit/helpers/mock_game_state.gd"
 	var asset_deck: Array = []  # запасы: выданная карта обязана уйти отсюда
 	var shop_reserve: Array = []
-	var locations: Array = []  # граф для move (Чартерный рейс)
 	var _board := StubBoard.new()
 	var _target := StubTarget.new()
 	var _check := StubCheck.new()
 	var _phase := StubPhase.new()
 
-	func is_host() -> bool:
-		return host
-
-	# Граф локаций из тестового списка — пересобирается на каждое чтение, чтобы
-	# `_gs.locations = [...]` в тесте подхватывалось без setup-хуков.
-	var map: LocationGraph:
-		get:
-			return LocationGraph.new(locations)
-
-	func name_of(pid: String) -> String:
-		return pid
-
-	func apply_board_effect(node: Dictionary) -> void:
-		board_effects.append(node)
-
-	# Лента исходов (die_roll / дельты сыщика) — копим, чтобы проверять видимость броска.
-	var feed: Array = []
-
-	func announce_action(pid: String, action_id: String, params: Dictionary = {}) -> void:
-		feed.append({"pid": pid, "id": action_id, "params": params})
-
 	func _refill_shop_reserve(bought: Array) -> void:
 		for b_v: Variant in bought:
 			shop_reserve.erase(String(b_v))
 
-	func broadcast_sync() -> void:
-		pass
-
-	func emit_changed() -> void:
-		pass
-
 
 func before_each() -> void:
-	_gs = autofree(MockGameState.new())
+	_gs = autofree(Mock.new())
 	_flow = AssetActionFlow.new(_gs)
 
 

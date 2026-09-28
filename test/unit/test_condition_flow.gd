@@ -16,7 +16,7 @@ extends GutTest
 ##     i == String(i), поэтому одиночный dieRoll → ключ "0";
 ##   flow.outcomes[cid] — форс конкретного reckoningOutcome при flip.
 
-var _gs: MockGameState
+var _gs: Mock
 var _cond: ConditionFlow
 
 
@@ -50,41 +50,15 @@ class StubPhase:
 		released.append(pid)
 
 
-class MockGameState:
-	extends Node
-	signal effect_check_applied(pid: String, passed: bool)  # будит интерактивную Расплату
-	signal mythos_decided(index: int)  # будит выбор в onReckoning (канал mythos_decision)
-	var players: Dictionary = {}
-	var mythos_decision: Dictionary = {}
-	var board_effects: Array = []
+class Mock:
+	extends "res://test/unit/helpers/mock_game_state.gd"
 	var reckoning_results: Dictionary = {}
-	var host: bool = true
-	var active_check: Dictionary = {}
-	var pending_check: Dictionary = {}
 	var _check := StubCheck.new()
 	var _phase := StubPhase.new()
 
-	func is_host() -> bool:
-		return host
-
-	func name_of(pid: String) -> String:
-		return pid
-
-	func apply_board_effect(node: Dictionary) -> void:
-		board_effects.append(node)
-
-	func broadcast_sync() -> void:
-		pass
-
-	func emit_changed() -> void:
-		pass
-
-	func announce_action(_pid: String, _id: String, _params: Dictionary = {}) -> void:
-		pass
-
 
 func before_each() -> void:
-	_gs = autofree(MockGameState.new())
+	_gs = autofree(Mock.new())
 	_cond = ConditionFlow.new(_gs)
 
 

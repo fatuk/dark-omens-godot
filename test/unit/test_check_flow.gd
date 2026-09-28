@@ -9,7 +9,7 @@ extends GutTest
 ## значения нового куба. Сам бросок (Dice.roll) рандомен — проверяем размер пула и
 ## факт броска, а не конкретные грани.
 
-var _gs: MockGameState
+var _gs: Mock
 var _cf: CheckFlow
 
 
@@ -24,26 +24,14 @@ class StubAssetTriggers:
 		return false
 
 
-class MockGameState:
-	extends Node
-	var players: Dictionary = {}
-	var active_check: Dictionary = {}
+class Mock:
+	extends "res://test/unit/helpers/mock_game_state.gd"
 	var _check_stack: Array = []
-	var sync_count: int = 0
 	var _asset_action: StubAssetTriggers = StubAssetTriggers.new()  # spendClue-триггер при переброске за улику
-
-	func name_of(pid: String) -> String:
-		return pid
-
-	func broadcast_sync() -> void:
-		sync_count += 1
-
-	func emit_changed() -> void:
-		pass
 
 
 func before_each() -> void:
-	_gs = autofree(MockGameState.new())
+	_gs = autofree(Mock.new())
 	_cf = CheckFlow.new(_gs)
 
 

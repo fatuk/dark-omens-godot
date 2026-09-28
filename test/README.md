@@ -63,9 +63,11 @@ cp -r /tmp/gut/addons/gut <корень проекта>/addons/gut
   (путь верхнеуровневой ноды `i` == `String(i)`) — записанный бросок
   переигрывается без ГСЧ. Случайные ветки (`flipCard` через `test`/`dieRoll`,
   triggered-броски) пока не покрыты — для них нужен инъецируемый ГСЧ.
-- **Моки.** `ConditionFlow` обращается к `GameState` только через четыре члена
-  (`players`, `is_host`, `name_of`, `apply_board_effect`) — в тестах это
-  минимальный `MockGameState extends Node`.
+- **Моки.** Общий мок `GameState` — `test/unit/helpers/mock_game_state.gd`
+  (публичный контракт: `is_host`, `name_of`, `current_pid`, `emit_changed`,
+  `broadcast_sync`, `apply_board_effect`, `announce_action` + общие поля стейта).
+  Специфичное для модуля — наследованием в тесте:
+  `class Mock extends "res://test/unit/helpers/mock_game_state.gd":`.
 - **Реальные данные.** Тесты используют боевые `data/conditions.json` и
   `data/assets.json` (например, `poisoned` → `loseHealth 1`), так что заодно
   ловят рассинхрон данных и интерпретатора.

@@ -7,20 +7,17 @@ extends GutTest
 ## задавая кубы слота напрямую (сам бросок Dice.roll рандомен — для open проверяем
 ## лишь размер пула и факт броска, для apply — заранее заданный passed).
 
-var _gs: MockGameState
+var _gs: Mock
 var _ds: DeathSaveFlow
 
 
 # Мок GameState: DeathSaveFlow/CheckFlow обращаются к players, _check, _sync, name_of.
-class MockGameState:
-	extends Node
-	var players: Dictionary = {}
-	var active_check: Dictionary = {}
+class Mock:
+	extends "res://test/unit/helpers/mock_game_state.gd"
 	var outcome: String = ""
 	var _check: CheckFlow
 	var _board: StubBoard
 	var _ghost_caches: Dictionary = {}
-	var sync_count: int = 0
 
 	func _init() -> void:
 		_check = CheckFlow.new(self)
@@ -35,19 +32,6 @@ class MockGameState:
 		cache["resources"] = int(cache["resources"]) + int(payload.get("resources", 0))
 		_ghost_caches[loc] = cache
 
-	func name_of(pid: String) -> String:
-		return pid
-
-	# Смерть НЕ в свой ход — _die не трогает phase/_phase (см. advance-ветку).
-	func current_pid() -> String:
-		return ""
-
-	func broadcast_sync() -> void:
-		sync_count += 1
-
-	func emit_changed() -> void:
-		pass
-
 
 # Заглушка BoardState: считает вызовы place_clue (для flush_ghost_clues).
 class StubBoard:
@@ -59,7 +43,7 @@ class StubBoard:
 
 
 func before_each() -> void:
-	_gs = autofree(MockGameState.new())
+	_gs = autofree(Mock.new())
 	_ds = DeathSaveFlow.new(_gs)
 
 
