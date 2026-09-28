@@ -381,7 +381,28 @@ func broadcast_sync() -> void:
 	_nm.relay_all(payload)
 
 
+# Один host-action проходит через несколько точек emit/broadcast, а на state_changed
+# подписаны ~30 узлов UI. Схлопываем все вызовы за кадр в один сигнал (deferred):
+# UI — пассивный наблюдатель, читает стейт в _refresh(), кадр задержки ему не важен.
+var _emit_pending: bool = false
+
+
 func emit_changed() -> void:
+	if _emit_pending:
+		return
+	_emit_pending = true
+	_flush_changed.call_deferred()
+
+
+## Синхронно разослать отложенный state_changed (тесты, отладочные сценарии, где
+## нужен снимок UI «прямо сейчас»). Вне очереди — no-op.
+func flush_changed() -> void:
+	if _emit_pending:
+		_flush_changed()
+
+
+func _flush_changed() -> void:
+	_emit_pending = false
 	state_changed.emit()
 
 
