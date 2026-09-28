@@ -8,6 +8,8 @@ extends RefCounted
 ##   • улики / жетоны Знамения / слухи на локациях;
 ##   • стартовая раскладка кампании (Icon Reference).
 ##
+##   • board-verbs эффектов (apply_verb): advanceDoom, openGate, spawnMonster, …
+##
 ## Синкаемый стейт (gates/entities/monsters/monster_bag/monster_surge/doom/
 ## omens_step) ОСТАЁТСЯ полями GameState — модуль мутирует его через _gs. Доступ к
 ## стейту/услугам — через _gs: _gs.is_host(), _gs.map,
@@ -782,3 +784,221 @@ func monster_surge() -> void:
 	GameConsole.log(
 		"[Наплыв] из %d врат (%s) по %d монстров" % [matched.size(), color, _gs.monster_surge]
 	)
+
+
+# ── Board-verbs эффектов (advanceDoom, openGate, spawnMonster, …) ─────────────
+
+
+# Число повторов verb'а. scale:"balance" → счётчик из карточки баланса (REFERENCE по
+# размеру партии): placeClue→clues, openGate→gates. Иначе — литерал count/amount.
+func _resolve_count(node: Dictionary, verb: String) -> int:
+	if String(node.get("scale", "")) == "balance":
+		# NB: dict-литерал в локальную переменную — иначе GDScript парсит
+		# String({…}.get(…)) как String({…}) и падает на конструкторе.
+		var field_of := {"placeClue": "clues", "openGate": "gates"}
+		var field: String = field_of.get(verb, "")
+		if not field.is_empty():
+			return maxi(0, reference_amount(field))
+	return int(node.get("amount", node.get("count", 1)))
+
+
+# Выдать артефакт сыщику. Пустой id — случайный из доступных, `want_trait` сужает
+## («Получите 1 Книгу-артефакт»).
+##
+## Артефакт УНИКАЛЕН: копия одна на партию. Поэтому исключаем занятые по ВСЕМУ
+## столу, а не только по рукам получателя, — иначе двое сыщиков носили бы один
+## «Некрономикон». Свободных не осталось → тихо ничего, как у пустой колоды.
+
+
+# Порог стойкости для целей по всему полю: "testResult" — число успехов проверки,
+# число — оно само, поля нет — берём всех (999).
+func _max_toughness(node: Dictionary) -> int:
+	var raw: Variant = node.get("maxToughness", null)
+	if raw == null:
+		return 999
+	if String(raw) == "testResult":
+		return int(node.get("_successes", 0))
+	return int(raw)
+
+
+# Один проход board-verb'а (без учёта _times — его разворачивает apply_board_effect).
+func apply_verb(node: Dictionary, verb: String) -> void:
+	var n: int = _resolve_count(node, verb)
+	match verb:
+		"advanceDoom":
+			_gs.doom += n
+			GameConsole.log("[Эффект] doom +%d" % n)
+			_gs._mystery.check_defeat()
+		"advanceOmen", "moveOmen":
+			# На каждый шаг омена: сдвигаем, затем СРАЗУ считаем дум по вратам
+			# нового цвета омена — ДО того как карта откроет новые врата, чтобы
+			# только что открытые врата не влияли на дум этого сдвига.
+			for _i: int in maxi(1, n):
+				_gs.omens_step += 1
+				resolve_omen_doom()
+			GameConsole.log("[Эффект] омен +%d" % maxi(1, n))
+		"openGate":
+			# where: "self" — врата в локации активного/якорного сыщика (встреча/forEach);
+			# "<locId>" — в конкретной локации; пусто — движок сам берёт гейт-спейс (как было).
+			var gate_where: String = String(node.get("where", ""))
+			var gate_loc: String = ""
+			if gate_where == "self":
+				var apid: String = String(node.get("_anchor_pid", _gs.current_pid()))
+				gate_loc = String((_gs.players.get(apid, {}) as Dictionary).get("location", ""))
+			elif not gate_where.is_empty():
+				gate_loc = gate_where
+			for _i: int in n:
+				open_gate(gate_loc)
+		"closeGate":
+			# _origin_loc — где сыщик стоял до эффектов ветки: если та же ветка его
+			# переместила (move), закрываются врата исходной клетки, а не новой.
+			if node.has("_origin_loc"):
+				close_gate_at(
+					String(node["_origin_loc"]), String(node.get("_anchor_pid", _gs.current_pid()))
+				)
+			else:
+				close_gate_at_active_player()
+		"spawnMonster":
+			# where: "self" — монстр в локации активного/якорного сыщика (встреча «появляется
+			# монстр»); "<locId>" — в конкретной; пусто — из случайных врат (как было).
+			var mon_where: String = String(node.get("where", ""))
+			var mon_loc: String = ""
+			if mon_where == "self":
+				var apid: String = String(node.get("_anchor_pid", _gs.current_pid()))
+				mon_loc = String((_gs.players.get(apid, {}) as Dictionary).get("location", ""))
+			elif not mon_where.is_empty():
+				mon_loc = mon_where
+			for _i: int in n:
+				if mon_where.is_empty():
+					spawn_monster_from_gate()
+				elif not mon_loc.is_empty():
+					spawn_monster_at(mon_loc)
+		"placeClue":
+			for _i: int in n:
+				place_clue()
+		"placeRumor":
+			for _i: int in n:
+				place_rumor()
+		"placeEldritchToken":
+			# Единый жетон поля Знамения.
+			#   where=="self"   → жетон(ы) на карту активной Тайны (счётчик решения);
+			#   where=="marked" → на помеченные локации Тайны (метка и жетон совпадают);
+			#   where==""       → N жетонов на случайные поля (как у Мифов);
+			#   where=="<id>"   → на конкретную локацию по id (data/locations.json).
+			match String(node.get("where", "")):
+				"self":
+					_gs.mystery_tokens_on_card += n
+					GameConsole.log(
+						"[Тайна] жетонов на карте Тайны: %d" % _gs.mystery_tokens_on_card
+					)
+				"marked":
+					place_eldritch_token_on_marked(n)
+				"":
+					for _i: int in n:
+						place_eldritch_token()
+				var loc_id:
+					place_eldritch_token_at(loc_id)
+		"monsterSurge":
+			monster_surge()
+		"mysteryProgress":
+			# Зачёт текущей локации активного игрока в активную Тайну. Выдаётся
+			# только из mystery-встреч (см. relay encounter-tables). За пределами
+			# фазы encounter — тихо игнорируем.
+			if _gs.phase != Phases.ENCOUNTER:
+				GameConsole.log("[Эффект] mysteryProgress вне фазы encounter — игнор")
+			else:
+				_gs._mystery.apply_mystery_progress()
+		"retreatDoom":
+			_gs.doom = maxi(0, _gs.doom - n)
+			GameConsole.log("[Эффект] doom −%d (откат) → %d" % [n, _gs.doom])
+		"setDoom":
+			_gs.doom = maxi(0, int(node.get("amount", node.get("count", 0))))
+			GameConsole.log("[Эффект] doom = %d" % _gs.doom)
+			_gs._mystery.check_defeat()
+		"loseGame":
+			# Партия проигрывает (эффект Слуха «investigators lose the game»).
+			if _gs.outcome.is_empty():
+				_gs.outcome = "defeat"
+				GameConsole.log("[Финал] поражение партии (эффект)")
+		"discardAllClues":
+			discard_all_clues()
+		"discardBoardClue":  # ближайшая к действующему сыщику улика на поле
+			var apid: String = String(node.get("_anchor_pid", _gs.current_pid()))
+			var lost: String = discard_nearest_clue(
+				String(_gs.players.get(apid, {}).get("location", ""))
+			)
+			if not lost.is_empty():
+				var ev := {"id": "board_clue_lost", "params": {"place": _gs.map.name_key(lost)}}
+				_gs.announce_action(apid, ev["id"], ev["params"])
+				# Исход — и в узел: прогон актива соберёт его в окно результата.
+				var evs: Array = node.get("_events", [])
+				evs.append(ev)
+				node["_events"] = evs
+		"discardAllGates":
+			discard_all_gates()
+		"discardGate":
+			discard_gate()
+		"moveMonster":
+			# Выбранный монстр → к якорному сыщику (where:self; бой — на следующей фазе
+			# встреч, как с любым монстром на клетке) либо в выбранную клетку (_target_space).
+			if node.has("_target_monster"):
+				var dest: String = String(node.get("_target_space", ""))
+				if dest.is_empty():
+					var apid: String = String(node.get("_anchor_pid", _gs.current_pid()))
+					dest = String((_gs.players.get(apid, {}) as Dictionary).get("location", ""))
+				move_monster_ref(String(node.get("_target_monster", "")), dest)
+		"discardMonster":
+			if node.has("_target_monster"):
+				discard_monster_ref(String(node.get("_target_monster", "")))  # выбранный
+			elif String(node.get("target", "")) == "eachMonster":
+				remove_monsters_by_toughness_everywhere(false, _max_toughness(node))
+			elif String(node.get("maxToughness", "")) == "testResult":
+				remove_monsters_by_toughness(false, int(node.get("_successes", 0)))
+			else:
+				remove_monster_at_active(false, n)  # снять без боя
+		"defeatMonster":
+			if String(node.get("target", "")) == "eachMonster":
+				remove_monsters_by_toughness_everywhere(true, _max_toughness(node))
+			elif String(node.get("maxToughness", "")) == "testResult":
+				remove_monsters_by_toughness(true, int(node.get("_successes", 0)))
+			else:
+				remove_monster_at_active(true, n)  # победить (вернуть id в мешок)
+		"damageMonster":
+			# Цель разрешает интерпретатор: _target_monster — выбранный игроком монстр
+			# (chosenMonster), _target_space — выбранная локация (chosenSpace, бьём всех
+			# там). Без выбора: eachMonsterOnSpace — все на локации активного игрока,
+			# иначе первый монстр под ногами (легаси-цель заклинаний).
+			if node.has("_target_monster"):
+				damage_monster_ref(String(node.get("_target_monster", "")), n)
+			elif node.has("_target_space"):
+				damage_monsters_at(String(node.get("_target_space", "")), n)
+			elif String(node.get("target", "")) == "eachMonsterOnSpace":
+				damage_monsters_at_active(n)
+			else:
+				damage_monster_at_active(n)
+		"resolveReckoning":
+			_gs._cond.host_resolve_reckoning()
+		"gainSpell":
+			# Заклинание тянет ТОТ сыщик, от которого идёт эффект (_anchor_pid ставит
+			# forEach-подпрограмма мифа), иначе — активный игрок хода. Раньше здесь
+			# всегда стоял current_pid(): в фазе мифов это последний ходивший, и
+			# карта уходила не тому, кто её выбрал.
+			var spell_pid: String = String(node.get("_anchor_pid", ""))
+			if spell_pid.is_empty() or not _gs.players.has(spell_pid):
+				spell_pid = _gs.current_pid()
+			# count — «возьмите 2 заклинания» (Некрономикон). Пустой spell — случайное
+			# из доступного пула, это уже умеет grant_spell.
+			for _s in range(maxi(1, n)):
+				_gs._spell.grant_spell(spell_pid, String(node.get("spell", "")))
+		"gainArtifact":
+			# Как и заклинание, артефакт получает ЯКОРНЫЙ сыщик (тот, от которого
+			# идёт эффект), а не «текущий по ходу»: в фазе Мифов это разные люди.
+			var art_pid: String = String(node.get("_anchor_pid", ""))
+			if art_pid.is_empty() or not _gs.players.has(art_pid):
+				art_pid = _gs.current_pid()
+			for _a in range(maxi(1, n)):
+				_gs.grant_artifact(
+					art_pid, String(node.get("artifact", "")), String(node.get("trait", ""))
+				)
+		_:
+			GameConsole.log("[Эффект] %s — пока не поддержано движком" % verb)

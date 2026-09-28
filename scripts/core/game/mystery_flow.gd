@@ -236,7 +236,7 @@ func _solve_active_mystery() -> void:
 
 
 # Doom достиг doomClock → партия проиграла (Древний пробуждается). Зовётся после
-# КАЖДОГО прироста дума: эффекты advanceDoom/setDoom (_apply_board_verb) и дум от
+# КАЖДОГО прироста дума: эффекты advanceDoom/setDoom (BoardState.apply_verb) и дум от
 # омена (board_state.resolve_omen_doom). Клампит дум к doomClock — чтобы трек не
 # переполнялся при перешаге, — и один раз выставляет outcome.
 func check_defeat() -> void:
