@@ -4,3 +4,4 @@ manifest.csv
 manifest_sheets.csv
 failed.txt
 EH_decks/
+*.import
