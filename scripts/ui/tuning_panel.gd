@@ -1197,12 +1197,16 @@ func _build_specs() -> Array:
 
 
 func _ready() -> void:
+	# Панель тюнинга (Ctrl+M) — только dev. В релизе не строим UI и убираем ноду
+	# целиком: две тысячи строк спек не должны жить в памяти игрока. Снаружи на
+	# ноду никто не ссылается (shop_modal слушает группу, а не автолоад).
+	if not OS.is_debug_build():
+		queue_free()
+		return
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_root.visible = false
 	UIStyle.style_panel(%Panel, 12)
 	_build_ui()
-	# Панель тюнинга (Ctrl+M) — только dev; в релизе игрок её не открывает.
-	set_process_unhandled_input(OS.is_debug_build())
 
 
 func _unhandled_input(event: InputEvent) -> void:

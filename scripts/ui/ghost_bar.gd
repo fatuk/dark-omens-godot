@@ -64,7 +64,7 @@ func _build() -> void:
 	panel.add_child(vb)
 
 	var title := UIStyle.label(
-		"Мир духов", UIStyle.MODAL_FS_TITLE, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
+		tr("GHOST_TITLE"), UIStyle.MODAL_FS_TITLE, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
 	)
 	title.name = "Title"
 	vb.add_child(title)
@@ -81,35 +81,32 @@ func _build() -> void:
 	row.add_theme_constant_override("separation", 12)
 	vb.add_child(row)
 
-	_clue_btn = UIStyle.button("Оставить улику", UIColors.ACCENT)
+	_clue_btn = UIStyle.button(tr("GHOST_BTN_PLACE_CLUE"), UIColors.ACCENT)
 	_clue_btn.name = "ClueBtn"
 	_clue_btn.pressed.connect(_on_place_clue)
 	row.add_child(_clue_btn)
 
-	var myst_btn := UIStyle.button("Тайны Древнего", UIColors.WARNING)
+	var myst_btn := UIStyle.button(tr("GHOST_BTN_MYSTERIES"), UIColors.WARNING)
 	myst_btn.name = "MysteriesBtn"
 	myst_btn.pressed.connect(_on_show_mysteries)
 	row.add_child(myst_btn)
 
-	var mythos_btn := UIStyle.button("Ближайшие Мифы", UIColors.WARNING)
+	var mythos_btn := UIStyle.button(tr("GHOST_BTN_MYTHOS"), UIColors.WARNING)
 	mythos_btn.name = "MythosBtn"
 	mythos_btn.pressed.connect(_on_show_mythos)
 	row.add_child(mythos_btn)
 
 	var hint := UIStyle.label(
-		"Шёпот живым — через чат (C)",
-		UIStyle.MODAL_FS_HINT,
-		UIColors.MUTED,
-		HORIZONTAL_ALIGNMENT_CENTER
+		tr("GHOST_HINT"), UIStyle.MODAL_FS_HINT, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
 	)
 	hint.name = "Hint"
 	vb.add_child(hint)
 
-	var myst: Array = _build_list_overlay("Все Тайны Древнего")
+	var myst: Array = _build_list_overlay(tr("GHOST_ALL_MYSTERIES"))
 	_myst_veil = myst[0]
 	_myst_veil.name = "MysteriesVeil"
 	_myst_list = myst[1]
-	var mythos: Array = _build_list_overlay("Ближайшие Мифы")
+	var mythos: Array = _build_list_overlay(tr("GHOST_BTN_MYTHOS"))
 	_mythos_veil = mythos[0]
 	_mythos_veil.name = "MythosVeil"
 	_mythos_list = mythos[1]
@@ -161,7 +158,7 @@ func _build_list_overlay(title_text: String) -> Array:
 	list.add_theme_constant_override("separation", 14)
 	scroll.add_child(list)
 
-	var close := UIStyle.button("Закрыть", UIColors.MUTED)
+	var close := UIStyle.button(tr("SIDEBAR_BTN_CLOSE"), UIColors.MUTED)
 	close.name = "Close"
 	close.pressed.connect(func() -> void: veil.visible = false)
 	vb.add_child(close)
@@ -197,8 +194,7 @@ func _refresh() -> void:
 	var acted: bool = bool(me.get(PlayerKeys.GHOST_ACTED, false))
 	if is_instance_valid(_budget_lbl):
 		_budget_lbl.text = (
-			"Улик в запасе: %d   ·   акт за раунд: %s"
-			% [budget, "использован" if acted else "доступен"]
+			tr("GHOST_BUDGET") % [budget, tr("GHOST_ACT_USED") if acted else tr("GHOST_ACT_FREE")]
 		)
 	if is_instance_valid(_clue_btn):
 		_clue_btn.disabled = acted or budget <= 0
@@ -241,9 +237,7 @@ func _populate_mythos() -> void:
 	var upcoming: Array = GameState.ghost_upcoming
 	if upcoming.is_empty():
 		_mythos_list.add_child(
-			UIStyle.label(
-				"Завеса тиха — ближайших Мифов не видно.", UIStyle.MODAL_FS_HERO, UIColors.MUTED
-			)
+			UIStyle.label(tr("GHOST_NO_MYTHOS"), UIStyle.MODAL_FS_HERO, UIColors.MUTED)
 		)
 		return
 	for i in range(upcoming.size()):

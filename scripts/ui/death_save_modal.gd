@@ -107,7 +107,7 @@ func _build() -> void:
 		c.queue_free()
 	_tray = null
 
-	_vbox.add_child(UIStyle.modal_title("На Пороге", UIColors.DANGER))
+	_vbox.add_child(UIStyle.modal_title(tr("DEATH_TITLE"), UIColors.DANGER))
 
 	_sub = UIStyle.label("", UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	_sub.name = "Subtitle"
@@ -129,12 +129,12 @@ func _build() -> void:
 	btns.add_theme_constant_override("separation", 16)
 	_vbox.add_child(btns)
 
-	_reroll_btn = UIStyle.button("Переброс (−1 ресурс)", UIColors.WARNING)
+	_reroll_btn = UIStyle.button(tr("DEATH_BTN_REROLL"), UIColors.WARNING)
 	_reroll_btn.name = "RerollBtn"
 	_reroll_btn.pressed.connect(_on_reroll)
 	btns.add_child(_reroll_btn)
 
-	_accept_btn = UIStyle.button("Принять судьбу", UIColors.ACCENT)
+	_accept_btn = UIStyle.button(tr("DEATH_BTN_ACCEPT"), UIColors.ACCENT)
 	_accept_btn.name = "AcceptBtn"
 	_accept_btn.pressed.connect(_on_accept)
 	btns.add_child(_accept_btn)
@@ -170,12 +170,12 @@ func _render_dice(dying: String) -> void:
 func _update(dying: String) -> void:
 	var c: Dictionary = _slot(dying)
 	var stat: String = String(c.get("death_stat", PlayerKeys.HP))
-	var kind: String = "тело" if stat == PlayerKeys.HP else "разум"
+	var kind: String = tr("DEATH_KIND_BODY") if stat == PlayerKeys.HP else tr("DEATH_KIND_MIND")
 	if is_instance_valid(_sub):
-		_sub.text = "%s — %s на грани" % [GameState._name_of(dying), kind]
+		_sub.text = tr("DEATH_SUBTITLE") % [GameState._name_of(dying), kind]
 	var passed: bool = bool(c.get("passed", false))
 	if is_instance_valid(_status):
-		_status.text = "Держится" if passed else "Тьма тянет…"
+		_status.text = tr("DEATH_HOLDS") if passed else tr("DEATH_PULLS")
 		_status.add_theme_color_override(
 			"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
 		)

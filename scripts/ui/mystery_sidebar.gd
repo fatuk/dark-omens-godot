@@ -105,11 +105,10 @@ func _refresh_rumors() -> void:
 		_rumors.visible = false
 		return
 	_rumors.visible = true
-	var ru: bool = I18n.get_locale() == "ru"
-	var tok_w: String = "жетонов" if ru else "tokens"
-	var portal_w: String = "портал" if ru else "portal"
+	var tok_w: String = tr("RUMOR_TOKENS_WORD")
+	var portal_w: String = tr("RUMOR_PORTAL_WORD")
 	var lines: PackedStringArray = PackedStringArray()
-	lines.append("— %s —" % ("Слухи в игре" if ru else "Rumors in play"))
+	lines.append("— %s —" % tr("RUMORS_IN_PLAY"))
 	for r_v: Variant in rumors:
 		var r: Dictionary = r_v
 		var nm: String = String(r.get("name", "?"))

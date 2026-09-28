@@ -1811,3 +1811,24 @@ ARTIFACT_GATE_BOX_NAME,Шкатулка врат,Gate Box
 ARTIFACT_GATE_BOX_ABILITY,"Сыщики в вашей локации бросают 1 дополнительный кубик, проходя проверки в ходе контактов в Иных мирах. Если вы закрыли врата в ходе контакта в Ином мире, получите 1 улику.","Investigators on your space roll 1 additional die when resolving tests during Other World Encounters. If you close a Gate during an Other World Encounter, gain 1 Clue."
 ARTIFACT_TKA_HALOT_NAME,T’tka Halot,T'tka Halot
 ARTIFACT_TKA_HALOT_ABILITY,"Действие: Пройдите проверку Знания. При успехе можете потратить 1 рассудок, чтобы выбранный вами монстр в вашей локации потерял 3 здоровья.","Action: Test Lore. If you pass, you may spend 1 Sanity to choose 1 Monster on your space to lose 3 Health."
+GHOST_TITLE,Мир духов,Spirit World
+GHOST_BTN_PLACE_CLUE,Оставить улику,Leave a Clue
+GHOST_BTN_MYSTERIES,Тайны Древнего,Ancient One's Mysteries
+GHOST_BTN_MYTHOS,Ближайшие Мифы,Upcoming Mythos
+GHOST_HINT,Шёпот живым — через чат (C),Whisper to the living via chat (C)
+GHOST_ALL_MYSTERIES,Все Тайны Древнего,All Mysteries of the Ancient One
+GHOST_BUDGET,Улик в запасе: %d   ·   акт за раунд: %s,Clues in reserve: %d   ·   act this round: %s
+GHOST_ACT_USED,использован,used
+GHOST_ACT_FREE,доступен,available
+GHOST_NO_MYTHOS,Завеса тиха — ближайших Мифов не видно.,The veil is quiet — no Mythos in sight.
+DEATH_TITLE,На Пороге,On the Threshold
+DEATH_BTN_REROLL,Переброс (−1 ресурс),Reroll (−1 resource)
+DEATH_BTN_ACCEPT,Принять судьбу,Accept fate
+DEATH_KIND_BODY,тело,body
+DEATH_KIND_MIND,разум,mind
+DEATH_SUBTITLE,%s — %s на грани,%s — %s on the brink
+DEATH_HOLDS,Держится,Holding on
+DEATH_PULLS,Тьма тянет…,The dark pulls…
+RUMORS_IN_PLAY,Слухи в игре,Rumors in play
+RUMOR_TOKENS_WORD,жетонов,tokens
+RUMOR_PORTAL_WORD,портал,portal
