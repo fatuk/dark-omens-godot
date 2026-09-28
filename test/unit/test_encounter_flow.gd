@@ -757,3 +757,27 @@ func test_encounter_move_then_close_gate_closes_origin() -> void:
 		String((closed[0] as Dictionary)["_origin_loc"]), "A", "врата закрываются на исходной A"
 	)
 	assert_eq(String(ef._gs.players["p"]["location"]), "C", "а сыщик уже в C")
+
+
+# ── Встреча без проверки: кубов нет, эффекты успеха применяются по «Завершить» ──
+
+
+func test_test_less_encounter_skips_check_and_applies_success() -> void:
+	var gs: MockGS = autofree(MockGS.new())
+	gs.map = MockMap.new()
+	gs.players["p"] = {"items": [], "location": "A", "resources": 0, "investigator": ""}
+	gs.turn_order = ["p"]
+	gs.current_encounter = {
+		"kind": "general",
+		"onSuccess": [{"do": "gainResource", "amount": 2}],
+		"onFailure": [{"do": "loseHealth", "amount": 5}],
+	}
+	gs.active_check = {"owner": "encounter", "rolled": true, "passed": false}  # хвост прошлой
+	var ef := EncounterFlow.new(gs)
+	ef._start_check_for_encounter("p")
+	var mc: MockCheck = gs._check
+	assert_true(mc.cleared, "старая проверка снята")
+	assert_eq(mc.started.size(), 0, "новая проверка не стартует — кубов нет")
+	ef._commit_outcome("p")
+	assert_true(bool(gs.current_encounter.get("committed", false)), "коммит прошёл")
+	assert_eq(int(gs.players["p"]["resources"]), 2, "применена ветка успеха")

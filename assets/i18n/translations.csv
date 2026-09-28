@@ -1713,6 +1713,7 @@ PICK_DESTINATION,Куда переместиться?,Move where?
 PICK_RESERVE_ASSET,Выберите карту с витрины:,Choose a card from the reserve:
 RECKONING_DECISION_PROMPT,Расплата: решите судьбу карты,Reckoning: decide the fate of the card
 DECISION_SKIP,Пропустить,Skip
+DECISION_DISCARD_SPELL,Сбросить 1 заклинание,Discard 1 spell
 
 ARTIFACT_KEY_TO_CARCOSA_NAME,Ключ к Каркозе,Key to Carcosa
 ARTIFACT_KEY_TO_CARCOSA_ABILITY,"Один раз за раунд вы можете потратить 1 единицу Рассудка, чтобы перебросить любое количество кубиков при прохождении проверки.","Once per round, you may spend 1 Sanity to reroll any number of dice when resolving a test."

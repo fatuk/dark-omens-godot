@@ -759,6 +759,12 @@ func _start_check_for_encounter(pid: String) -> void:
 	var enc: Dictionary = _gs.current_encounter
 	if enc.is_empty() or String(enc.get("kind", "")) == "combat":
 		return
+	# Карта без проверки (выбор, торг, «можете задержаться»): кубов нет, исход —
+	# ветка успеха по «Завершить». Снимаем возможную старую проверку, чтобы модалка
+	# не показала кнопку броска.
+	if _is_test_less(enc):
+		_gs._check.clear()
+		return
 	var test: Dictionary = _active_test(enc)
 	_gs._check.start(
 		"encounter",
@@ -789,6 +795,14 @@ func _active_test(enc: Dictionary) -> Dictionary:
 	return enc.get("test", {})
 
 
+## Плоская встреча (general/research) без проверки: в data нет test. Такие карты
+## разрешаются без броска — считаются пройденными, эффекты берутся из onSuccess.
+static func _is_test_less(enc: Dictionary) -> bool:
+	if String(enc.get("kind", "")) in ["gate", "mystery", "combat", "eldritch", "rumor"]:
+		return false
+	return (enc.get("test", {}) as Dictionary).is_empty()
+
+
 ## Хост: применить ИТОГОВЫЕ эффекты встречи. Зовётся при завершении (из
 ## PhaseController.host_apply_finish_encounter) — эффекты отвязаны от броска,
 ## чтобы между ними был доступен переброс за фокус. Идемпотентна (флаг committed).
@@ -816,7 +830,8 @@ func _commit_outcome(pid: String) -> void:
 		enc["committed"] = true
 		_commit_rumor(pid)
 		return
-	var passed: bool = bool(_gs.active_check.get("passed", false))
+	# Без проверки — «пройдено»: эффекты карты лежат в onSuccess.
+	var passed: bool = _is_test_less(enc) or bool(_gs.active_check.get("passed", false))
 	# Снимок состояния сыщика ДО эффектов — diff после коммита в ленту исходов
 	# (урон/лечение/состояния/жетоны). На интерактивной паузе _run_effect_slot
 	# ничего не мутирует (dup-изоляция) → diff считаем на завершающем проходе.

@@ -504,6 +504,8 @@ func _refresh() -> void:
 		_show_gate(card)  # gate и mystery — общая ветвящаяся структура
 	elif _chk_rolled():
 		_show_outcome(card)
+	elif _is_test_less(card):
+		_show_auto(card)  # без проверки: сразу исход и «Завершить»
 	else:
 		_show_card(card)
 
@@ -621,6 +623,29 @@ func _clear_choice() -> void:
 func _on_choice_pressed(index: int) -> void:
 	_clear_choice()  # блокируем повторные клики до синка от хоста
 	GameState.act(RelayActions.CHOOSE_EFFECT, {"index": index})
+
+
+# Плоская карта без проверки (выбор / торг / «можете задержаться»): кубов нет, показываем
+# вводку, исход ветки успеха как есть и «Завершить»; интерактивный choice внутри всплывёт
+# после клика обычным pending_choice.
+func _is_test_less(card: Dictionary) -> bool:
+	if _is_branching(card) or String(card.get("kind", "")) == "combat":
+		return false
+	return (card.get("test", {}) as Dictionary).is_empty()
+
+
+func _show_auto(card: Dictionary) -> void:
+	_ensure_stage_opaque()
+	_title.text = _title_text(card)
+	_main_text.text = _main_or_stakes(card)
+	_roll_btn.visible = false
+	_hide_dice()
+	_outcome.text = _outcome_text(card, true)
+	_outcome.add_theme_color_override("font_color", UIColors.SUCCESS)
+	_outcome.visible = true
+	_outcome_shown = true
+	_finish_btn.text = "BTN_FINISH_BIG"
+	_finish_btn.visible = true
 
 
 func _show_card(card: Dictionary) -> void:
