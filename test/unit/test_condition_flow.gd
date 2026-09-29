@@ -506,3 +506,103 @@ func test_reckon_condition_interactive_decisions_are_serialized() -> void:
 	assert_false(_front_active("b", "funding"), "b перевернул")
 	assert_true(_front_active("a", "righteous"), "a остался лицом")
 	assert_false(bool(_gs.mythos_decision.get("active", false)), "канал свободен")
+
+
+# ── Копии состояний: карта на руках = закреплённый оборот (reconcile_backs) ───
+
+
+func _own_back_ids(cid: String) -> Array:
+	var out: Array = []
+	for b_v: Variant in Conditions.get_def(cid).get("backs", []):
+		out.append(String((b_v as Dictionary)["id"]))
+	return out
+
+
+func test_reconcile_assigns_own_back_once() -> void:
+	_add_player("p", {"conditions": ["legInjury"]})
+	_cond.reconcile_backs()
+	var backs: Dictionary = _gs.players["p"]["conditions_backs"]
+	assert_has(
+		_own_back_ids("legInjury"), String(backs.get("legInjury", "")), "копия из своих оборотов"
+	)
+	var first: String = String(backs["legInjury"])
+	_cond.reconcile_backs()
+	assert_eq(
+		String(_gs.players["p"]["conditions_backs"]["legInjury"]),
+		first,
+		"повторный синк копию не меняет"
+	)
+
+
+func test_reconcile_gives_distinct_copies_across_players() -> void:
+	var n: int = _own_back_ids("legInjury").size()
+	for i in range(n):
+		_add_player("p%d" % i, {"conditions": ["legInjury"]})
+	_cond.reconcile_backs()
+	var seen: Dictionary = {}
+	for i in range(n):
+		seen[String(_gs.players["p%d" % i]["conditions_backs"]["legInjury"])] = true
+	assert_eq(seen.size(), n, "у %d сыщиков — %d разных копий" % [n, n])
+	_add_player("extra", {"conditions": ["legInjury"]})
+	_cond.reconcile_backs()
+	assert_true(
+		(_gs.players["extra"]["conditions_backs"] as Dictionary).has("legInjury"),
+		"копий не осталось — оборот всё равно закреплён (дублируется)"
+	)
+
+
+func test_flip_uses_assigned_back() -> void:
+	_add_player(
+		"p", {"conditions": ["legInjury"], "conditions_backs": {"legInjury": "reopenedWound"}}
+	)
+	_cond._flip_condition("p", "legInjury", Conditions.get_def("legInjury"), {}, {})
+	var p: Dictionary = _gs.players["p"]
+	assert_eq(
+		String((p["conditions_flipped"] as Dictionary)["legInjury"]),
+		"reopenedWound",
+		"перевёрнута своя копия"
+	)
+	assert_eq(int(p["hp"]), 4, "исход копии применён (loseHealth 1)")
+
+
+func test_discard_clears_assigned_back() -> void:
+	_add_player(
+		"p", {"conditions": ["legInjury"], "conditions_backs": {"legInjury": "failingBody"}}
+	)
+	_cond._flip_condition("p", "legInjury", Conditions.get_def("legInjury"), {}, {})
+	assert_false(
+		(_gs.players["p"]["conditions_backs"] as Dictionary).has("legInjury"),
+		"копия вернулась в оборот"
+	)
+
+
+func test_reconcile_drops_backs_of_removed_conditions() -> void:
+	_add_player("p", {"conditions": [], "conditions_backs": {"legInjury": "failingBody"}})
+	_cond.reconcile_backs()
+	assert_false(
+		(_gs.players["p"]["conditions_backs"] as Dictionary).has("legInjury"),
+		"хвост снятого состояния вычищен"
+	)
+
+
+# ── flip_held: повторное Благословение переворачивает карту ───────────────────
+
+
+func test_flip_held_flips_once() -> void:
+	_add_player(
+		"p", {"conditions": ["legInjury"], "conditions_backs": {"legInjury": "reopenedWound"}}
+	)
+	_cond.flip_held("p", "legInjury")
+	var p: Dictionary = _gs.players["p"]
+	assert_eq(String((p["conditions_flipped"] as Dictionary).get("legInjury", "")), "reopenedWound")
+	var hp_after: int = int(p["hp"])
+	_cond.flip_held("p", "legInjury")  # уже перевёрнуто — no-op
+	assert_eq(int(_gs.players["p"]["hp"]), hp_after, "второй флип не применяет исход повторно")
+
+
+func test_flip_held_ignores_missing_condition() -> void:
+	_add_player("p", {"conditions": []})
+	_cond.flip_held("p", "blessed")
+	assert_true(
+		(_gs.players["p"]["conditions_flipped"] as Dictionary).is_empty(), "нет карты — нет флипа"
+	)

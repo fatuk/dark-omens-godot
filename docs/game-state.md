@@ -144,7 +144,7 @@ GameState создаёт модули в `_ready` и делегирует им �
 | `_encounter` | EncounterFlow | встречи: генерация, проверка, эффекты, окно preventLoss |
 | `_encounter.combat` | CombatFlow | бой: очередь монстров клетки, Воля → Сила, фиксация, боевые триггеры карт |
 | `_check` | CheckFlow | активная проверка (пул/бросок/переброс/+1), стек вложенных |
-| `_cond` | ConditionFlow | состояния, held-ограничения, выдача активов |
+| `_cond` | ConditionFlow | состояния: Расплата и flip, копии (`conditions_backs`: карта = оборот), held-ограничения, выдача активов |
 | `_spell` | SpellFlow | колода копий заклинаний (`spell_deck`: копия = оборот), касты (ritual/incantation/glamour), результат каста |
 | `_board` | BoardState | врата, монстры, спаун, улики (жетоны + пул идентичностей), вещи павших, board-verbs эффектов (`apply_verb`) |
 | `_shop` | ShopReserve | колода активов и витрина магазина (сброс выводится) |

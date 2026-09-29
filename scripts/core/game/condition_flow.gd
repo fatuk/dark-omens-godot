@@ -215,8 +215,8 @@ func _apply_reckon_board(
 			_gs.apply_board_effect(node)
 
 
-# Перевернуть состояние: вытянуть случайный оборот из СОБСТВЕННЫХ backs состояния
-# (инлайн, как рубашки заклинаний), применить effect, затем then: flip|discard.
+# Перевернуть состояние: оборот — закреплённой за ЭТОЙ картой копии (conditions_backs,
+# см. reconcile_backs), применить effect, затем then: flip|discard.
 func _flip_condition(
 	pid: String, cid: String, def: Dictionary, ctx: Dictionary, flow: Dictionary = {}
 ) -> void:
@@ -226,8 +226,9 @@ func _flip_condition(
 		_set_flipped(p, cid, "")
 		GameConsole.log("[Расплата] %s · %s перевёрнуто" % [_gs.name_of(pid), cid])
 		return
-	var back: Dictionary = _pick_back(backs, cid, flow)
+	var back: Dictionary = _pick_back(backs, cid, flow, p)
 	var bid: String = String(back.get("id", ""))
+	_set_back(p, cid, bid)  # копия закреплена (если ещё не была)
 	_set_reckoning_result(pid, cid, back)  # для модалки результата флипа игрока
 	var res: Dictionary = _EffectRunner.run(back.get("effect", []), p, ctx, flow)
 	for l_v: Variant in res.get("logs", []):
@@ -241,15 +242,102 @@ func _flip_condition(
 		GameConsole.log("[Расплата] %s · %s → «%s»" % [_gs.name_of(pid), cid, bid])
 
 
-# Выбор оборота: форс через flow.outcomes[cid] по id (детерминизм/тесты/replay),
-# иначе случайный из собственных backs состояния (как random_back у заклинаний).
-func _pick_back(backs: Array, cid: String, flow: Dictionary) -> Dictionary:
+# Выбор оборота: форс через flow.outcomes[cid] (детерминизм/тесты/replay) → оборот
+# закреплённой копии (p.conditions_backs[cid]) → случайный из собственных backs
+# (карта без копии: легаси-снапшот или флип до первого синка).
+func _pick_back(backs: Array, cid: String, flow: Dictionary, p: Dictionary = {}) -> Dictionary:
 	var forced: String = String((flow.get("outcomes", {}) as Dictionary).get(cid, ""))
+	if forced.is_empty():
+		forced = String((p.get(PlayerKeys.CONDITIONS_BACKS, {}) as Dictionary).get(cid, ""))
 	if not forced.is_empty():
 		for b_v: Variant in backs:
 			if String((b_v as Dictionary).get("id", "")) == forced:
 				return b_v
 	return backs[randi() % backs.size()]
+
+
+## Хост: перевернуть состояние cid на руках сыщика вне Расплаты (повторное получение
+## Благословения/Проклятия — onDuplicate:"flip"). Уже перевёрнутое или не на руках —
+## no-op. Исход пишется в reckoning_results (модалка результата флипа).
+func flip_held(pid: String, cid: String) -> void:
+	if not _gs.is_host() or not _gs.players.has(pid):
+		return
+	var p: Dictionary = _gs.players[pid]
+	if not (p.get(PlayerKeys.CONDITIONS, []) as Array).has(cid):
+		return
+	if (p.get(PlayerKeys.CONDITIONS_FLIPPED, {}) as Dictionary).has(cid):
+		GameConsole.log("[Состояния] %s · «%s» уже перевёрнуто" % [_gs.name_of(pid), cid])
+		return
+	var def: Dictionary = Conditions.get_def(cid)
+	if def.is_empty():
+		return
+	_flip_condition(pid, cid, def, {}, {})
+
+
+# ── Копии состояний: карта на руках = конкретный оборот ───────────────────────
+
+
+## Хост: закрепить копию (оборот) за каждым состоянием на руках, у которого её ещё
+## нет. gainCondition исполняет статический интерпретатор без доступа к столу, поэтому
+## копия назначается здесь — при broadcast_sync, до рассылки (как идентичности улик).
+## Копия — оборот из backs состояния, не занятый другими сыщиками: каждая физическая
+## карта ровно у одного. Все копии заняты — берём случайный оборот с предупреждением
+## (в коробке карт больше не было бы, но снимать уже выданное состояние нельзя).
+## Копии снятых состояний вычищаются.
+func reconcile_backs() -> void:
+	if not _gs.is_host():
+		return
+	for pid: String in _gs.players:
+		var p: Dictionary = _gs.players[pid]
+		var conds: Array = p.get(PlayerKeys.CONDITIONS, [])
+		var backs: Dictionary = p.get(PlayerKeys.CONDITIONS_BACKS, {})
+		var changed: bool = false
+		for c_v: Variant in conds:
+			var cid: String = String(c_v)
+			if backs.has(cid):
+				continue
+			var own: Array = Conditions.get_def(cid).get("backs", [])
+			if own.is_empty():
+				continue  # без оборотов — копии неразличимы, закреплять нечего
+			backs[cid] = _free_back(cid, own, pid)
+			changed = true
+		for k_v: Variant in backs.keys():
+			if not conds.has(k_v):
+				backs.erase(k_v)
+				changed = true
+		if changed:
+			p[PlayerKeys.CONDITIONS_BACKS] = backs
+			_gs.players[pid] = p
+
+
+# Свободный оборот состояния cid: не закреплённый ни у кого, кроме pid (у самого pid
+# двух одинаковых состояний не бывает). Свободных нет → случайный, с предупреждением.
+func _free_back(cid: String, own_backs: Array, pid: String) -> String:
+	var taken: Dictionary = {}
+	for o_pid: String in _gs.players:
+		if o_pid == pid:
+			continue
+		var ob: Dictionary = (_gs.players[o_pid] as Dictionary).get(PlayerKeys.CONDITIONS_BACKS, {})
+		var b: String = String(ob.get(cid, ""))
+		if not b.is_empty():
+			taken[b] = true
+	var free: Array = []
+	for b_v: Variant in own_backs:
+		var bid: String = String((b_v as Dictionary).get("id", ""))
+		if not taken.has(bid):
+			free.append(bid)
+	if free.is_empty():
+		GameConsole.warn("[Состояния] все копии «%s» на руках — оборот дублируется" % cid)
+		return String((own_backs[randi() % own_backs.size()] as Dictionary).get("id", ""))
+	return String(free[randi() % free.size()])
+
+
+func _set_back(p: Dictionary, cid: String, back_id: String) -> void:
+	var backs: Dictionary = p.get(PlayerKeys.CONDITIONS_BACKS, {})
+	if back_id.is_empty() or backs.has(cid):
+		return
+	backs[cid] = back_id
+	p[PlayerKeys.CONDITIONS_BACKS] = backs
 
 
 # Записать результат флипа для модалки игрока (per-player): выпавший оборот —
@@ -275,6 +363,7 @@ func _discard_condition(pid: String, cid: String) -> void:
 	conds.erase(cid)
 	p["conditions"] = conds
 	(p.get("conditions_flipped", {}) as Dictionary).erase(cid)
+	(p.get(PlayerKeys.CONDITIONS_BACKS, {}) as Dictionary).erase(cid)  # копия — в оборот
 	GameConsole.log("[Расплата] %s · %s сброшено" % [_gs.name_of(pid), cid])
 
 

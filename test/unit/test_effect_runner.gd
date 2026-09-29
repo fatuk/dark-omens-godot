@@ -80,6 +80,20 @@ func test_gain_condition_no_duplicate() -> void:
 	EffectRunner.run([{"do": "gainCondition", "condition": "cursed"}], p)
 	assert_eq((p["conditions"] as Array).size(), 1, "состояние не дублируется")
 	assert_true((p["conditions"] as Array).has("cursed"))
+	# onDuplicate:"flip" (Благословение): вместо дубля — board-узел flipCondition владельцу.
+	var ph := {"user_id": "u1", "conditions": ["blessed"], "conditions_flipped": {}}
+	var rh: Dictionary = EffectRunner.run([{"do": "gainCondition", "condition": "blessed"}], ph, {})
+	assert_eq(ph["conditions"], ["blessed"], "дубля нет")
+	var bh: Array = rh.get("board", [])
+	assert_eq(bh.size(), 1)
+	assert_eq(String((bh[0] as Dictionary)["do"]), "flipCondition")
+	assert_eq(String((bh[0] as Dictionary)["condition"]), "blessed")
+	assert_eq(String((bh[0] as Dictionary)["_pid"]), "u1", "флип адресован владельцу")
+	# Без флага (Долг) — как раньше: дубля нет и переворота нет.
+	var ph2 := {"user_id": "u1", "conditions": ["debt"], "conditions_flipped": {}}
+	var rh2: Dictionary = EffectRunner.run([{"do": "gainCondition", "condition": "debt"}], ph2, {})
+	assert_eq(ph2["conditions"], ["debt"], "второго Долга нет")
+	assert_true((rh2.get("board", []) as Array).is_empty(), "и переворота нет")
 
 
 func test_lose_condition_clears_flipped() -> void:

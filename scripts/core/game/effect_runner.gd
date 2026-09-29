@@ -572,6 +572,19 @@ static func _run_action(
 	#     (мифос/хуки сами разворачивают target по игрокам и зовут run без flow —
 	#     тогда применяем к тому игроку, что передали).
 	if _PLAYER_VERBS.has(verb) and (target.is_empty() or target == "self" or not interactive):
+		# Повторное получение состояния с onDuplicate:"flip" (Благословение, Проклятие):
+		# карта не дублируется, а переворачивается — board-узел, флип делает ConditionFlow.
+		if verb == "gainCondition" and _duplicate_flips(node, player):
+			var dup_cid: String = String(node.get("condition", ""))
+			board.append(
+				{
+					"do": "flipCondition",
+					"condition": dup_cid,
+					"_pid": String(player.get("user_id", ""))
+				}
+			)
+			logs.append("«%s» уже есть — карта переворачивается" % dup_cid)
+			return
 		var times: int = _repeat(node, player, ctx)
 		for _i in times:
 			_apply_player_verb(verb, node, player, logs)
@@ -889,6 +902,15 @@ static func _pick_condition(node: Dictionary, player: Dictionary) -> String:
 	if pool.is_empty():
 		return ""
 	return String(pool[randi() % pool.size()])
+
+
+# gainCondition конкретной карты, которая уже на руках, и у которой в определении
+# onDuplicate:"flip" → вместо дубля переворот.
+static func _duplicate_flips(node: Dictionary, player: Dictionary) -> bool:
+	var cid: String = String(node.get("condition", ""))
+	if cid.is_empty() or not (player.get("conditions", []) as Array).has(cid):
+		return false
+	return String(Conditions.get_def(cid).get("onDuplicate", "")) == "flip"
 
 
 ## Первое held-состояние подходящего вида ("" — нет такого). Пустой список видов →

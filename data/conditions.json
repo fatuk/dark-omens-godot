@@ -1,5 +1,5 @@
 {
-  "_comment": "Статичная библиотека состояний. Тексты — ключи i18n. conditions: front/reckoning — ключи; onReckoning — Effect-DSL шага расплаты; опц. whileHeld (пассивы: cannotMove/cannotAct/cannotRecover/removeFromBoard/immuneToEffects/successThreshold), triggered ([{on,do}] по событию rest/travel/...), action (локальное действие). backs — ИНЛАЙН обороты состояния (как у заклинаний): {id,name,text,effect (Effect-DSL),then:flip|discard}; при flip тянется случайный (или форс flow.outcomes[cid]). Conditions.outcome_def агрегирует backs всех состояний по id.",
+  "_comment": "Статичная библиотека состояний. Тексты — ключи i18n. conditions: front/reckoning — ключи; onReckoning — Effect-DSL шага расплаты; опц. whileHeld (пассивы: cannotMove/cannotAct/cannotRecover/removeFromBoard/immuneToEffects/successThreshold), triggered ([{on,do}] по событию rest/travel/...), action (локальное действие); onDuplicate:\"flip\" — повторное получение переворачивает карту вместо дубля (Благословение/Проклятие). backs — ИНЛАЙН обороты состояния (как у заклинаний): {id,name,text,effect (Effect-DSL),then:flip|discard}; при flip тянется случайный (или форс flow.outcomes[cid]). Conditions.outcome_def агрегирует backs всех состояний по id.",
   "conditions": [
 	{
 	  "id": "debt",
@@ -661,6 +661,7 @@
 	},
 	{
 	  "id": "cursed",
+	  "onDuplicate": "flip",
 	  "name": "COND_CURSED_NAME",
 	  "kind": "bane",
 	  "front": "COND_CURSED_FRONT",
@@ -688,6 +689,7 @@
 	},
 	{
 	  "id": "blessed",
+	  "onDuplicate": "flip",
 	  "name": "COND_BLESSED_NAME",
 	  "kind": "boon",
 	  "front": "COND_BLESSED_FRONT",

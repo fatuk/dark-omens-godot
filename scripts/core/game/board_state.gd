@@ -976,6 +976,11 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 				damage_monster_at_active(n)
 		"resolveReckoning":
 			_gs._cond.host_resolve_reckoning()
+		"flipCondition":
+			# Повторное получение Благословения/Проклятия: переворот карты на руках (см.
+			# EffectRunner._duplicate_flips). _pid — чей gainCondition это был.
+			var fpid: String = String(node.get("_pid", node.get("_anchor_pid", _gs.current_pid())))
+			_gs._cond.flip_held(fpid, String(node.get("condition", "")))
 		"gainSpell":
 			# Заклинание тянет ТОТ сыщик, от которого идёт эффект (_anchor_pid ставит
 			# forEach-подпрограмма мифа), иначе — активный игрок хода. Раньше здесь

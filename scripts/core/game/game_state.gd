@@ -377,6 +377,7 @@ func broadcast_sync() -> void:
 		_death.sweep()
 		_sweeping = false
 	_board.reconcile_clue_identities()  # clue_ids игроков ⇄ число улик — до рассылки
+	_cond.reconcile_backs()  # состояниям без копии — закрепить оборот (карта = копия)
 	_reconcile_focus_quotes()  # цитаты жетонов концентрации привязаны к жетонам
 	_refresh_ghost_upcoming()  # 3 ближайших Мифа для Теней (host режет host-only колоду)
 	var payload: Dictionary = {"action": RelayActions.SYNC, "mythos_index": _mythos.index}
@@ -486,6 +487,7 @@ func _make_player_dict(
 		PlayerKeys.CLUE_IDS: [],  # идентичности добираются из пула при сверке (broadcast_sync)
 		PlayerKeys.CONDITIONS: [],
 		PlayerKeys.CONDITIONS_FLIPPED: {},  # {cond_id: outcome_id} — перевёрнутые в расплату
+		PlayerKeys.CONDITIONS_BACKS: {},  # {cond_id: back_id} — какая копия карты на руках (ConditionFlow.reconcile_backs)
 		PlayerKeys.ITEMS: _starting_items(investigator),
 		PlayerKeys.SKILL_MODS: {},
 	}

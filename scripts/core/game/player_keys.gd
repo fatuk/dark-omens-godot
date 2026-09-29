@@ -32,6 +32,7 @@ const CLUES := "clues"
 const CLUE_IDS := "clue_ids"  # аддитивный слой идентичности улик (ключи-локации Древнего)
 const CONDITIONS := "conditions"
 const CONDITIONS_FLIPPED := "conditions_flipped"
+const CONDITIONS_BACKS := "conditions_backs"  # {cond_id: back_id} — закреплённая копия (оборот)
 const ITEMS := "items"
 const SKILL_MODS := "skill_mods"
 const DEATH_SAVE_CHECK := "death_save_check"  # per-player слот спас-броска на Пороге
