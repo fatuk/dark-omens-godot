@@ -2,16 +2,23 @@ class_name SpellFlow
 extends RefCounted
 
 ## Подсистема заклинаний (хост-only). Двусторонняя карта: каст (тест Lore) → фронт
-## onPass (если pass) → flip к СЛУЧАЙНОЙ рубашке → резолв её tiers по ЧИСЛУ УСПЕХОВ
-## → discard (если рубашка эмитит discardCard) либо назад на фронт (заклинание
-## многоразовое, остаётся в руке). Рубашка тянется ЗАНОВО при каждом касте — каждый
-## каст свежий сюрприз (нарочно, чтобы провоцировать кастовать чаще).
-## Сам бросок каста делает cast-flow (CheckFlow); сюда приходит результат
-## (successes, dice). Стейт карт — в player.items {id, kind:"spell"}.
+## onPass (если pass) → flip к рубашке → резолв её tiers по ЧИСЛУ УСПЕХОВ → discard
+## (если рубашка эмитит discardCard) либо назад на фронт (заклинание многоразовое,
+## остаётся в руке).
 ##
-## flow.backs[item_index] — форс рубашки (детерминизм/тесты/replay). Доступ к
-## стейту — через _gs: _gs.players, _gs.is_host(), _gs.name_of(),
-## _gs.apply_board_effect(). Создаётся в GameState (поле _spell).
+## Колода — как в настолке: каждое заклинание лежит в стольких копиях, сколько у
+## него оборотов, у каждой копии СВОЙ оборот. Карта на руке — конкретная копия
+## {id, kind:"spell", back}: рубашка закреплена, пока карта у сыщика, и при каждом
+## касте переворачивается та же. Сброшенная копия возвращается в оборот при
+## замешивании (сброс выводится: все копии минус руки минус колода). Число копий
+## заклинания = backs.size() в контенте — дописал оборот в CMS, получил карту.
+## Сам бросок каста делает cast-flow (CheckFlow); сюда приходит результат
+## (successes, dice).
+##
+## flow.backs[item_index] — форс рубашки (детерминизм/тесты/replay); карта без back
+## (легаси-снапшот) — случайная рубашка. Доступ к стейту — через _gs: _gs.players,
+## _gs.spell_deck, _gs.is_host(), _gs.name_of(), _gs.apply_board_effect().
+## Создаётся в GameState (поле _spell).
 
 const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
@@ -23,8 +30,8 @@ func _init(gs: Node) -> void:
 
 
 ## Хост: разрешить каст заклинания item_index по результату теста (successes/dice).
-## passed = successes ≥ 1 → фронт.onPass. Затем СЛУЧАЙНАЯ рубашка (каждый каст —
-## свежая) → её tiers по числу успехов → discardCard в эффектах → карта сброшена.
+## passed = successes ≥ 1 → фронт.onPass. Затем рубашка ЭТОЙ копии (item.back) → её
+## tiers по числу успехов → discardCard в эффектах → карта сброшена.
 ## flow.backs[i] форсит конкретную рубашку (детерминизм/тесты). true — каст состоялся.
 func resolve_cast(
 	pid: String, item_index: int, successes: int, dice: Array, flow: Dictionary = {}
@@ -46,12 +53,13 @@ func resolve_cast(
 	if successes >= 1:
 		var front: Dictionary = spell.get("front", {})
 		consumed = _apply_effects(pid, front.get("onPass", []), ctx) or consumed
-	# Рубашка СЛУЧАЙНА при КАЖДОМ касте (наугад из набора оборотов заклинания) —
-	# это нарочно: каждый каст — свежий сюрприз, что провоцирует кастовать чаще.
-	# Хост-авторитетно: бросок здесь, в клиентов уезжает уже результат (как кубики).
-	# flow.backs[i] — форс конкретной рубашки (детерминизм/тесты), как flow.rolls
-	# для кубиков.
+	# Рубашка — закреплённая за ЭТОЙ копией (item.back, назначена при выдаче из
+	# колоды): переворачиваем ту же карту, что и в прошлый каст. flow.backs[i] —
+	# форс конкретной рубашки (детерминизм/тесты), как flow.rolls для кубиков.
+	# Карта без back (легаси-снапшот) → случайная рубашка.
 	var forced: String = String((flow.get("backs", {}) as Dictionary).get(str(item_index), ""))
+	if forced.is_empty() and items[item_index] is Dictionary:
+		forced = String((items[item_index] as Dictionary).get("back", ""))
 	var back: Dictionary = SpellCatalog.random_back(spell, forced)
 	# Снимок ДО рубашки (фронт уже применён) — diff даст ЧИСТУЮ расплату оборота.
 	var pre: Dictionary = {
@@ -342,24 +350,144 @@ func host_apply_trigger_spells(pid: String, indices: Array, flow: Dictionary = {
 
 
 ## Хост: выдать заклинание сыщику (board-verb gainSpell). spell_id пустой →
-## случайное из каталога. Кладёт карту {id, kind:"spell"} в инвентарь (рубашка не
-## фиксируется — тянется заново при каждом касте).
+## случайная копия из колоды; иначе — копия ИМЕННО этого заклинания (любой из его
+## оборотов). Копий не осталось (все в руках) — карта не выдаётся, как в настолке.
 func grant_spell(pid: String, spell_id: String = "") -> void:
 	if not _gs.is_host() or not _gs.players.has(pid):
 		return
-	var sid: String = spell_id
-	if sid.is_empty():
-		var pool: Array = SeasonGate.filter_room(SpellCatalog.all())
-		if pool.is_empty():
-			return
-		sid = String((pool[randi() % pool.size()] as Dictionary).get("id", ""))
-	if sid.is_empty() or SpellCatalog.by_id(sid).is_empty():
+	if not spell_id.is_empty() and SpellCatalog.by_id(spell_id).is_empty():
+		return
+	var copy: Dictionary = _take_copy(spell_id)
+	if copy.is_empty():
+		GameConsole.log("[Заклинание] копий «%s» не осталось" % (spell_id if spell_id else "?"))
 		return
 	var p: Dictionary = _gs.players[pid]
 	var items: Array = p.get("items", [])
-	items.append({"id": sid, "kind": "spell"})
+	items.append({"id": String(copy["id"]), "kind": "spell", "back": String(copy["back"])})
 	p["items"] = items
-	GameConsole.log("[Заклинание] %s получил «%s»" % [_gs.name_of(pid), sid])
+	GameConsole.log(
+		"[Заклинание] %s получил «%s» (%s)" % [_gs.name_of(pid), copy["id"], copy["back"]]
+	)
+
+
+# ── Колода копий ─────────────────────────────────────────────────────────────
+
+
+## Хост: собрать колоду партии — по копии на каждый оборот каждого доступного столу
+## заклинания. Стартовые заклинания сыщиков уже лежат в руках без рубашки: каждому
+## назначается своя копия (и вычитается из колоды). Зовётся из start_game.
+func reset_deck() -> void:
+	if not _gs.is_host():
+		return
+	_gs.spell_deck = _all_copies()
+	for pid: String in _gs.players:
+		assign_backs(pid)
+	(_gs.spell_deck as Array).shuffle()
+	GameConsole.log("[Заклинания] колода собрана: %d копий" % (_gs.spell_deck as Array).size())
+
+
+## Хост: закрепить копии за заклинаниями на руках сыщика: карте без back — своя копия
+## из колоды (стартовые карты, поздний вход, легаси-снапшот); карта с back — её копия
+## из колоды убирается (одна копия — один владелец). Копий нет → карта остаётся без
+## рубашки (каст возьмёт случайную).
+func assign_backs(pid: String) -> void:
+	if not _gs.is_host() or not _gs.players.has(pid):
+		return
+	var p: Dictionary = _gs.players[pid]
+	var items: Array = p.get("items", [])
+	for i in range(items.size()):
+		var it_v: Variant = items[i]
+		if not (it_v is Dictionary) or String((it_v as Dictionary).get("kind", "")) != "spell":
+			continue
+		var it: Dictionary = it_v
+		var sid: String = String(it.get("id", ""))
+		var own: String = String(it.get("back", ""))
+		if own.is_empty():
+			var copy: Dictionary = _take_copy(sid)
+			if copy.is_empty():
+				continue
+			it["back"] = String(copy["back"])
+			items[i] = it
+		else:
+			_remove_copy(sid, own)
+	p["items"] = items
+
+
+# Все копии доступных столу заклинаний: {id, back} на каждый оборот; заклинание без
+# оборотов — одна копия с пустым back.
+func _all_copies() -> Array:
+	var out: Array = []
+	for s_v: Variant in SeasonGate.filter_room(SpellCatalog.all()):
+		var s: Dictionary = s_v
+		var sid: String = String(s.get("id", ""))
+		var backs: Array = s.get("backs", [])
+		if backs.is_empty():
+			out.append({"id": sid, "back": ""})
+		for b_v: Variant in backs:
+			out.append({"id": sid, "back": String((b_v as Dictionary).get("id", ""))})
+	return out
+
+
+# Снять копию из колоды: заклинания spell_id (случайный из его оборотов) или любую
+# ("" — случайная карта). Нужной копии в колоде нет → замешиваем сброс (все копии
+# минус руки минус колода). {} — копий не осталось вовсе.
+func _take_copy(spell_id: String) -> Dictionary:
+	var deck: Array = _gs.spell_deck
+	var idx: int = _find_copy(deck, spell_id)
+	if idx < 0:
+		var discard: Array = _discarded_copies()
+		if not discard.is_empty():
+			discard.shuffle()
+			deck.append_array(discard)
+			GameConsole.log("[Заклинания] колода замешана из сброса: %d копий" % discard.size())
+			idx = _find_copy(deck, spell_id)
+	if idx < 0:
+		return {}
+	var copy: Dictionary = deck[idx]
+	deck.remove_at(idx)
+	_gs.spell_deck = deck
+	return copy
+
+
+func _find_copy(deck: Array, spell_id: String) -> int:
+	if deck.is_empty():
+		return -1
+	if spell_id.is_empty():
+		return randi() % deck.size()
+	var cands: Array = []
+	for i in range(deck.size()):
+		if String((deck[i] as Dictionary).get("id", "")) == spell_id:
+			cands.append(i)
+	return -1 if cands.is_empty() else int(cands[randi() % cands.size()])
+
+
+func _remove_copy(spell_id: String, back: String) -> void:
+	var deck: Array = _gs.spell_deck
+	for i in range(deck.size()):
+		var c: Dictionary = deck[i]
+		if String(c.get("id", "")) == spell_id and String(c.get("back", "")) == back:
+			deck.remove_at(i)
+			_gs.spell_deck = deck
+			return
+
+
+# Сброс выводится: копии, которых нет ни в руках, ни в колоде.
+func _discarded_copies() -> Array:
+	var taken: Dictionary = {}
+	for p_v: Variant in _gs.players.values():
+		for it_v: Variant in (p_v as Dictionary).get("items", []):
+			if it_v is Dictionary and String((it_v as Dictionary).get("kind", "")) == "spell":
+				var it: Dictionary = it_v
+				taken["%s|%s" % [String(it.get("id", "")), String(it.get("back", ""))]] = true
+	for c_v: Variant in _gs.spell_deck:
+		var c: Dictionary = c_v
+		taken["%s|%s" % [String(c.get("id", "")), String(c.get("back", ""))]] = true
+	var out: Array = []
+	for c_v: Variant in _all_copies():
+		var c: Dictionary = c_v
+		if not taken.has("%s|%s" % [String(c.get("id", "")), String(c.get("back", ""))]):
+			out.append(c)
+	return out
 
 
 # Прогон Effect-программы каста: мутирует игрока; discardCard → consumed (сброс

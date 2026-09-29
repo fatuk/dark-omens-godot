@@ -174,6 +174,11 @@ var encounter_discard: Array = []
 # Колода активов (синкается). Сброс НЕ хранится, а выводится — см. asset_discard_ids.
 var asset_deck: Array = []
 
+# Колода заклинаний (синкается): копии {id, back} — по одной на каждый оборот каждого
+# доступного столу заклинания, как физические карты настолки. Сброс выводится:
+# все копии минус руки минус колода (см. SpellFlow._discarded_copies).
+var spell_deck: Array = []
+
 # Где лежат ключи улик, уже вышедших из колоды: на жетонах поля. Синкается вместе с
 # колодой — иначе перезаход хоста терял привязку, и ключи этих жетонов пропадали из
 # оборота (в колоде их уже нет, в сброс они никогда не попадут).
@@ -345,6 +350,7 @@ const _SYNC_FIELDS: Array[String] = [
 	"clue_deck_built",
 	"encounter_discard",
 	"asset_deck",
+	"spell_deck",
 	"monster_surge",
 	"encounter_choices",
 	"shop_reserve",
@@ -584,6 +590,7 @@ func start_game(players_init: Array) -> void:
 	var setup_pc: int = int(campaign.get("playerCount", _campaign.balance_player_count()))
 	_board.reset_clue_deck()  # свежий пул улик Древнего перед раскладкой (соберётся лениво из campaign)
 	_board.setup_board(maxi(1, setup_pc))  # стартовая раскладка: врата+монстры, улики, Наплыв
+	_spell.reset_deck()  # колода копий заклинаний; стартовым заклинаниям сыщиков — рубашки
 	_mystery.apply_mystery_on_enter()  # onEnter первой Тайны (если библия уже готова; иначе при её приходе)
 	broadcast_sync()
 	emit_changed()
@@ -1024,6 +1031,7 @@ func _add_player_mid_game(uid: String, pname: String, investigator: String) -> v
 		san_max,
 	)
 	turn_order.append(uid)
+	_spell.assign_backs(uid)  # стартовому заклинанию — копия из колоды
 	GameConsole.log("[Game] %s присоединился к партии (игроков: %d)" % [pname, turn_order.size()])
 	broadcast_sync()
 	emit_changed()

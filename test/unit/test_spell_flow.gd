@@ -61,6 +61,7 @@ class MockGameState:
 	var last_cast_result: Dictionary = {}
 	var roll_successes: int = 0
 	var roll_dice: Array = []
+	var spell_deck: Array = []  # колода копий {id, back}; пустая → grant замешает «сброс»
 	var _check: StubCheck
 	var _phase: StubPhase
 
@@ -201,19 +202,93 @@ func test_grant_spell_explicit_id() -> void:
 	assert_eq(items.size(), 1, "карта добавлена")
 	assert_eq(String((items[0] as Dictionary)["id"]), "shriveling")
 	assert_eq(String((items[0] as Dictionary)["kind"]), "spell", "помечена как заклинание")
-	assert_false(
-		(items[0] as Dictionary).has("back"), "рубашка НЕ фиксируется — тянется заново каждый каст"
-	)
+	var back: String = String((items[0] as Dictionary).get("back", ""))
+	assert_true(back.begins_with("shriveling_b"), "выдана конкретная копия — рубашка закреплена")
 
 
 func test_flow_back_overrides_instance_back() -> void:
-	# Рубашка тянется заново при касте → даже если на экземпляре завалялся back,
-	# он игнорируется, а flow.backs форсит конкретную рубашку (детерминизм/тесты).
+	# flow.backs (детерминизм/тесты/replay) сильнее закреплённой рубашки копии.
 	_player([{"id": "shriveling", "kind": "spell", "back": "shriveling_b1"}])
 	_sf.resolve_cast("p", 0, 0, [3, 4], _force("shriveling_b2"))
 	assert_true(
 		(_gs.players["p"]["conditions"] as Array).has("poisoned"),
-		"flow.backs (b2 → poisoned) бьёт залежавшийся instance.back (b1)"
+		"flow.backs (b2 → poisoned) бьёт instance.back (b1)"
+	)
+
+
+func test_cast_uses_fixed_back_of_the_copy() -> void:
+	# Без форса переворачивается рубашка ЭТОЙ копии — и во второй каст та же.
+	_player([{"id": "shriveling", "kind": "spell", "back": "shriveling_b2"}])
+	_sf.resolve_cast("p", 0, 0, [3, 4])
+	assert_eq(String(_gs.last_cast_result["back"]), "shriveling_b2", "первый каст — b2")
+	assert_true((_gs.players["p"]["conditions"] as Array).has("poisoned"), "исход b2 при 0 успехов")
+	_sf.resolve_cast("p", 0, 3, [5, 5, 6])
+	assert_eq(String(_gs.last_cast_result["back"]), "shriveling_b2", "второй каст — та же копия")
+
+
+func test_legacy_item_without_back_gets_random_back() -> void:
+	_player([{"id": "shriveling", "kind": "spell"}])
+	_sf.resolve_cast("p", 0, 3, [5, 5, 6])
+	assert_true(
+		String(_gs.last_cast_result["back"]).begins_with("shriveling_b"),
+		"карта без back (легаси) — случайная рубашка заклинания"
+	)
+
+
+# ── Колода копий (reset_deck / assign_backs / замешивание) ────────────────────
+
+
+func test_reset_deck_one_copy_per_back_minus_hands() -> void:
+	_player([{"id": "shriveling", "kind": "spell"}])  # стартовое заклинание без рубашки
+	_sf.reset_deck()
+	var deck: Array = _gs.spell_deck
+	var total: int = 0
+	for s_v: Variant in SeasonGate.filter_room(SpellCatalog.all()):
+		total += maxi(1, ((s_v as Dictionary).get("backs", []) as Array).size())
+	assert_eq(deck.size(), total - 1, "копий = сумма оборотов минус карта в руке")
+	var item: Dictionary = _gs.players["p"]["items"][0]
+	assert_true(
+		String(item.get("back", "")).begins_with("shriveling_b"),
+		"стартовой карте назначена рубашка"
+	)
+	for c_v: Variant in deck:
+		var c: Dictionary = c_v
+		assert_false(
+			String(c["id"]) == "shriveling" and String(c["back"]) == String(item["back"]),
+			"копия из руки в колоде не лежит"
+		)
+
+
+func test_all_copies_in_hands_blocks_named_grant() -> void:
+	_player()
+	var n: int = (SpellCatalog.by_id("shriveling").get("backs", []) as Array).size()
+	for _i in range(n):
+		_sf.grant_spell("p", "shriveling")
+	var items: Array = _gs.players["p"]["items"]
+	assert_eq(items.size(), n, "выданы все копии")
+	var backs: Dictionary = {}
+	for it_v: Variant in items:
+		backs[String((it_v as Dictionary)["back"])] = true
+	assert_eq(backs.size(), n, "все рубашки разные — копии уникальны")
+	_sf.grant_spell("p", "shriveling")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), n, "копий не осталось — карта не выдана")
+
+
+func test_discarded_copy_returns_via_reshuffle() -> void:
+	_player()
+	var n: int = (SpellCatalog.by_id("shriveling").get("backs", []) as Array).size()
+	for _i in range(n):
+		_sf.grant_spell("p", "shriveling")
+	# «Сбросили» одну копию: убрали из руки → она вне рук и вне колоды = в сбросе.
+	var items: Array = _gs.players["p"]["items"]
+	var dropped: String = String((items[0] as Dictionary)["back"])
+	items.remove_at(0)
+	_gs.players["p"]["items"] = items
+	_sf.grant_spell("p", "shriveling")
+	items = _gs.players["p"]["items"]
+	assert_eq(items.size(), n, "копия вернулась через замешивание сброса")
+	assert_eq(
+		String((items[n - 1] as Dictionary)["back"]), dropped, "и это именно сброшенная копия"
 	)
 
 

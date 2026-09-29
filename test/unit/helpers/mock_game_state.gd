@@ -21,6 +21,7 @@ var active_check: Dictionary = {}
 var pending_check: Dictionary = {}
 var mythos_decision: Dictionary = {}
 var locations: Array = []  # граф для move / выбора клетки
+var spell_deck: Array = []  # колода копий заклинаний (SpellFlow)
 
 # Что модуль «сделал» с внешним миром — тесты читают отсюда.
 var board_effects: Array = []  # apply_board_effect(node)
