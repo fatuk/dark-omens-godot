@@ -606,3 +606,70 @@ func test_flip_held_ignores_missing_condition() -> void:
 	assert_true(
 		(_gs.players["p"]["conditions_flipped"] as Dictionary).is_empty(), "нет карты — нет флипа"
 	)
+
+
+# ── Оборот как приключение: завершения discardCard / flipBack / stayFlipped ───
+
+
+func _def_with_back(effect: Array, then: String = "") -> Dictionary:
+	var back := {"id": "b1", "name": "X", "text": "X", "effect": effect}
+	if not then.is_empty():
+		back["then"] = then
+	return {"id": "zz", "kind": "deal", "backs": [back]}
+
+
+func test_back_without_end_is_discarded_by_default() -> void:
+	_add_player("p", {"conditions": ["zz"]})
+	_cond._flip_condition("p", "zz", _def_with_back([{"do": "loseSanity", "amount": 1}]), {}, {})
+	var p: Dictionary = _gs.players["p"]
+	assert_eq(int(p["sanity"]), 4, "эффект оборота применён")
+	assert_false(
+		(p["conditions"] as Array).has("zz"), "без завершения — сброс (так кончается большинство)"
+	)
+
+
+func test_back_flip_back_returns_card_to_front() -> void:
+	_add_player("p", {"conditions": ["zz"]})
+	_cond._flip_condition(
+		"p", "zz", _def_with_back([{"do": "loseSanity", "amount": 1}, {"do": "flipBack"}]), {}, {}
+	)
+	var p: Dictionary = _gs.players["p"]
+	assert_true((p["conditions"] as Array).has("zz"), "карта осталась")
+	assert_false(
+		(p["conditions_flipped"] as Dictionary).has("zz"),
+		"и лежит лицом — следующая Расплата снова её берёт"
+	)
+	assert_eq(String((p["conditions_backs"] as Dictionary).get("zz", "")), "b1", "копия та же")
+
+
+func test_back_stay_flipped_keeps_back_face() -> void:
+	_add_player("p", {"conditions": ["zz"]})
+	_cond._flip_condition("p", "zz", _def_with_back([{"do": "stayFlipped"}]), {}, {})
+	var p: Dictionary = _gs.players["p"]
+	assert_eq(
+		String((p["conditions_flipped"] as Dictionary).get("zz", "")), "b1", "оборот стал лицом"
+	)
+
+
+func test_back_test_node_branches_silently() -> void:
+	# Тихий путь (без UI): test-узел оборота бросается по flow.rolls; путь узла «0».
+	var eff := [{"test": "will", "onPass": [{"do": "flipBack"}], "onFail": [{"do": "discardCard"}]}]
+	_add_player("p", {"conditions": ["zz"], "investigator": ""})
+	_cond._flip_condition(
+		"p", "zz", _def_with_back(eff), {"skills": {"will": 3}}, {"rolls": {"0": [5, 1, 1]}}
+	)
+	assert_true(
+		(_gs.players["p"]["conditions"] as Array).has("zz"), "прошёл проверку — карта на лицо"
+	)
+	_add_player("q", {"conditions": ["zz"], "investigator": ""})
+	_cond._flip_condition(
+		"q", "zz", _def_with_back(eff), {"skills": {"will": 3}}, {"rolls": {"0": [1, 1, 1]}}
+	)
+	assert_false((_gs.players["q"]["conditions"] as Array).has("zz"), "провалил — сброс")
+
+
+func test_flip_held_default_keeps_card_flipped() -> void:
+	# Повторное Благословение: оборот — новое лицо (default_end "stay").
+	_add_player("p", {"conditions": ["zz"]})
+	_cond._flip_condition("p", "zz", _def_with_back([]), {}, {}, "stay")
+	assert_eq(String((_gs.players["p"]["conditions_flipped"] as Dictionary).get("zz", "")), "b1")

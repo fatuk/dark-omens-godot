@@ -85,12 +85,40 @@ func reckon_condition(
 func _reckon_condition_interactive(
 	pid: String, cid: String, def: Dictionary, program: Array, ctx: Dictionary
 ) -> void:
+	var recon_before: Dictionary = (_gs.players.get(pid, {}) as Dictionary).duplicate(true)
+	var res: Dictionary = await _run_interactive(
+		pid, cid, program, ctx, Conditions.card_payload(cid)
+	)
+	if res.is_empty():
+		return  # погиб посреди Расплаты
+	for l_v: Variant in res.get("logs", []):
+		GameConsole.log("[Расплата] %s · %s: %s" % [_gs.name_of(pid), cid, String(l_v)])
+	for node_v: Variant in res.get("board", []):
+		var node: Dictionary = node_v
+		match String(node.get("do", "")):
+			"flipCard":
+				await _flip_condition_interactive(pid, cid, def, ctx)
+			"discardCard":
+				_discard_condition(pid, cid)
+			_:
+				_gs.apply_board_effect(node)
+	ActionFeed.announce_deltas(_gs, pid, recon_before, _gs.players.get(pid, {}))  # лента Расплаты
+	ActionFeed.collect_gains(_gs, pid, recon_before, _gs.players.get(pid, {}))
+
+
+# Корутина: прогнать Effect-программу сыщика интерактивно — test пендит ВИДИМУЮ
+# проверку (per-player слот reckoning_check), выбор — модалку решения; после каждого
+# ответа программа переигрывается детерминированно (dup-изоляция). subject — карта,
+# которую видит игрок в модалке проверки (лицо состояния или его оборот). Возвращает
+# результат прогона (мутации сыщика уже закоммичены) либо {} — сыщик погиб/ушёл.
+func _run_interactive(
+	pid: String, cid: String, program: Array, ctx: Dictionary, subject: Dictionary
+) -> Dictionary:
 	var decisions: Dictionary = {}
 	var rolls: Dictionary = {}
-	var recon_before: Dictionary = (_gs.players.get(pid, {}) as Dictionary).duplicate(true)
 	while true:
 		if not _gs.players.has(pid) or bool(_gs.players[pid].get(PlayerKeys.DEAD, false)):
-			return  # погиб посреди интерактивной Расплаты — новую проверку не пендим
+			return {}  # погиб посреди интерактивной Расплаты — новую проверку не пендим
 		var dup: Dictionary = (_gs.players[pid] as Dictionary).duplicate(true)
 		var fl: Dictionary = {
 			"interactive": true,
@@ -117,7 +145,7 @@ func _reckon_condition_interactive(
 			p["reckoning_pending"] = {
 				"cid": cid,
 				"path": String(pending.get("path", "")),
-				"subject": Conditions.card_payload(cid),
+				"subject": subject,
 			}
 			_gs.broadcast_sync()
 			_gs.emit_changed()
@@ -131,14 +159,12 @@ func _reckon_condition_interactive(
 			# Выбор (optional flipCard у Righteous/Funding, choice) — модалка решения
 			# через общий канал mythos_decision; параллельные Расплаты ждут очереди.
 			decisions[String(pending.get("path", ""))] = await _await_reckon_decision(
-				pid, pending, String(def.get("name", "")), Conditions.card_payload(cid)
+				pid, pending, Conditions.name_key(cid), subject
 			)
 			continue
 		_gs.players[pid] = dup  # коммит мутаций сыщика
-		_apply_reckon_output(pid, cid, def, ctx, res, {})
-		ActionFeed.announce_deltas(_gs, pid, recon_before, _gs.players.get(pid, {}))  # лента Расплаты
-		ActionFeed.collect_gains(_gs, pid, recon_before, _gs.players.get(pid, {}))
-		return
+		return res
+	return {}
 
 
 # Выбор сыщика в onReckoning состояния через общий канал mythos_decision (driver по
@@ -215,31 +241,105 @@ func _apply_reckon_board(
 			_gs.apply_board_effect(node)
 
 
-# Перевернуть состояние: оборот — закреплённой за ЭТОЙ картой копии (conditions_backs,
-# см. reconcile_backs), применить effect, затем then: flip|discard.
+# ── Переворот: оборот — приключение с (опциональной) проверкой ────────────────
+#
+# Оборот копии (conditions_backs) — Effect-программа back.effect: обычные эффекты,
+# test-узлы с ветками onPass/onFail, выбор. Завершение задаёт сама программа глаголом:
+#   discardCard  — состояние сброшено (так кончается большинство оборотов);
+#   flipBack     — карта возвращается на лицо, следующая Расплата снова её берёт;
+#   stayFlipped  — карта остаётся перевёрнутой, оборот становится новым лицом
+#                  (повторное Благословение/Проклятие).
+# Без глагола — legacy-поле then (discard | flip→stayFlipped | front→flipBack), без
+# него — default_end: "discard" в Расплате, "stay" у flip_held.
+
+
+# Тихий переворот (тесты, board-applier fallback, flip_held): test-узлы оборота
+# бросаются без UI (flow.rolls), выбор — первая ветка.
 func _flip_condition(
-	pid: String, cid: String, def: Dictionary, ctx: Dictionary, flow: Dictionary = {}
+	pid: String,
+	cid: String,
+	def: Dictionary,
+	ctx: Dictionary,
+	flow: Dictionary = {},
+	default_end: String = "discard"
 ) -> void:
+	var p: Dictionary = _gs.players.get(pid, {})
+	var back: Dictionary = _open_back(pid, cid, def, flow)
+	if back.is_empty():
+		return
+	var res: Dictionary = _EffectRunner.run(back.get("effect", []), p, ctx, flow)
+	_finish_flip(pid, cid, back, res, default_end)
+
+
+# Корутина живой Расплаты: оборот показывается игроку как карта (subject = его текст),
+# test-узлы оборота — видимая проверка через общий движок.
+func _flip_condition_interactive(
+	pid: String, cid: String, def: Dictionary, ctx: Dictionary
+) -> void:
+	var back: Dictionary = _open_back(pid, cid, def, {})
+	if back.is_empty():
+		return
+	var bid: String = String(back.get("id", ""))
+	var res: Dictionary = await _run_interactive(
+		pid, cid, back.get("effect", []), ctx, Conditions.card_payload(cid, bid)
+	)
+	if res.is_empty():
+		return  # погиб посреди оборота
+	_finish_flip(pid, cid, back, res, "discard")
+
+
+# Открыть оборот копии: закрепить его за картой (если ещё нет) и записать результат
+# для модалки игрока. {} — у состояния нет оборотов (тогда карта просто помечается
+# перевёрнутой, как раньше).
+func _open_back(pid: String, cid: String, def: Dictionary, flow: Dictionary) -> Dictionary:
 	var p: Dictionary = _gs.players.get(pid, {})
 	var backs: Array = def.get("backs", [])
 	if (backs as Array).is_empty():
 		_set_flipped(p, cid, "")
 		GameConsole.log("[Расплата] %s · %s перевёрнуто" % [_gs.name_of(pid), cid])
-		return
+		return {}
 	var back: Dictionary = _pick_back(backs, cid, flow, p)
-	var bid: String = String(back.get("id", ""))
-	_set_back(p, cid, bid)  # копия закреплена (если ещё не была)
+	_set_back(p, cid, String(back.get("id", "")))  # копия закреплена (если ещё не была)
 	_set_reckoning_result(pid, cid, back)  # для модалки результата флипа игрока
-	var res: Dictionary = _EffectRunner.run(back.get("effect", []), p, ctx, flow)
+	return back
+
+
+# Применить хвост прогона оборота: логи, board-узлы, завершение (см. шапку раздела).
+func _finish_flip(
+	pid: String, cid: String, back: Dictionary, res: Dictionary, default_end: String
+) -> void:
+	var bid: String = String(back.get("id", ""))
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[Расплата] %s · исход «%s»: %s" % [_gs.name_of(pid), bid, String(l_v)])
+	var end: String = ""
 	for node_v: Variant in res.get("board", []):
-		_gs.apply_board_effect(node_v as Dictionary)
-	if String(back.get("then", "flip")) == "discard":
-		_discard_condition(pid, cid)
-	else:
-		_set_flipped(p, cid, bid)
-		GameConsole.log("[Расплата] %s · %s → «%s»" % [_gs.name_of(pid), cid, bid])
+		var node: Dictionary = node_v
+		match String(node.get("do", "")):
+			"discardCard":
+				end = "discard"
+			"flipBack":
+				end = "front"
+			"stayFlipped":
+				end = "stay"
+			"flipCard":
+				pass  # переворот внутри оборота — карта уже перевёрнута
+			_:
+				_gs.apply_board_effect(node)
+	if end.is_empty():
+		var legacy := {"discard": "discard", "flip": "stay", "front": "front"}
+		end = String(legacy.get(String(back.get("then", "")), default_end))
+	var p: Dictionary = _gs.players.get(pid, {})
+	match end:
+		"discard":
+			_discard_condition(pid, cid)
+		"front":
+			(p.get(PlayerKeys.CONDITIONS_FLIPPED, {}) as Dictionary).erase(cid)
+			GameConsole.log(
+				"[Расплата] %s · %s → «%s», карта на лицо" % [_gs.name_of(pid), cid, bid]
+			)
+		_:
+			_set_flipped(p, cid, bid)
+			GameConsole.log("[Расплата] %s · %s → «%s»" % [_gs.name_of(pid), cid, bid])
 
 
 # Выбор оборота: форс через flow.outcomes[cid] (детерминизм/тесты/replay) → оборот
@@ -271,7 +371,7 @@ func flip_held(pid: String, cid: String) -> void:
 	var def: Dictionary = Conditions.get_def(cid)
 	if def.is_empty():
 		return
-	_flip_condition(pid, cid, def, {}, {})
+	_flip_condition(pid, cid, def, {}, {}, "stay")
 
 
 # ── Копии состояний: карта на руках = конкретный оборот ───────────────────────

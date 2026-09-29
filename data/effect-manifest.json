@@ -830,6 +830,18 @@
       "targets": null,
       "describeKey": "VERB_DISCARD_CARD"
     },
+    "flipBack": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_FLIP_BACK"
+    },
+    "stayFlipped": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_STAY_FLIPPED"
+    },
     "drawMythos": {
       "kind": "board",
       "params": [
