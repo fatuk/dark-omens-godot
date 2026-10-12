@@ -30,6 +30,8 @@ const TIMEOUT_CAMPAIGN: float = 60.0
 ## campaignId/act/doom — см. relay requestSchema). При успехе в ответе ключ
 ## `encounters` — массив карточек.
 func draw_encounter(req: Dictionary) -> Dictionary:
+	if is_offline():
+		return OfflineContent.draw(req)
 	var res: Dictionary = await _post("/encounters/draw", req, TIMEOUT_ENCOUNTER)
 	if not res["ok"]:
 		return res
@@ -41,6 +43,8 @@ func draw_encounter(req: Dictionary) -> Dictionary:
 ## /campaign/assemble (locations, ancientOne?, playerCount, themeHint?, language).
 ## При успехе в ответе ключ `campaign` — объект библии.
 func assemble_campaign(req: Dictionary) -> Dictionary:
+	if is_offline():
+		return OfflineContent.assemble(req)
 	var res: Dictionary = await _post("/campaign/assemble", req, TIMEOUT_CAMPAIGN)
 	if not res["ok"]:
 		return res
@@ -50,6 +54,8 @@ func assemble_campaign(req: Dictionary) -> Dictionary:
 
 ## Достать ранее сохранённую кампанию по id.
 func get_campaign(id: String) -> Dictionary:
+	if is_offline():
+		return OfflineContent.get_campaign(id)
 	var res: Dictionary = await _request(
 		HTTPClient.METHOD_GET, "/campaign/" + id, "", TIMEOUT_ENCOUNTER
 	)
@@ -62,6 +68,8 @@ func get_campaign(id: String) -> Dictionary:
 ## Актуальный список Древних (CMS + конфиг) для дропдауна «Создать комнату».
 ## Возвращает Array из {id, name}; при ошибке — пустой массив.
 func get_ancients(lang: String) -> Array:
+	if is_offline():
+		return OfflineContent.ancients(lang)
 	var res: Dictionary = await _request(
 		HTTPClient.METHOD_GET, "/ancients?lang=" + lang.uri_encode(), "", TIMEOUT_ENCOUNTER
 	)
@@ -69,6 +77,14 @@ func get_ancients(lang: String) -> Array:
 		return []
 	var json: Dictionary = res["json"]
 	return json.get("ancients", [])
+
+
+## Офлайн-партия (NetworkManager.local_mode): контент берём из запечённых файлов
+## data/offline/ (OfflineContent), сервер не нужен. Один переключатель на сеть и
+## контент — офлайн-игру нельзя случайно оставить без библии.
+func is_offline() -> bool:
+	var nm: Node = get_node_or_null("/root/NetworkManager")
+	return nm != null and bool(nm.get("local_mode"))
 
 
 # ── Транспорт ─────────────────────────────────────────────────────────────────
