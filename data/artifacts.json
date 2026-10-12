@@ -1425,5 +1425,26 @@
 			]
 		},
 		"hasImage": false
+	},
+	{
+		"id": "sheaf",
+		"nameKey": "ARTIFACT_SHEAF_NAME",
+		"abilityKey": "ARTIFACT_SHEAF_ABILITY",
+		"season": "core",
+		"unique": true,
+		"traits": [
+			"relic"
+		],
+		"effect": {
+			"whileOwned": [
+				{
+					"do": "cannotGainClues"
+				},
+				{
+					"do": "undiscardable"
+				}
+			]
+		},
+		"hasImage": false
 	}
 ]

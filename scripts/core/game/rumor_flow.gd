@@ -63,8 +63,13 @@ func on_enter(card: Dictionary) -> void:
 					)
 				)
 		"encounter":
-			# Метка слуха на локации — туда идут разыгрывать встречу-решение.
-			var eloc: String = _pick_marked_location()
+			# Метка слуха на локации — туда идут разыгрывать встречу-решение. Явная
+			# rumor.location («нотариус в Уэнэме») важнее случайной.
+			var eloc: String = String(rumor.get("location", ""))
+			if eloc.is_empty():
+				eloc = _pick_marked_location()
+			else:
+				_gs._board.place_rumor_at(eloc)
 			card["rumorLocation"] = eloc
 			GameConsole.log(
 				"[Слух] «%s»: встреча на %s, жетонов %d" % [_name(card), eloc, int(card["tokens"])]

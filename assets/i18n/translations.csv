@@ -1837,3 +1837,17 @@ DEATH_PULLS,Тьма тянет…,The dark pulls…
 RUMORS_IN_PLAY,Слухи в игре,Rumors in play
 RUMOR_TOKENS_WORD,жетонов,tokens
 RUMOR_PORTAL_WORD,портал,portal
+COND_OBSESSION_NAME,Одержимость,Obsession
+COND_OBSESSION_FRONT,При действии «Отдых» можно бросить 1 кубик; на 5 или 6 сбросьте эту карту.,"When you perform the Rest action, you may roll 1 die; on a 5 or 6, discard this card."
+COND_OBSESSION_RECKONING,Проверка Воли. При провале переверните эту карту.,"Test Will. If you fail, flip this card."
+OUTCOME_SHEAF_IN_EVERY_DREAM_NAME,Сноп в каждом сне,A Sheaf in Every Dream
+OUTCOME_SHEAF_IN_EVERY_DREAM_TEXT,"Вы просыпаетесь с соломой в кулаке и не помните, где её взяли. Потеряйте 1 рассудок, затем сбросьте эту карту.","You wake with straw in your fist and no memory of where you took it. Lose 1 Sanity, then discard this card."
+OUTCOME_COUNTING_STALKS_NAME,Счёт колосьев,Counting the Stalks
+OUTCOME_COUNTING_STALKS_TEXT,"Вы не можете пройти мимо поля, не пересчитав колосья, и теряете на этом целый день. Станьте задержанным, затем сбросьте эту карту.","You cannot pass a field without counting the stalks, and it costs you a whole day. Become Delayed, then discard this card."
+OUTCOME_THE_RULE_IS_WRITTEN_NAME,Правило записано,The Rule Is Written
+OUTCOME_THE_RULE_IS_WRITTEN_TEXT,"Ночью вы перевязываете всё, что попадается под руку, по одному и тому же правилу. Потеряйте 1 улику, затем сбросьте эту карту.","At night you tie up everything within reach by one and the same rule. Lose 1 Clue, then discard this card."
+
+MON_ELDER_NAME,Старший,The Elder
+MON_ELDER_ABILITY,"Нельзя атаковать, пока на поле есть культисты. Стойкость +1 за каждых двух сыщиков.",Cannot be attacked while any Cultist is on the board. Toughness +1 per two investigators.
+ARTIFACT_SHEAF_NAME,Сноп,The Sheaf
+ARTIFACT_SHEAF_ABILITY,"Нельзя сбросить. Пока Сноп у сыщика, он не может получать новые улики.","Cannot be discarded. While an investigator holds the Sheaf, they cannot gain Clues."

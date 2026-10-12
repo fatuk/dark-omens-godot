@@ -115,6 +115,10 @@ func _eval_hook_when(when_v: Variant, ctx: Dictionary) -> bool:
 		var locs: Array = _gs._campaign.current_mystery().get("locations", [])
 		if not locs.has(String(ctx.get("loc", ""))):
 			return false
+	# Явная клетка: хук срабатывает только на ней (без меток на карте).
+	var want_loc: String = String(w.get("location", ""))
+	if not want_loc.is_empty() and String(ctx.get("loc", "")) != want_loc:
+		return false
 	return true
 
 

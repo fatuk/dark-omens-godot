@@ -2331,5 +2331,31 @@
 			"textKey": "MON_ZOMBIE_HORDE_ABILITY"
 		},
 		"hasImage": true
+	},
+	{
+		"id": "elder",
+		"season": "core",
+		"nameKey": "MON_ELDER_NAME",
+		"epic": true,
+		"toughness": 3,
+		"toughnessPerInvestigator": 0.5,
+		"horror": {
+			"skill": "will",
+			"modifier": -1,
+			"damage": 2
+		},
+		"combat": {
+			"skill": "strength",
+			"modifier": -1,
+			"damage": 2
+		},
+		"untouchableWhile": {
+			"monster": "cultist"
+		},
+		"ability": {
+			"trigger": "passive",
+			"textKey": "MON_ELDER_ABILITY"
+		},
+		"hasImage": false
 	}
 ]

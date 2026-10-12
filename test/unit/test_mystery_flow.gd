@@ -440,3 +440,17 @@ func test_epic_defeated_without_after_solves_immediately() -> void:
 	_gs.players["p1"] = {"items": []}
 	_m.notify_monster_defeated("elder", "p1")
 	assert_eq(_gs._encounter.cleared, 1, "решение Тайны снимает липкие встречи")
+
+
+func test_hook_when_location_explicit() -> void:
+	_gs._campaign.mystery = {
+		"solveCondition": {"kind": "tokensOnCard", "n": 3},
+		"progress": [{"on": "researchClueGained", "when": {"location": "5"}, "effect": []}],
+	}
+	assert_true(
+		_m.mystery_hook_for("researchClueGained", {"loc": "Arkham"}).is_empty(),
+		"чужая клетка — нет"
+	)
+	assert_false(
+		_m.mystery_hook_for("researchClueGained", {"loc": "5"}).is_empty(), "поле — хук есть"
+	)
