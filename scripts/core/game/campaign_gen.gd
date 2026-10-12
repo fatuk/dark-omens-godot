@@ -226,6 +226,8 @@ func _summary(full: Dictionary, ancient_id: String = "") -> Dictionary:
 			# onReckoning — Расплата Тайны, пока она активна (тир ReckoningFlow).
 			"onReckoning": m.get("onReckoning", []),
 		}
+		if m.has("afterDefeat"):
+			msum["afterDefeat"] = m.get("afterDefeat", {})  # epicDefeated: особая встреча
 		# progress-хуки набора жетонов (реакции gateClosed/... + встречи-хуки
 		# encounterAtEldritchToken) — БЕЗ них tokensOnCard-Тайна не продвигается и
 		# не предлагает встречу. Лёгкие, синкаем как есть. Копируем только если есть

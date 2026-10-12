@@ -416,6 +416,7 @@ func commit(pid: String) -> void:
 		_remove_monster_instance(loc, idx)
 		_gs._board.return_monster_to_bag(String(enc.get("monsterId", "")))  # монстр умер → в мешок
 		_gs._rumor.notify_monster_defeated(loc)  # Слух с solve=monsterDefeated развеян
+		_gs._mystery.notify_monster_defeated(String(enc.get("monsterId", "")), pid)  # Тайна epicDefeated
 	else:
 		_set_monster_health(loc, idx, int(r.get("health_after", 0)))
 		mark_fought(loc, idx)  # выжил — но повторно в этом ходу не предлагается

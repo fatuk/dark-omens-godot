@@ -1025,6 +1025,8 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 				damage_monster_at_active(n)
 		"resolveReckoning":
 			_gs._cond.host_resolve_reckoning()
+		"solveMystery":
+			_gs._mystery.solve_now()  # ветка успеха особой встречи Тайны
 		"flipCondition":
 			# Повторное получение Благословения/Проклятия: переворот карты на руках (см.
 			# EffectRunner._duplicate_flips). _pid — чей gainCondition это был.

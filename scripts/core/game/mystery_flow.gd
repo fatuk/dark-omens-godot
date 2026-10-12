@@ -240,9 +240,70 @@ func apply_mystery_on_enter() -> void:
 			_gs.apply_board_effect(node)
 
 
+## Хост: гибель монстра mid (победил pid). Тайна вида epicDefeated {monster}: без
+## afterDefeat — решена сразу; с afterDefeat {encounterTag, holderOf} — владельцу
+## предмета holderOf (нет такого → победителю) назначается липкая особая встреча с
+## картами тега; решает её глагол solveMystery в ветке успеха.
+func notify_monster_defeated(mid: String, pid: String) -> void:
+	if not _gs.is_host() or mystery_kind() != "epicDefeated":
+		return
+	var m: Dictionary = _gs._campaign.current_mystery()
+	var sc: Dictionary = m.get("solveCondition", {})
+	if String(sc.get("monster", "")) != mid:
+		return
+	var after: Dictionary = m.get("afterDefeat", {})
+	if after.is_empty():
+		_solve_active_mystery()
+		return
+	var target: String = holder_of(String(after.get("holderOf", "")))
+	if target.is_empty():
+		target = pid
+	var ef: Variant = _gs.get("_encounter")
+	if ef == null:
+		return
+	(
+		ef
+		. assign_sticky(
+			target,
+			{
+				"kind": String(after.get("kind", "general")),
+				"tag": String(after.get("encounterTag", "")),
+				"mystery_idx": _gs.active_mystery,
+			}
+		)
+	)
+	GameConsole.log(
+		(
+			"[Тайна] %s повержен — особая встреча у %s (тег %s)"
+			% [mid, _gs.name_of(target), String(after.get("encounterTag", ""))]
+		)
+	)
+
+
+## Сыщик, у которого на руках артефакт/актив item_id ("" — ни у кого).
+func holder_of(item_id: String) -> String:
+	if item_id.is_empty():
+		return ""
+	for pid_v: Variant in _gs.players:
+		for it_v: Variant in (_gs.players[pid_v] as Dictionary).get("items", []):
+			if AssetCatalog.entry_id(it_v) == item_id:
+				return String(pid_v)
+	return ""
+
+
+## Хост: решить активную Тайну немедленно (board-verb solveMystery — ветка успеха
+## особой встречи).
+func solve_now() -> void:
+	if _gs.is_host():
+		_solve_active_mystery()
+
+
 # Активная Тайна решена: переходим к следующей или фиксируем победу.
 func _solve_active_mystery() -> void:
 	var solved_idx: int = _gs.active_mystery
+	var ef: Variant = _gs.get("_encounter")
+	if ef != null:
+		ef.clear_sticky()  # особые встречи этой Тайны больше не повторяются
 	GameConsole.log("[Тайна] решена тайна акта %d" % (solved_idx + 1))
 	_gs.active_mystery += 1
 	_gs.mystery_progress = 0

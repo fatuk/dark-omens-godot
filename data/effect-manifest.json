@@ -854,6 +854,12 @@
       "targets": null,
       "describeKey": "VERB_STAY_FLIPPED"
     },
+    "solveMystery": {
+      "kind": "board",
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_SOLVE_MYSTERY"
+    },
     "drawMythos": {
       "kind": "board",
       "params": [

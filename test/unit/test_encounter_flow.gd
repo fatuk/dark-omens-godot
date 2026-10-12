@@ -93,9 +93,18 @@ class MockRumor:
 		pass
 
 
+class MockMystery:
+	extends RefCounted
+
+	func notify_monster_defeated(_mid: String, _pid: String) -> void:
+		pass
+
+
 class MockGS:
 	extends Node
 	var phase: String = "encounter"
+	var active_mystery: int = 0
+	var _mystery := MockMystery.new()
 	var players: Dictionary = {}
 	var current_encounter: Dictionary = {}
 	var encounter_discard: Array = []
@@ -813,3 +822,36 @@ func test_untouchable_monster_is_skipped_while_guard_on_board() -> void:
 	gs.monsters.erase("far")
 	assert_false(ef.combat.is_untouchable("elder"), "культистов нет → можно")
 	assert_eq(ef.combat.unfought_indices("loc"), [0])
+
+
+# ── Липкая особая встреча Тайны: повтор каждый ход, пока Тайна та же ───────────
+
+
+func test_sticky_rearms_until_mystery_changes() -> void:
+	var gs: MockGS = autofree(MockGS.new())
+	gs.players["p"] = {"location": "loc", "hp": 5, "sanity": 5, "items": []}
+	var ef := EncounterFlow.new(gs)
+	ef.assign_sticky("p", {"kind": "general", "tag": "demo-final", "mystery_idx": 0})
+	assert_eq(String(ef.debug_assigned("p").get("tag", "")), "demo-final", "назначена")
+	ef._forced.erase("p")  # «сыграна» (generate снимает назначение)
+	ef._rearm_sticky("p")
+	assert_eq(
+		String(ef.debug_assigned("p").get("tag", "")), "demo-final", "повтор на следующий ход"
+	)
+	gs.active_mystery = 1  # Тайна решена → следующая
+	ef._forced.erase("p")
+	ef._rearm_sticky("p")
+	assert_true(ef.debug_assigned("p").is_empty(), "Тайна сменилась — повтора нет")
+	ef.assign_sticky("p", {"kind": "general", "tag": "x", "mystery_idx": 1})
+	ef.clear_sticky()
+	assert_true(ef.debug_assigned("p").is_empty(), "clear_sticky снимает и несыгранное")
+
+
+func test_investigator_flags() -> void:
+	var gs: MockGS = autofree(MockGS.new())
+	var ef := EncounterFlow.new(gs)
+	assert_eq(ef._investigator_flags({"items": []}), [])
+	var flags: Array = ef._investigator_flags(
+		{"items": [{"id": "wither", "kind": "spell"}, {"id": "lantern", "exhausted": false}]}
+	)
+	assert_eq(flags, ["hasSpell"], "заклинание → hasSpell; обычный актив флага не даёт")

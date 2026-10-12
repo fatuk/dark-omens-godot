@@ -36,9 +36,22 @@ class StubBoard:
 		return removed
 
 
+class StubEncounter:
+	extends RefCounted
+	var assigned: Dictionary = {}
+	var cleared: int = 0
+
+	func assign_sticky(pid: String, spec: Dictionary) -> void:
+		assigned[pid] = spec
+
+	func clear_sticky() -> void:
+		cleared += 1
+
+
 class MockGameState:
 	extends Node
 	var host: bool = true
+	var _encounter := StubEncounter.new()
 	var players: Dictionary = {}
 	var turn_order: Array = []
 	var current_idx: int = 0
@@ -401,3 +414,29 @@ func test_hook_programs_reach_player() -> void:
 	assert_true(
 		(_gs.players["p"]["conditions"] as Array).has("debt"), "onFail — игровой verb к сыщику"
 	)
+
+
+# ── epicDefeated: гибель эпика → липкая особая встреча владельцу Снопа ────────
+
+
+func test_epic_defeated_assigns_sticky_encounter_to_holder() -> void:
+	_gs._campaign.mystery = {
+		"solveCondition": {"kind": "epicDefeated", "monster": "elder"},
+		"afterDefeat": {"encounterTag": "demo-final", "holderOf": "sheaf"},
+	}
+	_gs.players["p1"] = {"items": [{"id": "sheaf", "kind": "artifact"}]}
+	_gs.players["p2"] = {"items": []}
+	_m.notify_monster_defeated("ghoul", "p2")
+	assert_true(_gs._encounter.assigned.is_empty(), "не тот монстр — ничего")
+	_m.notify_monster_defeated("elder", "p2")
+	var spec: Dictionary = _gs._encounter.assigned.get("p1", {})
+	assert_eq(String(spec.get("tag", "")), "demo-final", "встреча у владельца Снопа, по тегу")
+	assert_eq(int(spec.get("mystery_idx", -1)), 0, "привязана к текущей Тайне")
+	assert_false(_gs._encounter.assigned.has("p2"), "победителю — нет, у него нет Снопа")
+
+
+func test_epic_defeated_without_after_solves_immediately() -> void:
+	_gs._campaign.mystery = {"solveCondition": {"kind": "epicDefeated", "monster": "elder"}}
+	_gs.players["p1"] = {"items": []}
+	_m.notify_monster_defeated("elder", "p1")
+	assert_eq(_gs._encounter.cleared, 1, "решение Тайны снимает липкие встречи")

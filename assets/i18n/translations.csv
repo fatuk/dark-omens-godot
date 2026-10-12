@@ -871,6 +871,7 @@ VERB_FLIP_CARD,перевернуть карту,flip the card
 VERB_DISCARD_CARD,сбросить карту,discard the card
 VERB_FLIP_BACK,вернуть карту на лицо,flip the card back
 VERB_STAY_FLIPPED,карта остаётся перевёрнутой,the card stays flipped
+VERB_SOLVE_MYSTERY,Тайна раскрыта,the Mystery is solved
 VERB_LOSE_ASSET,сбросить активы ×{count},discard {count} Asset(s)
 VERB_LOSE_ARTIFACT,сбросить артефакты ×{count},discard {count} Artifact(s)
 VERB_GAIN_TICKET,+{count} билет,+{count} ticket(s)

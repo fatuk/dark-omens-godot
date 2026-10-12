@@ -26,6 +26,11 @@ var _gen_token: int = 0
 # этого игрока — см. generate/debug_assign.
 var _forced: Dictionary = {}
 
+# «Липкие» назначения: pid → spec. Особая встреча Тайны (после гибели эпика): если
+# встреча отыграна, а Тайна всё ещё та же — назначается снова на следующий ход
+# («повтор при провале»). Снимается решением Тайны (clear_sticky). Хост-локально.
+var _sticky: Dictionary = {}
+
 
 func _init(gs: Node) -> void:
 	_gs = gs
@@ -48,6 +53,32 @@ func debug_assigned(pid: String) -> Dictionary:
 	return _forced.get(pid, {})
 
 
+## Хост: назначить сыщику особую встречу Тайны и повторять её каждый ход, пока Тайна
+## (spec.mystery_idx) активна. spec: {kind, tag, mystery_idx}; tag — тег карт корпуса.
+func assign_sticky(pid: String, spec: Dictionary) -> void:
+	_forced[pid] = spec
+	_sticky[pid] = spec
+
+
+## Тайна решена — липкие назначения снимаются (и ещё не сыгранное тоже).
+func clear_sticky() -> void:
+	for pid_v: Variant in _sticky.keys():
+		_forced.erase(pid_v)
+	_sticky.clear()
+
+
+# После отыгранной встречи: липкое назначение ставится снова, если Тайна та же.
+func _rearm_sticky(pid: String) -> void:
+	var sp: Dictionary = _sticky.get(pid, {})
+	if sp.is_empty():
+		return
+	if int(sp.get("mystery_idx", -1)) != int(_gs.get("active_mystery")):
+		_sticky.erase(pid)
+		return
+	_forced[pid] = sp
+	GameConsole.log("[Тайна] особая встреча %s повторится на следующем ходу" % _gs.name_of(pid))
+
+
 ## Хост: сгенерировать карту встречи (kind) для игрока, чей сейчас ход на
 ## встречу, и разослать её. Корутина: вызывается без await (fire-and-forget)
 ## из encounter-флоу.
@@ -65,7 +96,7 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 		_forced.erase(pid)
 		kind = String(forced.get("kind", kind))
 		site_specific = bool(forced.get("siteSpecific", site_specific))
-		GameConsole.log("[Debug] встреча «%s» для %s" % [kind, _gs.name_of(pid)])
+		GameConsole.log("[Встреча] назначенная «%s» для %s" % [kind, _gs.name_of(pid)])
 
 	# Лента действий: тип не-боевой встречи (бой → _begin_combat, eldritch → _begin_eldritch_move).
 	var feed_id: String = {"research": "research", "gate": "gate", "mystery": "mystery"}.get(
@@ -92,6 +123,10 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 		return
 
 	var req: Dictionary = _build_request(_gs.players[pid], kind, site_specific)
+	# Назначенная встреча с тегом (особые карты Тайны) — корпус отдаёт только их.
+	var forced_tag: String = String(forced.get("tag", ""))
+	if not forced_tag.is_empty():
+		req["tag"] = forced_tag
 	# Мир врат штатно не задаём (за одними вратами каждый раз новый), но из консоли
 	# им можно прицелиться: реле по otherWorld отфильтрует пул.
 	var forced_world: String = String(forced.get("world", ""))
@@ -553,6 +588,7 @@ func _commit_outcome(pid: String) -> void:
 	ActionFeed.announce_deltas(_gs, pid, before, _gs.players[pid])
 	enc["committed"] = true
 	_gs._check.clear()  # проверка завершена — снять active_check
+	_rearm_sticky(pid)  # особая встреча Тайны: повтор на следующем ходу, пока не решена
 
 
 # ── Предотвращение потери (preventLoss): бинты и подобное ─────────────────────
@@ -827,6 +863,9 @@ func _build_request(
 		"count": 1,
 		"language": _gs.relay_language(),
 		"siteSpecific": site_specific,
+		# Флаги состояния сыщика: карты с data.requires (напр. hasSpell) выдаются
+		# только когда все требуемые флаги есть («вариант для сыщика с заклинанием»).
+		"flags": _investigator_flags(p),
 		# Сброс встреч: карточки, уже сыгранные в этой партии, реле повторно не выдаст.
 		"exclude": _gs.encounter_discard,
 	}
@@ -1027,6 +1066,19 @@ func _effect_ctx(pid: String) -> Dictionary:
 	ctx["monster_choices"] = _gs._board.monster_choices()  # для chosenMonster
 	ctx["locations"] = _gs.map.all()  # move — сыщик выбирает, куда (Юггот «Перелёт»)
 	return ctx
+
+
+# Флаги сыщика для корпуса: hasSpell (есть заклинание), artifact:<id> (каждый артефакт).
+func _investigator_flags(player: Dictionary) -> Array:
+	var out: Array = []
+	for it_v: Variant in player.get("items", []):
+		if it_v is Dictionary and String((it_v as Dictionary).get("kind", "")) == "spell":
+			if not out.has("hasSpell"):
+				out.append("hasSpell")
+		var aid: String = AssetCatalog.entry_id(it_v)
+		if ArtifactCatalog.has(aid):
+			out.append("artifact:" + aid)
+	return out
 
 
 # Прочие подключённые сыщики (кроме активного) как [{pid, name}] — варианты для
