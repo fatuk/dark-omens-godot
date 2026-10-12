@@ -150,7 +150,8 @@ func _auto_connect() -> void:
 		return
 	# Либо первый заход, либо все попытки исчерпаны — стартуем заново
 	var pname: String = _auth.current_user.get("name", "Player")
-	_show_status(tr("MENU_STATUS_CONNECTING") % SettingsStore.relay_url, UIColors.WARNING)
+	var where: String = tr("OFFLINE_LABEL") if _nm.local_mode else SettingsStore.relay_url
+	_show_status(tr("MENU_STATUS_CONNECTING") % where, UIColors.WARNING)
 	_rooms_panel.modulate.a = 0.4
 	var err: Error = _nm.connect_to_relay(pname, SettingsStore.relay_url)
 	if err != OK:
@@ -162,6 +163,7 @@ func _auto_connect() -> void:
 
 
 func _on_logout_pressed() -> void:
+	OfflineSession.stop()  # офлайн-стол: обратно на сокет, гостя забыть
 	_nm.disconnect_from_relay()
 	_auth.logout()
 	SceneManager.go("login")

@@ -1851,3 +1851,9 @@ MON_ELDER_NAME,Старший,The Elder
 MON_ELDER_ABILITY,"Нельзя атаковать, пока на поле есть культисты. Стойкость +1 за каждых двух сыщиков.",Cannot be attacked while any Cultist is on the board. Toughness +1 per two investigators.
 ARTIFACT_SHEAF_NAME,Сноп,The Sheaf
 ARTIFACT_SHEAF_ABILITY,"Нельзя сбросить. Пока Сноп у сыщика, он не может получать новые улики.","Cannot be discarded. While an investigator holds the Sheaf, they cannot gain Clues."
+LOGIN_BTN_OFFLINE,Играть офлайн (без аккаунта),Play offline (no account)
+LOGIN_STATUS_OFFLINE,Собираем офлайн-стол...,Setting up the offline table...
+LOGIN_ERR_OFFLINE_UNAVAILABLE,Офлайн-режим недоступен: нет запечённого контента,Offline mode unavailable: no baked content
+OFFLINE_GUEST_NAME,Гость,Guest
+OFFLINE_ROOM_NAME,Офлайн-партия,Offline game
+OFFLINE_LABEL,офлайн,offline

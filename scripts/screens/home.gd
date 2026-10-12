@@ -58,6 +58,9 @@ func _version_text() -> String:
 
 
 func _on_play_pressed() -> void:
+	# Демо-сборка: сервера и аккаунтов нет — сразу офлайн-стол с демо-сценарием.
+	if OfflineSession.is_demo_build() and OfflineSession.start():
+		return
 	# login сам проверит сохранённую сессию и перекинет к экрану комнат.
 	SceneManager.go("login")
 

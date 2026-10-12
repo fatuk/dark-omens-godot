@@ -41,11 +41,39 @@ func _ready() -> void:
 	_auth.session_invalid.connect(_on_session_invalid)
 	_auth.access_denied.connect(_on_access_denied)
 
+	_add_offline_button()
+
 	if not _auth.session_token.is_empty():
 		_show_panel("check")
 		_auth.check_session()
 	else:
 		_show_panel("email")
+
+
+# ── Офлайн-вход ───────────────────────────────────────────────────────────────
+
+
+## «Играть офлайн» — гость без аккаунта и сервера (LocalTransport + запечённый
+## контент). Кнопка есть только когда контент запечён (data/offline).
+func _add_offline_button() -> void:
+	if not OfflineContent.available():
+		return
+	var root: VBoxContainer = $Center/Root
+	var sep := HSeparator.new()
+	sep.name = "OfflineSep"
+	root.add_child(sep)
+	var btn := Button.new()
+	btn.name = "OfflineBtn"
+	btn.text = "LOGIN_BTN_OFFLINE"
+	UIStyle.style_button(btn)
+	btn.pressed.connect(_on_offline_pressed)
+	root.add_child(btn)
+
+
+func _on_offline_pressed() -> void:
+	_show_status("LOGIN_STATUS_OFFLINE", UIColors.WARNING)
+	if not OfflineSession.start():
+		_show_status("LOGIN_ERR_OFFLINE_UNAVAILABLE", UIColors.ERROR)
 
 
 # ── Применение Dark Omens-стилей к нодам из .tscn ─────────────────────────────
