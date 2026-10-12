@@ -39,6 +39,7 @@ class MockBoard:
 
 class MockGS:
 	extends Node
+	var campaign: Dictionary = {}
 	var gates: Dictionary = {}
 	var mythos_in_play: Array = []
 	var players: Dictionary = {}
@@ -257,3 +258,49 @@ func test_notify_monster_defeated_ignores_other_location() -> void:
 	_gs.mythos_in_play = [card]
 	assert_false(_rumor.notify_monster_defeated("elsewhere"), "монстр не там — Слух остаётся")
 	assert_eq(_gs.mythos_in_play.size(), 1, "карта в игре")
+
+
+# ── Слух «Завещание»: cost за попытку, N успехов, триггер по Року ─────────────
+
+
+func _encounter_rumor(extra: Dictionary) -> Dictionary:
+	var solve := {"kind": "encounter"}
+	solve.merge(extra)
+	var card: Dictionary = _rumor_card(0, {"solve": solve})
+	card["rumorLocation"] = "L"
+	_gs.mythos_in_play = [card]
+	return card
+
+
+func test_encounter_progress_needs_n_successes() -> void:
+	_encounter_rumor({"progress": 2})
+	assert_false(_rumor.progress_encounter_at("L"), "1/2 — Слух остаётся")
+	assert_eq(int((_gs.mythos_in_play[0] as Dictionary)["progress"]), 1, "счётчик на карте")
+	assert_true(_rumor.progress_encounter_at("L"), "2/2 — развеян")
+	assert_true((_gs.mythos_in_play as Array).is_empty())
+
+
+func test_encounter_cost_gates_offer_and_is_paid_per_attempt() -> void:
+	_encounter_rumor({"cost": {"spend": "clue", "amount": 1}})
+	_gs.players["p"] = {"location": "L", "clues": 0}
+	assert_eq(_rumor.encounter_location_for("p"), "", "нечем платить — встречу не предлагаем")
+	_gs.players["p"]["clues"] = 2
+	assert_eq(_rumor.encounter_location_for("p"), "L", "есть улика — предлагаем")
+	_rumor.pay_attempt("p", "L")
+	assert_eq(int(_gs.players["p"]["clues"]), 1, "попытка оплачена")
+
+
+func test_doom_trigger_fires_once_when_remaining_small() -> void:
+	_gs.campaign = {"doomClock": 8}
+	var card: Dictionary = _rumor_card(
+		5, {"doomTrigger": {"remainingAtMost": 4, "effect": [{"do": "advanceDoom", "amount": 2}]}}
+	)
+	_gs.mythos_in_play = [card]
+	_gs.doom = 3  # осталось 5 — рано
+	_rumor.reckon(card)
+	assert_eq(_gs.doom, 3, "осталось > N — молчит")
+	_gs.doom = 4  # осталось 4 — срабатывает
+	_rumor.reckon(card)
+	assert_eq(_gs.doom, 6, "advanceDoom 2 от триггера")
+	_rumor.reckon(card)
+	assert_eq(_gs.doom, 6, "второй раз не стреляет")

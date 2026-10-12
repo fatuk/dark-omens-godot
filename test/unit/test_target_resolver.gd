@@ -292,3 +292,13 @@ func test_targeted_when_is_evaluated_per_target() -> void:
 	)
 	assert_eq(int(_gs.players["a"]["sanity"]), 4, "без улик — потерял рассудок")
 	assert_eq(int(_gs.players["b"]["sanity"]), 5, "с уликами — не тронут")
+
+
+func test_random_investigator_picks_connected() -> void:
+	_player("a")
+	_player("b", {"connected": false})
+	_player("c")
+	for _i in range(10):
+		var hit: Array = _t._resolve_targets({"do": "loseClue", "target": "randomInvestigator"})
+		assert_eq(hit.size(), 1)
+		assert_true(["a", "c"].has(String(hit[0])), "только подключённые")

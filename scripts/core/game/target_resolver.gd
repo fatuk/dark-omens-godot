@@ -82,6 +82,10 @@ func _resolve_targets(node: Dictionary) -> Array:
 		"chosenInvestigator", "chosen":
 			var pid: String = String(node.get("_target_pid", ""))
 			return [pid] if not pid.is_empty() and _gs.players.has(pid) else []
+		"randomInvestigator":
+			# Случайный подключённый сыщик (Слух «Завещание»: −1 улика у случайного).
+			var pool: Array = _connected_pids()
+			return [String(pool[randi() % pool.size()])] if not pool.is_empty() else []
 		"rightNeighbor":
 			return _neighbor(_anchor_pid(node), 1)
 		"leftNeighbor":

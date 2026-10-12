@@ -95,6 +95,16 @@ func reckon(card: Dictionary) -> void:
 		return
 	var rumor: Dictionary = card.get("rumor", {})
 	_run_program(card, rumor.get("onReckoning", _DEFAULT_ON_RECKONING))
+	# Триггер по Року: doomTrigger {remainingAtMost: N, effect} — один раз, когда до
+	# пробуждения осталось ≤ N (doomClock − doom). Нет doomClock в библии → молчит.
+	var dt: Dictionary = rumor.get("doomTrigger", {})
+	if not dt.is_empty() and not bool(card.get("doom_fired", false)):
+		var camp_v: Variant = _gs.get("campaign")
+		var clock: int = int(camp_v.get("doomClock", 0)) if camp_v is Dictionary else 0
+		if clock > 0 and clock - int(_gs.doom) <= int(dt.get("remainingAtMost", 0)):
+			card["doom_fired"] = true
+			_run_program(card, dt.get("effect", []))
+			GameConsole.log("[Слух] «%s»: Рок подошёл — сработал doomTrigger" % _name(card))
 	if int(card.get("tokens", 0)) <= 0:
 		_run_program(card, rumor.get("onExpire", []))
 		if bool(rumor.get("solveOnExpire", false)):
@@ -119,13 +129,54 @@ func solve_on_gate_close(loc: String, _pid: String) -> void:
 # ── Решение через встречу (solve=encounter) ──────────────────────────────────
 
 
-## Локация encounter-Слуха, совпадающая с локацией игрока ("" — нет). Для EncounterFlow:
-## предложить встречу-решение на клетке слуха.
+## Локация encounter-Слуха, совпадающая с локацией игрока ("" — нет или нечем платить
+## за попытку: solve.cost). Для EncounterFlow: предложить встречу-решение на клетке слуха.
 func encounter_location_for(pid: String) -> String:
 	if not _gs.players.has(pid):
 		return ""
 	var loc: String = String(_gs.players[pid].get("location", ""))
-	return loc if not _encounter_card_at(loc).is_empty() else ""
+	var card: Dictionary = _encounter_card_at(loc)
+	if card.is_empty():
+		return ""
+	var cost: Dictionary = _solve_of(card).get("cost", {})
+	if not cost.is_empty():
+		var p: Dictionary = _gs.players[pid]
+		if not ResourceLedger.can_pay(p, String(cost.get("spend", "")), int(cost.get("amount", 1))):
+			return ""
+	return loc
+
+
+## Хост: плата за ПОПЫТКУ решения (solve.cost) — списывается при любом исходе проверки.
+func pay_attempt(pid: String, loc: String) -> void:
+	if not _gs.is_host() or not _gs.players.has(pid):
+		return
+	var cost: Dictionary = _solve_of(_encounter_card_at(loc)).get("cost", {})
+	if cost.is_empty():
+		return
+	ResourceLedger.spend(
+		_gs.players[pid], String(cost.get("spend", "")), int(cost.get("amount", 1))
+	)
+
+
+## Хост: успех встречи-решения на loc. solve.progress (дефолт 1) — сколько успехов
+## нужно суммарно; счётчик живёт на карте (card.progress, синкается). Набрали →
+## Слух развеян (true), иначе карта остаётся (false).
+func progress_encounter_at(loc: String) -> bool:
+	if not _gs.is_host():
+		return false
+	var card: Dictionary = _encounter_card_at(loc)
+	if card.is_empty():
+		return false
+	var need: int = maxi(1, int(_solve_of(card).get("progress", 1)))
+	card["progress"] = int(card.get("progress", 0)) + 1
+	if int(card["progress"]) < need:
+		GameConsole.log("[Слух] «%s»: решение %d/%d" % [_name(card), int(card["progress"]), need])
+		return false
+	return solve_encounter_at(loc)
+
+
+func _solve_of(card: Dictionary) -> Dictionary:
+	return (card.get("rumor", {}) as Dictionary).get("solve", {})
 
 
 ## Карта encounter-Слуха на локации loc ({} — нет).

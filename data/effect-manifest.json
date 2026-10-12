@@ -12,6 +12,7 @@
       "eachWith",
       "chosen",
       "chosenInvestigator",
+      "randomInvestigator",
       "rightNeighbor",
       "leftNeighbor"
     ],

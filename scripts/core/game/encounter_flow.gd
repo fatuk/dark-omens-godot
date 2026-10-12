@@ -371,9 +371,11 @@ func _begin_rumor_encounter(pid: String) -> void:
 
 
 # Итог встречи-решения Слуха: успех — развеять Слух на его локации; провал — ничего.
-func _commit_rumor(_pid: String) -> void:
+func _commit_rumor(pid: String) -> void:
+	var loc: String = String(_gs.current_encounter.get("rumor_loc", ""))
+	_gs._rumor.pay_attempt(pid, loc)  # плата за попытку — при любом исходе
 	if bool(_gs.active_check.get("passed", false)):
-		_gs._rumor.solve_encounter_at(String(_gs.current_encounter.get("rumor_loc", "")))
+		_gs._rumor.progress_encounter_at(loc)  # N-й успех развеивает Слух
 	_gs._check.clear()
 
 
