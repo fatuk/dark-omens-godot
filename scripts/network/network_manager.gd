@@ -36,6 +36,12 @@ var _is_host_flag: bool = false
 var _host_id: String = ""  # id соединения текущего хоста ("" — ещё неизвестен)
 var game_started: bool = false  # true если игровая сессия уже запущена (из DB)
 
+# Офлайн-режим (демо / соло без сервера): вместо сокета — LocalTransport, реле
+# «в процессе». Протокол тот же, так что ниже по стеку ничего не меняется.
+var local_mode: bool = false
+var _local: Node = null
+const _LOCAL_TRANSPORT := preload("res://scripts/network/local_transport.gd")
+
 # Сохранённое состояние для rejoin при реконнекте
 var _saved_room_id: String = ""
 var _saved_room_pass: String = ""
@@ -57,15 +63,55 @@ func _ready() -> void:
 	# Закрытие окна не закрываем сразу — сначала шлём leave_room (см. _notification /
 	# leave_and_quit), иначе обрыв сокета уводит хоста в 12с grace вместо промоушена.
 	get_tree().set_auto_accept_quit(false)
-	var t := _transport()
+	_wire(_transport())
+
+
+func _wire(t: Node) -> void:
 	t.ws_opened.connect(_on_ws_open)
 	t.ws_closed.connect(_on_ws_closed)
 	t.raw_received.connect(_on_raw_received)
-	t.reconnecting.connect(func(n: int) -> void: reconnecting.emit(n))
-	t.connection_lost.connect(func() -> void: connection_lost.emit())
+	t.reconnecting.connect(_on_transport_reconnecting)
+	t.connection_lost.connect(_on_transport_lost)
+
+
+func _unwire(t: Node) -> void:
+	t.ws_opened.disconnect(_on_ws_open)
+	t.ws_closed.disconnect(_on_ws_closed)
+	t.raw_received.disconnect(_on_raw_received)
+	t.reconnecting.disconnect(_on_transport_reconnecting)
+	t.connection_lost.disconnect(_on_transport_lost)
+
+
+func _on_transport_reconnecting(n: int) -> void:
+	reconnecting.emit(n)
+
+
+func _on_transport_lost() -> void:
+	connection_lost.emit()
 
 
 # ── Публичный API ──────────────────────────────────────────────────────────────
+
+
+## Включить/выключить офлайн-режим. Рвёт текущее соединение и комнату: звать до
+## connect_to_relay (url при local_mode игнорируется).
+func set_local_mode(enabled: bool) -> void:
+	if enabled == local_mode:
+		return
+	var old: Node = _transport()
+	old.disconnect_from_server()
+	_clear_room_state()
+	_unwire(old)
+	local_mode = enabled
+	if enabled:
+		if _local == null:
+			_local = _LOCAL_TRANSPORT.new()
+			_local.name = "LocalTransport"
+			add_child(_local)
+	elif _local != null:
+		_local.queue_free()
+		_local = null
+	_wire(_transport())
 
 
 func connect_to_relay(player_name: String, relay_url: String = "ws://127.0.0.1:3030") -> Error:
@@ -417,6 +463,8 @@ func _flush_outbox() -> void:
 
 
 func _transport() -> Node:
+	if local_mode and _local != null:
+		return _local
 	return get_node("/root/RelayTransport")
 
 

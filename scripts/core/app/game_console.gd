@@ -309,6 +309,7 @@ const _COMMANDS := [
 	{"text": "enc", "hint": "назначить встречу игроку"},
 	{"text": "list", "hint": "список каталога"},
 	{"text": "who", "hint": "игроки"},
+	{"text": "offline", "hint": "офлайн-режим on|off (реле в процессе)"},
 	{"text": "clear", "hint": "очистить консоль"},
 	{"text": "help", "hint": "справка"},
 ]
@@ -516,6 +517,8 @@ func _on_command_submitted(text: String) -> void:
 			_cmd_help()
 		"who", "players":
 			_cmd_who()
+		"offline", "local":
+			_cmd_offline(args)
 		"clear", "cls":
 			_cmd_clear()
 		"list", "ls":
@@ -566,11 +569,29 @@ func _cmd_help() -> void:
 	self.log("  enc <игрок> <вид> [мир]     — назначить встречу на следующий ход")
 	self.log("  list assets|spells|monsters|conditions|locations [фильтр]")
 	self.log("  who                         — игроки и их id/локации")
+	self.log("  offline [on|off]            — офлайн-режим: реле в процессе, без сервера")
 	self.log("  clear                       — очистить консоль")
 	self.log(
 		"Игрок: me · часть имени/сыщика · номер из `who`. Карта/монстр: id или часть названия."
 	)
 	self.log("Автодополнение: набирай и Tab — принять/дописать, ↑/↓ — выбрать, Esc — скрыть.")
+
+
+func _cmd_offline(args: Array) -> void:
+	var nm: Node = NetworkManager
+	var cur: bool = bool(nm.get("local_mode"))
+	var want: bool = not cur
+	if not args.is_empty():
+		want = String(args[0]).to_lower() in ["on", "1", "true", "да"]
+	if want == cur:
+		self.log("офлайн-режим уже %s" % ("включён" if cur else "выключен"))
+		return
+	nm.set_local_mode(want)
+	var pname: String = String(nm.get("my_name"))
+	if pname.is_empty():
+		pname = String(AuthManager.current_user.get("name", "Player"))
+	nm.connect_to_relay(pname, SettingsStore.relay_url)
+	self.log("офлайн-режим %s — переподключаюсь" % ("включён" if want else "выключен"))
 
 
 func _cmd_who() -> void:
