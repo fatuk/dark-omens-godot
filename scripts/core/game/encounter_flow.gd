@@ -724,9 +724,12 @@ func host_apply_reroll(pid: String, die_index: int, currency: String = "") -> bo
 # Фазы Мифов (GameState.check_mystery_tokens_solve), не здесь.
 func _commit_eldritch(pid: String) -> void:
 	var enc: Dictionary = _gs.current_encounter
-	if not bool(_gs.active_check.get("passed", false)):
-		return  # провал — ничего не теряем
 	var hook: Dictionary = enc.get("hook", {})
+	if not bool(_gs.active_check.get("passed", false)):
+		# Провал: cost не списывается, жетон остаётся; onFail хука (если есть) — к сыщику.
+		if not hook.is_empty():
+			_gs._mystery.mystery_apply_hook_fail(hook, pid)
+		return
 	if hook.is_empty():
 		return
 	var loc: String = String(enc.get("eldritch_loc", _gs.players[pid].get("location", "")))
@@ -950,6 +953,9 @@ func _apply_research_clue_removal(pid: String, kind: String) -> void:
 		_remove_clues_at(loc, gained)
 		# Идентичность: улика(и) с жетонов этой локации → на руки сыщику (до broadcast_sync).
 		_gs._board.collect_board_clues(pid, loc, gained)
+		# Хук Тайны «улика добыта исследованием» (когда locationMarked — только с её клеток).
+		for _g in range(gained):
+			_gs._mystery.try_mystery_hook("researchClueGained", {"loc": loc}, pid)
 	enc["_clues_removed"] = true
 
 

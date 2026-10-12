@@ -535,3 +535,11 @@ func test_apply_verb_spawn_monster_by_name_at_where() -> void:
 		{"do": "spawnMonster", "monster": "cultist", "where": "5", "count": 2}, "spawnMonster"
 	)
 	assert_eq((_gs.monsters.get("5", []) as Array).size(), 2, "два культиста по имени на поле")
+
+
+func test_place_clue_at_stacks_and_verb_where() -> void:
+	_board.place_clue_at("5")
+	_board.place_clue_at("5")
+	assert_eq((_gs.entities["5"] as Array).count("clue"), 2, "две улики на одной клетке")
+	_board.apply_verb({"do": "placeClue", "where": "Arkham", "count": 3}, "placeClue")
+	assert_eq((_gs.entities["Arkham"] as Array).count("clue"), 3, "placeClue where — явная клетка")

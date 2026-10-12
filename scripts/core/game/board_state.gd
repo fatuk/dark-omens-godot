@@ -611,6 +611,19 @@ func place_clue() -> void:
 	GameConsole.log("[Улика] на %s" % pick)
 
 
+## Положить улику на КОНКРЕТНУЮ локацию (onEnter Тайны: «3 улики на поле»). Несколько
+## улик на одной клетке допустимы — каждая отдельное исследование. Идентичность —
+## ключ этой локации, если он ещё в пуле; остальные анонимные.
+func place_clue_at(loc_id: String) -> void:
+	if not _gs.is_host() or loc_id.is_empty():
+		return
+	var cell: Array = _gs.entities.get(loc_id, [])
+	cell.append("clue")
+	_gs.entities[loc_id] = cell
+	claim_board_clue(loc_id)
+	GameConsole.log("[Улика] на %s (явно)" % loc_id)
+
+
 ## Положить жетон Знамения (Eldritch) на случайную локацию без такого жетона
 ## (≤1 на локацию — иначе их не отличить визуально и нечего «снимать» встречей).
 func place_eldritch_token() -> void:
@@ -899,8 +912,17 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 				elif not mon_loc.is_empty():
 					spawn_monster_at(mon_loc)
 		"placeClue":
+			# where: "self" — клетка якорного сыщика; "<locId>" — конкретная (Тайна «улики
+			# на поле»); пусто — случайная клетка без улики (как было).
+			var clue_where: String = String(node.get("where", ""))
+			if clue_where == "self":
+				var cpid: String = String(node.get("_anchor_pid", _gs.current_pid()))
+				clue_where = String((_gs.players.get(cpid, {}) as Dictionary).get("location", ""))
 			for _i: int in n:
-				place_clue()
+				if clue_where.is_empty():
+					place_clue()
+				else:
+					place_clue_at(clue_where)
 		"placeRumor":
 			for _i: int in n:
 				place_rumor()

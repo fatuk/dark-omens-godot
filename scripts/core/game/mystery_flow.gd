@@ -15,6 +15,8 @@ extends RefCounted
 ## _gs.is_host(), _gs._campaign, _gs._board.current_omen_color(), _gs.entities,
 ## _gs.campaign, _gs.doom, _gs.apply_board_effect(). Создаётся в GameState (поле _mystery).
 
+const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
+
 var _gs: Node
 var _on_enter_applied_idx: int = -1  # дедуп onEnter активной Тайны (хост-локально)
 
@@ -152,12 +154,32 @@ func mystery_apply_hook(hook: Dictionary, pid: String) -> bool:
 	var cost: Dictionary = hook.get("cost", {})
 	if not cost.is_empty():
 		_spend_resource(pid, String(cost.get("spend", "")), int(cost.get("amount", 1)))
-	var effect: Array = hook.get("effect", [])
-	for i: int in range(effect.size()):
-		var node: Dictionary = effect[i]
-		if node is Dictionary:
-			_gs.apply_board_effect(node)  # placeEldritchToken where:self → счётчик и т.п.
+	_run_hook_program(hook.get("effect", []), pid)
 	return true
+
+
+## Хост: провал проверки encounter-хука — ветка onFail (cost не списан). Игровые
+## verb'ы (gainCondition obsession) — к сыщику, board-узлы — на стол.
+func mystery_apply_hook_fail(hook: Dictionary, pid: String) -> void:
+	if not _gs.is_host():
+		return
+	_run_hook_program(hook.get("onFail", []), pid)
+
+
+# Программа хука через интерпретатор: игровые verb'ы мутируют сыщика pid, board-узлы
+# (placeEldritchToken where:self, gainArtifact, spawnMonster…) уходят на стол с
+# якорем pid. Тихий прогон (выбор — первая ветка).
+func _run_hook_program(program: Array, pid: String) -> void:
+	if (program as Array).is_empty() or not _gs.players.has(pid):
+		return
+	var p: Dictionary = _gs.players[pid]
+	var res: Dictionary = _EffectRunner.run(program, p, {})
+	for l_v: Variant in res.get("logs", []):
+		GameConsole.log("[Тайна] %s · %s" % [_gs.name_of(pid), String(l_v)])
+	for node_v: Variant in res.get("board", []):
+		var node: Dictionary = (node_v as Dictionary).duplicate(true)
+		node["_anchor_pid"] = pid
+		_gs.apply_board_effect(node)
 
 
 # Хост: реакция-триггеры. Фактически стреляет только gateClosed (BoardState).

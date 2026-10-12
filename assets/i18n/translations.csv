@@ -902,6 +902,8 @@ VERB_REROLL_MATCHING,перебросить совпавшие кубы,reroll m
 VERB_MIN_DICE,не меньше {count} кубов,at least {count} dice
 VERB_IMMUNE_TO,иммунитет: {status},immune to {status}
 VERB_PROTECT_RESOURCE,защита ресурса,protect a resource
+VERB_CANNOT_GAIN_CLUES,нельзя получать улики,cannot gain Clues
+VERB_UNDISCARDABLE,нельзя сбросить,cannot be discarded
 VERB_LOOK_AT_GATES,взглянуть на врата ×{count},look at {count} Gate(s)
 VERB_REORDER_GATES,переложить врата,reorder Gates
 VERB_CANNOT_MOVE,нельзя перемещаться,cannot move

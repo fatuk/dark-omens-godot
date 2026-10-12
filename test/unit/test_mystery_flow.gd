@@ -377,3 +377,27 @@ func test_check_defeat_noop_without_clock() -> void:
 	_m.check_defeat()
 	assert_eq(_gs.outcome, "", "без doomClock проверка не срабатывает")
 	assert_eq(_gs.doom, 99, "дум не клампится без clock")
+
+
+# ── Программы хука через интерпретатор: игровые verb'ы к сыщику, onFail при провале ──
+
+
+func test_hook_programs_reach_player() -> void:
+	_gs.players["p"] = {"clues": 3, "conditions": [], "items": [], "hp": 5, "sanity": 5}
+	var hook := {
+		"cost": {"spend": "clue", "amount": 2},
+		"effect":
+		[{"do": "placeEldritchToken", "where": "self"}, {"do": "gainArtifact", "artifact": "x"}],
+		"onFail": [{"do": "gainCondition", "condition": "debt"}],
+	}
+	assert_true(_m.mystery_apply_hook(hook, "p"), "успех: cost оплачен")
+	assert_eq(int(_gs.players["p"]["clues"]), 1, "две улики списаны")
+	assert_eq(_gs.board_effects.size(), 2, "board-узлы ушли на стол")
+	assert_eq(
+		String((_gs.board_effects[1] as Dictionary)["_anchor_pid"]), "p", "якорь — сыщик хука"
+	)
+	_m.mystery_apply_hook_fail(hook, "p")
+	assert_eq(int(_gs.players["p"]["clues"]), 1, "провал: cost не списан")
+	assert_true(
+		(_gs.players["p"]["conditions"] as Array).has("debt"), "onFail — игровой verb к сыщику"
+	)

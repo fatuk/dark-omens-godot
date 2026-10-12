@@ -65,7 +65,8 @@ func next_or_choice(pid: String) -> String:
 	return NEXT_ORDER
 
 
-## Индексы монстров клетки, с которыми в этом ходу ещё не дрались.
+## Индексы монстров клетки, с которыми в этом ходу ещё не дрались и КОТОРЫХ МОЖНО
+## атаковать (untouchableWhile — «нельзя, пока на поле есть культисты» у Старшего).
 func unfought_indices(loc: String) -> Array:
 	var out: Array = []
 	var mons: Array = _gs.monsters.get(loc, [])
@@ -73,8 +74,28 @@ func unfought_indices(loc: String) -> Array:
 		var inst_v: Variant = mons[i]
 		if inst_v is Dictionary and bool((inst_v as Dictionary).get("fought", false)):
 			continue
+		var mid: String = String(inst_v.get("id", "")) if inst_v is Dictionary else String(inst_v)
+		if is_untouchable(mid):
+			continue
 		out.append(i)
 	return out
+
+
+## Монстра нельзя атаковать сейчас: def.untouchableWhile {monster: id} — пока на поле
+## есть хоть один монстр с таким id. Неатакуемый остаётся на клетке и запирает её.
+func is_untouchable(mid: String) -> bool:
+	var uw: Dictionary = _gs.monster_def(mid).get("untouchableWhile", {})
+	var guard: String = String(uw.get("monster", ""))
+	if guard.is_empty():
+		return false
+	for loc_v: Variant in _gs.monsters:
+		for inst_v: Variant in _gs.monsters[loc_v] as Array:
+			var gid: String = (
+				String(inst_v.get("id", "")) if inst_v is Dictionary else String(inst_v)
+			)
+			if gid == guard:
+				return true
+	return false
 
 
 ## Новый ход встречи — пометки прошлого хода снимаем, иначе монстр, выживший в

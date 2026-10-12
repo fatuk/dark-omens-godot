@@ -765,6 +765,12 @@
               "balance"
             ]
           }
+        },
+        {
+          "name": "where",
+          "type": {
+            "t": "str"
+          }
         }
       ],
       "targets": null,
@@ -1378,6 +1384,20 @@
       ],
       "targets": null,
       "describeKey": "VERB_IMMUNE_TO"
+    },
+    "cannotGainClues": {
+      "kind": "player",
+      "passive": true,
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_CANNOT_GAIN_CLUES"
+    },
+    "undiscardable": {
+      "kind": "player",
+      "passive": true,
+      "params": [],
+      "targets": null,
+      "describeKey": "VERB_UNDISCARDABLE"
     },
     "protectResource": {
       "kind": "player",

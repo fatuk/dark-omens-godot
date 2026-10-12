@@ -79,6 +79,8 @@ const _PASSIVE_VERBS := [
 	"minDice",
 	"immuneTo",
 	"protectResource",
+	"cannotGainClues",
+	"undiscardable",
 	"cannotMove",
 	"cannotAct",
 	"cannotRecover",
@@ -284,13 +286,31 @@ static func _owns_whileowned(
 	player: Dictionary, verb: String, field: String, value: String
 ) -> bool:
 	for it_v: Variant in player.get("items", []):
-		var a: Dictionary = AssetCatalog.by_id(AssetCatalog.entry_id(it_v))
-		if a.is_empty():
-			continue
-		for n_v: Variant in (a.get("effect", {}) as Dictionary).get("whileOwned", []):
+		for n_v: Variant in _whileowned_of(it_v):
 			var n: Dictionary = n_v
-			if String(n.get("do", "")) == verb and String(n.get(field, "")) == value:
+			if (
+				String(n.get("do", "")) == verb
+				and (field.is_empty() or String(n.get(field, "")) == value)
+			):
 				return true
+	return false
+
+
+# whileOwned-узлы предмета: актив или артефакт (у артефактов те же слоты эффектов).
+static func _whileowned_of(entry: Variant) -> Array:
+	var aid: String = AssetCatalog.entry_id(entry)
+	var card: Dictionary = AssetCatalog.by_id(aid)
+	if card.is_empty():
+		card = ArtifactCatalog.by_id(aid)
+	return (card.get("effect", {}) as Dictionary).get("whileOwned", [])
+
+
+# Предмет нельзя сбросить (whileOwned undiscardable — Сноп): loseAsset/loseArtifact/
+# loseAllPossessions его не трогают.
+static func _item_undiscardable(entry: Variant) -> bool:
+	for n_v: Variant in _whileowned_of(entry):
+		if String((n_v as Dictionary).get("do", "")) == "undiscardable":
+			return true
 	return false
 
 
@@ -711,8 +731,12 @@ static func _apply_player_verb(
 			logs.append("+%d рассудка" % maxi(0, san_to - int(player.get("sanity", 0))))
 			player["sanity"] = san_to
 		"gainClue":
-			player["clues"] = int(player.get("clues", 0)) + n
-			logs.append("+%d улик" % n)
+			# cannotGainClues (whileOwned, Сноп) — улики не получить, пока предмет на руках.
+			if _owns_whileowned(player, "cannotGainClues", "", ""):
+				logs.append("улики не получить (предмет запрещает)")
+			else:
+				player["clues"] = int(player.get("clues", 0)) + n
+				logs.append("+%d улик" % n)
 		"loseClue":
 			# protectResource clue (Scribe's Journal) — улики нельзя ОТНЯТЬ (невольная
 			# потеря от эффектов); добровольная трата (spendClue) не защищается.
@@ -784,7 +808,11 @@ static func _apply_player_verb(
 		"loseAllPossessions":
 			# Сбросить весь инвентарь карт (активы/заклинания/артефакты). Состояния,
 			# улики, билеты — НЕ имущество (хранятся отдельными полями), их не трогаем.
-			player["items"] = []
+			var kept: Array = []
+			for it_v: Variant in player.get("items", []):
+				if _item_undiscardable(it_v):
+					kept.append(it_v)  # Сноп и подобное остаются
+			player["items"] = kept
 			logs.append("утрачено всё имущество")
 		"gainFocus":
 			# Потолок концентрации (GameState.MAX_CONCENTRATION) — как и action «взять».
@@ -986,7 +1014,7 @@ static func _drop_items(verb: String, node: Dictionary, player: Dictionary, logs
 	var want_trait: String = String(node.get("trait", ""))
 	var idx: Array = []
 	for i in range(items.size()):
-		if _item_matches(items[i], verb, want_trait):
+		if _item_matches(items[i], verb, want_trait) and not _item_undiscardable(items[i]):
 			idx.append(i)
 	if idx.is_empty():
 		logs.append("нечего сбрасывать")

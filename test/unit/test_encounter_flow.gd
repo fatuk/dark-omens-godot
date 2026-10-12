@@ -788,3 +788,28 @@ func test_test_less_encounter_skips_check_and_applies_success() -> void:
 	ef._commit_outcome("p")
 	assert_true(bool(gs.current_encounter.get("committed", false)), "коммит прошёл")
 	assert_eq(int(gs.players["p"]["resources"]), 2, "применена ветка успеха")
+
+
+# ── untouchableWhile: Старшего нельзя атаковать, пока на поле культисты ───────
+
+
+class MockGSElder:
+	extends MockGS
+
+	func monster_def(mid: String) -> Dictionary:
+		if mid == "elder":
+			return {"id": "elder", "toughness": 3, "untouchableWhile": {"monster": "cultist"}}
+		return super(mid)
+
+
+func test_untouchable_monster_is_skipped_while_guard_on_board() -> void:
+	var gs: MockGSElder = autofree(MockGSElder.new())
+	gs.players["p"] = {"location": "loc", "hp": 5, "sanity": 5, "items": []}
+	gs.monsters = {"loc": [{"id": "elder", "health": 3}], "far": [{"id": "cultist", "health": 1}]}
+	var ef := EncounterFlow.new(gs)
+	assert_true(ef.combat.is_untouchable("elder"), "культист на поле → Старший неуязвим")
+	assert_eq(ef.combat.unfought_indices("loc"), [], "в очередь боя не попадает")
+	assert_eq(ef.combat.next_or_choice("p"), CombatFlow.NEXT_LOCKED, "клетка заперта, боя нет")
+	gs.monsters.erase("far")
+	assert_false(ef.combat.is_untouchable("elder"), "культистов нет → можно")
+	assert_eq(ef.combat.unfought_indices("loc"), [0])
