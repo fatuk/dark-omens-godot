@@ -1857,3 +1857,4 @@ LOGIN_ERR_OFFLINE_UNAVAILABLE,Офлайн-режим недоступен: не
 OFFLINE_GUEST_NAME,Гость,Guest
 OFFLINE_ROOM_NAME,Офлайн-партия,Offline game
 OFFLINE_LABEL,офлайн,offline
+OFFLINE_BOT_NAME,Бот %d,Bot %d

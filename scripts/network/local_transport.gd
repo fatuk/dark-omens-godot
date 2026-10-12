@@ -29,6 +29,44 @@ var _client_name: String = ""
 var _room: Dictionary = {}  # {name, max_players, created_at}; пусто — комнаты нет
 var _ready_flag: bool = false
 var _investigator: String = ""
+# Виртуальные клиенты (боты): [{id, name, ready, investigator}]. Сидят в комнате
+# вместе с нами; их relay-сообщения заходят через inject_relay.
+var _virtual: Array = []
+
+# ── Виртуальные клиенты ───────────────────────────────────────────────────────
+
+
+## Посадить виртуального игрока (бота) за стол. До создания комнаты — попадёт в
+## joined_room.players; после — приходит player_joined, как при входе игрока.
+func add_virtual_player(id: String, player_name: String) -> void:
+	for v: Dictionary in _virtual:
+		if String(v["id"]) == id:
+			return
+	var entry: Dictionary = {"id": id, "name": player_name, "ready": false, "investigator": ""}
+	_virtual.append(entry)
+	if not _room.is_empty():
+		_reply({"type": "player_joined", "player": _player_entry(entry)})
+
+
+## Relay-сообщение от лица виртуального клиента: доставляется хосту (нам) как
+## {type: relay, from_id, data} — ровно то, что прислало бы реле от удалённого игрока.
+func inject_relay(from_id: String, data: Dictionary) -> void:
+	if _state != WebSocketPeer.STATE_OPEN or _room.is_empty():
+		return
+	if String(data.get("action", "")) == "set_ready":
+		for v: Dictionary in _virtual:
+			if String(v["id"]) == from_id:
+				v["ready"] = true
+				v["investigator"] = String(data.get("investigator", ""))
+	_reply({"type": "relay", "from_id": from_id, "data": data})
+
+
+func virtual_ids() -> Array:
+	var out: Array = []
+	for v: Dictionary in _virtual:
+		out.append(String(v["id"]))
+	return out
+
 
 # ── Поверхность RelayTransport ────────────────────────────────────────────────
 
@@ -101,6 +139,7 @@ func _handle(msg: Dictionary) -> void:
 			_room.clear()
 			_ready_flag = false
 			_investigator = ""
+			_virtual.clear()  # стол разобран — ботов сажают заново
 		"delete_any_room":
 			pass
 		"relay":
@@ -121,6 +160,17 @@ func _handle(msg: Dictionary) -> void:
 
 
 func _joined_room() -> Dictionary:
+	var players: Array = [
+		{
+			"id": CLIENT_ID,
+			"user_id": "",
+			"name": _client_name,
+			"ready": _ready_flag,
+			"investigator": _investigator,
+		}
+	]
+	for v: Dictionary in _virtual:
+		players.append(_player_entry(v))
 	return {
 		"type": "joined_room",
 		"room_id": ROOM_ID,
@@ -130,18 +180,19 @@ func _joined_room() -> Dictionary:
 		"host_id": CLIENT_ID,
 		# Стол — наш: играем в свою коробку (реле прислало бы сезоны хоста).
 		"seasons": Array(SeasonGate.own),
-		"players":
-		[
-			{
-				"id": CLIENT_ID,
-				"user_id": "",
-				"name": _client_name,
-				"ready": _ready_flag,
-				"investigator": _investigator,
-			}
-		],
+		"players": players,
 		"game_started": false,
 		"game_state": null,
+	}
+
+
+func _player_entry(v: Dictionary) -> Dictionary:
+	return {
+		"id": String(v["id"]),
+		"user_id": "",
+		"name": String(v["name"]),
+		"ready": bool(v["ready"]),
+		"investigator": String(v["investigator"]),
 	}
 
 
@@ -152,7 +203,7 @@ func _rooms_summary() -> Array:
 		{
 			"id": ROOM_ID,
 			"name": _room.get("name", ""),
-			"playerCount": 1,
+			"playerCount": 1 + _virtual.size(),
 			"maxPlayers": _room.get("max_players", 8),
 			"locked": false,
 			"empty": false,

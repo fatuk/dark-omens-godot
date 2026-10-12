@@ -45,6 +45,7 @@ static func start(player_count: int = 1, ancient: String = "") -> bool:
 	GameState._campaign.set_seed(ancient_id, maxi(1, player_count))
 
 	var room_name: String = TranslationServer.translate("OFFLINE_ROOM_NAME")
+	var seats: int = maxi(1, player_count)
 	nm.connect(
 		"joined_room",
 		func(_rid: String, _rname: String, _host: bool, _players: Array) -> void:
@@ -53,11 +54,36 @@ static func start(player_count: int = 1, ancient: String = "") -> bool:
 	)
 	nm.connect(
 		"connected_to_relay",
-		func() -> void: nm.call("create_room", room_name, "", maxi(1, player_count)),
+		func() -> void:
+			_seat_bots(nm, seats - 1)
+			nm.call("create_room", room_name, "", seats),
 		CONNECT_ONE_SHOT
 	)
 	nm.call("connect_to_relay", pname, "local://")
 	return true
+
+
+# Остальные места за столом — боты: виртуальные клиенты локального реле + драйвер,
+# который за них ходит. Сажаем ДО create_room, чтобы они были в joined_room.players.
+static func _seat_bots(nm: Node, count: int) -> void:
+	var old: Node = nm.get_node_or_null("BotDriver")
+	if old != null:
+		old.queue_free()
+	if count <= 0:
+		return
+	var transport: Node = nm.call("local_transport")
+	if transport == null:
+		return
+	var ids: Array = []
+	for i: int in range(count):
+		var bid: String = "bot-%d" % (i + 1)
+		var bname: String = TranslationServer.translate("OFFLINE_BOT_NAME") % (i + 1)
+		transport.call("add_virtual_player", bid, bname)
+		ids.append(bid)
+	var driver := BotDriver.new()
+	driver.name = "BotDriver"
+	driver.setup(ids)
+	nm.add_child(driver)
 
 
 ## Свернуть офлайн-сессию: обратно на сокет, гостя забыть (аккаунт, если он был,
@@ -66,6 +92,9 @@ static func stop() -> void:
 	var nm: Node = NetworkManager
 	if not bool(nm.get("local_mode")):
 		return
+	var driver: Node = nm.get_node_or_null("BotDriver")
+	if driver != null:
+		driver.queue_free()
 	nm.call("disconnect_from_relay")
 	nm.call("set_local_mode", false)
 	var auth: Node = AuthManager

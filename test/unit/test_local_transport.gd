@@ -127,6 +127,33 @@ func test_leave_room_forgets_room() -> void:
 	assert_eq(_got[2]["rooms"], [])
 
 
+func test_virtual_players_join_room_and_inject_relay() -> void:
+	await _open()
+	_t.add_virtual_player("bot-1", "Бот 1")
+	_t.send_raw({"type": "create_room", "room_name": "X", "password": "", "max_players": 2})
+	await get_tree().process_frame
+	var joined: Dictionary = _got[1]
+	assert_eq(joined["players"].size(), 2, "бот посажен до комнаты → в joined_room")
+	assert_eq(joined["players"][1]["id"], "bot-1")
+	_got.clear()
+	_t.add_virtual_player("bot-2", "Бот 2")
+	_t.add_virtual_player("bot-2", "Бот 2")  # дубликат игнорируется
+	_t.inject_relay("bot-1", {"action": "set_ready", "player_id": "bot-1", "investigator": "nurse"})
+	_t.send_raw({"type": "list_rooms"})
+	await get_tree().process_frame
+	assert_eq(_types(), ["player_joined", "relay", "rooms_list"])
+	assert_eq(_got[0]["player"]["name"], "Бот 2")
+	assert_eq(_got[1]["from_id"], "bot-1")
+	assert_eq(_got[2]["rooms"][0]["playerCount"], 3)
+	assert_eq(_t.virtual_ids(), ["bot-1", "bot-2"])
+	_got.clear()
+	_t.send_raw({"type": "join_room", "room_id": Transport.ROOM_ID, "password": ""})
+	await get_tree().process_frame
+	assert_true(_got[0]["players"][1]["ready"], "готовность бота видна в joined_room")
+	_t.send_raw({"type": "leave_room"})
+	assert_eq(_t.virtual_ids(), [], "вышли — стол разобран")
+
+
 func test_disconnect_closes_deferred_and_mutes_pending_replies() -> void:
 	await _open()
 	var closed: Array = []

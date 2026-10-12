@@ -468,6 +468,11 @@ func _transport() -> Node:
 	return get_node("/root/RelayTransport")
 
 
+## Локальный транспорт (null вне офлайн-режима) — для посадки ботов и их сообщений.
+func local_transport() -> Node:
+	return _local if local_mode else null
+
+
 func _clear_room_state() -> void:
 	# Вышли из комнаты — стол снова базовый. Иначе сезоны прошлого хоста
 	# протекли бы в следующую партию, где их никто не покупал.
