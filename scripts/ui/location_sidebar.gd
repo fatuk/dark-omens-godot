@@ -583,7 +583,7 @@ func _populate_items(loc_id: String) -> void:
 			var hp: int = (
 				int((inst_v as Dictionary).get("health", -1)) if inst_v is Dictionary else -1
 			)
-			var m: Dictionary = MonsterCatalog.by_id(mid)
+			var m: Dictionary = GameState.monster_def(mid)
 			if not m.is_empty():
 				_items_list.add_child(_make_monster_card(m, hp))
 	if clues > 0:

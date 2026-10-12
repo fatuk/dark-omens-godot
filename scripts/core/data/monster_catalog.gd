@@ -30,9 +30,10 @@ extends RefCounted
 ##         "none" (нет проверки, например только бой).
 ## trigger ∈ "onSpawn" | "movement" | "onDefeat" | "reckoning" | "special" |
 ##           "passive" | "none" (эвристика; авторитетен textKey).
-## Cultist — особый: вместо статов { "useAncientOne": true } (берутся с листа
-## Древнего). Эпики (toughnessPerInvestigator) масштабируют стойкость по числу
-## сыщиков в партии.
+## Cultist — особый: вместо статов { "useAncientOne": true } — статы, резист и
+## onReckoning берутся с листа Древнего (campaign.ancientOne.cultist, см. resolve;
+## в игре — GameState.monster_def). Эпики (toughnessPerInvestigator, может быть
+## дробным: 0.5 = «+1 за каждых двух») масштабируют стойкость по числу сыщиков.
 ##
 ## Использование:
 ##   var all:   Array = MonsterCatalog.all()
@@ -95,11 +96,39 @@ static func reckoning_of(id: String) -> Array:
 	return by_id(id).get("onReckoning", [])
 
 
-## Эффективная стойкость с учётом эпик-масштабирования по числу сыщиков.
+## Эффективная стойкость с учётом эпик-масштабирования по числу сыщиков:
+## toughness + ceil(per × N). per дробный допустим (0.5 → +1 за каждых двух сыщиков).
 static func toughness_for(m: Dictionary, investigator_count: int) -> int:
-	return (
-		int(m.get("toughness", 0)) + int(m.get("toughnessPerInvestigator", 0)) * investigator_count
-	)
+	var per: float = float(m.get("toughnessPerInvestigator", 0))
+	return int(m.get("toughness", 0)) + int(ceil(per * investigator_count))
+
+
+# Поля листа Древнего, которыми культист перекрывает каталог.
+const _CULTIST_FIELDS := [
+	"toughness", "toughnessPerInvestigator", "horror", "combat", "onReckoning", "resist"
+]
+# Нет листа / блока — безопасные дефолты (базовый культист: 1 / Воля 0 → 1 / Сила 0 → 1).
+const _CULTIST_DEFAULTS := {
+	"toughness": 1,
+	"horror": {"skill": "will", "modifier": 0, "damage": 1},
+	"combat": {"skill": "strength", "modifier": 0, "damage": 1},
+}
+
+
+## Определение монстра с учётом листа Древнего: монстр с useAncientOne (культист)
+## получает статы/резист/Расплату из ancient.cultist, остальные — как в каталоге.
+## Чистая функция: ancient — campaign.ancientOne (может быть {}).
+static func resolve(m: Dictionary, ancient: Dictionary) -> Dictionary:
+	if m.is_empty() or not bool(m.get("useAncientOne", false)):
+		return m
+	var out: Dictionary = m.duplicate(true)
+	var sheet: Dictionary = ancient.get("cultist", {})
+	for k: String in _CULTIST_FIELDS:
+		if sheet.has(k):
+			out[k] = sheet[k]
+		elif _CULTIST_DEFAULTS.has(k) and not out.has(k):
+			out[k] = _CULTIST_DEFAULTS[k]
+	return out
 
 
 ## Сопротивляется ли монстр урону типа dmg_type ("physical"|"magical"). resist в

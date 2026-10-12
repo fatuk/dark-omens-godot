@@ -83,7 +83,7 @@ func _monster_label(choice: String) -> String:
 		return choice
 	var inst_v: Variant = mons[idx]
 	var mid: String = String(inst_v.get("id", "")) if inst_v is Dictionary else String(inst_v)
-	var m: Dictionary = MonsterCatalog.by_id(mid)
+	var m: Dictionary = GameState.monster_def(mid)
 	if m.is_empty():
 		return mid
 	var tough: int = MonsterCatalog.toughness_for(m, GameState.campaign.get("playerCount", 1))

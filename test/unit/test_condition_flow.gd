@@ -472,7 +472,11 @@ func test_reckon_condition_interactive_pass_no_flip() -> void:
 # «перевернуть / пропустить» через канал mythos_decision (раньше optional молча
 # применялся всегда, а после появления optional-choice — молча пропускался).
 func test_reckon_condition_interactive_optional_pends_decision() -> void:
-	_add_player("p", {"conditions": ["righteous"]})
+	# Копия закреплена на обороте без решений внутри (guidingLight: healSanity) —
+	# иначе случайный blessingOfNodens (optional discardMonster) пендит второй выбор.
+	_add_player(
+		"p", {"conditions": ["righteous"], "conditions_backs": {"righteous": "guidingLight"}}
+	)
 	_cond.reckon_condition("p", "righteous", {}, true)
 	var md: Dictionary = _gs.mythos_decision
 	assert_true(bool(md.get("active", false)), "модалка решения выставлена")
@@ -673,3 +677,20 @@ func test_flip_held_default_keeps_card_flipped() -> void:
 	_add_player("p", {"conditions": ["zz"]})
 	_cond._flip_condition("p", "zz", _def_with_back([]), {}, {}, "stay")
 	assert_eq(String((_gs.players["p"]["conditions_flipped"] as Dictionary).get("zz", "")), "b1")
+
+
+func test_back_with_optional_node_pends_second_decision() -> void:
+	# Оборот — приключение: его узлы с выбором тоже идут через модалку решения.
+	# righteous/blessingOfNodens: discardMonster optional → после «перевернуть» —
+	# второй вопрос «применить / пропустить».
+	_add_player(
+		"p", {"conditions": ["righteous"], "conditions_backs": {"righteous": "blessingOfNodens"}}
+	)
+	_cond.reckon_condition("p", "righteous", {}, true)
+	_gs.mythos_decided.emit(0)  # перевернуть
+	var md: Dictionary = _gs.mythos_decision
+	assert_true(bool(md.get("active", false)), "оборот спросил про optional-эффект")
+	assert_true(_front_active("p", "righteous"), "до ответа оборот не завершён")
+	_gs.mythos_decided.emit(1)  # пропустить
+	assert_false(_front_active("p", "righteous"), "оборот отыгран → карта перевёрнута (then: flip)")
+	assert_false(bool(_gs.mythos_decision.get("active", false)), "канал освобождён")

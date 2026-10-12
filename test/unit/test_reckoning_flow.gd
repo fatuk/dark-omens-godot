@@ -25,6 +25,10 @@ class MockGS:
 	extends Node
 	var host: bool = true
 	var campaign: Dictionary = {}
+
+	func monster_def(mid: String) -> Dictionary:
+		return MonsterCatalog.resolve(MonsterCatalog.by_id(mid), campaign.get("ancientOne", {}))
+
 	var mythos_in_play: Array = []
 	var monsters: Dictionary = {}
 	var players: Dictionary = {}

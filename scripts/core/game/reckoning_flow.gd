@@ -104,7 +104,8 @@ func _reckon_monsters() -> void:
 	for loc_v: Variant in (_gs.monsters as Dictionary).keys():
 		for inst_v: Variant in _gs.monsters[loc_v] as Array:
 			var mid: String = String((inst_v as Dictionary).get("id", inst_v))
-			_apply_global(MonsterCatalog.reckoning_of(mid), "Монстр %s" % mid)
+			# Культист: Расплата с листа Древнего (monster_def), остальные — из каталога.
+			_apply_global(_gs.monster_def(mid).get("onReckoning", []), "Монстр %s" % mid)
 
 
 # Прогон глобальной (не привязанной к сыщику) onReckoning-программы. interactive:true,

@@ -240,7 +240,7 @@ func _spawn_monster(loc_id: String) -> void:
 	# Культистов много (повторяются) — не вынимаем из мешка; остальные уникальны.
 	if mid != "cultist":
 		_gs.monster_bag.remove_at(idx)
-	var m: Dictionary = MonsterCatalog.by_id(mid)
+	var m: Dictionary = _gs.monster_def(mid)
 	# Стойкость монстра — от РАЗМЕРА КОМНАТЫ (как весь баланс), а не от числа
 	# подключённых: соло-тест партии на N даёт монстров как на N.
 	var balance_pc: int = _gs._campaign.balance_player_count()
@@ -287,7 +287,7 @@ func monster_choices() -> Array:
 		for i in range(arr.size()):
 			var inst: Variant = arr[i]
 			var mid: String = String(inst.get("id", "")) if inst is Dictionary else String(inst)
-			var m: Dictionary = MonsterCatalog.by_id(mid)
+			var m: Dictionary = _gs.monster_def(mid)
 			if m.is_empty():
 				continue
 			var tough: int = maxi(1, MonsterCatalog.toughness_for(m, pc))
@@ -417,7 +417,7 @@ func remove_monsters_by_toughness(defeated: bool, max_t: int) -> void:
 	var removed: int = 0
 	for inst_v: Variant in _gs.monsters.get(loc, []):
 		var inst: Dictionary = inst_v if inst_v is Dictionary else {"id": String(inst_v)}
-		var m: Dictionary = MonsterCatalog.by_id(String(inst.get("id", "")))
+		var m: Dictionary = _gs.monster_def(String(inst.get("id", "")))
 		@warning_ignore("unsafe_method_access")
 		var t: int = maxi(1, MonsterCatalog.toughness_for(m, balance_pc) if not m.is_empty() else 1)
 		if t <= max_t:
@@ -451,7 +451,7 @@ func remove_monsters_by_toughness_everywhere(defeated: bool, max_t: int) -> void
 		var kept: Array = []
 		for inst_v: Variant in _gs.monsters[loc]:
 			var inst: Dictionary = inst_v if inst_v is Dictionary else {"id": String(inst_v)}
-			var m: Dictionary = MonsterCatalog.by_id(String(inst.get("id", "")))
+			var m: Dictionary = _gs.monster_def(String(inst.get("id", "")))
 			@warning_ignore("unsafe_method_access")
 			var t: int = maxi(
 				1, MonsterCatalog.toughness_for(m, balance_pc) if not m.is_empty() else 1
@@ -521,7 +521,7 @@ func _damage_at(loc: String, idx: int, amount: int) -> void:
 	var inst_v: Variant = arr[idx]
 	var inst: Dictionary = inst_v if inst_v is Dictionary else {"id": String(inst_v), "health": 1}
 	var mid: String = String(inst.get("id", ""))
-	var m: Dictionary = MonsterCatalog.by_id(mid)
+	var m: Dictionary = _gs.monster_def(mid)
 	var dealt: int = MonsterCatalog.apply_resistance(m, amount, "magical")
 	if dealt <= 0:
 		GameConsole.log("[Монстр] сопротивление магии — урон поглощён на %s" % loc)

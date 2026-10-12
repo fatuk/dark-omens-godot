@@ -121,7 +121,7 @@ func begin(pid: String, idx: int = 0) -> bool:
 	var inst_health: int = (
 		int((inst_v as Dictionary).get("health", -1)) if inst_v is Dictionary else -1
 	)
-	var m: Dictionary = MonsterCatalog.by_id(mid)
+	var m: Dictionary = _gs.monster_def(mid)
 	if m.is_empty():
 		return false
 	# Стойкость — по тому же авторитету размера партии, что и спаун (board_state),
@@ -299,7 +299,7 @@ func resolution(enc: Dictionary, c: Dictionary, pid: String) -> Dictionary:
 	var hits: int = int(c.get("successes", 0))
 	# Боевой урон — ФИЗИЧЕСКИЙ: монстр с physical-резистом получает вдвое меньше.
 	# (hp_loss игрока — от СЫРОГО броска: защита не зависит от резиста монстра.)
-	var m: Dictionary = MonsterCatalog.by_id(String(enc.get("monsterId", "")))
+	var m: Dictionary = _gs.monster_def(String(enc.get("monsterId", "")))
 	# + урон от успехов Воли (damageWithSuccesses), он резистом не режется.
 	var dealt: int = (
 		MonsterCatalog.apply_resistance(m, hits, "physical") + int(enc.get("will_dealt", 0))

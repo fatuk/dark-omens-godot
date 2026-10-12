@@ -1066,7 +1066,7 @@ func _active_monster_toughness(loc: String) -> int:
 		return -1
 	var inst_v: Variant = mons[0]
 	var mid: String = String(inst_v.get("id", "")) if inst_v is Dictionary else String(inst_v)
-	var m: Dictionary = MonsterCatalog.by_id(mid)
+	var m: Dictionary = _gs.monster_def(mid)
 	if m.is_empty():
 		return -1
 	@warning_ignore("unsafe_method_access")

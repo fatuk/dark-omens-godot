@@ -181,7 +181,7 @@ static func _fill_monsters(body: VBoxContainer) -> void:
 	list.add_theme_constant_override("separation", 4)
 	for mid_v: Variant in counts:
 		var mid: String = mid_v
-		var m: Dictionary = MonsterCatalog.by_id(mid)
+		var m: Dictionary = GameState.monster_def(mid)
 		var name_key: String = String(m.get("nameKey", mid))
 		var n: int = int(counts[mid])
 		list.add_child(_row(name_key if n <= 1 else "%s  ×%d" % [name_key, n], mid))

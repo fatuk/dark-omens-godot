@@ -1265,6 +1265,13 @@ func my_player() -> Dictionary:
 # ── Helpers, общие для подмодулей ─────────────────────────────────────────────
 
 
+## Определение монстра с учётом листа Древнего партии: культист (useAncientOne)
+## берёт статы и Расплату из campaign.ancientOne.cultist. Единая точка для боя,
+## спауна, списка целей, Расплаты монстров и UI — иначе шкалы разъезжаются.
+func monster_def(mid: String) -> Dictionary:
+	return MonsterCatalog.resolve(MonsterCatalog.by_id(mid), campaign.get("ancientOne", {}))
+
+
 ## Текущий язык игры названием для relay ("Russian" / "English"). Используется
 ## EncounterFlow и CampaignGen в теле запроса к ContentApi.
 func relay_language() -> String:

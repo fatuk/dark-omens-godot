@@ -22,6 +22,7 @@ var pending_check: Dictionary = {}
 var mythos_decision: Dictionary = {}
 var locations: Array = []  # граф для move / выбора клетки
 var spell_deck: Array = []  # колода копий заклинаний (SpellFlow)
+var campaign: Dictionary = {}  # библия (ancientOne.cultist читает monster_def)
 
 # Что модуль «сделал» с внешним миром — тесты читают отсюда.
 var board_effects: Array = []  # apply_board_effect(node)
@@ -62,3 +63,7 @@ func apply_board_effect(node: Dictionary) -> void:
 
 func announce_action(pid: String, action_id: String, params: Dictionary = {}) -> void:
 	feed.append({"pid": pid, "id": action_id, "params": params})
+
+
+func monster_def(mid: String) -> Dictionary:
+	return MonsterCatalog.resolve(MonsterCatalog.by_id(mid), campaign.get("ancientOne", {}))

@@ -124,6 +124,9 @@ class MockGS:
 	func name_of(pid: String) -> String:
 		return pid
 
+	func monster_def(mid: String) -> Dictionary:
+		return MonsterCatalog.resolve(MonsterCatalog.by_id(mid), campaign.get("ancientOne", {}))
+
 	func broadcast_sync() -> void:
 		pass
 
@@ -210,10 +213,14 @@ func test_discard_ignores_repeat_and_stubs() -> void:
 class MockGSDebug:
 	extends Node
 	var players: Dictionary = {}
+	var campaign: Dictionary = {}
 	var _encounter: EncounterFlow
 
 	func name_of(pid: String) -> String:
 		return pid
+
+	func monster_def(mid: String) -> Dictionary:
+		return MonsterCatalog.resolve(MonsterCatalog.by_id(mid), campaign.get("ancientOne", {}))
 
 
 func _debug_gs() -> MockGSDebug:
