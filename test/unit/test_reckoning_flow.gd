@@ -21,6 +21,14 @@ class StubCond:
 		reckoned.append({"pid": pid, "cid": cid})
 
 
+class StubCampaignR:
+	extends RefCounted
+	var mystery: Dictionary = {}
+
+	func current_mystery() -> Dictionary:
+		return mystery
+
+
 class MockGS:
 	extends Node
 	var host: bool = true
@@ -40,6 +48,7 @@ class MockGS:
 	var _target: RefCounted
 	var _cond := StubCond.new()
 	var _rumor: RumorFlow
+	var _campaign := StubCampaignR.new()  # активная Тайна (onReckoning)
 
 	signal mythos_decided(idx: int)
 
@@ -198,3 +207,50 @@ func test_parallel_gate_waits_for_all_players() -> void:
 	await _r.run_reckoning("")
 	assert_eq((_gs._cond.reckoned as Array).size(), 2, "Расплата обоих сыщиков выполнена")
 	assert_false(_gs.reckoning_active, "reckoning_active снят после завершения всех")
+
+
+func test_mystery_tier_applies_on_reckoning() -> void:
+	# Расплата активной Тайны — между Древним и картами Мифов; адресные цели per-target.
+	_gs._campaign.mystery = {
+		"onReckoning":
+		[
+			{"do": "advanceDoom", "amount": 1},
+			{
+				"do": "loseSanity",
+				"amount": 1,
+				"target": "eachOnSpace",
+				"location": "5",
+				"when": {"kind": "cluesAtMost", "n": 0},
+			},
+		]
+	}
+	_player("p1", {"location": "5", "clues": 0})
+	_player("p2", {"location": "5", "clues": 1})
+	_player("p3", {"location": "Arkham", "clues": 0})
+	await _r.run_reckoning("")
+	assert_eq(_gs.doom, 1, "Тайна двинула Рок")
+	assert_eq(int(_gs.players["p1"]["sanity"]), 4, "на поле без улик — −1")
+	assert_eq(int(_gs.players["p2"]["sanity"]), 5, "на поле с уликой — цел")
+	assert_eq(int(_gs.players["p3"]["sanity"]), 5, "не на поле — цел")
+
+
+func test_ancient_reckoning_no_investigators_at_predicate() -> void:
+	_gs.campaign = {
+		"ancientOne":
+		{
+			"onReckoning":
+			[
+				{
+					"do": "advanceDoom",
+					"amount": 1,
+					"when": {"kind": "noInvestigatorsAt", "location": "5"}
+				}
+			]
+		}
+	}
+	_player("p1", {"location": "Arkham"})
+	await _r.run_reckoning("")
+	assert_eq(_gs.doom, 1, "поле брошено → Расплата листа сработала")
+	_gs.players["p1"]["location"] = "5"
+	await _r.run_reckoning("")
+	assert_eq(_gs.doom, 1, "сыщик на поле → нет")

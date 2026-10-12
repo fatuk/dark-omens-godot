@@ -517,3 +517,21 @@ func test_remove_by_toughness_everywhere_zero_threshold_is_noop() -> void:
 	_gs.monsters = {"a": [{"id": "ghoul", "health": 1}]}
 	_board.remove_monsters_by_toughness_everywhere(false, 0)
 	assert_eq((_gs.monsters["a"] as Array).size(), 1, "порог 0 ничего не снимает")
+
+
+func test_spawn_named_at_bypasses_bag() -> void:
+	_gs.monster_bag = ["ghoul"]
+	_board.spawn_named_at("cultist", "5")
+	_board.spawn_named_at("ghoul", "5")
+	var at: Array = _gs.monsters["5"]
+	assert_eq(at.size(), 2, "оба на клетке")
+	assert_eq(String((at[0] as Dictionary)["id"]), "cultist")
+	assert_eq(int((at[0] as Dictionary)["health"]), 1, "культист без листа — стойкость 1")
+	assert_false(_gs.monster_bag.has("ghoul"), "уникальный монстр вынут из мешка")
+
+
+func test_apply_verb_spawn_monster_by_name_at_where() -> void:
+	_board.apply_verb(
+		{"do": "spawnMonster", "monster": "cultist", "where": "5", "count": 2}, "spawnMonster"
+	)
+	assert_eq((_gs.monsters.get("5", []) as Array).size(), 2, "два культиста по имени на поле")

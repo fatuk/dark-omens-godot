@@ -251,3 +251,44 @@ func test_give_to_self_noop() -> void:
 	_player("p1", {"clues": 3})
 	_t._apply_give("giveClue", {"count": 2}, "p1")
 	assert_eq(int(_gs.players["p1"]["clues"]), 3, "передача самому себе игнорируется")
+
+
+# ── eachOnSpace: клетка якоря или явная; when — по каждой цели ────────────────
+
+
+func test_each_on_space_uses_anchor_location() -> void:
+	_player("a", {"location": "5"})
+	_player("b", {"location": "5"})
+	_player("c", {"location": "Arkham"})
+	_gs.current_idx = 0  # активный — a
+	var hit: Array = _t._resolve_targets({"do": "loseSanity", "target": "eachOnSpace"})
+	hit.sort()
+	assert_eq(hit, ["a", "b"], "все на клетке активного")
+
+
+func test_each_on_space_explicit_location() -> void:
+	_player("a", {"location": "5"})
+	_player("c", {"location": "Arkham"})
+	var hit: Array = _t._resolve_targets(
+		{"do": "loseSanity", "target": "eachOnSpace", "location": "Arkham"}
+	)
+	assert_eq(hit, ["c"], "явная клетка важнее якоря")
+
+
+func test_targeted_when_is_evaluated_per_target() -> void:
+	_player("a", {"location": "5", "clues": 0, "sanity": 5})
+	_player("b", {"location": "5", "clues": 2, "sanity": 5})
+	(
+		_t
+		. apply_targeted_effect(
+			{
+				"do": "loseSanity",
+				"amount": 1,
+				"target": "eachOnSpace",
+				"location": "5",
+				"when": {"kind": "cluesAtMost", "n": 0},
+			}
+		)
+	)
+	assert_eq(int(_gs.players["a"]["sanity"]), 4, "без улик — потерял рассудок")
+	assert_eq(int(_gs.players["b"]["sanity"]), 5, "с уликами — не тронут")

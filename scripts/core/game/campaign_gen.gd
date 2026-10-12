@@ -223,6 +223,8 @@ func _summary(full: Dictionary, ancient_id: String = "") -> Dictionary:
 			# onEnter — board-эффекты при активации Тайны (напр. раскладка
 			# жетонов Знамения для tokensOnCard). Лёгкий, синкаем.
 			"onEnter": m.get("onEnter", []),
+			# onReckoning — Расплата Тайны, пока она активна (тир ReckoningFlow).
+			"onReckoning": m.get("onReckoning", []),
 		}
 		# progress-хуки набора жетонов (реакции gateClosed/... + встречи-хуки
 		# encounterAtEldritchToken) — БЕЗ них tokensOnCard-Тайна не продвигается и

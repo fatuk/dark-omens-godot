@@ -37,6 +37,7 @@ func run_reckoning(scope: String = "") -> void:
 		_gs.emit_changed()
 		return
 	_reckon_ancient()
+	_reckon_mystery()
 	_reckon_mythos_in_play()
 	_reckon_monsters()
 	_gs.broadcast_sync()
@@ -54,6 +55,13 @@ func _reckon_ancient() -> void:
 	# Пусто → Древний в Расплате молчит.
 	var ao: Dictionary = _gs.campaign.get("ancientOne", {})
 	_apply_global(ao.get("onReckoning", []), "Древний")
+
+
+# Тир 1б: Расплата активной Тайны (mystery.onReckoning — пока Тайна активна:
+# «Братчик появляется на поле», «сыщик без улик теряет рассудок»). Из CMS через библию.
+func _reckon_mystery() -> void:
+	var m: Dictionary = _gs._campaign.current_mystery()
+	_apply_global(m.get("onReckoning", []), "Тайна")
 
 
 # Тир 2: Расплата каждой карты Мифов в игре (её onReckoning-эффект, без триггеров).
@@ -117,7 +125,9 @@ func _apply_global(prog: Array, label: String) -> void:
 	var flow: Dictionary = {
 		"interactive": true, "decisions": {}, "rolls": {}, "pending": {}, "slot": ""
 	}
-	var res: Dictionary = _EffectRunner.run(prog, {}, {}, flow)
+	# Контекст предикатов поля: noInvestigatorsAt {location} (Расплата листа Древнего).
+	var ctx: Dictionary = {"investigators_at": _investigators_at()}
+	var res: Dictionary = _EffectRunner.run(prog, {}, ctx, flow)
 	if not (res.get("pending", {}) as Dictionary).is_empty():
 		GameConsole.warn("[Расплата:%s] выбор в глобальной Расплате не поддержан — пропуск" % label)
 		return
@@ -125,6 +135,18 @@ func _apply_global(prog: Array, label: String) -> void:
 		_gs.apply_board_effect(node_v as Dictionary)
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[Расплата:%s] %s" % [label, String(l_v)])
+
+
+# Сколько подключённых живых сыщиков на каждой клетке: {loc: n}.
+func _investigators_at() -> Dictionary:
+	var out: Dictionary = {}
+	for p_v: Variant in _gs.players.values():
+		var p: Dictionary = p_v
+		if not bool(p.get("connected", true)) or bool(p.get(PlayerKeys.DEAD, false)):
+			continue
+		var loc: String = String(p.get("location", ""))
+		out[loc] = int(out.get(loc, 0)) + 1
+	return out
 
 
 # Узлы-ЭФФЕКТЫ программы (отбрасываем триггеры resolveReckoning — иначе рекурсия).

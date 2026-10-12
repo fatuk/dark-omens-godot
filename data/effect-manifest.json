@@ -675,6 +675,12 @@
           "default": 1
         },
         {
+          "name": "monster",
+          "type": {
+            "t": "str"
+          }
+        },
+        {
           "name": "trait",
           "type": {
             "t": "str"

@@ -248,6 +248,21 @@ static func _run_node(
 		_run_action(node, player, logs, board, ctx, flow, path)
 
 
+## Публично: предикат when против игрока и контекста (TargetResolver — per-target).
+static func eval_predicate(pred: Dictionary, player: Dictionary, ctx: Dictionary = {}) -> bool:
+	return _predicate(pred, player, ctx)
+
+
+# Игровой verb, адресованный другим сыщикам (не self/активному): его when
+# откладывается до разрешения целей.
+static func _targets_others(node: Dictionary) -> bool:
+	var target: String = String(node.get("target", ""))
+	return (
+		_PLAYER_VERBS.has(String(node.get("do", "")))
+		and not (target.is_empty() or target == "self")
+	)
+
+
 ## Публично: применить ОДИН игровой verb к словарю игрока. Для GameState — когда
 ## эффект адресован другому сыщику (target lead/each/chosenInvestigator) и
 ## применяется на уровне поля. Возвращает строки-логи.
@@ -501,9 +516,11 @@ static func _run_action(
 	flow: Dictionary,
 	path: String
 ) -> void:
-	if node.has("when") and not _predicate(node["when"], player, ctx):
-		return
 	var verb: String = String(node["do"])
+	# when адресного игрового verb'а (target: each/eachOnSpace/…) решается ПО КАЖДОЙ
+	# цели в TargetResolver (eval_predicate), а не по «своему» игроку прогона.
+	if node.has("when") and not _targets_others(node) and not _predicate(node["when"], player, ctx):
+		return
 	# Мета-verb: добавить успехи к результату каста (ctx.successes). Влияет на узлы
 	# ПОСЛЕ него — resultTiers (ветвление по успехам) и board-verb'ы «по стойкости»
 	# (_successes). Не player/board verb: мутирует общий ctx и выходит. (Banishment:
@@ -1118,6 +1135,44 @@ static func _predicate(pred: Dictionary, player: Dictionary, ctx: Dictionary) ->
 			result = int(ctx.get("monsters_on_board", 0)) == 0
 		"noRumorsInPlay":
 			result = int(ctx.get("rumors_in_play", 0)) == 0
+		"cluesAtMost":
+			result = int(player.get("clues", 0)) <= int(pred.get("n", 0))
+		"noInvestigatorsAt":
+			# «На локации нет ни одного сыщика» (Расплата листа: поле нельзя бросать).
+			# ctx.investigators_at {loc: n} кладёт ReckoningFlow; без него — живой стол.
+			var loc: String = String(pred.get("location", ""))
+			if ctx.has("investigators_at"):
+				result = int((ctx["investigators_at"] as Dictionary).get(loc, 0)) == 0
+			else:
+				result = true
+				for p_v: Variant in GameState.players.values():
+					var pp: Dictionary = p_v
+					if (
+						String(pp.get("location", "")) == loc
+						and bool(pp.get("connected", true))
+						and not bool(pp.get("dead", false))
+					):
+						result = false
+						break
+		"cluesAtMost":
+			result = int(player.get("clues", 0)) <= int(pred.get("n", 0))
+		"noInvestigatorsAt":
+			# «На локации нет ни одного сыщика» (Расплата листа: поле нельзя бросать).
+			# ctx.investigators_at {loc: n} кладёт ReckoningFlow; без него — живой стол.
+			var loc: String = String(pred.get("location", ""))
+			if ctx.has("investigators_at"):
+				result = int((ctx["investigators_at"] as Dictionary).get(loc, 0)) == 0
+			else:
+				result = true
+				for p_v: Variant in GameState.players.values():
+					var pp: Dictionary = p_v
+					if (
+						String(pp.get("location", "")) == loc
+						and bool(pp.get("connected", true))
+						and not bool(pp.get("dead", false))
+					):
+						result = false
+						break
 		"rolledAny":
 			# В кубах каста (ctx.dice) есть заданная грань? Для рубашек заклинаний:
 			# «if you rolled any 1's, discard». Нет ctx.dice → false.

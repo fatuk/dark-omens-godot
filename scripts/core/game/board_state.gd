@@ -263,6 +263,25 @@ func spawn_monster_at(loc_id: String) -> void:
 	_spawn_monster(loc_id)
 
 
+## Заспаунить КОНКРЕТНОГО монстра (по id) на локации — в обход мешка: spawnMonster
+## {monster:"cultist"}, эпики Тайн. Стойкость — по листу Древнего/размеру партии
+## (monster_def). Уникальный монстр из мешка при этом из мешка вынимается.
+func spawn_named_at(mid: String, loc_id: String) -> void:
+	if not _gs.is_host() or mid.is_empty() or loc_id.is_empty():
+		return
+	var m: Dictionary = _gs.monster_def(mid)
+	if m.is_empty():
+		GameConsole.warn("[Спаун] неизвестный монстр «%s»" % mid)
+		return
+	if mid != "cultist":
+		(_gs.monster_bag as Array).erase(mid)
+	var hp: int = maxi(1, MonsterCatalog.toughness_for(m, _gs._campaign.balance_player_count()))
+	var arr: Array = _gs.monsters.get(loc_id, [])
+	arr.append({"id": mid, "health": hp})
+	_gs.monsters[loc_id] = arr
+	GameConsole.log("[Спаун] %s (стойкость %d) на %s — по имени" % [mid, hp, loc_id])
+
+
 ## Вернуть монстра в «мешок» (после гибели/снятия с поля). Культист всегда в
 ## мешке (его не вынимали) — не дублируем.
 func return_monster_to_bag(mid: String) -> void:
@@ -866,8 +885,16 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 				mon_loc = String((_gs.players.get(apid, {}) as Dictionary).get("location", ""))
 			elif not mon_where.is_empty():
 				mon_loc = mon_where
+			# monster: "<id>" — конкретный монстр в обход мешка (культист Тайны, эпик);
+			# без where — у якорного сыщика.
+			var mon_id: String = String(node.get("monster", ""))
+			if not mon_id.is_empty() and mon_loc.is_empty():
+				var mpid: String = String(node.get("_anchor_pid", _gs.current_pid()))
+				mon_loc = String((_gs.players.get(mpid, {}) as Dictionary).get("location", ""))
 			for _i: int in n:
-				if mon_where.is_empty():
+				if not mon_id.is_empty():
+					spawn_named_at(mon_id, mon_loc)
+				elif mon_where.is_empty():
 					spawn_monster_from_gate()
 				elif not mon_loc.is_empty():
 					spawn_monster_at(mon_loc)

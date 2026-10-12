@@ -42,6 +42,9 @@ func apply_targeted_effect(node: Dictionary) -> void:
 		var pid: String = String(pid_v)
 		if not _gs.players.has(pid):
 			continue
+		# when — по каждой цели (напр. «сыщики без улик»: cluesAtMost 0).
+		if node.has("when") and not _EffectRunner.eval_predicate(node["when"], _gs.players[pid]):
+			continue
 		for _t in range(times):
 			if verb == "giveAsset" or verb == "giveClue":
 				_apply_give(verb, node, pid)
@@ -70,7 +73,12 @@ func _resolve_targets(node: Dictionary) -> Array:
 		"eachOnSea":
 			return _pids_on_loc_type("sea")
 		"eachOnSpace":
-			return _pids_on_loc_type("space")
+			# Сыщики на клетке: явной (node.location — Расплата Тайны «на поле») либо
+			# клетке якоря (активный / forEach-сыщик).
+			var loc: String = String(node.get("location", ""))
+			if loc.is_empty():
+				loc = String(_gs.players.get(_anchor_pid(node), {}).get("location", ""))
+			return _pids_at(loc)
 		"chosenInvestigator", "chosen":
 			var pid: String = String(node.get("_target_pid", ""))
 			return [pid] if not pid.is_empty() and _gs.players.has(pid) else []
@@ -137,6 +145,17 @@ func _pids_on_loc_type(loc_type: String) -> Array:
 		var pid: String = String(pid_v)
 		if _loc_type_of(String(_gs.players[pid].get("location", ""))) == loc_type:
 			out.append(pid)
+	return out
+
+
+# Подключённые сыщики на клетке loc ("" → никого).
+func _pids_at(loc: String) -> Array:
+	var out: Array = []
+	if loc.is_empty():
+		return out
+	for pid_v: Variant in _connected_pids():
+		if String(_gs.players[pid_v].get("location", "")) == loc:
+			out.append(String(pid_v))
 	return out
 
 

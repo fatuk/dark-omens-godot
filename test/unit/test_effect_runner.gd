@@ -314,6 +314,18 @@ func test_when_has_condition_gates_action() -> void:
 	p["conditions"] = ["cursed"]
 	EffectRunner.run([node], p)
 	assert_eq(int(p["clues"]), 2, "с состоянием — эффект применён")
+	# cluesAtMost — по сыщику; noInvestigatorsAt — по контексту поля (investigators_at).
+	var poor := {"do": "gainClue", "when": {"kind": "cluesAtMost", "n": 0}}
+	EffectRunner.run([poor], p)
+	assert_eq(int(p["clues"]), 2, "улики есть → cluesAtMost 0 не прошёл")
+	p["clues"] = 0
+	EffectRunner.run([poor], p)
+	assert_eq(int(p["clues"]), 1, "улик нет → прошёл")
+	var empty_field := {"do": "gainClue", "when": {"kind": "noInvestigatorsAt", "location": "5"}}
+	EffectRunner.run([empty_field], p, {"investigators_at": {"5": 2}})
+	assert_eq(int(p["clues"]), 1, "на поле есть сыщики → не прошёл")
+	EffectRunner.run([empty_field], p, {"investigators_at": {"Arkham": 1}})
+	assert_eq(int(p["clues"]), 2, "поле пусто → прошёл")
 
 
 func test_when_negated_predicate() -> void:
