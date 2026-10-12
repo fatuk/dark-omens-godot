@@ -1529,77 +1529,77 @@
 	  "front": "COND_OBSESSION_FRONT",
 	  "reckoning": "COND_OBSESSION_RECKONING",
 	  "triggered": [
-	    {
-	      "on": "rest",
-	      "do": [
-	        {
-	          "dieRoll": [
-	            {
-	              "on": "5-6",
-	              "then": [
-	                {
-	                  "do": "discardCard"
-	                }
-	              ]
-	            }
-	          ]
-	        }
-	      ]
-	    }
+		{
+		  "on": "rest",
+		  "do": [
+			{
+			  "dieRoll": [
+				{
+				  "on": "5-6",
+				  "then": [
+					{
+					  "do": "discardCard"
+					}
+				  ]
+				}
+			  ]
+			}
+		  ]
+		}
 	  ],
 	  "onReckoning": [
-	    {
-	      "test": "will",
-	      "onPass": [],
-	      "onFail": [
-	        {
-	          "do": "flipCard"
-	        }
-	      ]
-	    }
+		{
+		  "test": "will",
+		  "onPass": [],
+		  "onFail": [
+			{
+			  "do": "flipCard"
+			}
+		  ]
+		}
 	  ],
 	  "backs": [
-	    {
-	      "id": "sheafInEveryDream",
-	      "name": "OUTCOME_SHEAF_IN_EVERY_DREAM_NAME",
-	      "text": "OUTCOME_SHEAF_IN_EVERY_DREAM_TEXT",
-	      "effect": [
-	        {
-	          "do": "loseSanity",
-	          "amount": 1
-	        },
-	        {
-	          "do": "discardCard"
-	        }
-	      ]
-	    },
-	    {
-	      "id": "countingStalks",
-	      "name": "OUTCOME_COUNTING_STALKS_NAME",
-	      "text": "OUTCOME_COUNTING_STALKS_TEXT",
-	      "effect": [
-	        {
-	          "do": "becomeDelayed"
-	        },
-	        {
-	          "do": "discardCard"
-	        }
-	      ]
-	    },
-	    {
-	      "id": "theRuleIsWritten",
-	      "name": "OUTCOME_THE_RULE_IS_WRITTEN_NAME",
-	      "text": "OUTCOME_THE_RULE_IS_WRITTEN_TEXT",
-	      "effect": [
-	        {
-	          "do": "loseClue",
-	          "count": 1
-	        },
-	        {
-	          "do": "discardCard"
-	        }
-	      ]
-	    }
+		{
+		  "id": "sheafInEveryDream",
+		  "name": "OUTCOME_SHEAF_IN_EVERY_DREAM_NAME",
+		  "text": "OUTCOME_SHEAF_IN_EVERY_DREAM_TEXT",
+		  "effect": [
+			{
+			  "do": "loseSanity",
+			  "amount": 1
+			},
+			{
+			  "do": "discardCard"
+			}
+		  ]
+		},
+		{
+		  "id": "countingStalks",
+		  "name": "OUTCOME_COUNTING_STALKS_NAME",
+		  "text": "OUTCOME_COUNTING_STALKS_TEXT",
+		  "effect": [
+			{
+			  "do": "becomeDelayed"
+			},
+			{
+			  "do": "discardCard"
+			}
+		  ]
+		},
+		{
+		  "id": "theRuleIsWritten",
+		  "name": "OUTCOME_THE_RULE_IS_WRITTEN_NAME",
+		  "text": "OUTCOME_THE_RULE_IS_WRITTEN_TEXT",
+		  "effect": [
+			{
+			  "do": "loseClue",
+			  "count": 1
+			},
+			{
+			  "do": "discardCard"
+			}
+		  ]
+		}
 	  ]
 	}
   ]
