@@ -569,7 +569,7 @@ func start_game(players_init: Array) -> void:
 			int(p.get("sanity_max", 5)),
 		)
 		turn_order.append(uid)
-	turn_order.sort()
+	turn_order = ordered_turns(turn_order, local_pid() if Demo.active() else "")
 
 	round_num = 1
 	phase = Phases.ACTION
@@ -1249,6 +1249,17 @@ func _have_finished_encounter() -> bool:
 	if not players.has(_nm.my_user_id):
 		return false
 	return bool(players[_nm.my_user_id].get("encounter_done", false))
+
+
+## Порядок хода партии: по id (стабильно у всех клиентов); first — этот сыщик ходит
+## первым и становится Ведущим (демо: человек впереди ботов). "" — без исключений.
+func ordered_turns(uids: Array, first: String = "") -> Array:
+	var out: Array = uids.duplicate()
+	out.sort()
+	if not first.is_empty() and out.has(first):
+		out.erase(first)
+		out.push_front(first)
+	return out
 
 
 ## Мой собственный user_id ("" если сеть ещё не готова). Имя local_pid, а не my_pid:

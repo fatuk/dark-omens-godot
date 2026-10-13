@@ -35,3 +35,14 @@ func test_demo_content_narrows_pools_only_in_demo() -> void:
 		SeasonGate.room_allows({"id": "38_revolver", "season": "mom"}, "assets"), "сезон важнее"
 	)
 	Demo.set_content({})
+
+
+func test_human_moves_first_in_demo_turn_order() -> void:
+	var uids: Array = ["local-player", "bot-2", "bot-1"]
+	assert_eq(GameState.ordered_turns(uids), ["bot-1", "bot-2", "local-player"], "по id")
+	assert_eq(
+		GameState.ordered_turns(uids, "local-player"),
+		["local-player", "bot-1", "bot-2"],
+		"человек первым, боты по id"
+	)
+	assert_eq(GameState.ordered_turns(uids, "nobody"), ["bot-1", "bot-2", "local-player"])
