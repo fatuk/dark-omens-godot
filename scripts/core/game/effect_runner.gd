@@ -1182,25 +1182,13 @@ static func _predicate(pred: Dictionary, player: Dictionary, ctx: Dictionary) ->
 					):
 						result = false
 						break
-		"cluesAtMost":
-			result = int(player.get("clues", 0)) <= int(pred.get("n", 0))
-		"noInvestigatorsAt":
-			# «На локации нет ни одного сыщика» (Расплата листа: поле нельзя бросать).
-			# ctx.investigators_at {loc: n} кладёт ReckoningFlow; без него — живой стол.
-			var loc: String = String(pred.get("location", ""))
-			if ctx.has("investigators_at"):
-				result = int((ctx["investigators_at"] as Dictionary).get(loc, 0)) == 0
-			else:
-				result = true
-				for p_v: Variant in GameState.players.values():
-					var pp: Dictionary = p_v
-					if (
-						String(pp.get("location", "")) == loc
-						and bool(pp.get("connected", true))
-						and not bool(pp.get("dead", false))
-					):
-						result = false
-						break
+		"gateAt", "noGateAt":
+			# Открыты ли врата на локации {location}. ctx.gates — снимок поля, если
+			# вызывающий его кладёт; без него — живой стол (Миф/Расплата исполняют узлы
+			# по одному, так что следующий узел видит врата, открытые предыдущим).
+			var gloc: String = String(pred.get("location", ""))
+			var gates: Dictionary = ctx.get("gates", GameState.gates)
+			result = gates.has(gloc) == (kind == "gateAt")
 		"rolledAny":
 			# В кубах каста (ctx.dice) есть заданная грань? Для рубашек заклинаний:
 			# «if you rolled any 1's, discard». Нет ctx.dice → false.

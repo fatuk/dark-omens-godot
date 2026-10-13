@@ -645,6 +645,12 @@
           "type": {
             "t": "str"
           }
+        },
+        {
+          "name": "monster",
+          "type": {
+            "t": "str"
+          }
         }
       ],
       "targets": null,
@@ -717,6 +723,19 @@
       ],
       "targets": "oneMonster",
       "describeKey": "VERB_DISCARD_MONSTER"
+    },
+    "restoreMonster": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "monster",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_RESTORE_MONSTER"
     },
     "moveMonster": {
       "kind": "board",

@@ -250,3 +250,22 @@ func test_ready_bots_picks_free_investigator_after_human_ready() -> void:
 	assert_false(String(msg["investigator"]).is_empty())
 	_nm.players[BOT]["ready"] = true
 	assert_eq(_d.ready_bots(), 0, "уже готов — не трогаем")
+
+
+func test_fighter_goes_to_gate_and_picks_circle() -> void:
+	_gs.gates = {"D": "green"}
+	_gs.monsters = {"C": [{"id": "x"}]}
+	assert_eq(_act("fighter")["payload"]["to"], "B", "врата открыты — к кругу, не к монстру")
+	_gs.phase = "encounter"
+	_gs.encounter_choices = ["general", "research", "gate"]
+	assert_eq(_act("fighter")["kind"], "gate", "боец — в круг")
+	assert_eq(_act("runner")["kind"], "research", "гонец — за уликой")
+
+
+func test_branch_without_test_finishes_at_once() -> void:
+	_gs.phase = "encounter"
+	_gs.current_encounter = {
+		"kind": "gate", "stage": 1, "branch": "success", "branches": {"success": {}}
+	}
+	_gs.active_check = {}
+	assert_eq(_act()["action"], RelayActions.FINISH_ENCOUNTER)

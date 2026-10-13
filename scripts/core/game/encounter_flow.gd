@@ -537,7 +537,17 @@ func _active_test(enc: Dictionary) -> Dictionary:
 ## Плоская встреча (general/research) без проверки: в data нет test. Такие карты
 ## разрешаются без броска — считаются пройденными, эффекты берутся из onSuccess.
 static func _is_test_less(enc: Dictionary) -> bool:
-	if String(enc.get("kind", "")) in ["gate", "mystery", "combat", "eldritch", "rumor"]:
+	var kind: String = String(enc.get("kind", ""))
+	if kind == "gate" or kind == "mystery":
+		# Ветвящаяся встреча: первая проверка обязательна, а ветка второй стадии может
+		# быть без проверки («✔ закройте врата») — тогда сразу её исход успеха.
+		if int(enc.get("stage", 0)) != 1:
+			return false
+		var branch: Dictionary = (enc.get("branches", {}) as Dictionary).get(
+			String(enc.get("branch", "success")), {}
+		)
+		return (branch.get("test", {}) as Dictionary).is_empty()
+	if kind in ["combat", "eldritch", "rumor"]:
 		return false
 	return (enc.get("test", {}) as Dictionary).is_empty()
 

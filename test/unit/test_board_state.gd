@@ -543,3 +543,33 @@ func test_place_clue_at_stacks_and_verb_where() -> void:
 	assert_eq((_gs.entities["5"] as Array).count("clue"), 2, "две улики на одной клетке")
 	_board.apply_verb({"do": "placeClue", "where": "Arkham", "count": 3}, "placeClue")
 	assert_eq((_gs.entities["Arkham"] as Array).count("clue"), 3, "placeClue where — явная клетка")
+
+
+func test_restore_monster_heals_every_instance_to_full() -> void:
+	_gs.monsters = {
+		"5": [{"id": "elder", "health": 1}, {"id": "cultist", "health": 1}],
+		"7": [{"id": "elder", "health": 2}]
+	}
+	assert_eq(_board.restore_monster("elder"), 2)
+	var full: int = (_gs.monsters["5"][0] as Dictionary)["health"]
+	assert_true(full >= 1)
+	assert_eq((_gs.monsters["7"][0] as Dictionary)["health"], full, "все экземпляры")
+	assert_eq((_gs.monsters["5"][1] as Dictionary)["health"], 1, "чужой монстр не тронут")
+	assert_eq(_board.restore_monster("nobody"), 0)
+
+
+func test_retreat_doom_not_below_zero() -> void:
+	_gs.doom = 1
+	_board.apply_verb({"do": "retreatDoom", "amount": 2}, "retreatDoom")
+	assert_eq(_gs.doom, 0)
+
+
+func test_open_gate_with_named_monster_skips_bag() -> void:
+	_gs.monster_bag = ["ghost"]
+	_board.apply_verb({"do": "openGate", "where": "5", "monster": "cultist"}, "openGate")
+	assert_true(_gs.gates.has("5"))
+	var ids: Array = []
+	for m: Dictionary in _gs.monsters.get("5", []):
+		ids.append(m["id"])
+	assert_eq(ids, ["cultist"], "из врат вышел Братчик, мешок не тронут")
+	assert_eq(_gs.monster_bag, ["ghost"])

@@ -274,7 +274,7 @@ func decide(pid: String, role: String = "fighter") -> Dictionary:
 				return {}
 			if _held(p):
 				return {}
-			return _encounter_intent(pid, p)
+			return _encounter_intent(pid, p, role)
 	return {}
 
 
@@ -357,7 +357,8 @@ func _goal_layers(role: String) -> Array:
 			mystery[String(loc_v)] = true
 	if role == "runner":
 		return [clues, mystery, gates]
-	return [monsters, gates, clues]
+	# Боец: «врата открыты — иду в круг» (у врат же и монстры).
+	return [gates, monsters, clues]
 
 
 ## BFS по дорогам карты: первый шаг от `from` к ближайшей из goals ("" — недостижимо).
@@ -384,10 +385,10 @@ func first_hop(from: String, goals: Dictionary) -> String:
 # ── Фаза встреч ───────────────────────────────────────────────────────────────
 
 
-func _encounter_intent(_pid: String, _p: Dictionary) -> Dictionary:
+func _encounter_intent(_pid: String, _p: Dictionary, role: String = "runner") -> Dictionary:
 	var choices: Array = _gs.get("encounter_choices")
 	if not choices.is_empty():
-		return {"action": RelayActions.CHOOSE_ENCOUNTER, "kind": pick_choice(choices)}
+		return {"action": RelayActions.CHOOSE_ENCOUNTER, "kind": pick_choice(choices, role)}
 	var enc: Dictionary = _gs.get("current_encounter")
 	if enc.is_empty():
 		return {}  # карта ещё генерится
@@ -413,6 +414,12 @@ func _encounter_intent(_pid: String, _p: Dictionary) -> Dictionary:
 			return {"action": RelayActions.FINISH_ENCOUNTER}
 		return {"action": RelayActions.RESOLVE_ENCOUNTER}
 	if kind == "gate" or kind == "mystery":
+		var stage: int = int(enc.get("stage", 0))
+		var branch: Dictionary = (enc.get("branches", {}) as Dictionary).get(
+			String(enc.get("branch", "success")), {}
+		)
+		if stage == 1 and (branch.get("test", {}) as Dictionary).is_empty():
+			return {"action": RelayActions.FINISH_ENCOUNTER}  # ветка без проверки
 		if not rolled:
 			return {"action": RelayActions.RESOLVE_ENCOUNTER}
 		if int(enc.get("stage", 0)) == 0:
@@ -424,11 +431,14 @@ func _encounter_intent(_pid: String, _p: Dictionary) -> Dictionary:
 	return {"action": RelayActions.RESOLVE_ENCOUNTER}
 
 
-## Вид встречи из предложенных: порядок боёв — первый; иначе по _CHOICE_ORDER.
-func pick_choice(choices: Array) -> String:
+## Вид встречи из предложенных: порядок боёв — первый; боец выбирает врата (круг)
+## раньше улики, остальные — по _CHOICE_ORDER.
+func pick_choice(choices: Array, role: String = "runner") -> String:
 	for c_v: Variant in choices:
 		if String(c_v).begins_with("combat"):
 			return String(c_v)
+	if role == "fighter" and choices.has("gate"):
+		return "gate"
 	for want: String in _CHOICE_ORDER:
 		if choices.has(want):
 			return want

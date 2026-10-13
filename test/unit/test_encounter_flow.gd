@@ -855,3 +855,22 @@ func test_investigator_flags() -> void:
 		{"items": [{"id": "wither", "kind": "spell"}, {"id": "lantern", "exhausted": false}]}
 	)
 	assert_eq(flags, ["hasSpell"], "заклинание → hasSpell; обычный актив флага не даёт")
+
+
+func test_branch_without_test_is_test_less_only_on_stage_two() -> void:
+	var enc := {
+		"kind": "gate",
+		"stage": 0,
+		"branch": "success",
+		"stage1": {"test": {"skill": "will", "modifier": -1}},
+		"branches":
+		{
+			"success": {"onSuccess": [{"do": "closeGate"}]},
+			"failure": {"test": {"skill": "observation"}, "onSuccess": [], "onFailure": []},
+		},
+	}
+	assert_false(EncounterFlow._is_test_less(enc), "первая проверка обязательна")
+	enc["stage"] = 1
+	assert_true(EncounterFlow._is_test_less(enc), "ветка успеха без проверки")
+	enc["branch"] = "failure"
+	assert_false(EncounterFlow._is_test_less(enc), "ветка провала с проверкой")

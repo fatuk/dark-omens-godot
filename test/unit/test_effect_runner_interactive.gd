@@ -409,3 +409,11 @@ func test_test_silent_without_checks_visible_flag() -> void:
 	)
 	assert_eq((res["pending"] as Dictionary).size(), 0, "без checks_visible проверка не пендит")
 	assert_eq(int(p["clues"]), 2, "тихий auto-pass (нет skills) → onPass")
+
+
+func test_gate_at_predicates_read_ctx_gates() -> void:
+	var ctx := {"gates": {"5": "green"}}
+	assert_true(EffectRunner.eval_predicate({"kind": "gateAt", "location": "5"}, {}, ctx))
+	assert_false(EffectRunner.eval_predicate({"kind": "gateAt", "location": "Arkham"}, {}, ctx))
+	assert_false(EffectRunner.eval_predicate({"kind": "noGateAt", "location": "5"}, {}, ctx))
+	assert_true(EffectRunner.eval_predicate({"kind": "noGateAt", "location": "Arkham"}, {}, ctx))

@@ -128,7 +128,7 @@ func setup_board(player_count: int) -> void:
 ## по циклу цветов омена. Каждые новые врата выпускают 1 монстра.
 ## Открыть врата. Возвращает локацию, где врата открылись ("" — не удалось: не хост
 ## либо нет свободной гейт-локации). Возврат нужен RumorFlow (привязка портала Слуха).
-func open_gate(loc_id: String = "", color: String = "") -> String:
+func open_gate(loc_id: String = "", color: String = "", spawn: bool = true) -> String:
 	if not _gs.is_host():
 		return ""
 	var lid: String = loc_id
@@ -150,7 +150,8 @@ func open_gate(loc_id: String = "", color: String = "") -> String:
 		col = _gate_color_for(lid)
 	_gs.gates[lid] = col
 	GameConsole.log("[Врата] открылись (%s) на %s" % [col, lid])
-	_spawn_monster(lid)  # каждые новые врата → 1 монстр
+	if spawn:
+		_spawn_monster(lid)  # каждые новые врата → 1 монстр (из мешка)
 	return lid
 
 
@@ -255,6 +256,25 @@ func _spawn_monster(loc_id: String) -> void:
 			% [mid, hp, loc_id, _gs.monster_bag.size()]
 		)
 	)
+
+
+## Все экземпляры монстра mid на поле восстанавливают здоровье до полной стойкости
+## (по листу Древнего и размеру партии, как при спауне). Возвращает число вылеченных.
+func restore_monster(mid: String) -> int:
+	if mid.is_empty():
+		return 0
+	var full: int = maxi(
+		1, MonsterCatalog.toughness_for(_gs.monster_def(mid), _gs._campaign.balance_player_count())
+	)
+	var healed: int = 0
+	for loc_v: Variant in (_gs.monsters as Dictionary).keys():
+		for inst_v: Variant in _gs.monsters[loc_v] as Array:
+			if inst_v is Dictionary and String((inst_v as Dictionary).get("id", "")) == mid:
+				(inst_v as Dictionary)["health"] = full
+				healed += 1
+	if healed > 0:
+		GameConsole.log("[Эффект] %s восстанавливает здоровье (%d)" % [mid, full])
+	return healed
 
 
 ## Заспаунить монстра на КОНКРЕТНОЙ локации (публичная обёртка над _spawn_monster).
@@ -877,8 +897,12 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 				gate_loc = String((_gs.players.get(apid, {}) as Dictionary).get("location", ""))
 			elif not gate_where.is_empty():
 				gate_loc = gate_where
+			# monster: из врат выходит этот монстр (Братчик), а не случайный из мешка.
+			var gate_mon: String = String(node.get("monster", ""))
 			for _i: int in n:
-				open_gate(gate_loc)
+				var opened: String = open_gate(gate_loc, "", gate_mon.is_empty())
+				if not opened.is_empty() and not gate_mon.is_empty():
+					spawn_named_at(gate_mon, opened)
 		"closeGate":
 			# _origin_loc — где сыщик стоял до эффектов ветки: если та же ветка его
 			# переместила (move), закрываются врата исходной клетки, а не новой.
@@ -955,6 +979,8 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 				GameConsole.log("[Эффект] mysteryProgress вне фазы encounter — игнор")
 			else:
 				_gs._mystery.apply_mystery_progress()
+		"restoreMonster":
+			restore_monster(String(node.get("monster", "")))
 		"retreatDoom":
 			_gs.doom = maxi(0, _gs.doom - n)
 			GameConsole.log("[Эффект] doom −%d (откат) → %d" % [n, _gs.doom])

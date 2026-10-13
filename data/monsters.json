@@ -2356,6 +2356,16 @@
 			"trigger": "passive",
 			"textKey": "MON_ELDER_ABILITY"
 		},
-		"hasImage": false
+		"hasImage": false,
+		"onReckoning": [
+			{
+				"do": "restoreMonster",
+				"monster": "elder",
+				"when": {
+					"kind": "gateAt",
+					"location": "5"
+				}
+			}
+		]
 	}
 ]

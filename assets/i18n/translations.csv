@@ -1848,7 +1848,7 @@ OUTCOME_THE_RULE_IS_WRITTEN_NAME,Правило записано,The Rule Is Wri
 OUTCOME_THE_RULE_IS_WRITTEN_TEXT,"Ночью вы перевязываете всё, что попадается под руку, по одному и тому же правилу. Потеряйте 1 улику, затем сбросьте эту карту.","At night you tie up everything within reach by one and the same rule. Lose 1 Clue, then discard this card."
 
 MON_ELDER_NAME,Старший,The Elder
-MON_ELDER_ABILITY,"Нельзя атаковать, пока на поле есть культисты. Стойкость +1 за каждых двух сыщиков.",Cannot be attacked while any Cultist is on the board. Toughness +1 per two investigators.
+MON_ELDER_ABILITY,"Нельзя атаковать, пока на поле есть культисты. Пока врата в Среднем Западе открыты, в каждую Расплату полностью восстанавливает здоровье. Стойкость +1 за каждых двух сыщиков.","Cannot be attacked while any Cultist is on the board. While the Midwest Gate is open, recovers all Health during each Reckoning. Toughness +1 per two investigators."
 ARTIFACT_SHEAF_NAME,Сноп,The Sheaf
 ARTIFACT_SHEAF_ABILITY,"Нельзя сбросить. Пока Сноп у сыщика, он не может получать новые улики.","Cannot be discarded. While an investigator holds the Sheaf, they cannot gain Clues."
 LOGIN_BTN_OFFLINE,Играть офлайн (без аккаунта),Play offline (no account)
@@ -1858,3 +1858,4 @@ OFFLINE_GUEST_NAME,Гость,Guest
 OFFLINE_ROOM_NAME,Офлайн-партия,Offline game
 OFFLINE_LABEL,офлайн,offline
 OFFLINE_BOT_NAME,Бот %d,Bot %d
+VERB_RESTORE_MONSTER,монстр восстанавливает здоровье,the Monster recovers all Health

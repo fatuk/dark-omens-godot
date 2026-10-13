@@ -1,5 +1,280 @@
 [
 	{
+		"id": "demo-sheaf-gate-3",
+		"kind": "gate",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"season:core",
+			"demo",
+			"world:The Future"
+		],
+		"data": {
+			"stage1": {
+				"test": {
+					"skill": "observation",
+					"modifier": 0
+				}
+			},
+			"successBranch": {
+				"onSuccess": [
+					{
+						"do": "closeGate"
+					},
+					{
+						"do": "retreatDoom",
+						"amount": 1
+					}
+				],
+				"onFailure": []
+			},
+			"failureBranch": {
+				"test": {
+					"skill": "strength",
+					"modifier": -1
+				},
+				"onSuccess": [
+					{
+						"do": "closeGate"
+					},
+					{
+						"do": "loseHealth",
+						"amount": 1
+					}
+				],
+				"onFailure": [
+					{
+						"do": "loseHealth",
+						"amount": 2
+					},
+					{
+						"do": "spawnMonster",
+						"monster": "cultist",
+						"where": "self"
+					}
+				]
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Та, что будет",
+				"stage1": {
+					"mainText": "Жатва, которую вы пытаетесь остановить, уже прошла: поле голое, городка за ним нет, а зерно свезено в одну кучу размером с церковь, и оно шевелится.",
+					"successText": "Вы замечаете, что куча ещё не достроена.",
+					"failureText": "Куча поворачивается к вам."
+				},
+				"successBranch": {
+					"mainText": "Вы разбрасываете верхние снопы — и будущее отступает на шаг.",
+					"successText": "Круг закрыт. Жатва ещё не случилась.",
+					"failureText": ""
+				},
+				"failureBranch": {
+					"mainText": "Зерно сыплется вам навстречу, и в нём что-то движется.",
+					"successText": "Вы прорываетесь к краю и закрываете круг.",
+					"failureText": "Вы вырываетесь, но из зерна за вами выходит культист."
+				}
+			},
+			"en": {
+				"name": "The One to Come",
+				"stage1": {
+					"mainText": "The harvest you are trying to stop has already happened: the field is bare, the town beyond it is gone, and the grain is heaped in a single pile the size of a church, and it is moving.",
+					"successText": "You notice the pile is not finished yet.",
+					"failureText": "The pile turns toward you."
+				},
+				"successBranch": {
+					"mainText": "You scatter the top sheaves, and the future steps back.",
+					"successText": "The circle is closed. The harvest has not happened yet.",
+					"failureText": ""
+				},
+				"failureBranch": {
+					"mainText": "Grain pours toward you, and something moves within it.",
+					"successText": "You force your way to the edge and close the circle.",
+					"failureText": "You break free, but a Cultist steps out of the grain after you."
+				}
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-gate-2",
+		"kind": "gate",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"season:core",
+			"demo",
+			"world:The Past"
+		],
+		"data": {
+			"stage1": {
+				"test": {
+					"skill": "lore",
+					"modifier": -1
+				}
+			},
+			"successBranch": {
+				"onSuccess": [
+					{
+						"do": "closeGate"
+					},
+					{
+						"do": "gainClue",
+						"count": 1
+					}
+				],
+				"onFailure": []
+			},
+			"failureBranch": {
+				"test": {
+					"skill": "will",
+					"modifier": -1
+				},
+				"onSuccess": [
+					{
+						"do": "closeGate"
+					},
+					{
+						"do": "loseSanity",
+						"amount": 2
+					}
+				],
+				"onFailure": [
+					{
+						"do": "loseSanity",
+						"amount": 2
+					},
+					{
+						"do": "gainCondition",
+						"condition": "obsession"
+					}
+				]
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Первая",
+				"stage1": {
+					"mainText": "Поле вековой давности: ни ограды, ни дома, только люди в кругу и один стоит в центре на коленях. Тот, кто стоит, одет как вы.",
+					"successText": "Вы узнаёте обряд — и понимаете, чем он кончается.",
+					"failureText": "Вы не понимаете, что видите, и подходите ближе."
+				},
+				"successBranch": {
+					"mainText": "Вы запоминаете слова и разрываете круг изнутри.",
+					"successText": "Круг закрыт, а слова остаются с вами.",
+					"failureText": ""
+				},
+				"failureBranch": {
+					"mainText": "Стоящий на коленях поднимает голову. У него ваше лицо.",
+					"successText": "Вы отводите взгляд и рвёте круг.",
+					"failureText": "Вы смотрите слишком долго — и начинаете считать колосья."
+				}
+			},
+			"en": {
+				"name": "The First",
+				"stage1": {
+					"mainText": "A field a century old: no fence, no house, only people in a circle and one kneeling at its center. The one who kneels is dressed like you.",
+					"successText": "You recognize the rite, and you know how it ends.",
+					"failureText": "You do not understand what you are seeing, and you step closer."
+				},
+				"successBranch": {
+					"mainText": "You commit the words to memory and break the circle from within.",
+					"successText": "The circle is closed, and the words stay with you.",
+					"failureText": ""
+				},
+				"failureBranch": {
+					"mainText": "The kneeling one raises his head. He has your face.",
+					"successText": "You look away and tear the circle open.",
+					"failureText": "You look too long, and you begin to count the stalks."
+				}
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-gate-1",
+		"kind": "gate",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"season:core",
+			"demo",
+			"world:The Past"
+		],
+		"data": {
+			"stage1": {
+				"test": {
+					"skill": "will",
+					"modifier": -1
+				}
+			},
+			"successBranch": {
+				"onSuccess": [
+					{
+						"do": "closeGate"
+					}
+				],
+				"onFailure": []
+			},
+			"failureBranch": {
+				"test": {
+					"skill": "observation",
+					"modifier": -1
+				},
+				"onSuccess": [
+					{
+						"do": "closeGate"
+					},
+					{
+						"do": "loseSanity",
+						"amount": 1
+					}
+				],
+				"onFailure": [
+					{
+						"do": "loseSanity",
+						"amount": 2
+					},
+					{
+						"do": "becomeDelayed"
+					}
+				]
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Прошлогодняя",
+				"stage1": {
+					"mainText": "Внутри круга пшеница стоит уже сжатая, и жнецов не видно, хотя они здесь — по стерне идут две борозды от пяток.",
+					"successText": "Вы не сходите с борозд и не оглядываетесь.",
+					"failureText": "Вы оглядываетесь — и стерня за спиной смыкается."
+				},
+				"successBranch": {
+					"mainText": "Борозды выводят вас к краю круга.",
+					"successText": "Вы выходите в своё лето, и круг за спиной гаснет.",
+					"failureText": ""
+				},
+				"failureBranch": {
+					"mainText": "Вы ищете выход по следам, которых не видно.",
+					"successText": "Вы находите край круга, но видели слишком много.",
+					"failureText": "Вы блуждаете до темноты, и выпускают вас не сразу."
+				}
+			},
+			"en": {
+				"name": "Last Year's",
+				"stage1": {
+					"mainText": "Inside the circle the wheat is already reaped, and no reapers are in sight, though they are here: two furrows of heel marks run across the stubble.",
+					"successText": "You keep to the furrows and do not look back.",
+					"failureText": "You look back, and the stubble closes in behind you."
+				},
+				"successBranch": {
+					"mainText": "The furrows lead you to the edge of the circle.",
+					"successText": "You step out into your own summer, and the circle dies behind you.",
+					"failureText": ""
+				},
+				"failureBranch": {
+					"mainText": "You search for a way out along tracks you cannot see.",
+					"successText": "You find the edge of the circle, but you have seen too much.",
+					"failureText": "You wander until dark, and it is a while before you are let go."
+				}
+			}
+		}
+	},
+	{
 		"id": "demo-sheaf-final-2",
 		"kind": "general",
 		"tags": [

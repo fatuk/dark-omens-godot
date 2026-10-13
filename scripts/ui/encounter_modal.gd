@@ -741,6 +741,18 @@ func _show_gate(card: Dictionary) -> void:
 	if fresh:
 		_play_stage_in()
 
+	# Ветка без проверки («✔ закройте врата»): кубов нет — сразу исход успеха.
+	if stage == 1 and (node.get("test", {}) as Dictionary).is_empty():
+		_roll_btn.visible = false
+		_hide_dice()
+		_outcome.text = _outcome_text(node, true)
+		_outcome.add_theme_color_override("font_color", UIColors.SUCCESS)
+		_outcome.visible = true
+		_outcome_shown = true
+		_finish_btn.text = "BTN_FINISH_BIG"
+		_finish_btn.visible = true
+		return
+
 	if not _chk_rolled():
 		_roll_btn.text = "ENCOUNTER_ROLL"
 		_roll_btn.visible = true
