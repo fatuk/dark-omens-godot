@@ -25,6 +25,9 @@ var _gen_token: int = 0
 # локально, НЕ синкается (карты генерит только хост). Съедается первой же встречей
 # этого игрока — см. generate/debug_assign.
 var _forced: Dictionary = {}
+# Встреча на жетоне Тайны с авторской картой (hook.encounterTag): {pid, loc, hook}
+# до прихода карты; generate штампует хук в карту, коммит снимает жетон / двигает Тайну.
+var _eldritch_card: Dictionary = {}
 
 # «Липкие» назначения: pid → spec. Особая встреча Тайны (после гибели эпика): если
 # встреча отыграна, а Тайна всё ещё та же — назначается снова на следующий ход
@@ -155,6 +158,11 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 	else:
 		_gs.current_encounter = _fallback_card()
 		GameConsole.warn("[Game] Генерация встречи не удалась: %s" % String(res.get("error", "")))
+	# Карта встречи на жетоне Тайны: итог карты решит судьбу жетона (см. _commit_outcome).
+	if String(_eldritch_card.get("pid", "")) == pid:
+		_gs.current_encounter["eldritch_hook"] = _eldritch_card.get("hook", {})
+		_gs.current_encounter["eldritch_loc"] = String(_eldritch_card.get("loc", ""))
+		_eldritch_card = {}
 	_start_check_for_encounter(pid)
 	_gs.broadcast_sync()
 	_gs.emit_changed()
@@ -322,6 +330,14 @@ func _begin_eldritch_move(pid: String) -> void:
 	var hook: Dictionary = _gs._mystery.mystery_encounter_hook(loc, pid)
 	if hook.is_empty():
 		generate("general")  # хук уже неприменим (страховка)
+		return
+	# Авторская встреча на жетоне (hook.encounterTag): карта из колоды с этим тегом, её
+	# проверка и исходы — как у обычной встречи; успех снимает жетон и даёт effect хука.
+	var tag: String = String(hook.get("encounterTag", ""))
+	if not tag.is_empty():
+		_eldritch_card = {"pid": pid, "loc": loc, "hook": hook}
+		_forced[pid] = {"kind": "general", "tag": tag}
+		generate("general")
 		return
 	# Проверка — из хука; нет test → по умолчанию Знание.
 	var test: Dictionary = hook.get("test", {"skill": "lore", "modifier": 0})
@@ -597,6 +613,10 @@ func _commit_outcome(pid: String) -> void:
 			return  # ждём выбор игрока
 		# Исследование: забранная улика исчезает с локации (один раз, после слота).
 		_apply_research_clue_removal(pid, kind)
+		# Авторская встреча на жетоне Тайны: исход карты решает судьбу жетона.
+		var ehook: Dictionary = enc.get("eldritch_hook", {})
+		if not ehook.is_empty():
+			_apply_eldritch_outcome(pid, ehook, String(enc.get("eldritch_loc", "")), passed)
 	ActionFeed.announce_deltas(_gs, pid, before, _gs.players[pid])
 	enc["committed"] = true
 	_gs._check.clear()  # проверка завершена — снять active_check
@@ -772,15 +792,26 @@ func host_apply_reroll(pid: String, die_index: int, currency: String = "") -> bo
 # Фазы Мифов (GameState.check_mystery_tokens_solve), не здесь.
 func _commit_eldritch(pid: String) -> void:
 	var enc: Dictionary = _gs.current_encounter
-	var hook: Dictionary = enc.get("hook", {})
-	if not bool(_gs.active_check.get("passed", false)):
+	_apply_eldritch_outcome(
+		pid,
+		enc.get("hook", {}),
+		String(enc.get("eldritch_loc", "")),
+		bool(_gs.active_check.get("passed", false))
+	)
+
+
+# Итог встречи на жетоне Тайны (общая карта bind-хода или авторская по encounterTag).
+func _apply_eldritch_outcome(pid: String, hook: Dictionary, loc_in: String, passed: bool) -> void:
+	if not passed:
 		# Провал: cost не списывается, жетон остаётся; onFail хука (если есть) — к сыщику.
 		if not hook.is_empty():
 			_gs._mystery.mystery_apply_hook_fail(hook, pid)
 		return
 	if hook.is_empty():
 		return
-	var loc: String = String(enc.get("eldritch_loc", _gs.players[pid].get("location", "")))
+	var loc: String = loc_in
+	if loc.is_empty():
+		loc = String(_gs.players[pid].get("location", ""))
 	# Снимаем жетон с клетки → на карту, ЕСЛИ хук велит (consumeToken, дефолт true).
 	# Источник жетона — entity eldritch_token (Мифы) ИЛИ метка локации Тайны; метку
 	# «снимаем» через mystery_claimed (world_map её не рисует, повторно не зайти).

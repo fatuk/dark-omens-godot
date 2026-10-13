@@ -625,3 +625,13 @@ func test_toughen_monster_counts_in_restore() -> void:
 	inst["health"] = 1
 	_board.restore_monster("elder")
 	assert_eq(inst["health"], full + 1, "лечение — до стойкости с бонусом")
+
+
+func test_eldritch_tokens_stack_on_one_cell_only_with_count() -> void:
+	_board.apply_verb({"do": "placeEldritchToken", "where": "5", "count": 3}, "placeEldritchToken")
+	assert_eq((_gs.entities.get("5", []) as Array).count("eldritch_token"), 3, "count 3 — стопка")
+	_board.apply_verb({"do": "placeEldritchToken", "where": "7"}, "placeEldritchToken")
+	_board.apply_verb({"do": "placeEldritchToken", "where": "7"}, "placeEldritchToken")
+	assert_eq(
+		(_gs.entities.get("7", []) as Array).count("eldritch_token"), 1, "по одному — без стопки"
+	)

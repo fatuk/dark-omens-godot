@@ -1,5 +1,131 @@
 [
 	{
+		"id": "demo-sheaf-field-3",
+		"kind": "general",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"season:core",
+			"demo",
+			"demo-sheaf-field"
+		],
+		"data": {
+			"test": {
+				"skill": "will",
+				"modifier": -1
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseSanity",
+					"amount": 1
+				}
+			]
+		},
+		"i18n": {
+			"ru": {
+				"name": "Голоса в стерне",
+				"mainText": "Ветер стих, но колосья у знака продолжают шептать — вашим голосом, чужими словами.",
+				"successText": "Вы запоминаете слова, не повторяя их вслух.",
+				"failureText": "Вы ловите себя на том, что шепчете вместе с ними."
+			},
+			"en": {
+				"name": "Voices in the Stubble",
+				"mainText": "The wind has died, but the stalks by the sign keep whispering, in your voice, in someone else's words.",
+				"successText": "You commit the words to memory without saying them aloud.",
+				"failureText": "You catch yourself whispering along with them."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-field-2",
+		"kind": "general",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"season:core",
+			"demo",
+			"demo-sheaf-field"
+		],
+		"data": {
+			"test": {
+				"skill": "observation",
+				"modifier": -1
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseSanity",
+					"amount": 1
+				}
+			]
+		},
+		"i18n": {
+			"ru": {
+				"name": "Следы обрываются",
+				"mainText": "От знака по стерне уходят следы босых ног — и обрываются посреди поля, будто человек поднялся в воздух.",
+				"successText": "Там, где следы кончаются, зарыт обрывок списка имён.",
+				"failureText": "Пока вы смотрите под ноги, за спиной кто-то проходит. Оборачиваться не хочется."
+			},
+			"en": {
+				"name": "The Tracks End",
+				"mainText": "Bare footprints lead away from the sign across the stubble and stop in the middle of the field, as if the walker rose into the air.",
+				"successText": "Where the tracks end, a scrap of a list of names is buried.",
+				"failureText": "While you study the ground, someone walks past behind you. You would rather not turn around."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-field-1",
+		"kind": "general",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"season:core",
+			"demo",
+			"demo-sheaf-field"
+		],
+		"data": {
+			"test": {
+				"skill": "lore",
+				"modifier": -1
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseHealth",
+					"amount": 1
+				}
+			]
+		},
+		"i18n": {
+			"ru": {
+				"name": "Узел на снопе",
+				"mainText": "У знака стоит сноп, перевязанный незнакомым узлом. Кажется, если развязать его правильно, поле вздохнёт.",
+				"successText": "Узел поддаётся. Под ним — знак, который вы зарисовываете в блокнот.",
+				"failureText": "Вы тянете не за ту петлю, и стебли режут ладони, как проволока."
+			},
+			"en": {
+				"name": "The Knot on the Sheaf",
+				"mainText": "By the sign stands a sheaf bound with an unfamiliar knot. It seems that if you untie it the right way, the field will breathe out.",
+				"successText": "The knot gives way. Beneath it is a sign, which you sketch in your notebook.",
+				"failureText": "You pull the wrong loop, and the stalks cut your palms like wire."
+			}
+		}
+	},
+	{
 		"id": "demo-sheaf-gate-3",
 		"kind": "gate",
 		"tags": [

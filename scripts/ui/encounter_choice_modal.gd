@@ -63,13 +63,29 @@ func _build(choices: Array) -> void:
 		var kind: String = String(choices[i])
 		var btn := Button.new()
 		btn.name = "Button"
-		btn.text = _monster_label(kind) if combat_order else String(_KIND_KEYS.get(kind, kind))
+		btn.text = _monster_label(kind) if combat_order else _kind_label(kind)
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		UIStyle.style_button(btn)
 		btn.pressed.connect(
 			func() -> void: GameState.act(RelayActions.CHOOSE_ENCOUNTER, {"kind": kind})
 		)
 		_vbox.add_child(btn)
+
+
+# Подпись вида встречи. Встреча на жетоне Тайны: авторская карта (encounterTag) —
+# «особая встреча», иначе bind-ход с ценой из хука («Связать знамение (−N)»).
+func _kind_label(kind: String) -> String:
+	if kind != "eldritch":
+		return String(_KIND_KEYS.get(kind, kind))
+	var me: String = GameState.local_pid()
+	var loc: String = String(GameState.my_player().get("location", ""))
+	var hook: Dictionary = GameState._mystery.mystery_encounter_hook(loc, me)
+	if not String(hook.get("encounterTag", "")).is_empty():
+		return tr("ENCOUNTER_CHOICE_ELDRITCH_SPECIAL")
+	var cost: int = int((hook.get("cost", {}) as Dictionary).get("amount", 0))
+	if cost > 0:
+		return tr("ENCOUNTER_CHOICE_ELDRITCH_COST") % cost
+	return tr("ENCOUNTER_CHOICE_ELDRITCH_FREE")
 
 
 # Подпись кнопки порядка боя: имя монстра и здоровье («Гуль · 2/3»). Экземпляр

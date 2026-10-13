@@ -1861,3 +1861,6 @@ OFFLINE_BOT_NAME,Бот %d,Bot %d
 VERB_RESTORE_MONSTER,монстр восстанавливает здоровье,the Monster recovers all Health
 VERB_TOUGHEN_MONSTER,монстр: стойкость +{amount} до конца партии,Monster: +{amount} Toughness for the rest of the game
 VERB_CHECK_MODIFIER,все проверки {amount},all tests {amount}
+ENCOUNTER_CHOICE_ELDRITCH_SPECIAL,Особая встреча у знака,Special encounter at the sign
+ENCOUNTER_CHOICE_ELDRITCH_COST,Связать знамение (−%d),Bind the omen (−%d)
+ENCOUNTER_CHOICE_ELDRITCH_FREE,Связать знамение,Bind the omen

@@ -752,11 +752,11 @@ func place_eldritch_token_on_marked(n: int) -> void:
 
 ## Положить жетон Знамения на КОНКРЕТНУЮ локацию по id (≤1 на клетку). Нет id /
 ## уже есть жетон — no-op. Зовётся из placeEldritchToken с where:"<locationId>".
-func place_eldritch_token_at(loc_id: String) -> void:
+func place_eldritch_token_at(loc_id: String, allow_stack: bool = false) -> void:
 	if not _gs.is_host() or loc_id.is_empty():
 		return
 	var arr: Array = _gs.entities.get(loc_id, [])
-	if (arr as Array).has("eldritch_token"):
+	if (arr as Array).has("eldritch_token") and not allow_stack:
 		return
 	arr.append("eldritch_token")
 	_gs.entities[loc_id] = arr
@@ -1040,7 +1040,9 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 					for _i: int in n:
 						place_eldritch_token()
 				var loc_id:
-					place_eldritch_token_at(loc_id)
+					# count > 1 — стопка на одной клетке (Тайна «три жетона на поле»).
+					for _i: int in n:
+						place_eldritch_token_at(loc_id, n > 1)
 		"monsterSurge":
 			monster_surge()
 		"mysteryProgress":

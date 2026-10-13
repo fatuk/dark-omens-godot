@@ -83,10 +83,14 @@ static func _index(id: String) -> void:
 			_by_campaign_id[String(bible.get("id", ""))] = id
 			var mysteries: Array = bible.get("mysteries", [])
 			for i: int in range(mysteries.size()):
-				var after: Dictionary = (mysteries[i] as Dictionary).get("afterDefeat", {})
-				var tag: String = String(after.get("encounterTag", ""))
-				if not tag.is_empty():
-					tags[tag] = true
+				var m: Dictionary = mysteries[i]
+				# Особые: встреча после эпика (afterDefeat) и встречи на жетонах (progress).
+				var nodes: Array = [m.get("afterDefeat", {})]
+				nodes.append_array(m.get("progress", []))
+				for n_v: Variant in nodes:
+					var tag: String = String((n_v as Dictionary).get("encounterTag", ""))
+					if not tag.is_empty():
+						tags[tag] = true
 	_special_tags[id] = tags
 
 

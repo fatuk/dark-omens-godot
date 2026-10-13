@@ -94,3 +94,39 @@ func test_stage_one_plays_as_scripted() -> void:
 		"улика влиятельному"
 	)
 	assert_eq(int(GameState.players[other].get("clues", 0)), other_before, "второму — нет")
+
+
+func _tokens_at(loc: String) -> int:
+	return (GameState.entities.get(loc, []) as Array).count("eldritch_token")
+
+
+func test_first_sheaf_tokens_and_special_encounters() -> void:
+	_start()
+	GameState._mystery.apply_mystery_on_enter()
+	assert_eq(_tokens_at("5"), 3, "три жетона Знамения на поле, улик нет")
+	assert_false((GameState.entities.get("5", []) as Array).has("clue"))
+	GameState.players["a"]["location"] = "5"
+	assert_true(GameState._encounter._compute_choices("a").has("eldritch"), "у знака — встреча")
+	var hook: Dictionary = GameState._mystery.mystery_encounter_hook("5", "a")
+	assert_eq(String(hook.get("encounterTag", "")), "demo-sheaf-field")
+	# Карты особых встреч — только по тегу, в общую выборку не попадают.
+	var cid: String = String(GameState.campaign.get("id", ""))
+	var req := {
+		"kind": "general",
+		"realLocation": {"id": "5", "name": "5", "locationType": "city"},
+		"language": "Russian",
+		"campaignId": cid,
+	}
+	for i: int in range(20):
+		var sid: String = String(OfflineContent.draw(req)["encounters"][0].get("sourceId", ""))
+		assert_false(sid.begins_with("demo-sheaf-field"), "особая карта в общей выборке")
+	req["tag"] = "demo-sheaf-field"
+	var tagged: String = String(OfflineContent.draw(req)["encounters"][0].get("sourceId", ""))
+	assert_true(tagged.begins_with("demo-sheaf-field"), "по тегу — карта поля")
+	# Провал: жетон остаётся; успех: жетон уходит на карту Тайны.
+	GameState._encounter._apply_eldritch_outcome("a", hook, "5", false)
+	assert_eq(_tokens_at("5"), 3)
+	assert_eq(GameState.mystery_tokens_on_card, 0)
+	GameState._encounter._apply_eldritch_outcome("a", hook, "5", true)
+	assert_eq(_tokens_at("5"), 2, "жетон снят с поля")
+	assert_eq(GameState.mystery_tokens_on_card, 1, "и лёг на карту Тайны")
