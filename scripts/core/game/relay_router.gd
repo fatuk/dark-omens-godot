@@ -47,6 +47,9 @@ func build_registry() -> Dictionary:
 		RelayActions.ACTION: _act_action,
 		RelayActions.RECKONING_ACTIVATE_CARD: _act_reckoning_activate_card,
 		RelayActions.TRAVEL_ARRIVED: _act_travel_arrived,
+		RelayActions.TRADE_OFFER: _act_trade_offer,
+		RelayActions.TRADE_RESPOND: _act_trade_respond,
+		RelayActions.TRADE_CANCEL: _act_trade_cancel,
 		RelayActions.FINISH_ENCOUNTER: _act_finish_encounter,
 		RelayActions.RESOLVE_ENCOUNTER: _act_resolve_encounter,
 		RelayActions.REROLL_ENCOUNTER: _act_reroll_encounter,
@@ -108,6 +111,18 @@ func _act_reckoning_activate_card(d: Dictionary) -> void:
 
 func _act_travel_arrived(d: Dictionary) -> void:
 	_phase.host_apply_travel_arrived(String(d.get("pid", "")))
+
+
+func _act_trade_offer(d: Dictionary) -> void:
+	_phase.host_apply_trade_offer(String(d.get("pid", "")), d)
+
+
+func _act_trade_respond(d: Dictionary) -> void:
+	_phase.host_apply_trade_response(String(d.get("pid", "")), bool(d.get("accept", false)))
+
+
+func _act_trade_cancel(d: Dictionary) -> void:
+	_phase.host_apply_trade_cancel(String(d.get("pid", "")))
 
 
 func _act_finish_encounter(d: Dictionary) -> void:

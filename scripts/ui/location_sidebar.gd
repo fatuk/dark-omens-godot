@@ -529,6 +529,8 @@ func _can_trade() -> bool:
 		return false
 	if (me.get("actions_used", []) as Array).has(GameActions.TRADE):
 		return false
+	if not GameState.trade_offer.is_empty():
+		return false  # предложение уже висит — ждём ответа
 	if String(me.get("location", "")) != _loc_id:
 		return false
 	var my_id: String = String(me.get("user_id", ""))

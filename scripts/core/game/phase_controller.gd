@@ -126,6 +126,10 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 	var p: Dictionary = _gs.players[pid]
 	if int(p.get("actions_left", 0)) <= 0:
 		return false
+	# Висит предложение обмена — сначала ответ партнёра или отзыв.
+	if String((_gs.trade_offer as Dictionary).get("from", "")) == pid:
+		GameConsole.warn("[Обмен] %s ждёт ответа на предложение" % _gs.name_of(pid))
+		return false
 
 	# whileHeld cannotAct (Detained / Lost in Time): любые действия запрещены, кроме
 	# pass и локального действия состояния (condition_action — это escape).
@@ -385,6 +389,25 @@ func host_apply_cast_trigger_spells(pid: String, indices: Array) -> bool:
 # take:[idx в ally.items], giveClues, takeClues}. Атомарно: всё валидируется ДО
 # переноса; невалид → false (действие не тратится). Невыбранные предметы не двигаются.
 func _apply_trade(pid: String, payload: Dictionary) -> bool:
+	if not _trade_check(pid, payload):
+		return false
+	var partner: String = String(payload.get("partner", ""))
+	var me: Dictionary = _gs.players[pid]
+	var ally: Dictionary = _gs.players[partner]
+	var give: Array = payload.get("give", [])
+	var take: Array = payload.get("take", [])
+	var my_items: Array = me.get("items", [])
+	var ally_items: Array = ally.get("items", [])
+	var give_clues: int = maxi(0, int(payload.get("giveClues", 0)))
+	var take_clues: int = maxi(0, int(payload.get("takeClues", 0)))
+	return _do_trade(
+		pid, partner, me, ally, give, take, my_items, ally_items, give_clues, take_clues
+	)
+
+
+# Проверка обмена без мутаций: партнёр есть, оба живы, на одной клетке, индексы и
+# улики в пределах. Общая для предложения и самого обмена.
+func _trade_check(pid: String, payload: Dictionary) -> bool:
 	var partner: String = String(payload.get("partner", ""))
 	if partner.is_empty() or partner == pid or not _gs.players.has(partner):
 		return false
@@ -407,6 +430,22 @@ func _apply_trade(pid: String, payload: Dictionary) -> bool:
 	var take_clues: int = maxi(0, int(payload.get("takeClues", 0)))
 	if give_clues > int(me.get("clues", 0)) or take_clues > int(ally.get("clues", 0)):
 		return false
+	return true
+
+
+# Мутация обмена (проверки — _trade_check).
+func _do_trade(
+	pid: String,
+	partner: String,
+	me: Dictionary,
+	ally: Dictionary,
+	give: Array,
+	take: Array,
+	my_items: Array,
+	ally_items: Array,
+	give_clues: int,
+	take_clues: int
+) -> bool:
 	# Разнести: выбранные уходят, невыбранные остаются на местах.
 	var give_set: Dictionary = {}
 	for i_v: Variant in give:
@@ -445,6 +484,101 @@ func _apply_trade(pid: String, payload: Dictionary) -> bool:
 		)
 	)
 	return true
+
+
+## Хост: предложить обмен со-локационному сыщику. Действие НЕ тратится: предложение
+## висит в trade_offer, пока партнёр не примет (тогда обычный обмен с тратой действия)
+## или не отклонит. Условия те же, что у самого обмена.
+func host_apply_trade_offer(pid: String, payload: Dictionary) -> bool:
+	if _gs.phase != Phases.ACTION or _gs.current_pid() != pid or not _gs.players.has(pid):
+		return false
+	if not (_gs.trade_offer as Dictionary).is_empty():
+		return false
+	var p: Dictionary = _gs.players[pid]
+	if int(p.get("actions_left", 0)) <= 0:
+		return false
+	if (p.get("actions_used", []) as Array).has(GameActions.TRADE):
+		return false
+	if not _trade_check(pid, payload):
+		GameConsole.warn("[Обмен] предложение %s отклонено проверкой" % _gs.name_of(pid))
+		return false
+	var partner: String = String(payload.get("partner", ""))
+	var give: Array = payload.get("give", [])
+	var take: Array = payload.get("take", [])
+	_gs.trade_offer = {
+		"from": pid,
+		"to": partner,
+		"give": give,
+		"take": take,
+		"giveClues": maxi(0, int(payload.get("giveClues", 0))),
+		"takeClues": maxi(0, int(payload.get("takeClues", 0))),
+		# Что именно лежало по индексам — на момент ответа проверим, что не изменилось.
+		"give_ids": _item_ids(_gs.players[pid].get("items", []), give),
+		"take_ids": _item_ids(_gs.players[partner].get("items", []), take),
+	}
+	GameConsole.log("[Обмен] %s предлагает обмен %s" % [_gs.name_of(pid), _gs.name_of(partner)])
+	_gs.broadcast_sync()
+	_gs.emit_changed()
+	return true
+
+
+## Хост: партнёр ответил на предложение. Согласие — обмен от лица инициатора (тратит
+## его действие); отказ — предложение снимается, действие цело.
+func host_apply_trade_response(pid: String, accept: bool) -> bool:
+	var o: Dictionary = _gs.trade_offer
+	if o.is_empty() or String(o.get("to", "")) != pid:
+		return false
+	var from: String = String(o.get("from", ""))
+	_gs.trade_offer = {}
+	if not accept:
+		GameConsole.log("[Обмен] %s отклонил предложение" % _gs.name_of(pid))
+	elif not _offer_still_valid(o):
+		GameConsole.warn("[Обмен] предметы изменились — предложение снято")
+	else:
+		host_apply_action(
+			from,
+			GameActions.TRADE,
+			{
+				"partner": pid,
+				"give": o.get("give", []),
+				"take": o.get("take", []),
+				"giveClues": int(o.get("giveClues", 0)),
+				"takeClues": int(o.get("takeClues", 0)),
+			}
+		)
+	_gs.broadcast_sync()
+	_gs.emit_changed()
+	return true
+
+
+## Хост: инициатор отзывает предложение.
+func host_apply_trade_cancel(pid: String) -> bool:
+	if String((_gs.trade_offer as Dictionary).get("from", "")) != pid:
+		return false
+	_gs.trade_offer = {}
+	_gs.broadcast_sync()
+	_gs.emit_changed()
+	return true
+
+
+# id предметов по индексам (для проверки, что предложение не устарело).
+func _item_ids(items: Array, idx: Array) -> Array:
+	var out: Array = []
+	for i_v: Variant in idx:
+		var i: int = int(i_v)
+		out.append(AssetCatalog.entry_id(items[i]) if i >= 0 and i < items.size() else "")
+	return out
+
+
+func _offer_still_valid(o: Dictionary) -> bool:
+	var from: String = String(o.get("from", ""))
+	var to: String = String(o.get("to", ""))
+	if not _gs.players.has(from) or not _gs.players.has(to):
+		return false
+	return (
+		_item_ids(_gs.players[from].get("items", []), o.get("give", [])) == o.get("give_ids", [])
+		and _item_ids(_gs.players[to].get("items", []), o.get("take", [])) == o.get("take_ids", [])
+	)
 
 
 # Все элементы idx — валидные позиции массива размера size (0..size−1).
@@ -791,6 +925,7 @@ func _fire_encounter_triggers(pid: String, gates_before: int, clues_before: int)
 ## Public — зовётся из _on_player_left когда отключился current.
 func advance_action_turn() -> void:
 	_gs.pending_spell_cast = {}  # абандон висящего spell-промпта при смене хода
+	_gs.trade_offer = {}  # и висящего предложения обмена
 	_gs.current_idx += 1
 	if not skip_disconnected():
 		enter_encounter()

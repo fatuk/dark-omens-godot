@@ -236,6 +236,9 @@ func decide(pid: String, role: String = "fighter") -> Dictionary:
 
 	if p.has("gains"):
 		return {"action": RelayActions.DISMISS_GAINS}
+	# Предложение обмена боту — в кооперативе бот соглашается всегда.
+	if String((_gs.get("trade_offer") as Dictionary).get("to", "")) == pid:
+		return {"action": RelayActions.TRADE_RESPOND, "accept": true}
 	if String((_gs.get("last_cast_result") as Dictionary).get("pid", "")) == pid:
 		return {"action": RelayActions.DISMISS_CAST_RESULT}
 

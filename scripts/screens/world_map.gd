@@ -129,6 +129,7 @@ func _ready() -> void:
 	_build_encounter_watch_modal()
 	_build_doom_runes()
 	_build_gains_modal()
+	_build_trade_offer_modal()
 	_build_chat_composer()
 	_build_hand_carousel()
 	_refresh_game_panel()
@@ -414,6 +415,13 @@ func _build_encounter_watch_modal() -> void:
 
 # Окно «вы получили»: сводка приобретений после мифа/Расплаты — там выдача идёт
 # молча, и понять, что именно пришло, было неоткуда.
+# Предложение обмена: партнёру — «Принять / Отклонить», инициатору — ожидание с отзывом.
+func _build_trade_offer_modal() -> void:
+	var t: CanvasLayer = load("res://scripts/ui/trade_offer_modal.gd").new()
+	t.name = "TradeOfferModal"
+	add_child(t)
+
+
 func _build_gains_modal() -> void:
 	var g: CanvasLayer = load("res://scripts/ui/gains_modal.gd").new()
 	g.name = "GainsModal"

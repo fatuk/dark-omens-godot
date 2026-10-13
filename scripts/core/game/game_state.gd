@@ -81,6 +81,10 @@ var reckoning_results: Dictionary = {}
 # (синкаются с players).
 var reckoning_active: bool = false
 
+# Предложение обмена, ждущее ответа партнёра: {from, to, give, take, giveClues,
+# takeClues, give_ids, take_ids}. {} — нет. Синкается: партнёр видит его в окне.
+var trade_offer: Dictionary = {}
+
 # UI-локально: время последнего отправленного сообщения чата (анти-спам кулдаун).
 const CHAT_COOLDOWN_MS := 800
 var _chat_last_ms: int = 0
@@ -336,6 +340,7 @@ const _SYNC_FIELDS: Array[String] = [
 	"current_mythos",
 	"mythos_in_play",
 	"mythos_decision",
+	"trade_offer",
 	"mythos_read",
 	"last_mythos",
 	"gates",
@@ -934,6 +939,10 @@ func _on_player_left(player_id: String, _new_host_id: String, user_id: String) -
 	if bool(mythos_decision.get("active", false)) and String(mythos_decision.get("pid", "")) == uid:
 		_phase.host_apply_absent_decision(uid)
 
+	# Ушёл участник висящего предложения обмена — снимаем его (ответа не будет).
+	if uid in [String(trade_offer.get("from", "")), String(trade_offer.get("to", ""))]:
+		trade_offer = {}
+
 	# Если ждали «Прочитал» этого сыщика на открытой карте мифа, а остальные уже
 	# отметились — резолвим карту (иначе миф зависнет в ожидании ушедшего).
 	_mythos.on_player_left()
@@ -1387,6 +1396,7 @@ func reset_session() -> void:
 # Общая часть reset_pregame/reset_session — обнуление игровых полей (без players).
 func _clear_pregame_fields() -> void:
 	_campaign.reset()
+	trade_offer = {}
 	current_encounter = {}
 	active_check = {}
 	_check.reset_stack()

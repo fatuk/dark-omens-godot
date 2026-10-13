@@ -128,6 +128,7 @@ class MockGameState:
 	var shop_reserve: Array = []
 	var current_encounter: Dictionary = {}
 	var pending_spell_cast: Dictionary = {}
+	var trade_offer: Dictionary = {}
 	var locations: Array = []
 	var loc_types: Dictionary = {}
 	var sync_count: int = 0
@@ -828,3 +829,67 @@ func test_shop_sell_asset_rejected_when_not_shopper() -> void:
 	_gs.active_check = {"owner": "shop", "pid": "other"}
 	assert_false(_pc.host_apply_shop_sell_asset("p", 0), "не активный покупатель — отказ")
 	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "карта на месте")
+
+
+# ── Обмен по предложению ──────────────────────────────────────────────────────
+
+const _OFFER := {"partner": "q", "give": [0], "take": [1], "giveClues": 1, "takeClues": 0}
+
+
+func test_trade_offer_holds_until_accepted() -> void:
+	_two_traders()
+	assert_true(_pc.host_apply_trade_offer("p", _OFFER))
+	assert_eq(_gs.trade_offer.get("to"), "q")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "до ответа ничего не перенесено")
+	assert_eq(int(_gs.players["p"]["actions_left"]), 2, "действие не потрачено")
+	assert_false(_pc.host_apply_action("p", "rest"), "пока висит предложение — других действий нет")
+	assert_false(_pc.host_apply_trade_offer("p", _OFFER), "второе предложение — нет")
+	assert_false(_pc.host_apply_trade_response("p", true), "ответить может только партнёр")
+	assert_true(_pc.host_apply_trade_response("q", true))
+	assert_true(_gs.trade_offer.is_empty())
+	assert_eq(String((_gs.players["p"]["items"][0] as Dictionary)["id"]), "c", "p получил c")
+	assert_eq(int(_gs.players["p"]["clues"]), 1, "отдал 1 улику")
+	assert_eq(int(_gs.players["p"]["actions_left"]), 1, "согласие тратит действие инициатора")
+	assert_true((_gs.players["p"]["actions_used"] as Array).has("trade"))
+
+
+func test_trade_offer_declined_or_withdrawn_changes_nothing() -> void:
+	_two_traders()
+	_pc.host_apply_trade_offer("p", _OFFER)
+	assert_true(_pc.host_apply_trade_response("q", false))
+	assert_true(_gs.trade_offer.is_empty())
+	assert_eq(String((_gs.players["p"]["items"][0] as Dictionary)["id"]), "a", "предметы на месте")
+	assert_eq(int(_gs.players["p"]["actions_left"]), 2, "отказ — действие цело")
+	_pc.host_apply_trade_offer("p", _OFFER)
+	assert_false(_pc.host_apply_trade_cancel("q"), "отозвать может только инициатор")
+	assert_true(_pc.host_apply_trade_cancel("p"))
+	assert_true(_gs.trade_offer.is_empty())
+
+
+func test_trade_offer_validated_like_trade() -> void:
+	_two_traders()
+	_gs.players["q"]["location"] = "Y"
+	assert_false(_pc.host_apply_trade_offer("p", _OFFER), "не на одной клетке")
+	_gs.players["q"]["location"] = "X"
+	assert_false(_pc.host_apply_trade_offer("q", _OFFER), "не свой ход")
+	assert_false(
+		_pc.host_apply_trade_offer("p", {"partner": "q", "giveClues": 9}), "улик не хватает"
+	)
+	assert_true(_gs.trade_offer.is_empty())
+
+
+func test_stale_trade_offer_is_dropped_on_accept() -> void:
+	_two_traders()
+	_pc.host_apply_trade_offer("p", _OFFER)
+	(_gs.players["q"]["items"] as Array).reverse()  # по индексу 1 теперь другой предмет
+	assert_true(_pc.host_apply_trade_response("q", true))
+	assert_true(_gs.trade_offer.is_empty())
+	assert_eq(String((_gs.players["p"]["items"][0] as Dictionary)["id"]), "a", "обмена не было")
+	assert_eq(int(_gs.players["p"]["actions_left"]), 2)
+
+
+func test_turn_change_drops_trade_offer() -> void:
+	_two_traders()
+	_pc.host_apply_trade_offer("p", _OFFER)
+	_pc.advance_action_turn()
+	assert_true(_gs.trade_offer.is_empty())

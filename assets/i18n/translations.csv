@@ -1864,3 +1864,14 @@ VERB_CHECK_MODIFIER,все проверки {amount},all tests {amount}
 ENCOUNTER_CHOICE_ELDRITCH_SPECIAL,Особая встреча у знака,Special encounter at the sign
 ENCOUNTER_CHOICE_ELDRITCH_COST,Связать знамение (−%d),Bind the omen (−%d)
 ENCOUNTER_CHOICE_ELDRITCH_FREE,Связать знамение,Bind the omen
+TRADE_OFFER_SEND,Предложить обмен,Offer the trade
+TRADE_OFFER_TITLE,Предложение обмена,Trade offer
+TRADE_OFFER_FROM,%s предлагает обмен,%s offers a trade
+TRADE_OFFER_WAITING,Ждём ответа: %s,Waiting for %s to respond
+TRADE_OFFER_YOU_GET,Вы получите,You receive
+TRADE_OFFER_YOU_GIVE,Вы отдадите,You give
+TRADE_OFFER_NOTHING,ничего,nothing
+TRADE_OFFER_CLUES,Улики: %d,Clues: %d
+TRADE_OFFER_ACCEPT,Принять,Accept
+TRADE_OFFER_DECLINE,Отклонить,Decline
+TRADE_OFFER_CANCEL,Отозвать предложение,Withdraw the offer

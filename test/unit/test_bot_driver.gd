@@ -21,6 +21,7 @@ class StubGs:
 	var encounter_choices: Array = []
 	var current_encounter: Dictionary = {}
 	var reckoning_results: Dictionary = {}
+	var trade_offer: Dictionary = {}
 	var last_cast_result: Dictionary = {}
 	var current_mythos: Dictionary = {}
 	var mythos_read: Array = []
@@ -269,3 +270,10 @@ func test_branch_without_test_finishes_at_once() -> void:
 	}
 	_gs.active_check = {}
 	assert_eq(_act()["action"], RelayActions.FINISH_ENCOUNTER)
+
+
+func test_bot_always_accepts_trade_offer() -> void:
+	_gs.trade_offer = {"from": "human", "to": BOT}
+	assert_eq(_act(), {"action": RelayActions.TRADE_RESPOND, "accept": true})
+	_gs.trade_offer = {"from": BOT, "to": "human"}
+	assert_ne(_act().get("action", ""), RelayActions.TRADE_RESPOND, "своё предложение не принимает")

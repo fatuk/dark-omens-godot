@@ -1,10 +1,10 @@
 extends CanvasLayer
 
-## Модалка обмена. Обмен — действие ЛОКАЦИИ; open() зовёт триггер локации (сайдбар).
+## Модалка обмена. Обмен — действие ЛОКАЦИИ; open() зовёт кнопка «Обмен» сайдбара.
 ## Игрок выбирает со-локационного напарника, отмечает свои предметы/улики «отдать» и
-## предметы/улики напарника «взять» → perform_action("trade", payload). Хост валидирует
-## и применяет (PhaseController._apply_trade). Модалка — сиблинг по имени "TradeModal".
-## TODO: подключить открытие обмена из сайдбара локации (раньше было в панели действий).
+## предметы/улики напарника «взять» → предложение (TRADE_OFFER). Партнёр принимает или
+## отклоняет в TradeOfferModal; при согласии хост меняет и тратит действие инициатора
+## (PhaseController.host_apply_trade_response). Модалка — сиблинг "TradeModal".
 
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
@@ -99,7 +99,7 @@ func _build(allies: Array) -> void:
 	row.name = "Buttons"
 	var ok := Button.new()
 	ok.name = "ConfirmBtn"
-	ok.text = "TRADE_CONFIRM"
+	ok.text = "TRADE_OFFER_SEND"
 	ok.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	UIStyle.style_button(ok, UIColors.ACCENT)
 	ok.pressed.connect(_on_confirm)
@@ -175,8 +175,8 @@ func _on_confirm() -> void:
 	UIStyle.modal_set_visible(_root, _panel, false)
 	(
 		GameState
-		. perform_action(
-			"trade",
+		. act(
+			RelayActions.TRADE_OFFER,
 			{
 				"partner": _partner,
 				"give": give,
