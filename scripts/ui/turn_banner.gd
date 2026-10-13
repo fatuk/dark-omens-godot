@@ -8,12 +8,19 @@ extends CanvasLayer
 
 const _TOP_RATIO: float = 0.3  # отступ сверху — доля высоты экрана
 const _SLIDE: float = 26.0  # с какой высоты выезжает
+# Сколько экран должен простоять БЕЗ окон, прежде чем выехать баннеру. Окна,
+# собранные кодом в world_map, подписаны на синк ПОЗЖЕ баннера и открываются уже
+# после его проверки; другие открываются через кадр. Пауза ловит и тех, и других,
+# а после закрытия окна (fade-out 0.15 с) выглядит как естественная очередь.
+const _SETTLE: float = 0.3
 
 var _anchor: Control
 var _bar: PanelContainer
 var _label: Label
 var _was_awaiting: bool = false
-var _pending: bool = false  # ход мой, но экран занят модалкой — ждём её закрытия
+var _pending: bool = false  # баннер ждёт, пока экран освободится от модалок
+var _free_for: float = 0.0  # сколько секунд подряд экран свободен
+var _showing: bool = false  # баннер сейчас на экране (тween идёт)
 var _pending_text: String = ""  # что показать, когда экран освободится
 var _intro_done: bool = false  # стартовый баннер «чей ход» показан
 var _tween: Tween
@@ -111,9 +118,8 @@ func _refresh() -> void:
 		_show_intro()
 	elif now and not _was_awaiting and SettingsStore.turn_notify:
 		_queue_banner(tr("TURN_BANNER_YOURS"))
-	if not now and _pending_text == tr("TURN_BANNER_YOURS"):
+	if not now and _pending and _pending_text == tr("TURN_BANNER_YOURS"):
 		_pending = false  # ждать больше нечего: ход уже не мой
-		set_process(false)
 	_was_awaiting = now
 
 
@@ -137,24 +143,30 @@ func _show_intro() -> void:
 		_queue_banner(tr("TURN_BANNER_OTHER") % Investigators.display_name(inv_id))
 
 
-# Показать сейчас или, если экран занят окном (миф, встреча, «вы получили»…),
-# после его закрытия — игрок сначала закрывает модалку, баннер ждёт.
+# Баннер — только на свободный экран: игрок сначала закрывает ВСЕ окна (миф,
+# встреча, «вы получили»…), баннер ждёт. Даже если окон сейчас нет — выждать
+# _SETTLE: окно этого же синка может открыться на долю кадра позже.
 func _queue_banner(text: String) -> void:
 	_pending_text = text
-	if UIStyle.any_modal_open():
-		_pending = true
-		set_process(true)
-	else:
-		_show_banner()
+	_pending = true
+	_free_for = 0.0
+	set_process(true)
 
 
-# Крутится ТОЛЬКО пока баннер ждёт закрытия модалок (см. _refresh): закрытие окна
+# Крутится, пока баннер ждёт свободного экрана или едет по нему: закрытие окна
 # не сопровождается синком состояния, поймать его иначе нечем.
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if _showing:
+		_watch_showing()
+		return
 	if not _pending:
 		set_process(false)
 		return
 	if UIStyle.any_modal_open():
+		_free_for = 0.0
+		return
+	_free_for += delta
+	if _free_for < _SETTLE:
 		return
 	_pending = false
 	set_process(false)
@@ -162,9 +174,22 @@ func _process(_delta: float) -> void:
 		_show_banner()
 
 
+# Окно открылось поверх едущего баннера — убираем его и ждём, пока экран снова
+# освободится (баннер слоем выше всех, иначе висел бы поверх окна).
+func _watch_showing() -> void:
+	if not UIStyle.any_modal_open():
+		return
+	if _tween and _tween.is_valid():
+		_tween.kill()
+	_bar.modulate.a = 0.0
+	_showing = false
+	_queue_banner(_pending_text)
+
+
 func _show_banner() -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
+	_showing = false
 	_label.text = _pending_text if not _pending_text.is_empty() else tr("TURN_BANNER_YOURS")
 	_reposition()
 	var top: float = _top_y()
@@ -176,3 +201,12 @@ func _show_banner() -> void:
 	)
 	_tween.tween_interval(1.3)
 	_tween.tween_property(_bar, "modulate:a", 0.0, 0.4)
+	_tween.finished.connect(_on_shown)
+	_showing = true
+	set_process(true)
+
+
+func _on_shown() -> void:
+	_showing = false
+	if not _pending:
+		set_process(false)
