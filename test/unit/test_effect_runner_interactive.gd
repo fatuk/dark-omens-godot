@@ -417,3 +417,12 @@ func test_gate_at_predicates_read_ctx_gates() -> void:
 	assert_false(EffectRunner.eval_predicate({"kind": "gateAt", "location": "Arkham"}, {}, ctx))
 	assert_false(EffectRunner.eval_predicate({"kind": "noGateAt", "location": "5"}, {}, ctx))
 	assert_true(EffectRunner.eval_predicate({"kind": "noGateAt", "location": "Arkham"}, {}, ctx))
+
+
+func test_no_gates_and_mystery_active_predicates() -> void:
+	var pred_no := {"kind": "noGatesOnBoard"}
+	assert_true(EffectRunner.eval_predicate(pred_no, {}, {"gates": {}}))
+	assert_false(EffectRunner.eval_predicate(pred_no, {}, {"gates": {"5": "blue"}}))
+	var pred_m := {"kind": "mysteryActive", "n": 3}
+	assert_true(EffectRunner.eval_predicate(pred_m, {}, {"active_mystery": 2}))
+	assert_false(EffectRunner.eval_predicate(pred_m, {}, {"active_mystery": 1}))

@@ -573,3 +573,55 @@ func test_open_gate_with_named_monster_skips_bag() -> void:
 		ids.append(m["id"])
 	assert_eq(ids, ["cultist"], "из врат вышел Братчик, мешок не тронут")
 	assert_eq(_gs.monster_bag, ["ghost"])
+
+
+func test_scenario_omen_track_from_ancient_sheet() -> void:
+	assert_eq(_board.omen_track(), BoardState.OMEN_COLORS, "без листа — стандартный трек")
+	_gs.campaign = {"ancientOne": {"omenTrack": ["green", "blue", "red"]}}
+	_gs.omens_step = 3
+	assert_eq(_board.current_omen_color(), "green", "три деления — цикл")
+	_gs.omens_step = 2
+	assert_eq(_board.current_omen_color(), "red")
+
+
+func test_scenario_gate_deck_fixed_first_and_token_colors() -> void:
+	_gs.monster_bag = ["cultist"]
+	_gs.campaign = {
+		"ancientOne":
+		{
+			"gateDeck":
+			[
+				{"location": "5", "color": "blue", "fixed": true},
+				{"location": "A", "color": "green"},
+				{"location": "B", "color": "red"},
+			]
+		}
+	}
+	_board._reset_gate_deck()
+	assert_eq(_board.open_gate(), "5", "закреплённый жетон — первым")
+	assert_eq(_gs.gates["5"], "blue", "цвет жетона сценария")
+	var second: String = _board.open_gate()
+	assert_true(second in ["A", "B"], "дальше — только жетоны сценария")
+	assert_eq(_gs.gates[second], "green" if second == "A" else "red")
+
+
+func test_spawn_monster_at_each_gate() -> void:
+	_gs.gates = {"A": "green", "B": "red"}
+	_board.apply_verb(
+		{"do": "spawnMonster", "monster": "cultist", "where": "gates"}, "spawnMonster"
+	)
+	assert_eq((_gs.monsters.get("A", []) as Array).size(), 1)
+	assert_eq((_gs.monsters.get("B", []) as Array).size(), 1)
+
+
+func test_toughen_monster_counts_in_restore() -> void:
+	_gs.monsters = {"5": [{"id": "elder", "health": 2}]}
+	_board.restore_monster("elder")
+	var full: int = (_gs.monsters["5"][0] as Dictionary)["health"]
+	assert_eq(_board.toughen_monster("elder", 1), 1)
+	var inst: Dictionary = _gs.monsters["5"][0]
+	assert_eq(inst["bonus"], 1)
+	assert_eq(inst["health"], full + 1, "здоровье растёт сразу")
+	inst["health"] = 1
+	_board.restore_monster("elder")
+	assert_eq(inst["health"], full + 1, "лечение — до стойкости с бонусом")

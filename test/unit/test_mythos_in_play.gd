@@ -22,6 +22,7 @@ class StubCampaignGen:
 class MockGS:
 	extends Node
 	var mythos_in_play: Array = []
+	var gates: Dictionary = {}
 	var _rumor: RumorFlow
 	# Поля/стабы для гейта «Прочитал» (mark_read/_all_read).
 	var phase: String = Phases.MYTHOS
@@ -182,3 +183,22 @@ func test_enter_phase_with_campaign_does_not_restart() -> void:
 	_gs.campaign = {"id": "abc-123"}
 	_m.enter_phase()
 	assert_eq(_gs._campaign.starts.size(), 0, "с кампанией сборку не перезапускаем")
+
+
+func test_check_modifier_and_discard_when_gates_closed() -> void:
+	var moon := {
+		"name": "Moon",
+		"whileInPlay": [{"do": "checkModifier", "amount": -1, "location": "5"}],
+		"discardWhen": {"kind": "noGatesOnBoard"},
+	}
+	_gs.players = {"a": {"location": "5"}, "b": {"location": "7"}}
+	_gs.gates = {"A": "green"}
+	_m._register_in_play(moon)
+	assert_eq(_m.check_modifier("a"), -1, "на поле — штраф")
+	assert_eq(_m.check_modifier("b"), 0, "в другой клетке — нет")
+	_m.sweep_in_play()
+	assert_eq((_gs.mythos_in_play as Array).size(), 1, "врата открыты — длится")
+	_gs.gates = {}
+	_m.sweep_in_play()
+	assert_eq((_gs.mythos_in_play as Array).size(), 0, "врат нет — сброшена")
+	assert_eq(_m.check_modifier("a"), 0)

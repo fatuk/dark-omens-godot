@@ -57,7 +57,7 @@ func make_check(
 		"owner": owner,
 		"pid": pid,
 		"skill": skill,
-		"modifier": modifier,
+		"modifier": modifier + _mythos_modifier(owner, pid),
 		"context": context,
 		"rolled": false,
 		"base": [],
@@ -74,6 +74,17 @@ func make_check(
 		"exhausted_cards": [],
 		"add_targets": [],  # кубы, на которые игрок положил +1 от addToDie (тапом)
 	}
+
+
+# Длящиеся карты Мифов в игре (whileInPlay checkModifier) — штраф/бонус ко всем
+# проверкам на клетке. Спас-бросок Порога не трогаем: у него фиксированный пул.
+func _mythos_modifier(owner: String, pid: String) -> int:
+	if owner == "deathSave":
+		return 0
+	var mf: Variant = _gs.get("_mythos")
+	if mf == null or not (mf as Object).has_method("check_modifier"):
+		return 0
+	return int((mf as Object).call("check_modifier", pid))
 
 
 ## Начать проверку (до броска). Перетирает прежнюю активную.

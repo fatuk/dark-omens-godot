@@ -150,6 +150,8 @@ func begin(pid: String, idx: int = 0) -> bool:
 	var inv_count: int = _gs._campaign.balance_player_count()
 	@warning_ignore("unsafe_method_access")
 	var tough: int = MonsterCatalog.toughness_for(m, inv_count)
+	if inst_v is Dictionary:
+		tough += int((inst_v as Dictionary).get("bonus", 0))  # toughenMonster
 	var cur: int = inst_health if inst_health >= 0 else tough  # легаси/без health → полное
 	var ability: Dictionary = m.get("ability", {})
 	_gs.current_encounter = {

@@ -37,7 +37,16 @@ const OMEN_COLORS: Array = ["green", "blue", "red", "blue"]
 
 ## Цвет текущего омена (по omens_step).
 func current_omen_color() -> String:
-	return String(OMEN_COLORS[_gs.omens_step % OMEN_COLORS.size()])
+	var track: Array = omen_track()
+	return String(track[_gs.omens_step % track.size()])
+
+
+## Трек омена партии: лист Древнего может задать свой (демо — 3 цвета), иначе
+## стандартный зелёный → синий → красный → синий.
+func omen_track() -> Array:
+	var ao: Dictionary = (_gs.get("campaign") as Dictionary).get("ancientOne", {})
+	var t: Variant = ao.get("omenTrack", [])
+	return t if t is Array and not (t as Array).is_empty() else OMEN_COLORS
 
 
 ## Сколько открытых врат заданного цвета. Для правила «омен сдвинулся → дум +
@@ -109,14 +118,17 @@ func setup_board(player_count: int) -> void:
 	_reset_gate_deck()
 	var ref: Dictionary = _reference_for(player_count)
 	_gs.monster_surge = int(ref.get("surge", 1))
-	for _i: int in int(ref.get("gates", 1)):
+	# Лист может переопределить число стартовых врат (демо: 0 — первый круг откроет Миф).
+	var setup: Dictionary = _scenario().get("setup", {})
+	var start_gates: int = int(setup.get("gates", ref.get("gates", 1)))
+	for _i: int in start_gates:
 		open_gate()
 	for _i: int in int(ref.get("clues", 1)):
 		place_clue()
 	GameConsole.log(
 		(
 			"[Старт] Раскладка: врат %d, улик %d, Наплыв %d (игроков %d)"
-			% [int(ref.get("gates", 1)), int(ref.get("clues", 1)), _gs.monster_surge, player_count]
+			% [start_gates, int(ref.get("clues", 1)), _gs.monster_surge, player_count]
 		)
 	)
 
@@ -162,6 +174,24 @@ func open_gate(loc_id: String = "", color: String = "", spawn: bool = true) -> S
 func _reset_gate_deck() -> void:
 	_gs.gate_deck = []
 	_gs.gate_discard = []
+	# Сценарная колода (лист Древнего gateDeck: [{location, color, fixed?}]): жетоны
+	# только этих клеток своих цветов; fixed — сверху в заданном порядке, прочие тасуются.
+	var tokens: Array = _scenario().get("gateDeck", [])
+	if not tokens.is_empty():
+		var fixed: Array = []
+		for t_v: Variant in tokens:
+			var t: Dictionary = t_v
+			var loc: String = String(t.get("location", ""))
+			if loc.is_empty():
+				continue
+			if bool(t.get("fixed", false)):
+				fixed.append(loc)
+			else:
+				_gs.gate_deck.append(loc)
+		(_gs.gate_deck as Array).shuffle()
+		fixed.reverse()  # тянем с конца: первый fixed должен лечь последним
+		(_gs.gate_deck as Array).append_array(fixed)
+		return
 	for did: String in _gs.map.ids():
 		if not _gs.map.gate_color(did).is_empty():
 			_gs.gate_deck.append(did)
@@ -197,6 +227,10 @@ func _gate_to_discard(loc_id: String) -> void:
 ## Каноничный цвет врат локации (из data/locations.json → gateColor). Локация
 ## без поля (не гейт-спейс) → "green" как безопасный фолбэк.
 func _gate_color_for(loc_id: String) -> String:
+	for t_v: Variant in _scenario().get("gateDeck", []):
+		var t: Dictionary = t_v
+		if String(t.get("location", "")) == loc_id and not String(t.get("color", "")).is_empty():
+			return String(t["color"])  # цвет жетона сценария важнее цвета клетки
 	var c: String = _gs.map.gate_color(loc_id)
 	return c if not c.is_empty() else "green"
 
@@ -225,6 +259,10 @@ func close_gate_at(loc: String, pid: String) -> void:
 		_gs._mystery.try_mystery_hook("gateClosed", {"loc": loc, "color": color}, pid)
 		# Слух: закрытие врат-портала на этой локации развеивает Слух (если он там).
 		_gs._rumor.solve_on_gate_close(loc, pid)
+		# Длящиеся карты Мифов с discardWhen («пока врата открыты») — проверить сброс.
+		var mf: Variant = _gs.get("_mythos")
+		if mf != null and (mf as Object).has_method("sweep_in_play"):
+			(mf as Object).call("sweep_in_play")
 
 
 ## Заспаунить монстра на локации, ВЫТЯНУВ случайный id из «мешка» (без повторов).
@@ -270,11 +308,36 @@ func restore_monster(mid: String) -> int:
 	for loc_v: Variant in (_gs.monsters as Dictionary).keys():
 		for inst_v: Variant in _gs.monsters[loc_v] as Array:
 			if inst_v is Dictionary and String((inst_v as Dictionary).get("id", "")) == mid:
-				(inst_v as Dictionary)["health"] = full
+				var inst: Dictionary = inst_v
+				inst["health"] = full + int(inst.get("bonus", 0))
 				healed += 1
 	if healed > 0:
 		GameConsole.log("[Эффект] %s восстанавливает здоровье (%d)" % [mid, full])
 	return healed
+
+
+## Монстры mid на поле получают +amount к стойкости до конца партии: бонус копится
+## на экземпляре (bonus — его учитывают бой и restoreMonster), здоровье растёт сразу.
+func toughen_monster(mid: String, amount: int) -> int:
+	var touched: int = 0
+	for loc_v: Variant in (_gs.monsters as Dictionary).keys():
+		for inst_v: Variant in _gs.monsters[loc_v] as Array:
+			if inst_v is Dictionary and String((inst_v as Dictionary).get("id", "")) == mid:
+				var inst: Dictionary = inst_v
+				inst["bonus"] = int(inst.get("bonus", 0)) + amount
+				inst["health"] = int(inst.get("health", 1)) + amount
+				touched += 1
+	if touched > 0:
+		GameConsole.log("[Эффект] %s: стойкость +%d до конца партии" % [mid, amount])
+	return touched
+
+
+# Сценарные правила поля из листа Древнего партии ({} — нет кампании / правил).
+func _scenario() -> Dictionary:
+	var camp: Variant = _gs.get("campaign")
+	if not (camp is Dictionary):
+		return {}
+	return (camp as Dictionary).get("ancientOne", {})
 
 
 ## Заспаунить монстра на КОНКРЕТНОЙ локации (публичная обёртка над _spawn_monster).
@@ -925,6 +988,15 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 			# monster: "<id>" — конкретный монстр в обход мешка (культист Тайны, эпик);
 			# без where — у якорного сыщика.
 			var mon_id: String = String(node.get("monster", ""))
+			if mon_where == "gates":
+				# where:"gates" — по монстру у КАЖДЫХ открытых врат (Расплата листа демо).
+				for gloc_v: Variant in (_gs.gates as Dictionary).keys():
+					for _i: int in n:
+						if not mon_id.is_empty():
+							spawn_named_at(mon_id, String(gloc_v))
+						else:
+							spawn_monster_at(String(gloc_v))
+				return
 			if not mon_id.is_empty() and mon_loc.is_empty():
 				var mpid: String = String(node.get("_anchor_pid", _gs.current_pid()))
 				mon_loc = String((_gs.players.get(mpid, {}) as Dictionary).get("location", ""))
@@ -981,6 +1053,10 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 				_gs._mystery.apply_mystery_progress()
 		"restoreMonster":
 			restore_monster(String(node.get("monster", "")))
+		"toughenMonster":
+			toughen_monster(String(node.get("monster", "")), n)
+		"checkModifier":
+			pass  # действует только из whileInPlay карты Мифов (MythosFlow.check_modifier)
 		"retreatDoom":
 			_gs.doom = maxi(0, _gs.doom - n)
 			GameConsole.log("[Эффект] doom −%d (откат) → %d" % [n, _gs.doom])

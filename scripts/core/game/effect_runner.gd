@@ -1182,6 +1182,13 @@ static func _predicate(pred: Dictionary, player: Dictionary, ctx: Dictionary) ->
 					):
 						result = false
 						break
+		"noGatesOnBoard":
+			var gs_gates: Dictionary = ctx.get("gates", GameState.gates)
+			result = gs_gates.is_empty()
+		"mysteryActive":
+			# Активна Тайна номер n (1..3). ctx.active_mystery — индекс (0..2), без него — стол.
+			var am: int = int(ctx.get("active_mystery", GameState.active_mystery))
+			result = am == int(pred.get("n", 1)) - 1
 		"gateAt", "noGateAt":
 			# Открыты ли врата на локации {location}. ctx.gates — снимок поля, если
 			# вызывающий его кладёт; без него — живой стол (Миф/Расплата исполняют узлы

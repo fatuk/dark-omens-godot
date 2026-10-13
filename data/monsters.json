@@ -2362,8 +2362,8 @@
 				"do": "restoreMonster",
 				"monster": "elder",
 				"when": {
-					"kind": "gateAt",
-					"location": "5"
+					"kind": "noGatesOnBoard",
+					"not": true
 				}
 			}
 		]

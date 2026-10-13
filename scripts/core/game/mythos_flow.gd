@@ -198,6 +198,7 @@ func _apply_resolve() -> void:
 	var on_reck: Array = card.get("onReckoning", [])
 	if _is_reckoning_card(on_reck):
 		await _apply_effects(on_reck)
+	sweep_in_play()  # длящаяся карта, вышедшая при закрытых вратах, сразу уходит
 	# Конец Фазы Мифов: Тайны типа tokensOnCard решаются именно здесь.
 	_gs._mystery.check_mystery_tokens_solve()
 	_gs._death.flush_ghost_clues()  # отложенные улики Теней ложатся после Мифа
@@ -322,7 +323,9 @@ func _run_for_each(node: Dictionary) -> void:
 	var sub: Array = node.get("do", [])
 	if (sub as Array).is_empty():
 		return
-	var pids: Array = _for_each_pids(String(node.get("forEach", "each")))
+	var pids: Array = _for_each_pids(
+		String(node.get("forEach", "each")), String(node.get("location", ""))
+	)
 	for i: int in range(pids.size()):
 		await _run_player_subprogram(String(pids[i]), sub)
 	# Подчищаем выбор (на случай ранней очистки/дисконнекта) и синкаем.
@@ -333,8 +336,52 @@ func _run_for_each(node: Dictionary) -> void:
 
 # Сыщики forEach-прохода: подключённые в порядке turn_order (Ведущий = turn_order[0]
 # первым). Разбор цели (each/eachOn*) делегируем в TargetResolver.
-func _for_each_pids(target: String) -> Array:
-	return _gs._target._resolve_targets({"target": target})
+func _for_each_pids(target: String, location: String = "") -> Array:
+	var node: Dictionary = {"target": target}
+	if not location.is_empty():
+		node["location"] = location  # eachOnSpace: явная клетка («сыщики на поле»)
+	return _gs._target._resolve_targets(node)
+
+
+## Суммарный модификатор проверок сыщика pid от длящихся карт Мифов в игре:
+## whileInPlay {do:"checkModifier", amount, location?} — на клетке location (без неё
+## — везде). «Жатвенная луна: все проверки на поле −1».
+func check_modifier(pid: String) -> int:
+	var loc: String = String((_gs.players.get(pid, {}) as Dictionary).get("location", ""))
+	var total: int = 0
+	for c_v: Variant in _gs.mythos_in_play as Array:
+		for n_v: Variant in (c_v as Dictionary).get("whileInPlay", []):
+			var n: Dictionary = n_v if n_v is Dictionary else {}
+			if String(n.get("do", "")) != "checkModifier":
+				continue
+			var where: String = String(n.get("location", ""))
+			if where.is_empty() or where == loc:
+				total += int(n.get("amount", -1))
+	return total
+
+
+## Сбросить длящиеся карты Мифов, чьё условие discardWhen стало истинным («сбрасывается,
+## когда врата закрыты»). Зовётся после закрытия врат и после розыгрыша карты.
+func sweep_in_play() -> void:
+	var keep: Array = []
+	var dropped: bool = false
+	# Врата текущего стола — явно в ctx (предикаты поля без ctx читают автолоад).
+	var ctx: Dictionary = {}
+	var gates: Variant = _gs.get("gates")
+	if gates is Dictionary:
+		ctx["gates"] = gates
+	for c_v: Variant in _gs.mythos_in_play as Array:
+		var card: Dictionary = c_v
+		var cond: Dictionary = card.get("discardWhen", {})
+		if not cond.is_empty() and _EffectRunner.eval_predicate(cond, {}, ctx):
+			GameConsole.log("[Mythos] «%s» сброшена" % String(card.get("name", "?")))
+			dropped = true
+			continue
+		keep.append(card)
+	if dropped:
+		_gs.mythos_in_play = keep
+		_gs.broadcast_sync()
+		_gs.emit_changed()
 
 
 # Прочие подключённые сыщики (кроме active_pid) как [{pid, name}] — варианты для

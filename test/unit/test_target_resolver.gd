@@ -302,3 +302,12 @@ func test_random_investigator_picks_connected() -> void:
 		var hit: Array = _t._resolve_targets({"do": "loseClue", "target": "randomInvestigator"})
 		assert_eq(hit.size(), 1)
 		assert_true(["a", "c"].has(String(hit[0])), "только подключённые")
+
+
+func test_highest_skill_target_picks_one_with_ties_to_lead() -> void:
+	_player("a", {"investigator": "Frank Dalton"})
+	_player("b", {"investigator": "Frank Dalton", "skill_mods": {"influence": 2}})
+	_player("c", {"investigator": "Frank Dalton", "skill_mods": {"influence": 2}})
+	assert_eq(_t._resolve_targets({"target": "highestSkill", "skill": "influence"}), ["b"])
+	_gs.players["b"]["connected"] = false
+	assert_eq(_t._resolve_targets({"target": "highestSkill", "skill": "influence"}), ["c"])

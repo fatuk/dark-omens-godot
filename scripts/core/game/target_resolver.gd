@@ -72,6 +72,30 @@ func _resolve_targets(node: Dictionary) -> Array:
 			return _pids_on_loc_type("wilderness")
 		"eachOnSea":
 			return _pids_on_loc_type("sea")
+		"highestSkill":
+			# Сыщик с наибольшим навыком {skill} (база + модификаторы); ничья — ближе
+			# к Ведущему (порядок хода). Один сыщик.
+			var best: String = ""
+			var best_v: int = -999
+			var sk: String = String(node.get("skill", "influence"))
+			for pid_v: Variant in _gs.turn_order:
+				var hp: String = String(pid_v)
+				var pl: Dictionary = _gs.players.get(hp, {})
+				if (
+					pl.is_empty()
+					or not bool(pl.get("connected", true))
+					or bool(pl.get("dead", false))
+				):
+					continue
+				var inv: Dictionary = Investigators.get_data(String(pl.get("investigator", "")))
+				var v: int = (
+					int((inv.get("skills", {}) as Dictionary).get(sk, 0))
+					+ int((pl.get("skill_mods", {}) as Dictionary).get(sk, 0))
+				)
+				if v > best_v:
+					best_v = v
+					best = hp
+			return [best] if not best.is_empty() else []
 		"eachOnSpace":
 			# Сыщики на клетке: явной (node.location — Расплата Тайны «на поле») либо
 			# клетке якоря (активный / forEach-сыщик).

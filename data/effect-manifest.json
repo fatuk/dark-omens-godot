@@ -14,7 +14,8 @@
       "chosenInvestigator",
       "randomInvestigator",
       "rightNeighbor",
-      "leftNeighbor"
+      "leftNeighbor",
+      "highestSkill"
     ],
     "foreach": [
       "each",
@@ -736,6 +737,47 @@
       ],
       "targets": null,
       "describeKey": "VERB_RESTORE_MONSTER"
+    },
+    "toughenMonster": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "monster",
+          "type": {
+            "t": "str"
+          }
+        },
+        {
+          "name": "amount",
+          "type": {
+            "t": "int",
+            "min": 1
+          },
+          "default": 1
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_TOUGHEN_MONSTER"
+    },
+    "checkModifier": {
+      "kind": "board",
+      "params": [
+        {
+          "name": "amount",
+          "type": {
+            "t": "int"
+          },
+          "default": -1
+        },
+        {
+          "name": "location",
+          "type": {
+            "t": "str"
+          }
+        }
+      ],
+      "targets": null,
+      "describeKey": "VERB_CHECK_MODIFIER"
     },
     "moveMonster": {
       "kind": "board",

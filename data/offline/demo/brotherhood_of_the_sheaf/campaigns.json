@@ -1,10 +1,10 @@
 {
 	"ancient": "brotherhood_of_the_sheaf",
-	"bakedAt": "2026-10-13T15:58:31.903Z",
+	"bakedAt": "2026-10-13T16:31:32.180Z",
 	"campaigns": {
 		"ru": {
 			"1": {
-				"id": "9212decc-03f0-4ea5-b5dc-70947d781e8f",
+				"id": "231bb19c-a8be-4ff2-8e22-c1cd9b94c199",
 				"title": "Тень над миром: Братство Колоса",
 				"ancientOne": {
 					"id": "brotherhood_of_the_sheaf",
@@ -16,11 +16,7 @@
 						{
 							"do": "spawnMonster",
 							"monster": "cultist",
-							"where": "5",
-							"when": {
-								"kind": "gateAt",
-								"location": "5"
-							}
+							"where": "gates"
 						}
 					],
 					"cultist": {
@@ -37,12 +33,47 @@
 						},
 						"onReckoning": []
 					},
+					"omenTrack": [
+						"green",
+						"blue",
+						"red"
+					],
+					"gateDeck": [
+						{
+							"location": "5",
+							"color": "blue",
+							"fixed": true
+						},
+						{
+							"location": "Arkham",
+							"color": "red"
+						},
+						{
+							"location": "San Francisco",
+							"color": "green"
+						},
+						{
+							"location": "6",
+							"color": "green"
+						},
+						{
+							"location": "The Amazon",
+							"color": "red"
+						},
+						{
+							"location": "Buenos Aires",
+							"color": "blue"
+						}
+					],
+					"setup": {
+						"gates": 0
+					},
 					"clues": []
 				},
-				"doomClock": 8,
+				"doomClock": 10,
 				"mysteries": [
 					{
-						"id": "7ac9ff52-de28-4f6c-b760-ef25c28b11a0",
+						"id": "1424f89c-dc31-4846-950b-04ecfdb6e5ce",
 						"title": "Первый сноп",
 						"flavorText": "Полоса примятых колосьев уходит от дома в поле и обрывается.",
 						"text": "Выложите 3 улики в Средний Запад. Сыщики получают их только встречами исследования на поле. Когда все три у сыщиков — тайна раскрыта. Расплата: пока тайна активна, в Среднем Западе появляется культист.",
@@ -83,7 +114,7 @@
 						"locations": []
 					},
 					{
-						"id": "72ed9d37-26d3-4695-97e5-8852df040a21",
+						"id": "101de944-e247-443a-a7b0-20a9370396e1",
 						"title": "Книга, которой нет в каталоге",
 						"flavorText": "По уликам видно: сноп перевязан по правилу, и правило где-то записано.",
 						"text": "Сыщик в Уэнэме может потратить 2 улики и пройти проверку Знаний (−1). При успехе тайна раскрыта, сыщик получает Сноп. При провале улики не тратятся, сыщик получает Одержимость. Расплата: сыщик без улик на поле теряет 1 рассудок.",
@@ -148,7 +179,7 @@
 						]
 					},
 					{
-						"id": "4bb827cc-99f5-47ba-972f-023267f14493",
+						"id": "665a26e1-a78f-4142-b821-cd7a7daed47e",
 						"title": "Старший",
 						"flavorText": "Тот, на кого записаны все завещания, вышел на поле. Он не спрашивает, где сноп, — он идёт к тому, у кого он.",
 						"text": "Выложите эпического монстра Старший в Средний Запад. Его нельзя атаковать, пока на поле есть культисты. Когда он побеждён, сыщик со Снопом проходит особую встречу; при успехе тайна раскрыта и партия выиграна.",
@@ -181,72 +212,123 @@
 				],
 				"mythosDeck": [
 					{
-						"id": "9f5677e7-ead4-4b27-bf15-aee9eea094a1",
+						"id": "b6141bbe-d8a0-4897-a52e-4a82c32ff9ac",
 						"act": 1,
-						"name": "Ночная жатва",
+						"name": "Круг",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "К утру поле выкошено на треть, и никто не слышал машин.",
-						"text": "Расплата. Наплыв монстров.",
-						"onDraw": [
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "monsterSurge"
-							}
-						]
-					},
-					{
-						"id": "523f774c-d9ef-4e99-835e-c440c3b3902a",
-						"act": 1,
-						"name": "Свежие следы",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Босые следы ведут в колосья и не ведут обратно.",
-						"text": "Откройте врата. Выложите улику.",
+						"flavorText": "Утром на поле появился круг. Фермер говорит, что это ветер; ветра ночью не было.",
+						"text": "Откройте врата. Из врат выходит культист.",
 						"onDraw": [
 							{
 								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
+								"monster": "cultist"
 							}
 						]
 					},
 					{
-						"id": "8f4c7b5e-6d03-40b1-883c-12eb37a4707e",
+						"id": "ae5a9bc5-94ce-4149-aa68-d80e219df718",
 						"act": 1,
-						"name": "Зерно и кровь",
+						"name": "Скот встал",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "Жернова на мельнице крутятся ночью, хотя ворот заперт.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата.",
+						"flavorText": "Весь скот в округе стоит мордой к полю. Коровы не мычат и не едят, а просто смотрят.",
+						"text": "Расплата. Каждый сыщик в Среднем Западе проходит проверку Воли; при провале теряет 1 рассудок.",
 						"onDraw": [
 							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
+								"do": "resolveReckoning"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"test": "will",
+										"modifier": 0,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 1
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "bf13ce2d-844f-4b22-ae16-08500a30f32c",
+						"act": 1,
+						"name": "Письмо",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "Соседка передала конверт через забор. Внутри — список имён и одна дата, подчёркнутая дважды.",
+						"text": "Сдвиньте омен. Сыщик с наибольшим Влиянием получает 1 улику.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "gainClue",
+								"count": 1,
+								"target": "highestSkill",
+								"skill": "influence"
+							}
+						]
+					},
+					{
+						"id": "6617c9d7-7652-4213-9a32-f0d32a1db1d1",
+						"act": 2,
+						"name": "Завещания",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "Нотариус заверил за ночь четыре документа. Все на одну фамилию.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Каждый сыщик в Уэнэме проходит проверку Влияния (−1); при провале его задерживают с расспросами.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
 							},
 							{
 								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
+								"monster": "cultist"
 							},
 							{
-								"do": "advanceDoom",
-								"amount": 1
+								"forEach": "eachOnSpace",
+								"location": "Arkham",
+								"do": [
+									{
+										"test": "influence",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "becomeDelayed"
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "7846ac36-d233-413d-9110-9c99f8c98169",
+						"act": 2,
+						"name": "Вторая борозда",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "От круга к дому ведёт новая полоса примятых колосьев. Прежняя вела от дома.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Расплата.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
 							},
 							{
 								"do": "resolveReckoning"
@@ -254,140 +336,50 @@
 						]
 					},
 					{
-						"id": "6d6d8364-cab6-4483-8bc4-ed64a8bea433",
+						"id": "98ea6637-85c2-487c-a84a-f69fb9afe40c",
 						"act": 2,
-						"name": "Собрание братства",
+						"name": "Пугало",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "Фонари движутся по полю ровной цепью.",
-						"text": "Расплата. Культист появляется в Среднем Западе.",
+						"flavorText": "На краю поля пугало. Утром его ещё не было, и одето оно в куртку, которую вы видели на человеке.",
+						"text": "Сдвиньте омен. В Среднем Западе появляется культист. Каждый сыщик в Среднем Западе проходит проверку Наблюдательности (−1); при провале теряет 2 рассудка.",
 						"onDraw": [
 							{
-								"do": "resolveReckoning"
+								"do": "advanceOmen",
+								"count": 1
 							},
 							{
 								"do": "spawnMonster",
 								"monster": "cultist",
 								"where": "5"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"test": "observation",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2
+											}
+										]
+									}
+								]
 							}
 						]
 					},
 					{
-						"id": "9bf8286f-72f9-4c58-b6a1-416b38f50bb6",
-						"act": 2,
-						"name": "Шёпот в колосьях",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Ветер идёт по полю против ветра.",
-						"text": "Сдвиньте омен. Откройте врата. Выложите улику.",
-						"onDraw": [
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "c416909b-190b-47d7-9da8-9adaa5d525b3",
-						"act": 2,
-						"name": "Пропавший фермер",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Его ищут на третий день. Собаки отказываются входить в поле.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Сдвиньте омен. Наплыв монстров. Расплата.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "monsterSurge"
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "9d037273-2bd5-4724-a122-a21ff320819b",
-						"act": 2,
-						"name": "Вязальщики",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Снопы на всех фермах перевязаны одинаково. Никто не признаётся, кто учил.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Сдвиньте омен.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "advanceOmen",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "902d9f6e-55f9-48fa-a7cc-129536be62e1",
+						"id": "0b95407f-377a-423b-9e90-39d8c76f6dc1",
 						"act": 2,
 						"name": "Завещание",
 						"subtype": "rumor",
 						"color": "blue",
-						"flavorText": "Нотариус в городке заверяет документы ночью и говорит, что клиенты сами выбирают час.",
-						"text": "Выложите 3 улики в Уэнэм. Пока Слух в игре, каждая Расплата — случайный сыщик теряет 1 улику. Сыщик в Уэнэме тратит улику и проходит проверку Влияния (−1); три успеха развеивают Слух. Когда до пробуждения остаётся 4 деления, Рок продвигается на 2.",
+						"flavorText": "Нотариус заверяет документы ночью и говорит, что клиенты сами выбирают час.",
+						"text": "Слух. Выложите 3 улики в Уэнэм. Пока Слух в игре, каждая Расплата — случайный сыщик теряет 1 улику. Сыщик в Уэнэме тратит улику и проходит проверку Влияния (−1); три успеха развеивают Слух. Когда до пробуждения остаётся 4 деления, Рок продвигается на 2.",
 						"onDraw": [
 							{
 								"do": "placeClue",
@@ -429,58 +421,56 @@
 						}
 					},
 					{
-						"id": "5790c073-2a0e-4dce-97f2-931e5ed9451c",
-						"act": 3,
-						"name": "Дорога в поле",
+						"id": "75d0e560-7c75-4b90-a6e4-f5140a8e32a1",
+						"act": 2,
+						"name": "Соседка замолчала",
 						"subtype": "event",
-						"color": "green",
-						"flavorText": "Колея сворачивает с тракта туда, где дороги нет.",
-						"text": "Сдвиньте омен. Выложите улику. Расплата.",
+						"color": "yellow",
+						"flavorText": "Соседка больше не выходит к забору. На окне — сноп колосьев, перевязанный чёрным.",
+						"text": "Расплата. Выложите 1 улику в Уэнэм.",
 						"onDraw": [
 							{
-								"do": "advanceOmen",
-								"count": 1
+								"do": "resolveReckoning"
 							},
 							{
 								"do": "placeClue",
+								"where": "Arkham",
 								"count": 1
-							},
-							{
-								"do": "resolveReckoning"
 							}
 						]
 					},
 					{
-						"id": "645cdf5b-b629-4e03-83a2-3567e3944f18",
+						"id": "56c5df5b-174e-4039-ab0a-0f9595d32c15",
 						"act": 3,
-						"name": "Голод земли",
+						"name": "Жатвенная луна",
+						"subtype": "ongoing",
+						"color": "blue",
+						"flavorText": "Луна висит над полем красная и не сдвигается с места уже третью ночь.",
+						"text": "Длится, пока открыты врата: все проверки в Среднем Западе −1. Сбрасывается, когда все врата закрыты.",
+						"onDraw": [],
+						"whileInPlay": [
+							{
+								"do": "checkModifier",
+								"amount": -1,
+								"location": "5"
+							}
+						],
+						"discardWhen": {
+							"kind": "noGatesOnBoard"
+						}
+					},
+					{
+						"id": "8b5c2588-7e8e-4d16-90ed-7e56d39583e2",
+						"act": 3,
+						"name": "Последняя ночь",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "Земля под ногами тёплая, как живот.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Каждый сыщик теряет 1 рассудок.",
+						"flavorText": "Пшеница перестала шуметь по всему округу. Ветер есть — звука нет.",
+						"text": "Сдвиньте омен. Расплата. Каждый сыщик теряет 1 рассудок. Если раскрывается третья Тайна, Старший получает +1 к стойкости до конца партии.",
 						"onDraw": [
 							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
+								"do": "advanceOmen",
+								"count": 1
 							},
 							{
 								"do": "resolveReckoning"
@@ -493,74 +483,94 @@
 										"amount": 1
 									}
 								]
+							},
+							{
+								"do": "toughenMonster",
+								"monster": "elder",
+								"amount": 1,
+								"when": {
+									"kind": "mysteryActive",
+									"n": 3
+								}
 							}
 						]
 					},
 					{
-						"id": "ca5e34ce-47a3-40df-9fff-3b32dab2cbf4",
+						"id": "7cf73978-87cb-4aed-8d13-e614a09b2aee",
 						"act": 3,
-						"name": "Клятва на зерне",
+						"name": "Все двадцать",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "Каждому, кто пришёл с поля, предлагают горсть зерна. Отказавшихся запоминают.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Каждый сыщик теряет 1 здоровье.",
+						"flavorText": "Двадцать ферм, двадцать хозяев, и все вышли на поле в один час, не сговариваясь.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. За каждого сыщика в Среднем Западе там появляется ещё один культист. Расплата.",
 						"onDraw": [
 							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"forEach": "each",
-								"do": [
-									{
-										"do": "loseHealth",
-										"amount": 1
-									}
-								]
-							}
-						]
-					},
-					{
-						"id": "1f9ad4f2-38b4-4b2f-9e71-6423a3ef47b1",
-						"act": 3,
-						"name": "Тихая ночь",
-						"subtype": "event",
-						"color": "blue",
-						"flavorText": "Впервые за неделю поле молчит. Это не успокаивает.",
-						"text": "Выложите улику. Каждый сыщик восстанавливает 1 рассудок.",
-						"onDraw": [
-							{
-								"do": "placeClue",
+								"do": "advanceOmen",
 								"count": 1
 							},
 							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"do": "spawnMonster",
+										"monster": "cultist",
+										"where": "self"
+									}
+								]
+							},
+							{
+								"do": "resolveReckoning"
+							}
+						]
+					},
+					{
+						"id": "22701fe8-c07c-4626-bf19-59a6f1f1d61c",
+						"act": 3,
+						"name": "Сноп на пороге",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "У двери дома, где вы ночевали, лежит сноп. Перевязан волосами. Вашими.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Каждый сыщик проходит проверку Воли (−1); при провале теряет 1 улику, а если улик нет — 2 рассудка.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
 								"forEach": "each",
 								"do": [
 									{
-										"do": "healSanity",
-										"amount": 1
+										"test": "will",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0
+												}
+											},
+											{
+												"do": "loseClue",
+												"count": 1,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0,
+													"not": true
+												}
+											}
+										]
 									}
 								]
 							}
@@ -570,7 +580,7 @@
 				"generated": "fallback"
 			},
 			"2": {
-				"id": "3410c0d6-a2dc-46c8-9737-7f5a0445a2c6",
+				"id": "59ee45fb-c6df-408b-9367-2d1754dba4d5",
 				"title": "Тень над миром: Братство Колоса",
 				"ancientOne": {
 					"id": "brotherhood_of_the_sheaf",
@@ -582,11 +592,7 @@
 						{
 							"do": "spawnMonster",
 							"monster": "cultist",
-							"where": "5",
-							"when": {
-								"kind": "gateAt",
-								"location": "5"
-							}
+							"where": "gates"
 						}
 					],
 					"cultist": {
@@ -603,12 +609,47 @@
 						},
 						"onReckoning": []
 					},
+					"omenTrack": [
+						"green",
+						"blue",
+						"red"
+					],
+					"gateDeck": [
+						{
+							"location": "5",
+							"color": "blue",
+							"fixed": true
+						},
+						{
+							"location": "Arkham",
+							"color": "red"
+						},
+						{
+							"location": "San Francisco",
+							"color": "green"
+						},
+						{
+							"location": "6",
+							"color": "green"
+						},
+						{
+							"location": "The Amazon",
+							"color": "red"
+						},
+						{
+							"location": "Buenos Aires",
+							"color": "blue"
+						}
+					],
+					"setup": {
+						"gates": 0
+					},
 					"clues": []
 				},
-				"doomClock": 8,
+				"doomClock": 10,
 				"mysteries": [
 					{
-						"id": "00395537-d662-4a88-a407-df05413f6146",
+						"id": "82942f84-8c6c-4403-a0fe-89d01bd71cbb",
 						"title": "Первый сноп",
 						"flavorText": "Полоса примятых колосьев уходит от дома в поле и обрывается.",
 						"text": "Выложите 3 улики в Средний Запад. Сыщики получают их только встречами исследования на поле. Когда все три у сыщиков — тайна раскрыта. Расплата: пока тайна активна, в Среднем Западе появляется культист.",
@@ -649,7 +690,7 @@
 						"locations": []
 					},
 					{
-						"id": "774582a9-5868-407f-899f-0c688bbd51cc",
+						"id": "1ebcc458-9a8f-4fe7-8f63-7bdc3222f024",
 						"title": "Книга, которой нет в каталоге",
 						"flavorText": "По уликам видно: сноп перевязан по правилу, и правило где-то записано.",
 						"text": "Сыщик в Уэнэме может потратить 2 улики и пройти проверку Знаний (−1). При успехе тайна раскрыта, сыщик получает Сноп. При провале улики не тратятся, сыщик получает Одержимость. Расплата: сыщик без улик на поле теряет 1 рассудок.",
@@ -714,7 +755,7 @@
 						]
 					},
 					{
-						"id": "25f2e67d-5c11-47a9-a3e4-0c2b2640551a",
+						"id": "22a60a1a-7390-452e-a4c9-93724790852a",
 						"title": "Старший",
 						"flavorText": "Тот, на кого записаны все завещания, вышел на поле. Он не спрашивает, где сноп, — он идёт к тому, у кого он.",
 						"text": "Выложите эпического монстра Старший в Средний Запад. Его нельзя атаковать, пока на поле есть культисты. Когда он побеждён, сыщик со Снопом проходит особую встречу; при успехе тайна раскрыта и партия выиграна.",
@@ -747,227 +788,117 @@
 				],
 				"mythosDeck": [
 					{
-						"id": "6f72583b-801f-4532-bbf3-57eced6b594a",
+						"id": "05f9bae2-c41a-4213-aa3e-c3209efc0d70",
 						"act": 1,
-						"name": "Ночная жатва",
+						"name": "Круг",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "К утру поле выкошено на треть, и никто не слышал машин.",
-						"text": "Расплата. Наплыв монстров.",
-						"onDraw": [
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "monsterSurge"
-							}
-						]
-					},
-					{
-						"id": "9a585d81-494a-4c54-a5ce-7a1015c172f9",
-						"act": 1,
-						"name": "Свежие следы",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Босые следы ведут в колосья и не ведут обратно.",
-						"text": "Откройте врата. Выложите улику.",
+						"flavorText": "Утром на поле появился круг. Фермер говорит, что это ветер; ветра ночью не было.",
+						"text": "Откройте врата. Из врат выходит культист.",
 						"onDraw": [
 							{
 								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
+								"monster": "cultist"
 							}
 						]
 					},
 					{
-						"id": "e31cb6b4-83ee-401d-8234-e2fc313f1bc7",
+						"id": "3007e896-d09d-465b-a9da-a93a197b4343",
 						"act": 1,
-						"name": "Голод земли",
+						"name": "Скот встал",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "Земля под ногами тёплая, как живот.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Каждый сыщик теряет 1 рассудок.",
+						"flavorText": "Весь скот в округе стоит мордой к полю. Коровы не мычат и не едят, а просто смотрят.",
+						"text": "Расплата. Каждый сыщик в Среднем Западе проходит проверку Воли; при провале теряет 1 рассудок.",
 						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
 							{
 								"do": "resolveReckoning"
 							},
 							{
-								"forEach": "each",
+								"forEach": "eachOnSpace",
+								"location": "5",
 								"do": [
 									{
-										"do": "loseSanity",
-										"amount": 1
+										"test": "will",
+										"modifier": 0,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 1
+											}
+										]
 									}
 								]
 							}
 						]
 					},
 					{
-						"id": "632a5def-977e-47dc-9ac9-52162c49caff",
-						"act": 2,
-						"name": "Собрание братства",
+						"id": "8f1295d8-6589-4db2-95b6-b94b5c4ea84a",
+						"act": 1,
+						"name": "Письмо",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "Фонари движутся по полю ровной цепью.",
-						"text": "Расплата. Культист появляется в Среднем Западе.",
+						"flavorText": "Соседка передала конверт через забор. Внутри — список имён и одна дата, подчёркнутая дважды.",
+						"text": "Сдвиньте омен. Сыщик с наибольшим Влиянием получает 1 улику.",
 						"onDraw": [
 							{
-								"do": "resolveReckoning"
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "gainClue",
+								"count": 1,
+								"target": "highestSkill",
+								"skill": "influence"
+							}
+						]
+					},
+					{
+						"id": "ad3d2928-454d-421c-a037-f3c9aa40bcde",
+						"act": 2,
+						"name": "Пугало",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "На краю поля пугало. Утром его ещё не было, и одето оно в куртку, которую вы видели на человеке.",
+						"text": "Сдвиньте омен. В Среднем Западе появляется культист. Каждый сыщик в Среднем Западе проходит проверку Наблюдательности (−1); при провале теряет 2 рассудка.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
 							},
 							{
 								"do": "spawnMonster",
 								"monster": "cultist",
 								"where": "5"
-							}
-						]
-					},
-					{
-						"id": "ed925f19-4bff-455b-a970-ce613c5992cb",
-						"act": 2,
-						"name": "Шёпот в колосьях",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Ветер идёт по полю против ветра.",
-						"text": "Сдвиньте омен. Откройте врата. Выложите улику.",
-						"onDraw": [
-							{
-								"do": "advanceOmen",
-								"count": 1
 							},
 							{
-								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "da18a3dd-ad64-4b51-a20e-7083d8cd5f73",
-						"act": 2,
-						"name": "Клятва на зерне",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Каждому, кто пришёл с поля, предлагают горсть зерна. Отказавшихся запоминают.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Каждый сыщик теряет 1 здоровье.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"forEach": "each",
+								"forEach": "eachOnSpace",
+								"location": "5",
 								"do": [
 									{
-										"do": "loseHealth",
-										"amount": 1
+										"test": "observation",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2
+											}
+										]
 									}
 								]
 							}
 						]
 					},
 					{
-						"id": "a67c4844-d5a9-4366-9e24-f6b8d4e27c17",
-						"act": 2,
-						"name": "Пропавший фермер",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Его ищут на третий день. Собаки отказываются входить в поле.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Сдвиньте омен. Наплыв монстров. Расплата.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "monsterSurge"
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "98d57c23-add2-476d-b444-498c753ce654",
+						"id": "338d9698-dd5b-4ff7-b2ea-0ed291bc43c8",
 						"act": 2,
 						"name": "Завещание",
 						"subtype": "rumor",
 						"color": "blue",
-						"flavorText": "Нотариус в городке заверяет документы ночью и говорит, что клиенты сами выбирают час.",
-						"text": "Выложите 3 улики в Уэнэм. Пока Слух в игре, каждая Расплата — случайный сыщик теряет 1 улику. Сыщик в Уэнэме тратит улику и проходит проверку Влияния (−1); три успеха развеивают Слух. Когда до пробуждения остаётся 4 деления, Рок продвигается на 2.",
+						"flavorText": "Нотариус заверяет документы ночью и говорит, что клиенты сами выбирают час.",
+						"text": "Слух. Выложите 3 улики в Уэнэм. Пока Слух в игре, каждая Расплата — случайный сыщик теряет 1 улику. Сыщик в Уэнэме тратит улику и проходит проверку Влияния (−1); три успеха развеивают Слух. Когда до пробуждения остаётся 4 деления, Рок продвигается на 2.",
 						"onDraw": [
 							{
 								"do": "placeClue",
@@ -1009,124 +940,213 @@
 						}
 					},
 					{
-						"id": "e2c71e66-86be-41e0-b25a-2bcc34e7ab7c",
-						"act": 3,
-						"name": "Дорога в поле",
+						"id": "f72b6891-d1d1-4141-90a9-19687a40e1b4",
+						"act": 2,
+						"name": "Завещания",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "Колея сворачивает с тракта туда, где дороги нет.",
-						"text": "Сдвиньте омен. Выложите улику. Расплата.",
+						"flavorText": "Нотариус заверил за ночь четыре документа. Все на одну фамилию.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Каждый сыщик в Уэнэме проходит проверку Влияния (−1); при провале его задерживают с расспросами.",
 						"onDraw": [
 							{
 								"do": "advanceOmen",
 								"count": 1
 							},
 							{
-								"do": "placeClue",
-								"count": 1
+								"do": "openGate",
+								"monster": "cultist"
 							},
 							{
-								"do": "resolveReckoning"
+								"forEach": "eachOnSpace",
+								"location": "Arkham",
+								"do": [
+									{
+										"test": "influence",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "becomeDelayed"
+											}
+										]
+									}
+								]
 							}
 						]
 					},
 					{
-						"id": "32eeccf1-c64c-47a5-949a-ff5a74191b53",
-						"act": 3,
-						"name": "Зерно и кровь",
+						"id": "11cec56c-21ae-498b-b271-a2ef7774469d",
+						"act": 2,
+						"name": "Вторая борозда",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "Жернова на мельнице крутятся ночью, хотя ворот заперт.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата.",
+						"flavorText": "От круга к дому ведёт новая полоса примятых колосьев. Прежняя вела от дома.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Расплата.",
 						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "cff90af1-a974-4c85-acf6-a1868a470141",
-						"act": 3,
-						"name": "Вязальщики",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Снопы на всех фермах перевязаны одинаково. Никто не признаётся, кто учил.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Сдвиньте омен.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
 							{
 								"do": "advanceOmen",
 								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"do": "resolveReckoning"
 							}
 						]
 					},
 					{
-						"id": "7dcbc4e4-d018-493c-a533-46e267510ce4",
-						"act": 3,
-						"name": "Тихая ночь",
+						"id": "8a30b95b-b6fd-469e-8f60-8eae406412b0",
+						"act": 2,
+						"name": "Соседка замолчала",
 						"subtype": "event",
-						"color": "blue",
-						"flavorText": "Впервые за неделю поле молчит. Это не успокаивает.",
-						"text": "Выложите улику. Каждый сыщик восстанавливает 1 рассудок.",
+						"color": "yellow",
+						"flavorText": "Соседка больше не выходит к забору. На окне — сноп колосьев, перевязанный чёрным.",
+						"text": "Расплата. Выложите 1 улику в Уэнэм.",
 						"onDraw": [
 							{
+								"do": "resolveReckoning"
+							},
+							{
 								"do": "placeClue",
+								"where": "Arkham",
 								"count": 1
+							}
+						]
+					},
+					{
+						"id": "31e1937d-7aa3-41b9-9e27-eab2fa34ed4c",
+						"act": 3,
+						"name": "Последняя ночь",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Пшеница перестала шуметь по всему округу. Ветер есть — звука нет.",
+						"text": "Сдвиньте омен. Расплата. Каждый сыщик теряет 1 рассудок. Если раскрывается третья Тайна, Старший получает +1 к стойкости до конца партии.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "resolveReckoning"
 							},
 							{
 								"forEach": "each",
 								"do": [
 									{
-										"do": "healSanity",
+										"do": "loseSanity",
 										"amount": 1
+									}
+								]
+							},
+							{
+								"do": "toughenMonster",
+								"monster": "elder",
+								"amount": 1,
+								"when": {
+									"kind": "mysteryActive",
+									"n": 3
+								}
+							}
+						]
+					},
+					{
+						"id": "c4cbfcf3-25da-406a-8684-4447d9723007",
+						"act": 3,
+						"name": "Все двадцать",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Двадцать ферм, двадцать хозяев, и все вышли на поле в один час, не сговариваясь.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. За каждого сыщика в Среднем Западе там появляется ещё один культист. Расплата.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"do": "spawnMonster",
+										"monster": "cultist",
+										"where": "self"
+									}
+								]
+							},
+							{
+								"do": "resolveReckoning"
+							}
+						]
+					},
+					{
+						"id": "309bc8a0-3590-48a8-abb8-75b3acdd1b6c",
+						"act": 3,
+						"name": "Жатвенная луна",
+						"subtype": "ongoing",
+						"color": "blue",
+						"flavorText": "Луна висит над полем красная и не сдвигается с места уже третью ночь.",
+						"text": "Длится, пока открыты врата: все проверки в Среднем Западе −1. Сбрасывается, когда все врата закрыты.",
+						"onDraw": [],
+						"whileInPlay": [
+							{
+								"do": "checkModifier",
+								"amount": -1,
+								"location": "5"
+							}
+						],
+						"discardWhen": {
+							"kind": "noGatesOnBoard"
+						}
+					},
+					{
+						"id": "80880051-c72d-4007-ba77-16d368111d38",
+						"act": 3,
+						"name": "Сноп на пороге",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "У двери дома, где вы ночевали, лежит сноп. Перевязан волосами. Вашими.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Каждый сыщик проходит проверку Воли (−1); при провале теряет 1 улику, а если улик нет — 2 рассудка.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "each",
+								"do": [
+									{
+										"test": "will",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0
+												}
+											},
+											{
+												"do": "loseClue",
+												"count": 1,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0,
+													"not": true
+												}
+											}
+										]
 									}
 								]
 							}
@@ -1136,7 +1156,7 @@
 				"generated": "fallback"
 			},
 			"3": {
-				"id": "8ca1814b-c7e7-4484-8068-0c08159915c9",
+				"id": "7dd8fe6e-9313-4d1d-ab9a-c11931bdce9e",
 				"title": "Тень над миром: Братство Колоса",
 				"ancientOne": {
 					"id": "brotherhood_of_the_sheaf",
@@ -1148,11 +1168,7 @@
 						{
 							"do": "spawnMonster",
 							"monster": "cultist",
-							"where": "5",
-							"when": {
-								"kind": "gateAt",
-								"location": "5"
-							}
+							"where": "gates"
 						}
 					],
 					"cultist": {
@@ -1169,12 +1185,47 @@
 						},
 						"onReckoning": []
 					},
+					"omenTrack": [
+						"green",
+						"blue",
+						"red"
+					],
+					"gateDeck": [
+						{
+							"location": "5",
+							"color": "blue",
+							"fixed": true
+						},
+						{
+							"location": "Arkham",
+							"color": "red"
+						},
+						{
+							"location": "San Francisco",
+							"color": "green"
+						},
+						{
+							"location": "6",
+							"color": "green"
+						},
+						{
+							"location": "The Amazon",
+							"color": "red"
+						},
+						{
+							"location": "Buenos Aires",
+							"color": "blue"
+						}
+					],
+					"setup": {
+						"gates": 0
+					},
 					"clues": []
 				},
-				"doomClock": 8,
+				"doomClock": 10,
 				"mysteries": [
 					{
-						"id": "998308b4-9b90-435a-ae39-a53550f4ace1",
+						"id": "1cbb4374-1945-4828-82ce-48fecf3630ee",
 						"title": "Первый сноп",
 						"flavorText": "Полоса примятых колосьев уходит от дома в поле и обрывается.",
 						"text": "Выложите 3 улики в Средний Запад. Сыщики получают их только встречами исследования на поле. Когда все три у сыщиков — тайна раскрыта. Расплата: пока тайна активна, в Среднем Западе появляется культист.",
@@ -1215,7 +1266,7 @@
 						"locations": []
 					},
 					{
-						"id": "fd579e20-bfaf-411f-a7f3-abd439880d81",
+						"id": "97736f9f-fe33-468f-8c7d-53a680e47954",
 						"title": "Книга, которой нет в каталоге",
 						"flavorText": "По уликам видно: сноп перевязан по правилу, и правило где-то записано.",
 						"text": "Сыщик в Уэнэме может потратить 2 улики и пройти проверку Знаний (−1). При успехе тайна раскрыта, сыщик получает Сноп. При провале улики не тратятся, сыщик получает Одержимость. Расплата: сыщик без улик на поле теряет 1 рассудок.",
@@ -1280,7 +1331,7 @@
 						]
 					},
 					{
-						"id": "955895d8-4f35-464f-b081-b6186fd0ec95",
+						"id": "0d8b2012-09b7-4761-80bb-410faa7a8808",
 						"title": "Старший",
 						"flavorText": "Тот, на кого записаны все завещания, вышел на поле. Он не спрашивает, где сноп, — он идёт к тому, у кого он.",
 						"text": "Выложите эпического монстра Старший в Средний Запад. Его нельзя атаковать, пока на поле есть культисты. Когда он побеждён, сыщик со Снопом проходит особую встречу; при успехе тайна раскрыта и партия выиграна.",
@@ -1313,170 +1364,88 @@
 				],
 				"mythosDeck": [
 					{
-						"id": "116dfdbf-9f2e-412a-b321-f626ae5efa2a",
+						"id": "f9240b94-4a33-4147-8a7f-0bee1ebb02d2",
 						"act": 1,
-						"name": "Ночная жатва",
+						"name": "Круг",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "К утру поле выкошено на треть, и никто не слышал машин.",
-						"text": "Расплата. Наплыв монстров.",
+						"flavorText": "Утром на поле появился круг. Фермер говорит, что это ветер; ветра ночью не было.",
+						"text": "Откройте врата. Из врат выходит культист.",
 						"onDraw": [
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "monsterSurge"
-							}
-						]
-					},
-					{
-						"id": "dbcbb2af-9da3-4bad-b8c5-6d6419feeffd",
-						"act": 1,
-						"name": "Шёпот в колосьях",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Ветер идёт по полю против ветра.",
-						"text": "Сдвиньте омен. Откройте врата. Выложите улику.",
-						"onDraw": [
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
 							{
 								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
+								"monster": "cultist"
 							}
 						]
 					},
 					{
-						"id": "e0583f2b-18ba-4c22-914d-709b29d6cc5d",
+						"id": "93732130-1ffb-4e07-9988-fbd76f17eee7",
 						"act": 1,
-						"name": "Голод земли",
+						"name": "Скот встал",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "Земля под ногами тёплая, как живот.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Каждый сыщик теряет 1 рассудок.",
+						"flavorText": "Весь скот в округе стоит мордой к полю. Коровы не мычат и не едят, а просто смотрят.",
+						"text": "Расплата. Каждый сыщик в Среднем Западе проходит проверку Воли; при провале теряет 1 рассудок.",
 						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
 							{
 								"do": "resolveReckoning"
 							},
 							{
-								"forEach": "each",
+								"forEach": "eachOnSpace",
+								"location": "5",
 								"do": [
 									{
-										"do": "loseSanity",
-										"amount": 1
+										"test": "will",
+										"modifier": 0,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 1
+											}
+										]
 									}
 								]
 							}
 						]
 					},
 					{
-						"id": "da0194ec-bb9a-451f-bb8b-635cb27e09d8",
-						"act": 2,
-						"name": "Собрание братства",
+						"id": "4752b16b-fe16-4b53-8bbe-60e781f5ca15",
+						"act": 1,
+						"name": "Письмо",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "Фонари движутся по полю ровной цепью.",
-						"text": "Расплата. Культист появляется в Среднем Западе.",
-						"onDraw": [
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5"
-							}
-						]
-					},
-					{
-						"id": "e70c6e87-631d-4d1d-a57e-c714b2e53799",
-						"act": 2,
-						"name": "Дорога в поле",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Колея сворачивает с тракта туда, где дороги нет.",
-						"text": "Сдвиньте омен. Выложите улику. Расплата.",
+						"flavorText": "Соседка передала конверт через забор. Внутри — список имён и одна дата, подчёркнутая дважды.",
+						"text": "Сдвиньте омен. Сыщик с наибольшим Влиянием получает 1 улику.",
 						"onDraw": [
 							{
 								"do": "advanceOmen",
 								"count": 1
 							},
 							{
-								"do": "placeClue",
-								"count": 1
-							},
-							{
-								"do": "resolveReckoning"
+								"do": "gainClue",
+								"count": 1,
+								"target": "highestSkill",
+								"skill": "influence"
 							}
 						]
 					},
 					{
-						"id": "e5111d6b-ec10-445e-b442-5d8909ee240a",
+						"id": "756fb18f-f03f-4ed8-b045-c28ed106640f",
 						"act": 2,
-						"name": "Пропавший фермер",
+						"name": "Вторая борозда",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "Его ищут на третий день. Собаки отказываются входить в поле.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Сдвиньте омен. Наплыв монстров. Расплата.",
+						"flavorText": "От круга к дому ведёт новая полоса примятых колосьев. Прежняя вела от дома.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Расплата.",
 						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
 							{
 								"do": "advanceOmen",
 								"count": 1
 							},
 							{
-								"do": "monsterSurge"
+								"do": "openGate",
+								"monster": "cultist"
 							},
 							{
 								"do": "resolveReckoning"
@@ -1484,180 +1453,13 @@
 						]
 					},
 					{
-						"id": "e600c9eb-e0d3-4372-b5cf-736a9cc04e80",
+						"id": "fcc93465-d459-4bd3-80cf-575dc1823883",
 						"act": 2,
-						"name": "Клятва на зерне",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Каждому, кто пришёл с поля, предлагают горсть зерна. Отказавшихся запоминают.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Каждый сыщик теряет 1 здоровье.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"forEach": "each",
-								"do": [
-									{
-										"do": "loseHealth",
-										"amount": 1
-									}
-								]
-							}
-						]
-					},
-					{
-						"id": "43765904-dbb3-4af5-b911-c240894be376",
-						"act": 2,
-						"name": "Тихая ночь",
-						"subtype": "event",
-						"color": "blue",
-						"flavorText": "Впервые за неделю поле молчит. Это не успокаивает.",
-						"text": "Выложите улику. Каждый сыщик восстанавливает 1 рассудок.",
-						"onDraw": [
-							{
-								"do": "placeClue",
-								"count": 1
-							},
-							{
-								"forEach": "each",
-								"do": [
-									{
-										"do": "healSanity",
-										"amount": 1
-									}
-								]
-							}
-						]
-					},
-					{
-						"id": "9b49a0ba-0cf3-49d6-aaf6-63722df9b29d",
-						"act": 3,
-						"name": "Свежие следы",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Босые следы ведут в колосья и не ведут обратно.",
-						"text": "Откройте врата. Выложите улику.",
-						"onDraw": [
-							{
-								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "803a7bca-9603-4643-83e6-0ec63426330f",
-						"act": 3,
-						"name": "Зерно и кровь",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Жернова на мельнице крутятся ночью, хотя ворот заперт.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "697c8bd0-6b3c-4ac1-b604-48155f0090b5",
-						"act": 3,
-						"name": "Вязальщики",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Снопы на всех фермах перевязаны одинаково. Никто не признаётся, кто учил.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Сдвиньте омен.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "advanceOmen",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "021e6bf6-f419-4d5d-affd-861908f1620d",
-						"act": 3,
 						"name": "Завещание",
 						"subtype": "rumor",
 						"color": "blue",
-						"flavorText": "Нотариус в городке заверяет документы ночью и говорит, что клиенты сами выбирают час.",
-						"text": "Выложите 3 улики в Уэнэм. Пока Слух в игре, каждая Расплата — случайный сыщик теряет 1 улику. Сыщик в Уэнэме тратит улику и проходит проверку Влияния (−1); три успеха развеивают Слух. Когда до пробуждения остаётся 4 деления, Рок продвигается на 2.",
+						"flavorText": "Нотариус заверяет документы ночью и говорит, что клиенты сами выбирают час.",
+						"text": "Слух. Выложите 3 улики в Уэнэм. Пока Слух в игре, каждая Расплата — случайный сыщик теряет 1 улику. Сыщик в Уэнэме тратит улику и проходит проверку Влияния (−1); три успеха развеивают Слух. Когда до пробуждения остаётся 4 деления, Рок продвигается на 2.",
 						"onDraw": [
 							{
 								"do": "placeClue",
@@ -1696,13 +1498,241 @@
 									}
 								]
 							}
+						}
+					},
+					{
+						"id": "6031cf7c-5a6b-4f4d-b84a-29146cca9646",
+						"act": 2,
+						"name": "Пугало",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "На краю поля пугало. Утром его ещё не было, и одето оно в куртку, которую вы видели на человеке.",
+						"text": "Сдвиньте омен. В Среднем Западе появляется культист. Каждый сыщик в Среднем Западе проходит проверку Наблюдательности (−1); при провале теряет 2 рассудка.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "spawnMonster",
+								"monster": "cultist",
+								"where": "5"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"test": "observation",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "371a7f6b-31d7-4b40-8012-741f21715258",
+						"act": 2,
+						"name": "Соседка замолчала",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Соседка больше не выходит к забору. На окне — сноп колосьев, перевязанный чёрным.",
+						"text": "Расплата. Выложите 1 улику в Уэнэм.",
+						"onDraw": [
+							{
+								"do": "resolveReckoning"
+							},
+							{
+								"do": "placeClue",
+								"where": "Arkham",
+								"count": 1
+							}
+						]
+					},
+					{
+						"id": "7a619afd-721a-4916-b843-0900ace9dcc6",
+						"act": 2,
+						"name": "Завещания",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "Нотариус заверил за ночь четыре документа. Все на одну фамилию.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Каждый сыщик в Уэнэме проходит проверку Влияния (−1); при провале его задерживают с расспросами.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "Arkham",
+								"do": [
+									{
+										"test": "influence",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "becomeDelayed"
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "62246a13-8493-4ca4-9266-f69d6c8b8994",
+						"act": 3,
+						"name": "Последняя ночь",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Пшеница перестала шуметь по всему округу. Ветер есть — звука нет.",
+						"text": "Сдвиньте омен. Расплата. Каждый сыщик теряет 1 рассудок. Если раскрывается третья Тайна, Старший получает +1 к стойкости до конца партии.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "resolveReckoning"
+							},
+							{
+								"forEach": "each",
+								"do": [
+									{
+										"do": "loseSanity",
+										"amount": 1
+									}
+								]
+							},
+							{
+								"do": "toughenMonster",
+								"monster": "elder",
+								"amount": 1,
+								"when": {
+									"kind": "mysteryActive",
+									"n": 3
+								}
+							}
+						]
+					},
+					{
+						"id": "72de3fbc-d7e0-4f56-9dd2-1919d114a2b3",
+						"act": 3,
+						"name": "Все двадцать",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Двадцать ферм, двадцать хозяев, и все вышли на поле в один час, не сговариваясь.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. За каждого сыщика в Среднем Западе там появляется ещё один культист. Расплата.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"do": "spawnMonster",
+										"monster": "cultist",
+										"where": "self"
+									}
+								]
+							},
+							{
+								"do": "resolveReckoning"
+							}
+						]
+					},
+					{
+						"id": "5c4a0e2d-111f-4305-94d4-bf46042d1e53",
+						"act": 3,
+						"name": "Сноп на пороге",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "У двери дома, где вы ночевали, лежит сноп. Перевязан волосами. Вашими.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Каждый сыщик проходит проверку Воли (−1); при провале теряет 1 улику, а если улик нет — 2 рассудка.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "each",
+								"do": [
+									{
+										"test": "will",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0
+												}
+											},
+											{
+												"do": "loseClue",
+												"count": 1,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0,
+													"not": true
+												}
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "0b742df7-1ace-4c53-91ac-47fedc0a772a",
+						"act": 3,
+						"name": "Жатвенная луна",
+						"subtype": "ongoing",
+						"color": "blue",
+						"flavorText": "Луна висит над полем красная и не сдвигается с места уже третью ночь.",
+						"text": "Длится, пока открыты врата: все проверки в Среднем Западе −1. Сбрасывается, когда все врата закрыты.",
+						"onDraw": [],
+						"whileInPlay": [
+							{
+								"do": "checkModifier",
+								"amount": -1,
+								"location": "5"
+							}
+						],
+						"discardWhen": {
+							"kind": "noGatesOnBoard"
 						}
 					}
 				],
 				"generated": "fallback"
 			},
 			"4": {
-				"id": "c8e4e1ef-df5b-4a8d-bc31-22cd54b7ed88",
+				"id": "d70604f1-bc69-4a83-98e8-e23a40019ad0",
 				"title": "Тень над миром: Братство Колоса",
 				"ancientOne": {
 					"id": "brotherhood_of_the_sheaf",
@@ -1714,11 +1744,7 @@
 						{
 							"do": "spawnMonster",
 							"monster": "cultist",
-							"where": "5",
-							"when": {
-								"kind": "gateAt",
-								"location": "5"
-							}
+							"where": "gates"
 						}
 					],
 					"cultist": {
@@ -1735,12 +1761,47 @@
 						},
 						"onReckoning": []
 					},
+					"omenTrack": [
+						"green",
+						"blue",
+						"red"
+					],
+					"gateDeck": [
+						{
+							"location": "5",
+							"color": "blue",
+							"fixed": true
+						},
+						{
+							"location": "Arkham",
+							"color": "red"
+						},
+						{
+							"location": "San Francisco",
+							"color": "green"
+						},
+						{
+							"location": "6",
+							"color": "green"
+						},
+						{
+							"location": "The Amazon",
+							"color": "red"
+						},
+						{
+							"location": "Buenos Aires",
+							"color": "blue"
+						}
+					],
+					"setup": {
+						"gates": 0
+					},
 					"clues": []
 				},
-				"doomClock": 8,
+				"doomClock": 10,
 				"mysteries": [
 					{
-						"id": "11e3be2a-f4a1-4a3b-bf90-06988a30afc9",
+						"id": "553bd7b4-aac8-4379-a953-136011b86cd0",
 						"title": "Первый сноп",
 						"flavorText": "Полоса примятых колосьев уходит от дома в поле и обрывается.",
 						"text": "Выложите 3 улики в Средний Запад. Сыщики получают их только встречами исследования на поле. Когда все три у сыщиков — тайна раскрыта. Расплата: пока тайна активна, в Среднем Западе появляется культист.",
@@ -1781,7 +1842,7 @@
 						"locations": []
 					},
 					{
-						"id": "7ba6c71a-1818-4b39-b2b6-aef373a55293",
+						"id": "e2151f80-1571-4296-9828-fe2f43ab46a4",
 						"title": "Книга, которой нет в каталоге",
 						"flavorText": "По уликам видно: сноп перевязан по правилу, и правило где-то записано.",
 						"text": "Сыщик в Уэнэме может потратить 2 улики и пройти проверку Знаний (−1). При успехе тайна раскрыта, сыщик получает Сноп. При провале улики не тратятся, сыщик получает Одержимость. Расплата: сыщик без улик на поле теряет 1 рассудок.",
@@ -1846,7 +1907,7 @@
 						]
 					},
 					{
-						"id": "ddb66080-ac67-44bc-a5d3-88febcca8e1e",
+						"id": "ab3e3e12-5190-43d1-a715-37b38e05beb4",
 						"title": "Старший",
 						"flavorText": "Тот, на кого записаны все завещания, вышел на поле. Он не спрашивает, где сноп, — он идёт к тому, у кого он.",
 						"text": "Выложите эпического монстра Старший в Средний Запад. Его нельзя атаковать, пока на поле есть культисты. Когда он побеждён, сыщик со Снопом проходит особую встречу; при успехе тайна раскрыта и партия выиграна.",
@@ -1879,351 +1940,136 @@
 				],
 				"mythosDeck": [
 					{
-						"id": "b1dcaa32-ae5e-438b-a2fb-871c3589172f",
+						"id": "01dec2a8-4a71-4f4d-a4cb-5ff9f3ab901a",
 						"act": 1,
-						"name": "Свежие следы",
+						"name": "Круг",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "Босые следы ведут в колосья и не ведут обратно.",
-						"text": "Откройте врата. Выложите улику.",
+						"flavorText": "Утром на поле появился круг. Фермер говорит, что это ветер; ветра ночью не было.",
+						"text": "Откройте врата. Из врат выходит культист.",
 						"onDraw": [
 							{
 								"do": "openGate",
+								"monster": "cultist"
+							}
+						]
+					},
+					{
+						"id": "013d48c4-8eb7-4750-ada4-c90c82baf9d3",
+						"act": 1,
+						"name": "Скот встал",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Весь скот в округе стоит мордой к полю. Коровы не мычат и не едят, а просто смотрят.",
+						"text": "Расплата. Каждый сыщик в Среднем Западе проходит проверку Воли; при провале теряет 1 рассудок.",
+						"onDraw": [
+							{
+								"do": "resolveReckoning"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"test": "will",
+										"modifier": 0,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 1
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "de7bdb00-2e05-47d9-91ae-fe5d2c120ae1",
+						"act": 1,
+						"name": "Письмо",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "Соседка передала конверт через забор. Внутри — список имён и одна дата, подчёркнутая дважды.",
+						"text": "Сдвиньте омен. Сыщик с наибольшим Влиянием получает 1 улику.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
 								"count": 1
 							},
 							{
+								"do": "gainClue",
+								"count": 1,
+								"target": "highestSkill",
+								"skill": "influence"
+							}
+						]
+					},
+					{
+						"id": "0ea8ea53-b78d-4530-bb52-06207d53f846",
+						"act": 2,
+						"name": "Соседка замолчала",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Соседка больше не выходит к забору. На окне — сноп колосьев, перевязанный чёрным.",
+						"text": "Расплата. Выложите 1 улику в Уэнэм.",
+						"onDraw": [
+							{
+								"do": "resolveReckoning"
+							},
+							{
 								"do": "placeClue",
+								"where": "Arkham",
 								"count": 1
 							}
 						]
 					},
 					{
-						"id": "ebe3eb60-93c2-4510-943a-a07c48f73360",
-						"act": 1,
-						"name": "Собрание братства",
+						"id": "b97bcabf-2199-4349-a0cc-823ebc7c0250",
+						"act": 2,
+						"name": "Пугало",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "Фонари движутся по полю ровной цепью.",
-						"text": "Расплата. Культист появляется в Среднем Западе.",
+						"flavorText": "На краю поля пугало. Утром его ещё не было, и одето оно в куртку, которую вы видели на человеке.",
+						"text": "Сдвиньте омен. В Среднем Западе появляется культист. Каждый сыщик в Среднем Западе проходит проверку Наблюдательности (−1); при провале теряет 2 рассудка.",
 						"onDraw": [
 							{
-								"do": "resolveReckoning"
+								"do": "advanceOmen",
+								"count": 1
 							},
 							{
 								"do": "spawnMonster",
 								"monster": "cultist",
 								"where": "5"
-							}
-						]
-					},
-					{
-						"id": "19750516-75c7-4eec-9475-49023e702357",
-						"act": 1,
-						"name": "Голод земли",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Земля под ногами тёплая, как живот.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Каждый сыщик теряет 1 рассудок.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
 							},
 							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"forEach": "each",
+								"forEach": "eachOnSpace",
+								"location": "5",
 								"do": [
 									{
-										"do": "loseSanity",
-										"amount": 1
+										"test": "observation",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2
+											}
+										]
 									}
 								]
 							}
 						]
 					},
 					{
-						"id": "48e3d0ea-29e8-4d84-8d64-a239d6dda9c7",
+						"id": "117d2a03-62a6-4dca-9738-567b1825c27f",
 						"act": 2,
-						"name": "Ночная жатва",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "К утру поле выкошено на треть, и никто не слышал машин.",
-						"text": "Расплата. Наплыв монстров.",
-						"onDraw": [
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "monsterSurge"
-							}
-						]
-					},
-					{
-						"id": "b4b983de-61cb-47e7-bd45-724397d3eb79",
-						"act": 2,
-						"name": "Дорога в поле",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Колея сворачивает с тракта туда, где дороги нет.",
-						"text": "Сдвиньте омен. Выложите улику. Расплата.",
-						"onDraw": [
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "67671fbe-67ef-4e50-a778-8305cabc71be",
-						"act": 2,
-						"name": "Пропавший фермер",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Его ищут на третий день. Собаки отказываются входить в поле.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Сдвиньте омен. Наплыв монстров. Расплата.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "monsterSurge"
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "bdf8f4d8-b2f1-463b-950e-903032f2de89",
-						"act": 2,
-						"name": "Клятва на зерне",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Каждому, кто пришёл с поля, предлагают горсть зерна. Отказавшихся запоминают.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Каждый сыщик теряет 1 здоровье.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"forEach": "each",
-								"do": [
-									{
-										"do": "loseHealth",
-										"amount": 1
-									}
-								]
-							}
-						]
-					},
-					{
-						"id": "b4ee76e1-7b2a-4399-afa2-85591172619a",
-						"act": 2,
-						"name": "Тихая ночь",
-						"subtype": "event",
-						"color": "blue",
-						"flavorText": "Впервые за неделю поле молчит. Это не успокаивает.",
-						"text": "Выложите улику. Каждый сыщик восстанавливает 1 рассудок.",
-						"onDraw": [
-							{
-								"do": "placeClue",
-								"count": 1
-							},
-							{
-								"forEach": "each",
-								"do": [
-									{
-										"do": "healSanity",
-										"amount": 1
-									}
-								]
-							}
-						]
-					},
-					{
-						"id": "9c374cb2-81a9-438e-a5b8-f28a52e5a000",
-						"act": 3,
-						"name": "Шёпот в колосьях",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Ветер идёт по полю против ветра.",
-						"text": "Сдвиньте омен. Откройте врата. Выложите улику.",
-						"onDraw": [
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "5621498c-fcf8-4df1-84de-65a6fb1a9639",
-						"act": 3,
-						"name": "Вязальщики",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Снопы на всех фермах перевязаны одинаково. Никто не признаётся, кто учил.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата. Сдвиньте омен.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "advanceOmen",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "de1675cb-0b78-4dbe-8c2a-ac83e426851f",
-						"act": 3,
-						"name": "Зерно и кровь",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Жернова на мельнице крутятся ночью, хотя ворот заперт.",
-						"text": "Если в Среднем Западе нет врат — откройте их, из врат выходит культист; если врата уже открыты — появляются два культиста. Рок +1. Расплата.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "ad880855-e7f8-4416-a621-a84477bb43ab",
-						"act": 3,
 						"name": "Завещание",
 						"subtype": "rumor",
 						"color": "blue",
-						"flavorText": "Нотариус в городке заверяет документы ночью и говорит, что клиенты сами выбирают час.",
-						"text": "Выложите 3 улики в Уэнэм. Пока Слух в игре, каждая Расплата — случайный сыщик теряет 1 улику. Сыщик в Уэнэме тратит улику и проходит проверку Влияния (−1); три успеха развеивают Слух. Когда до пробуждения остаётся 4 деления, Рок продвигается на 2.",
+						"flavorText": "Нотариус заверяет документы ночью и говорит, что клиенты сами выбирают час.",
+						"text": "Слух. Выложите 3 улики в Уэнэм. Пока Слух в игре, каждая Расплата — случайный сыщик теряет 1 улику. Сыщик в Уэнэме тратит улику и проходит проверку Влияния (−1); три успеха развеивают Слух. Когда до пробуждения остаётся 4 деления, Рок продвигается на 2.",
 						"onDraw": [
 							{
 								"do": "placeClue",
@@ -2263,6 +2109,200 @@
 								]
 							}
 						}
+					},
+					{
+						"id": "d6805a4d-64f5-4678-9559-a58405fd9ac7",
+						"act": 2,
+						"name": "Завещания",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "Нотариус заверил за ночь четыре документа. Все на одну фамилию.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Каждый сыщик в Уэнэме проходит проверку Влияния (−1); при провале его задерживают с расспросами.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "Arkham",
+								"do": [
+									{
+										"test": "influence",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "becomeDelayed"
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "c67e4bb3-038f-4cb9-a567-1885df423b6b",
+						"act": 2,
+						"name": "Вторая борозда",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "От круга к дому ведёт новая полоса примятых колосьев. Прежняя вела от дома.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Расплата.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"do": "resolveReckoning"
+							}
+						]
+					},
+					{
+						"id": "fbd49e45-911f-40b8-8497-659fcc02c3d9",
+						"act": 3,
+						"name": "Сноп на пороге",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "У двери дома, где вы ночевали, лежит сноп. Перевязан волосами. Вашими.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. Каждый сыщик проходит проверку Воли (−1); при провале теряет 1 улику, а если улик нет — 2 рассудка.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "each",
+								"do": [
+									{
+										"test": "will",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0
+												}
+											},
+											{
+												"do": "loseClue",
+												"count": 1,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0,
+													"not": true
+												}
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "f09a259e-febd-496d-b552-73400b1df4e0",
+						"act": 3,
+						"name": "Все двадцать",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Двадцать ферм, двадцать хозяев, и все вышли на поле в один час, не сговариваясь.",
+						"text": "Сдвиньте омен. Откройте врата, из них выходит культист. За каждого сыщика в Среднем Западе там появляется ещё один культист. Расплата.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"do": "spawnMonster",
+										"monster": "cultist",
+										"where": "self"
+									}
+								]
+							},
+							{
+								"do": "resolveReckoning"
+							}
+						]
+					},
+					{
+						"id": "e5d42f54-93f4-4dc6-a84f-4e6d1e01f37b",
+						"act": 3,
+						"name": "Жатвенная луна",
+						"subtype": "ongoing",
+						"color": "blue",
+						"flavorText": "Луна висит над полем красная и не сдвигается с места уже третью ночь.",
+						"text": "Длится, пока открыты врата: все проверки в Среднем Западе −1. Сбрасывается, когда все врата закрыты.",
+						"onDraw": [],
+						"whileInPlay": [
+							{
+								"do": "checkModifier",
+								"amount": -1,
+								"location": "5"
+							}
+						],
+						"discardWhen": {
+							"kind": "noGatesOnBoard"
+						}
+					},
+					{
+						"id": "7cb2f4b1-1ea6-49ed-b6fc-96f6e87b5dce",
+						"act": 3,
+						"name": "Последняя ночь",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Пшеница перестала шуметь по всему округу. Ветер есть — звука нет.",
+						"text": "Сдвиньте омен. Расплата. Каждый сыщик теряет 1 рассудок. Если раскрывается третья Тайна, Старший получает +1 к стойкости до конца партии.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "resolveReckoning"
+							},
+							{
+								"forEach": "each",
+								"do": [
+									{
+										"do": "loseSanity",
+										"amount": 1
+									}
+								]
+							},
+							{
+								"do": "toughenMonster",
+								"monster": "elder",
+								"amount": 1,
+								"when": {
+									"kind": "mysteryActive",
+									"n": 3
+								}
+							}
+						]
 					}
 				],
 				"generated": "fallback"
@@ -2270,7 +2310,7 @@
 		},
 		"en": {
 			"1": {
-				"id": "6797ec10-8f1a-48f5-bf4f-2dd0bd559d09",
+				"id": "67ff39c6-e367-444f-881f-79efe7769e00",
 				"title": "A Shadow over the World: The Brotherhood of the Sheaf",
 				"ancientOne": {
 					"id": "brotherhood_of_the_sheaf",
@@ -2282,11 +2322,7 @@
 						{
 							"do": "spawnMonster",
 							"monster": "cultist",
-							"where": "5",
-							"when": {
-								"kind": "gateAt",
-								"location": "5"
-							}
+							"where": "gates"
 						}
 					],
 					"cultist": {
@@ -2303,12 +2339,47 @@
 						},
 						"onReckoning": []
 					},
+					"omenTrack": [
+						"green",
+						"blue",
+						"red"
+					],
+					"gateDeck": [
+						{
+							"location": "5",
+							"color": "blue",
+							"fixed": true
+						},
+						{
+							"location": "Arkham",
+							"color": "red"
+						},
+						{
+							"location": "San Francisco",
+							"color": "green"
+						},
+						{
+							"location": "6",
+							"color": "green"
+						},
+						{
+							"location": "The Amazon",
+							"color": "red"
+						},
+						{
+							"location": "Buenos Aires",
+							"color": "blue"
+						}
+					],
+					"setup": {
+						"gates": 0
+					},
 					"clues": []
 				},
-				"doomClock": 8,
+				"doomClock": 10,
 				"mysteries": [
 					{
-						"id": "d0778f2b-5476-406d-aab5-982697a7a380",
+						"id": "bfbe2376-db20-4d18-8b12-4d3c5f4b7c33",
 						"title": "The First Sheaf",
 						"flavorText": "A strip of trampled stalks runs from the house into the field and breaks off.",
 						"text": "Place 3 Clues in the Midwest. Investigators may only gain them through research encounters on the field. When all three are in investigators' hands, the mystery is solved. Reckoning: while active, a Cultist appears in the Midwest.",
@@ -2349,7 +2420,7 @@
 						"locations": []
 					},
 					{
-						"id": "965ad972-bdba-467f-b19d-e2ec2f8fa7ce",
+						"id": "37455bdc-869b-41f5-8bfc-90e500af8a6b",
 						"title": "The Book Not in the Catalogue",
 						"flavorText": "The clues agree: the sheaf is tied by a rule, and the rule is written down somewhere.",
 						"text": "An investigator in Wenham may spend 2 Clues and test Lore (−1). On a pass the mystery is solved and the investigator gains the Sheaf. On a fail the Clues are not spent and the investigator gains Obsession. Reckoning: an investigator on the field with no Clues loses 1 Sanity.",
@@ -2414,7 +2485,7 @@
 						]
 					},
 					{
-						"id": "b4cba14c-b32d-431a-ad8a-978a1f4e364d",
+						"id": "80f498f3-4c3c-4f31-8663-2d2a1d7a433f",
 						"title": "The Elder",
 						"flavorText": "The one every will is made out to has walked onto the field. He does not ask where the sheaf is; he walks to whoever holds it.",
 						"text": "Place the epic monster The Elder in the Midwest. It cannot be attacked while Cultists are on the board. When it is defeated, the investigator holding the Sheaf resolves a special encounter; on a pass the mystery is solved and the game is won.",
@@ -2447,351 +2518,193 @@
 				],
 				"mythosDeck": [
 					{
-						"id": "c3a202ab-b409-45ab-a5f1-a1550d76950b",
+						"id": "8ceb9495-69ad-4531-a279-7776d1510540",
 						"act": 1,
-						"name": "Night Harvest",
+						"name": "The Circle",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "By morning a third of the field is cut, and no one heard a machine.",
-						"text": "Reckoning. Monster surge.",
+						"flavorText": "A circle appeared in the field this morning. The farmer says it was the wind; there was no wind last night.",
+						"text": "Open a Gate. A Cultist emerges from it.",
+						"onDraw": [
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							}
+						]
+					},
+					{
+						"id": "eaf28bd2-d16f-4dc0-b463-e750d5492373",
+						"act": 1,
+						"name": "The Cattle Stand Still",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Every head of cattle in the county stands facing the field. The cows neither low nor graze; they just watch.",
+						"text": "Reckoning. Each investigator in the Midwest tests Will; on a failure, loses 1 Sanity.",
 						"onDraw": [
 							{
 								"do": "resolveReckoning"
 							},
 							{
-								"do": "monsterSurge"
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"test": "will",
+										"modifier": 0,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 1
+											}
+										]
+									}
+								]
 							}
 						]
 					},
 					{
-						"id": "50042206-8685-4037-87e9-ec881b5af608",
+						"id": "063d0ee2-e99a-446a-b717-e7f42db716f0",
 						"act": 1,
-						"name": "The Brotherhood Gathers",
+						"name": "The Letter",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "Lanterns move across the field in an even line.",
-						"text": "Reckoning. A Cultist appears in the Midwest.",
+						"flavorText": "The neighbor passed an envelope over the fence. Inside: a list of names and a single date, underlined twice.",
+						"text": "Advance the Omen. The investigator with the highest Influence gains 1 Clue.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "gainClue",
+								"count": 1,
+								"target": "highestSkill",
+								"skill": "influence"
+							}
+						]
+					},
+					{
+						"id": "66b12896-cd01-411f-bc22-e280c24dca37",
+						"act": 2,
+						"name": "The Second Furrow",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "A new trail of flattened stalks leads from the circle to the house. The old one led away from it.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Reckoning.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"do": "resolveReckoning"
+							}
+						]
+					},
+					{
+						"id": "764a24a9-b9e7-4ee1-be40-30b45abf4f1d",
+						"act": 2,
+						"name": "The Wills",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "Overnight the notary certified four documents. All in the same surname.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Each investigator in Wenham tests Influence (−1); on a failure, they are held for questioning and become Delayed.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "Arkham",
+								"do": [
+									{
+										"test": "influence",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "becomeDelayed"
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "b89a821e-7810-47a0-ab8e-31e9399a2de7",
+						"act": 2,
+						"name": "The Neighbor Falls Silent",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "The neighbor no longer comes out to the fence. In her window: a sheaf of wheat tied with black.",
+						"text": "Reckoning. Place 1 Clue in Wenham.",
 						"onDraw": [
 							{
 								"do": "resolveReckoning"
+							},
+							{
+								"do": "placeClue",
+								"where": "Arkham",
+								"count": 1
+							}
+						]
+					},
+					{
+						"id": "947d1679-e1ad-4aa2-9129-289e20503a5f",
+						"act": 2,
+						"name": "The Scarecrow",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "A scarecrow stands at the edge of the field. It was not there this morning, and it wears a jacket you have seen on a man.",
+						"text": "Advance the Omen. A Cultist appears in the Midwest. Each investigator in the Midwest tests Observation (−1); on a failure, loses 2 Sanity.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
 							},
 							{
 								"do": "spawnMonster",
 								"monster": "cultist",
 								"where": "5"
-							}
-						]
-					},
-					{
-						"id": "228ecee1-943e-49c7-b7fd-85414ebb19ef",
-						"act": 1,
-						"name": "The Binders",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "The sheaves on every farm are tied the same way. No one admits who taught them.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Advance the Omen.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
 							},
 							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "advanceOmen",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "add69b99-87a9-4f16-bffb-39d94399a8eb",
-						"act": 2,
-						"name": "A Whisper in the Stalks",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "The wind moves through the field against the wind.",
-						"text": "Advance the Omen. Spawn a gate. Place a Clue.",
-						"onDraw": [
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "cff2b5d8-97cb-40f9-8053-febfd0b9b54c",
-						"act": 2,
-						"name": "Fresh Tracks",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Bare footprints lead into the stalks and do not lead back.",
-						"text": "Spawn a gate. Place a Clue.",
-						"onDraw": [
-							{
-								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "77c921aa-b357-41e2-bc2e-e92be785ff80",
-						"act": 2,
-						"name": "The Missing Farmer",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "They start searching on the third day. The dogs refuse to enter the field.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Advance the Omen. Monster surge. Reckoning.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "monsterSurge"
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "cf7dd81d-585f-4a60-ac5f-dfccae26d3e9",
-						"act": 2,
-						"name": "An Oath on the Grain",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Everyone who comes in from the field is offered a handful of grain. Those who refuse are remembered.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Each investigator loses 1 Health.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"forEach": "each",
+								"forEach": "eachOnSpace",
+								"location": "5",
 								"do": [
 									{
-										"do": "loseHealth",
-										"amount": 1
+										"test": "observation",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2
+											}
+										]
 									}
 								]
 							}
 						]
 					},
 					{
-						"id": "3d95c055-0b26-45bb-a8c6-99520c6d8f3d",
+						"id": "d2de1c85-85ce-40c3-a09b-59a56ff4648a",
 						"act": 2,
-						"name": "A Quiet Night",
-						"subtype": "event",
-						"color": "blue",
-						"flavorText": "For the first time in a week the field is silent. It is not reassuring.",
-						"text": "Place a Clue. Each investigator recovers 1 Sanity.",
-						"onDraw": [
-							{
-								"do": "placeClue",
-								"count": 1
-							},
-							{
-								"forEach": "each",
-								"do": [
-									{
-										"do": "healSanity",
-										"amount": 1
-									}
-								]
-							}
-						]
-					},
-					{
-						"id": "77661e07-9be4-4490-96b3-3d180b4b917f",
-						"act": 3,
-						"name": "The Road into the Field",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "The ruts turn off the road to where there is no road.",
-						"text": "Advance the Omen. Place a Clue. Reckoning.",
-						"onDraw": [
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "5d43ef4b-a8ae-4098-8038-2682bffec54d",
-						"act": 3,
-						"name": "The Hunger of the Soil",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "The ground underfoot is warm, like a belly.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Each investigator loses 1 Sanity.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"forEach": "each",
-								"do": [
-									{
-										"do": "loseSanity",
-										"amount": 1
-									}
-								]
-							}
-						]
-					},
-					{
-						"id": "1f97038e-b80c-43a5-bd5c-2f6b86c6a43b",
-						"act": 3,
-						"name": "Grain and Blood",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "The millstones turn at night, though the gate is locked.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "c6cae88b-3c8b-432c-82ff-d917c8459281",
-						"act": 3,
-						"name": "The Will",
+						"name": "The Testament",
 						"subtype": "rumor",
 						"color": "blue",
-						"flavorText": "The town notary certifies documents at night and says the clients choose the hour themselves.",
-						"text": "Place 3 Clues in Wenham. While this Rumor is in play, each Reckoning a random investigator loses 1 Clue. An investigator in Wenham may spend a Clue and test Influence (−1); three passes dispel the Rumor. When 4 Doom remain, advance Doom by 2.",
+						"flavorText": "The notary certifies documents at night and says the clients choose the hour themselves.",
+						"text": "Rumor. Place 3 Clues in Wenham. While this Rumor is in play, each Reckoning a random investigator loses 1 Clue. An investigator in Wenham may spend a Clue and test Influence (−1); three passes dispel the Rumor. When 4 Doom remain, advance Doom by 2.",
 						"onDraw": [
 							{
 								"do": "placeClue",
@@ -2831,12 +2744,149 @@
 								]
 							}
 						}
+					},
+					{
+						"id": "3d4baeff-b065-435d-b8e2-3e6f6c58a463",
+						"act": 3,
+						"name": "Harvest Moon",
+						"subtype": "ongoing",
+						"color": "blue",
+						"flavorText": "The moon hangs red over the field and has not moved for the third night running.",
+						"text": "Lasts while any Gate is open: all tests in the Midwest are at −1. Discard this card when all Gates are closed.",
+						"onDraw": [],
+						"whileInPlay": [
+							{
+								"do": "checkModifier",
+								"amount": -1,
+								"location": "5"
+							}
+						],
+						"discardWhen": {
+							"kind": "noGatesOnBoard"
+						}
+					},
+					{
+						"id": "adfc4175-1102-4332-bd3d-11117278741f",
+						"act": 3,
+						"name": "The Last Night",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "The wheat has gone quiet across the whole county. There is wind, but no sound.",
+						"text": "Advance the Omen. Reckoning. Each investigator loses 1 Sanity. If the third Mystery is active, the Elder gains +1 Toughness for the rest of the game.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "resolveReckoning"
+							},
+							{
+								"forEach": "each",
+								"do": [
+									{
+										"do": "loseSanity",
+										"amount": 1
+									}
+								]
+							},
+							{
+								"do": "toughenMonster",
+								"monster": "elder",
+								"amount": 1,
+								"when": {
+									"kind": "mysteryActive",
+									"n": 3
+								}
+							}
+						]
+					},
+					{
+						"id": "6dccf637-53e1-4d8f-80b8-b69689616c9d",
+						"act": 3,
+						"name": "All Twenty",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Twenty farms, twenty owners, and all of them walked out into the field at the same hour without a word between them.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. For each investigator in the Midwest, one more Cultist appears there. Reckoning.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"do": "spawnMonster",
+										"monster": "cultist",
+										"where": "self"
+									}
+								]
+							},
+							{
+								"do": "resolveReckoning"
+							}
+						]
+					},
+					{
+						"id": "7af11f89-fe85-4f05-bf30-96a4524b5bb3",
+						"act": 3,
+						"name": "A Sheaf on the Doorstep",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "At the door of the house where you spent the night lies a sheaf. It is tied with hair. Yours.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Each investigator tests Will (−1); on a failure, loses 1 Clue, or 2 Sanity if they have no Clues.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "each",
+								"do": [
+									{
+										"test": "will",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0
+												}
+											},
+											{
+												"do": "loseClue",
+												"count": 1,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0,
+													"not": true
+												}
+											}
+										]
+									}
+								]
+							}
+						]
 					}
 				],
 				"generated": "fallback"
 			},
 			"2": {
-				"id": "1afccbb7-3fda-42a5-b786-e64bb89ebb90",
+				"id": "fe3584ea-d432-4098-b446-e146766d57ee",
 				"title": "A Shadow over the World: The Brotherhood of the Sheaf",
 				"ancientOne": {
 					"id": "brotherhood_of_the_sheaf",
@@ -2848,11 +2898,7 @@
 						{
 							"do": "spawnMonster",
 							"monster": "cultist",
-							"where": "5",
-							"when": {
-								"kind": "gateAt",
-								"location": "5"
-							}
+							"where": "gates"
 						}
 					],
 					"cultist": {
@@ -2869,12 +2915,47 @@
 						},
 						"onReckoning": []
 					},
+					"omenTrack": [
+						"green",
+						"blue",
+						"red"
+					],
+					"gateDeck": [
+						{
+							"location": "5",
+							"color": "blue",
+							"fixed": true
+						},
+						{
+							"location": "Arkham",
+							"color": "red"
+						},
+						{
+							"location": "San Francisco",
+							"color": "green"
+						},
+						{
+							"location": "6",
+							"color": "green"
+						},
+						{
+							"location": "The Amazon",
+							"color": "red"
+						},
+						{
+							"location": "Buenos Aires",
+							"color": "blue"
+						}
+					],
+					"setup": {
+						"gates": 0
+					},
 					"clues": []
 				},
-				"doomClock": 8,
+				"doomClock": 10,
 				"mysteries": [
 					{
-						"id": "e3ff2e36-f80d-473a-b4f5-589ea2ba9589",
+						"id": "09134cd6-bd12-475a-874d-0aff2a01ccba",
 						"title": "The First Sheaf",
 						"flavorText": "A strip of trampled stalks runs from the house into the field and breaks off.",
 						"text": "Place 3 Clues in the Midwest. Investigators may only gain them through research encounters on the field. When all three are in investigators' hands, the mystery is solved. Reckoning: while active, a Cultist appears in the Midwest.",
@@ -2915,7 +2996,7 @@
 						"locations": []
 					},
 					{
-						"id": "29308216-36cc-4ab6-96ef-2ab7288ca2a4",
+						"id": "f113d4ed-3519-4332-ba4e-c2f8743bbec1",
 						"title": "The Book Not in the Catalogue",
 						"flavorText": "The clues agree: the sheaf is tied by a rule, and the rule is written down somewhere.",
 						"text": "An investigator in Wenham may spend 2 Clues and test Lore (−1). On a pass the mystery is solved and the investigator gains the Sheaf. On a fail the Clues are not spent and the investigator gains Obsession. Reckoning: an investigator on the field with no Clues loses 1 Sanity.",
@@ -2980,7 +3061,7 @@
 						]
 					},
 					{
-						"id": "7d4325a5-d88a-4370-a439-08d5539dac43",
+						"id": "7dfe1dbc-4c0b-4962-8902-380ab9ab6599",
 						"title": "The Elder",
 						"flavorText": "The one every will is made out to has walked onto the field. He does not ask where the sheaf is; he walks to whoever holds it.",
 						"text": "Place the epic monster The Elder in the Midwest. It cannot be attacked while Cultists are on the board. When it is defeated, the investigator holding the Sheaf resolves a special encounter; on a pass the mystery is solved and the game is won.",
@@ -3013,351 +3094,121 @@
 				],
 				"mythosDeck": [
 					{
-						"id": "a584fb75-1a64-4ea4-9789-0ccbc0375606",
+						"id": "e4a21dba-9079-4de6-b3aa-211c82bd46c3",
 						"act": 1,
-						"name": "The Road into the Field",
+						"name": "The Circle",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "The ruts turn off the road to where there is no road.",
-						"text": "Advance the Omen. Place a Clue. Reckoning.",
-						"onDraw": [
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "87dc38a3-d98a-4b06-aad8-9ebf9d80be9c",
-						"act": 1,
-						"name": "Fresh Tracks",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Bare footprints lead into the stalks and do not lead back.",
-						"text": "Spawn a gate. Place a Clue.",
+						"flavorText": "A circle appeared in the field this morning. The farmer says it was the wind; there was no wind last night.",
+						"text": "Open a Gate. A Cultist emerges from it.",
 						"onDraw": [
 							{
 								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
+								"monster": "cultist"
 							}
 						]
 					},
 					{
-						"id": "b125da35-01f2-4e21-8475-6eecd60ea051",
+						"id": "9ff0b3e0-63b6-4a37-94d4-3d2f823d44e0",
 						"act": 1,
-						"name": "An Oath on the Grain",
+						"name": "The Cattle Stand Still",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "Everyone who comes in from the field is offered a handful of grain. Those who refuse are remembered.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Each investigator loses 1 Health.",
+						"flavorText": "Every head of cattle in the county stands facing the field. The cows neither low nor graze; they just watch.",
+						"text": "Reckoning. Each investigator in the Midwest tests Will; on a failure, loses 1 Sanity.",
 						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
 							{
 								"do": "resolveReckoning"
 							},
 							{
-								"forEach": "each",
+								"forEach": "eachOnSpace",
+								"location": "5",
 								"do": [
 									{
-										"do": "loseHealth",
-										"amount": 1
+										"test": "will",
+										"modifier": 0,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 1
+											}
+										]
 									}
 								]
 							}
 						]
 					},
 					{
-						"id": "4c3cae49-b3b9-4d1b-bfd4-87fbc0afe256",
-						"act": 2,
-						"name": "The Brotherhood Gathers",
+						"id": "f5f0710a-17c3-492c-9582-6179a0fa13be",
+						"act": 1,
+						"name": "The Letter",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "Lanterns move across the field in an even line.",
-						"text": "Reckoning. A Cultist appears in the Midwest.",
-						"onDraw": [
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5"
-							}
-						]
-					},
-					{
-						"id": "c185780b-d88e-410c-8a46-dfa5cfad4bdc",
-						"act": 2,
-						"name": "Night Harvest",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "By morning a third of the field is cut, and no one heard a machine.",
-						"text": "Reckoning. Monster surge.",
-						"onDraw": [
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "monsterSurge"
-							}
-						]
-					},
-					{
-						"id": "69ab1396-65d4-4c33-a332-fa42c5d3b878",
-						"act": 2,
-						"name": "Grain and Blood",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "The millstones turn at night, though the gate is locked.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "e494f5a7-6482-4e4f-a627-26453356ea3b",
-						"act": 2,
-						"name": "The Missing Farmer",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "They start searching on the third day. The dogs refuse to enter the field.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Advance the Omen. Monster surge. Reckoning.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "monsterSurge"
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "5b6dd2d9-0e7b-4051-ab9b-ec823fb924e2",
-						"act": 2,
-						"name": "A Quiet Night",
-						"subtype": "event",
-						"color": "blue",
-						"flavorText": "For the first time in a week the field is silent. It is not reassuring.",
-						"text": "Place a Clue. Each investigator recovers 1 Sanity.",
-						"onDraw": [
-							{
-								"do": "placeClue",
-								"count": 1
-							},
-							{
-								"forEach": "each",
-								"do": [
-									{
-										"do": "healSanity",
-										"amount": 1
-									}
-								]
-							}
-						]
-					},
-					{
-						"id": "715a70e8-c878-49c7-b2e9-15523dda5d13",
-						"act": 3,
-						"name": "A Whisper in the Stalks",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "The wind moves through the field against the wind.",
-						"text": "Advance the Omen. Spawn a gate. Place a Clue.",
+						"flavorText": "The neighbor passed an envelope over the fence. Inside: a list of names and a single date, underlined twice.",
+						"text": "Advance the Omen. The investigator with the highest Influence gains 1 Clue.",
 						"onDraw": [
 							{
 								"do": "advanceOmen",
 								"count": 1
 							},
 							{
-								"do": "openGate",
-								"count": 1
+								"do": "gainClue",
+								"count": 1,
+								"target": "highestSkill",
+								"skill": "influence"
+							}
+						]
+					},
+					{
+						"id": "8962e4c8-3d74-4b1c-9c9b-6874bbb25bd9",
+						"act": 2,
+						"name": "The Neighbor Falls Silent",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "The neighbor no longer comes out to the fence. In her window: a sheaf of wheat tied with black.",
+						"text": "Reckoning. Place 1 Clue in Wenham.",
+						"onDraw": [
+							{
+								"do": "resolveReckoning"
 							},
 							{
 								"do": "placeClue",
+								"where": "Arkham",
 								"count": 1
 							}
 						]
 					},
 					{
-						"id": "c73cfce1-c1cf-45ff-a57e-318363a1922a",
-						"act": 3,
-						"name": "The Binders",
+						"id": "74eded1e-7271-4e1b-b97e-445c97c86ec3",
+						"act": 2,
+						"name": "The Second Furrow",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "The sheaves on every farm are tied the same way. No one admits who taught them.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Advance the Omen.",
+						"flavorText": "A new trail of flattened stalks leads from the circle to the house. The old one led away from it.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Reckoning.",
 						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
 							{
 								"do": "advanceOmen",
 								"count": 1
-							}
-						]
-					},
-					{
-						"id": "aaf98977-cfcb-4e10-9c28-68dead608f65",
-						"act": 3,
-						"name": "The Hunger of the Soil",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "The ground underfoot is warm, like a belly.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Each investigator loses 1 Sanity.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
 							},
 							{
 								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
+								"monster": "cultist"
 							},
 							{
 								"do": "resolveReckoning"
-							},
-							{
-								"forEach": "each",
-								"do": [
-									{
-										"do": "loseSanity",
-										"amount": 1
-									}
-								]
 							}
 						]
 					},
 					{
-						"id": "e5aca859-3e7c-4685-8324-0189a4cfb14c",
-						"act": 3,
-						"name": "The Will",
+						"id": "f4aa251b-fc75-4aa6-96cc-9652f0acaa6d",
+						"act": 2,
+						"name": "The Testament",
 						"subtype": "rumor",
 						"color": "blue",
-						"flavorText": "The town notary certifies documents at night and says the clients choose the hour themselves.",
-						"text": "Place 3 Clues in Wenham. While this Rumor is in play, each Reckoning a random investigator loses 1 Clue. An investigator in Wenham may spend a Clue and test Influence (−1); three passes dispel the Rumor. When 4 Doom remain, advance Doom by 2.",
+						"flavorText": "The notary certifies documents at night and says the clients choose the hour themselves.",
+						"text": "Rumor. Place 3 Clues in Wenham. While this Rumor is in play, each Reckoning a random investigator loses 1 Clue. An investigator in Wenham may spend a Clue and test Influence (−1); three passes dispel the Rumor. When 4 Doom remain, advance Doom by 2.",
 						"onDraw": [
 							{
 								"do": "placeClue",
@@ -3396,13 +3247,222 @@
 									}
 								]
 							}
+						}
+					},
+					{
+						"id": "60ab4ddd-2318-41f1-abe2-e52e967f8c4d",
+						"act": 2,
+						"name": "The Scarecrow",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "A scarecrow stands at the edge of the field. It was not there this morning, and it wears a jacket you have seen on a man.",
+						"text": "Advance the Omen. A Cultist appears in the Midwest. Each investigator in the Midwest tests Observation (−1); on a failure, loses 2 Sanity.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "spawnMonster",
+								"monster": "cultist",
+								"where": "5"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"test": "observation",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "24463f7a-ab6d-4252-af4b-76ca661c9aa9",
+						"act": 2,
+						"name": "The Wills",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "Overnight the notary certified four documents. All in the same surname.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Each investigator in Wenham tests Influence (−1); on a failure, they are held for questioning and become Delayed.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "Arkham",
+								"do": [
+									{
+										"test": "influence",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "becomeDelayed"
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "ffeb2555-6133-445f-81d8-acc69a3cb4e1",
+						"act": 3,
+						"name": "All Twenty",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Twenty farms, twenty owners, and all of them walked out into the field at the same hour without a word between them.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. For each investigator in the Midwest, one more Cultist appears there. Reckoning.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"do": "spawnMonster",
+										"monster": "cultist",
+										"where": "self"
+									}
+								]
+							},
+							{
+								"do": "resolveReckoning"
+							}
+						]
+					},
+					{
+						"id": "d6c3b84f-a7c5-4708-a778-7c21e5436d38",
+						"act": 3,
+						"name": "The Last Night",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "The wheat has gone quiet across the whole county. There is wind, but no sound.",
+						"text": "Advance the Omen. Reckoning. Each investigator loses 1 Sanity. If the third Mystery is active, the Elder gains +1 Toughness for the rest of the game.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "resolveReckoning"
+							},
+							{
+								"forEach": "each",
+								"do": [
+									{
+										"do": "loseSanity",
+										"amount": 1
+									}
+								]
+							},
+							{
+								"do": "toughenMonster",
+								"monster": "elder",
+								"amount": 1,
+								"when": {
+									"kind": "mysteryActive",
+									"n": 3
+								}
+							}
+						]
+					},
+					{
+						"id": "a39bf775-e16f-4397-86b2-10735cd2533c",
+						"act": 3,
+						"name": "A Sheaf on the Doorstep",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "At the door of the house where you spent the night lies a sheaf. It is tied with hair. Yours.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Each investigator tests Will (−1); on a failure, loses 1 Clue, or 2 Sanity if they have no Clues.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "each",
+								"do": [
+									{
+										"test": "will",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0
+												}
+											},
+											{
+												"do": "loseClue",
+												"count": 1,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0,
+													"not": true
+												}
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "8360f0fa-6849-44de-872c-a149d4341cd9",
+						"act": 3,
+						"name": "Harvest Moon",
+						"subtype": "ongoing",
+						"color": "blue",
+						"flavorText": "The moon hangs red over the field and has not moved for the third night running.",
+						"text": "Lasts while any Gate is open: all tests in the Midwest are at −1. Discard this card when all Gates are closed.",
+						"onDraw": [],
+						"whileInPlay": [
+							{
+								"do": "checkModifier",
+								"amount": -1,
+								"location": "5"
+							}
+						],
+						"discardWhen": {
+							"kind": "noGatesOnBoard"
 						}
 					}
 				],
 				"generated": "fallback"
 			},
 			"3": {
-				"id": "13131c7c-3b39-47af-94cb-f6f07fa05c45",
+				"id": "f851c244-0e23-4ccb-b7a6-c333347c0f49",
 				"title": "A Shadow over the World: The Brotherhood of the Sheaf",
 				"ancientOne": {
 					"id": "brotherhood_of_the_sheaf",
@@ -3414,11 +3474,7 @@
 						{
 							"do": "spawnMonster",
 							"monster": "cultist",
-							"where": "5",
-							"when": {
-								"kind": "gateAt",
-								"location": "5"
-							}
+							"where": "gates"
 						}
 					],
 					"cultist": {
@@ -3435,12 +3491,47 @@
 						},
 						"onReckoning": []
 					},
+					"omenTrack": [
+						"green",
+						"blue",
+						"red"
+					],
+					"gateDeck": [
+						{
+							"location": "5",
+							"color": "blue",
+							"fixed": true
+						},
+						{
+							"location": "Arkham",
+							"color": "red"
+						},
+						{
+							"location": "San Francisco",
+							"color": "green"
+						},
+						{
+							"location": "6",
+							"color": "green"
+						},
+						{
+							"location": "The Amazon",
+							"color": "red"
+						},
+						{
+							"location": "Buenos Aires",
+							"color": "blue"
+						}
+					],
+					"setup": {
+						"gates": 0
+					},
 					"clues": []
 				},
-				"doomClock": 8,
+				"doomClock": 10,
 				"mysteries": [
 					{
-						"id": "a500bee8-6a1a-445f-9898-ffdf8226a17d",
+						"id": "de899a87-5b71-44c4-8328-da239052f6c5",
 						"title": "The First Sheaf",
 						"flavorText": "A strip of trampled stalks runs from the house into the field and breaks off.",
 						"text": "Place 3 Clues in the Midwest. Investigators may only gain them through research encounters on the field. When all three are in investigators' hands, the mystery is solved. Reckoning: while active, a Cultist appears in the Midwest.",
@@ -3481,7 +3572,7 @@
 						"locations": []
 					},
 					{
-						"id": "756893ac-ce06-4e80-ad9d-e2f5eb6b0bf4",
+						"id": "cbc98dff-8b15-4f65-8ebf-6b759efafb74",
 						"title": "The Book Not in the Catalogue",
 						"flavorText": "The clues agree: the sheaf is tied by a rule, and the rule is written down somewhere.",
 						"text": "An investigator in Wenham may spend 2 Clues and test Lore (−1). On a pass the mystery is solved and the investigator gains the Sheaf. On a fail the Clues are not spent and the investigator gains Obsession. Reckoning: an investigator on the field with no Clues loses 1 Sanity.",
@@ -3546,7 +3637,7 @@
 						]
 					},
 					{
-						"id": "a006899b-a504-4ee7-b88b-8007d5cc080a",
+						"id": "dea03c2c-5450-4a56-8514-ee18f2648e02",
 						"title": "The Elder",
 						"flavorText": "The one every will is made out to has walked onto the field. He does not ask where the sheaf is; he walks to whoever holds it.",
 						"text": "Place the epic monster The Elder in the Midwest. It cannot be attacked while Cultists are on the board. When it is defeated, the investigator holding the Sheaf resolves a special encounter; on a pass the mystery is solved and the game is won.",
@@ -3579,216 +3670,80 @@
 				],
 				"mythosDeck": [
 					{
-						"id": "91a90d4d-e1a2-43b9-8561-e6d5c2420bb7",
+						"id": "fd91da34-ddd5-4a61-be1b-9d3a378302d3",
 						"act": 1,
-						"name": "Night Harvest",
+						"name": "The Circle",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "By morning a third of the field is cut, and no one heard a machine.",
-						"text": "Reckoning. Monster surge.",
+						"flavorText": "A circle appeared in the field this morning. The farmer says it was the wind; there was no wind last night.",
+						"text": "Open a Gate. A Cultist emerges from it.",
 						"onDraw": [
 							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "monsterSurge"
+								"do": "openGate",
+								"monster": "cultist"
 							}
 						]
 					},
 					{
-						"id": "d5c05b89-4031-463c-9081-e571e69d0e0c",
+						"id": "dab946f6-1cc4-40ba-a6f6-99ba08378d24",
 						"act": 1,
-						"name": "The Road into the Field",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "The ruts turn off the road to where there is no road.",
-						"text": "Advance the Omen. Place a Clue. Reckoning.",
-						"onDraw": [
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "45ffb117-91f6-4449-8ce9-e1fd4900e098",
-						"act": 1,
-						"name": "The Binders",
+						"name": "The Cattle Stand Still",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "The sheaves on every farm are tied the same way. No one admits who taught them.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Advance the Omen.",
+						"flavorText": "Every head of cattle in the county stands facing the field. The cows neither low nor graze; they just watch.",
+						"text": "Reckoning. Each investigator in the Midwest tests Will; on a failure, loses 1 Sanity.",
 						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
 							{
 								"do": "resolveReckoning"
 							},
 							{
-								"do": "advanceOmen",
-								"count": 1
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"test": "will",
+										"modifier": 0,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 1
+											}
+										]
+									}
+								]
 							}
 						]
 					},
 					{
-						"id": "077e13bb-d992-4c50-9db0-b99ca1177ae3",
-						"act": 2,
-						"name": "Fresh Tracks",
+						"id": "0bd087fd-cec4-4613-95c5-77868cb5b9e0",
+						"act": 1,
+						"name": "The Letter",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "Bare footprints lead into the stalks and do not lead back.",
-						"text": "Spawn a gate. Place a Clue.",
-						"onDraw": [
-							{
-								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "90ecdfb7-359c-4c86-8c8c-b6e59bc991a3",
-						"act": 2,
-						"name": "A Whisper in the Stalks",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "The wind moves through the field against the wind.",
-						"text": "Advance the Omen. Spawn a gate. Place a Clue.",
+						"flavorText": "The neighbor passed an envelope over the fence. Inside: a list of names and a single date, underlined twice.",
+						"text": "Advance the Omen. The investigator with the highest Influence gains 1 Clue.",
 						"onDraw": [
 							{
 								"do": "advanceOmen",
 								"count": 1
 							},
 							{
-								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
+								"do": "gainClue",
+								"count": 1,
+								"target": "highestSkill",
+								"skill": "influence"
 							}
 						]
 					},
 					{
-						"id": "ca73da13-c507-4fe4-a1f0-3c4fc99d4420",
+						"id": "99dced6d-bffd-420f-91f8-6e4e0f5d9740",
 						"act": 2,
-						"name": "Grain and Blood",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "The millstones turn at night, though the gate is locked.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "3b898ccf-64b4-4795-a5f7-df3405a1d184",
-						"act": 2,
-						"name": "The Missing Farmer",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "They start searching on the third day. The dogs refuse to enter the field.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Advance the Omen. Monster surge. Reckoning.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "monsterSurge"
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "166d659c-88bb-4aed-a514-c0918c047693",
-						"act": 2,
-						"name": "The Will",
+						"name": "The Testament",
 						"subtype": "rumor",
 						"color": "blue",
-						"flavorText": "The town notary certifies documents at night and says the clients choose the hour themselves.",
-						"text": "Place 3 Clues in Wenham. While this Rumor is in play, each Reckoning a random investigator loses 1 Clue. An investigator in Wenham may spend a Clue and test Influence (−1); three passes dispel the Rumor. When 4 Doom remain, advance Doom by 2.",
+						"flavorText": "The notary certifies documents at night and says the clients choose the hour themselves.",
+						"text": "Rumor. Place 3 Clues in Wenham. While this Rumor is in play, each Reckoning a random investigator loses 1 Clue. An investigator in Wenham may spend a Clue and test Influence (−1); three passes dispel the Rumor. When 4 Doom remain, advance Doom by 2.",
 						"onDraw": [
 							{
 								"do": "placeClue",
@@ -3830,55 +3785,198 @@
 						}
 					},
 					{
-						"id": "a3593815-619d-4aac-960f-4f6ce9d2f2cb",
-						"act": 3,
-						"name": "The Brotherhood Gathers",
+						"id": "6bf7ce28-f27e-4493-b717-2831dd657549",
+						"act": 2,
+						"name": "The Scarecrow",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "Lanterns move across the field in an even line.",
-						"text": "Reckoning. A Cultist appears in the Midwest.",
+						"flavorText": "A scarecrow stands at the edge of the field. It was not there this morning, and it wears a jacket you have seen on a man.",
+						"text": "Advance the Omen. A Cultist appears in the Midwest. Each investigator in the Midwest tests Observation (−1); on a failure, loses 2 Sanity.",
 						"onDraw": [
 							{
-								"do": "resolveReckoning"
+								"do": "advanceOmen",
+								"count": 1
 							},
 							{
 								"do": "spawnMonster",
 								"monster": "cultist",
 								"where": "5"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"test": "observation",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2
+											}
+										]
+									}
+								]
 							}
 						]
 					},
 					{
-						"id": "5b582bac-97ce-4be0-8baf-3950fe1d02c4",
-						"act": 3,
-						"name": "The Hunger of the Soil",
+						"id": "60c1c8ee-74a9-4e0e-9bbb-d3c1e70b02a0",
+						"act": 2,
+						"name": "The Neighbor Falls Silent",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "The ground underfoot is warm, like a belly.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Each investigator loses 1 Sanity.",
+						"flavorText": "The neighbor no longer comes out to the fence. In her window: a sheaf of wheat tied with black.",
+						"text": "Reckoning. Place 1 Clue in Wenham.",
 						"onDraw": [
 							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
+								"do": "resolveReckoning"
+							},
+							{
+								"do": "placeClue",
+								"where": "Arkham",
+								"count": 1
+							}
+						]
+					},
+					{
+						"id": "51714ea9-5d6a-4aad-829a-aa96e5ff8bca",
+						"act": 2,
+						"name": "The Wills",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "Overnight the notary certified four documents. All in the same surname.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Each investigator in Wenham tests Influence (−1); on a failure, they are held for questioning and become Delayed.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
 							},
 							{
 								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
+								"monster": "cultist"
 							},
 							{
-								"do": "advanceDoom",
-								"amount": 1
+								"forEach": "eachOnSpace",
+								"location": "Arkham",
+								"do": [
+									{
+										"test": "influence",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "becomeDelayed"
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "b81c296a-f4bf-4f6a-a361-c9545494e5ca",
+						"act": 2,
+						"name": "The Second Furrow",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "A new trail of flattened stalks leads from the circle to the house. The old one led away from it.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Reckoning.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"do": "resolveReckoning"
+							}
+						]
+					},
+					{
+						"id": "8d47bef8-3188-4c2d-85be-6341c8547ab2",
+						"act": 3,
+						"name": "A Sheaf on the Doorstep",
+						"subtype": "event",
+						"color": "green",
+						"flavorText": "At the door of the house where you spent the night lies a sheaf. It is tied with hair. Yours.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Each investigator tests Will (−1); on a failure, loses 1 Clue, or 2 Sanity if they have no Clues.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "each",
+								"do": [
+									{
+										"test": "will",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0
+												}
+											},
+											{
+												"do": "loseClue",
+												"count": 1,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0,
+													"not": true
+												}
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "d34c12df-199b-435d-b6c1-0ddafaf43e92",
+						"act": 3,
+						"name": "Harvest Moon",
+						"subtype": "ongoing",
+						"color": "blue",
+						"flavorText": "The moon hangs red over the field and has not moved for the third night running.",
+						"text": "Lasts while any Gate is open: all tests in the Midwest are at −1. Discard this card when all Gates are closed.",
+						"onDraw": [],
+						"whileInPlay": [
+							{
+								"do": "checkModifier",
+								"amount": -1,
+								"location": "5"
+							}
+						],
+						"discardWhen": {
+							"kind": "noGatesOnBoard"
+						}
+					},
+					{
+						"id": "568f3397-5ef4-4ba2-a711-eb4f2b54d18d",
+						"act": 3,
+						"name": "The Last Night",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "The wheat has gone quiet across the whole county. There is wind, but no sound.",
+						"text": "Advance the Omen. Reckoning. Each investigator loses 1 Sanity. If the third Mystery is active, the Elder gains +1 Toughness for the rest of the game.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
 							},
 							{
 								"do": "resolveReckoning"
@@ -3891,76 +3989,48 @@
 										"amount": 1
 									}
 								]
+							},
+							{
+								"do": "toughenMonster",
+								"monster": "elder",
+								"amount": 1,
+								"when": {
+									"kind": "mysteryActive",
+									"n": 3
+								}
 							}
 						]
 					},
 					{
-						"id": "b92d62f4-2cbe-42a1-bae9-ed0a6a0b900c",
+						"id": "32651897-3579-41f8-9ac7-befa2f764c24",
 						"act": 3,
-						"name": "An Oath on the Grain",
+						"name": "All Twenty",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "Everyone who comes in from the field is offered a handful of grain. Those who refuse are remembered.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Each investigator loses 1 Health.",
+						"flavorText": "Twenty farms, twenty owners, and all of them walked out into the field at the same hour without a word between them.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. For each investigator in the Midwest, one more Cultist appears there. Reckoning.",
 						"onDraw": [
 							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"forEach": "each",
-								"do": [
-									{
-										"do": "loseHealth",
-										"amount": 1
-									}
-								]
-							}
-						]
-					},
-					{
-						"id": "cf4ab473-16a4-4953-90bd-2e7836fafff1",
-						"act": 3,
-						"name": "A Quiet Night",
-						"subtype": "event",
-						"color": "blue",
-						"flavorText": "For the first time in a week the field is silent. It is not reassuring.",
-						"text": "Place a Clue. Each investigator recovers 1 Sanity.",
-						"onDraw": [
-							{
-								"do": "placeClue",
+								"do": "advanceOmen",
 								"count": 1
 							},
 							{
-								"forEach": "each",
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
 								"do": [
 									{
-										"do": "healSanity",
-										"amount": 1
+										"do": "spawnMonster",
+										"monster": "cultist",
+										"where": "self"
 									}
 								]
+							},
+							{
+								"do": "resolveReckoning"
 							}
 						]
 					}
@@ -3968,7 +4038,7 @@
 				"generated": "fallback"
 			},
 			"4": {
-				"id": "d42c39cc-bae2-4cea-80dd-736a257890c4",
+				"id": "645ef0d8-9275-4b51-ae4c-00d877f201d5",
 				"title": "A Shadow over the World: The Brotherhood of the Sheaf",
 				"ancientOne": {
 					"id": "brotherhood_of_the_sheaf",
@@ -3980,11 +4050,7 @@
 						{
 							"do": "spawnMonster",
 							"monster": "cultist",
-							"where": "5",
-							"when": {
-								"kind": "gateAt",
-								"location": "5"
-							}
+							"where": "gates"
 						}
 					],
 					"cultist": {
@@ -4001,12 +4067,47 @@
 						},
 						"onReckoning": []
 					},
+					"omenTrack": [
+						"green",
+						"blue",
+						"red"
+					],
+					"gateDeck": [
+						{
+							"location": "5",
+							"color": "blue",
+							"fixed": true
+						},
+						{
+							"location": "Arkham",
+							"color": "red"
+						},
+						{
+							"location": "San Francisco",
+							"color": "green"
+						},
+						{
+							"location": "6",
+							"color": "green"
+						},
+						{
+							"location": "The Amazon",
+							"color": "red"
+						},
+						{
+							"location": "Buenos Aires",
+							"color": "blue"
+						}
+					],
+					"setup": {
+						"gates": 0
+					},
 					"clues": []
 				},
-				"doomClock": 8,
+				"doomClock": 10,
 				"mysteries": [
 					{
-						"id": "942ebbc4-fbde-4598-adb9-9e0b8ba0bf45",
+						"id": "51c1888a-991f-465e-b58a-b14aeab71af0",
 						"title": "The First Sheaf",
 						"flavorText": "A strip of trampled stalks runs from the house into the field and breaks off.",
 						"text": "Place 3 Clues in the Midwest. Investigators may only gain them through research encounters on the field. When all three are in investigators' hands, the mystery is solved. Reckoning: while active, a Cultist appears in the Midwest.",
@@ -4047,7 +4148,7 @@
 						"locations": []
 					},
 					{
-						"id": "f6ad3aba-7038-4ecc-9790-2f296e19b476",
+						"id": "f99fda6f-af81-449f-82cc-6b5e6764ee94",
 						"title": "The Book Not in the Catalogue",
 						"flavorText": "The clues agree: the sheaf is tied by a rule, and the rule is written down somewhere.",
 						"text": "An investigator in Wenham may spend 2 Clues and test Lore (−1). On a pass the mystery is solved and the investigator gains the Sheaf. On a fail the Clues are not spent and the investigator gains Obsession. Reckoning: an investigator on the field with no Clues loses 1 Sanity.",
@@ -4112,7 +4213,7 @@
 						]
 					},
 					{
-						"id": "10d66203-e559-4f0c-b977-968bad00e321",
+						"id": "75519dd7-a91f-480d-8fe6-90e68dd9fdee",
 						"title": "The Elder",
 						"flavorText": "The one every will is made out to has walked onto the field. He does not ask where the sheaf is; he walks to whoever holds it.",
 						"text": "Place the epic monster The Elder in the Midwest. It cannot be attacked while Cultists are on the board. When it is defeated, the investigator holding the Sheaf resolves a special encounter; on a pass the mystery is solved and the game is won.",
@@ -4145,223 +4246,80 @@
 				],
 				"mythosDeck": [
 					{
-						"id": "b165fbb0-1135-4d2a-ab13-4f12f0953e5c",
+						"id": "c52cb5e9-6c88-4745-85b9-5b9379010a0c",
 						"act": 1,
-						"name": "A Whisper in the Stalks",
+						"name": "The Circle",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "The wind moves through the field against the wind.",
-						"text": "Advance the Omen. Spawn a gate. Place a Clue.",
+						"flavorText": "A circle appeared in the field this morning. The farmer says it was the wind; there was no wind last night.",
+						"text": "Open a Gate. A Cultist emerges from it.",
 						"onDraw": [
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
 							{
 								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
+								"monster": "cultist"
 							}
 						]
 					},
 					{
-						"id": "524d8482-02bb-44b6-9b7a-5a8f0f9428be",
+						"id": "beca57f0-6287-4ed9-af51-181410f11393",
 						"act": 1,
-						"name": "The Road into the Field",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "The ruts turn off the road to where there is no road.",
-						"text": "Advance the Omen. Place a Clue. Reckoning.",
-						"onDraw": [
-							{
-								"do": "advanceOmen",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "496a60ee-04db-41e3-9ee5-cead90567e3f",
-						"act": 1,
-						"name": "Grain and Blood",
+						"name": "The Cattle Stand Still",
 						"subtype": "event",
 						"color": "yellow",
-						"flavorText": "The millstones turn at night, though the gate is locked.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							}
-						]
-					},
-					{
-						"id": "58ee8da7-1ef7-4197-9a68-f1974d1f501f",
-						"act": 2,
-						"name": "The Brotherhood Gathers",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "Lanterns move across the field in an even line.",
-						"text": "Reckoning. A Cultist appears in the Midwest.",
+						"flavorText": "Every head of cattle in the county stands facing the field. The cows neither low nor graze; they just watch.",
+						"text": "Reckoning. Each investigator in the Midwest tests Will; on a failure, loses 1 Sanity.",
 						"onDraw": [
 							{
 								"do": "resolveReckoning"
 							},
 							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5"
-							}
-						]
-					},
-					{
-						"id": "56a3fb25-b017-4258-ae34-34888a9c91f5",
-						"act": 2,
-						"name": "Night Harvest",
-						"subtype": "event",
-						"color": "green",
-						"flavorText": "By morning a third of the field is cut, and no one heard a machine.",
-						"text": "Reckoning. Monster surge.",
-						"onDraw": [
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"do": "monsterSurge"
-							}
-						]
-					},
-					{
-						"id": "9cc0c463-93e4-47d4-8764-08371cab33ef",
-						"act": 2,
-						"name": "An Oath on the Grain",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "Everyone who comes in from the field is offered a handful of grain. Those who refuse are remembered.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Each investigator loses 1 Health.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"forEach": "each",
+								"forEach": "eachOnSpace",
+								"location": "5",
 								"do": [
 									{
-										"do": "loseHealth",
-										"amount": 1
+										"test": "will",
+										"modifier": 0,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 1
+											}
+										]
 									}
 								]
 							}
 						]
 					},
 					{
-						"id": "d95975c9-a674-4598-a334-4cc1725ffe4a",
-						"act": 2,
-						"name": "The Hunger of the Soil",
+						"id": "5227d1e4-c8f8-4683-8e32-f121b8337a64",
+						"act": 1,
+						"name": "The Letter",
 						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "The ground underfoot is warm, like a belly.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Each investigator loses 1 Sanity.",
+						"color": "green",
+						"flavorText": "The neighbor passed an envelope over the fence. Inside: a list of names and a single date, underlined twice.",
+						"text": "Advance the Omen. The investigator with the highest Influence gains 1 Clue.",
 						"onDraw": [
 							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
+								"do": "advanceOmen",
+								"count": 1
 							},
 							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
-							{
-								"forEach": "each",
-								"do": [
-									{
-										"do": "loseSanity",
-										"amount": 1
-									}
-								]
+								"do": "gainClue",
+								"count": 1,
+								"target": "highestSkill",
+								"skill": "influence"
 							}
 						]
 					},
 					{
-						"id": "08dbb5aa-3518-4575-b563-c821d221bd4f",
+						"id": "55d15cf0-7171-4c06-9a8d-e28eb67b0c4b",
 						"act": 2,
-						"name": "The Will",
+						"name": "The Testament",
 						"subtype": "rumor",
 						"color": "blue",
-						"flavorText": "The town notary certifies documents at night and says the clients choose the hour themselves.",
-						"text": "Place 3 Clues in Wenham. While this Rumor is in play, each Reckoning a random investigator loses 1 Clue. An investigator in Wenham may spend a Clue and test Influence (−1); three passes dispel the Rumor. When 4 Doom remain, advance Doom by 2.",
+						"flavorText": "The notary certifies documents at night and says the clients choose the hour themselves.",
+						"text": "Rumor. Place 3 Clues in Wenham. While this Rumor is in play, each Reckoning a random investigator loses 1 Clue. An investigator in Wenham may spend a Clue and test Influence (−1); three passes dispel the Rumor. When 4 Doom remain, advance Doom by 2.",
 						"onDraw": [
 							{
 								"do": "placeClue",
@@ -4403,130 +4361,252 @@
 						}
 					},
 					{
-						"id": "84e8248a-f1a2-495a-9662-8f7ffddcea70",
-						"act": 3,
-						"name": "Fresh Tracks",
+						"id": "a4d4e5fd-89c3-4c4e-9cfd-1e2c207f4250",
+						"act": 2,
+						"name": "The Neighbor Falls Silent",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "The neighbor no longer comes out to the fence. In her window: a sheaf of wheat tied with black.",
+						"text": "Reckoning. Place 1 Clue in Wenham.",
+						"onDraw": [
+							{
+								"do": "resolveReckoning"
+							},
+							{
+								"do": "placeClue",
+								"where": "Arkham",
+								"count": 1
+							}
+						]
+					},
+					{
+						"id": "8c10e49f-9b39-493d-bbe6-9d8722f3f633",
+						"act": 2,
+						"name": "The Second Furrow",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "A new trail of flattened stalks leads from the circle to the house. The old one led away from it.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Reckoning.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"do": "resolveReckoning"
+							}
+						]
+					},
+					{
+						"id": "d6369895-73cc-4981-b70f-1d88b4198de4",
+						"act": 2,
+						"name": "The Scarecrow",
 						"subtype": "event",
 						"color": "green",
-						"flavorText": "Bare footprints lead into the stalks and do not lead back.",
-						"text": "Spawn a gate. Place a Clue.",
+						"flavorText": "A scarecrow stands at the edge of the field. It was not there this morning, and it wears a jacket you have seen on a man.",
+						"text": "Advance the Omen. A Cultist appears in the Midwest. Each investigator in the Midwest tests Observation (−1); on a failure, loses 2 Sanity.",
 						"onDraw": [
-							{
-								"do": "openGate",
-								"count": 1
-							},
-							{
-								"do": "placeClue",
-								"count": 1
-							}
-						]
-					},
-					{
-						"id": "71ce8809-6008-4929-afca-278989ae2dc0",
-						"act": 3,
-						"name": "The Missing Farmer",
-						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "They start searching on the third day. The dogs refuse to enter the field.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Advance the Omen. Monster surge. Reckoning.",
-						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
 							{
 								"do": "advanceOmen",
 								"count": 1
 							},
 							{
-								"do": "monsterSurge"
+								"do": "spawnMonster",
+								"monster": "cultist",
+								"where": "5"
 							},
 							{
-								"do": "resolveReckoning"
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"test": "observation",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2
+											}
+										]
+									}
+								]
 							}
 						]
 					},
 					{
-						"id": "7e9d4086-4721-4c55-9bb2-1b53f49047a2",
-						"act": 3,
-						"name": "The Binders",
+						"id": "3a50ba2a-613b-43dc-b658-5d3d93c9b99d",
+						"act": 2,
+						"name": "The Wills",
 						"subtype": "event",
-						"color": "yellow",
-						"flavorText": "The sheaves on every farm are tied the same way. No one admits who taught them.",
-						"text": "If there is no Gate in the Midwest, open one and a Cultist emerges from it; if the Gate is already open, two Cultists appear instead. Advance Doom by 1. Reckoning. Advance the Omen.",
+						"color": "green",
+						"flavorText": "Overnight the notary certified four documents. All in the same surname.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Each investigator in Wenham tests Influence (−1); on a failure, they are held for questioning and become Delayed.",
 						"onDraw": [
-							{
-								"do": "spawnMonster",
-								"monster": "cultist",
-								"where": "5",
-								"count": 2,
-								"when": {
-									"kind": "gateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "openGate",
-								"where": "5",
-								"monster": "cultist",
-								"when": {
-									"kind": "noGateAt",
-									"location": "5"
-								}
-							},
-							{
-								"do": "advanceDoom",
-								"amount": 1
-							},
-							{
-								"do": "resolveReckoning"
-							},
 							{
 								"do": "advanceOmen",
 								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "Arkham",
+								"do": [
+									{
+										"test": "influence",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "becomeDelayed"
+											}
+										]
+									}
+								]
 							}
 						]
 					},
 					{
-						"id": "06bc801f-2e99-494f-a06d-e3a0526337c0",
+						"id": "f209eb90-f8b5-4d68-9f22-cd669c572d7a",
 						"act": 3,
-						"name": "A Quiet Night",
+						"name": "A Sheaf on the Doorstep",
 						"subtype": "event",
-						"color": "blue",
-						"flavorText": "For the first time in a week the field is silent. It is not reassuring.",
-						"text": "Place a Clue. Each investigator recovers 1 Sanity.",
+						"color": "green",
+						"flavorText": "At the door of the house where you spent the night lies a sheaf. It is tied with hair. Yours.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. Each investigator tests Will (−1); on a failure, loses 1 Clue, or 2 Sanity if they have no Clues.",
 						"onDraw": [
 							{
-								"do": "placeClue",
+								"do": "advanceOmen",
 								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
 							},
 							{
 								"forEach": "each",
 								"do": [
 									{
-										"do": "healSanity",
+										"test": "will",
+										"modifier": -1,
+										"onPass": [],
+										"onFail": [
+											{
+												"do": "loseSanity",
+												"amount": 2,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0
+												}
+											},
+											{
+												"do": "loseClue",
+												"count": 1,
+												"when": {
+													"kind": "cluesAtMost",
+													"n": 0,
+													"not": true
+												}
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					{
+						"id": "b46afc7e-1dfe-48ac-9561-38c58989acce",
+						"act": 3,
+						"name": "All Twenty",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "Twenty farms, twenty owners, and all of them walked out into the field at the same hour without a word between them.",
+						"text": "Advance the Omen. Open a Gate; a Cultist emerges from it. For each investigator in the Midwest, one more Cultist appears there. Reckoning.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "openGate",
+								"monster": "cultist"
+							},
+							{
+								"forEach": "eachOnSpace",
+								"location": "5",
+								"do": [
+									{
+										"do": "spawnMonster",
+										"monster": "cultist",
+										"where": "self"
+									}
+								]
+							},
+							{
+								"do": "resolveReckoning"
+							}
+						]
+					},
+					{
+						"id": "7fc4599c-f8bf-4925-be0e-c77e263ea9ae",
+						"act": 3,
+						"name": "Harvest Moon",
+						"subtype": "ongoing",
+						"color": "blue",
+						"flavorText": "The moon hangs red over the field and has not moved for the third night running.",
+						"text": "Lasts while any Gate is open: all tests in the Midwest are at −1. Discard this card when all Gates are closed.",
+						"onDraw": [],
+						"whileInPlay": [
+							{
+								"do": "checkModifier",
+								"amount": -1,
+								"location": "5"
+							}
+						],
+						"discardWhen": {
+							"kind": "noGatesOnBoard"
+						}
+					},
+					{
+						"id": "df220b68-bb7f-48ed-bd3c-0239a2fd626e",
+						"act": 3,
+						"name": "The Last Night",
+						"subtype": "event",
+						"color": "yellow",
+						"flavorText": "The wheat has gone quiet across the whole county. There is wind, but no sound.",
+						"text": "Advance the Omen. Reckoning. Each investigator loses 1 Sanity. If the third Mystery is active, the Elder gains +1 Toughness for the rest of the game.",
+						"onDraw": [
+							{
+								"do": "advanceOmen",
+								"count": 1
+							},
+							{
+								"do": "resolveReckoning"
+							},
+							{
+								"forEach": "each",
+								"do": [
+									{
+										"do": "loseSanity",
 										"amount": 1
 									}
 								]
+							},
+							{
+								"do": "toughenMonster",
+								"monster": "elder",
+								"amount": 1,
+								"when": {
+									"kind": "mysteryActive",
+									"n": 3
+								}
 							}
 						]
 					}
