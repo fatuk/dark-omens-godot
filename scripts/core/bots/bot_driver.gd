@@ -40,10 +40,10 @@ var _sent: Array = []  # для тестов/отладки: [{from, msg}]
 
 
 ## gs/nm — GameState/NetworkManager (стабы в тестах). Звать до add_child.
-func setup(bot_ids: Array, gs: Node = null, nm: Node = null) -> void:
+func setup(ids: Array, gs: Node = null, nm: Node = null) -> void:
 	bots = []
-	for i: int in range(bot_ids.size()):
-		var bid: String = String(bot_ids[i])
+	for i: int in range(ids.size()):
+		var bid: String = String(ids[i])
 		bots.append({"id": bid, "role": ROLES[i % ROLES.size()]})
 	_gs = gs
 	_nm = nm
