@@ -101,7 +101,9 @@ func ready_bots() -> int:
 		if bool(info.get("ready", false)):
 			taken[String(info.get("investigator", ""))] = true
 	var pool: Array = []
-	for inv_v: Variant in SeasonGate.filter_own(DataLoader.load_array(Investigators.DATA_PATH)):
+	for inv_v: Variant in SeasonGate.filter_own(
+		DataLoader.load_array(Investigators.DATA_PATH), "investigators"
+	):
 		var inv_name: String = String((inv_v as Dictionary).get("name", ""))
 		if not inv_name.is_empty() and not taken.has(inv_name):
 			pool.append(inv_name)

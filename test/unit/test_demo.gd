@@ -15,3 +15,23 @@ func test_redirect_only_in_demo() -> void:
 	assert_eq(Demo.redirect("lobby"), "lobby", "выбор сыщика остаётся")
 	assert_eq(Demo.redirect("world_map"), "world_map")
 	assert_eq(Demo.SEATS, 3, "гость + 2 бота")
+
+
+func test_demo_content_narrows_pools_only_in_demo() -> void:
+	Demo.set_content({"assets": ["38_revolver"], "investigators": ["Frank Dalton"]})
+	var rev := {"id": "38_revolver", "season": "core"}
+	var axe := {"id": "axe", "season": "core"}
+	var frank := {"name": "Frank Dalton", "season": "core"}
+	var mei := {"name": "Mei Lin", "season": "core"}
+	var spell := {"id": "wither", "season": "core"}
+	assert_true(SeasonGate.room_allows(axe, "assets"), "полная игра — без сужения")
+	Demo.forced = true
+	assert_true(SeasonGate.room_allows(rev, "assets"))
+	assert_false(SeasonGate.room_allows(axe, "assets"), "не в демо-наборе")
+	assert_true(SeasonGate.room_allows(spell, "spells"), "вида нет в наборе — не ограничен")
+	assert_true(SeasonGate.room_allows(axe), "без вида — без сужения")
+	assert_eq(SeasonGate.filter_own([frank, mei], "investigators"), [frank])
+	assert_false(
+		SeasonGate.room_allows({"id": "38_revolver", "season": "mom"}, "assets"), "сезон важнее"
+	)
+	Demo.set_content({})

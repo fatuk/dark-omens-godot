@@ -1,0 +1,38 @@
+{
+	"investigators": [
+		"Vivienne Marchetti",
+		"Clara Ashby",
+		"Mei Lin",
+		"Clive Ashton",
+		"Ngozi Eze",
+		"Frank Dalton"
+	],
+	"assets": [
+		"38_revolver",
+		"45_automatic",
+		"arcane_manuscripts",
+		"arcane_scholar",
+		"arcane_tome",
+		"axe",
+		"bandages",
+		"charter_flight",
+		"dynamite",
+		"elder_sign",
+		"hired_muscle",
+		"holy_water",
+		"kerosene",
+		"king_james_bible",
+		"lantern",
+		"lucky_cigarette_case",
+		"lucky_rabbits_foot",
+		"police_assistance",
+		"private_investigator",
+		"protective_amulet",
+		"research_student",
+		"sanctuary",
+		"spirit_dagger",
+		"tear_gas",
+		"whiskey",
+		"wireless_report"
+	]
+}

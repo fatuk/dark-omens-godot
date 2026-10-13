@@ -61,7 +61,7 @@ static func reckoning_of(id: String) -> Array:
 static func shop_offer(count: int = 4) -> Array:
 	var out: Array = []
 	for a in all():
-		if SeasonGate.room_allows(a):
+		if SeasonGate.room_allows(a, "assets"):
 			out.append(a)
 		if out.size() >= count:
 			break
@@ -398,7 +398,7 @@ static func available_ids() -> Array:
 	var out: Array = []
 	for a_v: Variant in all():
 		var a: Dictionary = a_v
-		if is_supported(a) and SeasonGate.room_allows(a):
+		if is_supported(a) and SeasonGate.room_allows(a, "assets"):
 			out.append(String(a.get("id", "")))
 	return out
 

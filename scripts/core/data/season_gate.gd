@@ -27,32 +27,34 @@ static var room: Array[String] = BASE.duplicate()
 static var own: Array[String] = BASE.duplicate()
 
 
-## Доступна ли запись за столом (монстр, заклинание, актив).
-static func room_allows(entry: Dictionary) -> bool:
-	return room.has(String(entry.get("season", "")))
+## Доступна ли запись за столом (монстр, заклинание, актив). kind — вид набора
+## демо-сборки ("assets"/"investigators", см. Demo.allows): в демо пул сужается до
+## демо-набора; "" — без этого сужения.
+static func room_allows(entry: Dictionary, kind: String = "") -> bool:
+	return room.has(String(entry.get("season", ""))) and Demo.allows(kind, entry)
 
 
 ## Доступна ли запись лично игроку (сыщик).
-static func own_allows(entry: Dictionary) -> bool:
-	return own.has(String(entry.get("season", "")))
+static func own_allows(entry: Dictionary, kind: String = "") -> bool:
+	return own.has(String(entry.get("season", ""))) and Demo.allows(kind, entry)
 
 
 ## Пул стола: только записи доступных комнате сезонов.
-static func filter_room(list: Array) -> Array:
+static func filter_room(list: Array, kind: String = "") -> Array:
 	var out: Array = []
 	for i: int in range(list.size()):
 		var e: Dictionary = list[i]
-		if room_allows(e):
+		if room_allows(e, kind):
 			out.append(e)
 	return out
 
 
 ## Личный пул: только записи сезонов, которыми владеет игрок.
-static func filter_own(list: Array) -> Array:
+static func filter_own(list: Array, kind: String = "") -> Array:
 	var out: Array = []
 	for i: int in range(list.size()):
 		var e: Dictionary = list[i]
-		if own_allows(e):
+		if own_allows(e, kind):
 			out.append(e)
 	return out
 
