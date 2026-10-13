@@ -277,3 +277,22 @@ func test_bot_always_accepts_trade_offer() -> void:
 	assert_eq(_act(), {"action": RelayActions.TRADE_RESPOND, "accept": true})
 	_gs.trade_offer = {"from": BOT, "to": "human"}
 	assert_ne(_act().get("action", ""), RelayActions.TRADE_RESPOND, "своё предложение не принимает")
+
+
+func test_bot_waits_while_human_reads_its_encounter() -> void:
+	_gs.phase = "encounter"
+	var text: String = "Ж".repeat(90)  # 90 знаков → 5 с чтения
+	_gs.current_encounter = {"kind": "general", "test": {"skill": "lore"}, "mainText": text}
+	assert_almost_eq(Driver.reading_time(text), 5.0, 0.01)
+	assert_eq(Driver.reading_time(""), 0.0, "нечего читать — не ждём")
+	assert_eq(Driver.reading_time("Да."), Driver.READ_MIN, "короткий — минимум")
+	_d._tick()
+	assert_eq(_out.size(), 0, "текст только появился — бот ждёт")
+	assert_gt(_d.reading_wait(BOT), 0.0)
+	_d._read_since -= 6.0  # прошло достаточно времени
+	_d._tick()
+	assert_eq(_out.size(), 1, "прочитано — бот бросает")
+	assert_eq(_out[0]["msg"]["action"], RelayActions.RESOLVE_ENCOUNTER)
+	# Бой наблюдателю не показывается — ждать нечего.
+	_gs.current_encounter = {"kind": "combat", "mainText": text}
+	assert_eq(_d.watched_text(BOT), "")

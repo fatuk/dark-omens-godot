@@ -18,6 +18,11 @@ extends Node
 const DELAY_MIN := 1.2  # пауза перед каждым шагом бота — чтобы за ним можно было уследить
 const DELAY_MAX := 2.0
 const RETRY_SEC := 3.0  # то же намерение повторяем не чаще — страховка от зацикливания
+# Встреча бота: живой игрок читает её в окне наблюдателя — бот не жмёт дальше,
+# пока текст не прочитан. Время — по длине текста, в рамках [MIN, MAX].
+const READ_CHARS_PER_SEC := 18.0
+const READ_MIN := 2.5
+const READ_MAX := 12.0
 const ROLES := ["fighter", "runner"]
 
 const _CHOICE_ORDER := [
@@ -35,6 +40,8 @@ var _nm: Node = null
 var _timer: Timer = null
 var _last: Dictionary = {}  # bot id → {sig, at}
 var _sent: Array = []  # для тестов/отладки: [{from, msg}]
+var _read_text: String = ""  # что сейчас видит наблюдатель встречи бота
+var _read_since: float = 0.0  # когда этот текст появился (сек)
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -62,6 +69,7 @@ func _ready() -> void:
 	add_child(_timer)
 	_timer.timeout.connect(_tick)
 	if _gs != null and _gs.has_signal("state_changed"):
+		_gs.state_changed.connect(_note_reading)
 		_gs.state_changed.connect(_schedule)
 	if _nm != null and _nm.has_signal("relay_received"):
 		_nm.relay_received.connect(_on_relay)
@@ -137,6 +145,11 @@ func _tick() -> void:
 		var intent: Dictionary = decide(bid, String(b["role"]))
 		if intent.is_empty():
 			continue
+		var wait: float = reading_wait(bid)
+		if wait > 0.0:
+			if _timer != null:
+				_timer.start(wait)  # живой игрок ещё читает встречу бота
+			return
 		if _send(bid, intent):
 			_schedule()  # одно действие за тик — следующему боту своя пауза
 			return
@@ -383,6 +396,67 @@ func first_hop(from: String, goals: Dictionary) -> String:
 				return x
 			queue.append(n)
 	return ""
+
+
+# ── Пауза на чтение ───────────────────────────────────────────────────────────
+
+
+## Сколько читать текст: по длине, в рамках [READ_MIN, READ_MAX].
+static func reading_time(text: String) -> float:
+	if text.strip_edges().is_empty():
+		return 0.0
+	return clampf(text.length() / READ_CHARS_PER_SEC, READ_MIN, READ_MAX)
+
+
+## Сколько ещё ждать, прежде чем бот нажмёт дальше на своей встрече: живой игрок
+## должен успеть прочитать то, что сейчас в окне наблюдателя. 0 — можно.
+func reading_wait(bid: String) -> float:
+	_note_reading()
+	var text: String = watched_text(bid)
+	if text.is_empty() or text != _read_text:
+		return 0.0
+	var now: float = Time.get_ticks_msec() / 1000.0
+	return maxf(0.0, reading_time(text) - (now - _read_since))
+
+
+# Запомнить момент, когда в окне наблюдателя сменился текст (зовётся на каждом синке).
+func _note_reading() -> void:
+	if _gs == null:
+		return
+	var pid: String = String(_gs.call("current_pid")) if _gs.has_method("current_pid") else ""
+	var text: String = watched_text(pid) if is_bot(pid) else ""
+	if text != _read_text:
+		_read_text = text
+		_read_since = Time.get_ticks_msec() / 1000.0
+
+
+## Новый текст, который видит наблюдатель встречи бота (зеркало encounter_watch_modal):
+## до броска — текст встречи, после — текст исхода. Бой окно не показывает — "".
+func watched_text(bid: String) -> String:
+	if _gs == null or String(_gs.get("phase")) != Phases.ENCOUNTER:
+		return ""
+	if String(_gs.call("current_pid")) != bid:
+		return ""
+	if not (_gs.get("encounter_choices") as Array).is_empty():
+		return ""
+	var card: Dictionary = _gs.get("current_encounter")
+	var kind: String = String(card.get("kind", ""))
+	if card.is_empty() or kind == "combat":
+		return ""
+	var node: Dictionary = card
+	if kind == "gate" or kind == "mystery":
+		node = (
+			card.get("stage1", {})
+			if int(card.get("stage", 0)) <= 0
+			else (card.get("branches", {}) as Dictionary).get(
+				String(card.get("branch", "success")), {}
+			)
+		)
+	var ac: Dictionary = _gs.get("active_check")
+	if String(ac.get("owner", "")) == "encounter" and bool(ac.get("rolled", false)):
+		var key: String = "successText" if bool(ac.get("passed", false)) else "failureText"
+		return String(node.get(key, "")).strip_edges()
+	return String(node.get("mainText", "")).strip_edges()
 
 
 # ── Фаза встреч ───────────────────────────────────────────────────────────────
