@@ -72,8 +72,8 @@ func _add_offline_button() -> void:
 
 func _on_offline_pressed() -> void:
 	_show_status("LOGIN_STATUS_OFFLINE", UIColors.WARNING)
-	# Офлайн-стол на двоих: гость + бот (размер стола пока фиксирован).
-	if not OfflineSession.start(2):
+	# В меню: Древний и число мест выбираются в «Создать комнату», места займут боты.
+	if not OfflineSession.enter():
 		_show_status("LOGIN_ERR_OFFLINE_UNAVAILABLE", UIColors.ERROR)
 
 

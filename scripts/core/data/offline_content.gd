@@ -1,51 +1,51 @@
 class_name OfflineContent
 extends RefCounted
 
-## Офлайн-источник контента: запечённый корпус встреч и готовые библии кампаний
-## из `res://data/offline/` (их печёт `make offline-bake` через relay-API).
-## Повторяет серверную выборку (relay `encounters.ts` → buildCorpusCards) и отдаёт
-## те же формы ответов, что и ContentApi, — игра не отличает офлайн от сервера.
-##
-## Библии запечены на Древнего × язык × число игроков: сборка на сервере
-## детерминирована, а случайность в ней (какие Мифы и Тайны попали в слоты)
-## для офлайн-партии не важна.
+## Офлайн-источник контента: запечённые по Древним корпуса встреч и библии
+## кампаний (их печёт bake-offline-content через relay-API):
+##   res://data/offline/demo/<id>/  — Древние демо-сценариев, идут в сборки;
+##   res://data/offline/dev/<id>/   — локальные тесты других Древних (не в гите,
+##                                    вырезаны из экспорта).
+## В папке — encounters.json (карты этого Древнего + общие) и campaigns.json
+## (библии язык × число игроков). Повторяет серверную выборку (relay encounters.ts →
+## buildCorpusCards) и отдаёт формы ответов ContentApi — игра не отличает офлайн.
 
-const ENCOUNTERS_PATH := "res://data/offline/encounters.json"
-const CAMPAIGNS_PATH := "res://data/offline/campaigns.json"
+const ROOT := "res://data/offline"
+const TIERS := ["demo", "dev"]  # порядок = порядок в списке Древних
 
-# Корпус и библии грузятся один раз (lazy). Тесты подменяют через set_corpus /
-# set_campaigns, не трогая файлы.
-static var _corpus: Array = []  # записи {id, kind, tags, data, i18n}
-static var _campaigns: Dictionary = {}  # ancientId → lang → "N" → библия
-static var _by_campaign_id: Dictionary = {}  # bible.id → {ancient, bible}
-static var _special_tags: Dictionary = {}  # тег особой встречи → true
+# Грузится один раз (lazy). Тесты подменяют через set_ancient, не трогая файлы.
+static var _ancients: Dictionary = {}  # id → {tier, corpus: Array, campaigns: {lang: {"N": библия}}}
+static var _order: Array = []  # id Древних: демо первыми
+static var _by_campaign_id: Dictionary = {}  # bible.id → id Древнего
+static var _special_tags: Dictionary = {}  # id Древнего → {тег особой встречи: true}
 static var _loaded: bool = false
 static var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 # ── Загрузка ──────────────────────────────────────────────────────────────────
 
 
-## Есть ли запечённый контент (оба файла на месте).
+## Есть ли хоть один запечённый Древний.
 static func available() -> bool:
 	_ensure_loaded()
-	return not _corpus.is_empty() and not _campaigns.is_empty()
+	return not _ancients.is_empty()
 
 
-static func set_corpus(records: Array) -> void:
-	_corpus = records
+## Тесты: подложить Древнего без файлов. campaigns — {lang: {"N": библия}}.
+static func set_ancient(
+	id: String, corpus: Array, campaigns: Dictionary, tier: String = "demo"
+) -> void:
 	_loaded = true
-
-
-static func set_campaigns(campaigns: Dictionary) -> void:
-	_campaigns = campaigns
-	_index_campaigns()
-	_loaded = true
+	_ancients[id] = {"tier": tier, "corpus": corpus, "campaigns": campaigns}
+	if not _order.has(id):
+		_order.append(id)
+	_index(id)
 
 
 static func reset() -> void:
-	_corpus = []
-	_campaigns = {}
+	_ancients = {}
+	_order = []
 	_by_campaign_id = {}
+	_special_tags = {}
 	_loaded = false
 
 
@@ -53,47 +53,78 @@ static func _ensure_loaded() -> void:
 	if _loaded:
 		return
 	_loaded = true
-	if FileAccess.file_exists(ENCOUNTERS_PATH):
-		_corpus = DataLoader.load_array(ENCOUNTERS_PATH)
-	if FileAccess.file_exists(CAMPAIGNS_PATH):
-		_campaigns = DataLoader.load_dict(CAMPAIGNS_PATH).get("campaigns", {})
-	_index_campaigns()
+	for tier: String in TIERS:
+		var dir: String = "%s/%s" % [ROOT, tier]
+		if not DirAccess.dir_exists_absolute(dir):
+			continue
+		var ids: Array = Array(DirAccess.get_directories_at(dir))
+		ids.sort()
+		for id_v: Variant in ids:
+			var id: String = String(id_v)
+			if _ancients.has(id):
+				continue  # демо важнее dev-копии того же Древнего
+			var enc_path: String = "%s/%s/encounters.json" % [dir, id]
+			var camp_path: String = "%s/%s/campaigns.json" % [dir, id]
+			if not FileAccess.file_exists(enc_path) or not FileAccess.file_exists(camp_path):
+				continue
+			var camps: Dictionary = DataLoader.load_dict(camp_path).get("campaigns", {})
+			set_ancient(id, DataLoader.load_array(enc_path), camps, tier)
 
 
-static func _index_campaigns() -> void:
-	_by_campaign_id = {}
-	_special_tags = {}
-	for ancient: String in _campaigns.keys():
-		var by_lang: Dictionary = _campaigns[ancient]
+# Индексы Древнего: id библий → Древний; теги особых встреч (afterDefeat.encounterTag
+# его Тайн) — такие карты выдаются только назначением по тегу.
+static func _index(id: String) -> void:
+	var tags: Dictionary = {}
+	var by_lang: Dictionary = _ancients[id]["campaigns"]
+	for lang: String in by_lang.keys():
+		var by_n: Dictionary = by_lang[lang]
+		for n: String in by_n.keys():
+			var bible: Dictionary = by_n[n]
+			_by_campaign_id[String(bible.get("id", ""))] = id
+			var mysteries: Array = bible.get("mysteries", [])
+			for i: int in range(mysteries.size()):
+				var after: Dictionary = (mysteries[i] as Dictionary).get("afterDefeat", {})
+				var tag: String = String(after.get("encounterTag", ""))
+				if not tag.is_empty():
+					tags[tag] = true
+	_special_tags[id] = tags
+
+
+## id Древнего по id или имени на любом языке ("" — не запечён). Диалог создания
+## комнаты шлёт имя (как и серверу — там его узнаёт findAncient).
+static func resolve_ancient(id_or_name: String) -> String:
+	_ensure_loaded()
+	if _ancients.has(id_or_name):
+		return id_or_name
+	var want: String = id_or_name.strip_edges().to_lower()
+	if want.is_empty():
+		return ""
+	for id: String in _order:
+		var by_lang: Dictionary = _ancients[id]["campaigns"]
 		for lang: String in by_lang.keys():
 			var by_n: Dictionary = by_lang[lang]
 			for n: String in by_n.keys():
-				var bible: Dictionary = by_n[n]
-				_by_campaign_id[String(bible.get("id", ""))] = {"ancient": ancient, "bible": bible}
-				# Теги особых встреч (afterDefeat.encounterTag Тайн): такие карты выдаются
-				# только назначением по тегу, в обычную выборку не попадают.
-				var mysteries: Array = bible.get("mysteries", [])
-				for i: int in range(mysteries.size()):
-					var after: Dictionary = (mysteries[i] as Dictionary).get("afterDefeat", {})
-					var tag: String = String(after.get("encounterTag", ""))
-					if not tag.is_empty():
-						_special_tags[tag] = true
+				var ao: Dictionary = (by_n[n] as Dictionary).get("ancientOne", {})
+				if String(ao.get("name", "")).to_lower() == want:
+					return id
+	return ""
 
 
 # ── Кампании ──────────────────────────────────────────────────────────────────
 
 
 ## Аналог POST /campaign/assemble: библия Древнего под язык и число игроков.
-## Нет точного размера партии — ближайший запечённый снизу (иначе сверху).
+## Нет точного размера партии — ближайший запечённый снизу (иначе сверху). Без
+## Древнего — первый запечённый (демо).
 static func assemble(req: Dictionary) -> Dictionary:
 	_ensure_loaded()
-	var ancient: String = String(req.get("ancientOne", ""))
-	if ancient.is_empty() or not _campaigns.has(ancient):
-		if ancient.is_empty() and not _campaigns.is_empty():
-			ancient = String(_campaigns.keys()[0])
-		else:
-			return _err("Офлайн-библии для Древнего «%s» нет" % ancient)
-	var by_lang: Dictionary = _campaigns[ancient]
+	var asked: String = String(req.get("ancientOne", ""))
+	var ancient: String = resolve_ancient(asked)
+	if ancient.is_empty():
+		if not asked.strip_edges().is_empty() or _order.is_empty():
+			return _err("Офлайн-библии для Древнего «%s» нет — запеките его" % asked)
+		ancient = String(_order[0])
+	var by_lang: Dictionary = _ancients[ancient]["campaigns"]
 	var lang: String = _lang_code(String(req.get("language", "")))
 	if not by_lang.has(lang):
 		if by_lang.is_empty():
@@ -113,22 +144,33 @@ static func get_campaign(id: String) -> Dictionary:
 	_ensure_loaded()
 	if not _by_campaign_id.has(id):
 		return _err("Кампания %s не запечена" % id.substr(0, 8))
-	var bible: Dictionary = (_by_campaign_id[id]["bible"] as Dictionary).duplicate(true)
-	return {"ok": true, "error": "", "campaign": bible}
+	var ancient: String = _by_campaign_id[id]
+	var by_lang: Dictionary = _ancients[ancient]["campaigns"]
+	for lang: String in by_lang.keys():
+		var by_n: Dictionary = by_lang[lang]
+		for n: String in by_n.keys():
+			if String((by_n[n] as Dictionary).get("id", "")) == id:
+				return {
+					"ok": true, "error": "", "campaign": (by_n[n] as Dictionary).duplicate(true)
+				}
+	return _err("Кампания %s не запечена" % id.substr(0, 8))
 
 
-## Аналог GET /ancients: Древние, для которых есть библии, с именем на языке.
+## Аналог GET /ancients: запечённые Древние (демо первыми) с именем на языке.
 static func ancients(locale: String) -> Array:
 	_ensure_loaded()
 	var lang: String = "en" if locale.begins_with("en") else "ru"
 	var out: Array = []
-	for ancient: String in _campaigns.keys():
-		var by_lang: Dictionary = _campaigns[ancient]
-		var use: String = lang if by_lang.has(lang) else String(by_lang.keys()[0])
-		var by_n: Dictionary = by_lang[use]
-		var any: Dictionary = by_n[by_n.keys()[0]] if not by_n.is_empty() else {}
-		var ao: Dictionary = any.get("ancientOne", {})
-		out.append({"id": ancient, "name": String(ao.get("name", ancient))})
+	for ancient: String in _order:
+		var by_lang: Dictionary = _ancients[ancient]["campaigns"]
+		var name: String = ancient
+		if not by_lang.is_empty():
+			var use: String = lang if by_lang.has(lang) else String(by_lang.keys()[0])
+			var by_n: Dictionary = by_lang[use]
+			if not by_n.is_empty():
+				var ao: Dictionary = (by_n[by_n.keys()[0]] as Dictionary).get("ancientOne", {})
+				name = String(ao.get("name", ancient))
+		out.append({"id": ancient, "name": name})
 	return out
 
 
@@ -138,9 +180,16 @@ static func ancients(locale: String) -> Array:
 ## Аналог POST /encounters/draw. Тот же порядок отбора, что на реле:
 ## вид → оси (loc / location / world) → requires по флагам → pinned/общие →
 ## сброс (exclude) → карты этого Древнего, потом общие → заглушка на недостачу.
+## Корпус — Древнего кампании (campaignId); без кампании — первого запечённого.
 static func draw(req: Dictionary) -> Dictionary:
 	_ensure_loaded()
-	if _corpus.is_empty():
+	var ancient_id: String = _ancient_for(String(req.get("campaignId", "")))
+	var corpus_owner: String = ancient_id
+	if corpus_owner.is_empty() and not _order.is_empty():
+		corpus_owner = String(_order[0])
+	var corpus: Array = (_ancients.get(corpus_owner, {}) as Dictionary).get("corpus", [])
+	var special: Dictionary = _special_tags.get(corpus_owner, {})
+	if corpus.is_empty():
 		return _err("Офлайн-корпус встреч пуст")
 	var kind: String = String(req.get("kind", "general"))
 	var real_loc: Dictionary = req.get("realLocation", {})
@@ -153,11 +202,10 @@ static func draw(req: Dictionary) -> Dictionary:
 	var flags: Array = req.get("flags", [])
 	var site_specific: bool = bool(req.get("siteSpecific", false))
 	var exclude: Array = req.get("exclude", [])
-	var ancient_id: String = _ancient_for(String(req.get("campaignId", "")))
 
 	var base: Array = []
-	for i: int in range(_corpus.size()):
-		var c: Dictionary = _corpus[i]
+	for i: int in range(corpus.size()):
+		var c: Dictionary = corpus[i]
 		if String(c.get("kind", "")) != kind:
 			continue
 		var tags: Array = c.get("tags", [])
@@ -167,7 +215,7 @@ static func draw(req: Dictionary) -> Dictionary:
 			if tags.has(tag):
 				base.append(c)
 			continue
-		if _has_special_tag(tags):
+		if _has_special_tag(tags, special):
 			continue
 		if not _axis_matches(tags, "loc", loc_type, true):
 			continue
@@ -361,9 +409,7 @@ static func _nearest_count(keys: Array, want: int) -> String:
 
 
 static func _ancient_for(campaign_id: String) -> String:
-	if campaign_id.is_empty() or not _by_campaign_id.has(campaign_id):
-		return ""
-	return String(_by_campaign_id[campaign_id]["ancient"])
+	return String(_by_campaign_id.get(campaign_id, "")) if not campaign_id.is_empty() else ""
 
 
 # requires: {hasSpell: true, …} — все ключи со значением true должны быть среди флагов.
@@ -378,9 +424,9 @@ static func _requires_ok(c: Dictionary, flags: Array) -> bool:
 	return true
 
 
-static func _has_special_tag(tags: Array) -> bool:
+static func _has_special_tag(tags: Array, special: Dictionary) -> bool:
 	for i: int in range(tags.size()):
-		if _special_tags.has(String(tags[i])):
+		if special.has(String(tags[i])):
 			return true
 	return false
 

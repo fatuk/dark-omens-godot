@@ -14,3 +14,7 @@ addons/gut/
 
 # Отчёты симулятора баланса карт (генерируются run_sim.ps1)
 sim-report/
+
+# Офлайн-снимки Древних для локальных тестов (make offline-bake ARGS="--ancient <id>").
+# В сборки идёт только data/offline/demo/ — демо-Древние.
+data/offline/dev/

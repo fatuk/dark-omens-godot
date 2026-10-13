@@ -196,6 +196,11 @@ func _on_create_room_pressed() -> void:
 func _on_room_form_submitted(
 	room_name: String, password: String, max_players: int, ancient_one: String
 ) -> void:
+	if _nm.local_mode:
+		# Офлайн-стол: свободные места займут боты, Древний — из запечённых.
+		OfflineSession.create_table(max_players, ancient_one, room_name)
+		_show_status(tr("MENU_STATUS_CREATING_ROOM") % room_name, UIColors.WARNING)
+		return
 	GameState.set_campaign_seed(ancient_one, max_players)
 	_nm.create_room(room_name, password, max_players)
 	_show_status(tr("MENU_STATUS_CREATING_ROOM") % room_name, UIColors.WARNING)

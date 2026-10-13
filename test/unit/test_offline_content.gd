@@ -52,7 +52,8 @@ func before_each() -> void:
 	OC.rng.seed = 7
 	(
 		OC
-		. set_corpus(
+		. set_ancient(
+			"sheaf",
 			[
 				_card("city-any", "general", ["loc:city"]),
 				_card("sea-any", "general", ["loc:sea"]),
@@ -65,10 +66,10 @@ func before_each() -> void:
 				_card("gate-yug", "gate", ["world:Yuggoth"]),
 				_card("final-1", "general", ["demo-final"]),
 				_card("final-2", "general", ["demo-final"], {"requires": {"hasSpell": true}}),
-			]
+			],
+			{"ru": {"2": BIBLE_RU}, "en": {"2": BIBLE_EN}},
 		)
 	)
-	OC.set_campaigns({"sheaf": {"ru": {"2": BIBLE_RU}, "en": {"2": BIBLE_EN}}})
 
 
 func _draw(req: Dictionary) -> Array:
@@ -202,3 +203,34 @@ func test_nearest_count() -> void:
 	assert_eq(OC._nearest_count(["2", "4"], 1), "2")
 	assert_eq(OC._nearest_count(["1", "2", "4"], 9), "4")
 	assert_eq(OC._nearest_count([], 2), "")
+
+
+func test_resolve_ancient_by_id_or_name() -> void:
+	assert_eq(OC.resolve_ancient("sheaf"), "sheaf")
+	assert_eq(OC.resolve_ancient("Братство"), "sheaf", "имя из диалога комнаты")
+	assert_eq(OC.resolve_ancient("brotherhood"), "sheaf", "без учёта регистра, любой язык")
+	assert_eq(OC.resolve_ancient("Ктулху"), "")
+	var res: Dictionary = OC.assemble(
+		{"ancientOne": "Brotherhood", "playerCount": 2, "language": "ru"}
+	)
+	assert_eq(res["campaign"]["id"], "camp-ru-2")
+
+
+func test_each_ancient_draws_from_own_corpus() -> void:
+	var bible := {"id": "camp-az", "ancientOne": {"id": "az", "name": "Азатот"}, "doomClock": 15}
+	(
+		OC
+		. set_ancient(
+			"az",
+			[_card("az-city", "general", ["loc:city", "ancient:az"])],
+			{"ru": {"1": bible}},
+			"dev",
+		)
+	)
+	assert_eq(OC.ancients("ru").size(), 2)
+	assert_eq(OC.ancients("ru")[0]["id"], "sheaf", "демо первым")
+	assert_eq(OC.assemble({"ancientOne": "az", "playerCount": 3})["campaign"]["doomClock"], 15)
+	var ids: Array = _ids(_draw(_req("general", "Rome", "city", {"campaignId": "camp-az"})))
+	assert_eq(ids, ["az-city"], "корпус Древнего кампании")
+	assert_eq(OC.get_campaign("camp-az")["campaign"]["doomClock"], 15)
+	assert_false(OC.assemble({"ancientOne": "Ктулху"})["ok"], "незапечённый — ошибка")
