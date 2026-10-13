@@ -172,7 +172,13 @@ func _arm_settled(dur: float) -> void:
 		return
 	_settle_tw = create_tween()
 	_settle_tw.tween_interval(dur)
-	_settle_tw.tween_callback(func() -> void: roll_settled.emit())
+	# Сначала гасим «крутится», потом сигнал: подписчики спрашивают is_rolling()
+	# прямо в обработчике, а твин внутри своего колбэка ещё is_valid().
+	_settle_tw.tween_callback(
+		func() -> void:
+			_settle_tw = null
+			roll_settled.emit()
+	)
 
 
 ## Пометки пула: bonus — сколько первых кубов добавлены сверх листа персонажа

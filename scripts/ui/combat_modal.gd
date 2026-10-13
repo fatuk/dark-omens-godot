@@ -25,6 +25,7 @@ const _FS_HITS := 20  # успехи
 const _FS_ABILITY := 15
 const _FS_LOSS := 22  # «−2 Рассудок» под лотком
 const _PULSE_PERIOD := 0.9  # сек на полупериод пульса
+const _REVEAL_FADE := 0.25  # проявление итога, когда кубы осели
 
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
@@ -96,6 +97,9 @@ func _build(card: Dictionary) -> void:
 		or bool(card.get("no_strength_step", false))
 	)
 	var str_step: bool = has_will and not skip_str
+	# Кубы активного шага ещё крутятся — итог (успехи на карте, потери) держим
+	# скрытым, иначе он виден раньше выпавших граней. Проявит _on_roll_settled.
+	var masked: bool = false
 
 	_vbox.add_child(
 		UIStyle.ornate_title(
@@ -103,7 +107,6 @@ func _build(card: Dictionary) -> void:
 		)
 	)
 	_vbox.add_child(_ensure_art(card))
-	_update_art(card, str_step, done)
 
 	# ── Лоток активного шага ──
 	if not has_will:
@@ -153,9 +156,13 @@ func _build(card: Dictionary) -> void:
 				String((card.get("combat", {}) as Dictionary).get("skill", "strength"))
 			)
 			_last_str = []
+	if not done and rolled:
+		var active: DiceTray = _str_tray if str_step else _will_tray
+		masked = is_instance_valid(active) and active.is_rolling()
+	_update_art(card, str_step, done, masked)
 
 	# ── Что будет с сыщиком, если принять расклад: потери по итогу шагов ──
-	_loss_lines(card, str_step, done)
+	_loss_lines(card, str_step, done, masked)
 
 	# ── Кнопки ──
 	var btns := HBoxContainer.new()
@@ -281,7 +288,7 @@ func _overlay_lbl(node_name: String, fs: int, color: Color, align: HorizontalAli
 
 
 # Живые значения на карте + какой из шагов пульсирует.
-func _update_art(card: Dictionary, str_step: bool, done: bool) -> void:
+func _update_art(card: Dictionary, str_step: bool, done: bool, masked: bool = false) -> void:
 	var combat: Dictionary = card.get("combat", {})
 	var horror: Dictionary = card.get("horror", {})
 	# enc.health — здоровье монстра НА СТАРТЕ боя; после атаки показываем итоговое
@@ -290,7 +297,9 @@ func _update_art(card: Dictionary, str_step: bool, done: bool) -> void:
 	# активной проверки; до броска — нет (-1 → пусто).
 	var res: Dictionary = card.get("resolution", {})
 	var c: Dictionary = _chk()
-	var live: int = int(c.get("successes", 0)) if bool(c.get("rolled", false)) else -1
+	var live: int = (
+		int(c.get("successes", 0)) if bool(c.get("rolled", false)) and not masked else -1
+	)
 	# Здоровье монстра: на старте боя; на шаге Силы — превью после удара (успехи бьют
 	# стойкость), по итогу — зафиксированное. Итог боя виден прямо на карте.
 	var mon_health: int = int(card.get("health", 0))
@@ -372,7 +381,26 @@ func _ensure_tray(t: DiceTray) -> DiceTray:
 	nt.name = "DiceTray"
 	nt.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	nt.die_selected.connect(_on_die_clicked)
+	nt.roll_settled.connect(_on_roll_settled)
 	return nt
+
+
+# Кубы осели — пересобрать окно уже с итогом (лоток не перекрутится: тот же бросок
+# рисуется статикой) и плавно проявить то, что было скрыто на время спина.
+func _on_roll_settled() -> void:
+	if not _root.visible or String(GameState.current_encounter.get("kind", "")) != "combat":
+		return
+	if not GameState.is_my_encounter_turn():
+		return
+	_build(GameState.current_encounter)
+	var reveal: Array = [_art.get_node("Horror/Hits"), _art.get_node("Damage/Hits")]
+	for n in _vbox.get_children():
+		if String(n.name).begins_with("Loss"):
+			reveal.append(n)
+	for n_v: Variant in reveal:
+		var n: CanvasItem = n_v
+		n.modulate.a = 0.0
+		n.create_tween().tween_property(n, "modulate:a", 1.0, _REVEAL_FADE)
 
 
 # Показать бросок: свежий → спин всех; переброс одного куба → крутится он; тот же
@@ -468,9 +496,9 @@ func _reroll_all_available() -> bool:
 # Только последствия для сыщика при принятии текущего расклада: −N рассудка после
 # броска Воли (и дальше, пока бой не закрыт), −N здоровья после броска Силы. За
 # вычетом уже предотвращённого картами (бинты/виски). Без потерь — строки нет.
-func _loss_lines(card: Dictionary, str_step: bool, done: bool) -> void:
+func _loss_lines(card: Dictionary, str_step: bool, done: bool, masked: bool = false) -> void:
 	var c: Dictionary = _chk()
-	var rolled: bool = bool(c.get("rolled", false))
+	var rolled: bool = bool(c.get("rolled", false)) and not masked
 	var sanity_loss: int = -1
 	if card.has("will"):
 		sanity_loss = int(card.get("sanity_loss", 0))
@@ -488,9 +516,13 @@ func _loss_lines(card: Dictionary, str_step: bool, done: bool) -> void:
 	if hp_loss > 0:
 		hp_loss = maxi(0, hp_loss - int(card.get("prevented_hp", 0)))
 	if sanity_loss > 0:
-		_vbox.add_child(_lbl("−%d %s" % [sanity_loss, tr("COMBAT_SANITY")], _FS_LOSS, _C_WILL))
+		var ls: Label = _lbl("−%d %s" % [sanity_loss, tr("COMBAT_SANITY")], _FS_LOSS, _C_WILL)
+		ls.name = "LossSanity"
+		_vbox.add_child(ls)
 	if hp_loss > 0:
-		_vbox.add_child(_lbl("−%d %s" % [hp_loss, tr("COMBAT_HEALTH")], _FS_LOSS, _C_STR))
+		var lh: Label = _lbl("−%d %s" % [hp_loss, tr("COMBAT_HEALTH")], _FS_LOSS, _C_STR)
+		lh.name = "LossHealth"
+		_vbox.add_child(lh)
 	# Кубик способности (defeatOnDie): что выпало и чем кончилось.
 	if card.has("ability_die"):
 		var won: bool = bool(card.get("defeated_on_horror", false))

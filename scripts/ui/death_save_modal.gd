@@ -21,6 +21,7 @@ var _accept_btn: Button
 var _sig: String = ""  # умирающий pid — при смене пересобираем
 var _last_dice: Array = []
 var _last_nonce: int = 0
+var _status_hidden: bool = false  # итог скрыт, пока кубик крутится
 
 
 func _ready() -> void:
@@ -106,6 +107,7 @@ func _build() -> void:
 	for c in _vbox.get_children():
 		c.queue_free()
 	_tray = null
+	_status_hidden = false
 
 	_vbox.add_child(UIStyle.modal_title(tr("DEATH_TITLE"), UIColors.DANGER))
 
@@ -146,6 +148,13 @@ func _ensure_tray() -> void:
 	_tray = DiceTray.new()
 	_tray.name = "DiceTray"
 	_dice_box.add_child(_tray)  # кубик некликабелен — переброс через кнопку соседа
+	_tray.roll_settled.connect(_on_roll_settled)
+
+
+# Кубик осел — проявить исход (см. _update).
+func _on_roll_settled() -> void:
+	if not _sig.is_empty():
+		_update(_sig)
 
 
 func _render_dice(dying: String) -> void:
@@ -174,11 +183,20 @@ func _update(dying: String) -> void:
 	if is_instance_valid(_sub):
 		_sub.text = tr("DEATH_SUBTITLE") % [GameState.name_of(dying), kind]
 	var passed: bool = bool(c.get("passed", false))
+	# Пока кубик крутится — исход и кнопку переброса (она выдаёт провал) не
+	# показываем: иначе итог виден раньше выпавшей грани. Проявит roll_settled.
+	var rolling: bool = is_instance_valid(_tray) and _tray.is_rolling()
 	if is_instance_valid(_status):
 		_status.text = tr("DEATH_HOLDS") if passed else tr("DEATH_PULLS")
 		_status.add_theme_color_override(
 			"font_color", UIColors.SUCCESS if passed else UIColors.DANGER
 		)
+		if rolling:
+			_status.modulate.a = 0.0
+			_status_hidden = true
+		elif _status_hidden:
+			_status_hidden = false
+			_status.create_tween().tween_property(_status, "modulate:a", 1.0, 0.25)
 
 	var am_dying: bool = _my_id() == dying
 	# Сосед может перебросить: я жив, не умирающий, есть ресурс, кубик провальный.
@@ -188,6 +206,7 @@ func _update(dying: String) -> void:
 		and not bool(me.get(PlayerKeys.DEAD, false))
 		and int(me.get(PlayerKeys.RESOURCES, 0)) > 0
 		and not passed
+		and not rolling
 	)
 	if is_instance_valid(_reroll_btn):
 		_reroll_btn.visible = can_reroll
