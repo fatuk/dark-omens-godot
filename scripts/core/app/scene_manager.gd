@@ -47,7 +47,12 @@ var _spinner_ring: TextureRect = null
 func go(scene_name: String, data: Dictionary = {}) -> void:
 	assert(SCENES.has(scene_name), "SceneManager: unknown scene '%s'" % scene_name)
 	params = data
-	var path: String = SCENES[scene_name]
+	# Демо-сборка: меню комнат и входа нет — выход из партии ведёт на главную, а сама
+	# партия забывается (прогресс в демо не хранится).
+	var target: String = Demo.redirect(scene_name)
+	if target != scene_name:
+		Demo.leave()
+	var path: String = SCENES[target]
 	var err: Error = ResourceLoader.load_threaded_request(path)
 	if err != OK:
 		# Не удалось запустить поток — фолбэк на синхронную загрузку (как было).

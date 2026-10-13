@@ -34,6 +34,8 @@ var _player_names: Dictionary = {}
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
+var _demo_starting: bool = false  # демо: автостарт уже запланирован
+
 
 func _ready() -> void:
 	_nm = get_node("/root/NetworkManager")
@@ -102,6 +104,8 @@ func _ready() -> void:
 
 
 func _save_ready_state() -> void:
+	if Demo.active():
+		return  # демо ничего не хранит между запусками
 	var cfg := ConfigFile.new()
 	cfg.load(_prefs_path)
 	cfg.set_value(_PREFS_SECTION, "room_id", _nm.room_id)
@@ -111,6 +115,8 @@ func _save_ready_state() -> void:
 
 
 func _clear_ready_state() -> void:
+	if Demo.active():
+		return
 	var cfg := ConfigFile.new()
 	cfg.load(_prefs_path)
 	cfg.set_value(_PREFS_SECTION, "was_ready", false)
@@ -118,6 +124,8 @@ func _clear_ready_state() -> void:
 
 
 func _check_auto_ready() -> void:
+	if Demo.active():
+		return
 	var cfg := ConfigFile.new()
 	if cfg.load(_prefs_path) != OK:
 		return
@@ -210,6 +218,10 @@ func _refresh_start_button() -> void:
 				can_start = false
 				break
 	_picker.set_start_enabled(can_start)
+	# Демо: «Начать» нет — партия стартует сама, когда игрок и боты готовы.
+	if can_start and Demo.active() and not _demo_starting:
+		_demo_starting = true  # пересчёт зовётся на каждый set_ready — стартуем один раз
+		call_deferred("_on_start_pressed")
 
 
 # ── Обработчики сигналов NetworkManager ───────────────────────────────────────

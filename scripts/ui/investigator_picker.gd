@@ -233,7 +233,7 @@ func _build_action_bar() -> HBoxContainer:
 func _update_start_btn_visibility() -> void:
 	if not is_instance_valid(_start_btn) or _nm == null:
 		return
-	_start_btn.visible = _nm.is_host()
+	_start_btn.visible = _nm.is_host() and not Demo.active()  # демо стартует само
 
 
 # Публичные хелперы для lobby.gd — после refactor'а кнопок «Готов»/«Начать»:

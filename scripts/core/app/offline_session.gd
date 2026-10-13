@@ -12,10 +12,6 @@ extends RefCounted
 const GUEST_ID := "guest"
 
 
-static func is_demo_build() -> bool:
-	return OS.has_feature("demo") or OS.get_cmdline_user_args().has("--demo")
-
-
 ## Идёт ли офлайн-сессия (транспорт локальный).
 static func is_active() -> bool:
 	return bool(NetworkManager.local_mode)
