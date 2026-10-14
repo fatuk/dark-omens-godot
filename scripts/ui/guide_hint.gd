@@ -30,9 +30,9 @@ static var ART_OVERFLOW_X: float = 140.0
 # Ширина рамки.
 static var FRAME_W: float = 620.0
 # Правый край рамки относительно кончика пальца (+ — правее: рука ложится на угол).
-static var FRAME_X: float = 40.0
+static var FRAME_X: float = -5.0
 # Верх рамки относительно кончика пальца (+ — ниже, − — выше).
-static var FRAME_Y: float = 60.0
+static var FRAME_Y: float = -35.0
 const _SLIDE_PX: float = 90.0  # въезд профессора справа
 const _FADE_IN: float = 0.35
 const _FADE_OUT: float = 0.2
