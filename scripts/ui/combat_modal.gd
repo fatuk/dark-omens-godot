@@ -48,6 +48,8 @@ var _pulse_on: Label = null  # какое число пульсирует сей
 func _ready() -> void:
 	UIStyle.style_modal_panel(_panel)
 	_panel.custom_minimum_size.x = _ART_SIZE.x + 160.0
+	# Окно растёт/сжимается плавно (исход боя, второй шаг проверки), а не скачком.
+	SmoothHeight.wrap(_panel)
 	GameState.state_changed.connect(_refresh)
 	_refresh()
 
