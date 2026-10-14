@@ -157,3 +157,34 @@ func test_offline_general_deck_mixes_ancient_and_any() -> void:
 			seen_any = true
 			break
 	assert_true(seen_any, "общая встреча по типу клетки выпадает и в демо")
+
+
+func test_demo_clues_only_at_six_spots_each_with_research() -> void:
+	# Улики в демо выкладываются только в шести местах Америк (data.clues Древнего),
+	# и у каждого места свои встречи-исследования — без механических заглушек.
+	_start()
+	var spots: Array = ["5", "6", "Arkham", "San Francisco", "4", "The Amazon"]
+	GameState._board.reset_clue_deck()
+	GameState._board.ensure_clue_deck()
+	var deck: Array = GameState.clue_deck.duplicate()
+	deck.sort()
+	var want: Array = spots.duplicate()
+	want.sort()
+	assert_eq(deck, want, "пул улик — только шесть мест")
+	for _i in range(10):
+		GameState._board.place_clue()
+	for loc_v: Variant in GameState.entities:
+		if (GameState.entities[loc_v] as Array).has("clue"):
+			assert_has(spots, String(loc_v), "улика легла в одно из шести мест")
+	var cid: String = String(GameState.campaign.get("id", ""))
+	for loc: String in spots:
+		var types: Dictionary = {"4": "wilderness", "The Amazon": "wilderness"}
+		var req := {
+			"kind": "research",
+			"campaignId": cid,
+			"realLocation": {"id": loc, "locationType": String(types.get(loc, "city"))},
+			"count": 1,
+		}
+		var card: Dictionary = OfflineContent.draw(req)["encounters"][0]
+		assert_false(bool(card.get("mechanical", true)), "%s: настоящая карта, не заглушка" % loc)
+		assert_false(String(card.get("name", "")).is_empty(), "%s: у встречи есть название" % loc)

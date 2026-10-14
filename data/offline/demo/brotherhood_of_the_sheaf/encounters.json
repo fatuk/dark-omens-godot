@@ -1,5 +1,728 @@
 [
 	{
+		"id": "demo-sheaf-research-amazon-2",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"loc:wilderness",
+			"location:The Amazon",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"test": {
+				"skill": "influence",
+				"modifier": 0
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "spawnMonster",
+					"monster": "cultist",
+					"where": "self"
+				}
+			],
+			"hasImage": false
+		},
+		"i18n": {
+			"ru": {
+				"name": "Деревня на реке",
+				"mainText": "Жители речной деревни растят пшеницу на расчищенной поляне — посреди сельвы, где ей не место. Чужаков встречают молча.",
+				"successText": "Старейшина рассказывает, кто научил их сеять и чем за это платят.",
+				"failureText": "Ночью вас будит шорох колосьев у самого гамака."
+			},
+			"en": {
+				"name": "The River Village",
+				"mainText": "The people of a river village grow wheat on a cleared patch — in the middle of the jungle, where it has no place. They greet strangers in silence.",
+				"successText": "The elder tells you who taught them to sow, and what they pay for it.",
+				"failureText": "At night you are woken by the rustle of wheat right beside your hammock."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-amazon-1",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"loc:wilderness",
+			"location:The Amazon",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"test": {
+				"skill": "lore",
+				"modifier": -1
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"test": "will",
+					"modifier": -1,
+					"onPass": [
+						{
+							"do": "gainClue",
+							"count": 1
+						},
+						{
+							"do": "loseSanity",
+							"amount": 1
+						}
+					],
+					"onFail": [
+						{
+							"do": "loseSanity",
+							"amount": 2
+						}
+					]
+				}
+			],
+			"hasImage": false
+		},
+		"i18n": {
+			"ru": {
+				"name": "Соломенный идол",
+				"mainText": "Проводник не подходит к идолу ближе, чем на бросок камня. Солома на нём сухая и свежая, хотя дожди здесь идут каждый день.",
+				"successText": "Внутри идола вы находите табличку с той же надписью, что на серпе в Небраске.",
+				"failureText": "Вы касаетесь соломы, и вам кажется, что идол повернул голову."
+			},
+			"en": {
+				"name": "The Straw Idol",
+				"mainText": "Your guide will not go nearer the idol than a stone's throw. Its straw is dry and fresh, though it rains here every day.",
+				"successText": "Inside the idol you find a tablet bearing the same inscription as the sickle in Nebraska.",
+				"failureText": "You touch the straw, and it seems to you that the idol turns its head."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-fort-2",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"loc:wilderness",
+			"location:4",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"test": {
+				"skill": "observation",
+				"modifier": -1
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseHealth",
+					"amount": 1
+				}
+			],
+			"hasImage": false
+		},
+		"i18n": {
+			"ru": {
+				"name": "Следы на снегу",
+				"mainText": "От озера на юг ведёт цепочка следов. Тот, кто их оставил, шёл босиком и не проваливался в снег.",
+				"successText": "Следы обрываются у камня, на котором вырезан сноп.",
+				"failureText": "Метель заметает следы, и вы долго ищете дорогу назад."
+			},
+			"en": {
+				"name": "Tracks in the Snow",
+				"mainText": "A line of footprints leads south from the lake. Whoever left them walked barefoot and never sank into the snow.",
+				"successText": "The tracks end at a stone with a sheaf carved into it.",
+				"failureText": "A blizzard buries the tracks, and it takes you a long time to find your way back."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-fort-1",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"loc:wilderness",
+			"location:4",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"test": {
+				"skill": "will",
+				"modifier": -1
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"test": "strength",
+					"modifier": 0,
+					"onPass": [
+						{
+							"do": "gainClue",
+							"count": 1
+						},
+						{
+							"do": "loseHealth",
+							"amount": 1
+						}
+					],
+					"onFail": [
+						{
+							"do": "becomeDelayed"
+						}
+					]
+				}
+			],
+			"hasImage": false
+		},
+		"i18n": {
+			"ru": {
+				"name": "Зимовье охотников",
+				"mainText": "Охотники показывают вам лёд, в который вмёрзли колосья. После заката к нему никто не подходит.",
+				"successText": "Вы выдалбливаете колос. На стебле — узел, какие вяжут только в одной общине.",
+				"failureText": "Темнеет раньше, чем вы успеваете закончить. Ночь у озера тянется бесконечно."
+			},
+			"en": {
+				"name": "The Trappers' Cabin",
+				"mainText": "The trappers show you the ice with the wheat frozen in it. Nobody goes near it after sundown.",
+				"successText": "You chip out an ear of wheat. The stalk is tied in a knot that only one community ties.",
+				"failureText": "Dark falls before you finish. The night by the lake goes on and on."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-sf-2",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"loc:city",
+			"location:San Francisco",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"test": {
+				"skill": "observation",
+				"modifier": 0
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseSanity",
+					"amount": 1
+				}
+			],
+			"hasImage": false
+		},
+		"i18n": {
+			"ru": {
+				"name": "Лавка травника",
+				"mainText": "Травник в Чайнатауне торгует сушёными колосьями «от дурных снов». Говорит, покупатели приходят всегда из одних и тех же мест.",
+				"successText": "Он записывает вам адрес на обёрточной бумаге.",
+				"failureText": "Пока вы торгуетесь, лавка закрывается. Больше вы её не находите."
+			},
+			"en": {
+				"name": "The Herbalist's Shop",
+				"mainText": "A Chinatown herbalist sells dried ears of wheat \"against bad dreams\". He says his buyers always come from the same few places.",
+				"successText": "He writes an address for you on a scrap of wrapping paper.",
+				"failureText": "While you haggle, the shop closes. You never find it again."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-sf-1",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"loc:city",
+			"location:San Francisco",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"test": {
+				"skill": "strength",
+				"modifier": -1
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseHealth",
+					"amount": 1
+				},
+				{
+					"do": "loseSanity",
+					"amount": 1
+				}
+			],
+			"hasImage": false
+		},
+		"i18n": {
+			"ru": {
+				"name": "Портовый склад",
+				"mainText": "Ящик из Небраски стоит в дальнем углу склада. Сторож клянётся, что по ночам слышит из него шелест.",
+				"successText": "Вы вскрываете крышку. Внутри — снопы, перевязанные чьими-то волосами, и письмо.",
+				"failureText": "Крышка поддаётся сама, раньше, чем вы успеваете отойти."
+			},
+			"en": {
+				"name": "The Dockside Warehouse",
+				"mainText": "The crate from Nebraska sits in the far corner of the warehouse. The watchman swears he hears rustling from it at night.",
+				"successText": "You pry off the lid. Inside are sheaves bound with someone's hair, and a letter.",
+				"failureText": "The lid gives way on its own, before you can step back."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-arkham-2",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"loc:city",
+			"location:Arkham",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"test": {
+				"skill": "lore",
+				"modifier": -1
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseSanity",
+					"amount": 1
+				}
+			],
+			"hasImage": false
+		},
+		"i18n": {
+			"ru": {
+				"name": "Лекция о жатве",
+				"mainText": "Приглашённый профессор читает лекцию о культах плодородия. На последнем слайде — снимок поля, которое вы узнаёте.",
+				"successText": "После лекции он соглашается показать вам остальные снимки.",
+				"failureText": "Профессор обрывает лекцию на полуслове и уходит. На доске остаётся недорисованный знак."
+			},
+			"en": {
+				"name": "A Lecture on the Harvest",
+				"mainText": "A visiting professor lectures on fertility cults. The last slide shows a photograph of a field you recognise.",
+				"successText": "After the lecture he agrees to show you the rest of his photographs.",
+				"failureText": "The professor breaks off mid-sentence and walks out. An unfinished sign is left on the blackboard."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-arkham-1",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"loc:city",
+			"location:Arkham",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"test": {
+				"skill": "lore",
+				"modifier": 0
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "becomeDelayed"
+				}
+			],
+			"hasImage": false
+		},
+		"i18n": {
+			"ru": {
+				"name": "Земельный реестр",
+				"mainText": "Архивариус приносит папку с купчими. Подписи на всех одинаковые, хотя годы разные — от 1871-го до прошлой весны.",
+				"successText": "Вы находите имя, которое повторяется чаще остальных.",
+				"failureText": "Вы засиживаетесь до закрытия, а наутро не можете вспомнить, что читали."
+			},
+			"en": {
+				"name": "The Land Registry",
+				"mainText": "The archivist brings a folder of deeds. Every signature is the same, though the years differ — from 1871 to last spring.",
+				"successText": "You find a name that turns up more often than any other.",
+				"failureText": "You stay until closing, and by morning you cannot remember what you read."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-dallas-2",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"loc:city",
+			"location:6",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"test": {
+				"skill": "influence",
+				"modifier": -1
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"test": "will",
+					"modifier": -1,
+					"onPass": [
+						{
+							"do": "gainClue",
+							"count": 1
+						}
+					],
+					"onFail": [
+						{
+							"do": "loseSanity",
+							"amount": 1
+						}
+					]
+				}
+			],
+			"hasImage": false
+		},
+		"i18n": {
+			"ru": {
+				"name": "Аукцион скота",
+				"mainText": "На аукционе распродают скот с фермы, откуда пропала вся семья. Покупатели молчат и не поднимают глаз.",
+				"successText": "Аукционист за бутылкой рассказывает, кто выкупил ферму ещё до торгов.",
+				"failureText": "Вас вежливо просят уйти. На выходе кто-то опускает вам в карман колос."
+			},
+			"en": {
+				"name": "The Cattle Auction",
+				"mainText": "They are selling off the stock of a farm whose whole family vanished. The buyers keep silent and never raise their eyes.",
+				"successText": "Over a bottle, the auctioneer tells you who bought the farm before the bidding even began.",
+				"failureText": "You are politely asked to leave. On the way out someone slips an ear of wheat into your pocket."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-dallas-1",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"loc:city",
+			"location:6",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"test": {
+				"skill": "observation",
+				"modifier": 0
+			},
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseHealth",
+					"amount": 1
+				}
+			],
+			"hasImage": false
+		},
+		"i18n": {
+			"ru": {
+				"name": "Элеватор",
+				"mainText": "Ночной сторож пускает вас на элеватор за пачку сигарет и уходит, не оглядываясь. В верхнем бункере кто-то выложил колосья ровным кругом.",
+				"successText": "Под кругом — тетрадь с адресами ферм. Многие из них вам уже знакомы.",
+				"failureText": "Зерно под ногами приходит в движение, и вы едва выбираетесь наружу."
+			},
+			"en": {
+				"name": "The Elevator",
+				"mainText": "The night watchman lets you into the elevator for a pack of cigarettes and walks off without looking back. In the top bin someone has laid ears of wheat in a perfect circle.",
+				"successText": "Beneath the circle lies a notebook of farm addresses. You already know many of them.",
+				"failureText": "The grain shifts underfoot, and you barely claw your way out."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-4",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				},
+				{
+					"do": "healSanity",
+					"amount": 1
+				}
+			],
+			"onFailure": [
+				{
+					"test": "will",
+					"modifier": -1,
+					"onPass": [
+						{
+							"do": "gainClue",
+							"count": 1
+						},
+						{
+							"do": "loseSanity",
+							"amount": 1
+						}
+					],
+					"onFail": [
+						{
+							"do": "loseSanity",
+							"amount": 2
+						},
+						{
+							"do": "gainCondition",
+							"condition": "obsession"
+						}
+					]
+				}
+			],
+			"hasImage": false,
+			"test": {
+				"skill": "lore",
+				"modifier": -1
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Стоячая пшеница",
+				"mainText": "Внутри круга колосья не шумят. Если войти, слышно, что шум есть — он просто идёт не от них.",
+				"successText": "Вы понимаете, откуда идёт шум, и это знание успокаивает.",
+				"failureText": "Вы стоите в круге дольше, чем собирались."
+			},
+			"en": {
+				"name": "The Standing Wheat",
+				"mainText": "Inside the circle the stalks make no sound. Step in, and you can hear that the sound is there; it just does not come from them.",
+				"successText": "You understand where the sound comes from, and the knowledge is a comfort.",
+				"failureText": "You stand in the circle longer than you meant to."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-3",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"test": "lore",
+					"modifier": -1,
+					"onPass": [
+						{
+							"do": "gainClue",
+							"count": 1
+						}
+					],
+					"onFail": [
+						{
+							"do": "becomeDelayed"
+						}
+					]
+				}
+			],
+			"hasImage": false,
+			"test": {
+				"skill": "influence",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Соседка",
+				"mainText": "Женщина с соседней фермы говорит через забор, не глядя на вас, и просит ничего не записывать.",
+				"successText": "Она рассказывает, кто и когда выходил в поле.",
+				"failureText": "Она замолкает на полуслове. Вы ждёте у забора до темноты, и напрасно."
+			},
+			"en": {
+				"name": "The Neighbour",
+				"mainText": "A woman from the next farm speaks over the fence without looking at you and asks you not to write anything down.",
+				"successText": "She tells you who went out into the field, and when.",
+				"failureText": "She falls silent mid-sentence. You wait by the fence until dark, for nothing."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-2",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"test": "observation",
+					"modifier": 0,
+					"onPass": [
+						{
+							"do": "gainClue",
+							"count": 1
+						},
+						{
+							"do": "loseSanity",
+							"amount": 1
+						}
+					],
+					"onFail": [
+						{
+							"do": "loseSanity",
+							"amount": 2
+						}
+					]
+				}
+			],
+			"hasImage": false,
+			"test": {
+				"skill": "will",
+				"modifier": -1
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Пугало",
+				"mainText": "Оно стоит там, где вчера не стояло, и одето в куртку, которую вы видели на человеке.",
+				"successText": "Вы подходите вплотную и обыскиваете карманы.",
+				"failureText": "Вы не можете заставить себя подойти, но успеваете разглядеть, что на куртке нашито."
+			},
+			"en": {
+				"name": "The Scarecrow",
+				"mainText": "It stands where it did not stand yesterday, dressed in a jacket you saw on a man.",
+				"successText": "You walk right up to it and go through the pockets.",
+				"failureText": "You cannot make yourself approach, but you manage to see what is stitched to the jacket."
+			}
+		}
+	},
+	{
+		"id": "demo-sheaf-research-1",
+		"kind": "research",
+		"tags": [
+			"ancient:brotherhood_of_the_sheaf",
+			"season:core",
+			"demo"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"test": "strength",
+					"modifier": -1,
+					"onPass": [
+						{
+							"do": "gainClue",
+							"count": 1
+						},
+						{
+							"do": "loseHealth",
+							"amount": 1
+						}
+					],
+					"onFail": [
+						{
+							"do": "spawnMonster",
+							"monster": "cultist",
+							"where": "self"
+						}
+					]
+				}
+			],
+			"hasImage": false,
+			"test": {
+				"skill": "observation",
+				"modifier": -1
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Обрыв полосы",
+				"mainText": "Примятая полоса кончается у ямы, засыпанной утром.",
+				"successText": "Вы находите в отвале то, что закапывали в спешке.",
+				"failureText": "Яму засыпали не до конца. Вы копаете руками — и земля отвечает."
+			},
+			"en": {
+				"name": "The Broken Strip",
+				"mainText": "The trampled strip ends at a pit that was filled in this morning.",
+				"successText": "In the spoil you find what was buried in a hurry.",
+				"failureText": "The pit was not filled all the way. You dig with your hands, and the earth answers."
+			}
+		}
+	},
+	{
 		"id": "gen-sea-14",
 		"kind": "general",
 		"tags": [
@@ -2252,250 +2975,6 @@
 				"mainText": "The wheat parts before you and closes behind — only it does not part toward the road.",
 				"successText": "You walk where it does not want you to, and come out at the Wenham graveyard.",
 				"failureText": "The field leads you back to the pit. You will have to walk again."
-			}
-		}
-	},
-	{
-		"id": "demo-sheaf-research-4",
-		"kind": "research",
-		"tags": [
-			"ancient:brotherhood_of_the_sheaf",
-			"loc:city",
-			"location:5",
-			"season:core",
-			"demo"
-		],
-		"data": {
-			"onSuccess": [
-				{
-					"do": "gainClue",
-					"count": 1
-				},
-				{
-					"do": "healSanity",
-					"amount": 1
-				}
-			],
-			"onFailure": [
-				{
-					"test": "will",
-					"modifier": -1,
-					"onPass": [
-						{
-							"do": "gainClue",
-							"count": 1
-						},
-						{
-							"do": "loseSanity",
-							"amount": 1
-						}
-					],
-					"onFail": [
-						{
-							"do": "loseSanity",
-							"amount": 2
-						},
-						{
-							"do": "gainCondition",
-							"condition": "obsession"
-						}
-					]
-				}
-			],
-			"hasImage": false,
-			"test": {
-				"skill": "lore",
-				"modifier": -1
-			}
-		},
-		"i18n": {
-			"ru": {
-				"name": "Стоячая пшеница",
-				"mainText": "Внутри круга колосья не шумят. Если войти, слышно, что шум есть — он просто идёт не от них.",
-				"successText": "Вы понимаете, откуда идёт шум, и это знание успокаивает.",
-				"failureText": "Вы стоите в круге дольше, чем собирались."
-			},
-			"en": {
-				"name": "The Standing Wheat",
-				"mainText": "Inside the circle the stalks make no sound. Step in, and you can hear that the sound is there; it just does not come from them.",
-				"successText": "You understand where the sound comes from, and the knowledge is a comfort.",
-				"failureText": "You stand in the circle longer than you meant to."
-			}
-		}
-	},
-	{
-		"id": "demo-sheaf-research-3",
-		"kind": "research",
-		"tags": [
-			"ancient:brotherhood_of_the_sheaf",
-			"loc:city",
-			"location:5",
-			"season:core",
-			"demo"
-		],
-		"data": {
-			"onSuccess": [
-				{
-					"do": "gainClue",
-					"count": 1
-				}
-			],
-			"onFailure": [
-				{
-					"test": "lore",
-					"modifier": -1,
-					"onPass": [
-						{
-							"do": "gainClue",
-							"count": 1
-						}
-					],
-					"onFail": [
-						{
-							"do": "becomeDelayed"
-						}
-					]
-				}
-			],
-			"hasImage": false,
-			"test": {
-				"skill": "influence",
-				"modifier": 0
-			}
-		},
-		"i18n": {
-			"ru": {
-				"name": "Соседка",
-				"mainText": "Женщина с соседней фермы говорит через забор, не глядя на вас, и просит ничего не записывать.",
-				"successText": "Она рассказывает, кто и когда выходил в поле.",
-				"failureText": "Она замолкает на полуслове. Вы ждёте у забора до темноты, и напрасно."
-			},
-			"en": {
-				"name": "The Neighbour",
-				"mainText": "A woman from the next farm speaks over the fence without looking at you and asks you not to write anything down.",
-				"successText": "She tells you who went out into the field, and when.",
-				"failureText": "She falls silent mid-sentence. You wait by the fence until dark, for nothing."
-			}
-		}
-	},
-	{
-		"id": "demo-sheaf-research-2",
-		"kind": "research",
-		"tags": [
-			"ancient:brotherhood_of_the_sheaf",
-			"loc:city",
-			"location:5",
-			"season:core",
-			"demo"
-		],
-		"data": {
-			"onSuccess": [
-				{
-					"do": "gainClue",
-					"count": 1
-				}
-			],
-			"onFailure": [
-				{
-					"test": "observation",
-					"modifier": 0,
-					"onPass": [
-						{
-							"do": "gainClue",
-							"count": 1
-						},
-						{
-							"do": "loseSanity",
-							"amount": 1
-						}
-					],
-					"onFail": [
-						{
-							"do": "loseSanity",
-							"amount": 2
-						}
-					]
-				}
-			],
-			"hasImage": false,
-			"test": {
-				"skill": "will",
-				"modifier": -1
-			}
-		},
-		"i18n": {
-			"ru": {
-				"name": "Пугало",
-				"mainText": "Оно стоит там, где вчера не стояло, и одето в куртку, которую вы видели на человеке.",
-				"successText": "Вы подходите вплотную и обыскиваете карманы.",
-				"failureText": "Вы не можете заставить себя подойти, но успеваете разглядеть, что на куртке нашито."
-			},
-			"en": {
-				"name": "The Scarecrow",
-				"mainText": "It stands where it did not stand yesterday, dressed in a jacket you saw on a man.",
-				"successText": "You walk right up to it and go through the pockets.",
-				"failureText": "You cannot make yourself approach, but you manage to see what is stitched to the jacket."
-			}
-		}
-	},
-	{
-		"id": "demo-sheaf-research-1",
-		"kind": "research",
-		"tags": [
-			"ancient:brotherhood_of_the_sheaf",
-			"loc:city",
-			"location:5",
-			"season:core",
-			"demo"
-		],
-		"data": {
-			"onSuccess": [
-				{
-					"do": "gainClue",
-					"count": 1
-				}
-			],
-			"onFailure": [
-				{
-					"test": "strength",
-					"modifier": -1,
-					"onPass": [
-						{
-							"do": "gainClue",
-							"count": 1
-						},
-						{
-							"do": "loseHealth",
-							"amount": 1
-						}
-					],
-					"onFail": [
-						{
-							"do": "spawnMonster",
-							"monster": "cultist",
-							"where": "self"
-						}
-					]
-				}
-			],
-			"hasImage": false,
-			"test": {
-				"skill": "observation",
-				"modifier": -1
-			}
-		},
-		"i18n": {
-			"ru": {
-				"name": "Обрыв полосы",
-				"mainText": "Примятая полоса кончается у ямы, засыпанной утром.",
-				"successText": "Вы находите в отвале то, что закапывали в спешке.",
-				"failureText": "Яму засыпали не до конца. Вы копаете руками — и земля отвечает."
-			},
-			"en": {
-				"name": "The Broken Strip",
-				"mainText": "The trampled strip ends at a pit that was filled in this morning.",
-				"successText": "In the spoil you find what was buried in a hurry.",
-				"failureText": "The pit was not filled all the way. You dig with your hands, and the earth answers."
 			}
 		}
 	},

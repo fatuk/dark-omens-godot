@@ -1191,18 +1191,35 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 # clue_discard / clue_board_ids / clue_deck_built — синкаемый стейт GameState.
 
 
-# Ленивая сборка пула идентичности из ВСЕХ локаций карты: каждая улика привязана к
-# локации (до 20). Есть авторский текст Древнего (campaign.ancientOne.clues) → веер
-# покажет его; нет — имя локации (ClueCatalog). Так лишних анонимных улик не бывает,
-# пока не разобраны все локации. Идемпотентно.
+# Ленивая сборка пула идентичности: каждая улика привязана к локации. Древний
+# перечислил улики (campaign.ancientOne.clues) → пул ТОЛЬКО из этих локаций: улики
+# выкладываются лишь туда, где у сценария есть их текст и свои встречи-исследования
+# (демо «Братство Колоса» — шесть мест в Америках). Список пуст → все локации карты,
+# веер покажет имя локации (ClueCatalog). У Азатота перечислены все 36 — как было.
+# Идемпотентно.
 func ensure_clue_deck() -> void:
 	if _gs.clue_deck_built:
 		return
 	_gs.clue_deck.clear()
-	for lid: String in _gs.map.ids():
+	var map_ids: Array = _gs.map.ids()
+	for lid: String in clue_locations(map_ids):
 		if not _gs.clue_deck.has(lid):
 			_gs.clue_deck.append(lid)
 	_gs.clue_deck_built = true
+
+
+## Локации, где вообще могут лежать улики: перечисленные Древним (и существующие на
+## карте), иначе — все map_ids.
+func clue_locations(map_ids: Array) -> Array:
+	var listed: Array = []
+	var anc: Dictionary = (_gs.campaign as Dictionary).get("ancientOne", {})
+	for c_v: Variant in anc.get("clues", []):
+		var loc: String = (
+			String((c_v as Dictionary).get("location", "")) if c_v is Dictionary else ""
+		)
+		if not loc.is_empty() and map_ids.has(loc) and not listed.has(loc):
+			listed.append(loc)
+	return listed if not listed.is_empty() else map_ids
 
 
 # Сброс пула при старте партии (перед раскладкой). Пересоберётся лениво из campaign.

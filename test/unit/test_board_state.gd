@@ -663,3 +663,20 @@ func test_eldritch_tokens_stack_on_one_cell_only_with_count() -> void:
 	assert_eq(
 		(_gs.entities.get("7", []) as Array).count("eldritch_token"), 1, "по одному — без стопки"
 	)
+
+
+# ── Пул улик: только перечисленные Древним локации ───────────────────────────
+
+
+func test_clue_locations_listed_by_ancient() -> void:
+	_gs.campaign = {
+		"ancientOne": {"clues": [{"location": "B"}, {"location": "X"}, {"location": "A"}]}
+	}
+	assert_eq(
+		_board.clue_locations(["A", "B", "C"]), ["B", "A"], "только перечисленные и есть на карте"
+	)
+
+
+func test_clue_locations_default_to_all() -> void:
+	_gs.campaign = {}
+	assert_eq(_board.clue_locations(["A", "B", "C"]), ["A", "B", "C"], "без списка — вся карта")
