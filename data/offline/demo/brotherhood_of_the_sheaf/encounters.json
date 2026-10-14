@@ -1,5 +1,1765 @@
 [
 	{
+		"id": "gen-sea-14",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "improveSkill",
+					"skill": "influence",
+					"amount": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseAsset",
+					"count": 2,
+					"trait": "item"
+				}
+			],
+			"test": {
+				"skill": "lore",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Морская викторина",
+				"mainText": "Офицеры в кают-компании ставят на кон всё, что есть в карманах, — в игру на знание морской истории. Вас приглашают сыграть.",
+				"successText": "Вы выигрываете партию за партией, и к концу вечера каждый на борту знает ваше имя.",
+				"failureText": "Вы проигрываете, и ставки приходится отдать."
+			},
+			"en": {
+				"name": "Naval Quiz",
+				"mainText": "In the wardroom the officers are staking everything in their pockets on a game of naval-history questions. They invite you to play.",
+				"successText": "You win round after round, and by the end of the evening everyone aboard knows your name.",
+				"failureText": "You lose, and you have to hand over your stakes."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-13",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainAsset",
+					"trait": "item"
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseHealth",
+					"amount": 2
+				}
+			],
+			"test": {
+				"skill": "strength",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Пожар в машинном",
+				"mainText": "В машинном отделении вспыхивает масло, и механик в одиночку пытается сбить пламя. Вы хватаете брезент и спускаетесь к нему.",
+				"successText": "Пламя удаётся сбить. Механик в знак благодарности отдаёт вам кое-что из своего снаряжения.",
+				"failureText": "Пожар потушен, но вы получаете ожоги, которые заживут не скоро."
+			},
+			"en": {
+				"name": "Engine-Room Fire",
+				"mainText": "Oil flares up in the engine room, and the engineer is trying to beat out the flames alone. You grab a tarpaulin and climb down to him.",
+				"successText": "The fire is beaten out. In thanks the engineer gives you something from his kit.",
+				"failureText": "The fire is out, but you come away with burns that will be slow to heal."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-12",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [],
+			"onFailure": [
+				{
+					"do": "loseAsset",
+					"count": 1,
+					"trait": "item"
+				}
+			],
+			"test": {
+				"skill": "strength",
+				"modifier": -1
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Затопленный трюм",
+				"mainText": "Шторм заливает трюм, и вода поднимается к ящикам, среди которых лежит ваш багаж. Вы спускаетесь по пояс в ледяную воду.",
+				"successText": "Вы вытаскиваете свои вещи до того, как трюм заливает доверху.",
+				"failureText": "Ящики сдвигаются с волной, и одна из ваших вещей уходит под них навсегда."
+			},
+			"en": {
+				"name": "The Flooded Hold",
+				"mainText": "The storm floods the hold, and the water rises toward the crates where your luggage is stowed. You climb down waist-deep into icy water.",
+				"successText": "You haul your things out before the hold floods to the top.",
+				"failureText": "The crates shift with the swell, and one of your belongings disappears beneath them for good."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-11",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainSpell",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "cursed"
+				}
+			],
+			"test": {
+				"skill": "lore",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Стихи безбилетника",
+				"mainText": "В трюме находят безбилетника в горячке. Он бормочет стихи на мёртвом языке, повторяя одни и те же строки.",
+				"successText": "Вы записываете строки и понимаете, что это не стихи, а формула.",
+				"failureText": "Вы повторяете строку вслух, чтобы запомнить. Безбилетник замолкает и смотрит на вас с ужасом."
+			},
+			"en": {
+				"name": "The Stowaway's Verses",
+				"mainText": "A stowaway is found in the hold, burning with fever. He mutters verses in a dead language, repeating the same lines.",
+				"successText": "You write the lines down and realise they are not verses but a formula.",
+				"failureText": "You say a line aloud to memorise it. The stowaway falls silent and stares at you in horror."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-10",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [],
+			"onFailure": [
+				{
+					"do": "becomeDelayed"
+				}
+			],
+			"test": {
+				"skill": "strength",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Якорная цепь",
+				"mainText": "Якорь за что-то цепляется, и цепь начинает тянуть судно вниз, к тому, что держит её на дне. Матросы бросаются к брашпилю, и вы вместе с ними.",
+				"successText": "Общими силами цепь удаётся отцепить. То, что держало её, остаётся внизу.",
+				"failureText": "Цепь рвётся вместе с куском борта. До прихода буксира судно стоит на месте."
+			},
+			"en": {
+				"name": "The Anchor Chain",
+				"mainText": "The anchor catches on something, and the chain begins to drag the ship down toward whatever holds it on the bottom. The sailors rush to the windlass, and you with them.",
+				"successText": "Together you get the chain free. Whatever was holding it stays below.",
+				"failureText": "The chain tears away along with a piece of the hull. The ship sits dead in the water until a tug arrives."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-09",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "placeClue",
+					"count": 1
+				}
+			],
+			"onFailure": [],
+			"test": {
+				"skill": "influence",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Старый китобой",
+				"mainText": "Капитан в молодости ходил на китобойце и любит рассказывать о местах, куда моряки не возвращаются. Обычно он рассказывает их как байки.",
+				"successText": "Вы спрашиваете о том, о чём не спрашивал никто, и одна из баек оказывается точным указанием.",
+				"failureText": "Капитан смеётся и переводит разговор на погоду."
+			},
+			"en": {
+				"name": "The Old Whaler",
+				"mainText": "In his youth the captain sailed on a whaler, and he likes to talk about places sailors never come back from. Usually he tells them as tall tales.",
+				"successText": "You ask what nobody has asked before, and one of the tall tales turns out to be a precise direction.",
+				"failureText": "The captain laughs and turns the talk to the weather."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-08",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"amount": 1
+				}
+			],
+			"onFailure": [],
+			"test": {
+				"skill": "influence",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Немой юнга",
+				"mainText": "Юнга не говорит ни слова с тех пор, как его подобрали в порту, но всё время что-то рисует углём на обрывках парусины.",
+				"successText": "Юнга вам доверяется и рисует то, что видел перед тем, как онемел. Рисунок многое объясняет.",
+				"failureText": "Юнга прячет рисунки и больше к вам не подходит."
+			},
+			"en": {
+				"name": "The Mute Cabin Boy",
+				"mainText": "The cabin boy has not said a word since he was picked up in port, but he is always drawing something in charcoal on scraps of sailcloth.",
+				"successText": "The boy comes to trust you and draws what he saw before he fell silent. The drawing explains a great deal.",
+				"failureText": "The boy hides his drawings and does not come near you again."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-07",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "loseSanity",
+					"amount": 1
+				},
+				{
+					"do": "gainCondition",
+					"condition": "backInjury"
+				}
+			],
+			"onFailure": []
+		},
+		"i18n": {
+			"ru": {
+				"name": "Волна-убийца",
+				"mainText": "Ночью, в тихую погоду, в борт бьёт одинокая волна выше мачты. Вас швыряет через всю каюту.",
+				"successText": "Вы приходите в себя у переборки, и спина ещё долго напоминает об этой ночи."
+			},
+			"en": {
+				"name": "Rogue Wave",
+				"mainText": "At night, in calm weather, a lone wave taller than the mast slams into the side. You are thrown across the whole cabin.",
+				"successText": "You come round against the bulkhead, and your back reminds you of that night for a long time."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-06",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"choice": [
+						{
+							"do": "gainClue",
+							"amount": 1
+						},
+						{
+							"do": "improveSkill",
+							"skill": "will",
+							"amount": 1
+						}
+					]
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "cursed"
+				}
+			],
+			"test": {
+				"skill": "observation",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Флаги несуществующего флота",
+				"mainText": "Навстречу идёт корабль под флагами флота, которого никогда не было. На мачте поднят сигнал, и экипаж ждёт, что вы его прочтёте.",
+				"successText": "Вы читаете сигнал. Призрачный корабль салютует и растворяется, оставив в памяти ясный смысл.",
+				"failureText": "Вы путаете флаги и отвечаете не тем сигналом. Призрачный экипаж запоминает ваше лицо."
+			},
+			"en": {
+				"name": "Flags of a Navy That Never Was",
+				"mainText": "A ship approaches flying the flags of a navy that never existed. A signal is hoisted on its mast, and the crew are waiting for you to read it.",
+				"successText": "You read the signal. The ghost ship salutes and dissolves, leaving a clear meaning in your memory.",
+				"failureText": "You confuse the flags and answer with the wrong signal. The ghostly crew remember your face."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-05",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"choice": [
+						{
+							"group": [
+								{
+									"do": "becomeDelayed"
+								},
+								{
+									"do": "gainArtifact"
+								}
+							]
+						},
+						{
+							"do": "text",
+							"text": "DECISION_SKIP"
+						}
+					]
+				}
+			],
+			"onFailure": []
+		},
+		"i18n": {
+			"ru": {
+				"name": "Затонувшая обсерватория",
+				"mainText": "Капитан рассказывает, что под вами на дне лежит обсерватория, ушедшая под воду вместе с островом. У него есть водолазный костюм, но погружения займут не один день.",
+				"successText": "Вы решаете, стоит ли игра свеч."
+			},
+			"en": {
+				"name": "The Sunken Observatory",
+				"mainText": "The captain tells you that an observatory lies on the seabed below, sunk along with its island. He has a diving suit, but the dives will take more than a day.",
+				"successText": "You decide whether it is worth the trouble."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-04",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainClue",
+					"amount": 1
+				},
+				{
+					"do": "gainAsset",
+					"trait": "ally"
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "paranoia"
+				}
+			],
+			"test": {
+				"skill": "observation",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Шлюпка в дрейфе",
+				"mainText": "Вахтенный замечает шлюпку без вёсел. На дне лежит измождённый человек, и рядом с ним — промокший дневник.",
+				"successText": "Вы находите в шлюпке следы, которые помогают вернуть спасённого к жизни. Он благодарен, а его дневник полон интересного.",
+				"failureText": "Когда шлюпку поднимают на борт, она пуста. По палубе от неё тянутся мокрые следы босых ног."
+			},
+			"en": {
+				"name": "A Drifting Lifeboat",
+				"mainText": "The watch spots a lifeboat with no oars. An emaciated man lies in the bottom, a sodden diary beside him.",
+				"successText": "You find clues in the boat that help bring the survivor round. He is grateful, and his diary is full of interesting things.",
+				"failureText": "When the lifeboat is hauled aboard, it is empty. Wet bare footprints lead away from it across the deck."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-03",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainCondition",
+					"condition": "blessed"
+				},
+				{
+					"do": "healHealth",
+					"amount": 1
+				},
+				{
+					"do": "healSanity",
+					"amount": 1
+				}
+			],
+			"onFailure": [],
+			"test": {
+				"skill": "lore",
+				"modifier": -1
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Незнакомая литургия",
+				"mainText": "Пожилая пассажирка по вечерам напевает на корме гимн на языке, которого вы не знаете, но мелодия кажется знакомой. Возможно, это обряд, о котором вы читали.",
+				"successText": "Вы узнаёте обряд и подхватываете ответный стих. Женщина улыбается и осеняет вас знаком.",
+				"failureText": "Вы так и не вспоминаете, где слышали этот напев."
+			},
+			"en": {
+				"name": "An Unfamiliar Liturgy",
+				"mainText": "In the evenings an elderly passenger hums a hymn at the stern in a language you do not know, yet the melody seems familiar. Perhaps it is a rite you have read about.",
+				"successText": "You recognise the rite and take up the response. The woman smiles and makes a sign over you.",
+				"failureText": "You never do remember where you heard that tune."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-02",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "move"
+				},
+				{
+					"do": "loseSanity",
+					"amount": 1
+				}
+			],
+			"onFailure": []
+		},
+		"i18n": {
+			"ru": {
+				"name": "Смерч",
+				"mainText": "Над волнами встаёт водяной смерч и проходит прямо через судно. Мачты стонут, палуба уходит из-под ног, и мир на миг исчезает.",
+				"successText": "Когда вы приходите в себя, берег за бортом уже другой. Как судно оказалось здесь, не может объяснить никто."
+			},
+			"en": {
+				"name": "Waterspout",
+				"mainText": "A waterspout rises over the waves and passes straight through the ship. The masts groan, the deck drops away beneath you, and for a moment the world disappears.",
+				"successText": "When you come to, the coast off the rail is a different one. Nobody can explain how the ship got here."
+			}
+		}
+	},
+	{
+		"id": "gen-sea-01",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:sea",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainArtifact"
+				}
+			],
+			"onFailure": [
+				{
+					"do": "becomeDelayed"
+				}
+			],
+			"test": {
+				"skill": "observation",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Луч без маяка",
+				"mainText": "Во время ночной вахты вы замечаете луч маяка там, где на картах нет ни маяка, ни суши. Капитан готов подойти ближе, если вы укажете курс.",
+				"successText": "Луч приводит к скале с затопленным алтарём. С его подножия вы достаёте то, что светилось.",
+				"failureText": "Луч гаснет, едва вы его теряете. Судно до утра ходит кругами и сбивается с графика."
+			},
+			"en": {
+				"name": "A Beam Without a Lighthouse",
+				"mainText": "On night watch you notice a lighthouse beam where the charts show neither lighthouse nor land. The captain is willing to close in if you give him a heading.",
+				"successText": "The beam leads to a rock with a drowned altar. From its foot you retrieve whatever was shining.",
+				"failureText": "The beam dies the moment you lose it. The ship circles until morning and falls behind schedule."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-14",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [],
+			"onFailure": [
+				{
+					"do": "loseSanity",
+					"amount": 1
+				},
+				{
+					"do": "gainCondition",
+					"condition": "poisoned"
+				}
+			],
+			"test": {
+				"skill": "will",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Болотный туман",
+				"mainText": "Над топью стелется сладковатый туман, от которого кружится голова. Выбраться можно, только если дышать медленно и не поддаваться панике.",
+				"successText": "Шаг за шагом вы выходите на твёрдую землю и только там позволяете себе вдохнуть полной грудью.",
+				"failureText": "Вы срываетесь на бег и глотаете туман полной грудью. Ещё сутки вас мутит, а мысли путаются."
+			},
+			"en": {
+				"name": "Marsh Mist",
+				"mainText": "A sweetish mist creeps over the bog, and it makes your head spin. The only way out is to breathe slowly and not give in to panic.",
+				"successText": "Step by step you reach firm ground, and only there do you let yourself take a full breath.",
+				"failureText": "You break into a run and gulp the mist down. For a day afterwards you are sick and your thoughts are muddled."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-13",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainCondition",
+					"condition": "blessed"
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "backInjury"
+				}
+			],
+			"test": {
+				"skill": "strength",
+				"modifier": -1
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Колокол",
+				"mainText": "Буря сорвала колокол с деревенской колокольни, и до воскресенья его нужно поднять обратно. Мужчин в деревне мало, и священник смотрит на вас с надеждой.",
+				"successText": "Колокол встаёт на место. Священник благословляет вас, и в воскресенье звон слышен на мили вокруг.",
+				"failureText": "Канат дёргает, и вы принимаете весь вес на спину. Что-то в пояснице неприятно хрустит."
+			},
+			"en": {
+				"name": "The Bell",
+				"mainText": "A storm tore the bell from the village belfry, and it must be raised again before Sunday. There are few men in the village, and the priest looks at you with hope.",
+				"successText": "The bell is back in place. The priest blesses you, and on Sunday the peal carries for miles.",
+				"failureText": "The rope jerks, and you take the whole weight on your back. Something in your lower back cracks unpleasantly."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-12",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainArtifact"
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseSanity",
+					"amount": 2
+				}
+			],
+			"test": {
+				"skill": "will",
+				"modifier": -1
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Провал в поле",
+				"mainText": "Посреди поля за ночь открылся провал, а на его дне видна каменная кладка. Лаз узкий, и чем глубже, тем сильнее давят стены.",
+				"successText": "Вы протискиваетесь до конца и находите в замурованной нише предмет, ждавший своего часа.",
+				"failureText": "На полпути стены смыкаются над головой. Вы выбираетесь наверх, задыхаясь, и долго не можете войти в тесную комнату."
+			},
+			"en": {
+				"name": "The Sinkhole",
+				"mainText": "Overnight a sinkhole opened in the middle of a field, and stone masonry shows at the bottom. The crawlway is narrow, and the deeper you go, the harder the walls press in.",
+				"successText": "You squeeze through to the end and find, in a walled-up niche, an object that has been waiting its time.",
+				"failureText": "Halfway down the walls close over your head. You claw your way out gasping, and for a long time cannot bring yourself to enter a cramped room."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-11",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"choice": [
+						{
+							"group": [
+								{
+									"do": "becomeDelayed"
+								},
+								{
+									"do": "healSanity",
+									"amount": 3
+								}
+							]
+						},
+						{
+							"group": [
+								{
+									"do": "becomeDelayed"
+								},
+								{
+									"do": "loseCondition",
+									"kind": "madness",
+									"choose": true
+								}
+							]
+						},
+						{
+							"do": "text",
+							"text": "DECISION_SKIP"
+						}
+					]
+				}
+			],
+			"onFailure": []
+		},
+		"i18n": {
+			"ru": {
+				"name": "Горный монастырь",
+				"mainText": "Монахи горного монастыря принимают странников без расспросов. Тишина здесь лечит, но тишине нужно время.",
+				"successText": "Вы решаете, как распорядиться этими днями."
+			},
+			"en": {
+				"name": "The Mountain Monastery",
+				"mainText": "The monks of the mountain monastery take in travellers without questions. The silence here heals, but silence takes time.",
+				"successText": "You decide how to spend these days."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-10",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "hallucinations"
+				}
+			],
+			"test": {
+				"skill": "strength",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Солнечный удар",
+				"mainText": "Вода кончилась два дня назад, и до колодца ещё полдня по раскалённой равнине. Тело просит лечь в тень, но тени здесь нет.",
+				"successText": "Вы доходите до колодца на одном упрямстве и запоминаете, на что способны.",
+				"failureText": "Марево встаёт стеной, и в нём начинают ходить люди, которых здесь быть не может."
+			},
+			"en": {
+				"name": "Sunstroke",
+				"mainText": "The water ran out two days ago, and the well is still half a day away across the scorching plain. Your body begs to lie down in the shade, but there is no shade here.",
+				"successText": "You reach the well on stubbornness alone and remember what you are capable of.",
+				"failureText": "The heat haze rises like a wall, and people who cannot be here begin to walk in it."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-09",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseHealth",
+					"amount": 1
+				},
+				{
+					"do": "gainCondition",
+					"condition": "legInjury"
+				}
+			],
+			"test": {
+				"skill": "strength",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Стая у костра",
+				"mainText": "Ночью к костру выходят волки, и у вожака слишком много глаз. Бежать некуда: остаётся стоять с горящей головнёй и не отступать ни на шаг.",
+				"successText": "Стая уходит в темноту. Вы понимаете, что выстояли бы и против худшего.",
+				"failureText": "Вожак бросается первым. Вы отбиваетесь, но его клыки успевают порвать вам ногу."
+			},
+			"en": {
+				"name": "The Pack at the Fire",
+				"mainText": "At night wolves come to the fire, and the leader has too many eyes. There is nowhere to run: all you can do is stand with a burning brand and not give a single step.",
+				"successText": "The pack melts back into the dark. You realise you could have stood against worse.",
+				"failureText": "The leader lunges first. You fight it off, but its fangs tear your leg."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-08",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"choice": [
+						{
+							"do": "gainClue",
+							"amount": 1
+						},
+						{
+							"do": "improveSkill",
+							"skill": "influence",
+							"amount": 1
+						}
+					]
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "cursed"
+				}
+			],
+			"test": {
+				"skill": "lore",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Пепельный круг",
+				"mainText": "На поляне остался круг пепла: здесь недавно собирались. В пепле начерчены знаки, и по ним можно понять, кто вёл собрание и кто ему подчинялся.",
+				"successText": "Знаки складываются в иерархию. Теперь вы знаете, с кем говорить — и как.",
+				"failureText": "Вы стираете последний знак рукой, и пепел ещё долго не отмывается с пальцев."
+			},
+			"en": {
+				"name": "The Ash Circle",
+				"mainText": "A circle of ash remains in the clearing: people gathered here recently. Signs are drawn in the ash, and from them you can tell who led the meeting and who obeyed.",
+				"successText": "The signs add up to a hierarchy. Now you know whom to talk to, and how.",
+				"failureText": "You smear the last sign with your hand, and the ash will not wash off your fingers for a long time."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-07",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "move"
+				}
+			],
+			"onFailure": [
+				{
+					"do": "becomeDelayed"
+				},
+				{
+					"do": "gainCondition",
+					"kind": "madness"
+				}
+			],
+			"test": {
+				"skill": "observation",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Туман на пустоши",
+				"mainText": "На пустошь опускается туман, и стрелка компаса начинает медленно вращаться. Ориентироваться придётся по тому, что ещё видно под ногами.",
+				"successText": "По наклону вереска вы находите направление и выходите из тумана дальше, чем рассчитывали.",
+				"failureText": "Вы плутаете до утра, всё время возвращаясь к одному и тому же камню. Что-то в вас так и не возвращается."
+			},
+			"en": {
+				"name": "Fog on the Moor",
+				"mainText": "Fog settles over the moor, and the compass needle begins to turn slowly. You will have to navigate by whatever you can still see underfoot.",
+				"successText": "From the lean of the heather you find your bearing and walk out of the fog further on than you expected.",
+				"failureText": "You wander until morning, always coming back to the same stone. Something in you never comes back."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-06",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainArtifact",
+					"trait": "tome"
+				}
+			],
+			"onFailure": [],
+			"test": {
+				"skill": "observation",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Пожарная вышка",
+				"mainText": "Лесничий с пожарной вышки пропал месяц назад. Его сменщик уверяет, что журнал наблюдений исчез вместе с ним, но в вышке явно есть тайник.",
+				"successText": "Под половицей вы находите не журнал, а старую книгу, которую лесничий берёг пуще жизни.",
+				"failureText": "Вы простукиваете каждую доску, но тайник так и не находится."
+			},
+			"en": {
+				"name": "The Fire Lookout",
+				"mainText": "The ranger at the fire lookout vanished a month ago. His replacement insists the logbook disappeared with him, but the tower clearly has a hiding place.",
+				"successText": "Under a floorboard you find not the logbook but an old book the ranger guarded more than his life.",
+				"failureText": "You tap every board, but the hiding place never turns up."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-05",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainArtifact",
+					"optional": true,
+					"cost": {
+						"spend": "clue",
+						"amount": 1
+					}
+				}
+			],
+			"onFailure": []
+		},
+		"i18n": {
+			"ru": {
+				"name": "Находка в борозде",
+				"mainText": "Фермер выпахал из земли странный предмет и не знает, что с ним делать. Деньги ему не нужны, зато он готов отдать находку тому, кто объяснит, во что он ввязался.",
+				"successText": "Вы рассказываете фермеру то, что знаете сами, и он с облегчением отдаёт вам находку."
+			},
+			"en": {
+				"name": "Found in the Furrow",
+				"mainText": "A farmer ploughed up a strange object and does not know what to do with it. He has no use for money, but he will give the find to anyone who can explain what he has got himself into.",
+				"successText": "You tell the farmer what you know yourself, and he hands you the find with relief."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-04",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "move"
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseHealth",
+					"amount": 1
+				},
+				{
+					"do": "gainCondition",
+					"condition": "legInjury"
+				}
+			],
+			"test": {
+				"skill": "observation",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Размытая тропа",
+				"mainText": "Ночной паводок смыл тропу вместе с мостом. Вода спадает, но русло всё ещё бурлит, и нужно найти брод, пока не стемнело.",
+				"successText": "По завихрениям воды вы угадываете мель и переходите русло, выиграв полдня пути.",
+				"failureText": "Камень под ногой оказывается скользким. Течение протаскивает вас по дну, и на берег вы выбираетесь хромая."
+			},
+			"en": {
+				"name": "The Washed-Out Trail",
+				"mainText": "A flood in the night swept away the trail along with the bridge. The water is falling, but the channel still churns, and you need to find a ford before dark.",
+				"successText": "From the eddies you guess where the shallows are and cross, gaining half a day of travel.",
+				"failureText": "The stone underfoot is slick. The current drags you along the bottom, and you limp out onto the bank."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-03",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"choice": [
+						{
+							"do": "gainClue",
+							"amount": 1
+						},
+						{
+							"do": "gainSpell",
+							"count": 1
+						}
+					]
+				}
+			],
+			"onFailure": [],
+			"test": {
+				"skill": "lore",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Тетрадь отшельника",
+				"mainText": "В разрушенной часовне вы находите тетрадь отшельника: латынь вперемешку со знаками, которые старше латыни. Последние страницы исписаны особенно торопливо.",
+				"successText": "Вы разбираете записи и выносите из часовни то, что отшельник успел понять.",
+				"failureText": "Знаки расплываются перед глазами. Вы оставляете тетрадь там, где нашли."
+			},
+			"en": {
+				"name": "The Hermit's Notebook",
+				"mainText": "In a ruined chapel you find a hermit's notebook: Latin mixed with signs older than Latin. The last pages are written in a particular hurry.",
+				"successText": "You work through the notes and carry out of the chapel what the hermit managed to understand.",
+				"failureText": "The signs swim before your eyes. You leave the notebook where you found it."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-02",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"choice": [
+						{
+							"do": "gainClue",
+							"amount": 1
+						},
+						{
+							"do": "improveSkill",
+							"skill": "lore",
+							"amount": 1
+						}
+					]
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "cursed"
+				}
+			],
+			"test": {
+				"skill": "will",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Круг, куда не садятся птицы",
+				"mainText": "На холме стоят камни, на которые никогда не садятся птицы. Местные советуют обходить их стороной, но, чтобы понять это место, нужно провести среди камней ночь.",
+				"successText": "К рассвету вы различаете в шёпоте ветра порядок — и уносите с холма знание, а не страх.",
+				"failureText": "Под утро вы засыпаете. Проснувшись, вы видите на ладони знак, которого вчера не было."
+			},
+			"en": {
+				"name": "The Circle Where Birds Don't Land",
+				"mainText": "On the hill stand stones where birds never land. The locals advise steering clear, but to understand this place you have to spend a night among the stones.",
+				"successText": "By dawn you hear an order in the whisper of the wind, and you carry knowledge down the hill, not fear.",
+				"failureText": "Toward morning you fall asleep. When you wake, there is a mark on your palm that was not there yesterday."
+			}
+		}
+	},
+	{
+		"id": "gen-wild-01",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainAsset",
+					"trait": "item"
+				},
+				{
+					"do": "loseSanity",
+					"amount": 1
+				}
+			],
+			"onFailure": []
+		},
+		"i18n": {
+			"ru": {
+				"name": "Почтовый самолёт",
+				"mainText": "В ельнике лежит почтовый самолёт: крыло снесено, пилот так и остался пристёгнутым в кабине. Мешки с почтой растерзаны не зверем — что-то искало в них определённое письмо.",
+				"successText": "Вы забираете из багажного отсека полезное снаряжение. Остекленевший взгляд пилота ещё долго стоит перед глазами."
+			},
+			"en": {
+				"name": "The Mail Plane",
+				"mainText": "A mail plane lies in the spruce wood: one wing torn off, the pilot still strapped into the cockpit. The mail sacks have been ripped open, and not by an animal. Something was looking for one particular letter.",
+				"successText": "You take useful gear from the cargo hold. The pilot's glassy stare stays with you for a long time."
+			}
+		}
+	},
+	{
+		"id": "gen-city-14",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainTicket",
+					"kind": "ship",
+					"count": 1
+				},
+				{
+					"do": "gainTicket",
+					"kind": "train",
+					"count": 1
+				}
+			],
+			"onFailure": [],
+			"test": {
+				"skill": "influence",
+				"modifier": -1
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Географическое общество",
+				"mainText": "Секретарь Географического общества распоряжается грантами для экспедиций. Он принимает по средам, и очередь из почтенных путешественников тянется до лестницы.",
+				"successText": "Секретарь находит ваш маршрут любопытным и выписывает проездные документы за счёт общества.",
+				"failureText": "Секретарь вежливо выслушивает вас и записывает на приём через год."
+			},
+			"en": {
+				"name": "The Geographical Society",
+				"mainText": "The secretary of the Geographical Society controls the expedition grants. He receives on Wednesdays, and a queue of distinguished travellers stretches down the stairs.",
+				"successText": "The secretary finds your route intriguing and issues travel papers at the society's expense.",
+				"failureText": "The secretary hears you out politely and books you an appointment a year from now."
+			}
+		}
+	},
+	{
+		"id": "gen-city-13",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainAsset",
+					"trait": "weapon"
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseHealth",
+					"amount": 1
+				},
+				{
+					"do": "gainCondition",
+					"condition": "legInjury"
+				}
+			],
+			"test": {
+				"skill": "influence",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Сортировочная станция",
+				"mainText": "Между вагонами на сортировочной станции торгуют ящиками без накладных. Продавцы нервничают: покупатель, который задаёт лишние вопросы, для них похож на сыщика.",
+				"successText": "Вы торгуетесь как свой и уходите с ящиком, о содержимом которого лучше не говорить вслух.",
+				"failureText": "Продавцы решают, что вы из полиции. Вас бьют и бросают на рельсы с вывихнутой ногой."
+			},
+			"en": {
+				"name": "The Rail Yard",
+				"mainText": "Between the cars at the rail yard, men are selling crates with no waybills. The sellers are jumpy: a buyer who asks too many questions looks like a detective to them.",
+				"successText": "You haggle like one of their own and walk off with a crate whose contents are best not mentioned aloud.",
+				"failureText": "The sellers decide you are police. They beat you and leave you on the tracks with a wrenched leg."
+			}
+		}
+	},
+	{
+		"id": "gen-city-12",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"choice": [
+						{
+							"do": "gainAsset",
+							"from": "reserve",
+							"trait": "service"
+						},
+						{
+							"do": "gainAsset",
+							"trait": "service"
+						}
+					]
+				}
+			],
+			"onFailure": [],
+			"test": {
+				"skill": "influence",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Городская канцелярия",
+				"mainText": "Нужная бумага лежит в канцелярии уже третью неделю. Чиновник за окошком не берёт взяток, но очень любит, когда с ним разговаривают как с человеком.",
+				"successText": "Через полчаса беседы о его внуках бумага подписана, а чиновник подсказывает, к кому ещё обратиться.",
+				"failureText": "Чиновник вежливо кивает и откладывает вашу бумагу в ту же стопку."
+			},
+			"en": {
+				"name": "City Records Office",
+				"mainText": "The paper you need has been sitting in the records office for three weeks. The clerk at the window takes no bribes, but he does love being spoken to like a human being.",
+				"successText": "Half an hour of talk about his grandchildren, and the paper is signed, along with a tip about who else to see.",
+				"failureText": "The clerk nods politely and puts your paper back on the same pile."
+			}
+		}
+	},
+	{
+		"id": "gen-city-11",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "healSanity",
+					"amount": 2
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "paranoia"
+				}
+			],
+			"test": {
+				"skill": "will",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Последний спектакль",
+				"mainText": "В заколоченном театре по ночам звучит голос актрисы, оборвавшей роль на полуслове много лет назад. Сторож говорит: тот, кто дослушает её до конца, уходит спокойным.",
+				"successText": "Вы подаёте ей последнюю реплику. Призрак кланяется пустому залу, и вы выходите на улицу с лёгким сердцем.",
+				"failureText": "Её голос звучит за спиной и на улице, и дома, и вы перестаёте понимать, кто ещё вас слушает."
+			},
+			"en": {
+				"name": "The Last Performance",
+				"mainText": "In a boarded-up theatre the voice of an actress who broke off her part mid-line years ago can be heard at night. The watchman says that whoever hears her out to the end leaves at peace.",
+				"successText": "You give her the final cue. The ghost bows to the empty hall, and you step out into the street light of heart.",
+				"failureText": "Her voice follows you into the street and home, and you can no longer tell who else is listening to you."
+			}
+		}
+	},
+	{
+		"id": "gen-city-10",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "placeClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseSanity",
+					"amount": 2
+				}
+			],
+			"test": {
+				"skill": "will",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Пластинки фотографа",
+				"mainText": "Фотограф спиритических сеансов показывает вам пластинки: на каждой среди гостей стоит лишняя фигура. Он уверен, что фигура указывает куда-то, но сам больше не может на неё смотреть.",
+				"successText": "Вы смотрите долго, пока не замечаете за фигурой знакомый городской силуэт. Теперь вы знаете, где искать.",
+				"failureText": "Фигура на пластинке поворачивает голову к вам. Вы роняете снимок и долго не можете унять дрожь."
+			},
+			"en": {
+				"name": "The Photographer's Plates",
+				"mainText": "A photographer of séances shows you his plates: on each one an extra figure stands among the guests. He is sure it is pointing somewhere, but he can no longer bear to look at it.",
+				"successText": "You look for a long time, until you notice a familiar skyline behind the figure. Now you know where to search.",
+				"failureText": "The figure on the plate turns its head toward you. You drop the print and cannot stop shaking for a long time."
+			}
+		}
+	},
+	{
+		"id": "gen-city-09",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainAsset",
+					"trait": "ally"
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseHealth",
+					"amount": 1
+				}
+			],
+			"test": {
+				"skill": "strength",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Лифтовая шахта",
+				"mainText": "В гостинице гаснет свет, и из шахты лифта доносится крик монтёра. Что-то тянет его вниз, в темноту между этажами. Вы прыгаете на крышу застрявшей кабины.",
+				"successText": "Вы отбиваете монтёра у того, что пряталось внизу. Спасённый клянётся, что теперь он ваш должник.",
+				"failureText": "Тварь уходит вниз вместе с добычей, напоследок полоснув вас по руке."
+			},
+			"en": {
+				"name": "The Lift Shaft",
+				"mainText": "The hotel lights go out, and a mechanic's scream rises from the lift shaft. Something is dragging him down into the dark between floors. You jump onto the roof of the stalled car.",
+				"successText": "You tear the mechanic away from whatever was hiding below. He swears he owes you from now on.",
+				"failureText": "The creature slips away downward with its prey, raking your arm on the way."
+			}
+		}
+	},
+	{
+		"id": "gen-city-08",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "healSanity",
+					"amount": 2
+				}
+			],
+			"onFailure": [
+				{
+					"do": "healSanity",
+					"amount": 2
+				},
+				{
+					"do": "loseAsset",
+					"count": 1,
+					"trait": "item"
+				}
+			],
+			"test": {
+				"skill": "observation",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Карнавал на набережной",
+				"mainText": "Город празднует: фейерверки, оркестр, жареные каштаны. Впервые за долгое время вы смеётесь — и всё же краем глаза следите за толпой, где в такие ночи работают карманники.",
+				"successText": "Вы ловите за руку мальчишку, тянувшегося к вашему карману, и отпускаете его с назиданием. Вечер удался.",
+				"failureText": "Вечер удался, но, вернувшись домой, вы обнаруживаете, что одна вещь из карманов осталась на карнавале."
+			},
+			"en": {
+				"name": "Carnival on the Embankment",
+				"mainText": "The city is celebrating: fireworks, a brass band, roasted chestnuts. For the first time in a long while you laugh, yet out of the corner of your eye you keep watch on the crowd, where pickpockets work on nights like this.",
+				"successText": "You catch a boy by the wrist as he reaches for your pocket and send him off with a lecture. A fine evening.",
+				"failureText": "A fine evening, but back home you find that one of the things in your pockets stayed behind at the carnival."
+			}
+		}
+	},
+	{
+		"id": "gen-city-07",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainAsset",
+					"trait": "ally"
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "debt"
+				}
+			],
+			"test": {
+				"skill": "influence",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Благотворительный вечер",
+				"mainText": "На вечере в пользу городской больницы собрались люди, которые могут открыть любую дверь. Чтобы кто-то из них вас запомнил, придётся блистать.",
+				"successText": "Седой меценат весь вечер смеётся вашим историям, а под конец предлагает свою помощь.",
+				"failureText": "Увлёкшись, вы громко обещаете щедрое пожертвование. Отступать поздно — приходится брать в долг."
+			},
+			"en": {
+				"name": "Charity Gala",
+				"mainText": "The gala in aid of the city hospital has gathered people who can open any door. To make one of them remember you, you will have to shine.",
+				"successText": "A grey-haired patron laughs at your stories all evening and at the end offers his help.",
+				"failureText": "Carried away, you loudly pledge a generous donation. It is too late to back out, so you have to borrow."
+			}
+		}
+	},
+	{
+		"id": "gen-city-06",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainArtifact",
+					"trait": "tome"
+				}
+			],
+			"onFailure": [],
+			"test": {
+				"skill": "lore",
+				"modifier": -1
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Наследство профессора",
+				"mainText": "Наследники покойного профессора распродают его библиотеку по каталогу, составленному шифром. Большинство лотов — пустяки, но профессор явно что-то прятал среди ботаники и сонетов.",
+				"successText": "Шифр сдаётся, и под невзрачным номером обнаруживается книга, которую профессор не показывал никому.",
+				"failureText": "Вы бьётесь над каталогом до закрытия торгов, но ключ к шифру так и не находится."
+			},
+			"en": {
+				"name": "The Professor's Estate",
+				"mainText": "The heirs of a late professor are selling his library from a catalogue he kept in cipher. Most lots are trifles, but the professor was plainly hiding something among the botany and the sonnets.",
+				"successText": "The cipher cracks, and behind a dull lot number you find a book the professor never showed anyone.",
+				"failureText": "You wrestle with the catalogue until the sale closes, but the key to the cipher never turns up."
+			}
+		}
+	},
+	{
+		"id": "gen-city-05",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainAsset",
+					"trait": "weapon"
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "detained"
+				}
+			],
+			"test": {
+				"skill": "influence",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Задняя комната оружейника",
+				"mainText": "Старый оружейник торгует охотничьими ружьями, но для «надёжных людей» у него есть товар и в задней комнате. Надёжным вас пока никто не считает.",
+				"successText": "Пара удачных историй о фронте, и дверь в заднюю комнату открывается. Вы уходите не с пустыми руками.",
+				"failureText": "Ваши расспросы слышит соседка-лавочница. Через час за вами приходит констебль, и до утра вы сидите в камере."
+			},
+			"en": {
+				"name": "The Gunsmith's Back Room",
+				"mainText": "The old gunsmith sells hunting rifles, but for \"reliable people\" he keeps other stock in the back room. Nobody considers you reliable yet.",
+				"successText": "A couple of well-told war stories, and the back-room door opens. You do not leave empty-handed.",
+				"failureText": "The shopkeeper next door overhears your questions. An hour later a constable comes for you, and you spend the night in a cell."
+			}
+		}
+	},
+	{
+		"id": "gen-city-04",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "legInjury"
+				}
+			],
+			"test": {
+				"skill": "influence",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Стачечный пикет",
+				"mainText": "У ворот фабрики вас обступают пикетчики: чужак в хорошем пальто, значит, штрейкбрехер или шпик хозяев. Объяснить, кто вы и зачем здесь, нужно быстро — толпа уже взялась за палки.",
+				"successText": "Вы находите нужные слова, и старший пикета, хмыкнув, сам провожает вас мимо своих людей.",
+				"failureText": "Слова не помогают. Вас сбивают с ног, и кто-то несколько раз прицельно бьёт по колену."
+			},
+			"en": {
+				"name": "Picket Line",
+				"mainText": "At the factory gates the picketers close in around you: a stranger in a good coat must be a strikebreaker or a company spy. You need to explain who you are and why you are here, fast, because the crowd is already reaching for clubs.",
+				"successText": "You find the right words, and the picket boss grunts and walks you past his men himself.",
+				"failureText": "Words do not help. You are knocked down, and someone takes several careful swings at your knee."
+			}
+		}
+	},
+	{
+		"id": "gen-city-03",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"choice": [
+						{
+							"do": "gainAsset",
+							"from": "reserve",
+							"trait": "item"
+						},
+						{
+							"do": "gainAsset",
+							"trait": "item"
+						}
+					]
+				}
+			],
+			"onFailure": [
+				{
+					"do": "loseHealth",
+					"amount": 1
+				},
+				{
+					"do": "loseAsset",
+					"count": 1,
+					"trait": "item"
+				}
+			],
+			"test": {
+				"skill": "strength",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Обвал лесов",
+				"mainText": "На стройке напротив с грохотом складываются леса, и под досками кричит рабочий. Пока остальные бегут за помощью, вы хватаетесь за балку, которую двоим не поднять.",
+				"successText": "Балка поддаётся, рабочего вытаскивают. Благодарный прораб отдаёт вам кое-что из инструментального ящика.",
+				"failureText": "Балка срывается из рук. Вы отделываетесь ссадинами, но сумка остаётся где-то под завалом."
+			},
+			"en": {
+				"name": "Scaffold Collapse",
+				"mainText": "Across the street the scaffolding on a building site folds with a crash, and a worker is screaming under the planks. While everyone else runs for help, you take hold of a beam two men could not lift.",
+				"successText": "The beam gives, and the worker is pulled clear. The grateful foreman hands you something from his toolbox.",
+				"failureText": "The beam slips from your grip. You get away with scrapes, but your bag ends up somewhere under the rubble."
+			}
+		}
+	},
+	{
+		"id": "gen-city-02",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "placeClue",
+					"count": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "debt"
+				}
+			],
+			"test": {
+				"skill": "influence",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Объявление в газете",
+				"mainText": "Редактор вечерней газеты не любит «мистиков», но место на четвёртой полосе ещё свободно. Если уговорить его напечатать вашу заметку о странных огнях над окраиной, читатели могут откликнуться.",
+				"successText": "Заметка выходит, и уже через день в редакцию приходит письмо: кто-то видел то же самое — и знает, где.",
+				"failureText": "Редактор соглашается только на платное объявление. Денег при себе нет, и вы подписываете долговую расписку."
+			},
+			"en": {
+				"name": "A Notice in the Paper",
+				"mainText": "The editor of the evening paper has no love for \"mystics\", but there is still room on page four. If you can talk him into printing your note about strange lights over the outskirts, readers may write in.",
+				"successText": "The note runs, and a day later a letter arrives at the office: someone saw the same thing, and knows where.",
+				"failureText": "The editor will only take a paid advertisement. You have no cash on you, so you sign an IOU."
+			}
+		}
+	},
+	{
+		"id": "gen-city-01",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:city",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"choice": [
+						{
+							"do": "gainAsset",
+							"from": "reserve",
+							"trait": "item"
+						},
+						{
+							"do": "gainAsset",
+							"trait": "item"
+						}
+					]
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "detained"
+				}
+			],
+			"test": {
+				"skill": "observation",
+				"modifier": 0
+			}
+		},
+		"i18n": {
+			"ru": {
+				"name": "Аукцион конфиската",
+				"mainText": "На складе полицейского управления распродают конфискованное добро: сундуки контрабанды, ящики без описи, чьи-то забытые чемоданы. Среди хлама наверняка есть что-то стоящее — нужно лишь разглядеть его раньше прочих покупателей.",
+				"successText": "Под грудой старых пальто вы находите вещь, которая в вашем деле пригодится, и уносите её за бесценок.",
+				"failureText": "Вы слишком пристально изучаете опечатанный ящик. Сержант решает, что вы скупщик краденого, и до выяснения вас запирают в участке."
+			},
+			"en": {
+				"name": "Impound Auction",
+				"mainText": "The police department is selling off confiscated goods from its warehouse: smugglers' trunks, unlabelled crates, suitcases nobody came back for. Somewhere in the junk there must be something worthwhile, if only you can spot it before the other bidders.",
+				"successText": "Under a heap of old coats you find something your line of work can use, and you carry it off for a song.",
+				"failureText": "You study a sealed crate a little too closely. The sergeant decides you are a fence, and you are locked up at the station until the matter is cleared up."
+			}
+		}
+	},
+	{
 		"id": "demo-sheaf-field-3",
 		"kind": "general",
 		"tags": [
