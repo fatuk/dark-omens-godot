@@ -44,6 +44,20 @@ const _CODE_TILT_DEG: float = 8.0  # штамп повёрнут по часов
 const _FOOTER_RECT := Rect2(472, 1778, 598, 167)  # внутреннее поле плашки футера
 const _FOOTER_CAPS_NUDGE: int = 6  # подпись футера ниже на N px (центр заглавных)
 const _CLOSE_RECT := Rect2(1346, 60, 136, 134)  # крестик в арте
+# Подсветка крестика по наведению: тот же кусок арта поверх, ярче и под круглой маской.
+const _CLOSE_GLOW_BOOST: float = 2.1
+const _CLOSE_GLOW_TIME: float = 0.15
+const _CLOSE_GLOW_SHADER := """
+shader_type canvas_item;
+uniform float boost = 1.6;
+void fragment() {
+	// COLOR на входе — уже текстура × modulate: берём rgb из текстуры заново,
+	// иначе вышел бы квадрат текстуры (темнее, а не ярче).
+	vec4 t = texture(TEXTURE, UV);
+	float m = 1.0 - smoothstep(0.44, 0.5, distance(UV, vec2(0.5)));
+	COLOR = vec4(t.rgb * boost, COLOR.a * m);
+}
+"""
 const _ICON_H: float = 112.0  # медальоны успеха/провала
 # Шрифты — тоже в пикселях бланка (на экране ≈ ×0.5).
 const _FS_NAME: int = 52
@@ -237,6 +251,24 @@ func _build_close() -> void:
 	btn.add_theme_stylebox_override("pressed", StyleBoxEmpty.new())
 	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	_place(btn, _CLOSE_RECT)
+
+	var glow := TextureRect.new()
+	glow.name = "CloseGlow"
+	glow.texture = ImageTexture.create_from_image(_BG.get_image().get_region(Rect2i(_CLOSE_RECT)))
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	glow.modulate.a = 0.0
+	var mat := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = _CLOSE_GLOW_SHADER
+	mat.shader = sh
+	mat.set_shader_parameter("boost", _CLOSE_GLOW_BOOST)
+	glow.material = mat
+	_place(glow, _CLOSE_RECT)
+	_sheet.move_child(glow, btn.get_index())  # под кнопкой — клики ловит она
+	var fade := func(on: bool) -> void:
+		create_tween().tween_property(glow, "modulate:a", 1.0 if on else 0.0, _CLOSE_GLOW_TIME)
+	btn.mouse_entered.connect(fade.bind(true))
+	btn.mouse_exited.connect(fade.bind(false))
 	btn.pressed.connect(
 		func() -> void:
 			_dismissed = _telegram

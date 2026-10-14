@@ -137,3 +137,15 @@ func test_outcome_reveal_is_animated() -> void:
 func test_sheet_height_clamps() -> void:
 	assert_eq(_Modal.sheet_height(5000.0), 2048.0, "не выше нарисованного")
 	assert_eq(_Modal.sheet_height(0.0), float(480 + 588), "не ниже шапки и низа")
+
+
+func test_close_glows_on_hover() -> void:
+	var btn: Button = _m.find_child("Close", true, false)
+	var glow: Control = _m.find_child("CloseGlow", true, false)
+	assert_eq(glow.modulate.a, 0.0, "без наведения не подсвечен")
+	btn.mouse_entered.emit()
+	await wait_seconds(0.3)
+	assert_eq(glow.modulate.a, 1.0, "навели — подсветился")
+	btn.mouse_exited.emit()
+	await wait_seconds(0.3)
+	assert_eq(glow.modulate.a, 0.0, "увели — погас")
