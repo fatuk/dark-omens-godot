@@ -137,6 +137,7 @@ func _build() -> void:
 	_sheet.add_child(_bg)
 
 	_name = _ink_label("Name", _FS_NAME, HORIZONTAL_ALIGNMENT_CENTER)
+	_name.add_theme_font_override("font", _bold_font())
 	_place(_name, _NAME_RECT)
 	_time = _ink_label("DispatchTime", _FS_TIME, HORIZONTAL_ALIGNMENT_CENTER)
 	_time.add_theme_font_override("font", _bold_font())
@@ -243,7 +244,7 @@ func _build_close() -> void:
 	)
 
 
-# Forum без жирного начертания — утолщаем глифы (время отправки, код связи).
+# Forum без жирного начертания — утолщаем глифы (имя, заголовки, время, код).
 func _bold_font() -> FontVariation:
 	var f := FontVariation.new()
 	var path: String = String(ProjectSettings.get_setting("gui/theme/custom_font", ""))
@@ -275,6 +276,7 @@ func _section_header(parent: Control, node_name: String, key: String) -> Label:
 	parent.add_child(row)
 	row.add_child(_icon("ChevronL", _CHEV_L, _CHEV_L.get_size()))
 	var l := _ink_label("Label", _FS_HEAD, HORIZONTAL_ALIGNMENT_CENTER)
+	l.add_theme_font_override("font", _bold_font())  # заголовки разделов — жирным
 	l.text = key
 	row.add_child(l)
 	row.add_child(_icon("ChevronR", _CHEV_R, _CHEV_R.get_size()))

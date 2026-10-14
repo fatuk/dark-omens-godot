@@ -84,11 +84,13 @@ func test_outcome_hidden_until_rolled_then_only_the_rolled_one() -> void:
 
 
 func test_time_and_code_are_bold() -> void:
-	for n: String in ["DispatchTime", "CommsCode"]:
+	for n: String in ["DispatchTime", "CommsCode", "Name"]:
 		var l: Label = _m.find_child(n, true, false)
 		var f: FontVariation = l.get_theme_font("font") as FontVariation
 		assert_not_null(f, "%s — своё начертание" % n)
 		assert_gt(f.variation_embolden, 0.0, "%s — жирным" % n)
+	var head: Label = _m.find_child("EncounterHeader", true, false).find_child("Label", true, false)
+	assert_not_null(head.get_theme_font("font") as FontVariation, "заголовок раздела — жирным")
 
 
 func test_close_hides_until_next_encounter() -> void:
