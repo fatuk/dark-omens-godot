@@ -1,5 +1,5 @@
 {
-  "_comment": "Статичная библиотека состояний. Тексты — ключи i18n. conditions: front/reckoning — ключи; onReckoning — Effect-DSL шага расплаты; опц. whileHeld (пассивы: cannotMove/cannotAct/cannotRecover/removeFromBoard/immuneToEffects/successThreshold), triggered ([{on,do}] по событию rest/travel/...), action (локальное действие); onDuplicate:\"flip\" — повторное получение переворачивает карту вместо дубля (Благословение/Проклятие). backs — ИНЛАЙН обороты состояния (как у заклинаний): {id,name,text,effect (Effect-DSL),then:flip|discard}; при flip тянется случайный (или форс flow.outcomes[cid]). Conditions.outcome_def агрегирует backs всех состояний по id.",
+  "_comment": "Статичная библиотека состояний. Тексты — ключи i18n. conditions: front/reckoning — ключи; onReckoning — Effect-DSL шага расплаты; опц. whileHeld (пассивы: cannotMove/cannotAct/cannotRecover/removeFromBoard/immuneToEffects/successThreshold), triggered ([{on,do}] по событию rest/travel/...), action (локальное действие); onDuplicate:\"flip\" — повторное получение переворачивает карту вместо дубля (Благословение/Проклятие). scenarioOnly:true — состояние сценария: случайный выбор по виду (gainCondition kind) его пропускает, выдаётся только явным condition:id. backs — ИНЛАЙН обороты состояния (как у заклинаний): {id,name,text,effect (Effect-DSL),then:flip|discard}; при flip тянется случайный (или форс flow.outcomes[cid]). Conditions.outcome_def агрегирует backs всех состояний по id.",
   "conditions": [
 	{
 	  "id": "debt",
@@ -1524,6 +1524,7 @@
 	},
 	{
 	  "id": "obsession",
+	  "scenarioOnly": true,
 	  "name": "COND_OBSESSION_NAME",
 	  "kind": "madness",
 	  "front": "COND_OBSESSION_FRONT",

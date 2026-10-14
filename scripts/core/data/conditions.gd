@@ -75,17 +75,24 @@ static func kind_of(id: String) -> String:
 	return String(get_def(id).get("kind", ""))
 
 
+## Состояние сценария (scenarioOnly: Одержимость «Братства Колоса»): в случайный
+## пул по виду не входит, выдаётся только явным id (gainCondition condition:"…").
+static func is_scenario_only(id: String) -> bool:
+	return bool(get_def(id).get("scenarioOnly", false))
+
+
 ## Все id состояний перечисленных видов. На картах «Безумие», «Болезнь», «Травма» —
-## это ВИД, а не карта: берётся случайная того вида. Пустой список видов → все id.
+## это ВИД, а не карта: берётся случайная того вида. Пустой список видов → все виды.
+## Состояния сценария (is_scenario_only) пропускаются — это пул случайного выбора.
 ## Порядок — как в data/conditions.json (детерминирован для тестов).
 static func ids_of_kinds(kinds: Array) -> Array:
 	_ensure_loaded()
-	if kinds.is_empty():
-		return all_ids()
 	var out: Array = []
 	for id_v: Variant in _by_id.keys():
 		var id: String = String(id_v)
-		if kinds.has(kind_of(id)):
+		if is_scenario_only(id):
+			continue
+		if kinds.is_empty() or kinds.has(kind_of(id)):
 			out.append(id)
 	return out
 
