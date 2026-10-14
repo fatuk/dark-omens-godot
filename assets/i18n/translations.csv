@@ -200,6 +200,10 @@ INV_NGOZI_EZE_QUOTE,«Я хожу между миром живых и миром
 INV_FRANK_DALTON_NAME,Фрэнк Далтон,Frank Dalton
 INV_FRANK_DALTON_OCC,Солдат,The Soldier
 INV_FRANK_DALTON_QUOTE,"«Я прошёл окопы и думал, что видел ад. Оказалось, ад только приоткрыл дверь»",«I walked through the trenches and thought that was hell. Turns out hell had just cracked the door»
+INV_FRANK_DALTON_ABILITY_NAME,В рукопашную,Hand to Hand
+INV_FRANK_DALTON_ABILITY_TEXT,Действие: вы и 1 монстр на вашей локации теряете по 1 здоровью.,Action: You and 1 Monster on your space each lose 1 Health.
+INV_FRANK_DALTON_PASSIVE_NAME,Солдатская выдержка,Soldier's Grit
+INV_FRANK_DALTON_PASSIVE_TEXT,"Вы не можете стать Задержаны или получить состояние «Заключение», если сами того не пожелаете.",You cannot become Delayed or gain a Detained Condition unless you choose to.
 INV_MARCUS_BELL_NAME,Маркус Белл,Marcus Bell
 INV_MARCUS_BELL_OCC,Одержимый,The Haunted
 INV_MARCUS_BELL_QUOTE,"«Оно живёт во мне. И я не всегда помню, чьи руки держат этот нож»",«It lives within me. And I don't always know whose hands hold this knife»

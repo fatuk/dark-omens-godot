@@ -47,10 +47,55 @@ static func _is_mine(inv_name: String) -> bool:
 # Запуск способности: встроенный вид с вводом открывает свой диалог, обычная
 # DSL-программа уходит хосту сразу.
 static func _activate(parent: Node, inv_name: String) -> void:
-	if Investigators.ability_kind(inv_name) == "convertVitality":
-		_open_convert_vitality(parent)
-		return
+	match Investigators.ability_kind(inv_name):
+		"convertVitality":
+			_open_convert_vitality(parent)
+			return
+		"strikeMonster":
+			_open_strike_monster(parent, inv_name)
+			return
 	GameState.perform_action(GameActions.INVESTIGATOR_ABILITY)
+
+
+# «Вы и 1 монстр на вашей локации теряете по 1 здоровью» (Фрэнк Далтон): монстр
+# один — бьём сразу; несколько — игрок выбирает, кого. Валидирует хост.
+static func _open_strike_monster(parent: Node, inv_name: String) -> void:
+	var loc: String = String(GameState.my_player().get("location", ""))
+	var here: Array = GameState.monsters.get(loc, [])
+	if here.is_empty():
+		return
+	if here.size() == 1:
+		GameState.perform_action(GameActions.INVESTIGATOR_ABILITY, {"monster": "%s#0" % loc})
+		return
+	var modal: ModalDialog = _MODAL.instantiate()
+	parent.add_child(modal)
+	modal.set_title(
+		TranslationServer.translate(String(Investigators.ability(inv_name).get("name", "")))
+	)
+	var box := VBoxContainer.new()
+	box.name = "StrikePick"
+	box.add_theme_constant_override("separation", 10)
+	var hint := UIStyle.label("ABILITY_STRIKE_PROMPT", UIStyle.MODAL_FS_BODY)
+	hint.name = "Hint"
+	box.add_child(hint)
+	for i in range(here.size()):
+		var inst: Variant = here[i]
+		var mid: String = (
+			String((inst as Dictionary).get("id", "")) if inst is Dictionary else String(inst)
+		)
+		var btn := UIStyle.button(
+			String(GameState.monster_def(mid).get("nameKey", mid)), UIColors.ACCENT
+		)
+		btn.name = "Monster%d" % i
+		var ref: String = "%s#%d" % [loc, i]
+		btn.pressed.connect(
+			func() -> void:
+				modal.close()
+				GameState.perform_action(GameActions.INVESTIGATOR_ABILITY, {"monster": ref})
+		)
+		box.add_child(btn)
+	modal.set_content(box)
+	modal.open()
 
 
 # Диалог «внутреннего равновесия»: из какого запаса потратить и сколько — столько

@@ -811,6 +811,8 @@ func can_use_ability() -> bool:
 	match Investigators.ability_kind(inv):
 		"convertVitality":
 			return _convert_vitality_max(me) > 0
+		"strikeMonster":
+			return has_monster_at(String(me.get("location", "")))  # бить некого — неактивна
 	return true
 
 

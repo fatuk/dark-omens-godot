@@ -100,6 +100,11 @@ const _SKILL_CHOICE_VERBS := ["improveSkill", "impairSkill"]
 # пула (CheckFlow.pool / _roll_test / _lore_roll — maxi(1, …)).
 const SKILL_MOD_CAP := 2
 
+# Глубина вложенности в ветку, которую выбрал игрок (choice с записанным решением).
+# >0 — эффекты «по своему выбору»: иммунитет «если только не выбрали сами» (Pocket
+# Watch, пассив Солдата) их не гасит. Прогон синхронный и однопоточный — статика безопасна.
+static var _chosen_depth: int = 0
+
 
 ## ctx (опц.) — контекст исполнения: { skills, loc_type, is_lead, gates_matching_omen,
 ## gates_on_board, monsters_on_board, clues_on_board, rumors_in_play, monster_toughness,
@@ -314,8 +319,17 @@ static func _item_undiscardable(entry: Variant) -> bool:
 	return false
 
 
+# Иммунитет к статусу ("delayed" / id состояния): предмет (Pocket Watch) или пассив
+# сыщика (Фрэнк Далтон). Обе карты — «если только не выбрали сами»: внутри ветки,
+# которую выбрал игрок, иммунитет молчит, иначе «станьте Задержанным, чтобы получить
+# Артефакт» давал бы артефакт даром.
 static func _owns_immunity(player: Dictionary, status: String) -> bool:
-	return _owns_whileowned(player, "immuneTo", "status", status)
+	if _chosen_depth > 0:
+		return false
+	return (
+		_owns_whileowned(player, "immuneTo", "status", status)
+		or (Investigators.passive_immune_to(String(player.get("investigator", "")), status))
+	)
 
 
 # Узел choice. Без interactive — берём первую ветку (легаси). С interactive: есть
@@ -340,7 +354,9 @@ static func _run_choice(
 	if decisions.has(path):
 		var idx: int = clampi(int(decisions[path]), 0, branches.size() - 1)
 		_charge_cost(branches[idx], player, logs, board)
+		_chosen_depth += 1  # ветку выбрал игрок — «если только не выбрали сами»
 		_run_node(branches[idx], player, logs, board, ctx, flow, path + "/c" + str(idx))
+		_chosen_depth -= 1
 		return
 	# Ветка с cost (spend/amount) доступна только если игрок может заплатить — гейт
 	# «сделай X, иначе штраф» (closes «unless he spends 1 Clue» лазейку).
@@ -761,7 +777,9 @@ static func _apply_player_verb(
 			var cid: String = String(node.get("condition", ""))
 			if cid.is_empty():
 				cid = _pick_condition(node, player)
-			if not cid.is_empty():
+			if not cid.is_empty() and _owns_immunity(player, cid):
+				logs.append("иммунитет к состоянию «%s»" % cid)  # Солдат: Detained
+			elif not cid.is_empty():
 				var conds: Array = player.get("conditions", [])
 				if not conds.has(cid):
 					conds.append(cid)

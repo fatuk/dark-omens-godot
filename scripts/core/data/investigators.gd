@@ -84,6 +84,8 @@ static func ability_program(inv_name: String) -> Array:
 ##   "convertVitality" — «потратить N здоровья или рассудка и восстановить
 ##                       столько же другого» (Мэй Линь). Игрок выбирает
 ##                       направление и величину; хост валидирует.
+##   "strikeMonster"   — «вы и 1 монстр на вашей локации теряете по 1 здоровью»
+##                       (Фрэнк Далтон). Игрок выбирает монстра, если их несколько.
 static func ability_kind(inv_name: String) -> String:
 	return String(ability(inv_name).get("kind", ""))
 
@@ -114,9 +116,22 @@ static func extra_skill_improvements(inv_name: String) -> int:
 	return n
 
 
-## Пассив сыщика ({} — нет). Ключи: name, text, mods.
+## Пассив сыщика ({} — нет). Ключи: name, text, mods, triggers, whileOwned.
 static func passive(inv_name: String) -> Dictionary:
 	return get_data(inv_name).get("passive", {})
+
+
+## Иммунитет пассива к статусу ("delayed" или id состояния, напр. "detained"):
+## узел whileOwned {do:"immuneTo", status} (Фрэнк Далтон). «Если только не выбрали
+## сами» обеспечивает EffectRunner — общий для пассива и предметов (Pocket Watch).
+static func passive_immune_to(inv_name: String, status: String) -> bool:
+	for n_v: Variant in passive(inv_name).get("whileOwned", []) as Array:
+		if not (n_v is Dictionary):
+			continue
+		var n: Dictionary = n_v
+		if String(n.get("do", "")) == "immuneTo" and String(n.get("status", "")) == status:
+			return true
+	return false
 
 
 ## Модификаторы пассива, подходящие под контекст проверки ("anyTest"/пусто — всегда).

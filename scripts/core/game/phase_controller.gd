@@ -69,6 +69,8 @@ func _run_investigator_ability(pid: String, p: Dictionary, payload: Dictionary) 
 	match Investigators.ability_kind(inv_id):
 		"convertVitality":
 			ok = _ability_convert_vitality(pid, p, payload)
+		"strikeMonster":
+			ok = _ability_strike_monster(pid, p, payload)
 		_:
 			ok = _ability_run_program(pid, p, inv_id)
 	if ok:
@@ -87,6 +89,28 @@ func _ability_run_program(pid: String, p: Dictionary, inv_id: String) -> bool:
 		GameConsole.log("[Способность] %s: %s" % [_gs.name_of(pid), String(l_v)])
 	for node_v: Variant in res.get("board", []):
 		_gs.apply_board_effect(node_v as Dictionary)
+	return true
+
+
+# «Вы и 1 монстр на вашей локации теряете по 1 здоровью» (Фрэнк Далтон).
+# payload: {monster: "loc#idx"} — выбранный монстр; без него — первый на клетке.
+# Монстр обязан стоять на клетке сыщика, иначе false (действие не тратим). Своё
+# здоровье может уйти в 0 — Порог откроет общий свип в broadcast_sync.
+func _ability_strike_monster(pid: String, p: Dictionary, payload: Dictionary) -> bool:
+	var loc: String = String(p.get("location", ""))
+	var here: Array = _gs.monsters.get(loc, [])
+	if here.is_empty():
+		return false
+	var ref: String = String(payload.get("monster", "%s#0" % loc))
+	var parts: PackedStringArray = ref.split("#")
+	if parts.size() != 2 or parts[0] != loc or not parts[1].is_valid_int():
+		return false
+	var idx: int = int(parts[1])
+	if idx < 0 or idx >= here.size():
+		return false
+	p[PlayerKeys.HP] = maxi(0, int(p.get(PlayerKeys.HP, 0)) - 1)
+	_gs._board.damage_monster_ref(ref, 1)
+	GameConsole.log("[Способность] %s: −1 здоровья себе и монстру %s" % [_gs.name_of(pid), ref])
 	return true
 
 

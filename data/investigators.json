@@ -1160,6 +1160,25 @@
 			"strength": 4,
 			"will": 4
 		},
+		"ability": {
+			"name": "INV_FRANK_DALTON_ABILITY_NAME",
+			"text": "INV_FRANK_DALTON_ABILITY_TEXT",
+			"kind": "strikeMonster"
+		},
+		"passive": {
+			"name": "INV_FRANK_DALTON_PASSIVE_NAME",
+			"text": "INV_FRANK_DALTON_PASSIVE_TEXT",
+			"whileOwned": [
+				{
+					"do": "immuneTo",
+					"status": "delayed"
+				},
+				{
+					"do": "immuneTo",
+					"status": "detained"
+				}
+			]
+		},
 		"hasImage": true
 	},
 	{
