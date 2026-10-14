@@ -183,7 +183,8 @@ static func ancients(locale: String) -> Array:
 
 ## Аналог POST /encounters/draw. Тот же порядок отбора, что на реле:
 ## вид → оси (loc / location / world) → requires по флагам → pinned/общие →
-## сброс (exclude) → карты этого Древнего, потом общие → заглушка на недостачу.
+## сброс (exclude) → general: свои и общие одной колодой; прочие: свои, потом общие →
+## заглушка на недостачу.
 ## Корпус — Древнего кампании (campaignId); без кампании — первого запечённого.
 static func draw(req: Dictionary) -> Dictionary:
 	_ensure_loaded()
@@ -272,9 +273,15 @@ static func draw(req: Dictionary) -> Dictionary:
 		else:
 			generic.append(c)
 
-	var chosen: Array = _pick_n(specific, n)
-	if chosen.size() < n:
-		chosen.append_array(_pick_n(generic, n - chosen.size()))
+	# general — ОДНА колода: свои карты Древнего и общие (ancient:any) наравне, как на
+	# реле. research/gate/mystery — свои карты Древнего в приоритете.
+	var chosen: Array = []
+	if kind == "general":
+		chosen = _pick_n(specific + generic, n)
+	else:
+		chosen = _pick_n(specific, n)
+		if chosen.size() < n:
+			chosen.append_array(_pick_n(generic, n - chosen.size()))
 
 	var out: Array = []
 	for i: int in range(chosen.size()):

@@ -115,10 +115,15 @@ func test_site_specific_general_takes_pinned_card() -> void:
 	assert_ne(ids[0], "arkham-pinned", "без siteSpecific — общая")
 
 
-func test_ancient_cards_preferred_when_campaign_known() -> void:
-	for i: int in range(10):
+func test_general_mixes_ancient_and_any_cards() -> void:
+	# general — одна колода, как на реле: свои карты Древнего и общие наравне (раньше
+	# свои шли первыми, и общие при Древнем со своими картами почти не выпадали).
+	var seen: Dictionary = {}
+	for i: int in range(40):
 		var ids: Array = _ids(_draw(_req("general", "Rome", "city", {"campaignId": "camp-ru-2"})))
-		assert_eq(ids, ["sheaf-city"])
+		seen[ids[0]] = true
+	assert_true(seen.has("sheaf-city"), "своя карта Древнего выпадает")
+	assert_true(seen.has("city-any"), "и общая — тоже")
 
 
 func test_research_prefers_pinned_to_this_cell() -> void:
@@ -131,7 +136,8 @@ func test_exclude_skips_discard_until_pool_is_empty() -> void:
 	# city-any — единственная общая городская без Древнего → сброс возвращается в колоду.
 	assert_eq(_ids(_draw(req)), ["city-any"])
 	req["campaignId"] = "camp-ru-2"
-	assert_eq(_ids(_draw(req)), ["sheaf-city"], "свежая карта Древнего вместо сброшенной")
+	for i: int in range(10):
+		assert_eq(_ids(_draw(req)), ["sheaf-city"], "свежая карта вместо сброшенной")
 
 
 func test_gate_any_world_or_explicit_world() -> void:

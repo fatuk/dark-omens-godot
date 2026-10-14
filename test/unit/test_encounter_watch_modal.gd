@@ -149,3 +149,28 @@ func test_close_glows_on_hover() -> void:
 	btn.mouse_exited.emit()
 	await wait_seconds(0.3)
 	assert_eq(glow.modulate.a, 0.0, "увели — погас")
+
+
+func test_stub_without_text_shows_stakes_and_effects() -> void:
+	# Механическая заглушка (корпусу нечего было дать — исследование на клетке без своих
+	# карт): текста нет, раньше бланк выходил пустым. Теперь — ставки и итог по эффектам.
+	GameState.current_encounter = {
+		"kind": "research",
+		"name": "",
+		"mechanical": true,
+		"mainText": "",
+		"successText": "",
+		"failureText": "",
+		"onSuccess": [{"do": "gainClue", "count": 1}],
+		"onFailure": [{"do": "loseSanity", "amount": 1}],
+		"test": {"skill": "observation", "modifier": 0},
+	}
+	_m.call("_refresh")
+	var txt: Label = _m.find_child("Text", true, false)
+	assert_string_contains(txt.text, tr("ENC_REWARD"), "ставки: что даст успех")
+	assert_string_contains(txt.text, tr("ENC_PENALTY"), "и чем грозит провал")
+	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": false}
+	_m.call("_refresh")
+	var rt: RichTextLabel = _m.find_child("Outcome", true, false).find_child("Text", true, false)
+	var lose: String = EffectManifest.describe({"do": "loseSanity", "amount": 1})
+	assert_string_contains(rt.text, lose, "итог провала — по эффектам")

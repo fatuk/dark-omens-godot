@@ -459,7 +459,7 @@ func _refresh() -> void:
 	_name.text = _investigator_name(pid).to_upper()
 	var nm: String = String(card.get("name", "")).strip_edges()
 	_head.text = nm.to_upper() if not nm.is_empty() else tr("TELEGRAM_ENCOUNTER")
-	_text.text = String(node.get("mainText", "")).strip_edges()
+	_text.text = _main_or_stakes(node)
 	# Исход — только когда проверка сыграна, и только тот, что выпал. Появился на уже
 	# открытой телеграмме — анимируем (рост бланка, затем проявление), без скачка.
 	var reveal: bool = rolled and not _outcome_block.visible and not fresh
@@ -467,11 +467,9 @@ func _refresh() -> void:
 	if rolled:
 		_outcome_icon.texture = _SUCCESS if passed else _FAILURE
 		_outcome_text.text = (
-			_outcome_bbcode("TELEGRAM_SUCCESS", _INK_SUCCESS, String(node.get("successText", "")))
+			_outcome_bbcode("TELEGRAM_SUCCESS", _INK_SUCCESS, _outcome_or_effects(node, true))
 			if passed
-			else _outcome_bbcode(
-				"TELEGRAM_FAILURE", _INK_FAILURE, String(node.get("failureText", ""))
-			)
+			else _outcome_bbcode("TELEGRAM_FAILURE", _INK_FAILURE, _outcome_or_effects(node, false))
 		)
 	_fit_text.call_deferred(reveal)
 
@@ -481,6 +479,31 @@ func _investigator_name(pid: String) -> String:
 	if inv.is_empty():
 		return GameState.name_of(pid)
 	return tr(Investigators.display_name(inv))
+
+
+# Текст встречи; у карты без флейвора (механическая заглушка — корпусу нечего было
+# дать: исследование на клетке без своих карт и т.п.) — ставки проверки, как в окне
+# самого игрока (EncounterModal._main_or_stakes). Иначе бланк выходил пустым.
+func _main_or_stakes(node: Dictionary) -> String:
+	var main: String = String(node.get("mainText", "")).strip_edges()
+	if not main.is_empty():
+		return main
+	var succ: Array = node.get("onSuccess", [])
+	var fail: Array = node.get("onFailure", [])
+	if succ.is_empty() and fail.is_empty():
+		return ""
+	return "%s: %s\n%s: %s" % [tr("ENC_REWARD"), _eff(succ), tr("ENC_PENALTY"), _eff(fail)]
+
+
+# Текст исхода; без флейвора — что именно произошло по эффектам ветки.
+func _outcome_or_effects(node: Dictionary, passed: bool) -> String:
+	var txt: String = String(node.get("successText" if passed else "failureText", "")).strip_edges()
+	return txt if not txt.is_empty() else _eff(node.get("onSuccess" if passed else "onFailure", []))
+
+
+func _eff(arr: Variant) -> String:
+	var s: String = EffectManifest.describe_list(arr)
+	return s if not s.is_empty() else tr("ENC_EFF_NONE")
 
 
 func _outcome_bbcode(key: String, col: Color, text: String) -> String:

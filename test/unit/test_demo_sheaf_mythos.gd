@@ -137,3 +137,23 @@ func test_first_sheaf_tokens_and_special_encounters() -> void:
 	GameState._encounter._apply_eldritch_outcome("a", hook, "5", true)
 	assert_eq(_tokens_at("5"), 2, "жетон снят с поля")
 	assert_eq(GameState.mystery_tokens_on_card, 1, "и лёг на карту Тайны")
+
+
+func test_offline_general_deck_mixes_ancient_and_any() -> void:
+	# Как на реле: общие встречи (ancient:any) тянутся наравне со своими картами
+	# Древнего, а не только когда свои кончились.
+	_start()
+	var cid: String = String(GameState.campaign.get("id", ""))
+	var seen_any: bool = false
+	for _i in range(60):
+		var req := {
+			"kind": "general",
+			"campaignId": cid,
+			"realLocation": {"id": "1", "locationType": "city"},
+			"count": 1,
+		}
+		var sid: String = String(OfflineContent.draw(req)["encounters"][0].get("sourceId", ""))
+		if sid.begins_with("gen-"):
+			seen_any = true
+			break
+	assert_true(seen_any, "общая встреча по типу клетки выпадает и в демо")
