@@ -33,6 +33,9 @@ static var FRAME_W: float = 620.0
 static var FRAME_X: float = -5.0
 # Верх рамки относительно кончика пальца (+ — ниже, − — выше).
 static var FRAME_Y: float = -35.0
+# Внутренние отступы рамки: текст не должен заходить на угловой орнамент.
+static var FRAME_PAD_X: float = 56.0
+static var FRAME_PAD_Y: float = 42.0
 const _SLIDE_PX: float = 90.0  # въезд профессора справа
 const _FADE_IN: float = 0.35
 const _FADE_OUT: float = 0.2
@@ -89,7 +92,8 @@ func _build() -> void:
 	_frame = PanelContainer.new()
 	_frame.name = "Frame"
 	_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	UIStyle.style_modal_panel(_frame, 30)
+	_frame.add_theme_stylebox_override("panel", UIStyle.make_modal_stylebox())
+	_apply_padding()
 	_root.add_child(_frame)
 	var box := VBoxContainer.new()
 	box.name = "Box"
@@ -118,7 +122,16 @@ func _build() -> void:
 
 ## Перераскладка по текущим static var (зовёт TuningPanel).
 func relayout() -> void:
+	_apply_padding()
 	_layout()
+
+
+func _apply_padding() -> void:
+	var sb: StyleBox = _frame.get_theme_stylebox("panel")
+	sb.content_margin_left = FRAME_PAD_X
+	sb.content_margin_right = FRAME_PAD_X
+	sb.content_margin_top = FRAME_PAD_Y
+	sb.content_margin_bottom = FRAME_PAD_Y
 
 
 # Раскладка от правого нижнего угла: профессор на верхнем крае HUD, рамка — слева

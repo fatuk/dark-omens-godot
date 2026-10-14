@@ -1191,6 +1191,24 @@ func _build_specs() -> Array:
 			"set": _set_guide_frame_w
 		},
 		{
+			"key": "guide_frame_pad_x",
+			"label": "Рамка: отступ по бокам",
+			"min": 0.0,
+			"max": 160.0,
+			"step": 2.0,
+			"default": GuideHint.FRAME_PAD_X,
+			"set": _set_guide_frame_pad_x
+		},
+		{
+			"key": "guide_frame_pad_y",
+			"label": "Рамка: отступ сверху/снизу",
+			"min": 0.0,
+			"max": 160.0,
+			"step": 2.0,
+			"default": GuideHint.FRAME_PAD_Y,
+			"set": _set_guide_frame_pad_y
+		},
+		{
 			"key": "guide_art_scale",
 			"label": "Профессор: масштаб",
 			"min": 0.25,
@@ -2010,6 +2028,16 @@ func _set_guide_frame_y(v: float) -> void:
 
 func _set_guide_frame_w(v: float) -> void:
 	GuideHint.FRAME_W = v
+	_relayout_guide()
+
+
+func _set_guide_frame_pad_x(v: float) -> void:
+	GuideHint.FRAME_PAD_X = v
+	_relayout_guide()
+
+
+func _set_guide_frame_pad_y(v: float) -> void:
+	GuideHint.FRAME_PAD_Y = v
 	_relayout_guide()
 
 
