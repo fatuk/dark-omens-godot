@@ -1071,17 +1071,13 @@ func _on_shop_requested() -> void:
 	modal.open()
 
 
-const _TRADE_MODAL := preload("res://scenes/ui/trade_modal.tscn")
+const _TRADE_MODAL_SCRIPT := preload("res://scripts/ui/trade_modal.gd")
 
 
 func _on_trade_requested() -> void:
-	# Не плодим дубликаты, если уже открыт. open() сам no-op, если менять не с кем.
-	if has_node("TradeModal"):
-		return
-	var modal := _TRADE_MODAL.instantiate()
-	modal.name = "TradeModal"
-	add_child(modal)
-	modal.open()
+	# Окно — одно: существующую "TradeModal" (статичную из сцены тоже) переиспользуем,
+	# нет — создаём. open() сам закроется, если менять не с кем.
+	_TRADE_MODAL_SCRIPT.open_for(self)
 
 
 const _GALLERY_MODAL := preload("res://scenes/ui/gallery_modal.tscn")

@@ -5,9 +5,10 @@ extends CanvasLayer
 ## предметы/улики напарника «взять» → предложение (TRADE_OFFER). Партнёр принимает или
 ## отклоняет в TradeOfferModal; при согласии хост меняет и тратит действие инициатора
 ## (PhaseController.host_apply_trade_response). Модалка — сиблинг "TradeModal".
-## Одноразовая, как ShopModal/GalleryModal: закрытие освобождает ноду (WorldMap
-## не плодит дубликаты по имени "TradeModal" — висящая скрытая нода блокировала бы
-## все следующие нажатия «Обмен»).
+## Одноразовая, как ShopModal/GalleryModal: закрытие освобождает ноду. Открывать —
+## через open_for(host): он берёт уже висящую "TradeModal" (в world_map.tscn она
+## стоит статически!) или создаёт новую, и ВСЕГДА зовёт open(). Раньше WorldMap при
+## существующей ноде просто выходил — и статичная нода из сцены глотала все нажатия.
 
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
@@ -46,6 +47,19 @@ func _allies() -> Array:
 
 
 ## Открыть модалку обмена (зовёт панель действий). Нет напарников — no-op.
+## Открыть окно обмена у host (WorldMap): существующую "TradeModal" — переиспользовать,
+## нет — создать. Возвращает узел окна.
+static func open_for(host: Node) -> Node:
+	var modal: Node = host.get_node_or_null("TradeModal")
+	if modal == null:
+		# load, а не preload: сцена ссылается на этот же скрипт (циклический preload).
+		modal = (load("res://scenes/ui/trade_modal.tscn") as PackedScene).instantiate()
+		modal.name = "TradeModal"
+		host.add_child(modal)
+	modal.call("open")
+	return modal
+
+
 func open() -> void:
 	var allies: Array = _allies()
 	if allies.is_empty():

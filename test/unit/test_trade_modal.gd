@@ -4,6 +4,7 @@
 extends GutTest
 
 const _TRADE_MODAL := preload("res://scenes/ui/trade_modal.tscn")
+const _TRADE_SCRIPT := preload("res://scripts/ui/trade_modal.gd")
 
 var _saved_uid: String
 
@@ -60,3 +61,26 @@ func test_no_ally_frees_modal() -> void:
 	assert_false(host.has_node("TradeModal"), "меняться не с кем — нода-блокер не остаётся")
 	await wait_process_frames(2)
 	assert_false(is_instance_valid(modal), "нода освобождена")
+
+
+func test_open_for_reuses_static_modal_from_scene() -> void:
+	# Регрессия: world_map.tscn держит "TradeModal" статически — WorldMap видел ноду и
+	# выходил, окно не открывалось никогда. open_for берёт её и открывает.
+	GameState.players = {"a": _player("a", "5"), "b": _player("b", "5")}
+	var host: Node = add_child_autofree(Node.new())
+	host.name = "Host"
+	var static_modal: Node = _TRADE_MODAL.instantiate()
+	static_modal.name = "TradeModal"
+	host.add_child(static_modal)
+	var opened: Node = _TRADE_SCRIPT.open_for(host)
+	assert_eq(opened, static_modal, "переиспользована нода из сцены")
+	assert_true((opened.get_node("Root") as Control).visible, "окно открыто")
+
+
+func test_open_for_creates_modal_when_none() -> void:
+	GameState.players = {"a": _player("a", "5"), "b": _player("b", "5")}
+	var host: Node = add_child_autofree(Node.new())
+	host.name = "Host"
+	var opened: Node = _TRADE_SCRIPT.open_for(host)
+	assert_eq(opened.get_parent(), host)
+	assert_true((opened.get_node("Root") as Control).visible, "окно открыто")
