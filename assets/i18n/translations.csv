@@ -1904,7 +1904,7 @@ SETTINGS_GUIDE_RESET,Показать подсказки заново,Show hints
 SETTINGS_GUIDE_RESET_DONE,Подсказки будут показаны снова,Hints will be shown again
 PICK_ON_MAP,Выберите подсвеченную локацию на карте,Pick a highlighted location on the map
 TELEGRAM_ENCOUNTER,ВСТРЕЧА,ENCOUNTER
-TELEGRAM_OUTCOMES,ВОЗМОЖНЫЕ ИСХОДЫ,POSSIBLE OUTCOMES
+TELEGRAM_OUTCOME,ИСХОД,OUTCOME
 TELEGRAM_SUCCESS,УСПЕХ:,SUCCESS:
 TELEGRAM_FAILURE,ПРОВАЛ:,FAILURE:
 TELEGRAM_IN_PROGRESS,ВСТРЕЧА В ПРОЦЕССЕ…,ENCOUNTER IN PROGRESS…

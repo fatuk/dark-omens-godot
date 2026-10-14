@@ -72,13 +72,23 @@ func test_not_shown_for_my_own_encounter() -> void:
 	assert_false(_shown(), "свою встречу показывает обычная модалка")
 
 
-func test_rolled_dims_outcome_that_did_not_happen() -> void:
+func test_outcome_hidden_until_rolled_then_only_the_rolled_one() -> void:
+	var block: Control = _m.find_child("Outcome", true, false)
+	assert_false(block.visible, "до броска исходы не раскрываем")
 	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": false}
 	_m.call("_refresh")
-	var ok: Control = _m.find_child("SuccessRow", true, false)
-	var bad: Control = _m.find_child("FailureRow", true, false)
-	assert_lt(ok.modulate.a, 1.0, "успех не случился — погашен")
-	assert_eq(bad.modulate.a, 1.0, "провал — ярко")
+	assert_true(block.visible, "бросок сыгран — исход виден")
+	var rt: RichTextLabel = block.find_child("Text", true, false)
+	assert_string_contains(rt.text, "плохо", "выпал провал — текст провала")
+	assert_false(rt.text.contains("хорошо"), "текст успеха не показываем")
+
+
+func test_time_and_code_are_bold() -> void:
+	for n: String in ["DispatchTime", "CommsCode"]:
+		var l: Label = _m.find_child(n, true, false)
+		var f: FontVariation = l.get_theme_font("font") as FontVariation
+		assert_not_null(f, "%s — своё начертание" % n)
+		assert_gt(f.variation_embolden, 0.0, "%s — жирным" % n)
 
 
 func test_close_hides_until_next_encounter() -> void:
@@ -97,3 +107,19 @@ func test_sand_clock_flips_half_turn() -> void:
 	var clock: Control = _m.find_child("SandClock", true, false)
 	await wait_seconds(2.0)  # пауза 1.2 + переворот 0.6
 	assert_almost_eq(fposmod(clock.rotation, TAU), PI, 0.2, "перевернулись на 180°")
+
+
+func test_height_follows_content() -> void:
+	await wait_process_frames(2)
+	var sheet: Control = _m.find_child("Sheet", true, false)
+	var before: float = sheet.size.y
+	assert_lt(before, 2048.0, "короткая встреча — бланк ниже нарисованного")
+	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": true}
+	_m.call("_refresh")
+	await wait_process_frames(2)
+	assert_gt(sheet.size.y, before, "появился исход — бланк вырос")
+
+
+func test_sheet_height_clamps() -> void:
+	assert_eq(_Modal.sheet_height(5000.0), 2048.0, "не выше нарисованного")
+	assert_eq(_Modal.sheet_height(0.0), float(480 + 588), "не ниже шапки и низа")
