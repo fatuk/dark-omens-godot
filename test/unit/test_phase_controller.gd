@@ -642,6 +642,29 @@ func test_start_new_round_resets_state() -> void:
 	assert_false(bool(p["encounter_done"]), "встречи закрыты")
 
 
+# ── host_apply_shop_close ─────────────────────────────────────────────────────
+
+
+func test_shop_close_waits_for_bought_card_choice() -> void:
+	# Купленный Чартерный рейс ещё выбирает, куда лететь (asset_acting) — закрытие
+	# магазина последним действием ход НЕ передаёт; передаст release_asset_turn.
+	_solo({"actions_left": 0, "shopping": true, "asset_acting": true})
+	_gs.turn_order = ["p", "q"]
+	_add_player("q")
+	assert_true(_pc.host_apply_shop_close("p"))
+	assert_eq(_gs.current_idx, 0, "ход остался у покупателя")
+	_pc.release_asset_turn("p")
+	assert_eq(_gs.current_idx, 1, "выбор сделан — ход перешёл")
+
+
+func test_shop_close_advances_when_nothing_holds() -> void:
+	_solo({"actions_left": 0, "shopping": true})
+	_gs.turn_order = ["p", "q"]
+	_add_player("q")
+	assert_true(_pc.host_apply_shop_close("p"))
+	assert_eq(_gs.current_idx, 1, "последнее действие — ход перешёл")
+
+
 # ── host_apply_shop_debt ──────────────────────────────────────────────────────
 
 

@@ -428,12 +428,16 @@ static var _open_modals: Dictionary = {}
 ## Открыта ли сейчас хоть одна модалка. Запись считается открытой, только пока узел
 ## жив И виден: так в реестре может постоянно жить окно, которое само себя прячет
 ## (магазин, галерея), — оно «закрыто», пока невидимо. Мёртвые записи чистим.
-static func any_modal_open() -> bool:
+## ignore_meta — окна с этой мета-меткой не считаются (выбор на карте не должен
+## ждать собственную модалку решения, которую он и заменяет).
+static func any_modal_open(ignore_meta: StringName = &"") -> bool:
 	var open: bool = false
 	for id_v: Variant in _open_modals.keys():
 		var n: Variant = _open_modals[id_v]
 		if not is_instance_valid(n):
 			_open_modals.erase(id_v)
+			continue
+		if ignore_meta != &"" and (n as Object).has_meta(ignore_meta):
 			continue
 		# visible читаем через get: в реестре бывают и Control, и CanvasLayer.
 		if bool((n as Object).get("visible")):

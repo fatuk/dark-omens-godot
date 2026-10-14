@@ -255,6 +255,26 @@ func test_charter_flight_offers_destinations_and_moves() -> void:
 	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "услуга сброшена")
 
 
+func test_charter_flight_holds_turn_until_destination_picked() -> void:
+	# Регрессия: купленный рейс спрашивал «куда», а ход уходил дальше (onGain не
+	# держал ход) — следующий игрок начинал, пока модалка выбора ещё висела.
+	_add_player("p")
+	_gs.locations = _chain_locations()
+	_flow.grant("p", _CHARTER)
+	assert_true(bool(_gs.players["p"].get("asset_acting", false)), "ход держим до выбора")
+	assert_eq(_gs._phase.released.size(), 0, "ход ещё не отпущен")
+	_flow.resolve_decision("p", 0)
+	assert_eq(_gs._phase.released, ["p"], "выбрал — ход отпущен")
+
+
+func test_instant_service_does_not_hold_turn() -> void:
+	# Услуга без выбора (граф пуст — move заглушка) отыгрывает сразу: держать нечего.
+	_add_player("p")
+	_flow.grant("p", _CHARTER)
+	assert_false(bool(_gs.players["p"].get("asset_acting", false)))
+	assert_eq(_gs._phase.released.size(), 0, "отпускать нечего")
+
+
 func test_move_without_graph_is_still_noop() -> void:
 	# Мифы и встречи зовут прогон без графа локаций — там move остаётся заглушкой,
 	# а не молча роняет сыщика в пустоту.

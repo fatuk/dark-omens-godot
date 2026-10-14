@@ -77,6 +77,7 @@ var _travelling: bool = false  # идёт анимация перемещени�
 @onready var _mythos_modal: CanvasLayer = $MythosModal
 
 var _map_layer: MapLayer
+var _pick_prompt: MapPickPrompt = null  # выбор «куда переместиться» на карте
 
 # Веер карт руки (Tab). Наполняется реальным имуществом локального игрока.
 var _hand_carousel: CanvasLayer = null
@@ -133,6 +134,7 @@ func _ready() -> void:
 	_build_chat_composer()
 	_build_hand_carousel()
 	_build_guide_director()
+	_build_map_pick_prompt()
 	_refresh_game_panel()
 	_refresh_investigators()
 	_refresh_gates()
@@ -370,6 +372,27 @@ func _build_outcome_modal() -> void:
 	var om: CanvasLayer = load("res://scripts/ui/outcome_modal.gd").new()
 	om.name = "OutcomeModal"
 	add_child(om)
+
+
+# Выбор «куда переместиться» на карте (Чартерный рейс и пр.): плашка-подсказка
+# сверху, цели — золотом на плашках имён, клик по цели — решение.
+func _build_map_pick_prompt() -> void:
+	_pick_prompt = MapPickPrompt.new()
+	_pick_prompt.name = "MapPickPrompt"
+	add_child(_pick_prompt)
+	_pick_prompt.changed.connect(_refresh_map_pick)
+
+
+func _refresh_map_pick() -> void:
+	if not is_instance_valid(_map_layer):
+		return
+	var d: Dictionary = MapPickPrompt.decision()
+	var ids: Array = []
+	for o_v: Variant in d.get("options", []):
+		ids.append(String((o_v as Dictionary).get("ref", "")))
+	_map_layer.set_pick_targets(ids)
+	if not d.is_empty() and _sidebar.is_open():
+		_sidebar.close_panel()  # не заслоняем карту — выбор идёт на ней
 
 
 # Подсказки профессора Армитеджа: сам решает, что и когда показать (GuideDirector).
@@ -1013,6 +1036,14 @@ func _handle_click(screen_pos: Vector2) -> void:
 	var world_pos: Vector2 = _camera.position + (screen_pos - vp_size * 0.5) / _camera.zoom
 	var loc_name: String = _map_layer.try_pick(world_pos)
 	if loc_name.is_empty():
+		return
+	# Идёт выбор «куда переместиться»: клик по подсвеченной цели — решение, прочие
+	# клики игнорируем (выбор обязателен, сайдбар закрыл бы карту).
+	var pick: Dictionary = MapPickPrompt.decision()
+	if not pick.is_empty():
+		var idx: int = MapPickPrompt.option_index(pick, loc_name)
+		if idx >= 0:
+			GameState.act(RelayActions.MYTHOS_DECIDE, {"index": idx})
 		return
 	# Повторный клик по уже выбранной локации — закрыть сайдбар (closed → set_selected("")).
 	if _sidebar.is_open() and _map_layer.get_selected_name() == loc_name:

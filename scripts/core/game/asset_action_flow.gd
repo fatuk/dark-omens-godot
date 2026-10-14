@@ -351,7 +351,7 @@ func _finish_run() -> void:
 		_gs.mythos_decision = {}
 	if had_check:
 		_gs._check.clear()  # чужую активную проверку (магазин/встреча) не трогаем
-	if held and (slot == "action" or slot == "triggered"):
+	if held and slot in ["action", "triggered", "onGain"]:
 		_gs._phase.release_asset_turn(pid)
 	_sync()
 	_pump()
@@ -468,9 +468,11 @@ func _prompt_key(kind: String, verb: String) -> String:
 # Прогон встал на вопросе к игроку — отмечаем, что ход придётся отпускать явно.
 func _hold() -> void:
 	_run["held"] = true
-	# Триггер запускает не действие игрока, а событие — флаг удержания хода ставим
-	# сами (у действия актива его ставит PhaseController по PLAY_WAITING).
-	if String(_run.get("slot", "")) == "triggered":
+	# Триггер и выдача карты (onGain — Чартерный рейс из магазина) — не действие
+	# игрока, флаг удержания хода ставим сами (у действия актива его ставит
+	# PhaseController по PLAY_WAITING). Без него ход уходил дальше, пока игрок
+	# ещё выбирал, куда лететь.
+	if String(_run.get("slot", "")) in ["triggered", "onGain"]:
 		var pid: String = String(_run.get("pid", ""))
 		if _gs.players.has(pid):
 			_gs.players[pid]["asset_acting"] = true

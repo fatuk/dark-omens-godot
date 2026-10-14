@@ -24,7 +24,14 @@ var _sig: String = ""  # подпись текущего выбора — что
 
 func _ready() -> void:
 	UIStyle.style_modal_panel(_panel)
+	add_to_group("mythos_decision_modal")  # MapPickPrompt зовёт refresh
+	_root.set_meta(MapPickPrompt.REPLACED_META, true)  # выбор на карте его не ждёт
 	GameState.state_changed.connect(_refresh)
+	_refresh()
+
+
+## Пересобрать по текущему состоянию (MapPickPrompt: карта освободилась/занята).
+func refresh() -> void:
 	_refresh()
 
 
@@ -35,6 +42,10 @@ func _my_id() -> String:
 func _refresh() -> void:
 	var d: Dictionary = GameState.mythos_decision
 	var mine: bool = bool(d.get("active", false)) and String(d.get("pid", "")) == _my_id()
+	# «Куда переместиться» выбирается кликом по карте (MapPickPrompt + подсветка) —
+	# список здесь закрыл бы карту.
+	if mine and not MapPickPrompt.decision().is_empty():
+		mine = false
 	UIStyle.modal_set_visible(_root, _panel, mine)
 	if not mine:
 		_sig = ""

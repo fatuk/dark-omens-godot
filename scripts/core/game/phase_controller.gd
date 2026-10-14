@@ -742,7 +742,9 @@ func host_apply_shop_close(pid: String) -> bool:
 		_gs._check.clear()
 	var was_shopping: bool = bool(p.get("shopping", false))
 	p["shopping"] = false
-	if was_shopping and int(p.get("actions_left", 0)) == 0:
+	# Купленная карта может ещё держать ход (Чартерный рейс выбирает, куда лететь —
+	# asset_acting) — тогда ход передаст release_asset_turn по завершении выбора.
+	if was_shopping and _turn_can_advance(p):
 		_advance_turn_delayed()
 	_gs.broadcast_sync()
 	_gs.emit_changed()

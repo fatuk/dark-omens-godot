@@ -69,6 +69,7 @@ const LABEL_SCREEN_Y_FAR: float = 33.0
 const LABEL_SCREEN_Y_NEAR: float = 50.0
 const LABEL_FONT: int = 14  # шрифт в экранных пикселях
 const _LABEL_BG_DEFAULT: Color = Color(0.05, 0.05, 0.08, 0.82)  # плашка имени по умолчанию
+const _LABEL_BG_PICK: Color = Color(0.62, 0.47, 0.13, 0.92)  # цель выбора на карте (золото)
 ## Фото-карточка сыщика (avatar-pin): целевая экранная высота, подъём над
 ## локацией (низ карточки у точки локации), горизонтальный разнос при веере.
 ## Высота лерпится по зуму (как маркер): на дальнем зуме ≈1.5× меньше, на
@@ -150,6 +151,7 @@ var _markers: Array = []  # [{sprite, label, indicator, pos, loc_name}]
 var _textures: Dictionary = {}
 var _selected_name: String = ""
 var _reach: Dictionary = {}  # loc_id -> Color: локации, до которых нужен билет (плашка красится)
+var _pick: Dictionary = {}  # loc_id -> true: цели выбора «куда переместиться» (плашка — золотом)
 
 # Кэш для _process: раскладка маркеров/карточек зум-инвариантна между кадрами —
 # пересчитываем её только при смене зума ИЛИ перестройке/смене выбора (_layout_dirty).
@@ -906,14 +908,37 @@ func set_ticket_reach(origin: String, train: int, ship: int) -> void:
 	if colors == _reach:
 		return
 	_reach = colors
+	_apply_label_colors()
+
+
+## Подсветить цели выбора «куда переместиться» (Чартерный рейс и пр. — выбор на
+## карте вместо списка): плашки имён — золотом, поверх билетной подсветки.
+## Пустой список — снять.
+func set_pick_targets(ids: Array) -> void:
+	var picks: Dictionary = {}
+	for id_v: Variant in ids:
+		picks[String(id_v)] = true
+	if picks == _pick:
+		return
+	_pick = picks
+	_apply_label_colors()
+
+
+## Цель выбора на карте? (клик по ней — решение).
+func is_pick_target(loc_id: String) -> bool:
+	return _pick.has(loc_id)
+
+
+# Цвет плашки имени: цель выбора > нужен билет > по умолчанию.
+func _apply_label_colors() -> void:
 	for i: int in range(_markers.size()):
 		var m: Dictionary = _markers[i]
 		var lb: Label = m.label as Label
 		if not is_instance_valid(lb):
 			continue
-		lb.add_theme_stylebox_override(
-			"normal", _make_label_bg(colors.get(String(m.loc_name), _LABEL_BG_DEFAULT))
-		)
+		var id: String = String(m.loc_name)
+		var col: Color = _LABEL_BG_PICK if _pick.has(id) else _reach.get(id, _LABEL_BG_DEFAULT)
+		lb.add_theme_stylebox_override("normal", _make_label_bg(col))
 
 
 # ── Маркеры сыщиков ───────────────────────────────────────────────────────────
