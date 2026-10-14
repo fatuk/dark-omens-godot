@@ -36,3 +36,12 @@ func test_items_have_no_separators_and_no_monsters_header() -> void:
 	assert_eq(sb.find_children("*", "HSeparator", true, false), [], "секции без линий")
 	var list: Node = sb._items_list
 	assert_eq(list.get_child(0).name, &"MonsterGrid", "сразу портреты, без «Монстры — N»")
+
+
+func test_tiles_fill_row_width() -> void:
+	for w: float in [300.0, 480.0, 560.0, 700.0]:
+		var side: float = LocationSidebar.monster_tile_side(w)
+		var cols: int = int((w + LocationSidebar._MON_GAP) / (side + LocationSidebar._MON_GAP))
+		var used: float = cols * side + (cols - 1) * LocationSidebar._MON_GAP
+		assert_true(side >= LocationSidebar._MON_TILE, "не мельче минимума (%d)" % w)
+		assert_almost_eq(used, w, float(cols), "ряд от края до края (%d)" % w)

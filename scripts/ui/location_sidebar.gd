@@ -90,10 +90,12 @@ var _items_hdr: Label = null
 var _items_list: VBoxContainer = null
 
 # Превью монстров локации — квадратные портреты (как карта в модалке боя).
-const _MON_TILE := 112.0  # сторона портрета
+# Ряд заполняется по ширине целиком: колонок столько, сколько влезает портретов не
+# меньше _MON_TILE, и сторона растягивается, чтобы ряд лёг от края до края.
+const _MON_TILE := 112.0  # МИНИМАЛЬНАЯ сторона портрета
 const _MON_GAP := 8  # зазор между портретами
-const _MON_PAD := 6.0  # инсет чисел от края
-const _MON_FS := 28  # кегль чисел ужаса/урона
+const _MON_PAD := 6.0  # инсет чисел от края (при _MON_TILE; растёт со стороной)
+const _MON_FS := 28  # кегль чисел ужаса/урона (при _MON_TILE; растёт со стороной)
 
 
 func _ready() -> void:
@@ -582,6 +584,7 @@ func _populate_items(loc_id: String) -> void:
 		grid.name = "MonsterGrid"
 		grid.add_theme_constant_override("h_separation", _MON_GAP)
 		grid.add_theme_constant_override("v_separation", _MON_GAP)
+		grid.resized.connect(_fit_monster_grid.bind(grid))
 		_items_list.add_child(grid)
 		for i: int in range(mons.size()):
 			var inst_v: Variant = mons[i]  # {id, health} или легаси id-строка
@@ -594,6 +597,7 @@ func _populate_items(loc_id: String) -> void:
 			var m: Dictionary = GameState.monster_def(mid)
 			if not m.is_empty():
 				grid.add_child(_make_monster_tile(m, hp))
+		_fit_monster_grid(grid)
 	if clues > 0:
 		_items_list.add_child(_make_category_header("SIDEBAR_CAT_CLUES", clues))
 	if rumors > 0:
@@ -607,6 +611,33 @@ func _make_category_header(key: String, count: int) -> Label:
 	l.add_theme_font_size_override("font_size", 13)
 	l.add_theme_color_override("font_color", UIColors.WARNING)
 	return l
+
+
+## Сторона портрета, при которой ряд шириной width заполняется целиком.
+static func monster_tile_side(width: float) -> float:
+	if width <= 0.0:
+		return _MON_TILE
+	var cols: int = maxi(1, int((width + _MON_GAP) / (_MON_TILE + _MON_GAP)))
+	return floorf((width - _MON_GAP * (cols - 1)) / cols)
+
+
+# Подогнать портреты под ширину ряда: сторона, кегль и инсет чисел — пропорционально.
+func _fit_monster_grid(grid: HFlowContainer) -> void:
+	var side: float = monster_tile_side(grid.size.x)
+	var k: float = side / _MON_TILE
+	for tile: Node in grid.get_children():
+		(tile as Control).custom_minimum_size = Vector2(side, side)
+		for num_name: String in ["Horror", "Damage"]:
+			var l: Label = tile.get_node_or_null(num_name)
+			if l == null:
+				continue
+			var right: bool = num_name == "Damage"
+			l.add_theme_font_size_override("font_size", roundi(_MON_FS * k))
+			l.offset_bottom = -_MON_PAD * k + 4
+			if right:
+				l.offset_right = -_MON_PAD * k
+			else:
+				l.offset_left = _MON_PAD * k
 
 
 ## Превью монстра — квадратный портрет, как карта в модалке боя: арт «под обрез»,
