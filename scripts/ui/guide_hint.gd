@@ -14,20 +14,25 @@ extends CanvasLayer
 signal finished
 
 const _ART := preload("res://assets/guide/armitadge.png")
-# Арт @2x — рисуем в половину натурального размера (1536×1024 → 768×512).
-const _ART_SCALE: float = 0.5
 # Кончик указательного пальца в пикселях исходника.
 const _FINGER := Vector2(47, 350)
 # Нижняя полоса HUD (InvestigatorPanel.BAR_H): профессор стоит на её верхнем крае.
 const _HUD_H: float = 248.0
-# Насколько арт уходит за правый край экрана (книга обрезана, как в макете).
-const _ART_OVERFLOW_X: float = 140.0
-# Рамка: ширина, правый край — чуть правее пальца (рука ложится на угол рамки),
-# верх — ниже пальца.
-const _FRAME_W: float = 620.0
 const _FRAME_MIN_H: float = 150.0
-const _FRAME_RIGHT_PAST_FINGER: float = 40.0
-const _FRAME_TOP_BELOW_FINGER: float = 60.0
+
+# Раскладка — крутится в панели тюнинга (Ctrl+M, секция «ПОДСКАЗКИ»): открытая
+# подсказка перераскладывается сразу (группа "guide_hint" → relayout). Найденные
+# значения запекаются сюда же. static var, а не const — панель правит их вживую.
+# Арт @2x — 0.5 = половина натурального размера (1536×1024 → 768×512).
+static var ART_SCALE: float = 0.5
+# Насколько арт уходит за правый край экрана (книга обрезана, как в макете).
+static var ART_OVERFLOW_X: float = 140.0
+# Ширина рамки.
+static var FRAME_W: float = 620.0
+# Правый край рамки относительно кончика пальца (+ — правее: рука ложится на угол).
+static var FRAME_X: float = 40.0
+# Верх рамки относительно кончика пальца (+ — ниже, − — выше).
+static var FRAME_Y: float = 60.0
 const _SLIDE_PX: float = 90.0  # въезд профессора справа
 const _FADE_IN: float = 0.35
 const _FADE_OUT: float = 0.2
@@ -59,6 +64,7 @@ func _ready() -> void:
 	# Над картой и HUD (≤ 50), под модалками (80+); про окно — над ними (до 90:
 	# диалоги и пауза выше).
 	layer = 89 if _over_modals else 79
+	add_to_group("guide_hint")  # TuningPanel пушит сюда relayout
 	_build()
 	if _lines.is_empty():
 		_close()
@@ -107,22 +113,25 @@ func _build() -> void:
 	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_art.stretch_mode = TextureRect.STRETCH_SCALE
 	_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_art.size = _ART.get_size() * _ART_SCALE
 	_root.add_child(_art)
+
+
+## Перераскладка по текущим static var (зовёт TuningPanel).
+func relayout() -> void:
+	_layout()
 
 
 # Раскладка от правого нижнего угла: профессор на верхнем крае HUD, рамка — слева
 # от него на уровне пальца. Ширина экрана при aspect=expand разная — считаем от края.
 func _layout() -> void:
 	var vp: Vector2 = get_viewport().get_visible_rect().size
-	var art_size: Vector2 = _ART.get_size() * _ART_SCALE
-	var art_pos := Vector2(vp.x + _ART_OVERFLOW_X - art_size.x, vp.y - _HUD_H - art_size.y)
+	var art_size: Vector2 = _ART.get_size() * ART_SCALE
+	var art_pos := Vector2(vp.x + ART_OVERFLOW_X - art_size.x, vp.y - _HUD_H - art_size.y)
+	_art.size = art_size
 	_art.position = art_pos
-	var finger: Vector2 = art_pos + _FINGER * _ART_SCALE
-	_frame.custom_minimum_size = Vector2(_FRAME_W, _FRAME_MIN_H)
-	_frame.position = Vector2(
-		finger.x + _FRAME_RIGHT_PAST_FINGER - _FRAME_W, finger.y + _FRAME_TOP_BELOW_FINGER
-	)
+	var finger: Vector2 = art_pos + _FINGER * ART_SCALE
+	_frame.custom_minimum_size = Vector2(FRAME_W, _FRAME_MIN_H)
+	_frame.position = Vector2(finger.x + FRAME_X - FRAME_W, finger.y + FRAME_Y)
 	_fit_frame.call_deferred()
 
 
@@ -131,7 +140,7 @@ func _layout() -> void:
 # низа экрана, и PanelContainer сам обратно не сжимается.
 func _fit_frame() -> void:
 	if is_instance_valid(_frame):
-		_frame.size = Vector2(_FRAME_W, 0.0)  # 0 → ужмётся до минимума содержимого
+		_frame.size = Vector2(FRAME_W, 0.0)  # 0 → ужмётся до минимума содержимого
 
 
 func _show_line(i: int) -> void:

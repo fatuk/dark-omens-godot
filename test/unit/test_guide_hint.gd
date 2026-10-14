@@ -40,3 +40,23 @@ func test_frame_fits_text() -> void:
 	var art: Control = g.find_child("Armitage", true, false)
 	assert_lt(frame.size.y, 400.0, "рамка по тексту, а не до низа экрана")
 	assert_lt(frame.position.x, art.position.x + 100.0, "рамка слева от профессора")
+
+
+func test_tuning_moves_open_frame() -> void:
+	# Панель тюнинга меняет static var и зовёт relayout у группы "guide_hint".
+	var g: GuideHint = GuideHint.say(_host(), ["GUIDE_HELLO"])
+	await wait_process_frames(2)
+	var frame: Control = g.find_child("Frame", true, false)
+	var before: Vector2 = frame.position
+	var saved := [GuideHint.FRAME_X, GuideHint.FRAME_Y, GuideHint.FRAME_W]
+	GuideHint.FRAME_X -= 100.0
+	GuideHint.FRAME_Y -= 50.0
+	GuideHint.FRAME_W = 700.0
+	get_tree().call_group("guide_hint", "relayout")
+	await wait_process_frames(2)
+	assert_eq(frame.position.y, before.y - 50.0, "выше на 50")
+	assert_eq(frame.size.x, 700.0, "шире")
+	assert_eq(frame.position.x + frame.size.x, before.x + 620.0 - 100.0, "правый край левее на 100")
+	GuideHint.FRAME_X = saved[0]
+	GuideHint.FRAME_Y = saved[1]
+	GuideHint.FRAME_W = saved[2]

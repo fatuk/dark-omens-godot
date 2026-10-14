@@ -1162,6 +1162,52 @@ func _build_specs() -> Array:
 			"default": UIStyle.MODAL_POP,
 			"set": _set_modal_pop
 		},
+		{"section": "ПОДСКАЗКИ (Армитедж; открыть — консоль `guide`)"},
+		{
+			"key": "guide_frame_x",
+			"label": "Рамка: X от пальца",
+			"min": -600.0,
+			"max": 400.0,
+			"step": 5.0,
+			"default": GuideHint.FRAME_X,
+			"set": _set_guide_frame_x
+		},
+		{
+			"key": "guide_frame_y",
+			"label": "Рамка: Y от пальца",
+			"min": -500.0,
+			"max": 500.0,
+			"step": 5.0,
+			"default": GuideHint.FRAME_Y,
+			"set": _set_guide_frame_y
+		},
+		{
+			"key": "guide_frame_w",
+			"label": "Рамка: ширина",
+			"min": 300.0,
+			"max": 1200.0,
+			"step": 10.0,
+			"default": GuideHint.FRAME_W,
+			"set": _set_guide_frame_w
+		},
+		{
+			"key": "guide_art_scale",
+			"label": "Профессор: масштаб",
+			"min": 0.25,
+			"max": 1.0,
+			"step": 0.01,
+			"default": GuideHint.ART_SCALE,
+			"set": _set_guide_art_scale
+		},
+		{
+			"key": "guide_art_overflow",
+			"label": "Профессор: за край",
+			"min": -200.0,
+			"max": 500.0,
+			"step": 5.0,
+			"default": GuideHint.ART_OVERFLOW_X,
+			"set": _set_guide_art_overflow
+		},
 		{"section": "ПРОСМОТР КАРТЫ"},
 		{
 			"key": "cpv_max_h",
@@ -1943,6 +1989,38 @@ func _set_cpv_backdrop(v: float) -> void:
 func _set_modal_backdrop(v: float) -> void:
 	UIStyle.MODAL_BACKDROP_ALPHA = v
 	UIStyle.refresh_backdrops()
+
+
+# ── Подсказки Армитеджа (GuideHint.* — static; открытая перераскладывается) ──
+
+
+func _relayout_guide() -> void:
+	get_tree().call_group("guide_hint", "relayout")
+
+
+func _set_guide_frame_x(v: float) -> void:
+	GuideHint.FRAME_X = v
+	_relayout_guide()
+
+
+func _set_guide_frame_y(v: float) -> void:
+	GuideHint.FRAME_Y = v
+	_relayout_guide()
+
+
+func _set_guide_frame_w(v: float) -> void:
+	GuideHint.FRAME_W = v
+	_relayout_guide()
+
+
+func _set_guide_art_scale(v: float) -> void:
+	GuideHint.ART_SCALE = v
+	_relayout_guide()
+
+
+func _set_guide_art_overflow(v: float) -> void:
+	GuideHint.ART_OVERFLOW_X = v
+	_relayout_guide()
 
 
 func _set_modal_fade_in(v: float) -> void:
