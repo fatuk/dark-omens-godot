@@ -1227,6 +1227,28 @@ func _kill_chat_bubble(pid: String, entry: Dictionary) -> void:
 	tw.chain().tween_callback(_drop_chat_bubble.bind(pid, entry))
 
 
+## Клик по карте пришёлся на облачко чата → оно растворяется (тем же уходом, что по
+## таймеру: подъём + fade). true — клик съеден облачком (локацию под ним не выбирать).
+## Попадание — по баллону облачка (Sprite «Cloud»), с учётом его масштаба.
+func try_dismiss_chat_bubble(world_pos: Vector2) -> bool:
+	for pid_v: Variant in _chat_bubbles.keys():
+		for e_v: Variant in _chat_bubbles[pid_v]:
+			var entry: Dictionary = e_v
+			if bool(entry.get("dying", false)):
+				continue
+			var node: Node2D = entry.get("node")
+			if not is_instance_valid(node) or not node.visible:
+				continue
+			var bg: Sprite2D = node.get_node_or_null("Cloud") as Sprite2D
+			if bg == null:
+				continue
+			var tex: Vector2 = bg.texture.get_size()
+			if Rect2(-tex * 0.5, tex).has_point(bg.to_local(world_pos)):
+				_kill_chat_bubble(String(pid_v), entry)
+				return true
+	return false
+
+
 func _drop_chat_bubble(pid: String, entry: Dictionary) -> void:
 	var stack: Array = _chat_bubbles.get(pid, [])
 	stack.erase(entry)

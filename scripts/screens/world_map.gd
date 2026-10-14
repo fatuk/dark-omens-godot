@@ -1034,6 +1034,9 @@ func _release_with_inertia() -> void:
 func _handle_click(screen_pos: Vector2) -> void:
 	var vp_size: Vector2 = get_viewport().get_visible_rect().size
 	var world_pos: Vector2 = _camera.position + (screen_pos - vp_size * 0.5) / _camera.zoom
+	# Облачко чата над фишкой — поверх локаций: клик по нему его растворяет.
+	if _map_layer.try_dismiss_chat_bubble(world_pos):
+		return
 	var loc_name: String = _map_layer.try_pick(world_pos)
 	if loc_name.is_empty():
 		return
