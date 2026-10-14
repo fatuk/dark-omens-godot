@@ -16,7 +16,7 @@ class_name SelectionIndicator
 const GROUP := "selection_indicators"
 
 # #8fbd4d — лаймовый
-const COLOR: Color = Color(0.561, 0.741, 0.302, 0.95)
+const COLOR: Color = Color(UIColors.ACTIVE, 0.95)  # единый цвет активного выделения
 
 const RING_RADIUS: float = 35.0
 const RING_THICKNESS: float = 1.9

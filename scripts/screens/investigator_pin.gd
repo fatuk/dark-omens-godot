@@ -14,7 +14,7 @@ const FRAME_TEX: Texture2D = preload("res://assets/map/avatar-pin.png")
 # Ореол хода: золото под цвет рамки, заметно ярче фона карты и НЕ лаймовый —
 # лайм уже занят подсветкой выделения (SelectionIndicator), путать нельзя.
 # static var, а не const: тюнинг-панель крутит их вживую (см. GROUP/refresh_glow).
-const GLOW_RGB: Color = Color(0.85, 0.71, 0.32)
+const GLOW_RGB: Color = UIColors.ACTIVE  # единый цвет активного выделения
 static var GLOW_ALPHA: float = 0.85  # яркость в самой плотной части
 static var GLOW_SPREAD: float = 1.55  # насколько ореол крупнее карточки
 static var GLOW_PULSE_SPEED: float = 2.4  # скорость дыхания, рад/с

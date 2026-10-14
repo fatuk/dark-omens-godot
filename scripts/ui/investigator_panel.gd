@@ -39,9 +39,6 @@ const _AVATAR_FRAME: Texture2D = preload("res://assets/investigator-panel/avatar
 ## static var, а не const: тюнинг-панель (Ctrl+M) крутит их вживую через GROUP /
 ## refresh_turn_glow; найденное значение запекается сюда в default.
 const GROUP := "investigator_panel"
-static var GLOW_R: float = 0.52  # цвет ореола (зелёный)
-static var GLOW_G: float = 0.83
-static var GLOW_B: float = 0.35
 static var GLOW_ALPHA: float = 0.66  # яркость у самого кольца
 static var GLOW_SPREAD: float = 1.2  # во сколько раз ореол крупнее аватарки
 static var GLOW_FALLOFF: float = 3.15  # крутизна затухания наружу (1 — линейно)
@@ -49,15 +46,10 @@ static var GLOW_PULSE_SPEED: float = 2.2  # скорость дыхания, р�
 static var GLOW_PULSE_AMOUNT: float = 0.72  # глубина дыхания (0 — ровное свечение)
 
 
-## Тюнинг-панель: положить значение в static-поле по имени (GLOW_R … GLOW_PULSE_AMOUNT).
+## Тюнинг-панель: положить значение в static-поле по имени (GLOW_ALPHA … GLOW_PULSE_AMOUNT).
+## Цвет ореола — общий UIColors.ACTIVE, здесь не крутится.
 static func set_glow_param(field: String, v: float) -> void:
 	match field:
-		"GLOW_R":
-			GLOW_R = v
-		"GLOW_G":
-			GLOW_G = v
-		"GLOW_B":
-			GLOW_B = v
 		"GLOW_ALPHA":
 			GLOW_ALPHA = v
 		"GLOW_SPREAD":
@@ -388,7 +380,8 @@ func refresh_turn_glow() -> void:
 	_turn_glow.offset_top = -m
 	_turn_glow.offset_right = m
 	_turn_glow.offset_bottom = m
-	_turn_glow_mat.set_shader_parameter("glow", Vector4(GLOW_R, GLOW_G, GLOW_B, GLOW_ALPHA))
+	var c: Color = UIColors.ACTIVE  # единый цвет активного выделения
+	_turn_glow_mat.set_shader_parameter("glow", Vector4(c.r, c.g, c.b, GLOW_ALPHA))
 	_turn_glow_mat.set_shader_parameter("edge", 1.0 / GLOW_SPREAD)
 	_turn_glow_mat.set_shader_parameter("falloff", GLOW_FALLOFF)
 	_turn_glow_mat.set_shader_parameter("pulse_speed", GLOW_PULSE_SPEED)

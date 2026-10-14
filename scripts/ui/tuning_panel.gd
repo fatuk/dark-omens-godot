@@ -999,33 +999,6 @@ func _build_specs() -> Array:
 		},
 		{"section": "ПАНЕЛЬ СЫЩИКА · ОРЕОЛ ХОДА"},
 		{
-			"key": "ipanel_glow_r",
-			"label": "Цвет · R",
-			"min": 0.0,
-			"max": 1.0,
-			"step": 0.01,
-			"default": InvestigatorPanel.GLOW_R,
-			"set": _ipanel_glow_setter("GLOW_R")
-		},
-		{
-			"key": "ipanel_glow_g",
-			"label": "Цвет · G",
-			"min": 0.0,
-			"max": 1.0,
-			"step": 0.01,
-			"default": InvestigatorPanel.GLOW_G,
-			"set": _ipanel_glow_setter("GLOW_G")
-		},
-		{
-			"key": "ipanel_glow_b",
-			"label": "Цвет · B",
-			"min": 0.0,
-			"max": 1.0,
-			"step": 0.01,
-			"default": InvestigatorPanel.GLOW_B,
-			"set": _ipanel_glow_setter("GLOW_B")
-		},
-		{
 			"key": "ipanel_glow_alpha",
 			"label": "Яркость",
 			"min": 0.0,
