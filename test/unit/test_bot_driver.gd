@@ -52,6 +52,9 @@ class StubGs:
 	func current_mystery() -> Dictionary:
 		return mystery
 
+	func has_monster_at(loc_id: String) -> bool:
+		return not (monsters.get(loc_id, []) as Array).is_empty()
+
 
 class StubNm:
 	extends Node
@@ -123,7 +126,9 @@ func test_on_goal_or_no_goal_focus_then_rest_then_pass() -> void:
 	_gs.players[BOT]["actions_used"] = [GameActions.TRAVEL]
 	assert_eq(_act()["type"], GameActions.PASS, "здоров, фокус полон, переезд был — пас")
 	_gs.players[BOT]["hp"] = 4
-	assert_eq(_act()["type"], GameActions.REST, "ранен — отдых")
+	assert_eq(_act()["type"], GameActions.PASS, "ранен, но монстр на клетке — отдыхать нельзя")
+	_gs.monsters = {}
+	assert_eq(_act()["type"], GameActions.REST, "ранен, монстра нет — отдых")
 
 
 func test_low_health_rests_first_and_cannot_move_skips_travel() -> void:

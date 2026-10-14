@@ -493,6 +493,10 @@ func _refresh_actions() -> void:
 		_travel_btn.text = tr("SIDEBAR_TRAVEL") if cs.is_empty() else tr("SIDEBAR_TRAVEL_COST") % cs
 	_trade_btn.visible = _can_trade()
 	_shop_btn.visible = GameState.can_shop(_loc_id)
+	# Монстр в городе → магазин закрыт: кнопка видна, но заблокирована с подписью.
+	var shop_closed: bool = GameState.has_monster_at(_loc_id)
+	_shop_btn.disabled = shop_closed
+	_shop_btn.text = "SIDEBAR_BTN_SHOP_CLOSED" if shop_closed else "SIDEBAR_BTN_SHOP"
 	var can_ticket: bool = GameState.can_buy_ticket(_loc_id)
 	var avail: Array = GameState.map.ticket_types(_loc_id)
 	_buy_train_btn.visible = can_ticket and avail.has("train")

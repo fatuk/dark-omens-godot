@@ -131,6 +131,7 @@ class MockGameState:
 	var trade_offer: Dictionary = {}
 	var locations: Array = []
 	var loc_types: Dictionary = {}
+	var monsters: Dictionary = {}  # loc → [{id, health}] (отдых/магазин с монстром закрыты)
 	var sync_count: int = 0
 	var _cond: StubCond
 	var _check: StubCheck
@@ -154,6 +155,9 @@ class MockGameState:
 
 	func name_of(pid: String) -> String:
 		return pid
+
+	func has_monster_at(loc_id: String) -> bool:
+		return not (monsters.get(loc_id, []) as Array).is_empty()
 
 	# Граф локаций: тесты задают связи через `locations`, а тип — отдельно через
 	# `loc_types` (часто без записи в locations). Сливаем в одну картину на каждое

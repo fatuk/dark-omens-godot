@@ -281,7 +281,11 @@ func _act_shop_sell_asset(d: Dictionary) -> void:
 ## действия), чтобы карты руки можно было активировать до броска. Действие тратится
 ## только на «Бросить кубы» (GameActions.ACQUIRE_ASSETS).
 func _act_shop_open(d: Dictionary) -> void:
-	_check.start("shop", String(d.get("pid", "")), "influence", 0, "acquireAssets")
+	var pid: String = String(d.get("pid", ""))
+	var loc: String = String((_gs.players.get(pid, {}) as Dictionary).get("location", ""))
+	if _gs.has_monster_at(loc):
+		return  # с монстром на клетке магазин закрыт (кнопка заблокирована в сайдбаре)
+	_check.start("shop", pid, "influence", 0, "acquireAssets")
 	_gs.broadcast_and_emit()
 
 

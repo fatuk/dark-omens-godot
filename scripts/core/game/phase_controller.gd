@@ -131,14 +131,8 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 		GameConsole.warn("[Обмен] %s ждёт ответа на предложение" % _gs.name_of(pid))
 		return false
 
-	# whileHeld cannotAct (Detained / Lost in Time): любые действия запрещены, кроме
-	# pass и локального действия состояния (condition_action — это escape).
-	if (
-		action_type != GameActions.PASS
-		and action_type != GameActions.CONDITION_ACTION
-		and _gs._cond.player_has_constraint(pid, "cannotAct")
-	):
-		GameConsole.warn("[Game] %s не может действовать (состояние)" % _gs.name_of(pid))
+	# Состояние (cannotAct) или монстр на клетке запрещают действие — не тратим его.
+	if _action_blocked(pid, p, action_type):
 		return false
 
 	# Одно и то же действие нельзя повторять в раунде (pass не в счёт). Каст заклинания
@@ -343,6 +337,30 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 
 	_gs.broadcast_sync()
 	_gs.emit_changed()
+	return true
+
+
+# Запрет действия, не связанный с его собственными условиями (вынесен из
+# host_apply_action — там лимит return'ов):
+#  • whileHeld cannotAct (Detained / Lost in Time): любые действия запрещены, кроме
+#    pass и локального действия состояния (condition_action — это escape);
+#  • монстр на клетке: отдых (лечение) и магазин недоступны, как в EH. UI блокирует
+#    то же самое (action_panel / location_sidebar).
+func _action_blocked(pid: String, p: Dictionary, action_type: String) -> bool:
+	if (
+		action_type != GameActions.PASS
+		and action_type != GameActions.CONDITION_ACTION
+		and _gs._cond.player_has_constraint(pid, "cannotAct")
+	):
+		GameConsole.warn("[Game] %s не может действовать (состояние)" % _gs.name_of(pid))
+		return true
+	if action_type != GameActions.REST and action_type != GameActions.ACQUIRE_ASSETS:
+		return false
+	if not _gs.has_monster_at(String(p.get("location", ""))):
+		return false
+	GameConsole.warn(
+		"[Game] %s — «%s» недоступно: на клетке монстр" % [_gs.name_of(pid), action_type]
+	)
 	return true
 
 

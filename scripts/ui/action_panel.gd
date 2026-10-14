@@ -309,7 +309,14 @@ func _refresh() -> void:
 			or int(me.get("concentration", 0)) >= GameState.MAX_CONCENTRATION
 		)
 	)
-	_rest_ab.set_disabled(not my_turn or used.has(GameActions.REST))
+	# С монстром на клетке лечиться (отдыхать) нельзя — хост отклонит то же самое.
+	_rest_ab.set_disabled(
+		(
+			not my_turn
+			or used.has(GameActions.REST)
+			or GameState.has_monster_at(String(me.get("location", "")))
+		)
+	)
 	_res_ab.set_disabled(
 		(
 			not my_turn

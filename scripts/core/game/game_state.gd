@@ -856,8 +856,16 @@ func travel_cost_to(dest: String) -> Dictionary:
 # ── Магазин (фасады) ──────────────────────────────────────────────────────────
 
 
+## Есть ли монстр в локации. С монстром на клетке магазин закрыт и отдых (лечение)
+## недоступен — как в EH (Acquire Assets / Rest). Хост валидирует то же самое.
+func has_monster_at(loc_id: String) -> bool:
+	return not (monsters.get(loc_id, []) as Array).is_empty()
+
+
 ## Доступен ли магазин: мой ход, город, мой сыщик там, есть действие и покупка
 ## («acquire_assets») ещё не сделана в этом раунде (уникальное действие — раз за раунд).
+## Монстр на клетке НЕ учитывается: кнопка видна, но заблокирована «Магазин закрыт»
+## (сайдбар проверяет has_monster_at отдельно).
 func can_shop(loc_id: String) -> bool:
 	if loc_id.is_empty() or not is_my_turn():
 		return false

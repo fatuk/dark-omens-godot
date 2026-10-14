@@ -312,7 +312,11 @@ func _action_intent(pid: String, p: Dictionary, role: String) -> Dictionary:
 	var used: Array = p.get(PlayerKeys.ACTIONS_USED, [])
 	var hp: int = int(p.get(PlayerKeys.HP, 0))
 	var san: int = int(p.get(PlayerKeys.SANITY, 0))
-	var can_rest: bool = not used.has(GameActions.REST)
+	# С монстром на клетке хост отдых отклонит — не просим (иначе бот зациклится).
+	var can_rest: bool = (
+		not used.has(GameActions.REST)
+		and not _gs.has_monster_at(String(p.get(PlayerKeys.LOCATION, "")))
+	)
 	# Еле живой — сначала отдых.
 	if can_rest and (hp <= 2 or san <= 2):
 		return _game_action(GameActions.REST)
