@@ -80,6 +80,7 @@ const INVESTIGATOR_CARD_H_FAR: float = 100.0  # ≈1.5× меньше на да�
 const INVESTIGATOR_OFFSET_Y: float = -112.0  # подъём над жетоном локации
 const INVESTIGATOR_FAN_X: float = 60.0  # разнос ОСНОВАНИЙ карточек в веере (по X)
 const INVESTIGATOR_FAN_ANGLE: float = 0.34  # наклон карточек в веере (рад, ≈±10° у пары)
+const INVESTIGATOR_FAN_TIME: float = 0.35  # перестройка веера (пришёл/ушёл сосед) — плавно
 
 ## Открытые врата: два слоя (outer/inner) на маркере локации. Оба вращаются,
 ## inner ощутимо быстрее. Размер обоих ≈ MARKER_SCREEN (заполняют кружок).
@@ -991,10 +992,18 @@ func set_investigators(list: Array) -> void:
 	_inv_signature = sig
 	_layout_dirty = true  # состав маркеров сыщиков сменился — пересчитать раскладку
 
+	# Где каждый сыщик стоял в веере ДО пересборки — пересобранный пин той же
+	# локации поедет оттуда в новый слот, а не прыгнет рывком.
+	var prev: Dictionary = {}  # pid → {loc, off, rot}
 	for i: int in range(_inv_markers.size()):
 		var old_e: Dictionary = _inv_markers[i]
 		var old_sp: Node2D = old_e.sprite as Node2D
 		if is_instance_valid(old_sp):
+			prev[String(old_e.get("pid", ""))] = {
+				"loc": String(old_e.get("loc", "")),
+				"off": old_e.get("screen_off", Vector2.ZERO),
+				"rot": old_sp.rotation,
+			}
 			old_sp.queue_free()
 	_inv_markers.clear()
 
@@ -1031,6 +1040,18 @@ func set_investigators(list: Array) -> void:
 		var screen_off := Vector2(
 			slot * INVESTIGATOR_FAN_X + half_h * sin(ang), pivot_y - half_h * cos(ang)
 		)
+		# Откуда ехать в слот: стоял здесь — со старого места в веере; только пришёл —
+		# из позы одиночки (прямо над локацией). Совпадает — без анимации.
+		var pid_s: String = String(entry.get("pid", ""))
+		var from_off: Vector2 = Vector2(0.0, pivot_y - half_h)
+		var from_rot: float = 0.0
+		var was: Dictionary = prev.get(pid_s, {})
+		if String(was.get("loc", "")) == loc_name:
+			from_off = was["off"]
+			from_rot = float(was["rot"])
+		var animate: bool = (
+			not from_off.is_equal_approx(screen_off) or not is_equal_approx(from_rot, ang)
+		)
 
 		var tex: Texture2D = _investigator_texture(String(entry.get("investigator", "")))
 		# base_scale переводит нативную высоту ассета (avatar-pin @2×) в полную
@@ -1043,25 +1064,58 @@ func set_investigators(list: Array) -> void:
 			var pin := InvestigatorPin.new()
 			pin.name = "Inv_%s_%d" % [String(entry.get("pid", "")), sign(dx)]
 			pin.z_index = 7  # пины сыщиков — поверх ВСЕХ айтемов (врата z=5)
-			pin.rotation = ang  # наклон в веере (масштаб-инвариантен; _process его не трогает)
+			# наклон в веере (масштаб-инвариантен; _process его не трогает)
+			pin.rotation = from_rot if animate else ang
 			pin.scale = Vector2.ONE * base_scale * inv0 * if0
-			pin.position = base + screen_off * inv0 * if0
+			var start_off: Vector2 = from_off if animate else screen_off
+			pin.position = base + start_off * inv0 * if0
 			add_child(pin)
 			pin.setup(tex)
 			pin.set_dead(bool(entry.get("dead", false)))
 			pin.set_away(not bool(entry.get("connected", true)))
-			(
-				_inv_markers
-				. append(
-					{
-						"sprite": pin,
-						"pid": String(entry.get("pid", "")),  # для hide_investigator (имя ноды санитизируется — матчить нельзя)
-						"base": base,
-						"screen_off": screen_off,
-						"base_scale": base_scale,
-					}
-				)
-			)
+			var im: Dictionary = {
+				"sprite": pin,
+				"pid": pid_s,  # для hide_investigator (имя ноды санитизируется — матчить нельзя)
+				"loc": loc_name,
+				"base": base,
+				"screen_off": start_off,
+				"base_scale": base_scale,
+			}
+			_inv_markers.append(im)
+			if animate:
+				_tween_fan(im, from_off, screen_off, from_rot, ang)
+
+
+# Пин плавно переезжает в свой слот веера: смещение от локации и наклон. screen_off
+# в записи меняется по ходу — _process при смене зума раскладывает по нему же.
+func _tween_fan(
+	im: Dictionary, from_off: Vector2, to_off: Vector2, from_rot: float, to_rot: float
+) -> void:
+	var pin: Node2D = im.sprite as Node2D
+	var step := func(t: float) -> void:
+		if not is_instance_valid(pin):
+			return
+		var off: Vector2 = from_off.lerp(to_off, t)
+		im["screen_off"] = off
+		pin.rotation = lerpf(from_rot, to_rot, t)
+		pin.position = Vector2(im.base) + off * _inv_zoom_factor()
+	(
+		pin
+		. create_tween()
+		. tween_method(step, 0.0, 1.0, INVESTIGATOR_FAN_TIME)
+		. set_trans(Tween.TRANS_CUBIC)
+		. set_ease(Tween.EASE_OUT)
+	)
+
+
+# Множитель экранных NEAR-пикселей → мировые при текущем зуме (как в _process).
+func _inv_zoom_factor() -> float:
+	var inv: float = (1.0 / camera.zoom.x) if is_instance_valid(camera) else 2.0
+	return (
+		inv
+		* lerpf(INVESTIGATOR_CARD_H_FAR, INVESTIGATOR_CARD_H_NEAR, _zoom_t())
+		/ INVESTIGATOR_CARD_H_NEAR
+	)
 
 
 # ── Чат: облачка сообщений над фишкой сыщика ──────────────────────────────────
