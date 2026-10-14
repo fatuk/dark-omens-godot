@@ -1317,6 +1317,10 @@ func relay_language() -> String:
 ## omens_step). Зовётся из EncounterFlow и MythosFlow.
 func apply_board_effect(node: Dictionary) -> void:
 	var verb: String = String(node.get("do", ""))
+	# Эффект выдал карту с onGain (услугу) — прогнать onGain общим путём выдачи.
+	if verb == "grantOnGain":
+		_grant_on_gain(node)
+		return
 	# Карта взята с витрины (gainAsset from:"reserve") — витрину дотягиваем.
 	if verb == "takeFromReserve":
 		_shop.take(String(node.get("id", "")))
@@ -1338,6 +1342,25 @@ func apply_board_effect(node: Dictionary) -> void:
 ## Артефакт УНИКАЛЕН: копия одна на партию. Поэтому исключаем занятые по ВСЕМУ
 ## столу, а не только по рукам получателя, — иначе двое сыщиков носили бы один
 ## «Некрономикон». Свободных не осталось → тихо ничего, как у пустой колоды.
+# Эффект уже положил карту в руку, но её onGain не исполнялся (услуга осталась бы
+# в руке — Чартерный рейс). Забираем из руки и выдаём заново общим путём
+# (ConditionFlow.host_grant_asset → AssetActionFlow.grant): onGain исполнится, услуга
+# сбросится, обычная карта вернётся в руку. Карты уже нет в руке — делать нечего.
+func _grant_on_gain(node: Dictionary) -> void:
+	var aid: String = String(node.get("id", ""))
+	var pid: String = String(node.get("_pid", node.get("_anchor_pid", "")))
+	if pid.is_empty():
+		pid = current_pid()
+	if aid.is_empty() or not players.has(pid):
+		return
+	var items: Array = players[pid].get("items", [])
+	for i in range(items.size()):
+		if AssetCatalog.entry_id(items[i]) == aid:
+			items.remove_at(i)
+			_cond.host_grant_asset(pid, aid)
+			return
+
+
 func grant_artifact(pid: String, artifact_id: String = "", want_trait: String = "") -> void:
 	if not is_host() or not players.has(pid):
 		return

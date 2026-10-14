@@ -49,9 +49,14 @@ func apply_targeted_effect(node: Dictionary) -> void:
 			if verb == "giveAsset" or verb == "giveClue":
 				_apply_give(verb, node, pid)
 			else:
-				var logs: Array = _EffectRunner.apply_player_verb(verb, node, _gs.players[pid])
+				var board: Array = []
+				var logs: Array = _EffectRunner.apply_player_verb(
+					verb, node, _gs.players[pid], board
+				)
 				for log_msg: Variant in logs:
 					GameConsole.log("[Эффект→%s] %s" % [_gs.name_of(pid), String(log_msg)])
+				for b_v: Variant in board:  # выданная услуга — через выдачу с onGain
+					_gs.apply_board_effect(b_v as Dictionary)
 
 
 # Список сыщиков-целей по target. lead → ведущий (turn_order[0]); each → все

@@ -279,6 +279,10 @@ func _apply_effects(effects: Array) -> void:
 					continue  # whileHeld immuneToEffects (Lost in Time)
 				var before: Dictionary = (_gs.players[uid] as Dictionary).duplicate(true)
 				var res: Dictionary = _EffectRunner.run([eff], _gs.players[uid])
+				# Выданная услуга (onGain) — общим путём выдачи, а не в руку.
+				for g_v: Variant in res.get("board", []):
+					if String((g_v as Dictionary).get("do", "")) == "grantOnGain":
+						_gs.apply_board_effect(g_v as Dictionary)
 				ActionFeed.announce_deltas(_gs, uid, before, _gs.players[uid])  # лента исходов мифа
 				ActionFeed.collect_gains(_gs, uid, before, _gs.players[uid])  # окно «вы получили»
 				for log_msg in res.get("logs", []):

@@ -137,3 +137,53 @@ func test_free_ids_exclude_reserve_and_all_hands() -> void:
 		String((p["items"][1] as Dictionary).get("id", "")), "kerosene", "GameState — пул колоды"
 	)
 	GameState.reset_session()
+
+
+# ── Услуги (onGain) из эффектов: не в руку, а через выдачу ───────────────────
+
+
+func test_effect_granted_service_is_routed_through_on_gain() -> void:
+	var saved: Callable = EffectRunner.asset_pool
+	EffectRunner.asset_pool = func() -> Array: return ["charter_flight"]
+	var p: Dictionary = _player()
+	var res: Dictionary = EffectRunner.run([{"do": "gainAsset", "trait": "service"}], p)
+	EffectRunner.asset_pool = saved
+	assert_has(
+		res.get("board", []),
+		{"do": "grantOnGain", "id": "charter_flight", "_pid": "p"},
+		"услуга уходит на выдачу с onGain"
+	)
+
+
+func test_plain_asset_has_no_on_gain_node() -> void:
+	var saved: Callable = EffectRunner.asset_pool
+	EffectRunner.asset_pool = func() -> Array: return [ITEM]
+	var res: Dictionary = EffectRunner.run([{"do": "gainAsset", "trait": "item"}], _player())
+	EffectRunner.asset_pool = saved
+	var on_gain: Array = (res.get("board", []) as Array).filter(
+		func(n: Variant) -> bool: return String((n as Dictionary).get("do", "")) == "grantOnGain"
+	)
+	assert_eq(on_gain, [], "обычная карта — просто в руку")
+
+
+func test_game_state_runs_on_gain_and_service_leaves_hand() -> void:
+	var nm: Node = get_node("/root/NetworkManager")
+	var was_host: bool = bool(nm.get("_is_host_flag"))
+	nm.set("_is_host_flag", true)
+	GameState.reset_session()
+	GameState.players = {
+		"p":
+		{"user_id": "p", "location": "5", "items": [{"id": "charter_flight", "exhausted": false}]}
+	}
+	GameState.apply_board_effect({"do": "grantOnGain", "id": "charter_flight", "_pid": "p"})
+	var ids: Array = []
+	for it_v: Variant in GameState.players["p"]["items"]:
+		ids.append(AssetCatalog.entry_id(it_v))
+	assert_does_not_have(ids, "charter_flight", "услуга не лежит в руке")
+	assert_eq(
+		String(GameState.mythos_decision.get("kind", "")),
+		"destination",
+		"рейс спрашивает, куда лететь"
+	)
+	GameState.reset_session()
+	nm.set("_is_host_flag", was_host)

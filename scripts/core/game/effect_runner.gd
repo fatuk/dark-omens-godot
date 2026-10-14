@@ -278,10 +278,13 @@ static func _targets_others(node: Dictionary) -> bool:
 
 ## Публично: применить ОДИН игровой verb к словарю игрока. Для GameState — когда
 ## эффект адресован другому сыщику (target lead/each/chosenInvestigator) и
-## применяется на уровне поля. Возвращает строки-логи.
-static func apply_player_verb(verb: String, node: Dictionary, player: Dictionary) -> Array:
+## применяется на уровне поля. Возвращает строки-логи. board — куда сложить
+## board-узлы verb'а (grantOnGain у выданной услуги); их применяет вызывающий.
+static func apply_player_verb(
+	verb: String, node: Dictionary, player: Dictionary, board: Array = []
+) -> Array:
 	var logs: Array = []
-	_apply_player_verb(verb, node, player, logs)
+	_apply_player_verb(verb, node, player, logs, board)
 	return logs
 
 
@@ -632,6 +635,7 @@ static func _run_action(
 		ritems.append({"id": taken, "exhausted": false})
 		player["items"] = ritems
 		board.append({"do": "takeFromReserve", "id": taken})
+		_note_on_gain(taken, player, board)
 		logs.append("взят с витрины актив «%s»" % taken)
 		return
 	# (1) Игровой verb к ПЕРЕДАННОМУ игроку: самонаправленный, либо легаси-режим
@@ -653,7 +657,7 @@ static func _run_action(
 			return
 		var times: int = _repeat(node, player, ctx)
 		for _i in times:
-			_apply_player_verb(verb, node, player, logs)
+			_apply_player_verb(verb, node, player, logs, board)
 		return
 	# (2) Интерактивный выбор цели (передача активов/улик другому сыщику) — только
 	#     в interactive-прогоне встречи. Нет решения → пауза; есть → нода в board.
@@ -730,7 +734,7 @@ static func _run_action(
 
 
 static func _apply_player_verb(
-	verb: String, node: Dictionary, player: Dictionary, logs: Array
+	verb: String, node: Dictionary, player: Dictionary, logs: Array, board: Array = []
 ) -> void:
 	var n: int = _amount(node)
 	match verb:
@@ -829,6 +833,7 @@ static func _apply_player_verb(
 				items.append({"id": aid, "exhausted": false})
 				player["items"] = items
 				logs.append("получен актив «%s»" % aid)
+				_note_on_gain(aid, player, board)
 		"gainImprovement":
 			# MVP: маркер предмета — каталога улучшений пока нет. У артефактов он
 			# появился, и gainArtifact ушёл в board-ветку GameState: выдача обязана
@@ -1006,6 +1011,16 @@ static func _held_of_kinds(player: Dictionary, kinds: Array) -> String:
 
 ## Активы из пула, имеющие трейт. Трейт пуст — пул целиком. Ни одного совпадения —
 ## тоже пул целиком (см. комментарий у gainAsset).
+# Карта с onGain (услуги: Чартерный рейс и пр. — «получив, сразу …, затем сбросьте»)
+# не должна просто лечь в руку: board-узел grantOnGain отдаёт её GameState, тот
+# прогоняет onGain общим путём выдачи (AssetActionFlow.grant), услуга сбрасывается.
+static func _note_on_gain(aid: String, player: Dictionary, board: Array) -> void:
+	var on_gain: Array = (AssetCatalog.by_id(aid).get("effect", {}) as Dictionary).get("onGain", [])
+	if on_gain.is_empty():
+		return
+	board.append({"do": "grantOnGain", "id": aid, "_pid": String(player.get("user_id", ""))})
+
+
 static func _assets_with_trait(pool: Array, want: String) -> Array:
 	if want.is_empty():
 		return pool
