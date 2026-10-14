@@ -348,7 +348,8 @@ func spawn_monster_at(loc_id: String) -> void:
 
 ## Заспаунить КОНКРЕТНОГО монстра (по id) на локации — в обход мешка: spawnMonster
 ## {monster:"cultist"}, эпики Тайн. Стойкость — по листу Древнего/размеру партии
-## (monster_def). Уникальный монстр из мешка при этом из мешка вынимается.
+## (monster_def). Уникальный монстр из мешка при этом из мешка вынимается; если он
+## уже на поле — второй экземпляр не выходит (каждый уникальный монстр — один).
 func spawn_named_at(mid: String, loc_id: String) -> void:
 	if not _gs.is_host() or mid.is_empty() or loc_id.is_empty():
 		return
@@ -357,6 +358,9 @@ func spawn_named_at(mid: String, loc_id: String) -> void:
 		GameConsole.warn("[Спаун] неизвестный монстр «%s»" % mid)
 		return
 	if mid != "cultist":
+		if is_on_board(mid):
+			GameConsole.warn("[Спаун] «%s» уже на поле — второй не появляется" % mid)
+			return
 		(_gs.monster_bag as Array).erase(mid)
 	var hp: int = maxi(1, MonsterCatalog.toughness_for(m, _gs._campaign.balance_player_count()))
 	var arr: Array = _gs.monsters.get(loc_id, [])
@@ -366,11 +370,28 @@ func spawn_named_at(mid: String, loc_id: String) -> void:
 
 
 ## Вернуть монстра в «мешок» (после гибели/снятия с поля). Культист всегда в
-## мешке (его не вынимали) — не дублируем.
+## мешке (его не вынимали) — не дублируем; уникальный монстр уже в мешке — тоже
+## (вторая копия в мешке потом вышла бы вторым экземпляром на поле).
 func return_monster_to_bag(mid: String) -> void:
 	if not _gs.is_host() or mid.is_empty() or mid == "cultist":
 		return
+	if (_gs.monster_bag as Array).has(mid):
+		return
 	_gs.monster_bag.append(mid)
+
+
+## Стоит ли монстр mid где-нибудь на поле.
+func is_on_board(mid: String) -> bool:
+	for loc_v: Variant in (_gs.monsters as Dictionary).keys():
+		for inst_v: Variant in _gs.monsters[loc_v] as Array:
+			var id: String = (
+				String((inst_v as Dictionary).get("id", ""))
+				if inst_v is Dictionary
+				else String(inst_v)
+			)
+			if id == mid:
+				return true
+	return false
 
 
 ## Список монстров на поле для интерактивного выбора (chosenMonster): [{ref:"loc#idx",

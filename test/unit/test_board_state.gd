@@ -213,6 +213,34 @@ func test_return_monster_to_bag() -> void:
 	assert_false(_gs.monster_bag.has("cultist"), "культист не дублируется")
 
 
+func test_return_does_not_put_second_copy_in_bag() -> void:
+	_board.return_monster_to_bag("ghoul")
+	_board.return_monster_to_bag("ghoul")
+	assert_eq(_gs.monster_bag.count("ghoul"), 1, "в мешке одна копия уникального монстра")
+
+
+func test_named_spawn_skips_unique_already_on_board() -> void:
+	# Эффект зовёт уникального монстра по имени, а он уже на поле — второй не выходит.
+	_gs.monster_bag = []
+	_board.spawn_named_at("ghoul", "gA")
+	_board.spawn_named_at("ghoul", "gB")
+	assert_eq((_gs.monsters.get("gA", []) as Array).size(), 1, "первый — на месте")
+	assert_false(_gs.monsters.has("gB"), "второго экземпляра нет")
+	assert_true(_board.is_on_board("ghoul"))
+
+
+func test_named_spawn_takes_unique_out_of_bag() -> void:
+	_gs.monster_bag = ["ghoul"]
+	_board.spawn_named_at("ghoul", "gA")
+	assert_false(_gs.monster_bag.has("ghoul"), "вынут из мешка — потом не выйдет повторно")
+
+
+func test_named_cultists_may_repeat() -> void:
+	_board.spawn_named_at("cultist", "gA")
+	_board.spawn_named_at("cultist", "gA")
+	assert_eq((_gs.monsters["gA"] as Array).size(), 2, "культистов много — по правилам")
+
+
 func test_remove_monster_at_active_returns_to_bag() -> void:
 	_at("loc")
 	_gs.monsters = {"loc": [{"id": "ghoul", "health": 2}]}
