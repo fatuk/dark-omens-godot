@@ -29,6 +29,7 @@ var _choice_holder: VBoxContainer
 const _CHOICE_GRID_AFTER: int = 8  # больше вариантов — сетка в прокрутке
 const _CHOICE_GRID_MAX_H: float = 300.0  # высота прокрутки сетки
 const _CHOICE_GRID_BTN_W: float = 210.0  # ширина кнопки в сетке
+const _CHOICE_BTN_W: float = 560.0  # ширина кнопки-ветки (по центру, не на всю карточку)
 var _tray: DiceTray  # единый лоток, создаётся лениво и переиспользуется
 var _last_dice: Array = []  # последний показанный бросок (спин — только на свежем)
 var _last_nonce: int = 0  # метка последнего отрисованного переброса (CheckFlow.reroll_nonce)
@@ -568,7 +569,10 @@ func _show_choice(card: Dictionary) -> void:
 		if grid:
 			btn.custom_minimum_size.x = _CHOICE_GRID_BTN_W
 		else:
-			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			# Фиксированная ширина по центру: растянутые на всю карточку плашки с
+			# короткой подписью смотрелись пусто. Длинное описание переносится.
+			btn.custom_minimum_size.x = _CHOICE_BTN_W
+			btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		UIStyle.style_button(btn)
 		var idx: int = i
 		btn.pressed.connect(func() -> void: _on_choice_pressed(idx))
@@ -617,7 +621,21 @@ func _choice_label(opt: Dictionary, kind: String) -> String:
 				% [tr(String(opt.get("name", "?"))), int(opt.get("count", 0))]
 			)
 		_:
-			return EffectManifest.describe(opt)
+			return EffectManifest.describe(opt) + _reserve_hint(opt)
+
+
+# Ветка «взять с витрины» (gainAsset from:"reserve"): перечислить карты, из которых
+# придётся выбирать, — игрок решает, зная, что именно сможет взять. Подходящих на
+# витрине нет → хост выдаст случайную из колоды (подпись не дописываем).
+func _reserve_hint(opt: Dictionary) -> String:
+	if String(opt.get("do", "")) != "gainAsset" or String(opt.get("from", "")) != "reserve":
+		return ""
+	var names := PackedStringArray()
+	for id_v: Variant in AssetCatalog.with_trait(
+		GameState.shop_reserve, String(opt.get("trait", ""))
+	):
+		names.append(tr(String(AssetCatalog.by_id(String(id_v)).get("nameKey", id_v))))
+	return "" if names.is_empty() else " (%s)" % ", ".join(names)
 
 
 func _clear_choice() -> void:
@@ -1030,6 +1048,12 @@ func _outcome_text(src: Dictionary, passed: bool) -> String:
 		out = "%s\n\n%s" % [txt, _eff(arr)]
 	else:
 		out = txt
+	# Что именно получено (хост пишет после коммита) — по имени карты.
+	var gained := PackedStringArray()
+	for it_v: Variant in GameState.current_encounter.get("gained_items", []):
+		gained.append(tr(AssetCatalog.card_name_key(it_v)))
+	if not gained.is_empty():
+		out += "\n" + tr("ENC_GAINED") % ", ".join(gained)
 	return out
 
 

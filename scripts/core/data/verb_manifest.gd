@@ -81,17 +81,7 @@ static func describe(node: Dictionary) -> String:
 	if not (do_val is String) or (do_val as String).is_empty():
 		return ""
 	var verb: String = do_val
-	var def: Dictionary = verb_def(verb)
-	var key: String = String(def.get("describeKey", ""))
-	var s: String = _t(key) if not key.is_empty() else verb
-	if key.is_empty() or s == key:  # нет записи в translations → деградация к verb'у
-		s = verb
-	else:
-		for p_v: Variant in def.get("params", []) as Array:
-			var p: Dictionary = p_v
-			var pname: String = String(p.get("name", ""))
-			if ("{" + pname + "}") in s:
-				s = s.replace("{" + pname + "}", _render_param(p, node))
+	var s: String = _gain_asset_text(node) if verb == "gainAsset" else _verb_text(verb, node)
 	var tgt: String = String(node.get("target", ""))
 	if not tgt.is_empty() and tgt != "self":
 		s += " · %s" % describe_target(tgt)
@@ -119,6 +109,37 @@ static func _join(arr: Variant, sep: String) -> String:
 			if not s.is_empty():
 				parts.append(s)
 	return sep.join(parts)
+
+
+# Метка verb'а по describeKey манифеста с подстановкой {param}.
+static func _verb_text(verb: String, node: Dictionary) -> String:
+	var def: Dictionary = verb_def(verb)
+	var key: String = String(def.get("describeKey", ""))
+	var s: String = _t(key) if not key.is_empty() else verb
+	if key.is_empty() or s == key:  # нет записи в translations → деградация к verb'у
+		return verb
+	for p_v: Variant in def.get("params", []) as Array:
+		var p: Dictionary = p_v
+		var pname: String = String(p.get("name", ""))
+		if ("{" + pname + "}") in s:
+			s = s.replace("{" + pname + "}", _render_param(p, node))
+	return s
+
+
+# gainAsset: ОТКУДА и КАКОЙ актив — «Выбрать с витрины: Предмет» против «Случайная
+# карта из колоды: Предмет». Иначе две ветки выбора читались одинаково («получает
+# актив»). Трейт — имя по TRAIT_*, без трейта — «Актив».
+static func _gain_asset_text(node: Dictionary) -> String:
+	var tr_key: String = String(node.get("trait", ""))
+	var trait_name: String = (
+		_t("ASSET_ANY") if tr_key.is_empty() else _t("TRAIT_" + tr_key.to_upper())
+	)
+	var key: String = (
+		"VERB_GAIN_ASSET_RESERVE"
+		if String(node.get("from", "")) == "reserve"
+		else "VERB_GAIN_ASSET_DECK"
+	)
+	return _t(key).replace("{trait}", trait_name)
 
 
 # Значение параметра как текст: condition → локализованное имя, skill → имя навыка,

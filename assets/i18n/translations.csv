@@ -836,6 +836,10 @@ VERB_SPEND_CLUE,−{amount} улик,spend {amount} Clues
 VERB_GAIN_CONDITION,состояние: {condition},gains {condition}
 VERB_LOSE_CONDITION,снять: {condition},loses {condition}
 VERB_GAIN_ASSET,получает актив,gains an Asset
+VERB_GAIN_ASSET_RESERVE,Выбрать с витрины: {trait},Choose from the reserve: {trait}
+VERB_GAIN_ASSET_DECK,Случайная карта из колоды: {trait},Random card from the deck: {trait}
+ASSET_ANY,Актив,Asset
+ENC_GAINED,Получено: %s,Gained: %s
 VERB_GAIN_SPELL,получает заклинание,gains a Spell
 VERB_GAIN_ARTIFACT,получает артефакт,gains an Artifact
 VERB_LOSE_SPELL,сбрасывает заклинание,loses a Spell

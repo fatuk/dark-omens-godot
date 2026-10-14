@@ -116,6 +116,7 @@ class MockGS:
 	var active_check: Dictionary = {}
 	var turn_order: Array = ["p"]
 	var map: RefCounted = null  # MockMap — граф локаций для move (ставит тест)
+	var shop_reserve: Array = []  # витрина — для gainAsset from:"reserve"
 	var board_effects: Array = []  # что ушло в apply_board_effect
 	var _check := MockCheck.new()
 	var _campaign := MockCampaign.new()

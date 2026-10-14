@@ -1313,6 +1313,10 @@ func relay_language() -> String:
 ## omens_step). Зовётся из EncounterFlow и MythosFlow.
 func apply_board_effect(node: Dictionary) -> void:
 	var verb: String = String(node.get("do", ""))
+	# Карта взята с витрины (gainAsset from:"reserve") — витрину дотягиваем.
+	if verb == "takeFromReserve":
+		_shop.take(String(node.get("id", "")))
+		return
 	# Адресные эффекты (target lead/each/eachOn*/chosenInvestigator) и передачи
 	# активов/улик — применяются к разрешённым сыщикам, а не к доске.
 	if _target.is_targeted_effect(node):

@@ -47,6 +47,10 @@ class StubShop:
 		for b_v: Variant in bought:
 			(gs.get("shop_reserve") as Array).erase(String(b_v))
 
+	func take(asset_id: String) -> void:
+		(gs.get("asset_deck") as Array).erase(asset_id)
+		refill([asset_id])
+
 
 class StubTarget:
 	extends RefCounted

@@ -618,6 +618,11 @@ func _commit_outcome(pid: String) -> void:
 		if not ehook.is_empty():
 			_apply_eldritch_outcome(pid, ehook, String(enc.get("eldritch_loc", "")), passed)
 	ActionFeed.announce_deltas(_gs, pid, before, _gs.players[pid])
+	# Какие карты пришли (актив/заклинание/артефакт) — исход напишет их по имени:
+	# описание эффекта («случайная карта из колоды») не говорит, что именно выпало.
+	var got: Array = ActionFeed.gains_summary(before, _gs.players[pid]).get("items", [])
+	if not got.is_empty():
+		enc["gained_items"] = got
 	enc["committed"] = true
 	_gs._check.clear()  # проверка завершена — снять active_check
 	_rearm_sticky(pid)  # особая встреча Тайны: повтор на следующем ходу, пока не решена
@@ -1108,6 +1113,8 @@ func _effect_ctx(pid: String) -> Dictionary:
 	ctx["other_pids"] = _other_investigators(pid)
 	ctx["monster_choices"] = _gs._board.monster_choices()  # для chosenMonster
 	ctx["locations"] = _gs.map.all()  # move — сыщик выбирает, куда (Юггот «Перелёт»)
+	# gainAsset from:"reserve" — выбор карты с витрины (иначе выдача молча случайная).
+	ctx["reserve"] = (_gs.shop_reserve as Array).duplicate()
 	return ctx
 
 

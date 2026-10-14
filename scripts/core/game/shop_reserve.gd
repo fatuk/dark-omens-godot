@@ -90,6 +90,15 @@ func refill(bought: Array) -> void:
 	_draw(_gs.SHOP_RESERVE_SIZE - _gs.shop_reserve.size())
 
 
+## Хост: карту забрал эффект (gainAsset from:"reserve" — встреча, розыгрыш актива):
+## снять её с витрины и из колоды, дотянуть витрину.
+func take(asset_id: String) -> void:
+	if not _gs.is_host():
+		return
+	(_gs.asset_deck as Array).erase(asset_id)
+	refill([asset_id])
+
+
 ## Добавляет n случайных ассетов в витрину. Карты не повторяются: исключаем уже
 ## выложенные И уже принадлежащие любому игроку — каждый ассет на поле уникален.
 func _draw(n: int) -> void:

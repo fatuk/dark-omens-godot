@@ -259,8 +259,7 @@ func _step() -> void:
 		elif String(node.get("do", "")) == "takeFromReserve":
 			# Карта взята с витрины (gainAsset from:reserve) — снять её оттуда и
 			# дотянуть витрину; из колоды она тоже выбывает.
-			_take_from_supply(String(node.get("id", "")))
-			_gs._shop.refill([String(node.get("id", ""))])
+			_gs._shop.take(String(node.get("id", "")))
 		else:
 			node["_anchor_pid"] = pid  # относительные цели — от этого сыщика
 			_gs.apply_board_effect(node)

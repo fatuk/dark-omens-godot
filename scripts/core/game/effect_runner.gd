@@ -580,18 +580,25 @@ static func _run_action(
 		logs.append("перемещение")
 		return
 	# gainAsset from:"reserve" — «возьмите карту с витрины»: сыщик выбирает из
-	# текущей витрины (ctx.reserve), карта уходит с витрины (board-узел takeFromReserve
-	# читает прогон актива). Витрина пуста / нет ctx — деградация к случайной выдаче.
+	# текущей витрины (ctx.reserve) карты нужного трейта, карта уходит с витрины
+	# (board-узел takeFromReserve → ShopReserve.take). Подходящих на витрине нет / нет
+	# ctx — деградация к случайной выдаче из колоды.
 	if (
 		verb == "gainAsset"
 		and String(node.get("from", "")) == "reserve"
 		and interactive
-		and not (ctx.get("reserve", []) as Array).is_empty()
+		and not (
+			AssetCatalog
+			. with_trait(ctx.get("reserve", []), String(node.get("trait", "")))
+			. is_empty()
+		)
 	):
 		var rdec: Dictionary = flow.get("decisions", {})
 		if not rdec.has(path):
 			var ropts: Array = []
-			for aid_v: Variant in ctx.get("reserve", []):
+			for aid_v: Variant in AssetCatalog.with_trait(
+				ctx.get("reserve", []), String(node.get("trait", ""))
+			):
 				var a: Dictionary = AssetCatalog.by_id(String(aid_v))
 				ropts.append(
 					{"ref": String(aid_v), "name": String(a.get("nameKey", String(aid_v)))}

@@ -79,6 +79,33 @@ static func _load() -> void:
 
 
 ## Payload карты ассета для GameCard.set_card (название/трейт/способность/стоимость).
+## i18n-ключ имени карты инвентаря любого вида (актив / заклинание / артефакт);
+## неизвестная — сам id. Для строк «получено: …» в исходах.
+static func card_name_key(entry: Variant) -> String:
+	var id: String = entry_id(entry)
+	var a: Dictionary = by_id(id)
+	if not a.is_empty():
+		return String(a.get("nameKey", id))
+	var s: Dictionary = SpellCatalog.by_id(id)
+	if not s.is_empty():
+		return String(s.get("name", id))
+	var art: Dictionary = ArtifactCatalog.by_id(id)
+	if not art.is_empty():
+		return String(art.get("nameKey", id))
+	return id
+
+
+## id из ids, у которых есть трейт want (пустой трейт — все). Строго, без отката
+## ко всему списку: «возьмите ПРЕДМЕТ с витрины» не должен предлагать союзника.
+## Общая для интерпретатора (gainAsset from:"reserve") и подписи кнопки выбора.
+static func with_trait(ids: Array, want: String) -> Array:
+	var out: Array = []
+	for id_v: Variant in ids:
+		if want.is_empty() or (by_id(String(id_v)).get("traits", []) as Array).has(want):
+			out.append(String(id_v))
+	return out
+
+
 static func card_payload(a: Dictionary) -> Dictionary:
 	var traits: Array = a.get("traits", [])
 	var trait_id: String = String(traits[-1]) if not traits.is_empty() else "item"
