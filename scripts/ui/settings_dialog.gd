@@ -31,6 +31,7 @@ var _fs_check: CheckBox
 var _fx_check: CheckBox
 var _turn_check: CheckBox
 var _fps_check: CheckBox
+var _guide_check: CheckBox
 var _music_slider: HSlider
 var _sfx_slider: HSlider
 var _lang_option: OptionButton
@@ -168,6 +169,33 @@ func _build_display_section() -> void:
 	fps_lbl.name = "ShowFpsLabel"
 	fps_row.add_child(fps_lbl)
 
+	# Подсказки профессора Армитеджа: вкл/выкл + «показать заново» (сразу, без Сохранить).
+	var guide_row := HBoxContainer.new()
+	guide_row.name = "GuideRow"
+	guide_row.add_theme_constant_override("separation", 10)
+	_vbox.add_child(guide_row)
+
+	_guide_check = CheckBox.new()
+	_guide_check.name = "GuideHintsCheck"
+	_guide_check.button_pressed = SettingsStore.guide_hints
+	_guide_check.add_theme_color_override("font_color", UIColors.TEXT)
+	_guide_check.add_theme_font_size_override("font_size", 14)
+	guide_row.add_child(_guide_check)
+	var guide_lbl := _plain_label("SETTINGS_GUIDE_HINTS")
+	guide_lbl.name = "GuideHintsLabel"
+	guide_row.add_child(guide_lbl)
+
+	var reset := UIStyle.button("SETTINGS_GUIDE_RESET")
+	reset.name = "GuideResetBtn"
+	reset.disabled = SettingsStore.guide_seen.is_empty()
+	reset.pressed.connect(
+		func() -> void:
+			SettingsStore.reset_guide()
+			reset.text = "SETTINGS_GUIDE_RESET_DONE"
+			reset.disabled = true
+	)
+	_vbox.add_child(reset)
+
 
 func _build_audio_section() -> void:
 	_section_header("SECTION_AUDIO", "AudioHeader")
@@ -230,6 +258,7 @@ func _on_save() -> void:
 	PostFx.set_enabled(_fx_check.button_pressed)
 	SettingsStore.turn_notify = _turn_check.button_pressed
 	SettingsStore.show_fps = _fps_check.button_pressed
+	SettingsStore.guide_hints = _guide_check.button_pressed
 	FpsOverlay.set_shown(SettingsStore.show_fps)
 	if _lang_option.selected >= 0:
 		I18n.set_locale(I18n.SUPPORTED[_lang_option.selected])

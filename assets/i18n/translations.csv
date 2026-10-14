@@ -1887,3 +1887,18 @@ TRADE_OFFER_CANCEL,Отозвать предложение,Withdraw the offer
 GUIDE_CONTINUE,Щёлкните — дальше,Click to continue
 GUIDE_CLOSE,Щёлкните — понятно,Click to close
 GUIDE_HELLO,"Приветствую, коллега. Я профессор Армитедж, Мискатоникский университет. Пока вы осваиваетесь, я буду рядом и подскажу, что делать.","Greetings, colleague. I am Professor Armitage of Miskatonic University. While you find your feet, I will be close by to tell you what to do."
+GUIDE_ACTIONS_1,"Ваш ход. За раунд у вас два действия, и одно и то же действие дважды не выбрать: отдых, концентрация, ресурс, переезд, магазин, обмен.","Your turn. You have two actions per round, and you cannot take the same action twice: rest, focus, resource, travel, shop, trade."
+GUIDE_ACTIONS_2,"Чтобы отправиться в путь, нажмите на соседнюю локацию. Дальние города достижимы по билетам на поезд и пароход — их продают в городах.","To travel, click a neighbouring location. Distant cities can be reached with train and ship tickets, sold in cities."
+GUIDE_ACTIONS_3,"Когда действия кончатся, начнётся фаза встреч: на своей клетке вы столкнётесь с тем, что там поджидает.","Once your actions are spent, the encounter phase begins: you will face whatever waits on your space."
+GUIDE_MONSTER_HERE,"Осторожно, рядом монстр. Пока он на вашей клетке, магазин закрыт и отдохнуть не выйдет, а в фазе встреч придётся с ним сразиться.","Careful, a monster is near. While it shares your space, shops are closed and you cannot rest, and in the encounter phase you will have to fight it."
+GUIDE_LOW_VITALITY,"Вы едва держитесь. Отдых вернёт по одному здоровью и рассудку, если рядом нет монстров. Упадёте до нуля — придётся пройти Порог.","You are barely standing. Resting restores 1 Health and 1 Sanity, if no monster is near. Drop to zero and you must face the Threshold."
+GUIDE_ENCOUNTER_1,"Встреча. Прочтите, что происходит, и бросьте кубики: кубиков столько, каков ваш навык в проверке, а успех — это 5 или 6.","An encounter. Read what happens, then roll: you roll as many dice as your skill in the test, and each 5 or 6 is a success."
+GUIDE_ENCOUNTER_2,Перед броском можно разыграть карты с руки — они добавляют кубики или дают перебросы.,Before rolling you may play cards from your hand: they add dice or grant rerolls.
+GUIDE_COMBAT_1,Бой. Сначала проверка Воли против ужаса монстра: каждый успех сбережёт вам единицу рассудка.,Combat. First a Will test against the monster's horror: each success saves you 1 Sanity.
+GUIDE_COMBAT_2,Затем проверка Силы: каждый успех ранит монстра и смягчает его удар по вам. Победите — и монстр исчезнет с поля.,Then a Strength test: each success wounds the monster and softens its blow. Defeat it and it leaves the board.
+GUIDE_SHOP,"Магазин. Бросьте Влияние — каждый успех даёт монету. На монеты покупаются карты с витрины, сколько хватит.",The shop. Roll Influence: each success is a coin. Spend the coins on cards from the reserve.
+GUIDE_MYTHOS,"Фаза Мифов. Древний делает свой ход: открываются врата, появляются монстры и улики, движется Рок. Когда Рок дойдёт до нуля — Древний пробудится.","The Mythos phase. The Ancient One makes its move: gates open, monsters and clues appear, Doom advances. When Doom reaches zero, the Ancient One awakens."
+GUIDE_RECKONING,"Расплата. Всё, что отмечено символом Расплаты — состояния, монстры, слухи, — срабатывает сейчас.","Reckoning. Everything marked with the Reckoning symbol, conditions, monsters, rumors, resolves now."
+SETTINGS_GUIDE_HINTS,Подсказки профессора Армитеджа,Professor Armitage's hints
+SETTINGS_GUIDE_RESET,Показать подсказки заново,Show hints again
+SETTINGS_GUIDE_RESET_DONE,Подсказки будут показаны снова,Hints will be shown again

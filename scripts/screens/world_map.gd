@@ -132,6 +132,7 @@ func _ready() -> void:
 	_build_trade_offer_modal()
 	_build_chat_composer()
 	_build_hand_carousel()
+	_build_guide_director()
 	_refresh_game_panel()
 	_refresh_investigators()
 	_refresh_gates()
@@ -369,6 +370,13 @@ func _build_outcome_modal() -> void:
 	var om: CanvasLayer = load("res://scripts/ui/outcome_modal.gd").new()
 	om.name = "OutcomeModal"
 	add_child(om)
+
+
+# Подсказки профессора Армитеджа: сам решает, что и когда показать (GuideDirector).
+func _build_guide_director() -> void:
+	var gd := GuideDirector.new()
+	gd.name = "GuideDirector"
+	add_child(gd)
 
 
 func _build_turn_banner() -> void:

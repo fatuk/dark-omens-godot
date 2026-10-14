@@ -1,0 +1,13 @@
+{
+	"_comment": "Подсказки профессора Армитеджа (GuideDirector). on — событие игры (список в GuideDirector.trigger_active); lines — ключи перевода реплик; show: free — ждать, пока экран свободен от окон, over — сразу поверх открытого окна (встреча, бой, магазин…); priority — больше = раньше в очереди. Каждая подсказка показывается один раз на профиль (SettingsStore.guide_seen), выключаются в настройках.",
+	"hints": [
+		{"id": "welcome", "on": "actionPhase", "show": "free", "priority": 10, "lines": ["GUIDE_HELLO", "GUIDE_ACTIONS_1", "GUIDE_ACTIONS_2", "GUIDE_ACTIONS_3"]},
+		{"id": "monster_here", "on": "monsterHere", "show": "free", "priority": 8, "lines": ["GUIDE_MONSTER_HERE"]},
+		{"id": "low_vitality", "on": "lowVitality", "show": "free", "priority": 6, "lines": ["GUIDE_LOW_VITALITY"]},
+		{"id": "encounter", "on": "encounter", "show": "over", "priority": 9, "lines": ["GUIDE_ENCOUNTER_1", "GUIDE_ENCOUNTER_2"]},
+		{"id": "combat", "on": "combat", "show": "over", "priority": 9, "lines": ["GUIDE_COMBAT_1", "GUIDE_COMBAT_2"]},
+		{"id": "shop", "on": "shop", "show": "over", "priority": 9, "lines": ["GUIDE_SHOP"]},
+		{"id": "mythos", "on": "mythos", "show": "over", "priority": 9, "lines": ["GUIDE_MYTHOS"]},
+		{"id": "reckoning", "on": "reckoning", "show": "over", "priority": 9, "lines": ["GUIDE_RECKONING"]}
+	]
+}

@@ -33,6 +33,7 @@ const _FADE_IN: float = 0.35
 const _FADE_OUT: float = 0.2
 
 var _lines: Array = []
+var _over_modals: bool = false
 var _index: int = 0
 var _closing: bool = false
 var _root: Control
@@ -43,17 +44,21 @@ var _more: Label
 
 
 ## Показать реплики наставника поверх сцены parent. Возвращает узел подсказки
-## (его finished — когда игрок прочитал всё).
-static func say(parent: Node, lines: Array) -> GuideHint:
+## (его finished — когда игрок прочитал всё). over_modals — поверх открытых окон
+## (подсказка ПРО это окно: встреча, бой, магазин); иначе — под модалками.
+static func say(parent: Node, lines: Array, over_modals: bool = false) -> GuideHint:
 	var g := GuideHint.new()
 	g.name = "GuideHint"
 	g._lines = lines.duplicate()
+	g._over_modals = over_modals
 	parent.add_child(g)
 	return g
 
 
 func _ready() -> void:
-	layer = 79  # над картой и HUD (≤ 50), под модалками (80+)
+	# Над картой и HUD (≤ 50), под модалками (80+); про окно — над ними (до 90:
+	# диалоги и пауза выше).
+	layer = 89 if _over_modals else 79
 	_build()
 	if _lines.is_empty():
 		_close()

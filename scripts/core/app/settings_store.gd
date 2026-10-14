@@ -37,6 +37,10 @@ var turn_notify: bool = true  # баннер «Ваш ход», когда иг�
 # Счётчик FPS поверх игры. Отладочный, но живёт в обычных настройках, а не за
 # OS.is_debug_build(): нужен на плейтестах, а они идут на релизной сборке.
 var show_fps: bool = false
+# Подсказки профессора Армитеджа (GuideDirector): включены, пока игрок их не выключит.
+var guide_hints: bool = true
+# id уже показанных подсказок — каждая показывается один раз на профиль.
+var guide_seen: Array = []
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -135,12 +139,36 @@ func save() -> void:
 	cfg.set_value("audio", "sfx", SfxManager.volume)
 	cfg.set_value("game", "turn_notify", turn_notify)
 	cfg.set_value("game", "show_fps", show_fps)
+	cfg.set_value("game", "guide_hints", guide_hints)
+	cfg.set_value("guide", "seen", guide_seen)
 	music_volume = MusicManager.volume
 	sfx_volume = SfxManager.volume
 	cfg.save(SETTINGS_FILE)
 
 
+## Подсказка показана — больше не повторять. Пишем сразу (только свою секцию):
+## игрок может выйти из партии, так и не открыв настройки.
+func mark_guide_seen(id: String) -> void:
+	if guide_seen.has(id):
+		return
+	guide_seen.append(id)
+	_save_guide()
+
+
+## «Показать подсказки заново» — забыть, что уже показано.
+func reset_guide() -> void:
+	guide_seen.clear()
+	_save_guide()
+
+
 # ── Internal ──────────────────────────────────────────────────────────────────
+
+
+func _save_guide() -> void:
+	var cfg := ConfigFile.new()
+	cfg.load(SETTINGS_FILE)  # ок если файла нет
+	cfg.set_value("guide", "seen", guide_seen)
+	cfg.save(SETTINGS_FILE)
 
 
 func _load() -> void:
@@ -160,3 +188,5 @@ func _load() -> void:
 	sfx_volume = float(cfg.get_value("audio", "sfx", 0.5))
 	turn_notify = bool(cfg.get_value("game", "turn_notify", true))
 	show_fps = bool(cfg.get_value("game", "show_fps", false))
+	guide_hints = bool(cfg.get_value("game", "guide_hints", true))
+	guide_seen = (cfg.get_value("guide", "seen", []) as Array).duplicate()
