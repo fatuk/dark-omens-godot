@@ -41,7 +41,8 @@ const _BODY_BOTTOM_GAP: float = 573.0  # от низа текста до низ�
 const _CODE_POS := Vector2(96, 1668)  # под «COMMS CODE» на повёрнутом штампе
 const _CODE_SIZE := Vector2(280, 60)
 const _CODE_TILT_DEG: float = 8.0  # штамп повёрнут по часовой
-const _FOOTER_RECT := Rect2(456, 1747, 630, 205)  # плашка внизу (текст чуть выше центра)
+const _FOOTER_RECT := Rect2(472, 1778, 598, 167)  # внутреннее поле плашки футера
+const _FOOTER_CAPS_NUDGE: int = 6  # подпись футера ниже на N px (центр заглавных)
 const _CLOSE_RECT := Rect2(1346, 60, 136, 134)  # крестик в арте
 const _ICON_H: float = 112.0  # медальоны успеха/провала
 # Шрифты — тоже в пикселях бланка (на экране ≈ ×0.5).
@@ -209,11 +210,18 @@ func _build_footer() -> void:
 	_clock.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(_clock)
 
+	# Коробка строки держит место под выносные элементы — заглавные визуально выше
+	# её центра; сдвигаем подпись вниз, чтобы буквы встали по центру плашки.
+	var pad := MarginContainer.new()
+	pad.name = "InProgressPad"
+	pad.add_theme_constant_override("margin_top", _FOOTER_CAPS_NUDGE * 2)
+	pad.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	pad.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(pad)
 	var lbl := UIStyle.label("TELEGRAM_IN_PROGRESS", _FS_FOOTER, UIColors.ACCENT)
 	lbl.name = "InProgress"
-	lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(lbl)
+	pad.add_child(lbl)
 
 
 # Крестик нарисован в арте — поверх него прозрачная кнопка.
