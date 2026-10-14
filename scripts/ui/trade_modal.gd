@@ -5,6 +5,9 @@ extends CanvasLayer
 ## предметы/улики напарника «взять» → предложение (TRADE_OFFER). Партнёр принимает или
 ## отклоняет в TradeOfferModal; при согласии хост меняет и тратит действие инициатора
 ## (PhaseController.host_apply_trade_response). Модалка — сиблинг "TradeModal".
+## Одноразовая, как ShopModal/GalleryModal: закрытие освобождает ноду (WorldMap
+## не плодит дубликаты по имени "TradeModal" — висящая скрытая нода блокировала бы
+## все следующие нажатия «Обмен»).
 
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
@@ -46,6 +49,7 @@ func _allies() -> Array:
 func open() -> void:
 	var allies: Array = _allies()
 	if allies.is_empty():
+		_close()  # меняться не с кем — не оставляем невидимую ноду-блокер
 		return
 	_partner = String(allies[0])
 	_reset_selection()
@@ -108,7 +112,7 @@ func _build(allies: Array) -> void:
 	cancel.text = "BTN_CANCEL"
 	cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	UIStyle.style_button(cancel)
-	cancel.pressed.connect(func() -> void: UIStyle.modal_set_visible(_root, _panel, false))
+	cancel.pressed.connect(_close)
 	row.add_child(ok)
 	row.add_child(cancel)
 	_vbox.add_child(row)
@@ -172,7 +176,7 @@ func _on_confirm() -> void:
 	for k_v: Variant in _take:
 		if bool(_take[k_v]):
 			take.append(int(k_v))
-	UIStyle.modal_set_visible(_root, _panel, false)
+	_close()
 	(
 		GameState
 		. act(
@@ -186,3 +190,13 @@ func _on_confirm() -> void:
 			}
 		)
 	)
+
+
+# Закрыть и освободить ноду после анимации. Имя меняем сразу: пока окно гаснет,
+# повторное «Обмен» должно открыть новое, а не упереться в уходящее.
+func _close() -> void:
+	name = "TradeModalClosing"
+	if not _root.visible:
+		queue_free()
+		return
+	UIStyle.modal_transition(_root, _panel, false).chain().tween_callback(queue_free)
