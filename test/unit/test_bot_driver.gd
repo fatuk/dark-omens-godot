@@ -301,3 +301,42 @@ func test_bot_waits_while_human_reads_its_encounter() -> void:
 	# Бой наблюдателю не показывается — ждать нечего.
 	_gs.current_encounter = {"kind": "combat", "mainText": text}
 	assert_eq(_d.watched_text(BOT), "")
+
+
+# ── Заключение и пр. (cannotAct): только действие состояния или пас ───────────
+
+
+func test_detained_bot_uses_condition_action_then_passes() -> void:
+	# Регрессия: бот с Заключением просил отдых, хост отклонял — партия вставала.
+	_gs.constraints["cannotAct"] = true
+	_gs.players[BOT]["hp"] = 3  # ранен — раньше это вело к вечному «отдыху»
+	_gs.players[BOT]["conditions"] = ["detained"]
+	var a: Dictionary = _act()
+	assert_eq(a["type"], GameActions.CONDITION_ACTION, "попытка выйти из заключения")
+	assert_eq(String(a["payload"].get("condition", "")), "detained")
+	_gs.players[BOT]["actions_used"] = [GameActions.CONDITION_ACTION]
+	assert_eq(_act()["type"], GameActions.PASS, "попытка в раунде была — пас")
+
+
+func test_cannot_act_without_condition_action_passes() -> void:
+	_gs.constraints["cannotAct"] = true
+	_gs.players[BOT]["conditions"] = ["lostInTimeAndSpace"]
+	assert_eq(_act()["type"], GameActions.PASS)
+
+
+func test_rejected_action_falls_back_to_pass() -> void:
+	# Хост раз за разом не принимает действие (состояние не меняется) — бот пасует.
+	var rest: Dictionary = {"action": RelayActions.ACTION, "type": GameActions.REST, "payload": {}}
+	for i in range(Driver.STUCK_REPEATS + 1):
+		_d.set(
+			"_last",
+			{BOT: (_d.get("_last") as Dictionary).get(BOT, {}).merged({"at": -100.0}, true)}
+		)
+		assert_true(_d.call("_send", BOT, rest), "отправка %d" % i)
+	var types: Array = []
+	for e: Dictionary in _out:
+		types.append(String((e["msg"] as Dictionary).get("type", "")))
+	assert_eq(
+		types.slice(0, Driver.STUCK_REPEATS), [GameActions.REST, GameActions.REST, GameActions.REST]
+	)
+	assert_eq(types[Driver.STUCK_REPEATS], GameActions.PASS, "после трёх отказов — пас")

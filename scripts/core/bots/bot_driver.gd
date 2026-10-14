@@ -18,6 +18,9 @@ extends Node
 const DELAY_MIN := 1.2  # пауза перед каждым шагом бота — чтобы за ним можно было уследить
 const DELAY_MAX := 2.0
 const RETRY_SEC := 3.0  # то же намерение повторяем не чаще — страховка от зацикливания
+# Столько раз подряд хост не принял одно и то же действие при неизменном состоянии —
+# бот пасует, а не просит то же вечно (страховка на непредвиденный отказ хоста).
+const STUCK_REPEATS := 3
 # Встреча бота: живой игрок читает её в окне наблюдателя — бот не жмёт дальше,
 # пока текст не прочитан. Время — по длине текста, в рамках [MIN, MAX].
 const READ_CHARS_PER_SEC := 18.0
@@ -38,7 +41,7 @@ var sender: Callable = Callable()
 var _gs: Node = null
 var _nm: Node = null
 var _timer: Timer = null
-var _last: Dictionary = {}  # bot id → {sig, at}
+var _last: Dictionary = {}  # bot id → {sig, at, count}
 var _sent: Array = []  # для тестов/отладки: [{from, msg}]
 var _read_text: String = ""  # что сейчас видит наблюдатель встречи бота
 var _read_since: float = 0.0  # когда этот текст появился (сек)
@@ -167,13 +170,29 @@ func _send(bid: String, intent: Dictionary) -> bool:
 	var sig: String = JSON.stringify(intent) + "|" + _fingerprint(bid)
 	var now: float = Time.get_ticks_msec() / 1000.0
 	var last: Dictionary = _last.get(bid, {})
-	if String(last.get("sig", "")) == sig and now - float(last.get("at", 0.0)) < RETRY_SEC:
+	var same: bool = String(last.get("sig", "")) == sig
+	if same and now - float(last.get("at", 0.0)) < RETRY_SEC:
 		return false
-	_last[bid] = {"sig": sig, "at": now}
-	var msg: Dictionary = intent.duplicate(true)
+	var count: int = int(last.get("count", 0)) + 1 if same else 1
+	_last[bid] = {"sig": sig, "at": now, "count": count}
+	var msg: Dictionary = (
+		(_stuck_fallback(bid, intent) if count > STUCK_REPEATS else intent).duplicate(true)
+	)
 	msg["pid"] = bid
 	_emit(bid, msg)
 	return true
+
+
+# Хост раз за разом отклоняет действие фазы действий (состояние не меняется) —
+# вместо вечного повтора пасуем: ход уйдёт дальше, партия не встанет.
+func _stuck_fallback(bid: String, intent: Dictionary) -> Dictionary:
+	if (
+		String(intent.get("action", "")) != RelayActions.ACTION
+		or String(intent.get("type", "")) == GameActions.PASS
+	):
+		return intent
+	push_warning("[Бот] %s: хост не принимает «%s» — пас" % [bid, intent.get("type", "")])
+	return _game_action(GameActions.PASS)
 
 
 # Срез состояния, от которого зависит намерение бота: смена любого поля → новое
@@ -310,6 +329,13 @@ func _held(p: Dictionary) -> bool:
 
 func _action_intent(pid: String, p: Dictionary, role: String) -> Dictionary:
 	var used: Array = p.get(PlayerKeys.ACTIONS_USED, [])
+	# Состояние запрещает действия (Заключение, Затерянный во времени): хост примет
+	# только пас и действие самого состояния. Раньше бот просил отдых — и вечно.
+	if _gs.player_has_constraint(pid, "cannotAct"):
+		var cid: String = _condition_with_action(p)
+		if not cid.is_empty() and not used.has(GameActions.CONDITION_ACTION):
+			return _game_action(GameActions.CONDITION_ACTION, {"condition": cid})
+		return _game_action(GameActions.PASS)
 	var hp: int = int(p.get(PlayerKeys.HP, 0))
 	var san: int = int(p.get(PlayerKeys.SANITY, 0))
 	# С монстром на клетке хост отдых отклонит — не просим (иначе бот зациклится).
@@ -335,6 +361,19 @@ func _action_intent(pid: String, p: Dictionary, role: String) -> Dictionary:
 	):
 		return _game_action(GameActions.REST)
 	return _game_action(GameActions.PASS)
+
+
+# Первое состояние на руках с локальным действием (Заключение: проверка Влияния →
+# сброс). Перевёрнутые лицом вниз не действуют. "" — таких нет.
+func _condition_with_action(p: Dictionary) -> String:
+	var flipped: Dictionary = p.get("conditions_flipped", {})
+	for c_v: Variant in p.get("conditions", []):
+		var cid: String = String(c_v)
+		if flipped.has(cid):
+			continue
+		if not (Conditions.get_def(cid).get("action", []) as Array).is_empty():
+			return cid
+	return ""
 
 
 func _game_action(type: String, payload: Dictionary = {}) -> Dictionary:
