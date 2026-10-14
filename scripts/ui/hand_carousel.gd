@@ -332,6 +332,11 @@ func _rebuild_cards() -> void:
 	_mid = float(maxi(1, _deck.size()) - 1) / 2.0
 	for i in range(_deck.size()):
 		var card: Control = _build_card(_deck[i], i)
+		# Новая карта — сразу в позе «закрыт» (снизу, прозрачная), а не в (0,0):
+		# пересборка часто приходит во время анимации закрытия после розыгрыша
+		# (слой ещё visible), и карта промигивала в левом верхнем углу экрана.
+		# Открытый веер тут же разложит _layout (_apply_section).
+		_set_hidden_pose(card)
 		add_child(card)
 		_els.append(card)
 		_exhausted.append(bool((_deck[i] as Dictionary).get("exhausted", false)))
@@ -479,16 +484,21 @@ func open() -> void:
 	_active = -1
 	# Стартовое положение «снизу и прозрачно» — для въезда веера.
 	for card in _els:
-		card.position = _p0() + Vector2(0.0, 160.0)
-		card.rotation = 0.0
-		card.scale = Vector2.ONE
-		card.modulate = MOD_HIDDEN
+		_set_hidden_pose(card)
 	# После анимации закрытия стрелки остаются прозрачными — возвращаем видимость
 	# (позицию им вернёт _position_chrome в _layout).
 	for arrow: Control in [_arrow_l, _arrow_r]:
 		if is_instance_valid(arrow):
 			arrow.modulate = Color.WHITE
 	_layout(true)
+
+
+# Поза закрытого веера: под якорем и прозрачно (старт въезда в open()).
+func _set_hidden_pose(card: Control) -> void:
+	card.position = _p0() + Vector2(0.0, 160.0)
+	card.rotation = 0.0
+	card.scale = Vector2.ONE
+	card.modulate = MOD_HIDDEN
 
 
 func close() -> void:
