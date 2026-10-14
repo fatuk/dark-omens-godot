@@ -86,7 +86,6 @@ var _trade_btn: Button = null
 var _shop_btn: Button = null
 var _buy_train_btn: Button = null
 var _buy_ship_btn: Button = null
-var _items_sep: HSeparator = null
 var _items_hdr: Label = null
 var _items_list: VBoxContainer = null
 
@@ -360,10 +359,6 @@ func _make_buy_ticket_btn(label_key: String, ticket_type: String) -> Button:
 
 # Описание + список объектов на локации в прокручиваемой области (тянется вниз).
 func _build_content() -> void:
-	var sep := HSeparator.new()
-	sep.name = "Sep"
-	_vbox.add_child(sep)
-
 	var scroll := ScrollContainer.new()
 	scroll.name = "Scroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -376,8 +371,6 @@ func _build_content() -> void:
 	content.add_theme_constant_override("separation", 8)
 	scroll.add_child(content)
 
-	_items_sep = HSeparator.new()
-	_items_sep.name = "ItemsSeparator"
 	_items_hdr = Label.new()
 	_items_hdr.name = "ItemsHeader"
 	_items_hdr.text = "SIDEBAR_ITEMS"
@@ -386,7 +379,6 @@ func _build_content() -> void:
 	_items_list = VBoxContainer.new()
 	_items_list.name = "ItemsList"
 	_items_list.add_theme_constant_override("separation", 6)
-	content.add_child(_items_sep)
 	content.add_child(_items_hdr)
 	content.add_child(_items_list)
 
@@ -579,14 +571,13 @@ func _populate_items(loc_id: String) -> void:
 	var rumors: int = (ents as Array).count("rumor")
 
 	var empty: bool = mons.is_empty() and clues == 0 and rumors == 0
-	_items_sep.visible = not empty
 	_items_hdr.visible = not empty
 	_items_list.visible = not empty
 	if empty:
 		return
 
 	if not mons.is_empty():
-		_items_list.add_child(_make_category_header("SIDEBAR_CAT_MONSTERS", mons.size()))
+		# Без заголовка «Монстры — N»: портреты сами говорят, что это монстры.
 		var grid := HFlowContainer.new()
 		grid.name = "MonsterGrid"
 		grid.add_theme_constant_override("h_separation", _MON_GAP)

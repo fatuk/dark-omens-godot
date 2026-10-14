@@ -23,3 +23,16 @@ func test_ancient_dependent_monster_has_no_numbers() -> void:
 	var tile: Control = autofree(_sb._make_monster_tile(MonsterCatalog.by_id("cultist")))
 	assert_null(tile.get_node_or_null("Horror"), "статы зависят от Древнего — чисел нет")
 	assert_null(tile.get_node_or_null("Damage"))
+
+
+func test_items_have_no_separators_and_no_monsters_header() -> void:
+	var sb: LocationSidebar = add_child_autofree(
+		load("res://scenes/ui/location_sidebar.tscn").instantiate()
+	)
+	var saved: Dictionary = GameState.monsters
+	GameState.monsters = {"t": [{"id": "byakhee", "health": 2}]}
+	sb._populate_items("t")
+	GameState.monsters = saved
+	assert_eq(sb.find_children("*", "HSeparator", true, false), [], "секции без линий")
+	var list: Node = sb._items_list
+	assert_eq(list.get_child(0).name, &"MonsterGrid", "сразу портреты, без «Монстры — N»")
