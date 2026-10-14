@@ -105,6 +105,12 @@ const SKILL_MOD_CAP := 2
 # Watch, пассив Солдата) их не гасит. Прогон синхронный и однопоточный — статика безопасна.
 static var _chosen_depth: int = 0
 
+## Откуда тянуть «случайный актив из колоды» (gainAsset без from): () -> Array id.
+## GameState ставит ShopReserve.free_ids — колода без разобранного (витрина, руки
+## всех игроков): каждый актив на поле уникален. Не задан (тесты, офлайн-хелперы) —
+## весь доступный каталог. Свои карты получателя исключаются в любом случае.
+static var asset_pool: Callable = Callable()
+
 
 ## ctx (опц.) — контекст исполнения: { skills, loc_type, is_lead, gates_matching_omen,
 ## gates_on_board, monsters_on_board, clues_on_board, rumors_in_play, monster_toughness,
@@ -807,9 +813,14 @@ static func _apply_player_verb(
 			# trait сужает выдачу («получите случайное ОРУЖИЕ из колоды»). Трейта нет
 			# ни у одного доступного актива → выдаём из общего пула, а не ничего:
 			# пустая награда за успех хуже слегка неточной.
-			var pool: Array = _assets_with_trait(
-				AssetCatalog.available_ids(), String(node.get("trait", ""))
+			var base: Array = (
+				asset_pool.call() if asset_pool.is_valid() else AssetCatalog.available_ids()
 			)
+			var own: Dictionary = {}
+			for it_v: Variant in player.get("items", []):
+				own[AssetCatalog.entry_id(it_v)] = true
+			base = base.filter(func(id: Variant) -> bool: return not own.has(String(id)))
+			var pool: Array = _assets_with_trait(base, String(node.get("trait", "")))
 			var items: Array = player.get("items", [])
 			if pool.is_empty():
 				logs.append("активов в пуле не осталось")

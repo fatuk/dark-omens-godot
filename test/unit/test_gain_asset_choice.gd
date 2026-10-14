@@ -104,3 +104,36 @@ func test_take_from_reserve_board_effect_removes_and_refills() -> void:
 	assert_has(GameState.shop_reserve, ITEM_2, "остальные на месте")
 	GameState.reset_session()
 	nm.set("_is_host_flag", was_host)
+
+
+# ── Без дублей: «случайная из колоды» не выдаёт то, что уже в игре ───────────
+
+
+func test_random_draw_skips_own_cards() -> void:
+	var saved: Callable = EffectRunner.asset_pool
+	EffectRunner.asset_pool = func() -> Array: return [ITEM, ITEM_2]
+	for _i in range(20):
+		var p: Dictionary = _player()
+		p["items"] = [{"id": ITEM, "exhausted": false}]
+		EffectRunner.run([{"do": "gainAsset", "trait": "item"}], p)
+		assert_eq(String((p["items"][1] as Dictionary).get("id", "")), ITEM_2, "второй копии нет")
+	EffectRunner.asset_pool = saved
+
+
+func test_free_ids_exclude_reserve_and_all_hands() -> void:
+	GameState.reset_session()
+	GameState.players = {
+		"a": {"user_id": "a", "items": [{"id": ITEM, "exhausted": false}]},
+		"b": {"user_id": "b", "items": [{"id": ALLY, "exhausted": false}]},
+	}
+	GameState.shop_reserve = [ITEM_2]
+	GameState.asset_deck = [ITEM, ITEM_2, ALLY, "kerosene"]
+	assert_eq(
+		GameState._shop.free_ids(), ["kerosene"], "только то, что не на руках и не на витрине"
+	)
+	var p: Dictionary = GameState.players["a"]
+	EffectRunner.run([{"do": "gainAsset"}], p)
+	assert_eq(
+		String((p["items"][1] as Dictionary).get("id", "")), "kerosene", "GameState — пул колоды"
+	)
+	GameState.reset_session()

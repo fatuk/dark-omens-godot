@@ -37,6 +37,18 @@ func discard_ids() -> Array:
 	return out
 
 
+## Карты, которые можно выдать «случайную из колоды» (gainAsset без from): колода
+## за вычетом уже разобранного (витрина, руки); колода пуста — сброс, как при
+## замешивании у витрины. Каждый актив на поле уникален — дублей не выдаём.
+func free_ids() -> Array:
+	var taken: Dictionary = _in_play()
+	var out: Array = []
+	for a: Variant in _gs.asset_deck:
+		if not taken.has(String(a)):
+			out.append(String(a))
+	return out if not out.is_empty() else discard_ids()
+
+
 # Карты, которые сейчас НЕ в колоде и не в сбросе: витрина магазина и руки игроков.
 func _in_play() -> Dictionary:
 	var taken: Dictionary = {}

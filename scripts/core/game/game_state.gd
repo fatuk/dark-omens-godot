@@ -296,6 +296,8 @@ func _ready() -> void:
 	_cond = ConditionFlow.new(self)
 	_reckoning = ReckoningFlow.new(self)
 	_shop = ShopReserve.new(self)  # до _board: setup_board наполняет витрину
+	# «Случайный актив из колоды» в эффектах — без дублей: колода минус разобранное.
+	preload("res://scripts/core/game/effect_runner.gd").asset_pool = _shop.free_ids
 	_board = BoardState.new(self)
 	_mystery = MysteryFlow.new(self)
 	_rumor = RumorFlow.new(self)
