@@ -90,6 +90,12 @@ var _items_sep: HSeparator = null
 var _items_hdr: Label = null
 var _items_list: VBoxContainer = null
 
+# Превью монстров локации — квадратные портреты (как карта в модалке боя).
+const _MON_TILE := 112.0  # сторона портрета
+const _MON_GAP := 8  # зазор между портретами
+const _MON_PAD := 6.0  # инсет чисел от края
+const _MON_FS := 28  # кегль чисел ужаса/урона
+
 
 func _ready() -> void:
 	add_to_group("location_sidebar")  # тюнинг тени дёргает группу (call_group)
@@ -581,6 +587,11 @@ func _populate_items(loc_id: String) -> void:
 
 	if not mons.is_empty():
 		_items_list.add_child(_make_category_header("SIDEBAR_CAT_MONSTERS", mons.size()))
+		var grid := HFlowContainer.new()
+		grid.name = "MonsterGrid"
+		grid.add_theme_constant_override("h_separation", _MON_GAP)
+		grid.add_theme_constant_override("v_separation", _MON_GAP)
+		_items_list.add_child(grid)
 		for i: int in range(mons.size()):
 			var inst_v: Variant = mons[i]  # {id, health} или легаси id-строка
 			var mid: String = (
@@ -591,7 +602,7 @@ func _populate_items(loc_id: String) -> void:
 			)
 			var m: Dictionary = GameState.monster_def(mid)
 			if not m.is_empty():
-				_items_list.add_child(_make_monster_card(m, hp))
+				grid.add_child(_make_monster_tile(m, hp))
 	if clues > 0:
 		_items_list.add_child(_make_category_header("SIDEBAR_CAT_CLUES", clues))
 	if rumors > 0:
@@ -607,78 +618,111 @@ func _make_category_header(key: String, count: int) -> Label:
 	return l
 
 
-func _make_monster_card(m: Dictionary, cur_health: int = -1) -> PanelContainer:
-	var pc := PanelContainer.new()
-	pc.name = "Panel"
-	UIStyle.style_panel(pc, 10)
-	var vb := VBoxContainer.new()
-	vb.name = "VBox"
-	vb.add_theme_constant_override("separation", 2)
-	pc.add_child(vb)
+## Превью монстра — квадратный портрет, как карта в модалке боя: арт «под обрез»,
+## ужас (синий) слева снизу, урон (красный) справа снизу. Полные статы (стойкость,
+## проверки, сопротивление, способность) — во всплывающей подсказке.
+func _make_monster_tile(m: Dictionary, cur_health: int = -1) -> Control:
+	var tile := Control.new()
+	tile.name = "Monster"
+	tile.custom_minimum_size = Vector2(_MON_TILE, _MON_TILE)
+	tile.clip_contents = true
+	tile.mouse_filter = Control.MOUSE_FILTER_PASS  # подсказка; колесо — скроллу
+	tile.tooltip_text = _monster_tooltip(m, cur_health)
 
-	var nm := Label.new()
-	nm.name = "Name"
-	nm.text = String(m.get("nameKey", ""))  # MON_*_NAME — Godot переведёт
-	nm.add_theme_font_size_override("font_size", 14)
-	nm.add_theme_color_override("font_color", UIColors.ACCENT)
-	vb.add_child(nm)
+	var bg := ColorRect.new()  # подложка: под артом с прозрачностью и вместо него
+	bg.name = "ArtBg"
+	bg.color = UIColors.ART_BG
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(bg)
+	var tex: Texture2D = MonsterCatalog.card_art(String(m.get("id", "")))
+	if tex != null:
+		var art := TextureRect.new()
+		art.name = "Art"
+		art.texture = tex
+		art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		tile.add_child(art)
 
 	if m.has("horror"):
-		var inv: int = maxi(1, GameState.players.size())
-		var tough: int = MonsterCatalog.toughness_for(m, inv)
-		var st := Label.new()
-		st.name = "Stat"
-		# Текущее здоровье экземпляра / макс (если ранен — видно в бою).
-		st.text = (
-			("%s: %d / %d" % [tr("SIDEBAR_TOUGHNESS"), cur_health, tough])
-			if cur_health >= 0
-			else ("%s: %d" % [tr("SIDEBAR_TOUGHNESS"), tough])
-		)
-		st.add_theme_font_size_override("font_size", 12)
-		st.add_theme_color_override("font_color", UIColors.TEXT)
-		vb.add_child(st)
-		vb.add_child(_stat_line("SIDEBAR_HORROR", m.get("horror", {})))
-		vb.add_child(_stat_line("SIDEBAR_COMBAT", m.get("combat", {})))
-		if m.has("resist"):
-			var rl := Label.new()
-			rl.name = "Resist"
-			rl.text = "%s: %s" % [tr("SIDEBAR_RESIST"), _resist_text(m.get("resist"))]
-			rl.add_theme_font_size_override("font_size", 12)
-			rl.add_theme_color_override("font_color", UIColors.ACCENT)
-			vb.add_child(rl)
-	elif bool(m.get("useAncientOne", false)):
-		var ao := Label.new()
-		ao.name = "Ability"
-		ao.text = "SIDEBAR_USE_ANCIENT_ONE"
-		ao.add_theme_font_size_override("font_size", 12)
-		ao.add_theme_color_override("font_color", UIColors.MUTED)
-		vb.add_child(ao)
+		var horror: int = int((m.get("horror", {}) as Dictionary).get("damage", 0))
+		var combat: int = int((m.get("combat", {}) as Dictionary).get("damage", 0))
+		tile.add_child(_tile_number("Horror", horror, UIColors.WILL, false))
+		tile.add_child(_tile_number("Damage", combat, UIColors.STRENGTH, true))
 
-	var ab := Label.new()
-	ab.name = "Ability"
-	ab.text = String(m.get("ability", {}).get("textKey", ""))
-	ab.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ab.add_theme_font_size_override("font_size", 11)
-	ab.add_theme_color_override("font_color", UIColors.MUTED)
-	vb.add_child(ab)
-	return pc
+	var frame := Panel.new()  # рамка поверх арта
+	frame.name = "Frame"
+	var sb := StyleBoxFlat.new()
+	sb.draw_center = false
+	sb.set_border_width_all(1)
+	sb.border_color = UIColors.BORDER
+	frame.add_theme_stylebox_override("panel", sb)
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(frame)
+	return tile
+
+
+# Крупное число в нижнем углу портрета (right — правый угол), с тенью, как в бою.
+func _tile_number(node_name: String, value: int, color: Color, right: bool) -> Label:
+	var l := Label.new()
+	l.name = node_name
+	l.text = str(value)
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	l.add_theme_font_size_override("font_size", _MON_FS)
+	l.add_theme_color_override("font_color", color)
+	l.add_theme_color_override("font_shadow_color", Color.BLACK)
+	l.add_theme_constant_override("shadow_offset_x", 1)
+	l.add_theme_constant_override("shadow_offset_y", 1)
+	l.set_anchors_and_offsets_preset(
+		Control.PRESET_BOTTOM_RIGHT if right else Control.PRESET_BOTTOM_LEFT
+	)
+	l.grow_horizontal = Control.GROW_DIRECTION_BEGIN if right else Control.GROW_DIRECTION_END
+	l.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	l.offset_bottom = -_MON_PAD + 4
+	if right:
+		l.offset_right = -_MON_PAD
+	else:
+		l.offset_left = _MON_PAD
+	return l
+
+
+# Подсказка портрета: имя, стойкость (тек./макс., если ранен), проверки, способность.
+func _monster_tooltip(m: Dictionary, cur_health: int = -1) -> String:
+	var lines: PackedStringArray = [tr(String(m.get("nameKey", "")))]
+	if m.has("horror"):
+		var tough: int = MonsterCatalog.toughness_for(m, maxi(1, GameState.players.size()))
+		lines.append(
+			(
+				("%s: %d / %d" % [tr("SIDEBAR_TOUGHNESS"), cur_health, tough])
+				if cur_health >= 0
+				else ("%s: %d" % [tr("SIDEBAR_TOUGHNESS"), tough])
+			)
+		)
+		lines.append(_stat_line("SIDEBAR_HORROR", m.get("horror", {})))
+		lines.append(_stat_line("SIDEBAR_COMBAT", m.get("combat", {})))
+		if m.has("resist"):
+			lines.append("%s: %s" % [tr("SIDEBAR_RESIST"), _resist_text(m.get("resist"))])
+	elif bool(m.get("useAncientOne", false)):
+		lines.append(tr("SIDEBAR_USE_ANCIENT_ONE"))
+	var ability: String = String((m.get("ability", {}) as Dictionary).get("textKey", ""))
+	if not ability.is_empty():
+		lines.append(tr(ability))
+	return "\n".join(lines)
 
 
 # Строка проверки: «Ужас: Воля −1 · урон 2».
-func _stat_line(label_key: String, stat: Dictionary) -> Label:
-	var l := Label.new()
-	l.name = "Label"
+func _stat_line(label_key: String, stat: Dictionary) -> String:
 	var skill: String = String(stat.get("skill", "none"))
 	var skill_tr: String = tr("SKILL_" + skill.to_upper())
 	var mod: int = int(stat.get("modifier", 0))
 	var mod_s: String = ("%+d" % mod) if mod != 0 else "0"
-	l.text = (
+	return (
 		"%s: %s %s · %s %d"
 		% [tr(label_key), skill_tr, mod_s, tr("SIDEBAR_DAMAGE"), int(stat.get("damage", 0))]
 	)
-	l.add_theme_font_size_override("font_size", 12)
-	l.add_theme_color_override("font_color", UIColors.TEXT)
-	return l
 
 
 # Текст сопротивления монстра: «физическое»/«магическое» (resist — строка/массив).
