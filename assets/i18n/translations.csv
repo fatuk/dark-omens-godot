@@ -160,6 +160,7 @@ ABILITY_CONVERT_PROMPT,Что потратить и сколько? Стольк
 ABILITY_CONVERT_HP_TO_SAN,Здоровье → Рассудок,Health → Sanity
 ABILITY_CONVERT_SAN_TO_HP,Рассудок → Здоровье,Sanity → Health
 ABILITY_CONFIRM,Применить,Apply
+ABILITY_STRIKE_PROMPT,Какого монстра ударить?,Which monster do you strike?
 INV_ABILITY_NONE,У этого сыщика нет особых способностей.,This investigator has no special abilities.
 INV_AL_DOBBS_NAME,Эл Доббс,Al Dobbs
 INV_AL_DOBBS_OCC,Коммивояжёр,The Salesman

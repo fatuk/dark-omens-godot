@@ -156,3 +156,22 @@ func test_location_text_keys_are_translated() -> void:
 			if key.is_empty() or tr(key) == key:
 				missing.append(key if not key.is_empty() else String(l.get("id", "")))
 	assert_eq(missing, [], "непереведённые ключи локаций: %s" % str(missing))
+
+
+func test_ui_literal_keys_are_translated() -> void:
+	# Ключ, вписанный прямо в UI-код (UIStyle.label/button, tr, translate), но не
+	# добавленный в translations.csv — в модалке торчит ABILITY_STRIKE_PROMPT.
+	var re := RegEx.create_from_string(
+		r'(?:UIStyle\.(?:label|button)|\btr|translate)\(\s*"([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)"'
+	)
+	var missing: Array = []
+	for dir: String in ["res://scripts/ui", "res://scripts/screens"]:
+		for f: String in DirAccess.get_files_at(dir):
+			if not f.ends_with(".gd"):
+				continue
+			var src: String = FileAccess.get_file_as_string(dir.path_join(f))
+			for m: RegExMatch in re.search_all(src):
+				var key: String = m.get_string(1)
+				if tr(key) == key and not missing.has(key):
+					missing.append("%s (%s)" % [key, f])
+	assert_eq(missing, [], "непереведённые ключи в UI-коде: %s" % str(missing))
