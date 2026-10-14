@@ -192,6 +192,7 @@ func _render_dice() -> void:
 	if not is_instance_valid(_dice_box):
 		return
 	_ensure_tray()
+	_tray.set_roller(_my_id())  # Благословение/Проклятие сдвигают порог подсветки
 	if not _rolled():
 		if not _last_dice.is_empty():
 			_last_dice = []

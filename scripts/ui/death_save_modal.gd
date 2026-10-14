@@ -161,6 +161,7 @@ func _render_dice(dying: String) -> void:
 	if not is_instance_valid(_dice_box):
 		return
 	_ensure_tray()
+	_tray.set_roller(dying)  # Благословение/Проклятие умирающего — порог подсветки
 	var c: Dictionary = _slot(dying)
 	var dice: Array = c.get("dice", [])
 	if dice.is_empty():

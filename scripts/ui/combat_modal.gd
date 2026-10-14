@@ -415,6 +415,8 @@ func _configure_tray(
 	tray: DiceTray, dice: Array, last: Array, can: bool, nonce: int = -1, ri: int = -1
 ) -> void:
 	var add: bool = GameState.dice.can_add()  # заряжен +1 → кубы < 6 кликабельны
+	# Благословение/Проклятие бросающего сдвигают порог подсветки успехов.
+	tray.set_roller(String(_chk().get("pid", GameState.my_player().get("user_id", ""))))
 	if last.is_empty():
 		tray.play_roll(dice, can, add)
 	elif dice == last:

@@ -83,7 +83,7 @@ const _SFX_ACT_PITCH: float = 0.05  # ± случайный питч щелчк�
 const _SFX_ACT_LEAD: float = 0.10  # на сколько раньше всполоха бить щелчок (сек)
 
 # Свечение-подложка (за гранью, во внутреннем вырезе рамки).
-const C_GLOW_SUCCESS := UIColors.SUCCESS  # успех (≥5) — зелёное свечение
+const C_GLOW_SUCCESS := UIColors.SUCCESS  # успех (≥ threshold) — зелёное свечение
 const C_GLOW_REROLL := UIColors.ACCENT  # провал + есть фокус → янтарь (кликабельно)
 
 # Вертикальный motion-blur грани: несколько тапов по Y с треугольным весом.
@@ -110,6 +110,9 @@ var _pending_skill: String = ""  # какой навык показывать в
 var _settle_tw: Tween = null  # ожидание конца броска (см. roll_settled)
 var _bonus_n: int = 0  # сколько ПЕРВЫХ кубов помечены как добавленные (зелёные)
 var _blocked_n: int = 0  # сколько холостых рамок дорисовать в хвосте (красные)
+## Порог успеха для подсветки: Blessed → 4, Cursed → 6, иначе 5. Ставит модалка
+## по сыщику, который бросает (set_roller) — как хост считает успехи в CheckFlow.
+var threshold: int = Dice.SUCCESS_MIN
 
 
 func _init() -> void:
@@ -122,6 +125,14 @@ func _init() -> void:
 # ── API ───────────────────────────────────────────────────────────────────────
 
 
+## Порог успеха по состояниям бросающего сыщика pid (Благословение/Проклятие).
+func set_roller(pid: String) -> void:
+	var p: Dictionary = GameState.players.get(pid, {})
+	threshold = Conditions.success_threshold(
+		p.get("conditions", []), p.get("conditions_flipped", {})
+	)
+
+
 ## Показать результат сразу (без анимации) — для ре-рендера на синке.
 func show_roll(values: Array, can_reroll: bool = false, can_add: bool = false) -> void:
 	_build(values, can_reroll, 0, can_add)
@@ -131,10 +142,10 @@ func show_roll(values: Array, can_reroll: bool = false, can_add: bool = false) -
 
 ## Куб кликабелен: под переброс (провал по порогу + есть чем) ИЛИ под +1 addToDie
 ## (любой куб < 6, если заряд свободен). Не «рубашка».
-static func _clickable(value: int, is_pending: bool, can_reroll: bool, can_add: bool) -> bool:
+func _clickable(value: int, is_pending: bool, can_reroll: bool, can_add: bool) -> bool:
 	if is_pending:
 		return false
-	if can_reroll and not Dice.is_success(value):
+	if can_reroll and not Dice.is_success(value, threshold):
 		return true
 	return can_add and value < Dice.SIDES
 
@@ -497,7 +508,7 @@ func _settle(die: Dictionary, flash: bool) -> void:
 
 	if die["pending"]:
 		_style_glow(die["glow"], Color.BLACK, false)
-	elif Dice.is_success(val):
+	elif Dice.is_success(val, threshold):
 		_style_glow(die["glow"], C_GLOW_SUCCESS, true)
 	elif die["clickable"]:
 		_style_glow(die["glow"], C_GLOW_REROLL, true)
