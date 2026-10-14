@@ -116,8 +116,20 @@ func test_height_follows_content() -> void:
 	assert_lt(before, 2048.0, "короткая встреча — бланк ниже нарисованного")
 	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": true}
 	_m.call("_refresh")
-	await wait_process_frames(2)
+	await wait_seconds(1.0)
 	assert_gt(sheet.size.y, before, "появился исход — бланк вырос")
+
+
+func test_outcome_reveal_is_animated() -> void:
+	await wait_process_frames(2)
+	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": false}
+	_m.call("_refresh")
+	await wait_process_frames(2)
+	var block: Control = _m.find_child("Outcome", true, false)
+	assert_true(block.visible)
+	assert_lt(block.modulate.a, 1.0, "исход проявляется, а не выскакивает")
+	await wait_seconds(1.0)
+	assert_eq(block.modulate.a, 1.0, "проявился полностью")
 
 
 func test_sheet_height_clamps() -> void:

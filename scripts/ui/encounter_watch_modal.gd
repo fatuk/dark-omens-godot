@@ -41,7 +41,7 @@ const _BODY_BOTTOM_GAP: float = 573.0  # от низа текста до низ�
 const _CODE_POS := Vector2(96, 1668)  # под «COMMS CODE» на повёрнутом штампе
 const _CODE_SIZE := Vector2(280, 60)
 const _CODE_TILT_DEG: float = 8.0  # штамп повёрнут по часовой
-const _FOOTER_RECT := Rect2(456, 1777, 630, 205)  # пустая плашка внизу
+const _FOOTER_RECT := Rect2(456, 1747, 630, 205)  # плашка внизу (текст чуть выше центра)
 const _CLOSE_RECT := Rect2(1346, 60, 136, 134)  # крестик в арте
 const _ICON_H: float = 112.0  # медальоны успеха/провала
 # Шрифты — тоже в пикселях бланка (на экране ≈ ×0.5).
@@ -57,6 +57,9 @@ const _BOLD_EMBOLDEN: float = 0.9
 # Песочные часы: пауза, затем переворот на 180°.
 const _CLOCK_PAUSE: float = 1.2
 const _CLOCK_FLIP: float = 0.6
+# Появление исхода: бланк плавно растёт, затем исход проявляется.
+const _GROW_TIME: float = 0.4
+const _REVEAL_TIME: float = 0.35
 
 const _INK := Color(0.17, 0.12, 0.08)  # чернила на бланке
 const _INK_SUCCESS := Color(0.2, 0.36, 0.18)
@@ -79,6 +82,7 @@ var _clock_tween: Tween
 var _bg: NinePatchRect
 var _footer: Control
 var _sheet_h: float = _SHEET.y  # текущая высота бланка (по содержимому)
+var _reveal_tween: Tween  # рост бланка + проявление исхода
 
 var _sig: String = ""  # подпись состояния — чтобы не перерисовывать каждый синк
 var _telegram: String = ""  # какая встреча сейчас на бланке (новая — новые время и код)
@@ -404,7 +408,8 @@ func _refresh() -> void:
 		return
 	_sig = sig
 
-	if telegram != _telegram:
+	var fresh: bool = telegram != _telegram
+	if fresh:
 		# Новая телеграмма: время отправки — реальное время читающего, код — свежий.
 		_telegram = telegram
 		_time.text = dispatch_time()
@@ -413,7 +418,9 @@ func _refresh() -> void:
 	var nm: String = String(card.get("name", "")).strip_edges()
 	_head.text = nm.to_upper() if not nm.is_empty() else tr("TELEGRAM_ENCOUNTER")
 	_text.text = String(node.get("mainText", "")).strip_edges()
-	# Исход — только когда проверка сыграна, и только тот, что выпал.
+	# Исход — только когда проверка сыграна, и только тот, что выпал. Появился на уже
+	# открытой телеграмме — анимируем (рост бланка, затем проявление), без скачка.
+	var reveal: bool = rolled and not _outcome_block.visible and not fresh
 	_outcome_block.visible = rolled
 	if rolled:
 		_outcome_icon.texture = _SUCCESS if passed else _FAILURE
@@ -424,7 +431,7 @@ func _refresh() -> void:
 				"TELEGRAM_FAILURE", _INK_FAILURE, String(node.get("failureText", ""))
 			)
 		)
-	_fit_text.call_deferred()
+	_fit_text.call_deferred(reveal)
 
 
 func _investigator_name(pid: String) -> String:
@@ -442,7 +449,8 @@ func _outcome_bbcode(key: String, col: Color, text: String) -> String:
 
 
 # Высота бланка — по тексту; не влезает и в полный бланк — ужимаем шрифты тела.
-func _fit_text() -> void:
+# reveal — исход только что появился: бланк растёт плавно, исход проявляется после.
+func _fit_text(reveal: bool = false) -> void:
 	var fs: int = _FS_BODY
 	while true:
 		_text.add_theme_font_size_override("font_size", fs)
@@ -450,7 +458,22 @@ func _fit_text() -> void:
 		if _body.get_combined_minimum_size().y <= _BODY_RECT.size.y or fs <= _FS_MIN:
 			break
 		fs -= 2
-	_apply_height(sheet_height(_body.get_combined_minimum_size().y))
+	var target: float = sheet_height(_body.get_combined_minimum_size().y)
+	if _reveal_tween != null and _reveal_tween.is_valid():
+		_reveal_tween.kill()
+	if not reveal:
+		_outcome_block.modulate.a = 1.0
+		_apply_height(target)
+		return
+	_outcome_block.modulate.a = 0.0  # прозрачен, пока бланк растёт под него
+	_reveal_tween = create_tween()
+	(
+		_reveal_tween
+		. tween_method(_apply_height, _sheet_h, target, _GROW_TIME)
+		. set_trans(Tween.TRANS_CUBIC)
+		. set_ease(Tween.EASE_OUT)
+	)
+	_reveal_tween.tween_property(_outcome_block, "modulate:a", 1.0, _REVEAL_TIME)
 
 
 # ── Песочные часы ─────────────────────────────────────────────────────────────
