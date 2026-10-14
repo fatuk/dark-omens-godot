@@ -1884,3 +1884,6 @@ TRADE_OFFER_CLUES,Улики: %d,Clues: %d
 TRADE_OFFER_ACCEPT,Принять,Accept
 TRADE_OFFER_DECLINE,Отклонить,Decline
 TRADE_OFFER_CANCEL,Отозвать предложение,Withdraw the offer
+GUIDE_CONTINUE,Щёлкните — дальше,Click to continue
+GUIDE_CLOSE,Щёлкните — понятно,Click to close
+GUIDE_HELLO,"Приветствую, коллега. Я профессор Армитедж, Мискатоникский университет. Пока вы осваиваетесь, я буду рядом и подскажу, что делать.","Greetings, colleague. I am Professor Armitage of Miskatonic University. While you find your feet, I will be close by to tell you what to do."

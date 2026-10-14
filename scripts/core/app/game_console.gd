@@ -310,6 +310,7 @@ const _COMMANDS := [
 	{"text": "list", "hint": "список каталога"},
 	{"text": "who", "hint": "игроки"},
 	{"text": "offline", "hint": "офлайн-режим on|off (реле в процессе)"},
+	{"text": "guide", "hint": "подсказка Армитеджа: [текст | ключ …]"},
 	{"text": "clear", "hint": "очистить консоль"},
 	{"text": "help", "hint": "справка"},
 ]
@@ -535,6 +536,8 @@ func _on_command_submitted(text: String) -> void:
 			_cmd_cond(args)
 		"enc", "encounter":
 			_cmd_enc(args)
+		"guide":
+			_cmd_guide(args)
 		_:
 			err("неизвестная команда «%s» — введите `help`" % cmd)
 	_scroll_bottom_deferred()  # вывод команды мог добавить строки — промотать вниз
@@ -592,6 +595,24 @@ func _cmd_offline(args: Array) -> void:
 		pname = String(AuthManager.current_user.get("name", "Player"))
 	nm.connect_to_relay(pname, SettingsStore.relay_url)
 	self.log("офлайн-режим %s — переподключаюсь" % ("включён" if want else "выключен"))
+
+
+# Показать подсказку Армитеджа поверх текущей сцены. Без аргументов — приветствие;
+# аргументы-ключи (GUIDE_…) — по реплике на ключ; иначе весь ввод — одна реплика.
+func _cmd_guide(args: Array) -> void:
+	var lines: Array = []
+	if args.is_empty():
+		lines = ["GUIDE_HELLO"]
+	elif args.all(func(a: Variant) -> bool: return String(a).begins_with("GUIDE_")):
+		lines = args
+	else:
+		lines = [" ".join(PackedStringArray(args))]
+	var scene: Node = get_tree().current_scene
+	if scene == null:
+		err("нет текущей сцены")
+		return
+	GuideHint.say(scene, lines)
+	self.log("подсказка: %d реплик(и)" % lines.size())
 
 
 func _cmd_who() -> void:
