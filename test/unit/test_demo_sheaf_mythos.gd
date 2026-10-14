@@ -102,9 +102,16 @@ func _tokens_at(loc: String) -> int:
 
 func test_first_sheaf_tokens_and_special_encounters() -> void:
 	_start()
+	# Стартовые улики раскладываются случайно и могут лечь и на «5» — сверяем, что
+	# ТАЙНА добавляет жетоны, а не улики (раньше тест падал от неудачной раскладки).
+	var clues_before: int = (GameState.entities.get("5", []) as Array).count("clue")
 	GameState._mystery.apply_mystery_on_enter()
 	assert_eq(_tokens_at("5"), 3, "три жетона Знамения на поле, улик нет")
-	assert_false((GameState.entities.get("5", []) as Array).has("clue"))
+	assert_eq(
+		(GameState.entities.get("5", []) as Array).count("clue"),
+		clues_before,
+		"Тайна улик не кладёт"
+	)
 	GameState.players["a"]["location"] = "5"
 	assert_true(GameState._encounter._compute_choices("a").has("eldritch"), "у знака — встреча")
 	var hook: Dictionary = GameState._mystery.mystery_encounter_hook("5", "a")
