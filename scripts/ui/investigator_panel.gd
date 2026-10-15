@@ -44,6 +44,7 @@ static var GLOW_SPREAD: float = 1.2  # во сколько раз ореол к�
 static var GLOW_FALLOFF: float = 3.15  # крутизна затухания наружу (1 — линейно)
 static var GLOW_PULSE_SPEED: float = 2.2  # скорость дыхания, рад/с
 static var GLOW_PULSE_AMOUNT: float = 0.72  # глубина дыхания (0 — ровное свечение)
+const GLOW_FADE: float = 0.45  # сек на плавное появление/угасание ореола хода
 
 
 ## Тюнинг-панель: положить значение в static-поле по имени (GLOW_ALPHA … GLOW_PULSE_AMOUNT).
@@ -118,6 +119,9 @@ var _info_bar: InfoBar
 var _portrait: TextureRect
 var _turn_glow: ColorRect  # ореол «твой ход» под аватаркой (см. GROUP)
 var _turn_glow_mat: ShaderMaterial
+var _turn_on: bool = false  # ореол включён (цель фейда)
+var _turn_level: float = 0.0  # текущая яркость ореола 0..1 (ведёт твин)
+var _turn_tw: Tween
 var _name_label: Label
 var _occ_label: Label
 
@@ -350,11 +354,13 @@ func _refresh_live() -> void:
 	# ход; GameState.is_my_turn() смотрит лишь фазу действий); Тени ходить нечем.
 	if is_instance_valid(_turn_glow):
 		var my_phase: bool = GameState.phase == Phases.ACTION or GameState.phase == Phases.ENCOUNTER
-		_turn_glow.visible = (
-			GameState.active
-			and my_phase
-			and GameState.current_pid() == GameState.local_pid()
-			and not ghost
+		_set_turn_glow(
+			(
+				GameState.active
+				and my_phase
+				and GameState.current_pid() == GameState.local_pid()
+				and not ghost
+			)
 		)
 	if is_instance_valid(_portrait) and _portrait.material is ShaderMaterial:
 		(_portrait.material as ShaderMaterial).set_shader_parameter("dead", 1.0 if ghost else 0.0)
@@ -380,12 +386,33 @@ func refresh_turn_glow() -> void:
 	_turn_glow.offset_top = -m
 	_turn_glow.offset_right = m
 	_turn_glow.offset_bottom = m
-	var c: Color = UIColors.ACTIVE  # единый цвет активного выделения
-	_turn_glow_mat.set_shader_parameter("glow", Vector4(c.r, c.g, c.b, GLOW_ALPHA))
+	_set_turn_level(_turn_level)  # glow: цвет × текущая яркость фейда
 	_turn_glow_mat.set_shader_parameter("edge", 1.0 / GLOW_SPREAD)
 	_turn_glow_mat.set_shader_parameter("falloff", GLOW_FALLOFF)
 	_turn_glow_mat.set_shader_parameter("pulse_speed", GLOW_PULSE_SPEED)
 	_turn_glow_mat.set_shader_parameter("pulse_amount", GLOW_PULSE_AMOUNT)
+
+
+# Ореол хода включается/гаснет плавным фейдом яркости, а не скачком видимости.
+func _set_turn_glow(on: bool) -> void:
+	if on == _turn_on:
+		return
+	_turn_on = on
+	if _turn_tw != null and _turn_tw.is_valid():
+		_turn_tw.kill()
+	_turn_glow.visible = true
+	_turn_tw = create_tween()
+	_turn_tw.tween_method(_set_turn_level, _turn_level, 1.0 if on else 0.0, GLOW_FADE)
+	if not on:
+		_turn_tw.tween_callback(func() -> void: _turn_glow.visible = false)
+
+
+# Яркость ореола (0..1) — множитель альфы glow в шейдере (modulate шейдер не видит:
+# он целиком задаёт COLOR).
+func _set_turn_level(v: float) -> void:
+	_turn_level = v
+	var c: Color = UIColors.ACTIVE  # единый цвет активного выделения
+	_turn_glow_mat.set_shader_parameter("glow", Vector4(c.r, c.g, c.b, GLOW_ALPHA * v))
 
 
 # ── Загрузка данных сыщика ────────────────────────────────────────────────────

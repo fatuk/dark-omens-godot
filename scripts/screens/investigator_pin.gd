@@ -19,6 +19,7 @@ static var GLOW_ALPHA: float = 0.85  # яркость в самой плотно
 static var GLOW_SPREAD: float = 1.55  # насколько ореол крупнее карточки
 static var GLOW_PULSE_SPEED: float = 2.4  # скорость дыхания, рад/с
 static var GLOW_PULSE_AMOUNT: float = 0.25  # глубина дыхания (0 — ровное свечение)
+const GLOW_FADE: float = 0.45  # сек на плавное появление/угасание ореола хода
 
 ## Группа всех пинов на карте — тюнинг-панель через неё переприменяет параметры.
 const GROUP := "investigator_pins"
@@ -63,6 +64,9 @@ void fragment() {
 var _portrait_poly: Polygon2D
 var _turn_glow: Polygon2D  # ореол «сейчас ходит» ПОД карточкой (см. set_active)
 var _turn_mat: ShaderMaterial
+var _turn_on: bool = false  # ореол включён (цель фейда)
+var _turn_level: float = 0.0  # текущая яркость ореола 0..1 (ведёт твин)
+var _turn_tw: Tween
 
 # Размер карточки (нативный, ассет @2×) и геометрия прозрачного окна под портрет.
 const CARD_W: float = 325.0
@@ -164,14 +168,40 @@ func setup(portrait: Texture2D) -> void:
 ## Пометка «сейчас ходит»: мягкий золотой ореол ПОД карточкой. Живёт на самом
 ## пине, поэтому едет вместе с ним при панорамировании, зуме и веере на клетке —
 ## отдельной ноде пришлось бы синхронить позицию каждый кадр.
+## Включение/выключение — плавным фейдом яркости (не скачком).
 func set_active(active: bool) -> void:
+	if active == _turn_on:
+		return
+	_turn_on = active
+	if active and not is_instance_valid(_turn_glow):
+		_build_turn_glow()
+	if not is_instance_valid(_turn_glow):
+		return
+	if _turn_tw != null and _turn_tw.is_valid():
+		_turn_tw.kill()
+	_turn_tw = create_tween()
+	_turn_tw.tween_method(_set_turn_level, _turn_level, 1.0 if active else 0.0, GLOW_FADE)
 	if not active:
-		if is_instance_valid(_turn_glow):
-			_turn_glow.queue_free()
-			_turn_glow = null
-		return
+		_turn_tw.tween_callback(_drop_turn_glow)
+
+
+# Яркость ореола (0..1) — множитель альфы glow в шейдере (modulate шейдер не видит:
+# он целиком задаёт COLOR).
+func _set_turn_level(v: float) -> void:
+	_turn_level = v
+	if _turn_mat != null:
+		_turn_mat.set_shader_parameter(
+			"glow", Vector4(GLOW_RGB.r, GLOW_RGB.g, GLOW_RGB.b, GLOW_ALPHA * v)
+		)
+
+
+func _drop_turn_glow() -> void:
 	if is_instance_valid(_turn_glow):
-		return
+		_turn_glow.queue_free()
+	_turn_glow = null
+
+
+func _build_turn_glow() -> void:
 	var hw: float = CARD_W * 0.5 * GLOW_SPREAD
 	var hh: float = CARD_H * 0.5 * GLOW_SPREAD
 	_turn_glow = Polygon2D.new()
@@ -198,7 +228,7 @@ func set_active(active: bool) -> void:
 # Параметры ореола в материал. Отдельно от сборки — их же переприменяет
 # refresh_glow, когда тюнинг-панель подвинула ползунок.
 func _apply_glow_params(hw: float, hh: float) -> void:
-	_turn_mat.set_shader_parameter("glow", Vector4(GLOW_RGB.r, GLOW_RGB.g, GLOW_RGB.b, GLOW_ALPHA))
+	_set_turn_level(_turn_level)  # glow: цвет × текущая яркость фейда
 	_turn_mat.set_shader_parameter("edge", 1.0 / GLOW_SPREAD)
 	_turn_mat.set_shader_parameter("half_size", Vector2(hw, hh))
 	_turn_mat.set_shader_parameter("pulse_speed", GLOW_PULSE_SPEED)
@@ -210,8 +240,9 @@ func _apply_glow_params(hw: float, hh: float) -> void:
 func refresh_glow() -> void:
 	if not is_instance_valid(_turn_glow):
 		return
-	set_active(false)
-	set_active(true)
+	_turn_glow.free()  # сразу, без фейда: яркость (_turn_level) сохраняется
+	_turn_glow = null
+	_build_turn_glow()
 
 
 ## Игрок вышел из комнаты: карточка полупрозрачная — «его тут нет». Намеренно НЕ
