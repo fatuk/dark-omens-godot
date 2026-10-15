@@ -84,22 +84,23 @@ const Z_MSG := Rect2(0.130, 0.640, 0.740, 0.270)
 # Затухает к краям (мягкая маска), чтобы не перекрыть орнамент-кант рамки.
 const Z_SMOKE := Rect2(0.075, 0.075, 0.850, 0.520)
 
-# Карта-улика (layout "clue"): рамка cards/clue/card-frame.png — тёмное окно во всю
-# карту, без плашек. Заголовок (имя локации) сверху, под ним подзаголовок (имя улики)
-# крупным текстом, ниже описание светлым по тёмному; не влезло — прокрутка курсором,
-# как у остальных карт. Зоны — доли рамки.
-const Z_CLUE_TITLE := Rect2(0.100, 0.068, 0.800, 0.085)
-const Z_CLUE_SUB := Rect2(0.100, 0.158, 0.800, 0.055)
-const Z_CLUE_DESC := Rect2(0.115, 0.232, 0.770, 0.590)
+# Карта-улика (layout "clue"): рамка cards/clue/card-frame.png — под эмблемой-глазом
+# тёмная шапка из двух полос: заголовок (имя локации) — в верхней, подзаголовок (имя
+# улики) — в узкой под тонким разделителем; ниже — пергамент с описанием тёмной тушью.
+# Не влезло — прокрутка курсором, как у остальных карт. Зоны — доли рамки (замерены по
+# ассету 1768×2796: полосы шапки 0.192–0.278 и 0.283–0.340, пергамент ≈0.36–0.90).
+const Z_CLUE_TITLE := Rect2(0.120, 0.195, 0.760, 0.083)
+const Z_CLUE_SUB := Rect2(0.120, 0.285, 0.760, 0.052)
+const Z_CLUE_DESC := Rect2(0.170, 0.385, 0.660, 0.490)
 
 const C_COST_TXT := UIColors.ACCENT  # янтарь — как заголовок
 const C_TITLE_TXT := UIColors.ACCENT  # янтарь на синей плашке
 const C_SUB_TXT := Color(0.62, 0.72, 0.82)  # приглушённый голубой — трейт
 const C_DESC_TXT := Color(0, 0, 0)  # чёрный — на пергаменте
 const C_MSG_TXT := Color(0.12, 0.09, 0.06)  # тёмная тушь — фраза на пергаменте карты-сообщения
-const C_CLUE_TITLE := UIColors.TEXT  # имя локации — светлый камень по тёмному окну
-const C_CLUE_SUB := Color(0.62, 0.80, 0.66)  # имя улики — приглушённый зелёный
-const C_CLUE_DESC := Color(0.88, 0.85, 0.78)  # описание — светлый пергамент
+const C_CLUE_TITLE := Color(0.93, 0.88, 0.78)  # имя локации — светлый пергамент по шапке
+const C_CLUE_SUB := Color(0.70, 0.78, 0.68)  # имя улики — приглушённый серо-зелёный
+const C_CLUE_DESC := Color(0.17, 0.12, 0.08)  # описание — тёмная тушь на пергаменте
 
 # Параметры дыма карты-сообщения — static (дефолт + правятся в панели тюнинга Ctrl+M).
 # Сеттер панели пишет их и дёргает refresh_smoke() у живых карт (группа "smoke_card").
@@ -330,10 +331,14 @@ func set_card(d: Dictionary) -> void:
 	_clue_title.visible = is_clue
 	_clue_sub.text = _sub.text
 	_clue_sub.visible = is_clue and not _clue_sub.text.is_empty()
-	# Описание: у улики зона — тёмное окно на всю карту, текст светлый и крупнее;
-	# у актива — пергамент рамки, чёрный, базовый размер.
+	# Описание: у улики — пергамент под шапкой, тёмная тушь и крупнее; у актива —
+	# пергамент рамки, чёрный, базовый размер.
 	_set_zone_rect(_desc_zone, Z_CLUE_DESC if is_clue else Z_DESC)
 	_desc.add_theme_color_override("font_color", C_CLUE_DESC if is_clue else C_DESC_TXT)
+	# Улика — повествование по пергаменту: ровно слева, как абзац; у актива — по центру.
+	_desc.horizontal_alignment = (
+		HORIZONTAL_ALIGNMENT_LEFT if is_clue else HORIZONTAL_ALIGNMENT_CENTER
+	)
 	_desc.add_theme_font_size_override("font_size", _fs(FS_CLUE_DESC if is_clue else FS_DESC))
 	_desc.text = String(d.get("desc", ""))
 	_desc.visible = not is_msg
