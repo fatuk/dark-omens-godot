@@ -89,6 +89,10 @@ var _buy_ship_btn: Button = null
 var _items_hdr: Label = null
 var _items_list: VBoxContainer = null
 
+# Улика на локации — строка «иконка + имя улики».
+const _CLUE_ICON: Texture2D = preload("res://assets/map/clue-icon.png")
+const _CLUE_ICON_PX := 28.0
+
 # Превью монстров локации — квадратные портреты (как карта в модалке боя).
 # Ряд заполняется по ширине целиком: колонок столько, сколько влезает портретов не
 # меньше _MON_TILE, и сторона растягивается, чтобы ряд лёг от края до края.
@@ -599,9 +603,37 @@ func _populate_items(loc_id: String) -> void:
 				grid.add_child(_make_monster_tile(m, hp))
 		_fit_monster_grid(grid)
 	if clues > 0:
-		_items_list.add_child(_make_category_header("SIDEBAR_CAT_CLUES", clues))
+		# Улики — вертикальным списком: иконка улики + её имя (идентичность Древнего для
+		# этой локации; не заведена — просто «Улика»).
+		var clue_name: String = String(ClueCatalog.by_location(loc_id).get("title", ""))
+		if clue_name.strip_edges().is_empty():
+			clue_name = tr("TOKEN_CLUE")
+		for i: int in range(clues):
+			_items_list.add_child(_make_clue_row(clue_name, i))
 	if rumors > 0:
 		_items_list.add_child(_make_category_header("SIDEBAR_CAT_RUMORS", rumors))
+
+
+func _make_clue_row(clue_name: String, index: int) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.name = "Clue%d" % index
+	row.add_theme_constant_override("separation", 8)
+	var icon := TextureRect.new()
+	icon.name = "Icon"
+	icon.texture = _CLUE_ICON
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.custom_minimum_size = Vector2(_CLUE_ICON_PX, _CLUE_ICON_PX)
+	row.add_child(icon)
+	var l := Label.new()
+	l.name = "Name"
+	l.text = clue_name
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.add_theme_font_size_override("font_size", 14)
+	l.add_theme_color_override("font_color", UIColors.TEXT)
+	row.add_child(l)
+	return row
 
 
 func _make_category_header(key: String, count: int) -> Label:

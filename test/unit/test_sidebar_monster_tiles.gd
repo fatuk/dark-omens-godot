@@ -2,6 +2,8 @@
 ## (слева) и урон (справа); полные статы — в подсказке.
 extends GutTest
 
+const _SIDEBAR := preload("res://scenes/ui/location_sidebar.tscn")
+
 var _sb: LocationSidebar
 
 
@@ -26,9 +28,7 @@ func test_ancient_dependent_monster_has_no_numbers() -> void:
 
 
 func test_items_have_no_separators_and_no_monsters_header() -> void:
-	var sb: LocationSidebar = add_child_autofree(
-		load("res://scenes/ui/location_sidebar.tscn").instantiate()
-	)
+	var sb: LocationSidebar = add_child_autofree(_SIDEBAR.instantiate())
 	var saved: Dictionary = GameState.monsters
 	GameState.monsters = {"t": [{"id": "byakhee", "health": 2}]}
 	sb._populate_items("t")
@@ -45,3 +45,20 @@ func test_tiles_fill_row_width() -> void:
 		var used: float = cols * side + (cols - 1) * LocationSidebar._MON_GAP
 		assert_true(side >= LocationSidebar._MON_TILE, "не мельче минимума (%d)" % w)
 		assert_almost_eq(used, w, float(cols), "ряд от края до края (%d)" % w)
+
+
+func test_clues_listed_with_icon_and_name() -> void:
+	var sb: LocationSidebar = add_child_autofree(_SIDEBAR.instantiate())
+	var saved_ents: Dictionary = GameState.entities
+	var saved_camp: Dictionary = GameState.campaign
+	GameState.entities = {"t": ["clue", "clue"]}
+	GameState.campaign = {"ancientOne": {"clues": [{"location": "t", "title": "Сломанный серп"}]}}
+	sb._populate_items("t")
+	GameState.entities = saved_ents
+	GameState.campaign = saved_camp
+	var rows: Array = sb._items_list.get_children().filter(
+		func(n: Node) -> bool: return n.name.begins_with("Clue")
+	)
+	assert_eq(rows.size(), 2, "по строке на улику, вертикально")
+	assert_eq((rows[0].get_node("Name") as Label).text, "Сломанный серп", "имя улики")
+	assert_not_null((rows[0].get_node("Icon") as TextureRect).texture, "иконка улики")
