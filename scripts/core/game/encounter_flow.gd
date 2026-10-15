@@ -470,6 +470,25 @@ func host_apply_resolve(pid: String) -> bool:
 	return true
 
 
+## Завязка ветвящейся встречи (gate/mystery) для показа на второй стадии: текст
+## stage1 и исход первой проверки, приведший в ветку («…и оно шевелится. Куча
+## поворачивается к вам.»). На первой стадии и у плоских встреч — "".
+static func gate_setup_text(card: Dictionary) -> String:
+	var kind: String = String(card.get("kind", ""))
+	if (kind != "gate" and kind != "mystery") or int(card.get("stage", 0)) <= 0:
+		return ""
+	var s1: Dictionary = card.get("stage1", {})
+	var parts: PackedStringArray = []
+	for key: String in [
+		"mainText",
+		"successText" if String(card.get("branch", "success")) == "success" else "failureText"
+	]:
+		var t: String = String(s1.get(key, "")).strip_edges()
+		if not t.is_empty():
+			parts.append(t)
+	return " ".join(parts)
+
+
 # Активный узел двухфазных врат: стадия 0 → stage1 (маршрутизация), стадия 1 →
 # ветка по результату первой проверки (branches.success / branches.failure).
 func _gate_node(card: Dictionary, stage: int) -> Dictionary:

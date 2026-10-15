@@ -89,6 +89,7 @@ var _code: Label
 var _body: VBoxContainer
 var _head: Label
 var _text: Label
+var _setup: Label  # завязка двухфазной встречи над веткой (вторая стадия)
 var _outcome_block: Control  # разделитель + «Исход» + строка; виден после броска
 var _outcome_icon: TextureRect
 var _outcome_text: RichTextLabel
@@ -181,6 +182,13 @@ func _build_body() -> void:
 	_place(_body, _BODY_RECT)
 
 	_head = _section_header(_body, "EncounterHeader", "TELEGRAM_ENCOUNTER")
+	# Двухфазная встреча на второй стадии: сначала завязка (выцветшими чернилами), под
+	# ней ветка и исход — наблюдатель видит весь путь, а не один обрывок.
+	_setup = _ink_label("Setup", _FS_BODY, HORIZONTAL_ALIGNMENT_CENTER)
+	_setup.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_setup.modulate.a = 0.6
+	_setup.visible = false
+	_body.add_child(_setup)
 	_text = _ink_label("Text", _FS_BODY, HORIZONTAL_ALIGNMENT_CENTER)
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_body.add_child(_text)
@@ -459,6 +467,8 @@ func _refresh() -> void:
 	_name.text = _investigator_name(pid).to_upper()
 	var nm: String = String(card.get("name", "")).strip_edges()
 	_head.text = nm.to_upper() if not nm.is_empty() else tr("TELEGRAM_ENCOUNTER")
+	_setup.text = EncounterFlow.gate_setup_text(card)
+	_setup.visible = not _setup.text.is_empty()
 	_text.text = _main_or_stakes(node)
 	# Исход — только когда проверка сыграна, и только тот, что выпал. Появился на уже
 	# открытой телеграмме — анимируем (рост бланка, затем проявление), без скачка.
@@ -519,6 +529,7 @@ func _fit_text(reveal: bool = false) -> void:
 	var fs: int = _FS_BODY
 	while true:
 		_text.add_theme_font_size_override("font_size", fs)
+		_setup.add_theme_font_size_override("font_size", fs)
 		_outcome_text.add_theme_font_size_override("normal_font_size", fs)
 		if _body.get_combined_minimum_size().y <= _BODY_RECT.size.y or fs <= _FS_MIN:
 			break

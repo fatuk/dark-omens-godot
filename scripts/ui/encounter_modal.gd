@@ -49,6 +49,9 @@ var _outcome_tween: Tween = null
 # анимируем не у него, а у клипающего контейнера вокруг. Пока её нет, появление
 # исхода мгновенно раздвигало блок — текст встречи скачком уезжал вверх.
 var _outcome_slot: Control
+# Завязка двухфазной встречи (stage1 + исход первой проверки) — над текстом ветки на
+# второй стадии, приглушённо: весь путь встречи читается целиком (см. _show_gate).
+var _setup_text: Label
 
 # Смена узла ветвящейся встречи (врата/Тайна): stage 0 → ветка успеха/провала.
 # Узлы — разные сцены одной истории, поэтому меняем их не подменой текста, а
@@ -121,6 +124,16 @@ func _ready() -> void:
 	_main_text.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_outcome.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_dice.add_theme_color_override("font_color", UIColors.MUTED)
+	_setup_text = Label.new()
+	_setup_text.name = "SetupText"
+	_setup_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_setup_text.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+	_setup_text.add_theme_color_override("font_color", UIColors.MUTED)
+	_setup_text.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_setup_text.visible = false
+	_setup_text.custom_minimum_size.x = _main_text.custom_minimum_size.x  # колонка уже задана
+	_main_text.get_parent().add_child(_setup_text)
+	_main_text.get_parent().move_child(_setup_text, _main_text.get_index())
 
 	# Контейнер ряда кубиков — над строкой _dice (успехи/концентрация).
 	_dice_holder = VBoxContainer.new()
@@ -246,6 +259,8 @@ func _resize_card() -> void:
 	# Узкая колонка текста (по центру) — автоперенос по этой ширине.
 	var text_w: float = w * _TEXT_WIDTH_FRAC
 	_main_text.custom_minimum_size.x = text_w
+	if _setup_text != null:  # _resize_card зовётся из _ready раньше, чем она создана
+		_setup_text.custom_minimum_size.x = text_w
 	_outcome.custom_minimum_size.x = text_w
 	if _outcome_slot != null:
 		_outcome_slot.custom_minimum_size.x = text_w
@@ -302,11 +317,11 @@ func _on_outcome_visibility() -> void:
 # заголовок с повествованием: на свежей стадии исход ещё скрыт, и появится он
 # своим фейдом (_play_outcome_in), когда осядут кубы.
 func _stage_out_nodes() -> Array:
-	return [_title.get_parent(), _main_text, _outcome]
+	return [_title.get_parent(), _setup_text, _main_text, _outcome]
 
 
 func _stage_in_nodes() -> Array:
-	return [_title.get_parent(), _main_text]
+	return [_title.get_parent(), _setup_text, _main_text]
 
 
 # Затухание старого узла. По завершении снимаем флаг и просим перерисовку — там
@@ -493,6 +508,7 @@ func _refresh() -> void:
 		return
 	UIStyle.modal_set_visible(_root, _panel, true)
 	_apply_background()  # подложка по типу локации встречи
+	_setup_text.visible = false  # завязку показывает только _show_gate на второй стадии
 	# Интерактивный выбор ветки эффектов (choice) — поверх любого состояния:
 	# коммит встал на паузу и ждёт решения активного игрока.
 	if not (card.get("pending_choice", {}) as Dictionary).is_empty():
@@ -755,6 +771,9 @@ func _show_gate(card: Dictionary) -> void:
 	var fresh: bool = _stage_key != key
 	_stage_key = key
 	_title.text = "%s  (%d/2)" % [_title_text(card), stage + 1]
+	# Вторая стадия: над веткой — завязка (stage1 + исход первой проверки).
+	_setup_text.text = EncounterFlow.gate_setup_text(card)
+	_setup_text.visible = not _setup_text.text.is_empty()
 	_main_text.text = _main_or_stakes(node)
 	if fresh:
 		_play_stage_in()

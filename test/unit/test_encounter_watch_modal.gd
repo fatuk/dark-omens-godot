@@ -174,3 +174,65 @@ func test_stub_without_text_shows_stakes_and_effects() -> void:
 	var rt: RichTextLabel = _m.find_child("Outcome", true, false).find_child("Text", true, false)
 	var lose: String = EffectManifest.describe({"do": "loseSanity", "amount": 1})
 	assert_string_contains(rt.text, lose, "итог провала — по эффектам")
+
+
+# ── Двухфазная встреча: завязка + ветка + исход видны всем ───────────────────
+
+
+func _gate(stage: int, branch: String) -> Dictionary:
+	return {
+		"kind": "gate",
+		"name": "Та, что будет",
+		"stage": stage,
+		"branch": branch,
+		"stage1":
+		{
+			"mainText": "Зерно шевелится.",
+			"successText": "Куча не достроена.",
+			"failureText": "Куча поворачивается.",
+			"test": {"skill": "observation"},
+		},
+		"branches":
+		{
+			"success": {"mainText": "Вы разбрасываете снопы.", "successText": "Круг закрыт."},
+			"failure":
+			{
+				"mainText": "Зерно сыплется навстречу.",
+				"successText": "Прорвались.",
+				"failureText": "Вышел культист.",
+				"test": {"skill": "strength"},
+			},
+		},
+	}
+
+
+func test_gate_setup_text_follows_branch() -> void:
+	assert_eq(
+		EncounterFlow.gate_setup_text(_gate(0, "")), "", "первая стадия — завязка и есть текст"
+	)
+	assert_eq(
+		EncounterFlow.gate_setup_text(_gate(1, "failure")), "Зерно шевелится. Куча поворачивается."
+	)
+	assert_eq(
+		EncounterFlow.gate_setup_text(_gate(1, "success")), "Зерно шевелится. Куча не достроена."
+	)
+	assert_eq(EncounterFlow.gate_setup_text(_card("плоская")), "", "у плоской встречи завязки нет")
+
+
+func test_second_stage_shows_setup_branch_and_outcome() -> void:
+	GameState.current_encounter = _gate(1, "failure")
+	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": false}
+	_m.call("_refresh")
+	var setup: Label = _m.find_child("Setup", true, false)
+	assert_true(setup.visible, "завязка видна")
+	assert_eq(setup.text, "Зерно шевелится. Куча поворачивается.")
+	assert_eq((_m.find_child("Text", true, false) as Label).text, "Зерно сыплется навстречу.")
+	var out: RichTextLabel = _m.find_child("OutcomeRow", true, false).get_node("Text")
+	assert_string_contains(out.text, "Вышел культист.", "исход ветки")
+
+
+func test_first_stage_has_no_separate_setup() -> void:
+	GameState.current_encounter = _gate(0, "")
+	_m.call("_refresh")
+	assert_false((_m.find_child("Setup", true, false) as Label).visible)
+	assert_eq((_m.find_child("Text", true, false) as Label).text, "Зерно шевелится.")
