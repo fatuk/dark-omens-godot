@@ -214,6 +214,7 @@ const _CHAT_TEXT_PAD := 10.0  # доп. отступ-«воздух» вокру
 const _CHAT_TEXT_RISE := 16.0  # native: текст чуть ВЫШЕ центра — визуальная масса дыма выше геом. центра
 const _CHAT_RISE := 130.0  # подъём НОВОГО облачка над центром пина (экранно, ×inv·inv_factor)
 const _CHAT_GAP := -5.0  # ВОЗДУХ между краями соседних облачек (rise-ед.; высота баллона учтена)
+const _CHAT_STEP_K := 0.7  # шаг стопки (центр→центр) ужат на 30%: края дыма заходят друг на друга
 const _CHAT_SPAWN_DROP := 46.0  # на сколько НИЖЕ target стартует новое (всплытие снизу)
 const _CHAT_EXIT_RISE := 10.0  # на сколько уезжает вверх облачко при растворении (уход)
 const _CHAT_SMOOTH := 9.0  # скорость лёрпа подъёма/сдвига (экспон. сглаживание)
@@ -1190,7 +1191,9 @@ func _reslot_chat(pid: String) -> void:
 	for slot: int in range(n):  # slot 0 — новейшее (внизу), дальше старые выше
 		var entry: Dictionary = live[n - 1 - slot]
 		var half: float = _chat_bubble_half_h(entry)
-		center = _CHAT_RISE if slot == 0 else center + prev_half + _CHAT_GAP + half
+		center = (
+			_CHAT_RISE if slot == 0 else center + (prev_half + _CHAT_GAP + half) * _CHAT_STEP_K
+		)
 		entry["target"] = center
 		prev_half = half
 
