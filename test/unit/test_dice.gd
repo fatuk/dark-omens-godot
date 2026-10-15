@@ -97,6 +97,12 @@ func test_mod_is_pre_roll() -> void:
 	assert_false(Dice.mod_is_pre_roll({"do": "addToDie"}), "грани — после броска")
 
 
+func test_mod_usable_after_roll() -> void:
+	assert_true(Dice.mod_usable_after_roll({"do": "rollAdditionalDice"}), "доп. куб — и после")
+	assert_true(Dice.mod_usable_after_roll({"do": "addToDie"}), "грани — после броска")
+	assert_false(Dice.mod_usable_after_roll({"do": "improveSkill"}), "навык — только до")
+
+
 # ── pre_roll_bonus: пул кубов ─────────────────────────────────────────────────
 
 

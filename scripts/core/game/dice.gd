@@ -98,6 +98,17 @@ static func mod_is_pre_roll(m: Dictionary) -> bool:
 	return PRE_ROLL_VERBS.has(String(m.get("do", "")))
 
 
+# Исключение из «пул — только до броска»: доп. кубы можно добрать и ПОСЛЕ броска
+# (FAQ EH: способность «roll additional dice» применима к уже брошенной проверке) —
+# они докидываются к брошенным (CheckFlow.activate). Фонарь, оружие с доп. кубом.
+const ANY_TIME_VERBS: Array = ["rollAdditionalDice"]
+
+
+## Можно ли применить мод к УЖЕ брошенной проверке: результат/перебросы и доп. кубы.
+static func mod_usable_after_roll(m: Dictionary) -> bool:
+	return not mod_is_pre_roll(m) or ANY_TIME_VERBS.has(String(m.get("do", "")))
+
+
 ## Эффективный навык для базы пула: substituteSkill (fromSkill==skill) → toSkill
 ## (Security Squad: Влияние вместо Силы). Карта тапается опционально — свапаем стат,
 ## когда выгодно. Нет подходящего мода → исходный skill.

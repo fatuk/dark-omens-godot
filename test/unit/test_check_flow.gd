@@ -347,6 +347,32 @@ func test_activate_post_roll_card_applies_and_exhausts_once_per_round() -> void:
 	assert_has(verbs, "addToDie", "мод добавлен в active_mods")
 
 
+func test_activate_lantern_adds_die_before_roll() -> void:
+	# lantern: action rollAdditionalDice 1, anyTest, optional, oncePerRound — до броска.
+	_player({"items": [{"id": "lantern", "exhausted": false}]})
+	_rolled({"context": "", "skill": "will", "rolled": false, "base": [], "dice": []})
+	var before: int = _cf.pool(_gs.active_check)
+	assert_true(_cf.activate("p", 0), "Фонарь применяется к проверке")
+	assert_eq(_cf.pool(_gs.active_check), before + 1, "+1 куб в пул")
+	assert_true(bool(_gs.players["p"]["items"][0]["exhausted"]), "oncePerRound → истощён")
+
+
+func test_activate_lantern_after_roll_adds_rolled_die() -> void:
+	# FAQ EH: доп. кубы можно добрать и после броска — докидываются к брошенным.
+	_player({"items": [{"id": "lantern", "exhausted": false}]})
+	_rolled()  # rolled=true, base [2, 6]
+	assert_true(_cf.activate("p", 0), "Фонарь применим к брошенной проверке")
+	var base: Array = _gs.active_check["base"]
+	assert_eq(base.size(), 3, "к двум брошенным кубам докинут третий")
+	assert_eq([int(base[0]), int(base[1])], [2, 6], "брошенные кубы не перекинуты")
+	assert_eq((_gs.active_check["dice"] as Array).size(), 3, "показ — тоже 3 куба")
+	assert_true(bool(_gs.players["p"]["items"][0]["exhausted"]), "oncePerRound → истощён")
+	assert_true(
+		AssetCatalog.fits_check(AssetCatalog.by_id("lantern"), "", "will", true),
+		"веер не гасит Фонарь после броска"
+	)
+
+
 func test_activate_discard_self_removes_card() -> void:
 	# kerosene: improveSkill strength (до броска), combatEncounter, cost discardSelf.
 	_player({"items": [{"id": "kerosene", "exhausted": false}]})
