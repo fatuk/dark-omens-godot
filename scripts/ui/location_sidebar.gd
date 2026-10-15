@@ -91,7 +91,7 @@ var _items_list: VBoxContainer = null
 
 # Улика на локации — строка «иконка + имя улики».
 const _CLUE_ICON: Texture2D = preload("res://assets/map/clue-icon.png")
-const _CLUE_ICON_PX := 28.0
+const _CLUE_ICON_PX := 36.0
 
 # Превью монстров локации — квадратные портреты (как карта в модалке боя).
 # Ряд заполняется по ширине целиком: колонок столько, сколько влезает портретов не
@@ -380,7 +380,7 @@ func _build_content() -> void:
 	_items_hdr = Label.new()
 	_items_hdr.name = "ItemsHeader"
 	_items_hdr.text = "SIDEBAR_ITEMS"
-	_items_hdr.add_theme_font_size_override("font_size", 11)
+	_items_hdr.add_theme_font_size_override("font_size", 15)
 	_items_hdr.add_theme_color_override("font_color", UIColors.MUTED)
 	_items_list = VBoxContainer.new()
 	_items_list.name = "ItemsList"
@@ -617,7 +617,7 @@ func _populate_items(loc_id: String) -> void:
 func _make_clue_row(clue_name: String, index: int) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.name = "Clue%d" % index
-	row.add_theme_constant_override("separation", 8)
+	row.add_theme_constant_override("separation", 10)
 	var icon := TextureRect.new()
 	icon.name = "Icon"
 	icon.texture = _CLUE_ICON
@@ -630,7 +630,7 @@ func _make_clue_row(clue_name: String, index: int) -> HBoxContainer:
 	l.text = clue_name
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l.add_theme_font_size_override("font_size", 14)
+	l.add_theme_font_size_override("font_size", 19)
 	l.add_theme_color_override("font_color", UIColors.TEXT)
 	row.add_child(l)
 	return row
