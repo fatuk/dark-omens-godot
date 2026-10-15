@@ -1085,6 +1085,23 @@ func set_investigators(list: Array) -> void:
 			_inv_markers.append(im)
 			if animate:
 				_tween_fan(im, from_off, screen_off, from_rot, ang)
+	_order_pins_by_depth()
+
+
+# Пины соседних локаций перекрываются (карточки растут вверх от клетки): ниже на карте
+# — ближе к зрителю, рисуется поверх. Пины одного z — порядок по дереву, поэтому
+# переставляем их по высоте локации; внутри клетки — как собраны (порядок веера).
+func _order_pins_by_depth() -> void:
+	var order: Array = []
+	for i: int in range(_inv_markers.size()):
+		order.append([float((_inv_markers[i]["base"] as Vector2).y), i])
+	order.sort_custom(
+		func(a: Array, b: Array) -> bool: return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1])
+	)
+	for o: Array in order:
+		var pin: Node = _inv_markers[int(o[1])]["sprite"]
+		if is_instance_valid(pin):
+			move_child(pin, -1)
 
 
 # Пин плавно переезжает в свой слот веера: смещение от локации и наклон. screen_off

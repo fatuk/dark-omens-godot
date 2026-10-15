@@ -109,6 +109,8 @@ func setup(portrait: Texture2D) -> void:
 	poly.name = "Portrait"
 	poly.texture = portrait
 	poly.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	# Портрет и рамка — на ОДНОМ слое z (порядок — по дереву): разные z сквозят между
+	# пинами — рамка соседнего пина рисовалась бы поверх этого портрета.
 	poly.z_index = 0
 	var hw: float = WIN_SIZE.x * 0.5
 	var hh: float = WIN_SIZE.y * 0.5
@@ -145,7 +147,7 @@ func setup(portrait: Texture2D) -> void:
 	frame.name = "Frame"
 	frame.texture = FRAME_TEX
 	frame.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	frame.z_index = 1
+	frame.z_index = 0  # над портретом — порядком в дереве (добавлена позже)
 	frame.polygon = PackedVector2Array(
 		[
 			_persp(Vector2(-fhw, -fhh)),
