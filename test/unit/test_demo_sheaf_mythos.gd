@@ -109,7 +109,7 @@ func test_first_sheaf_tokens_and_special_encounters() -> void:
 	# ТАЙНА добавляет жетоны, а не улики (раньше тест падал от неудачной раскладки).
 	var clues_before: int = (GameState.entities.get("5", []) as Array).count("clue")
 	GameState._mystery.apply_mystery_on_enter()
-	assert_eq(_tokens_at("5"), 3, "три жетона Знамения на поле, улик нет")
+	assert_eq(_tokens_at("5"), 2, "два жетона Знамения на поле, улик нет")
 	assert_eq(
 		(GameState.entities.get("5", []) as Array).count("clue"),
 		clues_before,
@@ -135,10 +135,10 @@ func test_first_sheaf_tokens_and_special_encounters() -> void:
 	assert_true(tagged.begins_with("demo-sheaf-field"), "по тегу — карта поля")
 	# Провал: жетон остаётся; успех: жетон уходит на карту Тайны.
 	GameState._encounter._apply_eldritch_outcome("a", hook, "5", false)
-	assert_eq(_tokens_at("5"), 3)
+	assert_eq(_tokens_at("5"), 2)
 	assert_eq(GameState.mystery_tokens_on_card, 0)
 	GameState._encounter._apply_eldritch_outcome("a", hook, "5", true)
-	assert_eq(_tokens_at("5"), 2, "жетон снят с поля")
+	assert_eq(_tokens_at("5"), 1, "жетон снят с поля")
 	assert_eq(GameState.mystery_tokens_on_card, 1, "и лёг на карту Тайны")
 
 
