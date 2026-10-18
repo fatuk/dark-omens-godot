@@ -607,10 +607,12 @@ func _commit_outcome(pid: String) -> void:
 		combat.commit(pid)
 		return
 	if kind == "eldritch":
+		enc["passed"] = bool(_gs.active_check.get("passed", false))  # исход — телеграмме
 		enc["committed"] = true
 		_commit_eldritch(pid)
 		return
 	if kind == "rumor":
+		enc["passed"] = bool(_gs.active_check.get("passed", false))
 		enc["committed"] = true
 		_commit_rumor(pid)
 		return
@@ -642,6 +644,9 @@ func _commit_outcome(pid: String) -> void:
 	var got: Array = ActionFeed.gains_summary(before, _gs.players[pid]).get("items", [])
 	if not got.is_empty():
 		enc["gained_items"] = got
+	# Исход храним в самой встрече: active_check ниже снимается, а у карт без проверки
+	# его не было вовсе — наблюдатели (телеграмма) читают итог отсюда.
+	enc["passed"] = passed
 	enc["committed"] = true
 	_gs._check.clear()  # проверка завершена — снять active_check
 	_rearm_sticky(pid)  # особая встреча Тайны: повтор на следующем ходу, пока не решена

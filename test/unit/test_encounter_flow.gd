@@ -798,6 +798,7 @@ func test_test_less_encounter_skips_check_and_applies_success() -> void:
 	ef._commit_outcome("p")
 	assert_true(bool(gs.current_encounter.get("committed", false)), "коммит прошёл")
 	assert_eq(int(gs.players["p"]["resources"]), 2, "применена ветка успеха")
+	assert_true(bool(gs.current_encounter.get("passed", false)), "исход «успех» — в самой встрече")
 
 
 # ── untouchableWhile: Старшего нельзя атаковать, пока на поле культисты ───────

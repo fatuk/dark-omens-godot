@@ -446,11 +446,16 @@ func _refresh() -> void:
 
 	var node: Dictionary = _node(card)
 	var chk: Dictionary = _check()
+	# Исход известен, когда проверка брошена ЛИБО встреча уже зафиксирована: при
+	# фиксации движок снимает active_check (исход переезжает в current_encounter.passed),
+	# а у карт без проверки (выбор, торг, «можете задержаться») её не было вовсе —
+	# раньше такая телеграмма так и оставалась без исхода.
 	var rolled: bool = bool(chk.get("rolled", false))
-	var passed: bool = bool(chk.get("passed", false))
+	var settled: bool = rolled or bool(card.get("committed", false))
+	var passed: bool = bool(chk.get("passed", false)) if rolled else bool(card.get("passed", true))
 	# Перерисовываем только при смене содержимого (синк прилетает часто).
 	var sig: String = (
-		"%s|%d|%s|%s" % [telegram, int(card.get("stage", 0)), str(rolled), str(passed)]
+		"%s|%d|%s|%s" % [telegram, int(card.get("stage", 0)), str(settled), str(passed)]
 	)
 	UIStyle.modal_set_visible(_root, _holder, true)
 	_start_clock()
@@ -472,9 +477,9 @@ func _refresh() -> void:
 	_text.text = _main_or_stakes(node)
 	# Исход — только когда проверка сыграна, и только тот, что выпал. Появился на уже
 	# открытой телеграмме — анимируем (рост бланка, затем проявление), без скачка.
-	var reveal: bool = rolled and not _outcome_block.visible and not fresh
-	_outcome_block.visible = rolled
-	if rolled:
+	var reveal: bool = settled and not _outcome_block.visible and not fresh
+	_outcome_block.visible = settled
+	if settled:
 		_outcome_icon.texture = _SUCCESS if passed else _FAILURE
 		_outcome_text.text = (
 			_outcome_bbcode("TELEGRAM_SUCCESS", _INK_SUCCESS, _outcome_or_effects(node, true))

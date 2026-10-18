@@ -83,6 +83,38 @@ func test_outcome_hidden_until_rolled_then_only_the_rolled_one() -> void:
 	assert_false(rt.text.contains("хорошо"), "текст успеха не показываем")
 
 
+func test_test_less_card_shows_success_once_committed() -> void:
+	# Карта без проверки («Почтовый самолёт»): кубов нет, эффекты onSuccess применяются
+	# на «Завершить». Раньше телеграмма так и оставалась без исхода.
+	var card: Dictionary = _card("Почтовый самолёт")
+	card.erase("test")
+	GameState.current_encounter = card
+	_m.call("_refresh")
+	var block: Control = _m.find_child("Outcome", true, false)
+	assert_false(block.visible, "до фиксации исхода нет")
+	card["committed"] = true
+	card["passed"] = true
+	_m.call("_refresh")
+	assert_true(block.visible, "встреча зафиксирована — исход виден")
+	var rt: RichTextLabel = block.find_child("Text", true, false)
+	assert_string_contains(rt.text, "хорошо", "без проверки — исход успеха")
+
+
+func test_outcome_survives_check_cleared_on_commit() -> void:
+	# При фиксации движок снимает active_check — исход берём из current_encounter.passed.
+	var block: Control = _m.find_child("Outcome", true, false)
+	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": false}
+	_m.call("_refresh")
+	assert_true(block.visible)
+	GameState.active_check = {}
+	GameState.current_encounter["committed"] = true
+	GameState.current_encounter["passed"] = false
+	_m.call("_refresh")
+	assert_true(block.visible, "проверку сняли — исход остался")
+	var rt: RichTextLabel = block.find_child("Text", true, false)
+	assert_string_contains(rt.text, "плохо", "тот же исход — провал")
+
+
 func test_time_and_code_are_bold() -> void:
 	for n: String in ["DispatchTime", "CommsCode", "Name"]:
 		var l: Label = _m.find_child(n, true, false)
