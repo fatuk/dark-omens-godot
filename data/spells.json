@@ -109,8 +109,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "wither",
@@ -215,8 +214,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "mind_s_eye",
@@ -328,8 +326,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "healing_words",
@@ -441,8 +438,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "azure_flame",
@@ -554,8 +550,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "enchant_weapon",
@@ -663,8 +658,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "wrack",
@@ -773,8 +767,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "poison_mist",
@@ -882,8 +875,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "clairvoyance",
@@ -991,8 +983,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "storm_of_spirits",
@@ -1100,8 +1091,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "spectral_razor",
@@ -1210,8 +1200,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "banishment",
@@ -1323,8 +1312,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "blessing_of_isis",
@@ -1438,8 +1426,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "voice_of_ra",
@@ -1548,8 +1535,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "call_the_storm",
@@ -1661,8 +1647,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "conjuration",
@@ -1768,8 +1753,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "arcane_insight",
@@ -1870,8 +1854,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "feed_the_mind",
@@ -1985,8 +1968,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "occult_exaltation",
@@ -2101,8 +2083,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "binding",
@@ -2210,8 +2191,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "dread_curse",
@@ -2320,8 +2300,7 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "beast_within",
@@ -2455,7 +2434,6 @@
 					}
 				]
 			}
-		],
-		"hasImage": false
+		]
 	}
 ]

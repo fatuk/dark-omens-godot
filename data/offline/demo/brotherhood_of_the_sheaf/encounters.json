@@ -27,7 +27,7 @@
 					"where": "self"
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -87,7 +87,7 @@
 					]
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -131,7 +131,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -190,7 +190,7 @@
 					]
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -234,7 +234,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -282,7 +282,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -326,7 +326,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -369,7 +369,7 @@
 					"do": "becomeDelayed"
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -425,7 +425,7 @@
 					]
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -469,7 +469,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -531,7 +531,7 @@
 					]
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "lore",
 				"modifier": -1
@@ -584,7 +584,7 @@
 					]
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "influence",
 				"modifier": 0
@@ -642,7 +642,7 @@
 					]
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "will",
 				"modifier": -1
@@ -701,7 +701,7 @@
 					]
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "observation",
 				"modifier": -1
@@ -2908,7 +2908,7 @@
 					"count": 1
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "lore",
 				"modifier": 0
@@ -2957,7 +2957,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "will",
 				"modifier": -1
@@ -3008,7 +3008,7 @@
 					"kind": "injury"
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3052,7 +3052,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3100,7 +3100,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3143,7 +3143,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3191,7 +3191,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3239,7 +3239,7 @@
 					"kind": "injury"
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3290,7 +3290,7 @@
 					]
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3338,7 +3338,7 @@
 					"kind": "madness"
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3381,7 +3381,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3424,7 +3424,7 @@
 					"amount": 2
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3467,7 +3467,7 @@
 					"condition": "debt"
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3511,7 +3511,7 @@
 					"count": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3555,7 +3555,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3603,7 +3603,7 @@
 					"condition": "debt"
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3647,7 +3647,7 @@
 					"amount": 2
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3691,7 +3691,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -3731,7 +3731,7 @@
 					"condition": "lostInTimeAndSpace"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "observation",
 				"modifier": 0
@@ -3779,7 +3779,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "lore",
 				"modifier": -1
@@ -3818,7 +3818,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "strength",
 				"modifier": -2
@@ -3862,7 +3862,7 @@
 					"condition": "poisoned"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "influence",
 				"modifier": -2
@@ -3906,7 +3906,7 @@
 					"condition": "detained"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "observation",
 				"modifier": -1
@@ -3945,7 +3945,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "lore",
 				"modifier": -2
@@ -3987,7 +3987,7 @@
 					"condition": "cursed"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "will",
 				"modifier": 0
@@ -4031,7 +4031,7 @@
 					"amount": 2
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "lore",
 				"modifier": -1
@@ -4070,7 +4070,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "influence",
 				"modifier": 0
@@ -4113,7 +4113,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -4152,7 +4152,7 @@
 					"condition": "hallucinations"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "will",
 				"modifier": 0
@@ -4196,7 +4196,7 @@
 					"condition": "detained"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "influence",
 				"modifier": -1
@@ -4240,7 +4240,7 @@
 					"condition": "detained"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "influence",
 				"modifier": 0
@@ -4280,7 +4280,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -4330,7 +4330,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -4370,7 +4370,7 @@
 					"condition": "backInjury"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "influence",
 				"modifier": 0
@@ -4428,7 +4428,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -4468,7 +4468,7 @@
 					"condition": "lostInTimeAndSpace"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "will",
 				"modifier": -1
@@ -4516,7 +4516,7 @@
 					"condition": "amnesia"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "strength",
 				"modifier": -1
@@ -4571,7 +4571,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -4621,7 +4621,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -4674,7 +4674,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "strength",
 				"modifier": -2
@@ -4722,7 +4722,7 @@
 					"condition": "internalInjury"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "observation",
 				"modifier": 0
@@ -4774,7 +4774,7 @@
 					]
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "influence",
 				"modifier": 0
@@ -4817,7 +4817,7 @@
 					"condition": "detained"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "strength",
 				"modifier": 0
@@ -4871,7 +4871,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -4915,7 +4915,7 @@
 					"do": "becomeDelayed"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "observation",
 				"modifier": 0
@@ -4959,7 +4959,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false
+			"isReady": false
 		},
 		"i18n": {
 			"ru": {
@@ -4994,7 +4994,7 @@
 				}
 			],
 			"onFailure": [],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "influence",
 				"modifier": 0
@@ -5043,7 +5043,7 @@
 					"condition": "hallucinations"
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "will",
 				"modifier": 0
@@ -5087,7 +5087,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "influence",
 				"modifier": 0
@@ -5131,7 +5131,7 @@
 					"amount": 1
 				}
 			],
-			"hasImage": false,
+			"isReady": false,
 			"test": {
 				"skill": "observation",
 				"modifier": 0

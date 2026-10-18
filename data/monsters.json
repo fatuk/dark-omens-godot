@@ -24,8 +24,7 @@
 				"amount": 1,
 				"target": "each"
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "byakhee",
@@ -45,8 +44,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_BYAKHEE_ABILITY"
-		},
-		"hasImage": true
+		}
 	},
 	{
 		"id": "carrier_nightgaunt",
@@ -66,8 +64,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_CARRIER_NIGHTGAUNT_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "child_of_the_goat",
@@ -94,8 +91,7 @@
 				"amount": 1,
 				"target": "each"
 			}
-		],
-		"hasImage": false
+		]
 	},
 	{
 		"id": "colour_out_of_space",
@@ -117,8 +113,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_COLOUR_OUT_OF_SPACE_ABILITY"
-		},
-		"hasImage": true
+		}
 	},
 	{
 		"id": "crawling_one",
@@ -138,8 +133,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_CRAWLING_ONE_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "crazed_mob",
@@ -160,8 +154,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_CRAZED_MOB_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "cthonian",
@@ -181,8 +174,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_CTHONIAN_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "cultist",
@@ -192,8 +184,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_CULTIST_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "dark_young",
@@ -213,8 +204,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_DARK_YOUNG_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "deep_one",
@@ -234,8 +224,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_DEEP_ONE_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "deep_one_hybrid",
@@ -255,8 +244,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_DEEP_ONE_HYBRID_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "dhole",
@@ -276,8 +264,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_DHOLE_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "dimensional_shambler",
@@ -297,8 +284,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_DIMENSIONAL_SHAMBLER_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "elder_thing",
@@ -318,8 +304,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_ELDER_THING_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "fire_vampire",
@@ -339,8 +324,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_FIRE_VAMPIRE_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "firebug",
@@ -360,8 +344,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_FIREBUG_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "flying_polyp",
@@ -381,8 +364,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_FLYING_POLYP_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "formless_spawn",
@@ -403,8 +385,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_FORMLESS_SPAWN_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "ghast",
@@ -424,8 +405,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_GHAST_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "ghost",
@@ -447,8 +427,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_GHOST_ABILITY"
-		},
-		"hasImage": true
+		}
 	},
 	{
 		"id": "ghoul",
@@ -468,8 +447,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_GHOUL_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "ghoul_priest",
@@ -489,8 +467,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_GHOUL_PRIEST_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "giant_penguin",
@@ -510,8 +487,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_GIANT_PENGUIN_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "gnoph_keh",
@@ -531,8 +507,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_GNOPH_KEH_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "goat_spawn",
@@ -552,8 +527,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_GOAT_SPAWN_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "gug",
@@ -573,8 +547,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_GUG_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "honored_dead",
@@ -594,8 +567,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_HONORED_DEAD_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "hound_of_tindalos",
@@ -615,8 +587,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_HOUND_OF_TINDALOS_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "hunting_byakhee",
@@ -636,8 +607,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_HUNTING_BYAKHEE_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "hunting_horror",
@@ -657,8 +627,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_HUNTING_HORROR_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "jiangshi",
@@ -678,8 +647,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_JIANGSHI_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "leng_spider",
@@ -699,8 +667,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_LENG_SPIDER_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "leopard_man",
@@ -720,8 +687,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_LEOPARD_MAN_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "lloigor",
@@ -741,8 +707,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_LLOIGOR_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "maniac",
@@ -762,8 +727,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_MANIAC_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "mi_go",
@@ -783,8 +747,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_MI_GO_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "moon_beast",
@@ -804,8 +767,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_MOON_BEAST_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "mummy",
@@ -825,8 +787,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_MUMMY_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "nightgaunt",
@@ -846,8 +807,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_NIGHTGAUNT_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "poltergeist",
@@ -868,8 +828,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_POLTERGEIST_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "proto_shoggoth",
@@ -889,8 +848,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_PROTO_SHOGGOTH_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "rat_thing",
@@ -910,8 +868,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_RAT_THING_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "ravenous_gug",
@@ -931,8 +888,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_RAVENOUS_GUG_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "riot",
@@ -952,8 +908,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_RIOT_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "sand_dweller",
@@ -973,8 +928,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_SAND_DWELLER_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "serpent_people",
@@ -994,8 +948,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_SERPENT_PEOPLE_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "servitor_of_the_outer_gods",
@@ -1015,8 +968,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_SERVITOR_OF_THE_OUTER_GODS_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "shan",
@@ -1036,8 +988,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_SHAN_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "shoggoth",
@@ -1057,8 +1008,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_SHOGGOTH_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "skeleton",
@@ -1078,8 +1028,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_SKELETON_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "spawn_of_sebak",
@@ -1099,8 +1048,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_SPAWN_OF_SEBAK_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "star_spawn",
@@ -1120,8 +1068,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_STAR_SPAWN_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "star_vampire",
@@ -1141,8 +1088,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_STAR_VAMPIRE_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "tcho_tcho",
@@ -1162,8 +1108,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_TCHO_TCHO_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "thrall",
@@ -1183,8 +1128,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_THRALL_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "vampire",
@@ -1204,8 +1148,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_VAMPIRE_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "warlock",
@@ -1225,8 +1168,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_WARLOCK_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "wendigo",
@@ -1246,8 +1188,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_WENDIGO_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "werewolf",
@@ -1267,8 +1208,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_WEREWOLF_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "witch",
@@ -1288,8 +1228,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_WITCH_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "wraith",
@@ -1310,8 +1249,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_WRAITH_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "yithian",
@@ -1331,8 +1269,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_YITHIAN_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "young_cthonian",
@@ -1352,8 +1289,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_YOUNG_CTHONIAN_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "zombie",
@@ -1373,8 +1309,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_ZOMBIE_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "zoog",
@@ -1394,8 +1329,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_ZOOG_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "abhoth",
@@ -1417,8 +1351,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_ABHOTH_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "ancient_cthonian",
@@ -1439,8 +1372,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_ANCIENT_CTHONIAN_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "atlach_nacha",
@@ -1462,8 +1394,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_ATLACH_NACHA_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "bloated_woman",
@@ -1485,8 +1416,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_BLOATED_WOMAN_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "child_of_abhoth",
@@ -1508,8 +1438,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_CHILD_OF_ABHOTH_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "children_of_yig",
@@ -1531,8 +1460,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_CHILDREN_OF_YIG_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "crawling_chaos",
@@ -1554,8 +1482,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_CRAWLING_CHAOS_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "crazed_elder_thing",
@@ -1576,8 +1503,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_CRAZED_ELDER_THING_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "cthulhu",
@@ -1599,8 +1525,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_CTHULHU_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "cthylla",
@@ -1622,8 +1547,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_CTHYLLA_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "doppelganger",
@@ -1644,8 +1568,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_DOPPELGANGER_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "dunwich_horror",
@@ -1667,8 +1590,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_DUNWICH_HORROR_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "ghatanothoa",
@@ -1689,8 +1611,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_GHATANOTHOA_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "god_of_the_bloody_tongue",
@@ -1712,8 +1633,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_GOD_OF_THE_BLOODY_TONGUE_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "haunter_of_the_dark",
@@ -1735,8 +1655,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_HAUNTER_OF_THE_DARK_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "hydra",
@@ -1758,8 +1677,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_HYDRA_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "ithaqua",
@@ -1781,8 +1699,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_ITHAQUA_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "nctolhu",
@@ -1804,8 +1721,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_NCTOLHU_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "nctosa",
@@ -1827,8 +1743,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_NCTOSA_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "nug",
@@ -1850,8 +1765,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_NUG_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "quachil_uttaus",
@@ -1873,8 +1787,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_QUACHIL_UTTAUS_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "rampaging_shoggoth",
@@ -1895,8 +1808,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_RAMPAGING_SHOGGOTH_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "render_of_the_veils",
@@ -1918,8 +1830,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_RENDER_OF_THE_VEILS_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "rhan_tegoth",
@@ -1941,8 +1852,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_RHAN_TEGOTH_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "rogue_byakhee",
@@ -1963,8 +1873,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_ROGUE_BYAKHEE_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "shub_niggurath",
@@ -1986,8 +1895,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_SHUB_NIGGURATH_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "shudde_m_ell",
@@ -2009,8 +1917,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_SHUDDE_M_ELL_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "sleeper_of_n_kai",
@@ -2032,8 +1939,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_SLEEPER_OF_N_KAI_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "spawn_of_azathoth",
@@ -2054,8 +1960,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_SPAWN_OF_AZATHOTH_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "spawn_of_hastur",
@@ -2077,8 +1982,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_SPAWN_OF_HASTUR_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "spinner_of_webs",
@@ -2100,8 +2004,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_SPINNER_OF_WEBS_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "the_beast",
@@ -2123,8 +2026,7 @@
 		"ability": {
 			"trigger": "passive",
 			"textKey": "MON_THE_BEAST_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "the_brood",
@@ -2146,8 +2048,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_THE_BROOD_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "tick_tock_men",
@@ -2169,8 +2070,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_TICK_TOCK_MEN_ABILITY"
-		},
-		"hasImage": true
+		}
 	},
 	{
 		"id": "tulzscha",
@@ -2192,8 +2092,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_TULZSCHA_ABILITY"
-		},
-		"hasImage": true
+		}
 	},
 	{
 		"id": "wind_walker",
@@ -2215,8 +2114,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_WIND_WALKER_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "winged_serpent",
@@ -2238,8 +2136,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_WINGED_SERPENT_ABILITY"
-		},
-		"hasImage": false
+		}
 	},
 	{
 		"id": "worldrender",
@@ -2261,8 +2158,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_WORLDRENDER_ABILITY"
-		},
-		"hasImage": true
+		}
 	},
 	{
 		"id": "yeb",
@@ -2284,8 +2180,7 @@
 		"ability": {
 			"trigger": "onSpawn",
 			"textKey": "MON_YEB_ABILITY"
-		},
-		"hasImage": true
+		}
 	},
 	{
 		"id": "yig",
@@ -2307,8 +2202,7 @@
 		"ability": {
 			"trigger": "special",
 			"textKey": "MON_YIG_ABILITY"
-		},
-		"hasImage": true
+		}
 	},
 	{
 		"id": "zombie_horde",
@@ -2329,8 +2223,7 @@
 		"ability": {
 			"trigger": "reckoning",
 			"textKey": "MON_ZOMBIE_HORDE_ABILITY"
-		},
-		"hasImage": true
+		}
 	},
 	{
 		"id": "elder",
@@ -2356,7 +2249,6 @@
 			"trigger": "passive",
 			"textKey": "MON_ELDER_ABILITY"
 		},
-		"hasImage": false,
 		"onReckoning": [
 			{
 				"do": "restoreMonster",
