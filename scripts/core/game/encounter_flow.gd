@@ -1067,6 +1067,9 @@ func _apply_research_clue_removal(pid: String, kind: String) -> void:
 		# Хук Тайны «улика добыта исследованием» (когда locationMarked — только с её клеток).
 		for _g in range(gained):
 			_gs._mystery.try_mystery_hook("researchClueGained", {"loc": loc}, pid)
+		# Слух «улики на карту» (researchClue) на этой клетке: найденная улика уходит
+		# с сыщика на карту Слуха — копит его решение.
+		_gs._rumor.research_clue_to_card(pid, loc, gained)
 	enc["_clues_removed"] = true
 
 

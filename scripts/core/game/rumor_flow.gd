@@ -7,8 +7,10 @@ extends RefCounted
 ##   onReckoning   — DSL-программа КАЖДОЙ Расплаты (дефолт: снять 1 жетон с карты);
 ##   onExpire      — DSL-программа, когда жетонов на карте 0 (Рок за врата / потери / …);
 ##   solveOnExpire — авто-развеять Слух после onExpire (иначе onExpire бьёт каждую Расплату);
-##   solve.kind    — как развеять: "gateClose" (закрыть врата-портал) | … (encounter/
-##                   monsterDefeated/toughnessOnCard — следующие фазы).
+##   solve.kind    — как развеять: "gateClose" (закрыть врата-портал) | "encounter"
+##                   (встреча-решение на клетке слуха) | "researchClue" (улика из
+##                   исследования на клетке слуха уходит на карту; solve.progress улик —
+##                   развеян) | monsterDefeated / toughnessOnCard.
 ##
 ## DSL-программы Слуха гоняются через EffectRunner на «доску» (target:each разрулит
 ## TargetResolver), а узел `discardEldritchToken where:"self"` ПЕРЕХВАТЫВАЕТСЯ — он снимает
@@ -62,9 +64,9 @@ func on_enter(card: Dictionary) -> void:
 						% [_name(card), loc, int(card["tokens"])]
 					)
 				)
-		"encounter":
-			# Метка слуха на локации — туда идут разыгрывать встречу-решение. Явная
-			# rumor.location («нотариус в Уэнэме») важнее случайной.
+		"encounter", "researchClue":
+			# Метка слуха на локации — туда идут разыгрывать встречу-решение (или
+			# исследование). Явная rumor.location («нотариус в Аркхэме») важнее случайной.
 			var eloc: String = String(rumor.get("location", ""))
 			if eloc.is_empty():
 				eloc = _pick_marked_location()
@@ -180,19 +182,54 @@ func progress_encounter_at(loc: String) -> bool:
 	return solve_encounter_at(loc)
 
 
+## Хост: исследование на loc принесло сыщику gained улик. Есть researchClue-Слух на
+## этой клетке — улики переезжают С СЫЩИКА на карту Слуха (card.progress, не больше,
+## чем нужно до solve.progress). Набрали — Слух развеян, метка снята. true — улики
+## ушли на карту (сыщику они не остались).
+func research_clue_to_card(pid: String, loc: String, gained: int) -> bool:
+	if not _gs.is_host() or gained <= 0 or not _gs.players.has(pid):
+		return false
+	var card: Dictionary = _rumor_card_at(loc, "researchClue")
+	if card.is_empty():
+		return false
+	var p: Dictionary = _gs.players[pid]
+	var need: int = maxi(1, int(_solve_of(card).get("progress", 1)))
+	var have: int = int(card.get("progress", 0))
+	var move: int = mini(mini(gained, need - have), int(p.get("clues", 0)))
+	if move <= 0:
+		return false
+	ResourceLedger.spend(p, "clue", move)
+	card["progress"] = have + move
+	GameConsole.log(
+		(
+			"[Слух] «%s»: %s кладёт улику на карту (%d/%d)"
+			% [_name(card), _gs.name_of(pid), int(card["progress"]), need]
+		)
+	)
+	if int(card["progress"]) >= need:
+		_gs._board.remove_rumor_at(loc)
+		_solve(card, "улики на карте Слуха (%d)" % need)
+	return true
+
+
 func _solve_of(card: Dictionary) -> Dictionary:
 	return (card.get("rumor", {}) as Dictionary).get("solve", {})
 
 
 ## Карта encounter-Слуха на локации loc ({} — нет).
 func _encounter_card_at(loc: String) -> Dictionary:
+	return _rumor_card_at(loc, "encounter")
+
+
+## Карта Слуха со способом решения kind на локации loc ({} — нет).
+func _rumor_card_at(loc: String, kind: String) -> Dictionary:
 	if loc.is_empty():
 		return {}
 	for c_v: Variant in _gs.mythos_in_play as Array:
 		var card: Dictionary = c_v
 		if (
 			is_rumor(card)
-			and solve_kind(card) == "encounter"
+			and solve_kind(card) == kind
 			and String(card.get("rumorLocation", "")) == loc
 		):
 			return card

@@ -53,6 +53,9 @@ class MockGS:
 	func is_host() -> bool:
 		return true
 
+	func name_of(pid: String) -> String:
+		return pid
+
 	# Граф локаций из тестового списка — пересобирается на каждое чтение, чтобы
 	# `_gs.locations = [...]` в тесте подхватывалось без setup-хуков.
 	var map: LocationGraph:
@@ -304,3 +307,40 @@ func test_doom_trigger_fires_once_when_remaining_small() -> void:
 	assert_eq(_gs.doom, 6, "advanceDoom 2 от триггера")
 	_rumor.reckon(card)
 	assert_eq(_gs.doom, 6, "второй раз не стреляет")
+
+
+# ── Слух «улики на карту» (researchClue): улика из исследования уходит на карту ─
+
+
+func test_on_enter_research_clue_marks_explicit_location() -> void:
+	var card: Dictionary = _rumor_card(0, {"location": "Arkham", "solve": {"kind": "researchClue"}})
+	_rumor.on_enter(card)
+	assert_eq(String(card["rumorLocation"]), "Arkham", "явная клетка Слуха")
+	assert_true(_gs._board.marked.has("Arkham"), "метка слуха на карте")
+	assert_true(_gs.gates.is_empty(), "портал не открывается")
+
+
+func test_research_clue_moves_to_card_until_solved() -> void:
+	var card: Dictionary = _rumor_card(0, {"solve": {"kind": "researchClue", "progress": 3}})
+	card["rumorLocation"] = "L"
+	_gs.mythos_in_play = [card]
+	_gs._board.marked = ["L"]
+	_gs.players["p"] = {"location": "L", "clues": 1}
+	assert_true(_rumor.research_clue_to_card("p", "L", 1), "улика ушла на карту")
+	assert_eq(int(_gs.players["p"]["clues"]), 0, "у сыщика её больше нет")
+	assert_eq(int(card["progress"]), 1, "1/3 на карте")
+	for _i in range(2):
+		_gs.players["p"]["clues"] = 1
+		_rumor.research_clue_to_card("p", "L", 1)
+	assert_true((_gs.mythos_in_play as Array).is_empty(), "3/3 — Слух развеян")
+	assert_false(_gs._board.marked.has("L"), "метка снята")
+
+
+func test_research_clue_elsewhere_stays_with_investigator() -> void:
+	var card: Dictionary = _rumor_card(0, {"solve": {"kind": "researchClue", "progress": 3}})
+	card["rumorLocation"] = "L"
+	_gs.mythos_in_play = [card]
+	_gs.players["p"] = {"location": "M", "clues": 1}
+	assert_false(_rumor.research_clue_to_card("p", "M", 1), "не на клетке Слуха")
+	assert_eq(int(_gs.players["p"]["clues"]), 1, "улика осталась у сыщика")
+	assert_false(card.has("progress"), "карта не тронута")
