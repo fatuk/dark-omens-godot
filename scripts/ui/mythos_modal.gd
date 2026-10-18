@@ -16,6 +16,7 @@ var _title_lbl: Label
 var _flavor_lbl: Label
 var _text_lbl: Label
 var _eff_header: Label
+var _eff_sep: Control  # разделитель над блоком эффектов (прячется вместе с ним)
 var _eff_box: VBoxContainer
 var _next_btn: Button
 
@@ -61,6 +62,7 @@ func _build() -> void:
 	_vbox.add_child(_text_lbl)
 
 	UIStyle.separator(_vbox)
+	_eff_sep = _vbox.get_child(_vbox.get_child_count() - 1)
 
 	_eff_header = Label.new()
 	_eff_header.name = "EffectsHeader"
@@ -127,7 +129,15 @@ func _show_card(card: Dictionary) -> void:
 	_flavor_lbl.visible = not _flavor_lbl.text.is_empty()
 	_text_lbl.text = String(card.get("text", ""))
 	_text_lbl.visible = not _text_lbl.text.is_empty()
-	_render_effects(card.get("onDraw", []))
+	# Есть текст правил — он и объясняет, что случится; машинный список эффектов
+	# дублировал бы его. Список — запасной вариант для карт без текста (шаблонные
+	# заглушки колоды, сгенерированный контент).
+	var show_effects: bool = not _text_lbl.visible
+	_eff_sep.visible = show_effects
+	_eff_header.visible = show_effects
+	_eff_box.visible = show_effects
+	if show_effects:
+		_render_effects(card.get("onDraw", []))
 
 
 # Кнопка «Прочитал»: пока я не отметился — активна. После — заблокирована и
