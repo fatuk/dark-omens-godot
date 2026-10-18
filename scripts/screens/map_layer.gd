@@ -637,6 +637,11 @@ var _tr_to: String = ""
 var _tr_copies: Array = []  # [{pin, dot, dx}] — 3 wrap-копии (как у маркеров/линий)
 var _tr_base_scale: float = 1.0
 var _tr_screen_off: Vector2 = Vector2.ZERO
+var _tr_pid: String = ""  # кто летит — облачка чата следуют за его летящим пином
+# pid → позиция летящего пина (центральный тайл), пока сыщик в пути. Держится и между
+# сегментами билетного маршрута (копии пина там пересоздаются); снимается, когда пины
+# расставлены заново (set_investigators) — облачка возвращаются к обычному пину.
+var _travel_anchor: Dictionary = {}
 
 const TRAVEL_DUR: float = 1.7  # длительность анимации перемещения, сек
 
@@ -683,10 +688,14 @@ func hide_investigator(pid: String) -> void:
 
 
 ## Анимирует перемещение сыщика inv_id по дуге from_loc→to_loc: ведёт пин + точку
-## цвета пути, камера следит. Корутина — await до завершения.
-func play_travel(inv_id: String, from_loc: String, to_loc: String, ctype: String) -> void:
+## цвета пути, камера следит. Корутина — await до завершения. pid — чей пин летит:
+## облачка чата этого игрока едут вместе с ним.
+func play_travel(
+	inv_id: String, from_loc: String, to_loc: String, ctype: String, pid: String = ""
+) -> void:
 	if gc_point(from_loc, to_loc, 0.0) == Vector2.INF:
 		return
+	_tr_pid = pid
 	_tr_from = from_loc
 	_tr_to = to_loc
 	_tr_base_scale = INVESTIGATOR_CARD_H_NEAR / InvestigatorPin.card_height()
@@ -734,6 +743,8 @@ func _travel_step(t: float) -> void:
 	var pin_scale: Vector2 = Vector2.ONE * _tr_base_scale * inv * inv_factor
 	var pin_off: Vector2 = _tr_screen_off * inv * inv_factor
 	var dot_scale: Vector2 = Vector2.ONE * inv
+	if not _tr_pid.is_empty():
+		_travel_anchor[_tr_pid] = p + pin_off  # облачка чата — над летящим пином
 	for c in _tr_copies:
 		var off: Vector2 = Vector2(c["dx"], 0.0)
 		var pin: Node2D = c["pin"] as Node2D
@@ -974,6 +985,7 @@ func set_active_investigator(pid: String) -> void:
 ## Размещает маркеры сыщиков на карте. list: [{pid, investigator, location}].
 ## Перестраивает, только если состав/локации изменились (сигнатура).
 func set_investigators(list: Array) -> void:
+	_travel_anchor.clear()  # пины на финальных местах — облачкам снова к обычному пину
 	var sig: String = ""
 	for i: int in range(list.size()):
 		var e: Dictionary = list[i]
@@ -1289,20 +1301,36 @@ func _layout_chat_bubbles(bscale: float, delta: float) -> void:
 	for pid_v: Variant in _chat_bubbles.keys():
 		var pid: String = pid_v
 		var stack: Array = _chat_bubbles[pid]
-		var pin: Node2D = _nearest_inv_pin(pid, cam_x)
+		var anchor: Vector2 = _chat_anchor(pid, cam_x)
 		for e_v: Variant in stack:
 			var entry: Dictionary = e_v
 			var node: Node2D = entry.get("node")
 			if not is_instance_valid(node):
 				continue
-			if pin == null:
+			if anchor == Vector2.INF:
 				node.visible = false
 				continue
 			node.visible = true
 			if not bool(entry.get("dying", false)):  # умирающим rise драйвит exit-твин
 				entry["rise"] = lerpf(float(entry["rise"]), float(entry["target"]), t)
 			node.scale = Vector2.ONE * _CHAT_DOWNSCALE * bscale  # @2× → половина натурального
-			node.position = Vector2(pin.position.x, pin.position.y - float(entry["rise"]) * bscale)
+			node.position = Vector2(anchor.x, anchor.y - float(entry["rise"]) * bscale)
+
+
+# Точка, над которой висят облачка pid: летящий пин, пока сыщик в пути (статичный пин
+# в это время спрятан на старой клетке), иначе — ближайшая к камере wrap-копия пина.
+# Vector2.INF — пина нет (облачка прячем).
+func _chat_anchor(pid: String, cam_x: float) -> Vector2:
+	if _travel_anchor.has(pid):
+		var base: Vector2 = _travel_anchor[pid]
+		var best: Vector2 = base
+		for dx: int in [-TILE_W, TILE_W]:  # wrap-копии, как у летящих пинов
+			var cand: Vector2 = base + Vector2(dx, 0.0)
+			if absf(cand.x - cam_x) < absf(best.x - cam_x):
+				best = cand
+		return best
+	var pin: Node2D = _nearest_inv_pin(pid, cam_x)
+	return pin.position if pin != null else Vector2.INF
 
 
 # Ближайшая к камере wrap-копия пина сыщика pid (видимая на экране), либо null.

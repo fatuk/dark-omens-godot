@@ -319,7 +319,9 @@ func _animate_moves(moves: Array, list: Array) -> void:
 		for seg: Array in _travel_segments(m):
 			var a: String = seg[0]
 			var b: String = seg[1]
-			await _map_layer.play_travel(String(m.inv), a, b, _map_layer.edge_ctype(a, b))
+			await _map_layer.play_travel(
+				String(m.inv), a, b, _map_layer.edge_ctype(a, b), String(m.pid)
+			)
 		# Своя фишка доехала — сообщаем хосту: он держал передачу хода до этого
 		# момента, чтобы следующий игрок не начинал ход поверх летящей фишки.
 		if String(m.pid) == me:
