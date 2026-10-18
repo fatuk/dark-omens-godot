@@ -22,6 +22,7 @@ const _ART_DIR := "res://assets/mythos/"
 # Разворот модалки (как макет карты Мифов): арт ~58% ширины, текст справа.
 const _PANEL_SIZE := Vector2(1240, 800)
 const _ART_W: float = 700.0
+const _ART_RADIUS: int = 14  # скругление углов рамки арта
 const _TEXT_PAD := Vector2(40, 34)  # поля текстовой колонки (по бокам, сверху/снизу)
 
 var _art: TextureRect
@@ -125,11 +126,17 @@ func _build() -> void:
 
 # Левая половина разворота: арт во всю высоту (обрезка «по покрытию») и поверх —
 # внутренняя тень, чтобы края картинки уходили в рамку и в текстовую панель.
+# Панель со скруглёнными углами — маска: арт и тень обрезаются по её форме.
 func _build_art_pane() -> Control:
-	var pane := Control.new()
+	var pane := Panel.new()
 	pane.name = "ArtPane"
 	pane.custom_minimum_size = Vector2(_ART_W, 0)
-	pane.clip_contents = true
+	var mask := StyleBoxFlat.new()
+	mask.bg_color = Color(0.045, 0.045, 0.04)  # в тон фона модалки — видно, пока арта нет
+	mask.set_corner_radius_all(_ART_RADIUS)
+	mask.anti_aliasing = true
+	pane.add_theme_stylebox_override("panel", mask)
+	pane.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
 	_art = TextureRect.new()
 	_art.name = "Art"
 	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
