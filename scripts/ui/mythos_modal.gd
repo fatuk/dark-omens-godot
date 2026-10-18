@@ -34,12 +34,12 @@ static var TITLE_FS: float = UIStyle.MODAL_FS_HERO
 static var FLAVOR_FS: float = UIStyle.MODAL_FS_BODY
 static var TEXT_FS: float = UIStyle.MODAL_FS_BODY
 # Внутренняя тень арта (uniform'ы inner_shadow.gdshader): доли стороны + плотность.
-static var SHADOW_ALPHA: float = 0.2
-static var SHADOW_LEFT: float = 0.08
+static var SHADOW_ALPHA: float = 0.51
+static var SHADOW_LEFT: float = 0.15
 static var SHADOW_RIGHT: float = 0.2
-static var SHADOW_TOP: float = 0.1
-static var SHADOW_BOTTOM: float = 0.12
-static var SHADOW_CURVE: float = 1.8
+static var SHADOW_TOP: float = 0.19
+static var SHADOW_BOTTOM: float = 0.19
+static var SHADOW_CURVE: float = 3.35
 
 var _art: TextureRect
 var _art_pane: Panel
