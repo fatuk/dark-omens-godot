@@ -20,6 +20,10 @@ const REST_HEAL_SANITY: int = 1
 # и оставляет окно под будущие эффекты — ни одно действие не крутит цикл мгновенно.
 # В тестах _gs — мок вне дерева сцены, пауза пропускается (поведение синхронное).
 static var TURN_DELAY: float = 1.0
+# Пауза после «Завершить» встречу перед передачей хода: зрители (телеграмма) получают
+# встречу уже ЗАФИКСИРОВАННОЙ и успевают прочитать исход. Без неё фиксация и передача
+# хода уходили одной рассылкой — исход не доходил до зрителей вовсе.
+static var ENCOUNTER_OUTCOME_HOLD: float = 2.5
 static var TRAVEL_ARRIVE_DELAY: float = 2.0  # пауза после приезда фишки перед передачей хода
 static var TRAVEL_ANIM_TIMEOUT: float = 12.0  # сторож: клиент не отчитался о конце анимации
 
@@ -936,11 +940,36 @@ func _commit_and_advance(pid: String) -> bool:
 	_gs.players[pid]["encounter_done"] = true
 	GameConsole.log("[Game] %s завершил встречу" % _gs.name_of(pid))
 
+	if ENCOUNTER_OUTCOME_HOLD > 0.0 and _gs.is_inside_tree():
+		# Сначала — зафиксированная встреча (исход в current_encounter.passed), ход
+		# уходит после паузы. В тестах (_gs вне дерева) — сразу, как раньше.
+		_gs.broadcast_sync()
+		_gs.emit_changed()
+		_advance_encounter_after_hold(pid)
+		return true
+
 	advance_encounter_turn()
 
 	_gs.broadcast_sync()
 	_gs.emit_changed()
 	return true
+
+
+# Передать ход встреч после паузы ENCOUNTER_OUTCOME_HOLD — если за паузу ход не ушёл
+# иначе (выход игрока, смена фазы).
+func _advance_encounter_after_hold(pid: String) -> void:
+	var round_at: int = int(_gs.round_num)
+	await _gs.get_tree().create_timer(ENCOUNTER_OUTCOME_HOLD).timeout
+	if (
+		_gs.phase != Phases.ENCOUNTER
+		or int(_gs.round_num) != round_at
+		or _gs.current_pid() != pid
+		or not bool((_gs.players.get(pid, {}) as Dictionary).get("encounter_done", false))
+	):
+		return
+	advance_encounter_turn()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Триггеры активов по итогу встречи pid — ровно один раз на встречу (флаг в enc).
