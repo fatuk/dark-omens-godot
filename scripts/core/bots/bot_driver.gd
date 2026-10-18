@@ -27,6 +27,12 @@ const READ_CHARS_PER_SEC := 18.0
 const READ_MIN := 2.5
 const READ_MAX := 12.0
 const ROLES := ["fighter", "runner"]
+# Проверки бота: улики на переброс тратит только сверх этого запаса (их ждут Тайны);
+# расходные карты (сброс/оплата) до броска играет, только если пул не больше RISKY_POOL.
+const CLUE_RESERVE := 2
+const RISKY_POOL := 2
+# Владельцы active_check, где бот — сам себе игрок (лавку и касты бот не ведёт).
+const _ASSIST_OWNERS := ["encounter", "combat", "effectCheck"]
 
 const _CHOICE_ORDER := [
 	"research", "mystery", "eldritch", "rumor", "belongings", "gate", "local", "general"
@@ -45,6 +51,9 @@ var _last: Dictionary = {}  # bot id → {sig, at, count}
 var _sent: Array = []  # для тестов/отладки: [{from, msg}]
 var _read_text: String = ""  # что сейчас видит наблюдатель встречи бота
 var _read_since: float = 0.0  # когда этот текст появился (сек)
+# Попытки «помощника проверки» при данном состоянии слота: отклонённую хостом активацию
+# или переброс не повторяем — иначе бот залип бы на ней, так и не бросив кубы.
+var _assist_tried: Dictionary = {}
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -223,6 +232,7 @@ func _fingerprint(bid: String) -> String:
 				p.get(PlayerKeys.ENCOUNTER_DONE, false),
 				p.get(PlayerKeys.TRAVEL_ANIM, false),
 				(p.get("reckoning_check", {}) as Dictionary).get("rolled", null),
+				(p.get("reckoning_check", {}) as Dictionary).get("reroll_nonce", 0),
 			]
 		)
 	)
@@ -251,6 +261,12 @@ func decide(pid: String, role: String = "fighter") -> Dictionary:
 	# Порог: спас-бросок уже брошен хостом — принимаем.
 	if not (p.get(PlayerKeys.DEATH_SAVE_CHECK, {}) as Dictionary).is_empty():
 		return {"action": RelayActions.DEATH_SAVE_APPLY}
+
+	# Своя проверка: до броска — карты под пул, после неудачного — карты на результат,
+	# +1 на куб и перебросы. Иначе ниже — обычный бросок / применение.
+	var assist: Dictionary = check_assist(pid, p)
+	if not assist.is_empty():
+		return assist
 
 	# Параллельная Расплата: свой слот проверки → бросить, затем применить.
 	var rc: Dictionary = p.get("reckoning_check", {})
@@ -500,6 +516,206 @@ func watched_text(bid: String) -> String:
 		var key: String = "successText" if bool(ac.get("passed", false)) else "failureText"
 		return String(node.get(key, "")).strip_edges()
 	return String(node.get("mainText", "")).strip_edges()
+
+
+# ── Помощник проверки ─────────────────────────────────────────────────────────
+
+
+## Ход бота внутри СВОЕЙ проверки (слот Расплаты или active_check с его pid): до броска
+## разыграть подходящую карту; после неудачного броска — карту на результат, +1 на куб,
+## «перебросить все», поштучный переброс (бесплатно → концентрация → улика сверх
+## CLUE_RESERVE). {} — помогать нечем (или прошла) — бросаем/применяем как обычно.
+## Карты не автоприменяются (даже пассивы whileOwned) — бот играет их сам, как игрок.
+func check_assist(pid: String, p: Dictionary) -> Dictionary:
+	var rc: Dictionary = p.get("reckoning_check", {})
+	var reck: bool = not rc.is_empty()
+	var c: Dictionary = rc if reck else (_gs.get("active_check") as Dictionary)
+	if c.is_empty() or String(c.get("pid", "")) != pid:
+		return {}
+	if not reck and not _ASSIST_OWNERS.has(String(c.get("owner", ""))):
+		return {}
+	var rolled: bool = bool(c.get("rolled", false))
+	if rolled and bool(c.get("passed", false)):
+		return {}  # прошла — тратить нечего
+	var state: String = _assist_state(c, p)
+	var activate: String = (
+		RelayActions.RECKONING_ACTIVATE_CARD if reck else RelayActions.ACTIVATE_CARD
+	)
+	var card: int = _card_to_play(p, c, rolled, state, activate)
+	if card >= 0:
+		return _assist_try({"action": activate, "index": card}, state)
+	if not rolled:
+		return {}
+	var failing: Array = _failing_dice(c, p)  # по убыванию грани: [0] — ближе к успеху
+	if failing.is_empty():
+		return {}
+	var add_left: int = (
+		Dice.add_charges(c.get("active_mods", []), String(c.get("skill", ""))).size()
+		- (c.get("add_targets", []) as Array).size()
+	)
+	if add_left > 0:
+		var add_action: String = RelayActions.RECKONING_ADD_DIE if reck else RelayActions.ADD_DIE
+		var add: Dictionary = _assist_try({"action": add_action, "die": int(failing[0])}, state)
+		if not add.is_empty():
+			return add
+	if int(c.get("reroll_all_allowance", 0)) - int(c.get("reroll_all_used", 0)) > 0:
+		var all_action: String = (
+			RelayActions.RECKONING_REROLL_ALL if reck else RelayActions.REROLL_ALL
+		)
+		var all: Dictionary = _assist_try({"action": all_action}, state)
+		if not all.is_empty():
+			return all
+	var currency: String = _reroll_currency(p, c)
+	if currency.is_empty():
+		return {}
+	var action: String = RelayActions.RECKONING_REROLL
+	if not reck:
+		action = (
+			RelayActions.REROLL_ENCOUNTER
+			if ["encounter", "combat"].has(String(c.get("owner", "")))
+			else RelayActions.CHECK_REROLL
+		)
+	# Перебрасываем самый слабый провальный куб.
+	var weakest: int = int(failing[failing.size() - 1])
+	return _assist_try({"action": action, "die": weakest, "currency": currency}, state)
+
+
+# Намерение помощника — если при ЭТОМ состоянии слота его ещё не пробовали. Хост
+# отклонил (состояние не сдвинулось) → повторно не шлём, бот идёт дальше по проверке.
+func _assist_try(intent: Dictionary, state: String) -> Dictionary:
+	var key: String = JSON.stringify(intent) + "|" + state
+	if _assist_tried.has(key):
+		return {}
+	if _assist_tried.size() > 512:
+		_assist_tried.clear()  # долгую партию не копим
+	_assist_tried[key] = true
+	return intent
+
+
+# Отпечаток слота проверки и ресурсов бота: меняется после любой удачной помощи.
+func _assist_state(c: Dictionary, p: Dictionary) -> String:
+	var spent: Array = []
+	var items: Array = p.get("items", [])
+	for i in range(items.size()):
+		if items[i] is Dictionary and bool((items[i] as Dictionary).get("exhausted", false)):
+			spent.append(i)
+	return (
+		JSON
+		. stringify(
+			[
+				c.get("owner", ""),
+				c.get("skill", ""),
+				c.get("context", ""),
+				c.get("rolled", false),
+				c.get("dice", []),
+				(c.get("active_mods", []) as Array).size(),
+				c.get("exhausted_cards", []),
+				c.get("add_targets", []),
+				c.get("rerolls_used", 0),
+				c.get("reroll_all_used", 0),
+				p.get(PlayerKeys.CONCENTRATION, 0),
+				p.get(PlayerKeys.CLUES, 0),
+				items.size(),
+				spent,
+			]
+		)
+	)
+
+
+# Индекс карты руки, которую стоит сыграть в эту проверку сейчас (-1 — нечего). Тот же
+# фильтр, что у веера (контекст, навык шага, тайминг до/после броска); у истощённой
+# карты работает только пассив. Расходные (сброс/оплата) до броска — лишь при малом пуле.
+func _card_to_play(
+	p: Dictionary, c: Dictionary, rolled: bool, state: String, activate: String
+) -> int:
+	var ctx: String = String(c.get("context", ""))
+	var skill: String = String(c.get("skill", ""))
+	var used: Array = c.get("exhausted_cards", [])
+	var items: Array = p.get("items", [])
+	var small_pool: bool = _pool(p, c) <= RISKY_POOL
+	for i in range(items.size()):
+		var it: Variant = items[i]
+		if not (it is Dictionary) or used.has(i):
+			continue
+		var asset: Dictionary = AssetCatalog.by_id(AssetCatalog.entry_id(it))
+		if asset.is_empty():
+			continue  # заклинания (glamour) бот пока не играет
+		var spent: bool = bool((it as Dictionary).get("exhausted", false))
+		var action_mods: Array = [] if spent else AssetCatalog.action_check_mods(asset, ctx)
+		if not _mods_fit(action_mods, asset, ctx, skill, rolled):
+			continue
+		var costly: bool = false
+		var payable: bool = true
+		for m_v: Variant in action_mods:
+			var cost: Dictionary = (m_v as Dictionary).get("cost", {})
+			if bool(cost.get("discardSelf", false)):
+				costly = true
+			if cost.has("spend"):
+				costly = true
+				var res: String = String(cost.get("spend", ""))
+				var amt: int = int(cost.get("amount", 1))
+				payable = payable and ResourceLedger.can_pay(p, res, amt, false)
+		if not payable or (costly and not rolled and not small_pool):
+			continue
+		var key: String = JSON.stringify({"action": activate, "index": i}) + "|" + state
+		if _assist_tried.has(key):
+			continue  # эту карту при этом состоянии хост уже не принял
+		return i
+	return -1
+
+
+# Подходит ли карта шагу: есть мод под навык и момент (до броска — усиление пула,
+# после — результат/перебросы/доп. кубы). action_mods пусты у истощённой карты.
+func _mods_fit(
+	action_mods: Array, asset: Dictionary, ctx: String, skill: String, rolled: bool
+) -> bool:
+	var mods: Array = action_mods.duplicate()
+	mods.append_array(AssetCatalog.passive_check_mods(asset, ctx))
+	for m_v: Variant in mods:
+		var m: Dictionary = m_v
+		var timing: bool = Dice.mod_usable_after_roll(m) if rolled else Dice.mod_is_pre_roll(m)
+		if Dice.mod_skill_ok(m, skill) and timing:
+			return true
+	return false
+
+
+# Провальные кубы проверки по отображаемым граням, по убыванию грани.
+func _failing_dice(c: Dictionary, p: Dictionary) -> Array:
+	var shown: Array = c.get("dice", c.get("base", []))
+	var thr: int = Conditions.success_threshold(
+		p.get("conditions", []), p.get("conditions_flipped", {})
+	)
+	var out: Array = []
+	for i in range(shown.size()):
+		if int(shown[i]) < thr:
+			out.append(i)
+	out.sort_custom(func(a: int, b: int) -> bool: return int(shown[a]) > int(shown[b]))
+	return out
+
+
+# Чем перебросить: бесплатный запас от карт → концентрация → улика сверх запаса.
+func _reroll_currency(p: Dictionary, c: Dictionary) -> String:
+	if int(c.get("rerolls_used", 0)) < int(c.get("reroll_allowance", 0)):
+		return "free"
+	if int(p.get(PlayerKeys.CONCENTRATION, 0)) > 0:
+		return "concentration"
+	if int(p.get(PlayerKeys.CLUES, 0)) > CLUE_RESERVE:
+		return "clue"
+	return ""
+
+
+# Пул проверки — зеркало CheckFlow.pool (навык сыщика + модификаторы + доп. кубы карт).
+func _pool(p: Dictionary, c: Dictionary) -> int:
+	if c.has("fixed_pool"):
+		return maxi(1, int(c["fixed_pool"]))
+	var skill: String = String(c.get("skill", "will"))
+	var active: Array = c.get("active_mods", [])
+	var stat: String = Dice.substituted_skill(active, skill)
+	var inv: Dictionary = Investigators.get_data(String(p.get(PlayerKeys.INVESTIGATOR, "")))
+	var base: int = int((inv.get("skills", {}) as Dictionary).get(stat, 1))
+	var mods: int = int((p.get(PlayerKeys.SKILL_MODS, {}) as Dictionary).get(stat, 0))
+	var bonus: int = Dice.pre_roll_bonus(active, skill)
+	return maxi(1, base + mods + int(c.get("modifier", 0)) + bonus)
 
 
 # ── Фаза встреч ───────────────────────────────────────────────────────────────

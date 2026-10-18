@@ -340,3 +340,98 @@ func test_rejected_action_falls_back_to_pass() -> void:
 		types.slice(0, Driver.STUCK_REPEATS), [GameActions.REST, GameActions.REST, GameActions.REST]
 	)
 	assert_eq(types[Driver.STUCK_REPEATS], GameActions.PASS, "после трёх отказов — пас")
+
+
+# ── Помощник проверки: карты и перебросы ─────────────────────────────────────
+
+
+func _will_check(extra: Dictionary = {}) -> void:
+	_gs.phase = "encounter"
+	_gs.current_encounter = {"kind": "general", "test": {"skill": "will"}}
+	var c: Dictionary = {
+		"owner": "encounter",
+		"pid": BOT,
+		"skill": "will",
+		"modifier": 0,
+		"context": "generalEncounter",
+		"rolled": false,
+		"active_mods": [],
+		"exhausted_cards": [],
+		"add_targets": [],
+		"reroll_allowance": 0,
+		"rerolls_used": 0,
+	}
+	for k: String in extra:
+		c[k] = extra[k]
+	_gs.active_check = c
+
+
+func test_bot_plays_fitting_card_before_roll() -> void:
+	# Фонарь: +1 куб в любой проверке, без цены — играется до броска.
+	_gs.players[BOT]["items"] = [{"id": "kerosene"}, {"id": "lantern"}]
+	_will_check()
+	var a: Dictionary = _act()
+	assert_eq(a["action"], RelayActions.ACTIVATE_CARD, "сначала карта, потом бросок")
+	assert_eq(int(a["index"]), 1, "Фонарь, а не Керосин (бой/Сила)")
+
+
+func test_bot_skips_unfitting_card_and_rolls() -> void:
+	# Керосин — только бой и Сила: в проверке Воли встречи не подходит.
+	_gs.players[BOT]["items"] = [{"id": "kerosene"}]
+	_will_check()
+	assert_eq(_act()["action"], RelayActions.RESOLVE_ENCOUNTER, "подходящих карт нет — бросаем")
+
+
+func test_bot_does_not_replay_card_used_this_check() -> void:
+	_gs.players[BOT]["items"] = [{"id": "lantern"}]
+	_will_check({"exhausted_cards": [0]})
+	assert_eq(_act()["action"], RelayActions.RESOLVE_ENCOUNTER, "Фонарь уже в этой проверке")
+
+
+func test_bot_rerolls_failed_die_with_concentration() -> void:
+	_gs.players[BOT]["concentration"] = 1
+	_will_check({"rolled": true, "passed": false, "base": [4, 2], "dice": [4, 2]})
+	var a: Dictionary = _act()
+	assert_eq(a["action"], RelayActions.REROLL_ENCOUNTER)
+	assert_eq(int(a["die"]), 1, "перебрасываем самый слабый провальный куб")
+	assert_eq(String(a["currency"]), "concentration")
+
+
+func test_bot_stops_rerolling_once_passed() -> void:
+	_gs.players[BOT]["concentration"] = 2
+	_will_check({"rolled": true, "passed": true, "base": [5, 2], "dice": [5, 2]})
+	assert_eq(_act()["action"], RelayActions.FINISH_ENCOUNTER, "прошла — фокус бережём")
+
+
+func test_bot_keeps_clue_reserve() -> void:
+	# Улик ровно запас — на переброс не тратит (их ждут Тайны).
+	_gs.players[BOT]["clues"] = BotDriver.CLUE_RESERVE
+	_will_check({"rolled": true, "passed": false, "base": [2], "dice": [2]})
+	assert_eq(_act()["action"], RelayActions.FINISH_ENCOUNTER)
+	_gs.players[BOT]["clues"] = BotDriver.CLUE_RESERVE + 1
+	var a: Dictionary = _act()
+	assert_eq(a["action"], RelayActions.REROLL_ENCOUNTER, "улика сверх запаса — тратит")
+	assert_eq(String(a["currency"]), "clue")
+
+
+func test_bot_does_not_retry_rejected_assist() -> void:
+	# Хост отклонил переброс (состояние не сдвинулось) — бот не залипает, а идёт дальше.
+	_gs.players[BOT]["concentration"] = 1
+	_will_check({"rolled": true, "passed": false, "base": [2], "dice": [2]})
+	assert_eq(_act()["action"], RelayActions.REROLL_ENCOUNTER)
+	assert_eq(_act()["action"], RelayActions.FINISH_ENCOUNTER, "повтор при том же состоянии — нет")
+
+
+func test_bot_assists_reckoning_slot() -> void:
+	_gs.players[BOT]["items"] = [{"id": "lantern"}]
+	_gs.players[BOT]["reckoning_check"] = {
+		"owner": "reckoning",
+		"pid": BOT,
+		"skill": "will",
+		"context": "",
+		"rolled": false,
+		"active_mods": [],
+		"exhausted_cards": [],
+	}
+	var a: Dictionary = _act()
+	assert_eq(a["action"], RelayActions.RECKONING_ACTIVATE_CARD, "в слоте Расплаты — свой маршрут")
