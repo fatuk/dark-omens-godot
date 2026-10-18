@@ -19,13 +19,34 @@ extends CanvasLayer
 const _INNER_SHADOW := preload("res://assets/shaders/inner_shadow.gdshader")
 const _ART_DIR := "res://assets/mythos/"
 
-# Разворот модалки (как макет карты Мифов): арт ~58% ширины, текст справа.
-const _PANEL_SIZE := Vector2(1240, 800)
-const _ART_W: float = 700.0
-const _ART_RADIUS: int = 14  # скругление углов рамки арта
-const _TEXT_PAD := Vector2(40, 34)  # поля текстовой колонки (по бокам, сверху/снизу)
+# Раскладка разворота — крутится в панели тюнинга (Ctrl+M, секция «МИФЫ»): static
+# var, а не const, панель правит их на живой игре и зовёт apply_tuning у открытого
+# окна (группа "mythos_modal"). Найденное значение запекается сюда же.
+static var PANEL_W: float = 1240.0
+static var PANEL_H: float = 800.0
+static var ART_W: float = 700.0  # ширина арта; текст — остаток
+static var ART_RADIUS: float = 14.0  # скругление углов рамки арта
+static var TEXT_PAD_X: float = 40.0  # поля текстовой колонки по бокам
+static var TEXT_PAD_TOP: float = 34.0
+static var TEXT_PAD_BOTTOM: float = 20.0
+static var TEXT_SEP: float = 22.0  # интервал между блоками колонки
+static var TITLE_FS: float = UIStyle.MODAL_FS_HERO
+static var FLAVOR_FS: float = UIStyle.MODAL_FS_BODY
+static var TEXT_FS: float = UIStyle.MODAL_FS_BODY
+# Внутренняя тень арта (uniform'ы inner_shadow.gdshader): доли стороны + плотность.
+static var SHADOW_ALPHA: float = 0.9
+static var SHADOW_LEFT: float = 0.08
+static var SHADOW_RIGHT: float = 0.2
+static var SHADOW_TOP: float = 0.1
+static var SHADOW_BOTTOM: float = 0.12
+static var SHADOW_CURVE: float = 1.8
 
 var _art: TextureRect
+var _art_pane: Panel
+var _art_mask: StyleBoxFlat
+var _shadow_mat: ShaderMaterial
+var _text_margin: MarginContainer
+var _text_col: VBoxContainer
 var _title_lbl: Label
 var _flavor_lbl: Label
 var _text_lbl: Label
@@ -45,6 +66,7 @@ var _review: bool = false
 
 
 func _ready() -> void:
+	add_to_group("mythos_modal")  # панель тюнинга переприменяет раскладку на лету
 	UIStyle.style_modal_panel(_panel)
 	_build()
 	GameState.state_changed.connect(_refresh)
@@ -55,7 +77,6 @@ func _ready() -> void:
 
 
 func _build() -> void:
-	_panel.custom_minimum_size = _PANEL_SIZE
 	_vbox.add_theme_constant_override("separation", 0)
 
 	var split := HBoxContainer.new()
@@ -71,21 +92,16 @@ func _build() -> void:
 	seam.color = UIStyle.MODAL_LINE_COLOR
 	split.add_child(seam)
 
-	var margin := MarginContainer.new()
-	margin.name = "TextPane"
-	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	margin.add_theme_constant_override("margin_left", int(_TEXT_PAD.x))
-	margin.add_theme_constant_override("margin_right", int(_TEXT_PAD.x))
-	margin.add_theme_constant_override("margin_top", int(_TEXT_PAD.y))
-	margin.add_theme_constant_override("margin_bottom", int(_TEXT_PAD.y * 0.6))
-	split.add_child(margin)
+	_text_margin = MarginContainer.new()
+	_text_margin.name = "TextPane"
+	_text_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	split.add_child(_text_margin)
 	var col := VBoxContainer.new()
 	col.name = "Column"
-	col.add_theme_constant_override("separation", 22)
-	margin.add_child(col)
+	_text_margin.add_child(col)
+	_text_col = col
 
 	_title_lbl = UIStyle.modal_title("", UIColors.DANGER)
-	_title_lbl.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HERO)
 	col.add_child(_title_lbl)
 
 	_flavor_lbl = _centered_label("Flavor", UIStyle.MODAL_FS_BODY, UIColors.TEXT)
@@ -122,6 +138,31 @@ func _build() -> void:
 	_next_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_next_btn.pressed.connect(_on_next)
 	col.add_child(_next_btn)
+	apply_tuning()
+
+
+## Применить настраиваемые размеры/тень к собранному окну. Зовёт и панель тюнинга
+## (группа "mythos_modal") — правка видна сразу, без пересборки.
+func apply_tuning() -> void:
+	if not is_instance_valid(_art_pane):
+		return
+	_panel.custom_minimum_size = Vector2(PANEL_W, PANEL_H)
+	_art_pane.custom_minimum_size = Vector2(ART_W, 0)
+	_art_mask.set_corner_radius_all(int(ART_RADIUS))
+	_text_margin.add_theme_constant_override("margin_left", int(TEXT_PAD_X))
+	_text_margin.add_theme_constant_override("margin_right", int(TEXT_PAD_X))
+	_text_margin.add_theme_constant_override("margin_top", int(TEXT_PAD_TOP))
+	_text_margin.add_theme_constant_override("margin_bottom", int(TEXT_PAD_BOTTOM))
+	_text_col.add_theme_constant_override("separation", int(TEXT_SEP))
+	_title_lbl.add_theme_font_size_override("font_size", int(TITLE_FS))
+	_flavor_lbl.add_theme_font_size_override("font_size", int(FLAVOR_FS))
+	_text_lbl.add_theme_font_size_override("font_size", int(TEXT_FS))
+	_shadow_mat.set_shader_parameter("shadow_color", Color(0, 0, 0, SHADOW_ALPHA))
+	_shadow_mat.set_shader_parameter("size_left", SHADOW_LEFT)
+	_shadow_mat.set_shader_parameter("size_right", SHADOW_RIGHT)
+	_shadow_mat.set_shader_parameter("size_top", SHADOW_TOP)
+	_shadow_mat.set_shader_parameter("size_bottom", SHADOW_BOTTOM)
+	_shadow_mat.set_shader_parameter("curve", SHADOW_CURVE)
 
 
 # Левая половина разворота: арт во всю высоту (обрезка «по покрытию») и поверх —
@@ -130,11 +171,11 @@ func _build() -> void:
 func _build_art_pane() -> Control:
 	var pane := Panel.new()
 	pane.name = "ArtPane"
-	pane.custom_minimum_size = Vector2(_ART_W, 0)
+	_art_pane = pane
 	var mask := StyleBoxFlat.new()
 	mask.bg_color = Color(0.045, 0.045, 0.04)  # в тон фона модалки — видно, пока арта нет
-	mask.set_corner_radius_all(_ART_RADIUS)
 	mask.anti_aliasing = true
+	_art_mask = mask
 	pane.add_theme_stylebox_override("panel", mask)
 	pane.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
 	_art = TextureRect.new()
@@ -150,6 +191,7 @@ func _build_art_pane() -> Control:
 	var mat := ShaderMaterial.new()
 	mat.shader = _INNER_SHADOW
 	shadow.material = mat
+	_shadow_mat = mat
 	pane.add_child(shadow)
 	return pane
 

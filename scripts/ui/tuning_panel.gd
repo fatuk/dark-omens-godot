@@ -14,6 +14,8 @@ extends CanvasLayer
 @onready var _root: Control = $Root
 @onready var _vbox: VBoxContainer = %VBox
 
+const _MythosModal := preload("res://scripts/ui/mythos_modal.gd")
+
 # Кэш: key -> {slider: HSlider, val: Label, default: float, set: Callable}.
 var _rows: Dictionary = {}
 
@@ -1135,6 +1137,160 @@ func _build_specs() -> Array:
 			"default": UIStyle.MODAL_POP,
 			"set": _set_modal_pop
 		},
+		{"section": "МИФЫ (модалка карты)"},
+		{
+			"key": "mythos_panel_w",
+			"label": "Окно: ширина",
+			"min": 800.0,
+			"max": 1800.0,
+			"step": 10.0,
+			"default": _MythosModal.PANEL_W,
+			"set": _set_mythos.bind("PANEL_W")
+		},
+		{
+			"key": "mythos_panel_h",
+			"label": "Окно: высота",
+			"min": 500.0,
+			"max": 1000.0,
+			"step": 10.0,
+			"default": _MythosModal.PANEL_H,
+			"set": _set_mythos.bind("PANEL_H")
+		},
+		{
+			"key": "mythos_art_w",
+			"label": "Арт: ширина",
+			"min": 300.0,
+			"max": 1200.0,
+			"step": 10.0,
+			"default": _MythosModal.ART_W,
+			"set": _set_mythos.bind("ART_W")
+		},
+		{
+			"key": "mythos_art_radius",
+			"label": "Арт: радиус углов",
+			"min": 0.0,
+			"max": 60.0,
+			"step": 1.0,
+			"default": _MythosModal.ART_RADIUS,
+			"set": _set_mythos.bind("ART_RADIUS")
+		},
+		{
+			"key": "mythos_pad_x",
+			"label": "Текст: поля по бокам",
+			"min": 0.0,
+			"max": 120.0,
+			"step": 1.0,
+			"default": _MythosModal.TEXT_PAD_X,
+			"set": _set_mythos.bind("TEXT_PAD_X")
+		},
+		{
+			"key": "mythos_pad_top",
+			"label": "Текст: поле сверху",
+			"min": 0.0,
+			"max": 120.0,
+			"step": 1.0,
+			"default": _MythosModal.TEXT_PAD_TOP,
+			"set": _set_mythos.bind("TEXT_PAD_TOP")
+		},
+		{
+			"key": "mythos_pad_bottom",
+			"label": "Текст: поле снизу",
+			"min": 0.0,
+			"max": 120.0,
+			"step": 1.0,
+			"default": _MythosModal.TEXT_PAD_BOTTOM,
+			"set": _set_mythos.bind("TEXT_PAD_BOTTOM")
+		},
+		{
+			"key": "mythos_text_sep",
+			"label": "Текст: интервал блоков",
+			"min": 0.0,
+			"max": 60.0,
+			"step": 1.0,
+			"default": _MythosModal.TEXT_SEP,
+			"set": _set_mythos.bind("TEXT_SEP")
+		},
+		{
+			"key": "mythos_title_fs",
+			"label": "Шрифт: заголовок",
+			"min": 16.0,
+			"max": 64.0,
+			"step": 1.0,
+			"default": _MythosModal.TITLE_FS,
+			"set": _set_mythos.bind("TITLE_FS")
+		},
+		{
+			"key": "mythos_flavor_fs",
+			"label": "Шрифт: flavor",
+			"min": 12.0,
+			"max": 40.0,
+			"step": 1.0,
+			"default": _MythosModal.FLAVOR_FS,
+			"set": _set_mythos.bind("FLAVOR_FS")
+		},
+		{
+			"key": "mythos_text_fs",
+			"label": "Шрифт: правила",
+			"min": 12.0,
+			"max": 40.0,
+			"step": 1.0,
+			"default": _MythosModal.TEXT_FS,
+			"set": _set_mythos.bind("TEXT_FS")
+		},
+		{
+			"key": "mythos_shadow_alpha",
+			"label": "Тень: плотность",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": _MythosModal.SHADOW_ALPHA,
+			"set": _set_mythos.bind("SHADOW_ALPHA")
+		},
+		{
+			"key": "mythos_shadow_left",
+			"label": "Тень: слева",
+			"min": 0.0,
+			"max": 0.5,
+			"step": 0.01,
+			"default": _MythosModal.SHADOW_LEFT,
+			"set": _set_mythos.bind("SHADOW_LEFT")
+		},
+		{
+			"key": "mythos_shadow_right",
+			"label": "Тень: справа",
+			"min": 0.0,
+			"max": 0.5,
+			"step": 0.01,
+			"default": _MythosModal.SHADOW_RIGHT,
+			"set": _set_mythos.bind("SHADOW_RIGHT")
+		},
+		{
+			"key": "mythos_shadow_top",
+			"label": "Тень: сверху",
+			"min": 0.0,
+			"max": 0.5,
+			"step": 0.01,
+			"default": _MythosModal.SHADOW_TOP,
+			"set": _set_mythos.bind("SHADOW_TOP")
+		},
+		{
+			"key": "mythos_shadow_bottom",
+			"label": "Тень: снизу",
+			"min": 0.0,
+			"max": 0.5,
+			"step": 0.01,
+			"default": _MythosModal.SHADOW_BOTTOM,
+			"set": _set_mythos.bind("SHADOW_BOTTOM")
+		},
+		{
+			"key": "mythos_shadow_curve",
+			"label": "Тень: кривая",
+			"min": 0.2,
+			"max": 4.0,
+			"step": 0.05,
+			"default": _MythosModal.SHADOW_CURVE,
+			"set": _set_mythos.bind("SHADOW_CURVE")
+		},
 		{"section": "ПОДСКАЗКИ (Армитедж; открыть — консоль `guide`)"},
 		{
 			"key": "guide_frame_x",
@@ -2034,6 +2190,49 @@ func _set_modal_fade_out(v: float) -> void:
 
 func _set_modal_pop(v: float) -> void:
 	UIStyle.MODAL_POP = v
+
+
+# Модалка Мифов: все параметры — static var скрипта; открытое окно переприменяет их.
+# bind передаёт имя поля последним аргументом (после значения слайдера). Явный match:
+# set() по имени на классе (не экземпляре) GDScript не позволяет.
+func _set_mythos(v: float, field: String) -> void:
+	match field:
+		"PANEL_W":
+			_MythosModal.PANEL_W = v
+		"PANEL_H":
+			_MythosModal.PANEL_H = v
+		"ART_W":
+			_MythosModal.ART_W = v
+		"ART_RADIUS":
+			_MythosModal.ART_RADIUS = v
+		"TEXT_PAD_X":
+			_MythosModal.TEXT_PAD_X = v
+		"TEXT_PAD_TOP":
+			_MythosModal.TEXT_PAD_TOP = v
+		"TEXT_PAD_BOTTOM":
+			_MythosModal.TEXT_PAD_BOTTOM = v
+		"TEXT_SEP":
+			_MythosModal.TEXT_SEP = v
+		"TITLE_FS":
+			_MythosModal.TITLE_FS = v
+		"FLAVOR_FS":
+			_MythosModal.FLAVOR_FS = v
+		"TEXT_FS":
+			_MythosModal.TEXT_FS = v
+		"SHADOW_ALPHA":
+			_MythosModal.SHADOW_ALPHA = v
+		"SHADOW_LEFT":
+			_MythosModal.SHADOW_LEFT = v
+		"SHADOW_RIGHT":
+			_MythosModal.SHADOW_RIGHT = v
+		"SHADOW_TOP":
+			_MythosModal.SHADOW_TOP = v
+		"SHADOW_BOTTOM":
+			_MythosModal.SHADOW_BOTTOM = v
+		"SHADOW_CURVE":
+			_MythosModal.SHADOW_CURVE = v
+	if is_inside_tree():
+		get_tree().call_group("mythos_modal", "apply_tuning")
 
 
 # ── Карта: панорамирование и зум ──────────────────────────────────────────────
