@@ -418,12 +418,6 @@ func _node(card: Dictionary) -> Dictionary:
 	return branches.get(String(card.get("branch", "success")), {})
 
 
-# Проверка встречи (owner=encounter) — из неё берём только факт «сыграно» и исход.
-func _check() -> Dictionary:
-	var c: Dictionary = GameState.active_check
-	return c if String(c.get("owner", "")) == "encounter" else {}
-
-
 func _refresh() -> void:
 	var pid: String = _watching_pid()
 	var card: Dictionary = GameState.current_encounter
@@ -445,14 +439,12 @@ func _refresh() -> void:
 		return
 
 	var node: Dictionary = _node(card)
-	var chk: Dictionary = _check()
-	# Исход известен, когда проверка брошена ЛИБО встреча уже зафиксирована: при
-	# фиксации движок снимает active_check (исход переезжает в current_encounter.passed),
-	# а у карт без проверки (выбор, торг, «можете задержаться») её не было вовсе —
-	# раньше такая телеграмма так и оставалась без исхода.
-	var rolled: bool = bool(chk.get("rolled", false))
-	var settled: bool = rolled or bool(card.get("committed", false))
-	var passed: bool = bool(chk.get("passed", false)) if rolled else bool(card.get("passed", true))
+	# Исход — только ОКОНЧАТЕЛЬНЫЙ: когда встреча зафиксирована («Завершить»). После
+	# броска игрок ещё перебрасывает (жетоны, карты, бот — тоже), и промежуточные
+	# «провал → успех» наблюдателю не показываем. Итог лежит в current_encounter.passed
+	# (active_check при фиксации снят; у карт без проверки — успех).
+	var settled: bool = bool(card.get("committed", false))
+	var passed: bool = bool(card.get("passed", true))
 	# Перерисовываем только при смене содержимого (синк прилетает часто).
 	var sig: String = (
 		"%s|%d|%s|%s" % [telegram, int(card.get("stage", 0)), str(settled), str(passed)]

@@ -1,6 +1,7 @@
 ## Телеграмма наблюдателя (encounter_watch_modal): чужая встреча на бланке. Время
-## отправки — «ЧЧ:ММ» читающего, код связи — «7Y-19-KA», после броска несбывшийся
-## исход гаснет, крестик прячет до следующей встречи, часы переворачиваются.
+## отправки — «ЧЧ:ММ» читающего, код связи — «7Y-19-KA», исход — только окончательный
+## (после «Завершить», без промежуточных бросков и перебросов) и только выпавший,
+## крестик прячет до следующей встречи, часы переворачиваются.
 extends GutTest
 
 const _Modal := preload("res://scripts/ui/encounter_watch_modal.gd")
@@ -72,12 +73,22 @@ func test_not_shown_for_my_own_encounter() -> void:
 	assert_false(_shown(), "свою встречу показывает обычная модалка")
 
 
-func test_outcome_hidden_until_rolled_then_only_the_rolled_one() -> void:
+# Встреча зафиксирована («Завершить»): итог — в current_encounter.passed.
+func _settle(passed: bool) -> void:
+	GameState.current_encounter["committed"] = true
+	GameState.current_encounter["passed"] = passed
+
+
+func test_outcome_hidden_until_settled_then_only_the_final_one() -> void:
 	var block: Control = _m.find_child("Outcome", true, false)
 	assert_false(block.visible, "до броска исходы не раскрываем")
 	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": false}
 	_m.call("_refresh")
-	assert_true(block.visible, "бросок сыгран — исход виден")
+	assert_false(block.visible, "бросок есть, но игрок ещё может перебросить — молчим")
+	GameState.active_check = {}
+	_settle(false)
+	_m.call("_refresh")
+	assert_true(block.visible, "встреча зафиксирована — исход виден")
 	var rt: RichTextLabel = block.find_child("Text", true, false)
 	assert_string_contains(rt.text, "плохо", "выпал провал — текст провала")
 	assert_false(rt.text.contains("хорошо"), "текст успеха не показываем")
@@ -100,19 +111,20 @@ func test_test_less_card_shows_success_once_committed() -> void:
 	assert_string_contains(rt.text, "хорошо", "без проверки — исход успеха")
 
 
-func test_outcome_survives_check_cleared_on_commit() -> void:
-	# При фиксации движок снимает active_check — исход берём из current_encounter.passed.
+func test_intermediate_rerolls_are_not_shown() -> void:
+	# Провал → переброс → успех: наблюдатель видит только итог после «Завершить».
 	var block: Control = _m.find_child("Outcome", true, false)
 	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": false}
 	_m.call("_refresh")
-	assert_true(block.visible)
-	GameState.active_check = {}
-	GameState.current_encounter["committed"] = true
-	GameState.current_encounter["passed"] = false
+	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": true}
 	_m.call("_refresh")
-	assert_true(block.visible, "проверку сняли — исход остался")
+	assert_false(block.visible, "промежуточные броски не показываем")
+	GameState.active_check = {}
+	_settle(true)
+	_m.call("_refresh")
 	var rt: RichTextLabel = block.find_child("Text", true, false)
-	assert_string_contains(rt.text, "плохо", "тот же исход — провал")
+	assert_string_contains(rt.text, "хорошо", "итог — успех")
+	assert_false(rt.text.contains("плохо"), "промежуточного провала нет")
 
 
 func test_time_and_code_are_bold() -> void:
@@ -129,7 +141,7 @@ func test_close_hides_until_next_encounter() -> void:
 	(_m.find_child("Close", true, false) as Button).pressed.emit()
 	await wait_seconds(0.3)
 	assert_false(_shown(), "закрыли крестиком")
-	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": true}
+	_settle(true)
 	_m.call("_refresh")
 	assert_false(_shown(), "та же встреча — не всплывает снова")
 	GameState.current_encounter = _card("Другая встреча")
@@ -148,7 +160,7 @@ func test_height_follows_content() -> void:
 	var sheet: Control = _m.find_child("Sheet", true, false)
 	var before: float = sheet.size.y
 	assert_lt(before, 2048.0, "короткая встреча — бланк ниже нарисованного")
-	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": true}
+	_settle(true)
 	_m.call("_refresh")
 	await wait_seconds(1.0)
 	assert_gt(sheet.size.y, before, "появился исход — бланк вырос")
@@ -156,7 +168,7 @@ func test_height_follows_content() -> void:
 
 func test_outcome_reveal_is_animated() -> void:
 	await wait_process_frames(2)
-	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": false}
+	_settle(false)
 	_m.call("_refresh")
 	await wait_process_frames(2)
 	var block: Control = _m.find_child("Outcome", true, false)
@@ -201,7 +213,7 @@ func test_stub_without_text_shows_stakes_and_effects() -> void:
 	var txt: Label = _m.find_child("Text", true, false)
 	assert_string_contains(txt.text, tr("ENC_REWARD"), "ставки: что даст успех")
 	assert_string_contains(txt.text, tr("ENC_PENALTY"), "и чем грозит провал")
-	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": false}
+	_settle(false)
 	_m.call("_refresh")
 	var rt: RichTextLabel = _m.find_child("Outcome", true, false).find_child("Text", true, false)
 	var lose: String = EffectManifest.describe({"do": "loseSanity", "amount": 1})
@@ -253,7 +265,7 @@ func test_gate_setup_text_follows_branch() -> void:
 
 func test_second_stage_shows_setup_branch_and_outcome() -> void:
 	GameState.current_encounter = _gate(1, "failure")
-	GameState.active_check = {"owner": "encounter", "rolled": true, "passed": false}
+	_settle(false)
 	_m.call("_refresh")
 	var setup: Label = _m.find_child("Setup", true, false)
 	assert_true(setup.visible, "завязка видна")
