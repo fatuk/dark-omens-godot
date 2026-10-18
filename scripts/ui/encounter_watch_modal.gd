@@ -504,6 +504,8 @@ func _main_or_stakes(node: Dictionary) -> String:
 
 # Текст исхода; без флейвора — что именно произошло по эффектам ветки.
 func _outcome_or_effects(node: Dictionary, passed: bool) -> String:
+	if passed and EncounterFlow.declined(GameState.current_encounter):
+		return tr("ENCOUNTER_DECLINED")  # предложение не взято — «отдаёт вам…» было бы враньём
 	var txt: String = String(node.get("successText" if passed else "failureText", "")).strip_edges()
 	return txt if not txt.is_empty() else _eff(node.get("onSuccess" if passed else "onFailure", []))
 

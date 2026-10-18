@@ -167,6 +167,9 @@ func _ready() -> void:
 	_outcome.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	# Прячут исход из многих мест — вместо правки каждого схлопываем обойму по сигналу.
 	_outcome.visibility_changed.connect(_on_outcome_visibility)
+	# Текст исхода сменился у уже показанного лейбла (дописалось «Получено: …», другая
+	# встреча без проверки) — обойма подстраивает высоту, иначе хвост текста обрезан.
+	_outcome.minimum_size_changed.connect(_sync_outcome_height)
 	# Верхняя распорка (EXPAND): блок «текст + нижняя группа» прижат к НИЗУ карточки.
 	# Нижняя группа (проверка · кубы · кнопка) стоит у низа НЕПОДВИЖНО; при длинном
 	# тексте распорка сжимается и ТЕКСТ поднимается вверх (заходя на верхний арт), а не
@@ -296,6 +299,19 @@ func _play_outcome_in() -> void:
 		. set_trans(Tween.TRANS_CUBIC)
 		. set_ease(Tween.EASE_OUT)
 	)
+	_outcome_tween.chain().tween_callback(_sync_outcome_height)  # текст сменился за рост
+
+
+# Обойма исхода — по текущему тексту (снап). В разгар роста высоту ведёт твин.
+func _sync_outcome_height() -> void:
+	if _outcome_slot == null or not _outcome.visible:
+		return
+	if _outcome_tween != null and _outcome_tween.is_running():
+		return
+	var h: float = _outcome_height()
+	if not is_equal_approx(_outcome_slot.custom_minimum_size.y, h):
+		_outcome_slot.custom_minimum_size.y = h
+		_outcome.offset_bottom = h
 
 
 # Естественная высота текста исхода при текущей ширине колонки.
@@ -311,6 +327,10 @@ func _on_outcome_visibility() -> void:
 		if _outcome_tween != null and _outcome_tween.is_valid():
 			_outcome_tween.kill()
 		_outcome_slot.custom_minimum_size.y = 0.0
+	else:
+		# Показан без проявления (встреча без проверки, ветка врат без теста) — обойма
+		# схлопнута или держит высоту прошлого исхода: подогнать под текст.
+		_sync_outcome_height.call_deferred()
 
 
 # Гаснет весь старый узел, включая уже показанный исход; проявляется — только
@@ -682,12 +702,42 @@ func _show_auto(card: Dictionary) -> void:
 	_main_text.text = _main_or_stakes(card)
 	_roll_btn.visible = false
 	_hide_dice()
-	_outcome.text = _outcome_text(card, true)
-	_outcome.add_theme_color_override("font_color", UIColors.SUCCESS)
+	var offers: Array = EncounterFlow.offer_nodes(card.get("onSuccess", []))
+	if offers.is_empty():
+		_outcome.text = _outcome_text(card, true)
+		_outcome.add_theme_color_override("font_color", UIColors.SUCCESS)
+	else:
+		# «Можете …»: флейвор успеха описывает взятое предложение — до решения
+		# показываем само предложение с ценой; платить нечем — так и говорим.
+		var can: bool = EncounterFlow.can_afford_offer(offers, GameState.my_player())
+		_outcome.text = _offer_text(offers, can)
+		_outcome.add_theme_color_override("font_color", UIColors.ACCENT if can else UIColors.MUTED)
 	_outcome.visible = true
+	if not _outcome_shown:
+		_play_outcome_in()  # обойма исхода растёт под текст (иначе — прошлая высота)
 	_outcome_shown = true
 	_finish_btn.text = "BTN_FINISH_BIG"
 	_finish_btn.visible = true
+
+
+# Предложение «можете …»: «Можно: <эффект> (<цена>)»; нечем платить — приписка.
+func _offer_text(offers: Array, can: bool) -> String:
+	var parts := PackedStringArray()
+	for n_v: Variant in offers:
+		var n: Dictionary = (n_v as Dictionary).duplicate()
+		n.erase("optional")
+		var s: String = EffectManifest.describe(n)
+		var cost: Dictionary = n.get("cost", {})
+		var spend: String = String(cost.get("spend", ""))
+		if not spend.is_empty():
+			var c: String = EffectManifest.describe(
+				{"do": "spend" + spend.capitalize(), "amount": int(cost.get("amount", 1))}
+			)
+			if not c.is_empty():
+				s += " (%s)" % c
+		parts.append(s)
+	var out: String = tr("ENCOUNTER_OFFER") % ", ".join(parts)
+	return out if can else "%s\n%s" % [out, tr("ENCOUNTER_OFFER_UNAFFORDABLE")]
 
 
 func _show_card(card: Dictionary) -> void:
@@ -1056,6 +1106,8 @@ func _main_or_stakes(src: Dictionary) -> String:
 # Текст исхода: художественный success/failureText, либо описание применённых
 # эффектов, если текста нет (механический режим); пустой исход → «идём дальше».
 func _outcome_text(src: Dictionary, passed: bool) -> String:
+	if passed and EncounterFlow.declined(GameState.current_encounter):
+		return tr("ENCOUNTER_DECLINED")  # предложение не взято — флейвор «отдаёт вам…» врёт
 	var txt: String = String(src.get("successText" if passed else "failureText", "")).strip_edges()
 	var arr: Array = src.get("onSuccess" if passed else "onFailure", [])
 	var out: String

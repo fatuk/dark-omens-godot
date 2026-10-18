@@ -470,6 +470,31 @@ func host_apply_resolve(pid: String) -> bool:
 	return true
 
 
+## Предложение «можете …» в эффектах исхода: узел optional (часто с ценой —
+## «потратьте 1 улику: артефакт»). Флейвор успеха у таких карт описывает ВЗЯТОЕ
+## предложение, поэтому до решения его не показываем, а при отказе — подменяем.
+static func offer_nodes(effects: Array) -> Array:
+	var out: Array = []
+	for n_v: Variant in effects:
+		if n_v is Dictionary and bool((n_v as Dictionary).get("optional", false)):
+			out.append(n_v)
+	return out
+
+
+## Хватает ли сыщику на ХОТЯ БЫ одно предложение (цена — как в EffectRunner).
+static func can_afford_offer(effects: Array, player: Dictionary) -> bool:
+	for n_v: Variant in offer_nodes(effects):
+		if _EffectRunner._can_afford(n_v, player):
+			return true
+	return false
+
+
+## Предложение не взято (пропуск / платить нечем): хост ставит флаг при коммите —
+## исход тогда «ни с чем», а не флейвор успеха.
+static func declined(enc: Dictionary) -> bool:
+	return bool(enc.get("declined", false))
+
+
 ## Завязка ветвящейся встречи (gate/mystery) для показа на второй стадии: текст
 ## stage1 и исход первой проверки, приведший в ветку («…и оно шевелится. Куча
 ## поворачивается к вам.»). На первой стадии и у плоских встреч — "".
@@ -1037,10 +1062,16 @@ func _run_effect_slot(effects: Array, pid: String, slot: String) -> bool:
 			enc["pending_choice"] = pending  # модалка покажет выбор; ход замирает
 		return false
 	# Слот завершён — фиксируем мутации игрока, поле и логи.
-	_gs.players[pid] = dup
+	var board: Array = res.get("board", [])
 	if slot == "main":
 		enc["_clues_gained"] = int(dup.get("clues", 0)) - clues_before
-	var board: Array = res.get("board", [])
+		# Предложение «можете …» не взято: ни сыщик, ни поле не изменились.
+		enc["declined"] = (
+			not offer_nodes(effects).is_empty()
+			and board.is_empty()
+			and dup == (_gs.players[pid] as Dictionary)
+		)
+	_gs.players[pid] = dup
 	for i in range(board.size()):
 		var bnode: Dictionary = board[i]
 		bnode["_origin_loc"] = origin_loc  # closeGate после move — врата исходной клетки

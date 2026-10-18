@@ -974,6 +974,8 @@ static func outcome_hold(enc: Dictionary) -> float:
 		)
 	var key: String = "successText" if bool(enc.get("passed", true)) else "failureText"
 	var chars: int = String(node.get(key, "")).strip_edges().length()
+	if EncounterFlow.declined(enc):
+		chars = 0  # вместо флейвора — короткое «ни с чем»
 	return clampf(
 		chars / BotDriver.READ_CHARS_PER_SEC, ENCOUNTER_OUTCOME_HOLD, ENCOUNTER_OUTCOME_HOLD_MAX
 	)

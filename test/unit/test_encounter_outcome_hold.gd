@@ -59,3 +59,65 @@ func test_hold_follows_outcome_text_length() -> void:
 		PhaseController.ENCOUNTER_OUTCOME_HOLD_MAX,
 		"длинный — потолок"
 	)
+
+
+# «Находка в борозде»: без проверки, «можете потратить 1 улику: артефакт».
+func _offer_card() -> Dictionary:
+	return {
+		"kind": "general",
+		"name": "Находка в борозде",
+		"successText": "…и он с облегчением отдаёт вам находку.",
+		"onSuccess":
+		[
+			{
+				"do": "gainArtifact",
+				"optional": true,
+				"cost": {"spend": "clue", "amount": 1},
+			}
+		],
+	}
+
+
+func test_offer_unaffordable_is_declined() -> void:
+	# Улик нет — предложение отсечено ценой, ничего не взято: исход «ни с чем».
+	GameState.players["a"]["clues"] = 0
+	GameState.current_encounter = _offer_card()
+	assert_true(GameState._phase.host_apply_finish_encounter("a"), "встреча завершена")
+	assert_true(EncounterFlow.declined(GameState.current_encounter), "платить нечем — отказ")
+	GameState.phase = Phases.MYTHOS
+	await wait_seconds(0.5)
+
+
+func test_offer_skipped_is_declined() -> void:
+	GameState.players["a"]["clues"] = 1
+	GameState.current_encounter = _offer_card()
+	GameState._phase.host_apply_finish_encounter("a")
+	assert_false(
+		(GameState.current_encounter.get("pending_choice", {}) as Dictionary).is_empty(),
+		"улика есть — выбор «взять / пропустить»"
+	)
+	GameState._phase.host_apply_effect_choice("a", 1)  # пропустить
+	assert_true(bool(GameState.current_encounter.get("committed", false)))
+	assert_true(EncounterFlow.declined(GameState.current_encounter), "пропустил — отказ")
+	assert_eq(int(GameState.players["a"]["clues"]), 1, "улика не потрачена")
+	GameState.phase = Phases.MYTHOS
+	await wait_seconds(0.5)
+
+
+func test_offer_taken_is_not_declined() -> void:
+	GameState.players["a"]["clues"] = 1
+	GameState.current_encounter = _offer_card()
+	GameState._phase.host_apply_finish_encounter("a")
+	GameState._phase.host_apply_effect_choice("a", 0)  # заплатить
+	assert_eq(int(GameState.players["a"]["clues"]), 0, "улика потрачена")
+	assert_false(EncounterFlow.declined(GameState.current_encounter), "взял — флейвор успеха")
+	GameState.phase = Phases.MYTHOS
+	await wait_seconds(0.5)
+
+
+func test_offer_affordability() -> void:
+	var offers: Array = EncounterFlow.offer_nodes(_offer_card()["onSuccess"])
+	assert_eq(offers.size(), 1, "optional-узел — предложение")
+	assert_false(EncounterFlow.can_afford_offer(offers, {"clues": 0}))
+	assert_true(EncounterFlow.can_afford_offer(offers, {"clues": 2}))
+	assert_true(EncounterFlow.offer_nodes([{"do": "gainClue"}]).is_empty(), "без optional — нет")

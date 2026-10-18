@@ -685,6 +685,9 @@ ENCOUNTER_ACCEPT,Принять исход,Accept the outcome
 ENCOUNTER_GATE_TRIAL,Испытание Иного мира — пройдите проверку.,An Other World ordeal — make the check.
 ENCOUNTER_MYSTERY_TRIAL,Расследование на месте Тайны — пройдите проверку.,Investigating the Mystery site — make the check.
 ENCOUNTER_PROCEED,Вы идёте дальше.,You press on.
+ENCOUNTER_DECLINED,Вы уходите ни с чем.,You leave empty-handed.
+ENCOUNTER_OFFER,Предложение: %s,Offer: %s
+ENCOUNTER_OFFER_UNAFFORDABLE,Платить нечем — вы уходите ни с чем.,Nothing to pay with — you leave empty-handed.
 ENCOUNTER_CHOOSE,Сделайте выбор,Make a choice
 ENCOUNTER_CHOOSE_TARGET,Кому передать?,Give to whom?
 ENCOUNTER_CHOOSE_MONSTER,Какого монстра сбросить?,Discard which monster?
