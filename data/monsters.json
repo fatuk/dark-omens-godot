@@ -69,6 +69,7 @@
 	{
 		"id": "child_of_the_goat",
 		"season": "core",
+		"resist": "magical",
 		"nameKey": "MON_CHILD_OF_THE_GOAT_NAME",
 		"toughness": 1,
 		"horror": {
@@ -87,9 +88,17 @@
 		},
 		"onReckoning": [
 			{
-				"do": "loseHealth",
-				"amount": 1,
-				"target": "each"
+				"dieRoll": [
+					{
+						"on": "1-2",
+						"then": [
+							{
+								"do": "advanceDoom",
+								"amount": 1
+							}
+						]
+					}
+				]
 			}
 		]
 	},
