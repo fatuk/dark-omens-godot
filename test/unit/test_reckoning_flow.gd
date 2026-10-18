@@ -45,6 +45,7 @@ class MockGS:
 	var locations: Array = []
 	var mythos_decision: Dictionary = {}
 	var reckoning_active: bool = false
+	var reckoning_roll: Dictionary = {}  # показ броска глобальной Расплаты
 	var _target: RefCounted
 	var _cond := StubCond.new()
 	var _rumor: RumorFlow
@@ -162,6 +163,37 @@ func test_mythos_card_self_discards() -> void:
 	assert_eq(_gs.doom, 2, "обе карты применили эффект (+1 каждая)")
 	assert_eq((_gs.mythos_in_play as Array).size(), 1, "карта A сброшена, B осталась")
 	assert_eq(String((_gs.mythos_in_play[0] as Dictionary).get("name", "")), "B")
+
+
+func test_monster_reckoning_roll_shown_before_effect() -> void:
+	# «Дитя Козла»: бросок 1 куба, 1–2 — Рок +1. Бросок публикуется всем (кто бросил,
+	# грани) и держится ROLL_SHOW — эффект применяется только ПОСЛЕ показа.
+	var show: float = ReckoningFlow.ROLL_SHOW
+	ReckoningFlow.ROLL_SHOW = 0.3
+	_gs.monsters = {"loc": [{"id": "child_of_the_goat"}]}
+	_player("p1")
+	var run: Callable = func() -> void: await _r.run_reckoning("")
+	run.call()
+	await wait_frames(1)
+	var ev: Dictionary = _gs.reckoning_roll
+	assert_eq(String(ev.get("source", "")), "monster", "показ броска монстра")
+	assert_eq(String(ev.get("id", "")), "child_of_the_goat", "кто бросил")
+	assert_eq((ev.get("dice", []) as Array).size(), 1, "один куб")
+	assert_eq(_gs.doom, 0, "пока бросок на экране — Рок не тронут")
+	var die: int = int((ev.get("dice", [0]) as Array)[0])
+	await wait_seconds(0.5)
+	assert_eq(_gs.doom, 1 if die <= 2 else 0, "после показа — эффект по выпавшей грани")
+	assert_true(_gs.reckoning_roll.is_empty(), "показ снят")
+	ReckoningFlow.ROLL_SHOW = show
+
+
+func test_monster_reckoning_without_roll_not_shown() -> void:
+	# Расплата без кубов (Птичий раб: −1 рассудок) — окна броска нет, без задержки.
+	_gs.monsters = {"loc": [{"id": "avian_thrall"}]}
+	_player("p1")
+	await _r.run_reckoning("")
+	assert_true(_gs.reckoning_roll.is_empty(), "бросать нечего — нечего и показывать")
+	assert_eq(int(_gs.players["p1"]["sanity"]), 4)
 
 
 func test_collect_reckoning_cards() -> void:

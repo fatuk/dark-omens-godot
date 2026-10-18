@@ -74,6 +74,8 @@ var last_cast_result: Dictionary = {}
 # name, text}}. Заполняет ConditionFlow._flip_condition; показывает владельцу pid,
 # он же закрывает (DISMISS_RECKONING).
 var reckoning_results: Dictionary = {}
+# Бросок в глобальной Расплате (монстр / карта Мифов) — показ всем (ReckoningFlow._show_roll).
+var reckoning_roll: Dictionary = {}
 
 # Идёт ли ПАРАЛЛЕЛЬНЫЙ тир сыщиков Расплаты (все резолвят одновременно). true между
 # стартом и финишем всех; для оверлея «ждём других» у закончивших. Хост ставит/снимает
@@ -339,6 +341,7 @@ const _SYNC_FIELDS: Array[String] = [
 	"last_cast_result",
 	"reckoning_results",
 	"reckoning_active",
+	"reckoning_roll",
 	"current_mythos",
 	"mythos_in_play",
 	"mythos_decision",
@@ -554,6 +557,7 @@ func start_game(players_init: Array) -> void:
 	last_cast_result = {}
 	reckoning_results = {}
 	reckoning_active = false
+	reckoning_roll = {}
 	# campaign / campaign_pending НЕ сбрасываем — библия могла быть прогрета
 	# заранее в лобби (prewarm_campaign). Сброс прошлой игры — reset_pregame().
 	for p: Dictionary in players_init:
@@ -1445,6 +1449,7 @@ func _clear_pregame_fields() -> void:
 	last_cast_result = {}
 	reckoning_results = {}
 	reckoning_active = false
+	reckoning_roll = {}
 	current_mythos = {}
 	mythos_in_play = []
 	mythos_decision = {}

@@ -15,11 +15,18 @@ extends RefCounted
 const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 const _CARD_DELAY := 0.3  # пауза между картами Расплаты сыщика (под анимацию)
 
+## Бросок в Расплате монстра/карты Мифов («Дитя Козла: 1–2 — Рок +1») — тихий dieRoll,
+## которого раньше никто не видел. Хост публикует его всем (GameState.reckoning_roll:
+## кто бросил, грани, что последует) и держит ROLL_SHOW секунд — ПОТОМ применяет эффект.
+## Крутится в коде; 0 — без показа (тесты).
+static var ROLL_SHOW: float = 3.2
+
 signal player_reckoned  # сыщик закончил свою Расплату (для гейта завершения всех)
 
 var _gs: Node
 var _reck_total: int = 0  # сколько сыщиков в параллельном тире
 var _reck_done: int = 0  # сколько уже закончили
+var _roll_nonce: int = 0  # метка показа броска (клиент перестраивает окно на новой)
 
 
 func _init(gs: Node) -> void:
@@ -32,14 +39,14 @@ func run_reckoning(scope: String = "") -> void:
 		return
 	GameConsole.log("[Расплата] начало (%s)" % ("full" if scope.is_empty() else scope))
 	if scope == "mythosInPlay":
-		_reckon_mythos_in_play()
+		await _reckon_mythos_in_play()
 		_gs.broadcast_sync()
 		_gs.emit_changed()
 		return
 	_reckon_ancient()
 	_reckon_mystery()
-	_reckon_mythos_in_play()
-	_reckon_monsters()
+	await _reckon_mythos_in_play()
+	await _reckon_monsters()
 	_gs.broadcast_sync()
 	_gs.emit_changed()
 	await _reckon_investigators()
@@ -74,7 +81,7 @@ func _reckon_mythos_in_play() -> void:
 			_gs._rumor.reckon(card)  # Слух: снять жетон / Рок за врата. Остаётся в игре.
 			keep.append(card)
 			continue
-		if _run_card_reckoning(card):
+		if await _run_card_reckoning(card):
 			GameConsole.log("[Расплата] карта Мифов «%s» сброшена" % String(card.get("name", "?")))
 		else:
 			keep.append(card)
@@ -95,6 +102,12 @@ func _run_card_reckoning(card: Dictionary) -> bool:
 	if not (res.get("pending", {}) as Dictionary).is_empty():
 		GameConsole.warn("[Расплата] выбор в Расплате карты Мифов не поддержан — пропуск")
 		return false
+	var src: Dictionary = {
+		"source": "mythos",
+		"name": String(card.get("name", "")),
+		"sourceId": String(card.get("sourceId", "")),
+	}
+	await _show_roll(src, flow, res.get("board", []))
 	var discard: bool = false
 	for node_v: Variant in res.get("board", []):
 		if String((node_v as Dictionary).get("do", "")) == "discardCard":
@@ -113,13 +126,18 @@ func _reckon_monsters() -> void:
 		for inst_v: Variant in _gs.monsters[loc_v] as Array:
 			var mid: String = String((inst_v as Dictionary).get("id", inst_v))
 			# Культист: Расплата с листа Древнего (monster_def), остальные — из каталога.
-			_apply_global(_gs.monster_def(mid).get("onReckoning", []), "Монстр %s" % mid)
+			var def: Dictionary = _gs.monster_def(mid)
+			var src: Dictionary = {
+				"source": "monster", "id": mid, "nameKey": String(def.get("nameKey", mid))
+			}
+			await _apply_global(def.get("onReckoning", []), "Монстр %s" % mid, src)
 
 
 # Прогон глобальной (не привязанной к сыщику) onReckoning-программы. interactive:true,
 # чтобы цели target:each уходили в board (TargetResolver), а не на dummy-игрока. choice
 # в глобальной Расплате не поддержан (некому выбирать) — pend → лог-предупреждение.
-func _apply_global(prog: Array, label: String) -> void:
+# source (монстр) — был бросок → сначала показать его всем, потом применить эффекты.
+func _apply_global(prog: Array, label: String, source: Dictionary = {}) -> void:
 	if (prog as Array).is_empty():
 		return
 	var flow: Dictionary = {
@@ -131,10 +149,37 @@ func _apply_global(prog: Array, label: String) -> void:
 	if not (res.get("pending", {}) as Dictionary).is_empty():
 		GameConsole.warn("[Расплата:%s] выбор в глобальной Расплате не поддержан — пропуск" % label)
 		return
+	if not source.is_empty():
+		await _show_roll(source, flow, res.get("board", []))
 	for node_v: Variant in res.get("board", []):
 		_gs.apply_board_effect(node_v as Dictionary)
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[Расплата:%s] %s" % [label, String(l_v)])
+
+
+# Показать всем бросок глобальной Расплаты (были кубы в flow.rolls) и подержать ROLL_SHOW:
+# GameState.reckoning_roll = {source, id/nameKey | name/sourceId, dice, effects, nonce}.
+# effects — board-узлы, что последуют (клиент описывает их сам, на своём языке).
+# Кубов не было / показ выключен / _gs вне дерева — ничего не ждём.
+func _show_roll(source: Dictionary, flow: Dictionary, board: Array) -> void:
+	var dice: Array = []
+	for rec_v: Variant in (flow.get("rolls", {}) as Dictionary).values():
+		for d_v: Variant in rec_v as Array:
+			dice.append(int(d_v))
+	if dice.is_empty() or ROLL_SHOW <= 0.0 or not _gs.is_inside_tree():
+		return
+	_roll_nonce += 1
+	var ev: Dictionary = source.duplicate()
+	ev["dice"] = dice
+	ev["effects"] = board.duplicate(true)
+	ev["nonce"] = _roll_nonce
+	_gs.set("reckoning_roll", ev)
+	_gs.broadcast_sync()
+	_gs.emit_changed()
+	await _gs.get_tree().create_timer(ROLL_SHOW).timeout
+	_gs.set("reckoning_roll", {})
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Сколько подключённых живых сыщиков на каждой клетке: {loc: n}.

@@ -130,6 +130,7 @@ func _ready() -> void:
 	_build_encounter_watch_modal()
 	_build_doom_runes()
 	_build_gains_modal()
+	_build_reckoning_roll_modal()
 	_build_trade_offer_modal()
 	_build_chat_composer()
 	_build_hand_carousel()
@@ -459,6 +460,13 @@ func _build_gains_modal() -> void:
 	var g: CanvasLayer = load("res://scripts/ui/gains_modal.gd").new()
 	g.name = "GainsModal"
 	add_child(g)
+
+
+# Бросок в Расплате монстра/карты Мифов: кто бросил (портрет + имя), что выпало, исход.
+func _build_reckoning_roll_modal() -> void:
+	var r: CanvasLayer = load("res://scripts/ui/reckoning_roll_modal.gd").new()
+	r.name = "ReckoningRollModal"
+	add_child(r)
 
 
 # Руны Рока: слой поверх всего, проступает по мере роста безысходности.
