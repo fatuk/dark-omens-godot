@@ -24,8 +24,8 @@ const _ART_DIR := "res://assets/mythos/"
 # окна (группа "mythos_modal"). Найденное значение запекается сюда же.
 static var PANEL_W: float = 1240.0
 static var PANEL_H: float = 800.0
-static var ART_W: float = 700.0  # ширина арта; текст — остаток
-static var ART_RADIUS: float = 14.0  # скругление углов рамки арта
+static var ART_W: float = 710.0  # ширина арта; текст — остаток
+static var ART_RADIUS: float = 46.0  # скругление углов рамки арта
 static var TEXT_PAD_X: float = 40.0  # поля текстовой колонки по бокам
 static var TEXT_PAD_TOP: float = 34.0
 static var TEXT_PAD_BOTTOM: float = 20.0
@@ -34,7 +34,7 @@ static var TITLE_FS: float = UIStyle.MODAL_FS_HERO
 static var FLAVOR_FS: float = UIStyle.MODAL_FS_BODY
 static var TEXT_FS: float = UIStyle.MODAL_FS_BODY
 # Внутренняя тень арта (uniform'ы inner_shadow.gdshader): доли стороны + плотность.
-static var SHADOW_ALPHA: float = 0.9
+static var SHADOW_ALPHA: float = 0.2
 static var SHADOW_LEFT: float = 0.08
 static var SHADOW_RIGHT: float = 0.2
 static var SHADOW_TOP: float = 0.1
