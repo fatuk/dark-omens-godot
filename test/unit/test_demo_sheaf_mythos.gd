@@ -63,6 +63,8 @@ func test_stage_one_plays_as_scripted() -> void:
 	for i: int in range(3):
 		names.append(String((deck[i] as Dictionary).get("name", "")))
 	assert_eq(names, ["Круг", "Скот встал", "Письмо"], "стадия 1 — в фиксированном порядке")
+	# id карточки в CMS доезжает до игры — по нему модалка ищет арт Мифа.
+	assert_eq(String((deck[0] as Dictionary).get("sourceId", "")), "demo-sheaf-mythos-01")
 	assert_true(GameState.gates.is_empty(), "старт без врат: первый круг откроет Миф")
 
 	# 1. «Круг»: врата из закреплённого жетона — Средний Запад, синие; из них культист.
