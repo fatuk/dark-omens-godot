@@ -1359,6 +1359,13 @@ func _make_chat_bubble(text: String) -> Node2D:
 	var b := Node2D.new()
 	b.name = "ChatBubble"
 	b.z_index = 9  # над пинами сыщиков (z=7)
+	# Свежий снимок экрана ПЕРЕД облачком: darken-шейдер читает фон (screen_tex) и пишет
+	# весь свой прямоугольник (blend_disabled). Без копии все облачка читали один снимок,
+	# снятый до первого из них, — второе затирало первое ровной прямоугольной гранью.
+	var copy := BackBufferCopy.new()
+	copy.name = "BackBuffer"
+	copy.copy_mode = BackBufferCopy.COPY_MODE_VIEWPORT  # rect в Compatibility даёт чёрный
+	b.add_child(copy)
 	var bg := Sprite2D.new()
 	bg.name = "Cloud"
 	bg.texture = _CHAT_BALLOON  # centered=true по умолчанию (вокруг origin)
@@ -1376,7 +1383,10 @@ func _make_chat_bubble(text: String) -> Node2D:
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	b.add_child(lbl)  # поверх фона (порядок детей)
+	# Текст — на слой выше ВСЕХ облачков (z 9+1): облачко соседа (darken) не ложится на
+	# буквы при пересечении — облака сливаются в одно пятно, текст поверх.
+	lbl.z_index = 1
+	b.add_child(lbl)
 	return b  # размер — в _fit_chat_bubble ПОСЛЕ add_child (иначе get_minimum_size пустой)
 
 
