@@ -298,6 +298,11 @@ func test_bot_waits_while_human_reads_its_encounter() -> void:
 	_d._tick()
 	assert_eq(_out.size(), 1, "прочитано — бот бросает")
 	assert_eq(_out[0]["msg"]["action"], RelayActions.RESOLVE_ENCOUNTER)
+	# После броска исход наблюдателю ещё не виден (только после «Завершить»; время на
+	# него даёт пауза хоста) — бот не ждёт чтения исхода перед «Завершить».
+	_gs.current_encounter["failureText"] = "Ж".repeat(200)
+	_gs.active_check = {"owner": "encounter", "rolled": true, "passed": false}
+	assert_eq(_d.watched_text(BOT), text, "в окне — по-прежнему текст встречи")
 	# Бой наблюдателю не показывается — ждать нечего.
 	_gs.current_encounter = {"kind": "combat", "mainText": text}
 	assert_eq(_d.watched_text(BOT), "")

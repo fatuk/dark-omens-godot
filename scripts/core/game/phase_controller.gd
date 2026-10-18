@@ -22,8 +22,11 @@ const REST_HEAL_SANITY: int = 1
 static var TURN_DELAY: float = 1.0
 # Пауза после «Завершить» встречу перед передачей хода: зрители (телеграмма) получают
 # встречу уже ЗАФИКСИРОВАННОЙ и успевают прочитать исход. Без неё фиксация и передача
-# хода уходили одной рассылкой — исход не доходил до зрителей вовсе.
+# хода уходили одной рассылкой — исход не доходил до зрителей вовсе. Длина — по тексту
+# исхода (скорость чтения та же, что у ботов: BotDriver.READ_CHARS_PER_SEC), в рамках
+# [ENCOUNTER_OUTCOME_HOLD, ENCOUNTER_OUTCOME_HOLD_MAX].
 static var ENCOUNTER_OUTCOME_HOLD: float = 2.5
+static var ENCOUNTER_OUTCOME_HOLD_MAX: float = 12.0
 static var TRAVEL_ARRIVE_DELAY: float = 2.0  # пауза после приезда фишки перед передачей хода
 static var TRAVEL_ANIM_TIMEOUT: float = 12.0  # сторож: клиент не отчитался о конце анимации
 
@@ -940,12 +943,13 @@ func _commit_and_advance(pid: String) -> bool:
 	_gs.players[pid]["encounter_done"] = true
 	GameConsole.log("[Game] %s завершил встречу" % _gs.name_of(pid))
 
-	if ENCOUNTER_OUTCOME_HOLD > 0.0 and _gs.is_inside_tree():
+	var hold: float = outcome_hold(_gs.current_encounter)
+	if hold > 0.0 and _gs.is_inside_tree():
 		# Сначала — зафиксированная встреча (исход в current_encounter.passed), ход
 		# уходит после паузы. В тестах (_gs вне дерева) — сразу, как раньше.
 		_gs.broadcast_sync()
 		_gs.emit_changed()
-		_advance_encounter_after_hold(pid)
+		_advance_encounter_after_hold(pid, hold)
 		return true
 
 	advance_encounter_turn()
@@ -955,11 +959,31 @@ func _commit_and_advance(pid: String) -> bool:
 	return true
 
 
-# Передать ход встреч после паузы ENCOUNTER_OUTCOME_HOLD — если за паузу ход не ушёл
-# иначе (выход игрока, смена фазы).
-func _advance_encounter_after_hold(pid: String) -> void:
+## Сколько держать зафиксированную встречу перед передачей хода: время чтения текста
+## исхода (выпавшей ветки), в рамках [ENCOUNTER_OUTCOME_HOLD, ENCOUNTER_OUTCOME_HOLD_MAX].
+static func outcome_hold(enc: Dictionary) -> float:
+	var node: Dictionary = enc
+	var kind: String = String(enc.get("kind", ""))
+	if kind == "gate" or kind == "mystery":
+		node = (
+			enc.get("stage1", {})
+			if int(enc.get("stage", 0)) <= 0
+			else (enc.get("branches", {}) as Dictionary).get(
+				String(enc.get("branch", "success")), {}
+			)
+		)
+	var key: String = "successText" if bool(enc.get("passed", true)) else "failureText"
+	var chars: int = String(node.get(key, "")).strip_edges().length()
+	return clampf(
+		chars / BotDriver.READ_CHARS_PER_SEC, ENCOUNTER_OUTCOME_HOLD, ENCOUNTER_OUTCOME_HOLD_MAX
+	)
+
+
+# Передать ход встреч после паузы hold — если за паузу ход не ушёл иначе (выход
+# игрока, смена фазы).
+func _advance_encounter_after_hold(pid: String, hold: float) -> void:
 	var round_at: int = int(_gs.round_num)
-	await _gs.get_tree().create_timer(ENCOUNTER_OUTCOME_HOLD).timeout
+	await _gs.get_tree().create_timer(hold).timeout
 	if (
 		_gs.phase != Phases.ENCOUNTER
 		or int(_gs.round_num) != round_at

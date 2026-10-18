@@ -44,3 +44,18 @@ func test_finished_encounter_stays_visible_before_turn_passes() -> void:
 	GameState.phase = Phases.MYTHOS
 	await wait_seconds(0.5)
 	assert_eq(GameState.current_pid(), "a", "после смены фазы ход не передан")
+
+
+func test_hold_follows_outcome_text_length() -> void:
+	PhaseController.ENCOUNTER_OUTCOME_HOLD = 2.5
+	var enc: Dictionary = {"kind": "general", "passed": false, "successText": "Да."}
+	enc["failureText"] = "Ж".repeat(90)  # 90 знаков при 18/с — 5 с
+	assert_almost_eq(PhaseController.outcome_hold(enc), 5.0, 0.01, "читаем выпавший исход")
+	enc["passed"] = true
+	assert_eq(PhaseController.outcome_hold(enc), 2.5, "короткий — минимум")
+	enc["successText"] = "Ж".repeat(1000)
+	assert_eq(
+		PhaseController.outcome_hold(enc),
+		PhaseController.ENCOUNTER_OUTCOME_HOLD_MAX,
+		"длинный — потолок"
+	)

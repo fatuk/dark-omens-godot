@@ -489,8 +489,10 @@ func _note_reading() -> void:
 		_read_since = Time.get_ticks_msec() / 1000.0
 
 
-## Новый текст, который видит наблюдатель встречи бота (зеркало encounter_watch_modal):
-## до броска — текст встречи, после — текст исхода. Бой окно не показывает — "".
+## Текст, который видит наблюдатель встречи бота до «Завершить» (зеркало
+## encounter_watch_modal): только текст встречи — исход телеграмма показывает лишь
+## после фиксации, и время на его чтение даёт пауза хоста перед передачей хода
+## (PhaseController.outcome_hold). Бой окно не показывает — "".
 func watched_text(bid: String) -> String:
 	if _gs == null or String(_gs.get("phase")) != Phases.ENCOUNTER:
 		return ""
@@ -511,10 +513,6 @@ func watched_text(bid: String) -> String:
 				String(card.get("branch", "success")), {}
 			)
 		)
-	var ac: Dictionary = _gs.get("active_check")
-	if String(ac.get("owner", "")) == "encounter" and bool(ac.get("rolled", false)):
-		var key: String = "successText" if bool(ac.get("passed", false)) else "failureText"
-		return String(node.get(key, "")).strip_edges()
 	return String(node.get("mainText", "")).strip_edges()
 
 
