@@ -2,75 +2,9 @@
 
 [ext_resource type="Script" uid="uid://cogbadw2s2es3" path="res://scripts/ui/pause_menu.gd" id="1_script"]
 
+; Экран паузы строится кодом (pause_menu.gd): меню слева, сводка партии справа.
 [node name="PauseMenu" type="CanvasLayer"]
 process_mode = 3
 layer = 100
 visible = false
 script = ExtResource("1_script")
-
-[node name="Root" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-
-[node name="Backdrop" type="ColorRect" parent="Root"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 0
-color = Color(0, 0, 0, 0.65)
-
-[node name="Center" type="CenterContainer" parent="Root"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 1
-
-; ── Главная панель ─────────────────────────────────────────────────────────
-[node name="MainPanel" type="PanelContainer" parent="Root/Center"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 0)
-layout_mode = 2
-
-[node name="VBox" type="VBoxContainer" parent="Root/Center/MainPanel"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="Title" type="Label" parent="Root/Center/MainPanel/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "PAUSE_TITLE"
-
-[node name="Sep1" type="HSeparator" parent="Root/Center/MainPanel/VBox"]
-layout_mode = 2
-
-[node name="ContinueBtn" type="Button" parent="Root/Center/MainPanel/VBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "PAUSE_BTN_RESUME"
-
-[node name="SettingsBtn" type="Button" parent="Root/Center/MainPanel/VBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "PAUSE_BTN_SETTINGS"
-
-[node name="Sep2" type="HSeparator" parent="Root/Center/MainPanel/VBox"]
-layout_mode = 2
-
-[node name="MenuBtn" type="Button" parent="Root/Center/MainPanel/VBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "PAUSE_BTN_MAIN_MENU"
-
-[node name="QuitBtn" type="Button" parent="Root/Center/MainPanel/VBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "PAUSE_BTN_QUIT_GAME"

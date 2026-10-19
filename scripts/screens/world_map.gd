@@ -130,6 +130,7 @@ func _ready() -> void:
 	_build_ghost_bar()
 	_build_encounter_watch_modal()
 	_build_doom_runes()
+	_build_menu_button()
 	_build_gains_modal()
 	_build_reckoning_roll_modal()
 	_build_trade_offer_modal()
@@ -472,6 +473,42 @@ func _build_reckoning_roll_modal() -> void:
 
 # Руны Рока: слой поверх всего, проступает по мере роста безысходности.
 # Пока в ручном режиме — параметры крутятся в панели тюнинга (Ctrl+M).
+# «Гамбургер» в левом верхнем углу — тот же экран паузы, что по Escape. Слой над
+# рамкой экрана (75), под модалками (80+). Пока три полосы кодом — иконку пришлют.
+func _build_menu_button() -> void:
+	var layer := CanvasLayer.new()
+	layer.name = "MenuButtonLayer"
+	layer.layer = 76
+	add_child(layer)
+	var btn := Button.new()
+	btn.name = "MenuButton"
+	btn.flat = true
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.tooltip_text = "PAUSE_MENU_BTN_TIP"
+	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	btn.position = Vector2(44, 40)
+	btn.custom_minimum_size = Vector2(52, 44)
+	btn.size = btn.custom_minimum_size
+	var bars := VBoxContainer.new()
+	bars.name = "Bars"
+	bars.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bars.alignment = BoxContainer.ALIGNMENT_CENTER
+	bars.add_theme_constant_override("separation", 8)
+	bars.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for i in range(3):
+		var bar := ColorRect.new()
+		bar.name = "Bar%d" % i
+		bar.color = UIColors.ACCENT
+		bar.custom_minimum_size = Vector2(0, 4)
+		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bars.add_child(bar)
+	btn.add_child(bars)
+	btn.mouse_entered.connect(func() -> void: bars.modulate = UIColors.HIGHLIGHT)
+	btn.mouse_exited.connect(func() -> void: bars.modulate = Color.WHITE)
+	btn.pressed.connect(func() -> void: get_node("/root/PauseMenu").call("toggle"))
+	layer.add_child(btn)
+
+
 func _build_doom_runes() -> void:
 	var r: CanvasLayer = load("res://scripts/ui/doom_runes.gd").new()
 	r.name = "DoomRunes"

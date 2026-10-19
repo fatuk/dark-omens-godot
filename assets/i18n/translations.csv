@@ -63,6 +63,15 @@ CONN_UNCHARTED,путь,uncharted
 PAUSE_RESUME,Продолжить,Resume
 PAUSE_SETTINGS,Настройки,Settings
 PAUSE_LEAVE,Выйти из игры,Leave game
+PAUSE_MAIN_MENU,В главное меню,Main menu
+PAUSE_MESSAGES,ПОСЛАНИЯ,MESSAGES
+PAUSE_TASKS,ТЕКУЩИЕ ЗАДАЧИ,CURRENT TASKS
+PAUSE_TIME,ВРЕМЯ ИГРЫ,PLAY TIME
+PAUSE_NO_MESSAGES,Пока тихо.,All quiet so far.
+PAUSE_RUMOR,Слух,Rumor
+PAUSE_ROUND_FMT,Раунд %d · %s,Round %d · %s
+PAUSE_DOOM_FMT,Рок: %d из %d,Doom: %d of %d
+PAUSE_MENU_BTN_TIP,Меню (Esc),Menu (Esc)
 ,,
 MAIN_PLAY,Играть,Play
 MAIN_SETTINGS,Настройки,Settings
