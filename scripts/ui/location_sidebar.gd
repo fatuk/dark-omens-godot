@@ -91,6 +91,10 @@ var _items_list: VBoxContainer = null
 
 # Улика на локации — строка «иконка + имя улики».
 const _CLUE_ICON: Texture2D = preload("res://assets/map/clue-icon.png")
+# Сыщики на локации: круглый портрет в кольце (как аватар в панели сыщика), уменьшенный.
+const _INV_RING: Texture2D = preload("res://assets/investigator-panel/avatar-round-frame.png")
+const _INV_D := 72.0  # диаметр портрета сыщика в списке
+static var _circle_shader: Shader = null  # общая круглая маска (InvestigatorPanel)
 const _CLUE_ICON_PX := 36.0
 
 # Превью монстров локации — квадратные портреты (как карта в модалке боя).
@@ -567,7 +571,7 @@ func _refresh_items() -> void:
 		_populate_items(_loc_id)
 
 
-## Список объектов локации: Монстры (со статами) → Улики → Слухи.
+## Список объектов локации: Сыщики → Монстры (со статами) → Улики → Слухи.
 func _populate_items(loc_id: String) -> void:
 	if not is_instance_valid(_items_list):
 		return
@@ -579,11 +583,16 @@ func _populate_items(loc_id: String) -> void:
 	var clues: int = (ents as Array).count("clue")
 	var rumors: int = (ents as Array).count("rumor")
 
-	var empty: bool = mons.is_empty() and clues == 0 and rumors == 0
+	var invs: Array = _investigators_at(loc_id)
+
+	var empty: bool = invs.is_empty() and mons.is_empty() and clues == 0 and rumors == 0
 	_items_hdr.visible = not empty
 	_items_list.visible = not empty
 	if empty:
 		return
+
+	for pid_v: Variant in invs:
+		_items_list.add_child(_make_investigator_row(String(pid_v)))
 
 	if not mons.is_empty():
 		# Без заголовка «Монстры — N»: портреты сами говорят, что это монстры.
@@ -615,6 +624,83 @@ func _populate_items(loc_id: String) -> void:
 			_items_list.add_child(_make_clue_row(clue_name, i))
 	if rumors > 0:
 		_items_list.add_child(_make_category_header("SIDEBAR_CAT_RUMORS", rumors))
+
+
+# Сыщики на клетке (id игроков в порядке хода). Тень (погибший) тоже стоит на поле —
+# показываем её ч/б портретом.
+func _investigators_at(loc_id: String) -> Array:
+	var out: Array = []
+	for pid_v: Variant in GameState.turn_order:
+		var p: Dictionary = GameState.players.get(String(pid_v), {})
+		if (
+			String(p.get("location", "")) == loc_id
+			and not String(p.get("investigator", "")).is_empty()
+		):
+			out.append(String(pid_v))
+	return out
+
+
+# Строка сыщика: круглый портрет в кольце, имя сыщика, ник игрока под ним.
+func _make_investigator_row(pid: String) -> HBoxContainer:
+	var p: Dictionary = GameState.players.get(pid, {})
+	var inv: String = String(p.get("investigator", ""))
+	var row := HBoxContainer.new()
+	row.name = "Investigator_" + pid
+	row.add_theme_constant_override("separation", 12)
+
+	var holder := Control.new()
+	holder.name = "Avatar"
+	holder.custom_minimum_size = Vector2(_INV_D, _INV_D)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(holder)
+	var portrait := TextureRect.new()
+	portrait.name = "Portrait"
+	var path: String = "res://assets/investigators/%s.png" % inv
+	portrait.texture = load(path) as Texture2D if ResourceLoader.exists(path) else null
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	portrait.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if _circle_shader == null:
+		_circle_shader = Shader.new()
+		_circle_shader.code = InvestigatorPanel._CIRCLE_MASK_SHADER
+	var mat := ShaderMaterial.new()
+	mat.shader = _circle_shader
+	mat.set_shader_parameter("dead", 1.0 if bool(p.get("dead", false)) else 0.0)
+	portrait.material = mat
+	holder.add_child(portrait)
+	var ring := TextureRect.new()
+	ring.name = "Ring"
+	ring.texture = _INV_RING
+	ring.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	ring.stretch_mode = TextureRect.STRETCH_SCALE
+	ring.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(ring)
+
+	var text := VBoxContainer.new()
+	text.name = "Text"
+	text.alignment = BoxContainer.ALIGNMENT_CENTER
+	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text.add_theme_constant_override("separation", 0)
+	row.add_child(text)
+	var inv_lbl := Label.new()
+	inv_lbl.name = "Investigator"
+	inv_lbl.text = Investigators.display_name(inv)
+	inv_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	inv_lbl.add_theme_font_size_override("font_size", 19)
+	inv_lbl.add_theme_color_override("font_color", UIColors.ACCENT)
+	text.add_child(inv_lbl)
+	var nick := Label.new()
+	nick.name = "Player"
+	nick.text = String(p.get("name", pid))
+	nick.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED  # ник — не ключ перевода
+	nick.add_theme_font_size_override("font_size", 15)
+	nick.add_theme_color_override("font_color", UIColors.MUTED)
+	text.add_child(nick)
+	return row
 
 
 func _make_clue_row(clue_name: String, index: int) -> HBoxContainer:
