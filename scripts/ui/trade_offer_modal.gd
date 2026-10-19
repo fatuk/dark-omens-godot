@@ -11,6 +11,7 @@ var _root: ColorRect
 var _panel: PanelContainer
 var _box: VBoxContainer
 var _sig: String = ""  # что уже показано — не пересобираем на каждом синке
+var _swap: CheckBox  # обмен по связи «Мозга ми-го»: партнёр может поменяться местами
 
 
 func _ready() -> void:
@@ -96,6 +97,17 @@ func _fill(o: Dictionary, role: String) -> void:
 	_section("TRADE_OFFER_YOU_GET", get_lines)
 	_section("TRADE_OFFER_YOU_GIVE", give_away)
 
+	# «Мозг ми-го в банке»: партнёр может переместиться на клетку инициатора (тот уйдёт
+	# на покинутую) — решение партнёра, независимо от того, принял ли он обмен.
+	_swap = null
+	if role == "to" and bool(o.get("link", false)):
+		_swap = CheckBox.new()
+		_swap.name = "SwapPlaces"
+		_swap.text = tr("TRADE_SWAP_PLACES") % GameState.name_of(from)
+		_swap.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_swap.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+		_box.add_child(_swap)
+
 	var row := HBoxContainer.new()
 	row.name = "Buttons"
 	row.add_theme_constant_override("separation", 12)
@@ -170,6 +182,7 @@ func _button(key: String, color: Color, accept: bool) -> Button:
 	b.pressed.connect(
 		func() -> void:
 			UIStyle.modal_set_visible(_root, _panel, false)  # не ждём синка
-			GameState.act(RelayActions.TRADE_RESPOND, {"accept": accept})
+			var swap: bool = _swap != null and _swap.button_pressed
+			GameState.act(RelayActions.TRADE_RESPOND, {"accept": accept, "swap": swap})
 	)
 	return b

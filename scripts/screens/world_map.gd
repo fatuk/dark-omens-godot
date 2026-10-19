@@ -115,6 +115,7 @@ func _ready() -> void:
 
 	# Привязка GamePanel к глобальному GameState
 	GameState.state_changed.connect(_refresh_game_panel)
+	GameState.state_changed.connect(_watch_trade_link)
 	GameState.state_changed.connect(_refresh_investigators)
 	GameState.state_changed.connect(_refresh_gates)
 	GameState.state_changed.connect(_refresh_entities)
@@ -1085,6 +1086,18 @@ func _on_shop_requested() -> void:
 
 
 const _TRADE_MODAL_SCRIPT := preload("res://scripts/ui/trade_modal.gd")
+
+# «Мозг ми-го в банке» сыгран — связь с напарником появилась: сразу открыть обмен
+# (иначе игрок искал бы кнопку «Обмен» на своей клетке, где напарника нет).
+var _seen_trade_link: String = ""
+
+
+func _watch_trade_link() -> void:
+	var link: String = String(GameState.my_player().get("trade_link", ""))
+	if link != _seen_trade_link:
+		_seen_trade_link = link
+		if not link.is_empty() and GameState.trade_offer.is_empty():
+			_TRADE_MODAL_SCRIPT.open_for(self)
 
 
 func _on_trade_requested() -> void:

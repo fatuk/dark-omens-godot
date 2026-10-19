@@ -76,7 +76,77 @@
 			"magical",
 			"relic"
 		],
-		"effect": {}
+		"effect": {
+			"action": [
+				{
+					"choice": [
+						{
+							"text": "SKILL_TOKEN_SPEND_STRENGTH",
+							"cost": {
+								"skillToken": "strength"
+							},
+							"group": [
+								{
+									"do": "improveSkill",
+									"skill": "choice"
+								}
+							]
+						},
+						{
+							"text": "SKILL_TOKEN_SPEND_LORE",
+							"cost": {
+								"skillToken": "lore"
+							},
+							"group": [
+								{
+									"do": "improveSkill",
+									"skill": "choice"
+								}
+							]
+						},
+						{
+							"text": "SKILL_TOKEN_SPEND_WILL",
+							"cost": {
+								"skillToken": "will"
+							},
+							"group": [
+								{
+									"do": "improveSkill",
+									"skill": "choice"
+								}
+							]
+						},
+						{
+							"text": "SKILL_TOKEN_SPEND_INFLUENCE",
+							"cost": {
+								"skillToken": "influence"
+							},
+							"group": [
+								{
+									"do": "improveSkill",
+									"skill": "choice"
+								}
+							]
+						},
+						{
+							"text": "SKILL_TOKEN_SPEND_OBSERVATION",
+							"cost": {
+								"skillToken": "observation"
+							},
+							"group": [
+								{
+									"do": "improveSkill",
+									"skill": "choice"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "true_magick",
@@ -1105,7 +1175,17 @@
 			"magical",
 			"teamwork"
 		],
-		"effect": {}
+		"effect": {
+			"action": [
+				{
+					"do": "tradeLink",
+					"target": "chosenInvestigator"
+				}
+			]
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "lightning_gun",

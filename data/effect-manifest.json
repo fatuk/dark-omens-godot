@@ -1306,6 +1306,12 @@
       "repeatable": true,
       "describeKey": "VERB_GIVE_CLUE"
     },
+    "tradeLink": {
+      "kind": "give",
+      "params": [],
+      "targets": "oneInvestigator",
+      "describeKey": "VERB_TRADE_LINK"
+    },
     "substituteSkill": {
       "kind": "player",
       "passive": true,

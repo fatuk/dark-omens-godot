@@ -67,6 +67,11 @@ func can_play(pid: String, index: int) -> bool:
 	var asset: Dictionary = asset_at(pid, index)
 	if not AssetCatalog.has_standalone_action(asset):
 		return false
+	# Платить нечем («потратьте жетон навыка», а жетонов нет) — действие пустое.
+	if not _EffectRunner.program_affordable(
+		AssetCatalog.standalone_action(asset), _gs.players[pid]
+	):
+		return false
 	# Карта бьёт по монстру, а монстров на поле нет — играть некого: действие
 	# сгорело бы впустую, а карта выглядела бы доступной.
 	if _needs_monster(AssetCatalog.standalone_action(asset)):

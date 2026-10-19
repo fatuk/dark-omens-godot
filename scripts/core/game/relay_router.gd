@@ -118,7 +118,9 @@ func _act_trade_offer(d: Dictionary) -> void:
 
 
 func _act_trade_respond(d: Dictionary) -> void:
-	_phase.host_apply_trade_response(String(d.get("pid", "")), bool(d.get("accept", false)))
+	_phase.host_apply_trade_response(
+		String(d.get("pid", "")), bool(d.get("accept", false)), bool(d.get("swap", false))
+	)
 
 
 func _act_trade_cancel(d: Dictionary) -> void:

@@ -26,9 +26,13 @@ func _ready() -> void:
 	_root.visible = false
 
 
-# Со-локационные подключённые напарники (user_id), кроме себя.
+# Со-локационные подключённые напарники (user_id), кроме себя. Связь «Мозга ми-го»
+# (trade_link) — обмен именно с ним, где бы он ни был.
 func _allies() -> Array:
 	var me: Dictionary = GameState.my_player()
+	var link: String = String(me.get("trade_link", ""))
+	if not link.is_empty() and not bool(GameState.players.get(link, {}).get("dead", false)):
+		return [link]
 	var my_loc: String = String(me.get("location", ""))
 	var my_id: String = String(me.get("user_id", ""))
 	var out: Array = []

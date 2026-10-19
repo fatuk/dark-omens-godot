@@ -121,3 +121,31 @@ func test_offer_affordability() -> void:
 	assert_false(EncounterFlow.can_afford_offer(offers, {"clues": 0}))
 	assert_true(EncounterFlow.can_afford_offer(offers, {"clues": 2}))
 	assert_true(EncounterFlow.offer_nodes([{"do": "gainClue"}]).is_empty(), "без optional — нет")
+
+
+func test_linked_trade_remote_without_action_and_swap() -> void:
+	# «Мозг ми-го в банке»: связь a→b; они на разных клетках, действий у a не осталось.
+	GameState.phase = Phases.ACTION
+	GameState.players["a"]["location"] = "arkham"
+	GameState.players["b"]["location"] = "tokyo"
+	GameState.players["a"]["actions_left"] = 0
+	GameState.players["a"]["items"] = [{"id": "18_derringer", "exhausted": false}]
+	GameState.players["a"]["trade_link"] = "b"
+	var b_had: int = (GameState.players["b"].get("items", []) as Array).size()
+	var offer: Dictionary = {"partner": "b", "give": [0], "take": [], "giveClues": 0}
+	assert_true(GameState._phase.host_apply_trade_offer("a", offer), "обмен на расстоянии")
+	assert_true(bool(GameState.trade_offer.get("link", false)), "партнёру — галка мест")
+	assert_true(GameState._phase.host_apply_trade_response("b", true, true))
+	assert_eq((GameState.players["b"]["items"] as Array).size(), b_had + 1, "предмет у партнёра")
+	assert_eq(String(GameState.players["b"]["location"]), "arkham", "партнёр пришёл к a")
+	assert_eq(String(GameState.players["a"]["location"]), "tokyo", "a — на его место")
+	assert_false(GameState.players["a"].has("trade_link"), "связь отыграна")
+
+
+func test_trade_without_link_still_needs_same_space() -> void:
+	GameState.phase = Phases.ACTION
+	GameState.players["a"]["location"] = "arkham"
+	GameState.players["b"]["location"] = "tokyo"
+	GameState.players["a"]["actions_left"] = 2
+	var offer: Dictionary = {"partner": "b", "give": [], "take": [], "giveClues": 0}
+	assert_false(GameState._phase.host_apply_trade_offer("a", offer), "без связи — только рядом")

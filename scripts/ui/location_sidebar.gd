@@ -533,6 +533,9 @@ func _can_trade() -> bool:
 	if _loc_id.is_empty() or not GameState.is_my_turn():
 		return false
 	var me: Dictionary = GameState.my_player()
+	# «Мозг ми-го»: обмен по связи — действие уже потрачено на карту, напарник далеко.
+	if not String(me.get("trade_link", "")).is_empty():
+		return GameState.trade_offer.is_empty() and String(me.get("location", "")) == _loc_id
 	if int(me.get("actions_left", 0)) <= 0:
 		return false
 	if (me.get("actions_used", []) as Array).has(GameActions.TRADE):

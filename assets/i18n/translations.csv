@@ -908,6 +908,13 @@ VERB_PREVENT_LOSS,предотвратить потерю {amount},prevent {amou
 VERB_DEFEAT_MONSTER,победить монстра,defeat a Monster
 VERB_GIVE_ASSET,передать актив,give an Asset
 VERB_GIVE_CLUE,передать улику,give a Clue
+VERB_TRADE_LINK,обмен с сыщиком на расстоянии,trade with an investigator anywhere
+TRADE_SWAP_PLACES,Поменяться местами с сыщиком %s,Swap places with %s
+SKILL_TOKEN_SPEND_STRENGTH,Потратить жетон Силы,Spend the Strength token
+SKILL_TOKEN_SPEND_LORE,Потратить жетон Знания,Spend the Lore token
+SKILL_TOKEN_SPEND_WILL,Потратить жетон Воли,Spend the Will token
+SKILL_TOKEN_SPEND_INFLUENCE,Потратить жетон Влияния,Spend the Influence token
+SKILL_TOKEN_SPEND_OBSERVATION,Потратить жетон Наблюдения,Spend the Observation token
 VERB_SUBSTITUTE_SKILL,{toSkill} вместо {fromSkill},{toSkill} instead of {fromSkill}
 VERB_SUBSTITUTE_RESOURCE,{toResource} вместо {fromResource},{toResource} instead of {fromResource}
 VERB_ENHANCE_REROLL,усиленный переброс,enhanced reroll

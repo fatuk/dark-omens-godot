@@ -373,6 +373,11 @@ static func _run_choice(
 	for k in range(branches.size()):
 		if _can_afford(branches[k], player):
 			affordable.append(k)
+	# Платить нечем ни за одну ветку, а бесплатной нет («потратьте жетон навыка: …»
+	# без жетонов) — ничего не происходит: ветку без оплаты не применяем.
+	if (affordable as Array).is_empty():
+		logs.append("платить нечем — выбор пропущен")
+		return
 	# Cost отсёк ветки до ≤1 доступной → выбора нет: применяем единственную (штраф).
 	# Если cost ничего не отсёк — пауза как раньше (даже на одной ветке).
 	if (affordable as Array).size() < branches.size() and (affordable as Array).size() <= 1:
@@ -401,6 +406,30 @@ static func _can_afford(branch: Variant, player: Dictionary) -> bool:
 	var dk: String = String(cost.get("discardCondition", ""))
 	if not dk.is_empty():
 		return not _condition_of_kind(player, dk).is_empty()
+	# skillToken — жетон улучшения/ухудшения навыка («Маска Стенела»): есть ли он.
+	var sk: String = String(cost.get("skillToken", ""))
+	if not sk.is_empty():
+		return int((player.get("skill_mods", {}) as Dictionary).get(sk, 0)) != 0
+	return true
+
+
+## Есть ли в программе действия хоть что-то, за что можно заплатить: верхний choice
+## без доступных веток (и без бесплатной) — карту играть незачем (AssetActionFlow).
+static func program_affordable(program: Array, player: Dictionary) -> bool:
+	for n_v: Variant in program:
+		if not (n_v is Dictionary):
+			continue
+		var n: Dictionary = n_v
+		if n.has("choice"):
+			var any: bool = false
+			for b_v: Variant in n.get("choice", []):
+				if _can_afford(b_v, player):
+					any = true
+					break
+			if not any:
+				return false
+		elif n.has("cost") and not _can_afford(n, player):
+			return false
 	return true
 
 
@@ -419,6 +448,14 @@ static func _charge_cost(branch: Variant, player: Dictionary, logs: Array, board
 		var amt: int = int(cost.get("amount", 1))
 		_spend_resource(player, spend, amt)
 		logs.append("потрачено %s ×%d" % [spend, amt])
+		return
+	# Потратить жетон навыка — снять его целиком (улучшение или ухудшение).
+	var sk: String = String(cost.get("skillToken", ""))
+	if not sk.is_empty():
+		var mods: Dictionary = player.get("skill_mods", {})
+		mods.erase(sk)
+		player["skill_mods"] = mods
+		logs.append("потрачен жетон навыка %s" % sk)
 		return
 	var dk: String = String(cost.get("discardCondition", ""))
 	if dk.is_empty():

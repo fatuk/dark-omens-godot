@@ -22,7 +22,7 @@ func _init(gs: Node) -> void:
 ## lead/each/eachOn*/chosenInvestigator, либо передача актива/улики (give*).
 func is_targeted_effect(node: Dictionary) -> bool:
 	var verb: String = String(node.get("do", ""))
-	if verb == "giveAsset" or verb == "giveClue":
+	if verb == "giveAsset" or verb == "giveClue" or verb == "tradeLink":
 		return true
 	var target: String = String(node.get("target", ""))
 	if target.is_empty() or target == "self":
@@ -44,6 +44,9 @@ func apply_targeted_effect(node: Dictionary) -> void:
 			continue
 		# when — по каждой цели (напр. «сыщики без улик»: cluesAtMost 0).
 		if node.has("when") and not _EffectRunner.eval_predicate(node["when"], _gs.players[pid]):
+			continue
+		if verb == "tradeLink":
+			_apply_trade_link(node, pid)
 			continue
 		for _t in range(times):
 			if verb == "giveAsset" or verb == "giveClue":
@@ -197,6 +200,19 @@ func _loc_type_of(loc_id: String) -> String:
 	if loc_id.is_empty():
 		return ""
 	return _gs.map.type_of(loc_id)
+
+
+# «Мозг ми-го в банке»: сыщик-владелец получает связь с выбранным — обмен с ним без
+# общей клетки и без траты действия (оно уже ушло на карту); партнёр при ответе
+# может поменяться местами. Связь держит players[src].trade_link до ответа / раунда.
+func _apply_trade_link(node: Dictionary, target_pid: String) -> void:
+	var src: String = String(node.get("_anchor_pid", _gs.current_pid()))
+	if src.is_empty() or not _gs.players.has(src) or src == target_pid:
+		return
+	_gs.players[src]["trade_link"] = target_pid
+	GameConsole.log(
+		"[Эффект] %s ↔ %s: обмен на расстоянии" % [_gs.name_of(src), _gs.name_of(target_pid)]
+	)
 
 
 # Передача от активного игрока выбранному: giveClue — улики (сколько есть, до n);

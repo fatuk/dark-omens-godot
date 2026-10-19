@@ -54,9 +54,10 @@ class StubShop:
 
 class StubTarget:
 	extends RefCounted
+	var others: Array = []  # «прочие сыщики» для chosenInvestigator
 
 	func other_pids(_exclude: String) -> Array:
-		return []
+		return others
 
 
 # Заглушка CheckFlow: программа с test поднимает видимую проверку.
@@ -447,3 +448,63 @@ func test_gain_asset_from_reserve_lets_player_pick() -> void:
 			picked = true
 			break
 	assert_true(picked, "за 80 бросков 5–6 не выпало — крайне маловероятно")
+
+
+# ── «Маска Стенела»: потратить жетон навыка → улучшить навык ──────────────────
+
+
+func test_mask_spends_skill_token_and_improves_chosen_skill() -> void:
+	_add_player("p")
+	_gs.players["p"]["items"] = [{"id": "mask_of_sthenelus", "exhausted": false}]
+	_gs.players["p"]["skill_mods"] = {"lore": -1, "will": 1}  # ухудшение Знания, улучшение Воли
+	assert_true(_flow.can_play("p", 0), "есть жетоны — карта играется")
+	assert_eq(_flow.play("p", 0), AssetActionFlow.PLAY_WAITING)
+	var opts: Array = _gs.mythos_decision.get("options", [])
+	assert_eq(opts.size(), 5, "жетон какого навыка потратить")
+	assert_false(bool((opts[0] as Dictionary).get("_affordable", true)), "жетона Силы нет")
+	assert_true(bool((opts[1] as Dictionary).get("_affordable", false)), "жетон Знания есть")
+	_flow.resolve_decision("p", 1)  # тратим ухудшение Знания
+	assert_false(_gs.mythos_decision.is_empty(), "теперь — какой навык улучшить")
+	_flow.resolve_decision("p", 3)  # Сила (порядок: influence, lore, observation, strength, will)
+	var mods: Dictionary = _gs.players["p"].get("skill_mods", {})
+	assert_false(mods.has("lore"), "жетон Знания снят")
+	assert_eq(int(mods.get("strength", 0)), 1, "Сила улучшена")
+	assert_eq(int(mods.get("will", 0)), 1, "жетон Воли не тронут")
+	assert_true(bool(_gs.players["p"]["items"][0].get("exhausted", false)), "карта истощена")
+
+
+func test_mask_single_token_is_spent_without_asking() -> void:
+	# Жетон один — выбирать, какой тратить, не из чего: сразу «какой навык улучшить».
+	_add_player("p")
+	_gs.players["p"]["items"] = [{"id": "mask_of_sthenelus", "exhausted": false}]
+	_gs.players["p"]["skill_mods"] = {"lore": -1}
+	_flow.play("p", 0)
+	var opts: Array = _gs.mythos_decision.get("options", [])
+	assert_eq(String((opts[0] as Dictionary).get("do", "")), "improveSkill", "сразу улучшение")
+	_flow.resolve_decision("p", 4)  # Воля
+	var mods: Dictionary = _gs.players["p"].get("skill_mods", {})
+	assert_false(mods.has("lore"), "ухудшение Знания снято")
+	assert_eq(int(mods.get("will", 0)), 1, "Воля улучшена")
+
+
+func test_mask_not_playable_without_skill_tokens() -> void:
+	_add_player("p")
+	_gs.players["p"]["items"] = [{"id": "mask_of_sthenelus", "exhausted": false}]
+	assert_false(_flow.can_play("p", 0), "жетонов нет — тратить нечего")
+	assert_eq(_flow.play("p", 0), AssetActionFlow.PLAY_INVALID)
+
+
+# ── «Мозг ми-го в банке»: обмен на расстоянии ─────────────────────────────────
+
+
+func test_brain_case_links_trade_with_chosen_investigator() -> void:
+	_add_player("p")
+	_add_player("q")
+	_gs.players["p"]["items"] = [{"id": "migo_brain_case", "exhausted": false}]
+	_gs._target.others = [{"pid": "q", "name": "Q"}]
+	assert_eq(_flow.play("p", 0), AssetActionFlow.PLAY_WAITING, "кого выбрать")
+	assert_eq(String(_gs.mythos_decision.get("kind", "")), "target")
+	_flow.resolve_decision("p", 0)
+	var link: Dictionary = _board_node("tradeLink")
+	assert_eq(String(link.get("_target_pid", "")), "q", "связь — с выбранным сыщиком")
+	assert_eq(String(link.get("_anchor_pid", "")), "p", "от владельца карты")

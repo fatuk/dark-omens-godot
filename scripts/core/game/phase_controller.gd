@@ -464,7 +464,9 @@ func _trade_check(pid: String, payload: Dictionary) -> bool:
 	var ally: Dictionary = _gs.players[partner]
 	if bool(me.get("dead", false)) or bool(ally.get("dead", false)):
 		return false  # Тень не торгует (ни как инициатор, ни как партнёр)
-	if String(me.get("location", "")) != String(ally.get("location", "")):
+	# «Мозг ми-го в банке»: связанный сыщик — обмен без общей клетки.
+	var linked: bool = String(me.get("trade_link", "")) == partner
+	if not linked and String(me.get("location", "")) != String(ally.get("location", "")):
 		GameConsole.warn(
 			"[Обмен] %s и %s не на одной локации" % [_gs.name_of(pid), _gs.name_of(partner)]
 		)
@@ -544,9 +546,11 @@ func host_apply_trade_offer(pid: String, payload: Dictionary) -> bool:
 	if not (_gs.trade_offer as Dictionary).is_empty():
 		return false
 	var p: Dictionary = _gs.players[pid]
-	if int(p.get("actions_left", 0)) <= 0:
+	# Обмен по связи «Мозга ми-го» действие не тратит (оно ушло на карту).
+	var linked: bool = String(p.get("trade_link", "")) == String(payload.get("partner", ""))
+	if not linked and int(p.get("actions_left", 0)) <= 0:
 		return false
-	if (p.get("actions_used", []) as Array).has(GameActions.TRADE):
+	if not linked and (p.get("actions_used", []) as Array).has(GameActions.TRADE):
 		return false
 	if not _trade_check(pid, payload):
 		GameConsole.warn("[Обмен] предложение %s отклонено проверкой" % _gs.name_of(pid))
@@ -564,6 +568,7 @@ func host_apply_trade_offer(pid: String, payload: Dictionary) -> bool:
 		# Что именно лежало по индексам — на момент ответа проверим, что не изменилось.
 		"give_ids": _item_ids(_gs.players[pid].get("items", []), give),
 		"take_ids": _item_ids(_gs.players[partner].get("items", []), take),
+		"link": linked,  # партнёру — галка «поменяться местами»
 	}
 	GameConsole.log("[Обмен] %s предлагает обмен %s" % [_gs.name_of(pid), _gs.name_of(partner)])
 	_gs.broadcast_sync()
@@ -572,14 +577,18 @@ func host_apply_trade_offer(pid: String, payload: Dictionary) -> bool:
 
 
 ## Хост: партнёр ответил на предложение. Согласие — обмен от лица инициатора (тратит
-## его действие); отказ — предложение снимается, действие цело.
-func host_apply_trade_response(pid: String, accept: bool) -> bool:
+## его действие); отказ — предложение снимается, действие цело. Обмен по связи
+## «Мозга ми-го» (link): действие не тратится, а партнёр может (swap) переместиться
+## на клетку инициатора — тот уходит на покинутую — независимо от согласия.
+func host_apply_trade_response(pid: String, accept: bool, swap: bool = false) -> bool:
 	var o: Dictionary = _gs.trade_offer
 	if o.is_empty() or String(o.get("to", "")) != pid:
 		return false
 	var from: String = String(o.get("from", ""))
 	_gs.trade_offer = {}
-	if not accept:
+	if bool(o.get("link", false)):
+		_finish_linked_trade(from, pid, o, accept, swap)
+	elif not accept:
 		GameConsole.log("[Обмен] %s отклонил предложение" % _gs.name_of(pid))
 	elif not _offer_still_valid(o):
 		GameConsole.warn("[Обмен] предметы изменились — предложение снято")
@@ -598,6 +607,34 @@ func host_apply_trade_response(pid: String, accept: bool) -> bool:
 	_gs.broadcast_sync()
 	_gs.emit_changed()
 	return true
+
+
+# Ответ на обмен по связи «Мозга ми-го»: обмен (без траты действия), обмен местами,
+# связь снимается — карта отыграна.
+func _finish_linked_trade(
+	from: String, to: String, o: Dictionary, accept: bool, swap: bool
+) -> void:
+	if accept and _offer_still_valid(o):
+		_apply_trade(
+			from,
+			{
+				"partner": to,
+				"give": o.get("give", []),
+				"take": o.get("take", []),
+				"giveClues": int(o.get("giveClues", 0)),
+				"takeClues": int(o.get("takeClues", 0)),
+			}
+		)
+	elif not accept:
+		GameConsole.log("[Обмен] %s отклонил предложение" % _gs.name_of(to))
+	if swap and _gs.players.has(from) and _gs.players.has(to):
+		var a: String = String(_gs.players[from].get("location", ""))
+		var b: String = String(_gs.players[to].get("location", ""))
+		_gs.players[to]["location"] = a
+		_gs.players[from]["location"] = b
+		GameConsole.log("[Обмен] %s и %s поменялись местами" % [_gs.name_of(to), _gs.name_of(from)])
+	if _gs.players.has(from):
+		(_gs.players[from] as Dictionary).erase("trade_link")
 
 
 ## Хост: инициатор отзывает предложение.
@@ -1124,6 +1161,7 @@ func start_new_round() -> void:
 	for pid: String in _gs.players:
 		_gs.players[pid]["actions_left"] = _gs.ACTIONS_PER_ROUND
 		_gs.players[pid]["actions_used"] = []
+		_gs.players[pid].erase("trade_link")  # «Мозг ми-го»: связь живёт до конца раунда
 		_gs.players[pid]["encounter_done"] = false
 		_gs.players[pid]["ghost_acted_this_round"] = false  # Тень снова может действовать
 		_refresh_items(_gs.players[pid])  # снять истощение активов (Refresh-шаг)
