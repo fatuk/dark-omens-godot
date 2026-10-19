@@ -300,6 +300,16 @@ func test_grant_spell_random_from_catalog() -> void:
 	assert_true(SpellCatalog.is_spell(String((items[0] as Dictionary)["id"])), "id из каталога")
 
 
+func test_grant_spell_of_type() -> void:
+	# «Получите заклинание-ритуал»: из колоды берётся заклинание нужного вида.
+	_player()
+	for _i in range(6):
+		_sf.grant_spell("p", "", "glamour")
+	for it_v: Variant in _gs.players["p"]["items"]:
+		var sid: String = String((it_v as Dictionary)["id"])
+		assert_eq(String(SpellCatalog.by_id(sid).get("subtype", "")), "glamour", sid)
+
+
 func test_grant_spell_non_host_noop() -> void:
 	_gs.host = false
 	_player()

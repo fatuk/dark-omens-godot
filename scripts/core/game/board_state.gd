@@ -1166,9 +1166,11 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 			if spell_pid.is_empty() or not _gs.players.has(spell_pid):
 				spell_pid = _gs.current_pid()
 			# count — «возьмите 2 заклинания» (Некрономикон). Пустой spell — случайное
-			# из доступного пула, это уже умеет grant_spell.
+			# из доступного пула, это уже умеет grant_spell; trait — вид («Ритуал»).
 			for _s in range(maxi(1, n)):
-				_gs._spell.grant_spell(spell_pid, String(node.get("spell", "")))
+				_gs._spell.grant_spell(
+					spell_pid, String(node.get("spell", "")), String(node.get("trait", ""))
+				)
 		"gainArtifact":
 			# Как и заклинание, артефакт получает ЯКОРНЫЙ сыщик (тот, от которого
 			# идёт эффект), а не «текущий по ходу»: в фазе Мифов это разные люди.

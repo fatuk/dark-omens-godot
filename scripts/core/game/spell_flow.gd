@@ -352,12 +352,12 @@ func host_apply_trigger_spells(pid: String, indices: Array, flow: Dictionary = {
 ## Хост: выдать заклинание сыщику (board-verb gainSpell). spell_id пустой →
 ## случайная копия из колоды; иначе — копия ИМЕННО этого заклинания (любой из его
 ## оборотов). Копий не осталось (все в руках) — карта не выдаётся, как в настолке.
-func grant_spell(pid: String, spell_id: String = "") -> void:
+func grant_spell(pid: String, spell_id: String = "", want_type: String = "") -> void:
 	if not _gs.is_host() or not _gs.players.has(pid):
 		return
 	if not spell_id.is_empty() and SpellCatalog.by_id(spell_id).is_empty():
 		return
-	var copy: Dictionary = _take_copy(spell_id)
+	var copy: Dictionary = _take_copy(spell_id, want_type)
 	if copy.is_empty():
 		GameConsole.log("[Заклинание] копий «%s» не осталось" % (spell_id if spell_id else "?"))
 		return
@@ -431,16 +431,18 @@ func _all_copies() -> Array:
 # Снять копию из колоды: заклинания spell_id (случайный из его оборотов) или любую
 # ("" — случайная карта). Нужной копии в колоде нет → замешиваем сброс (все копии
 # минус руки минус колода). {} — копий не осталось вовсе.
-func _take_copy(spell_id: String) -> Dictionary:
+# want_type — вид заклинания («получите Ритуал»: ritual / incantation / glamour). Такого
+# в колоде нет — любое: пустая награда хуже неточной (то же правило, что у gainAsset).
+func _take_copy(spell_id: String, want_type: String = "") -> Dictionary:
 	var deck: Array = _gs.spell_deck
-	var idx: int = _find_copy(deck, spell_id)
+	var idx: int = _find_copy(deck, spell_id, want_type)
 	if idx < 0:
 		var discard: Array = _discarded_copies()
 		if not discard.is_empty():
 			discard.shuffle()
 			deck.append_array(discard)
 			GameConsole.log("[Заклинания] колода замешана из сброса: %d копий" % discard.size())
-			idx = _find_copy(deck, spell_id)
+			idx = _find_copy(deck, spell_id, want_type)
 	if idx < 0:
 		return {}
 	var copy: Dictionary = deck[idx]
@@ -449,9 +451,17 @@ func _take_copy(spell_id: String) -> Dictionary:
 	return copy
 
 
-func _find_copy(deck: Array, spell_id: String) -> int:
+func _find_copy(deck: Array, spell_id: String, want_type: String = "") -> int:
 	if deck.is_empty():
 		return -1
+	if spell_id.is_empty() and not want_type.is_empty():
+		var typed: Array = []
+		for i in range(deck.size()):
+			var sid: String = String((deck[i] as Dictionary).get("id", ""))
+			if String(SpellCatalog.by_id(sid).get("subtype", "")) == want_type:
+				typed.append(i)
+		if not typed.is_empty():
+			return int(typed[randi() % typed.size()])
 	if spell_id.is_empty():
 		return randi() % deck.size()
 	var cands: Array = []
