@@ -409,6 +409,36 @@ func test_activate_cost_spend_pays_resource() -> void:
 	assert_eq(int(_gs.players["p"]["clues"]), 0, "улика списана")
 
 
+func test_activate_paid_while_owned_reroll_all() -> void:
+	# «Идол дракона»: whileOwned rerollDice all:true за 1 рассудок, проверка Силы в бою.
+	# Раньше платные пассивы не играли вовсе — карту было не разыграть.
+	_player({"items": [{"id": "dragon_idol", "exhausted": false}], "sanity": 3})
+	_rolled({"context": "combatEncounter", "skill": "strength"})
+	var a: Dictionary = AssetCatalog.by_id("dragon_idol")
+	assert_true(AssetCatalog.fits_check(a, "combatEncounter", "strength", true), "UI предложит")
+	assert_true(_cf.activate("p", 0))
+	assert_eq(int(_gs.players["p"]["sanity"]), 2, "рассудок списан")
+	assert_eq(int(_gs.active_check["reroll_all_allowance"]), 1, "all:true — переброс всех")
+	assert_eq(int(_gs.active_check["reroll_allowance"]), 0, "не поштучный")
+	assert_false(_cf.activate("p", 0), "второй раз в ту же проверку — нет")
+
+
+func test_activate_paid_while_owned_rejected_without_sanity_or_wrong_skill() -> void:
+	_player({"items": [{"id": "dragon_idol", "exhausted": false}], "sanity": 0})
+	_rolled({"context": "combatEncounter", "skill": "strength"})
+	assert_false(_cf.activate("p", 0), "нечем платить")
+	_player({"items": [{"id": "dragon_idol", "exhausted": false}], "sanity": 3})
+	_rolled({"context": "combatEncounter", "skill": "will"})
+	assert_false(_cf.activate("p", 0), "только проверка Силы")
+
+
+func test_paid_while_owned_not_seeded_as_aura() -> void:
+	# Платный мод — не аура: в пассивы на старте проверки не попадает (бесплатно не даём).
+	var a: Dictionary = AssetCatalog.by_id("dragon_idol")
+	assert_true(AssetCatalog.passive_check_mods(a, "combatEncounter").is_empty())
+	assert_eq(AssetCatalog.paid_check_mods(a, "combatEncounter").size(), 1)
+
+
 func test_activate_wrong_context_rejected() -> void:
 	# kerosene нужен combatEncounter — в shop-проверке нет применимых модов.
 	_player({"items": [{"id": "kerosene", "exhausted": false}]})

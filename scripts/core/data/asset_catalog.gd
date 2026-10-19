@@ -223,6 +223,7 @@ static func has_standalone_action(a: Dictionary) -> bool:
 static func fits_check(a: Dictionary, context: String, skill: String, rolled: bool) -> bool:
 	var mods: Array = action_check_mods(a, context).duplicate()
 	mods.append_array(passive_check_mods(a, context))
+	mods.append_array(paid_check_mods(a, context))
 	for m_v: Variant in mods:
 		if not Dice.mod_skill_ok(m_v, skill):
 			continue
@@ -246,12 +247,30 @@ static func action_check_mods(a: Dictionary, context: String) -> Array:
 	return out
 
 
+## Платные модификаторы проверки из whileOwned: check-mod-глагол С cost (без when),
+## подходящий по контексту («Идол дракона»: потратьте 1 рассудок — перебросьте кубы
+## в проверке Силы боя; «Топор»: переброс за 2 рассудка). Не аура: играется тапом
+## по карте на проверке, цену платит каждое применение (раз за проверку; limit
+## oncePerRound — раз за раунд). Активацию ведёт CheckFlow.activate наравне с action.
+static func paid_check_mods(a: Dictionary, context: String) -> Array:
+	var out: Array = []
+	for e_v: Variant in (a.get("effect", {}) as Dictionary).get("whileOwned", []):
+		var e: Dictionary = e_v
+		if not _CHECK_MOD_VERBS.has(String(e.get("do", ""))):
+			continue
+		if not e.has("cost") or e.has("when"):
+			continue
+		if _ctx_match(String(e.get("context", "")), context):
+			out.append(e)
+	return out
+
+
 ## Пассивные модификаторы проверки (АУРЫ): любой check-mod-глагол в whileOwned без
 ## cost/when, подходящий по контексту. Применяются АВТОМАТИЧЕСКИ — сидируются в
 ## active_mods при старте проверки (improveSkill «.38 Revolver» = +2 Силы; rerollDice
 ## «Lucky Ring» = бесплатный переброс). Навык фильтруется в конвейере (карта боя —
-## только на «свой» шаг). Платные (axe: «переброс за 2 рассудка») и условные (when)
-## пока не поддержаны.
+## только на «свой» шаг). Платные (axe: «переброс за 2 рассудка») — paid_check_mods,
+## условные (when) пока не поддержаны.
 static func passive_check_mods(a: Dictionary, context: String) -> Array:
 	var out: Array = []
 	for e_v: Variant in (a.get("effect", {}) as Dictionary).get("whileOwned", []):

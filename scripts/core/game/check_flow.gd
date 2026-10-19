@@ -322,6 +322,13 @@ func activate(pid: String, item_index: int, c: Dictionary = {}) -> bool:
 	var action_mods: Array = (
 		[] if (is_glam or spent) else AssetCatalog.action_check_mods(asset, ctx).filter(ok)
 	)
+	# Платные моды whileOwned («потратьте 1 рассудок — перебросьте») — как action: тап,
+	# цена, лимит. Истощение карты (её action уже сыгран) их не гасит, кроме oncePerRound.
+	if not is_glam:
+		for pm_v: Variant in AssetCatalog.paid_check_mods(asset, ctx).filter(ok):
+			if spent and String((pm_v as Dictionary).get("limit", "")) == "oncePerRound":
+				continue
+			action_mods.append(pm_v)
 	var passive_mods: Array = (
 		SpellCatalog.aura_check_mods(glamour, ctx).filter(ok)
 		if is_glam
@@ -390,9 +397,10 @@ func activate(pid: String, item_index: int, c: Dictionary = {}) -> bool:
 					continue
 				deferred = true
 				var cnt4: int = int(m4.get("count", 1))
-				var key: String = "reroll_all_debt" if cnt4 >= _REROLL_ALL_MIN else "reroll_debt"
+				var all4: bool = _is_reroll_all(m4)
+				var key: String = "reroll_all_debt" if all4 else "reroll_debt"
 				var debt: Array = c.get(key, [])
-				for _k in range(1 if cnt4 >= _REROLL_ALL_MIN else cnt4):
+				for _k in range(1 if all4 else cnt4):
 					debt.append(item_index)
 				c[key] = debt
 			if not deferred:
@@ -440,10 +448,8 @@ func _allowance(c: Dictionary) -> int:
 	var total: int = 0
 	for m_v: Variant in c.get("active_mods", []):
 		var m: Dictionary = m_v
-		if String(m.get("do", "")) == "rerollDice":
-			var cnt: int = int(m.get("count", 1))
-			if cnt < _REROLL_ALL_MIN:
-				total += cnt
+		if String(m.get("do", "")) == "rerollDice" and not _is_reroll_all(m):
+			total += int(m.get("count", 1))
 	return total
 
 
@@ -453,9 +459,15 @@ func _allowance_all(c: Dictionary) -> int:
 	var n: int = 0
 	for m_v: Variant in c.get("active_mods", []):
 		var m: Dictionary = m_v
-		if String(m.get("do", "")) == "rerollDice" and int(m.get("count", 1)) >= _REROLL_ALL_MIN:
+		if String(m.get("do", "")) == "rerollDice" and _is_reroll_all(m):
 			n += 1
 	return n
+
+
+# «Перебросить сколько угодно кубов» — all:true («Идол дракона») или count >= порога
+# (count 99, «Счастливый талисман»).
+static func _is_reroll_all(m: Dictionary) -> bool:
+	return bool(m.get("all", false)) or int(m.get("count", 1)) >= _REROLL_ALL_MIN
 
 
 ## Хост: перебросить куб БЕЗ списания валюты владельца — плату берёт вызывающий
