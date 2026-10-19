@@ -11,9 +11,14 @@ extends CanvasLayer
 
 const _MIN_W: float = 460.0
 const _ART_H: float = 230.0  # высота портрета в окне
+# Ширина текстовой колонки (окно минус поля). Лейблам с переносом её задаём сразу:
+# без ширины они до раскладки меряют высоту «по слову на строку», Center
+# раздувается под неё и уже не сжимается — окно уезжает вниз за экран.
+const _TEXT_W: float = _MIN_W - 48.0
 const _MYTHOS_ART_DIR := "res://assets/mythos/"
 
 var _root: ColorRect
+var _center: CenterContainer
 var _panel: PanelContainer
 var _box: VBoxContainer
 var _nonce: int = -1  # какой бросок уже показан — не пересобираем на каждом синке
@@ -35,16 +40,16 @@ func _build() -> void:
 	_root.visible = false
 	add_child(_root)
 
-	var center := CenterContainer.new()
-	center.name = "Center"
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_root.add_child(center)
+	_center = CenterContainer.new()
+	_center.name = "Center"
+	_center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_root.add_child(_center)
 
 	_panel = PanelContainer.new()
 	_panel.name = "Panel"
 	_panel.custom_minimum_size.x = _MIN_W
 	UIStyle.style_modal_panel(_panel)
-	center.add_child(_panel)
+	_center.add_child(_panel)
 
 	var margin := MarginContainer.new()
 	margin.name = "Margin"
@@ -68,6 +73,9 @@ func _refresh() -> void:
 	if n != _nonce:
 		_nonce = n
 		_fill(ev)
+		# Подстраховка: Center держит размер не меньше прошлого минимума — вернуть
+		# его к экрану, когда новое содержимое разложено.
+		_center.set_anchors_and_offsets_preset.call_deferred(Control.PRESET_FULL_RECT)
 	UIStyle.modal_set_visible(_root, _panel, true)
 
 
@@ -102,6 +110,7 @@ func _fill(ev: Dictionary) -> void:
 	)
 	name_lbl.name = "Who"
 	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_lbl.custom_minimum_size.x = _TEXT_W
 	_box.add_child(name_lbl)
 
 	var tray := DiceTray.new()
@@ -122,6 +131,7 @@ func _fill(ev: Dictionary) -> void:
 	)
 	outcome.name = "Outcome"
 	outcome.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	outcome.custom_minimum_size.x = _TEXT_W
 	outcome.modulate.a = 0.0  # проявится, когда кубы осядут — не раньше броска
 	_box.add_child(outcome)
 	tray.roll_settled.connect(
