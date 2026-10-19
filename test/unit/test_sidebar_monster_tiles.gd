@@ -27,7 +27,7 @@ func test_ancient_dependent_monster_has_no_numbers() -> void:
 	assert_null(tile.get_node_or_null("Damage"))
 
 
-func test_items_have_no_separators_and_no_monsters_header() -> void:
+func test_items_have_no_separators_and_category_header() -> void:
 	var sb: LocationSidebar = add_child_autofree(_SIDEBAR.instantiate())
 	var saved: Dictionary = GameState.monsters
 	GameState.monsters = {"t": [{"id": "byakhee", "health": 2}]}
@@ -35,7 +35,8 @@ func test_items_have_no_separators_and_no_monsters_header() -> void:
 	GameState.monsters = saved
 	assert_eq(sb.find_children("*", "HSeparator", true, false), [], "секции без линий")
 	var list: Node = sb._items_list
-	assert_eq(list.get_child(0).name, &"MonsterGrid", "сразу портреты, без «Монстры — N»")
+	assert_eq(list.get_child(0).name, &"Section_monsters", "заголовок категории «МОНСТРЫ»")
+	assert_eq(list.get_child(1).name, &"MonsterGrid", "под ним — портреты")
 
 
 func test_tiles_fill_row_width() -> void:
