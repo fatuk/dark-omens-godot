@@ -932,7 +932,7 @@ MON_BYAKHEE_NAME,Бьякхи,Byakhee
 MON_BYAKHEE_ABILITY,"Победив этого монстра в боевой встрече, можно потерять 1 рассудок и переместиться на 3 локации вместо того, чтобы разрешать ещё одну встречу.","If you defeat this Monster during a Combat Encounter, you may lose 1 Sanity and move 3 spaces instead of resolving another encounter."
 MON_CARRIER_NIGHTGAUNT_NAME,Мверзь-носильщик,Carrier Nightgaunt
 MON_CARRIER_NIGHTGAUNT_ABILITY,"Если вы прошли и проверку Воли, и проверку Силы, можно оставить этому монстру всё здоровье. Тогда вы и он перемещаетесь в локацию на расстоянии до 2.","If you pass both the Will test and the Strength test, you may choose to have this Monster lose no Health. If you do, you and this Monster move to a space within 2 spaces."
-MON_CHILD_OF_THE_GOAT_NAME,Дитя Козла,Child of the Goat
+MON_CHILD_OF_THE_GOAT_NAME,Дитя Козы,Child of the Goat
 MON_CHILD_OF_THE_GOAT_ABILITY,Магическое сопротивление. Расплата: бросьте 1 кубик. На 1 или 2 рок +1.,"Magical Resistance. Reckoning: Roll 1 die. On a 1 or 2, advance Doom by 1."
 MON_COLOUR_OUT_OF_SPACE_NAME,Цвет из иных миров,Colour Out of Space
 MON_COLOUR_OUT_OF_SPACE_ABILITY,После проверки Воли бросьте 1 кубик. На 5 или 6 этот монстр побеждён. При появлении переместите его на Тунгуску.,"After resolving the Will test, roll 1 die. On a 5 or 6, defeat this Monster. When this Monster is spawned, move it to Tunguska."

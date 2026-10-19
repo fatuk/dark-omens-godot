@@ -144,3 +144,28 @@ func test_artifact_reckoning_is_read_like_asset() -> void:
 	# у актива, — иначе Расплата молча пропустит карту.
 	var reck: Array = AssetCatalog.reckoning_of("cursed_sphere")
 	assert_gt(reck.size(), 0, "Расплата артефакта видна через AssetCatalog")
+
+
+func test_artifacts_with_action_text_are_playable_actions() -> void:
+	# «Action: …» в тексте карты = самостоятельное действие фазы действий. Без тега
+	# action движок его не предлагал («Идол дракона» в фазу действий не разыгрывался).
+	var en: Dictionary = {}
+	var f := FileAccess.open("res://assets/i18n/translations.csv", FileAccess.READ)
+	while not f.eof_reached():
+		var row: PackedStringArray = f.get_csv_line()
+		if row.size() >= 3:
+			en[row[0]] = row[2]
+	var missing: Array = []
+	for a_v: Variant in ArtifactCatalog.all():
+		var a: Dictionary = a_v
+		var text: String = String(en.get(String(a.get("abilityKey", "")), ""))
+		# Без программы действия (механика ещё не заведена) тегом не помочь — пропускаем.
+		var prog: Array = (a.get("effect", {}) as Dictionary).get("action", [])
+		if (
+			text.contains("Action:")
+			and not prog.is_empty()
+			and not AssetCatalog.has_standalone_action(a)
+		):
+			missing.append(String(a.get("id", "")))
+	assert_eq(missing, [], "артефакты с «Action:» без тега action")
+	assert_true(AssetCatalog.has_standalone_action(ArtifactCatalog.by_id("dragon_idol")))

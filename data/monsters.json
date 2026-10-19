@@ -69,7 +69,6 @@
 	{
 		"id": "child_of_the_goat",
 		"season": "core",
-		"resist": "magical",
 		"nameKey": "MON_CHILD_OF_THE_GOAT_NAME",
 		"toughness": 1,
 		"horror": {
@@ -100,7 +99,9 @@
 					}
 				]
 			}
-		]
+		],
+		"resist": "magical",
+		"isReady": true
 	},
 	{
 		"id": "colour_out_of_space",

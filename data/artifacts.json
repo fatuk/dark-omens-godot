@@ -182,7 +182,10 @@
 					}
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "shining_trapezohedron",
@@ -220,7 +223,10 @@
 					]
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "book_of_the_dead",
@@ -412,7 +418,10 @@
 					]
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "bone_pipes",
@@ -451,7 +460,10 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "heart_of_winter",
@@ -566,7 +578,10 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "pnakotic_manuscripts",
@@ -600,7 +615,10 @@
 					}
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "crystal_elder_things",
@@ -677,7 +695,10 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "satchel_of_the_void",
@@ -702,7 +723,10 @@
 					"count": 1
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "milk_shub_niggurath",
@@ -744,7 +768,10 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "massa_di_requiem",
@@ -794,7 +821,10 @@
 					]
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "elixir_of_life",
@@ -836,7 +866,10 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "zanthu_tablets",
@@ -881,7 +914,10 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "sword_yha_talla",
@@ -957,7 +993,10 @@
 					"trait": "ally"
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "cursed_sphere",
@@ -1103,7 +1142,10 @@
 					]
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "sword_saint_jerome",
@@ -1171,7 +1213,10 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "de_vermis_mysteriis",
@@ -1201,7 +1246,10 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "necronomicon",
@@ -1230,7 +1278,10 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "pallid_mask",
@@ -1317,7 +1368,10 @@
 					]
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "gate_box",
@@ -1378,7 +1432,10 @@
 					"onFail": []
 				}
 			]
-		}
+		},
+		"tags": [
+			"action"
+		]
 	},
 	{
 		"id": "sheaf",
