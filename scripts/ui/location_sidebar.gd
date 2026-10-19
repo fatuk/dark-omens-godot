@@ -86,7 +86,6 @@ var _trade_btn: Button = null
 var _shop_btn: Button = null
 var _buy_train_btn: Button = null
 var _buy_ship_btn: Button = null
-var _items_hdr: Label = null
 var _items_list: VBoxContainer = null
 
 # Улика на локации — строка «иконка + имя улики».
@@ -381,15 +380,9 @@ func _build_content() -> void:
 	content.add_theme_constant_override("separation", 8)
 	scroll.add_child(content)
 
-	_items_hdr = Label.new()
-	_items_hdr.name = "ItemsHeader"
-	_items_hdr.text = "SIDEBAR_ITEMS"
-	_items_hdr.add_theme_font_size_override("font_size", 15)
-	_items_hdr.add_theme_color_override("font_color", UIColors.MUTED)
 	_items_list = VBoxContainer.new()
 	_items_list.name = "ItemsList"
 	_items_list.add_theme_constant_override("separation", 6)
-	content.add_child(_items_hdr)
 	content.add_child(_items_list)
 
 
@@ -576,6 +569,7 @@ func _populate_items(loc_id: String) -> void:
 	if not is_instance_valid(_items_list):
 		return
 	for child in _items_list.get_children():
+		_items_list.remove_child(child)  # сразу из дерева: _add_section считает детей
 		child.queue_free()
 
 	var ents: Array = GameState.entities.get(loc_id, [])
@@ -586,16 +580,19 @@ func _populate_items(loc_id: String) -> void:
 	var invs: Array = _investigators_at(loc_id)
 
 	var empty: bool = invs.is_empty() and mons.is_empty() and clues == 0 and rumors == 0
-	_items_hdr.visible = not empty
 	_items_list.visible = not empty
 	if empty:
 		return
 
-	for pid_v: Variant in invs:
-		_items_list.add_child(_make_investigator_row(String(pid_v)))
+	# Каждая категория — под своим заголовком («СЫЩИКИ», «МОНСТРЫ», …), а не общим
+	# «НА ЛОКАЦИИ».
+	if not invs.is_empty():
+		_add_section("SIDEBAR_CAT_INVESTIGATORS")
+		for pid_v: Variant in invs:
+			_items_list.add_child(_make_investigator_row(String(pid_v)))
 
 	if not mons.is_empty():
-		# Без заголовка «Монстры — N»: портреты сами говорят, что это монстры.
+		_add_section("SIDEBAR_CAT_MONSTERS")
 		var grid := HFlowContainer.new()
 		grid.name = "MonsterGrid"
 		grid.add_theme_constant_override("h_separation", _MON_GAP)
@@ -620,10 +617,11 @@ func _populate_items(loc_id: String) -> void:
 		var clue_name: String = String(ClueCatalog.by_location(loc_id).get("title", ""))
 		if clue_name.strip_edges().is_empty():
 			clue_name = tr("TOKEN_CLUE")
+		_add_section("SIDEBAR_CAT_CLUES")
 		for i: int in range(clues):
 			_items_list.add_child(_make_clue_row(clue_name, i))
 	if rumors > 0:
-		_items_list.add_child(_make_category_header("SIDEBAR_CAT_RUMORS", rumors))
+		_add_section("SIDEBAR_CAT_RUMORS", rumors)  # своего списка у слухов нет — число
 
 
 # Сыщики на клетке (id игроков в порядке хода). Тень (погибший) тоже стоит на поле —
@@ -725,13 +723,20 @@ func _make_clue_row(clue_name: String, index: int) -> HBoxContainer:
 	return row
 
 
-func _make_category_header(key: String, count: int) -> Label:
+# Заголовок категории объектов локации («СЫЩИКИ», «МОНСТРЫ»…); count ≥ 0 — дописать
+# число (у слухов нет своего списка). Не первая категория — отступ сверху.
+func _add_section(key: String, count: int = -1) -> void:
+	if _items_list.get_child_count() > 0:
+		var gap := Control.new()
+		gap.name = "SectionGap"
+		gap.custom_minimum_size.y = 8.0
+		_items_list.add_child(gap)
 	var l := Label.new()
-	l.name = "Label"
-	l.text = "%s — %d" % [tr(key), count]
-	l.add_theme_font_size_override("font_size", 13)
-	l.add_theme_color_override("font_color", UIColors.WARNING)
-	return l
+	l.name = "Section_" + key.trim_prefix("SIDEBAR_CAT_").to_lower()
+	l.text = tr(key).to_upper() + (" · %d" % count if count >= 0 else "")
+	l.add_theme_font_size_override("font_size", 15)
+	l.add_theme_color_override("font_color", UIColors.MUTED)
+	_items_list.add_child(l)
 
 
 ## Сторона портрета, при которой ряд шириной width заполняется целиком.
