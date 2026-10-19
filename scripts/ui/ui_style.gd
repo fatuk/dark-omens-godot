@@ -695,8 +695,8 @@ static func volume_slider_row(
 	var lbl := Label.new()
 	lbl.name = "Label"
 	lbl.text = label_key
-	lbl.custom_minimum_size.x = 110
-	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.custom_minimum_size.x = 200
+	lbl.add_theme_font_size_override("font_size", MODAL_FS_BODY)
 	lbl.add_theme_color_override("font_color", UIColors.TEXT)
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(lbl)
@@ -708,15 +708,15 @@ static func volume_slider_row(
 	slider.step = 0.01
 	slider.value = initial
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider.custom_minimum_size = Vector2(0, 22)
+	slider.custom_minimum_size = Vector2(0, 28)
 	row.add_child(slider)
 
 	var pct := Label.new()
 	pct.name = "Percent"
 	pct.text = "%d%%" % roundi(initial * 100.0)
-	pct.custom_minimum_size.x = 44
+	pct.custom_minimum_size.x = 64
 	pct.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	pct.add_theme_font_size_override("font_size", 13)
+	pct.add_theme_font_size_override("font_size", MODAL_FS_HINT)
 	pct.add_theme_color_override("font_color", UIColors.MUTED)
 	pct.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(pct)
