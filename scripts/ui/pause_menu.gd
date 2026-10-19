@@ -25,8 +25,9 @@ const _ITEM_FS: int = 34
 const _ITEM_H: float = 72.0
 const _HEAD_FS: int = 26
 const _BODY_FS: int = 20
-const _MESSAGES_SHOWN: int = 4  # сколько последних посланий в сводке
-const _MESSAGES_KEPT: int = 30  # сколько копим (история транзиентна — с начала сессии)
+# Сколько посланий копим (история транзиентна — с начала сессии у этого клиента);
+# в рамке — все, с прокруткой. Потолок — только от бесконечного роста за долгую партию.
+const _MESSAGES_KEPT: int = 1000
 
 var _open: bool = false
 var _settings_dialog: Control = null
@@ -37,6 +38,7 @@ var _items: VBoxContainer
 var _continue_btn: Button
 var _menu_btn: Button
 var _messages_box: VBoxContainer
+var _messages_scroll: ScrollContainer
 var _tasks_box: VBoxContainer
 var _time_value: Label
 var _time_box: VBoxContainer
@@ -231,7 +233,8 @@ func _build_side_column() -> void:
 	_side_col.add_theme_constant_override("separation", 18)
 	_side_col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(_side_col)
-	_messages_box = _side_panel("Messages", "PAUSE_MESSAGES")
+	_messages_box = _side_panel("Messages", "PAUSE_MESSAGES", true)
+	_messages_scroll = _messages_box.find_child("Scroll", true, false)
 	_tasks_box = _side_panel("Tasks", "PAUSE_TASKS")
 	_time_box = _side_panel("Time", "PAUSE_TIME")
 	# Время сессии — справа в шапке своей рамки (как «05:42:17» в макете).
@@ -243,10 +246,13 @@ func _build_side_column() -> void:
 
 
 # Рамка сводки: шапка-заголовок + тело (VBox, его наполняет _refresh_side).
-func _side_panel(node_name: String, title_key: String) -> VBoxContainer:
+# scroll — рамка забирает всё свободное место колонки, тело прокручивается (послания).
+func _side_panel(node_name: String, title_key: String, scroll: bool = false) -> VBoxContainer:
 	var panel := PanelContainer.new()
 	panel.name = node_name
 	UIStyle.style_modal_panel(panel)
+	if scroll:
+		panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_side_col.add_child(panel)
 	var margin := MarginContainer.new()
 	margin.name = "Margin"
@@ -269,7 +275,21 @@ func _side_panel(node_name: String, title_key: String) -> VBoxContainer:
 	var body := VBoxContainer.new()
 	body.name = "Body"
 	body.add_theme_constant_override("separation", 10)
-	vb.add_child(body)
+	if scroll:
+		var sc := ScrollContainer.new()
+		sc.name = "Scroll"
+		sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		# Поле справа под полосу прокрутки — иначе она ложится на время посланий.
+		var pad := MarginContainer.new()
+		pad.name = "Pad"
+		pad.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		pad.add_theme_constant_override("margin_right", 16)
+		pad.add_child(body)
+		sc.add_child(pad)
+		vb.add_child(sc)
+	else:
+		vb.add_child(body)
 	return vb
 
 
@@ -298,7 +318,7 @@ func _refresh_side() -> void:
 
 
 func _body(box: VBoxContainer) -> VBoxContainer:
-	var body: VBoxContainer = box.get_node("Body")
+	var body: VBoxContainer = box.find_child("Body", true, false)
 	for c in body.get_children():
 		body.remove_child(c)
 		c.queue_free()
@@ -313,14 +333,13 @@ func _text(text: String, size: int, color: Color) -> Label:
 	return l
 
 
-# Послания: последние записи ленты действий и чата — кто, что, когда.
+# Послания: все записи ленты действий и чата за сессию — кто, что, когда. Новые
+# сверху; не влезают — рамка прокручивается.
 func _fill_messages() -> void:
 	var body: VBoxContainer = _body(_messages_box)
 	var shown: int = 0
 	var locale: String = I18n.get_locale()
 	for i in range(_messages.size() - 1, -1, -1):
-		if shown >= _MESSAGES_SHOWN:
-			break
 		var m: Dictionary = _messages[i]
 		var text: String = (
 			Messages.render(String(m.get("id", "")), m.get("nouns", []), locale)
@@ -345,6 +364,7 @@ func _fill_messages() -> void:
 		shown += 1
 	if shown == 0:
 		body.add_child(_text(tr("PAUSE_NO_MESSAGES"), _BODY_FS, UIColors.MUTED))
+	_messages_scroll.scroll_vertical = 0  # к свежим
 
 
 # Текущие задачи: активная Тайна (что сделать, прогресс по локациям/жетонам) и Слухи.
