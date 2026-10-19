@@ -168,15 +168,10 @@ func _build_menu_column() -> void:
 	vb.add_theme_constant_override("separation", 10)
 	margin.add_child(vb)
 
-	var title := UIStyle.label(
-		"PAUSE_TITLE", _TITLE_FS, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
-	)
-	title.name = "Title"
+	# Общий орнаментальный заголовок: шеврон · «ПАУЗА» · шеврон.
+	var title := UIStyle.ornate_title("PAUSE_TITLE", _TITLE_FS, UIColors.ACCENT)
 	title.custom_minimum_size.x = _MENU_W - 80.0
 	vb.add_child(title)
-	var orn := UIStyle.ornate_title("", 10, UIColors.ACCENT)  # шевроны под заголовком
-	orn.name = "Ornament"
-	vb.add_child(orn)
 
 	var gap := Control.new()
 	gap.name = "Gap"
