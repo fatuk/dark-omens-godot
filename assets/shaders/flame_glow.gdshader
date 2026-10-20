@@ -33,6 +33,10 @@ void fragment() {
 	uv.y *= stretch;  // вытянуть пламя вверх-вниз
 	float d = length(uv) * 2.0;  // 0 в центре, 1 у края
 	float glow = pow(clamp(1.0 - d, 0.0, 1.0), 2.4);
+	// Мягкий спад к краям прямоугольника: из-за stretch (и sway) свечение по вертикали
+	// не успевает погаснуть к краю — без спада край прямоугольника виден резкой линией.
+	vec2 e = min(UV, vec2(1.0) - UV);
+	glow *= smoothstep(0.0, 0.18, e.x) * smoothstep(0.0, 0.18, e.y);
 	// Мерцание яркости: сумма двух шумов на разных частотах.
 	float fl = 0.68 + 0.22 * vnoise(t) + 0.14 * vnoise(t * 2.7 + 3.1);
 	vec3 col = glow_color.rgb * glow * intensity * fl;
