@@ -5,7 +5,7 @@ extends CanvasLayer
 ## в левом верхнем углу карты (toggle()).
 ## Autoload-синглтон: /root/PauseMenu (см. project.godot). Строится кодом.
 ##
-## Слева — колонка меню («ПАУЗА» + пункты), посередине сквозь затемнение видна
+## Слева — колонка меню (пункты), посередине сквозь затемнение видна
 ## карта, справа (только в партии) — сводка: последние послания (лента действий и
 ## чат), текущие задачи (активная Тайна и Слухи), время игры (сессия, раунд, фаза).
 ##
@@ -20,7 +20,6 @@ const _SETTINGS_DIALOG := preload("res://scenes/ui/settings_dialog.tscn")
 
 const _MENU_W: float = 520.0  # ширина левой колонки
 const _SIDE_W: float = 560.0  # ширина правой колонки сводки
-const _TITLE_FS: int = 64
 const _ITEM_FS: int = 34
 const _ITEM_H: float = 72.0
 const _HEAD_FS: int = 26
@@ -115,7 +114,7 @@ func _build() -> void:
 	_build_side_column()
 
 
-# Левая колонка: тёмная подложка с мягким краем, заголовок, пункты меню.
+# Левая колонка: тёмная подложка с мягким краем и пункты меню (без заголовка).
 func _build_menu_column() -> void:
 	_menu_col = Control.new()
 	_menu_col.name = "MenuColumn"
@@ -162,23 +161,13 @@ func _build_menu_column() -> void:
 	margin.offset_right = _MENU_W
 	margin.add_theme_constant_override("margin_left", 40)
 	margin.add_theme_constant_override("margin_right", 0)
-	margin.add_theme_constant_override("margin_top", 70)
+	margin.add_theme_constant_override("margin_top", 110)  # вровень с рамками сводки справа
 	_menu_col.add_child(margin)
 
 	var vb := VBoxContainer.new()
 	vb.name = "VBox"
 	vb.add_theme_constant_override("separation", 10)
 	margin.add_child(vb)
-
-	# Общий орнаментальный заголовок: шеврон · «ПАУЗА» · шеврон.
-	var title := UIStyle.ornate_title("PAUSE_TITLE", _TITLE_FS, UIColors.ACCENT)
-	title.custom_minimum_size.x = _MENU_W - 80.0
-	vb.add_child(title)
-
-	var gap := Control.new()
-	gap.name = "Gap"
-	gap.custom_minimum_size.y = 40.0
-	vb.add_child(gap)
 
 	_items = VBoxContainer.new()
 	_items.name = "Items"
