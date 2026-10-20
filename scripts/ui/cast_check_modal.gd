@@ -143,9 +143,9 @@ func _build(cs: Dictionary) -> void:
 
 	var spell: Dictionary = SpellCatalog.by_id(String(cs.get("spell_id", "")))
 	var title_zone := _zone("TitleZone", _Z_TITLE)
-	var title := UIStyle.modal_title("CAST_TITLE")
+	# Стандартный орнаментальный заголовок: шеврон · «Чтение заклинания» · шеврон.
+	var title := UIStyle.ornate_title("CAST_TITLE", UIStyle.MODAL_FS_TITLE, UIColors.ACCENT)
 	title.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	title_zone.add_child(title)
 
 	# Карта заклинания (фронт) — в центре магического круга.
