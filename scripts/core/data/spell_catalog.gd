@@ -13,7 +13,10 @@ extends RefCounted
 ## названия и пергамент выше — свои зоны текста (доли рамки, замерены по картинке:
 ## плашка 0.506–0.617, пергамент 0.617–0.92 и уже по ширине).
 const FRAME: Texture2D = preload("res://assets/cards/spell/card-frame.png")
-const Z_TITLE := Rect2(0.110, 0.517, 0.780, 0.090)
+const Z_TITLE := Rect2(0.110, 0.509, 0.780, 0.090)
+# Текст плашки в тон фиолетовой рамке (у актива — янтарь и голубой на синей плашке).
+const C_TITLE := Color(0.88, 0.80, 0.94)  # светлая сирень
+const C_SUB := Color(0.68, 0.60, 0.78)  # приглушённая сирень — трейт
 const Z_DESC := Rect2(0.150, 0.645, 0.700, 0.260)
 
 const PATH := "res://data/spells.json"
@@ -80,6 +83,8 @@ static func card_payload(s: Dictionary) -> Dictionary:
 		"id": String(s.get("id", "")),
 		"base_frame": FRAME,
 		"zones": {"title": Z_TITLE, "desc": Z_DESC},
+		"title_color": C_TITLE,
+		"sub_color": C_SUB,
 	}
 	var art: Texture2D = card_art(String(s.get("id", "")))
 	if art != null:

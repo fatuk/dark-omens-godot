@@ -14,6 +14,7 @@ extends Control
 ##            обычно, меняется только рисунок рамки;
 ##   zones  — у своей рамки плашка/пергамент сдвинуты (заклинание): Rect2-доли для
 ##            заголовка (title) и описания (desc) вместо Z_TITLE / Z_DESC;
+##   title_color / sub_color — цвета названия и трейта в тон своей рамке;
 ##   layout — "clue": раскладка улики (заголовок, подзаголовок, описание по тёмному
 ##            окну на всю карту) вместо плашек рамки актива.
 
@@ -332,6 +333,8 @@ func set_card(d: Dictionary) -> void:
 	# Заголовок/подзаголовок: у улики — свои зоны над окном, плашечные лейблы актива
 	# прячем; иначе наоборот.
 	_title.text = String(d.get("title", ""))
+	_title.add_theme_color_override("font_color", d.get("title_color", C_TITLE_TXT))
+	_sub.add_theme_color_override("font_color", d.get("sub_color", C_SUB_TXT))
 	_title.visible = not is_msg and not is_clue
 	_fit_title()
 	_sub.text = String(d.get("subtitle", ""))
