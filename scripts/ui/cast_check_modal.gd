@@ -15,15 +15,15 @@ extends CanvasLayer
 ##
 ## Вид — «лист» по арту cards/spell/spell-cast.png (рамка, магический круг, стол со
 ## свечами): окно в пропорциях картинки, контент по её зонам (доли листа): заголовок
-## над кругом, карта — в круге, кубы и кнопки — на столе.
+## наверху, крупная карта на круге, под ней кубы, у нижнего края кнопки.
 
 const _SHEET_TEX: Texture2D = preload("res://assets/cards/spell/spell-cast.png")
 const _SHEET_H: float = 940.0  # высота листа; ширина — по аспекту картинки
-const _CIRCLE := Vector2(0.5, 0.33)  # центр магического круга (доли листа)
-const _CARD_H_FRAC: float = 0.44  # высота карты — доля высоты листа
+const _CARD_CENTER := Vector2(0.5, 0.372)  # центр карты (доли листа): на круге, крупно
+const _CARD_H_FRAC: float = 0.535  # высота карты — доля высоты листа
 const _Z_TITLE := Rect2(0.12, 0.03, 0.76, 0.06)
-const _Z_DICE := Rect2(0.10, 0.63, 0.80, 0.13)
-const _Z_BUTTONS := Rect2(0.16, 0.79, 0.68, 0.08)
+const _Z_DICE := Rect2(0.10, 0.665, 0.80, 0.165)  # сразу под картой
+const _Z_BUTTONS := Rect2(0.14, 0.86, 0.72, 0.085)  # у нижнего края
 
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
@@ -156,7 +156,8 @@ func _build(cs: Dictionary) -> void:
 	card.custom_minimum_size = card_size
 	card.size = card_size
 	card.position = (
-		Vector2(_sheet.custom_minimum_size.x * _CIRCLE.x, _SHEET_H * _CIRCLE.y) - card_size * 0.5
+		Vector2(_sheet.custom_minimum_size.x * _CARD_CENTER.x, _SHEET_H * _CARD_CENTER.y)
+		- card_size * 0.5
 	)
 	var spell_payload: Dictionary = SpellCatalog.card_payload(spell)
 	card.set_card(spell_payload)
