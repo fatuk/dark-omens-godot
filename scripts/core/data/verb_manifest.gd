@@ -163,8 +163,9 @@ static func _render_param(p: Dictionary, node: Dictionary) -> String:
 
 
 # Состояние задано ВИДОМ, а не картой (gainCondition kind:"madness" — случайное
-# безумие; loseCondition kind:[…] — любое из видов): «любое «Безумие»». Конкретная
-# карта выпадет только при применении. Ни карты, ни вида — просто «любое».
+# безумие; loseCondition kind:[…] — любое из видов): имя вида, несколько — через «/»
+# («Вы получаете состояние «Безумие»»). Конкретная карта выпадет только при применении.
+# Ни карты, ни вида — «любое».
 static func _condition_kind_text(node: Dictionary) -> String:
 	var kinds: Variant = node.get("kind", "")
 	var list: Array = kinds if kinds is Array else ([kinds] if not String(kinds).is_empty() else [])
@@ -173,7 +174,7 @@ static func _condition_kind_text(node: Dictionary) -> String:
 		names.append(_t("COND_KIND_" + String(k_v).to_upper()))
 	if names.is_empty():
 		return _t("COND_ANY")
-	return _t("COND_ANY_OF_KIND") % " / ".join(names)
+	return " / ".join(names)
 
 
 static func _skill_name(s: String) -> String:
