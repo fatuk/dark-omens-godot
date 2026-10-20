@@ -17,6 +17,12 @@ const Z_TITLE := Rect2(0.110, 0.509, 0.780, 0.090)
 # Текст плашки в тон фиолетовой рамке (у актива — янтарь и голубой на синей плашке).
 const C_TITLE := Color(0.88, 0.80, 0.94)  # светлая сирень
 const C_SUB := Color(0.68, 0.60, 0.78)  # приглушённая сирень — трейт
+# Арт подгоняется под тон рамки: тритон тёмный фиолет → фиолет → светлая сирень,
+# смешанный с исходником. static — крутится на лету; 0 — арт как есть.
+static var TONE_AMOUNT: float = 0.55
+const TONE_SHADOW := Color(0.07, 0.03, 0.12)
+const TONE_MID := Color(0.42, 0.24, 0.55)
+const TONE_LIGHT := Color(0.95, 0.86, 1.0)
 const Z_DESC := Rect2(0.150, 0.645, 0.700, 0.260)
 
 const PATH := "res://data/spells.json"
@@ -84,6 +90,8 @@ static func card_payload(s: Dictionary) -> Dictionary:
 		"base_frame": FRAME,
 		"zones": {"title": Z_TITLE, "desc": Z_DESC},
 		"title_color": C_TITLE,
+		"art_tone":
+		{"amount": TONE_AMOUNT, "shadow": TONE_SHADOW, "mid": TONE_MID, "light": TONE_LIGHT},
 		"sub_color": C_SUB,
 	}
 	var art: Texture2D = card_art(String(s.get("id", "")))

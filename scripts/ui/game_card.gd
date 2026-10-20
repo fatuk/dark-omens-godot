@@ -15,6 +15,7 @@ extends Control
 ##   zones  — у своей рамки плашка/пергамент сдвинуты (заклинание): Rect2-доли для
 ##            заголовка (title) и описания (desc) вместо Z_TITLE / Z_DESC;
 ##   title_color / sub_color — цвета названия и трейта в тон своей рамке;
+##   art_tone — {amount, shadow, mid, light: Color}: подогнать арт под тон рамки;
 ##   layout — "clue": раскладка улики (заголовок, подзаголовок, описание по тёмному
 ##            окну на всю карту) вместо плашек рамки актива.
 
@@ -28,14 +29,28 @@ const ASPECT: float = 1768.0 / 2796.0
 ## скруглённых углах рамки торчали бы прямоугольные углы арта — режем по радиусу.
 const ART_CORNER_RADIUS: float = 24.0
 
+# Скругление углов арта + подгонка тона (art_tone): тритон по яркости (тени → shadow,
+# полутона → mid, света → light), смешанный с исходником на tone_amount. Средняя точка
+# держит цвет: в дуотоне тёмный арт уходил в серость. 0 — арт как есть.
 const _ROUND_CORNERS_SHADER := """
 shader_type canvas_item;
 uniform float radius_px = 24.0;
 uniform vec2 rect_px = vec2(100.0, 100.0);
+uniform float tone_amount = 0.0;
+uniform vec3 tone_shadow = vec3(0.0);
+uniform vec3 tone_mid = vec3(0.5);
+uniform vec3 tone_light = vec3(1.0);
 void fragment() {
 	vec2 q = abs(UV * rect_px - rect_px * 0.5) - (rect_px * 0.5 - vec2(radius_px));
 	float dist = length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0) - radius_px;
 	COLOR.a *= 1.0 - smoothstep(-1.0, 1.0, dist);
+	if (tone_amount > 0.0) {
+		float l = dot(COLOR.rgb, vec3(0.299, 0.587, 0.114));
+		vec3 tri = l < 0.5
+			? mix(tone_shadow, tone_mid, l * 2.0)
+			: mix(tone_mid, tone_light, (l - 0.5) * 2.0);
+		COLOR.rgb = mix(COLOR.rgb, tri, tone_amount);
+	}
 }
 """
 
@@ -383,6 +398,7 @@ func set_card(d: Dictionary) -> void:
 		_art_fill.color = d.get("art_color", C_ART_FILL)
 		_glyph.text = String(d.get("glyph", ""))
 		_glyph.visible = not _glyph.text.is_empty()
+	_apply_art_tone(d.get("art_tone", {}))
 
 
 # Переложить параметры дыма из static в материал (панель тюнинга дёргает по группе).
@@ -468,6 +484,17 @@ func _process(delta: float) -> void:
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
+
+
+# Тон арта под рамку (заклинание — сирень); пусто — арт без коррекции.
+func _apply_art_tone(tone: Dictionary) -> void:
+	var m := _art.material as ShaderMaterial
+	if m == null:
+		return
+	m.set_shader_parameter("tone_amount", float(tone.get("amount", 0.0)))
+	for key: String in ["shadow", "mid", "light"]:
+		var c: Color = tone.get(key, Color(0.5, 0.5, 0.5))
+		m.set_shader_parameter("tone_" + key, Vector3(c.r, c.g, c.b))
 
 
 # Control, заякоренный на дробную зону рамки (доли 0..1).

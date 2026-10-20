@@ -598,3 +598,6 @@ func test_spell_card_uses_own_frame_and_zones() -> void:
 	assert_eq(p.get("base_frame"), SpellCatalog.FRAME, "рамка заклинания")
 	assert_eq((p.get("zones", {}) as Dictionary).get("title"), SpellCatalog.Z_TITLE)
 	assert_eq((p.get("zones", {}) as Dictionary).get("desc"), SpellCatalog.Z_DESC)
+	var tone: Dictionary = p.get("art_tone", {})
+	assert_gt(float(tone.get("amount", 0.0)), 0.0, "арт подгоняется под сиреневый тон рамки")
+	assert_eq(tone.get("mid"), SpellCatalog.TONE_MID)
