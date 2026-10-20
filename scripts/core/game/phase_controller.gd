@@ -332,15 +332,8 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 				return false
 			p["actions_left"] = int(p["actions_left"]) - 1
 		GameActions.CAST_SPELL:
-			# Ritual-заклинание: каст = действие. begin_ritual стартует spell-проверку
-			# (БЕЗ броска); игрок бросает/перебрасывает в модалке и жмёт «Применить»
-			# (apply_cast → release_cast_turn). casting держит ход до применения, как
-			# shopping для магазина. false — карта невалидна (действие не тратим).
-			if not _gs._spell.begin_ritual(pid, int(payload.get("item", -1))):
-				GameConsole.warn("[Заклинание] %s — нельзя прочитать" % _gs.name_of(pid))
+			if not _apply_cast_spell(pid, p, payload, used):
 				return false
-			p["casting"] = true
-			p["actions_left"] = int(p["actions_left"]) - 1
 		GameActions.PASS:
 			p["actions_left"] = 0
 		_:
@@ -415,6 +408,40 @@ func _announce_action_feed(pid: String, action_type: String, payload: Dictionary
 		GameActions.INVESTIGATOR_ABILITY:
 			_gs.announce_action(pid, action_type)
 		# GameActions.PASS — не анонсируем
+
+
+# Ritual-заклинание: каст = действие. begin_ritual стартует spell-проверку (БЕЗ броска);
+# игрок бросает/перебрасывает в модалке и жмёт «Применить» (apply_cast →
+# release_cast_turn). casting держит ход до применения, как shopping для магазина.
+# Разные заклинания за ход — можно, ОДНО И ТО ЖЕ — раз в раунд: его каст — действие этой
+# карты, а действие не повторяют (метка cast_spell:<id> в actions_used). false — каст
+# невозможен (действие не тратим).
+func _apply_cast_spell(pid: String, p: Dictionary, payload: Dictionary, used: Array) -> bool:
+	var item: int = int(payload.get("item", -1))
+	var cast_key: String = _cast_key(p, item)
+	if used.has(cast_key):
+		GameConsole.warn(
+			"[Заклинание] %s — это заклинание уже читали в этом раунде" % _gs.name_of(pid)
+		)
+		return false
+	if not _gs._spell.begin_ritual(pid, item):
+		GameConsole.warn("[Заклинание] %s — нельзя прочитать" % _gs.name_of(pid))
+		return false
+	p["casting"] = true
+	p["actions_left"] = int(p["actions_left"]) - 1
+	used.append(cast_key)
+	p["actions_used"] = used
+	return true
+
+
+# Метка каста заклинания в actions_used: cast_spell:<id заклинания> — по id, а не по
+# индексу в руке (индексы сдвигаются, когда карты приходят/уходят).
+func _cast_key(p: Dictionary, item_index: int) -> String:
+	var items: Array = p.get("items", [])
+	var sid: String = ""
+	if item_index >= 0 and item_index < items.size():
+		sid = AssetCatalog.entry_id(items[item_index])
+	return "%s:%s" % [GameActions.CAST_SPELL, sid]
 
 
 ## Хост: игрок подтвердил выбор триггер-заклинаний в промпте отдыха (item-индексы;
