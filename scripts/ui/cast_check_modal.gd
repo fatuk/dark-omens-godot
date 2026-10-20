@@ -12,12 +12,23 @@ extends CanvasLayer
 ##
 ## Бросок/перебросы — хост-авторитетны в active_check (owner="spell"); модалка лишь
 ## отражает синкнутое состояние (реактивно по state_changed).
+##
+## Вид — «лист» по арту cards/spell/spell-cast.png (рамка, магический круг, стол со
+## свечами): окно в пропорциях картинки, контент по её зонам (доли листа): заголовок
+## над кругом, карта — в круге, кубы и кнопки — на столе.
 
-const _CARD_MIN := Vector2(290, 459)
+const _SHEET_TEX: Texture2D = preload("res://assets/cards/spell/spell-cast.png")
+const _SHEET_H: float = 940.0  # высота листа; ширина — по аспекту картинки
+const _CIRCLE := Vector2(0.5, 0.33)  # центр магического круга (доли листа)
+const _CARD_H_FRAC: float = 0.44  # высота карты — доля высоты листа
+const _Z_TITLE := Rect2(0.12, 0.03, 0.76, 0.06)
+const _Z_DICE := Rect2(0.10, 0.63, 0.80, 0.13)
+const _Z_BUTTONS := Rect2(0.16, 0.79, 0.68, 0.08)
 
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
-@onready var _vbox: VBoxContainer = %VBox
+
+var _sheet: Control  # лист: фон-картинка + зоны контента (пересобираются в _build)
 
 var _sig: String = ""  # подпись текущего каста (перестраиваем карту только при смене)
 var _last_dice: Array = []
@@ -32,9 +43,44 @@ var _apply_btn: Button
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	UIStyle.style_modal_panel(_panel)
+	_build_sheet()
 	GameState.state_changed.connect(_refresh)
 	_refresh()
+
+
+# Панель без своей рамки — её место занимает лист-картинка в пропорциях арта.
+func _build_sheet() -> void:
+	_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	var size: Vector2 = Vector2(
+		_SHEET_H * _SHEET_TEX.get_width() / _SHEET_TEX.get_height(), _SHEET_H
+	)
+	_panel.custom_minimum_size = size
+	_sheet = Control.new()
+	_sheet.name = "Sheet"
+	_sheet.custom_minimum_size = size
+	_panel.add_child(_sheet)
+	var bg := TextureRect.new()
+	bg.name = "Background"
+	bg.texture = _SHEET_TEX
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sheet.add_child(bg)
+
+
+# Зона листа по долям (x, y, w, h ∈ 0..1).
+func _zone(zname: String, r: Rect2) -> Control:
+	var c := Control.new()
+	c.name = zname
+	c.anchor_left = r.position.x
+	c.anchor_top = r.position.y
+	c.anchor_right = r.position.x + r.size.x
+	c.anchor_bottom = r.position.y + r.size.y
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sheet.add_child(c)
+	return c
 
 
 # ── Доступ к стейту ───────────────────────────────────────────────────────────
@@ -89,47 +135,60 @@ func _refresh() -> void:
 
 
 func _build(cs: Dictionary) -> void:
-	for c in _vbox.get_children():
-		c.queue_free()
+	for c in _sheet.get_children():
+		if c.name != "Background":
+			_sheet.remove_child(c)
+			c.queue_free()
 	_tray = null
 
 	var spell: Dictionary = SpellCatalog.by_id(String(cs.get("spell_id", "")))
-	_vbox.add_child(UIStyle.modal_title("CAST_TITLE"))
+	var title_zone := _zone("TitleZone", _Z_TITLE)
+	var title := UIStyle.modal_title("CAST_TITLE")
+	title.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title_zone.add_child(title)
 
-	# Карта заклинания (фронт) по центру.
-	var card_row := HBoxContainer.new()
-	card_row.name = "CardRow"
-	card_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	_vbox.add_child(card_row)
+	# Карта заклинания (фронт) — в центре магического круга.
+	var card_h: float = _SHEET_H * _CARD_H_FRAC
+	var card_size := Vector2(card_h * GameCard.ASPECT, card_h)
 	var card := GameCard.new()
 	card.name = "SpellCard"
-	card.custom_minimum_size = _CARD_MIN
+	card.custom_minimum_size = card_size
+	card.size = card_size
+	card.position = (
+		Vector2(_sheet.custom_minimum_size.x * _CIRCLE.x, _SHEET_H * _CIRCLE.y) - card_size * 0.5
+	)
 	var spell_payload: Dictionary = SpellCatalog.card_payload(spell)
 	card.set_card(spell_payload)
-	card_row.add_child(card)
+	_sheet.add_child(card)
 	CardPreview.attach_click(card, spell_payload)
 
-	# Кубы spell-проверки.
+	# Кубы spell-проверки — на столе под кругом.
+	var dice_zone := _zone("DiceZone", _Z_DICE)
 	_dice_box = HBoxContainer.new()
 	_dice_box.name = "DiceBox"
 	_dice_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	_dice_box.add_theme_constant_override("separation", 6)
-	_dice_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_vbox.add_child(_dice_box)
+	_dice_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dice_zone.add_child(_dice_box)
 
 	# Кнопки: бросок · применить.
+	var btn_zone := _zone("ButtonsZone", _Z_BUTTONS)
 	var btns := HBoxContainer.new()
 	btns.name = "Buttons"
 	btns.add_theme_constant_override("separation", 16)
-	_vbox.add_child(btns)
+	btns.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	btn_zone.add_child(btns)
 
 	_roll_btn = UIStyle.button("CAST_ROLL", UIColors.ACCENT)
 	_roll_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_roll_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # родная высота: зона выше кнопки
 	_roll_btn.pressed.connect(_on_roll)
 	btns.add_child(_roll_btn)
 
 	_apply_btn = UIStyle.button("CAST_APPLY", UIColors.ACCENT)
 	_apply_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_apply_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # родная высота: зона выше кнопки
 	_apply_btn.pressed.connect(_on_apply)
 	btns.add_child(_apply_btn)
 
