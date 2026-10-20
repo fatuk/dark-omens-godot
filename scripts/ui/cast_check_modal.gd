@@ -21,7 +21,7 @@ const _SHEET_TEX: Texture2D = preload("res://assets/cards/spell/spell-cast.png")
 const _SHEET_H: float = 940.0  # высота листа; ширина — по аспекту картинки
 const _CARD_CENTER := Vector2(0.5, 0.372)  # центр карты (доли листа): на круге, крупно
 const _CARD_H_FRAC: float = 0.535  # высота карты — доля высоты листа
-const _Z_TITLE := Rect2(0.12, 0.03, 0.76, 0.06)
+const _Z_TITLE := Rect2(0.12, 0.045, 0.76, 0.06)  # посередине между орнаментом рамки и картой
 const _Z_DICE := Rect2(0.10, 0.665, 0.80, 0.165)  # сразу под картой
 const _Z_BUTTONS := Rect2(0.14, 0.86, 0.72, 0.085)  # у нижнего края
 
