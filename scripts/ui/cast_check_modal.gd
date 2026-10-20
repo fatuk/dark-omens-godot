@@ -55,14 +55,19 @@ const _FLAME_COLOR := Color(1.0, 0.68, 0.34)
 
 # Магическая аура за картой: фиолетовые языки лижут края карты наружу (arcane_aura).
 const _AURA_SHADER := preload("res://assets/shaders/arcane_aura.gdshader")
-const _AURA_REACH: float = 150.0  # px: как далеко от края карты достают языки
+# Крутятся в панели тюнинга (Ctrl+M, секция «ОКНО КАСТА — АУРА»); найденное запекается.
 static var AURA_INTENSITY: float = 0.85
 static var AURA_SPEED: float = 0.55
+static var AURA_RISE: float = 0.35  # тяга языков вверх
+static var AURA_REACH: float = 150.0  # px: как далеко от края карты достают языки
+static var AURA_DENSITY: float = 0.42  # порог языков: ниже — гуще
+static var AURA_SWIRL: float = 2.2  # закрутка
 
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
 
 var _sheet: Control  # лист: фон-картинка + зоны контента (пересобираются в _build)
+var _aura: ColorRect  # магическая аура за картой (параметры — static AURA_*)
 
 var _sig: String = ""  # подпись текущего каста (перестраиваем карту только при смене)
 var _last_dice: Array = []
@@ -77,6 +82,7 @@ var _apply_btn: Button
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("cast_check_modal")  # панель тюнинга переприменяет ауру на лету
 	_build_sheet()
 	GameState.state_changed.connect(_refresh)
 	_refresh()
@@ -107,26 +113,38 @@ func _build_sheet() -> void:
 	_build_aura(bg, size)
 
 
-# Аура — прямоугольник, центрированный на карте с запасом _AURA_REACH; ребёнок фона —
+# Аура — прямоугольник, центрированный на карте с запасом AURA_REACH; ребёнок фона —
 # под картой (она закрывает середину) и переживает пересборку листа.
-func _build_aura(bg: Control, size: Vector2) -> void:
-	var card_size: Vector2 = _card_size()
-	var rect_size: Vector2 = card_size + Vector2.ONE * _AURA_REACH * 2.0
+func _build_aura(bg: Control, _size: Vector2) -> void:
 	var mat := ShaderMaterial.new()
 	mat.shader = _AURA_SHADER
+	_aura = ColorRect.new()
+	_aura.name = "MagicAura"
+	_aura.color = Color.WHITE  # цвет считает шейдер
+	_aura.material = mat
+	_aura.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.add_child(_aura)
+	apply_tuning()
+
+
+## Переприменить параметры ауры (static AURA_*) — зовёт панель тюнинга.
+func apply_tuning() -> void:
+	if not is_instance_valid(_aura):
+		return
+	var card_size: Vector2 = _card_size()
+	var rect_size: Vector2 = card_size + Vector2.ONE * AURA_REACH * 2.0
+	var sheet: Vector2 = _sheet.custom_minimum_size
+	_aura.size = rect_size
+	_aura.position = Vector2(sheet.x * _CARD_CENTER.x, sheet.y * _CARD_CENTER.y) - rect_size * 0.5
+	var mat := _aura.material as ShaderMaterial
 	mat.set_shader_parameter("rect_px", rect_size)
 	mat.set_shader_parameter("card_half_px", card_size * 0.5)
-	mat.set_shader_parameter("reach_px", _AURA_REACH)
+	mat.set_shader_parameter("reach_px", AURA_REACH)
 	mat.set_shader_parameter("intensity", AURA_INTENSITY)
 	mat.set_shader_parameter("speed", AURA_SPEED)
-	var aura := ColorRect.new()
-	aura.name = "MagicAura"
-	aura.color = Color.WHITE  # цвет считает шейдер
-	aura.material = mat
-	aura.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	aura.size = rect_size
-	aura.position = Vector2(size.x * _CARD_CENTER.x, size.y * _CARD_CENTER.y) - rect_size * 0.5
-	bg.add_child(aura)
+	mat.set_shader_parameter("rise", AURA_RISE)
+	mat.set_shader_parameter("threshold", AURA_DENSITY)
+	mat.set_shader_parameter("swirl", AURA_SWIRL)
 
 
 # Размер карты заклинания в круге (общий для ауры и самой карты).

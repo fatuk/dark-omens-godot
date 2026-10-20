@@ -14,6 +14,8 @@ uniform vec4 color_bright : source_color = vec4(0.86, 0.62, 1.0, 1.0);
 uniform float intensity : hint_range(0.0, 3.0) = 1.0;
 uniform float speed : hint_range(0.0, 3.0) = 0.55;
 uniform float rise : hint_range(0.0, 1.0) = 0.35;  // тяга языков вверх
+uniform float threshold : hint_range(0.0, 1.0) = 0.42;  // ниже — языков больше и гуще
+uniform float swirl : hint_range(0.0, 6.0) = 2.2;  // сила закрутки (domain-warp)
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -57,9 +59,9 @@ void fragment() {
 	float ang = atan(p.y, p.x);
 	vec2 q = vec2(ang * 2.2, d * 2.4 - t + p.y / reach_px * rise);
 	vec2 warp = vec2(fbm(q + vec2(0.0, t * 0.6)), fbm(q + vec2(5.2, 1.3 - t * 0.4)));
-	float n = fbm(q * 1.6 + warp * 2.2);
+	float n = fbm(q * 1.6 + warp * swirl);
 
-	float tongues = smoothstep(0.42, 0.85, n);
+	float tongues = smoothstep(threshold, threshold + 0.43, n);
 	float fade = clamp(1.0 - d, 0.0, 1.0);
 	fade *= fade;
 	float halo = exp(-max(d, 0.0) * 4.0) * 0.35;  // мягкое сияние у самого края карты

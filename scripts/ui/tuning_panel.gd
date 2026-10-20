@@ -15,6 +15,7 @@ extends CanvasLayer
 @onready var _vbox: VBoxContainer = %VBox
 
 const _MythosModal := preload("res://scripts/ui/mythos_modal.gd")
+const _CastModal := preload("res://scripts/ui/cast_check_modal.gd")
 
 # Кэш: key -> {slider: HSlider, val: Label, default: float, set: Callable}.
 var _rows: Dictionary = {}
@@ -1137,6 +1138,61 @@ func _build_specs() -> Array:
 			"default": UIStyle.MODAL_POP,
 			"set": _set_modal_pop
 		},
+		{"section": "ОКНО КАСТА — АУРА"},
+		{
+			"key": "aura_intensity",
+			"label": "Яркость",
+			"min": 0.0,
+			"max": 3.0,
+			"step": 0.05,
+			"default": _CastModal.AURA_INTENSITY,
+			"set": _set_cast_aura.bind("AURA_INTENSITY")
+		},
+		{
+			"key": "aura_speed",
+			"label": "Скорость",
+			"min": 0.0,
+			"max": 3.0,
+			"step": 0.05,
+			"default": _CastModal.AURA_SPEED,
+			"set": _set_cast_aura.bind("AURA_SPEED")
+		},
+		{
+			"key": "aura_rise",
+			"label": "Тяга вверх",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": _CastModal.AURA_RISE,
+			"set": _set_cast_aura.bind("AURA_RISE")
+		},
+		{
+			"key": "aura_reach",
+			"label": "Длина языков, px",
+			"min": 30.0,
+			"max": 300.0,
+			"step": 5.0,
+			"default": _CastModal.AURA_REACH,
+			"set": _set_cast_aura.bind("AURA_REACH")
+		},
+		{
+			"key": "aura_density",
+			"label": "Порог (ниже — гуще)",
+			"min": 0.0,
+			"max": 0.9,
+			"step": 0.01,
+			"default": _CastModal.AURA_DENSITY,
+			"set": _set_cast_aura.bind("AURA_DENSITY")
+		},
+		{
+			"key": "aura_swirl",
+			"label": "Закрутка",
+			"min": 0.0,
+			"max": 6.0,
+			"step": 0.1,
+			"default": _CastModal.AURA_SWIRL,
+			"set": _set_cast_aura.bind("AURA_SWIRL")
+		},
 		{"section": "МИФЫ (модалка карты)"},
 		{
 			"key": "mythos_panel_w",
@@ -2195,6 +2251,25 @@ func _set_modal_pop(v: float) -> void:
 # Модалка Мифов: все параметры — static var скрипта; открытое окно переприменяет их.
 # bind передаёт имя поля последним аргументом (после значения слайдера). Явный match:
 # set() по имени на классе (не экземпляре) GDScript не позволяет.
+# Аура окна каста: пишем static и просим открытое окно переприменить.
+func _set_cast_aura(v: float, field: String) -> void:
+	match field:
+		"AURA_INTENSITY":
+			_CastModal.AURA_INTENSITY = v
+		"AURA_SPEED":
+			_CastModal.AURA_SPEED = v
+		"AURA_RISE":
+			_CastModal.AURA_RISE = v
+		"AURA_REACH":
+			_CastModal.AURA_REACH = v
+		"AURA_DENSITY":
+			_CastModal.AURA_DENSITY = v
+		"AURA_SWIRL":
+			_CastModal.AURA_SWIRL = v
+	if is_inside_tree():
+		get_tree().call_group("cast_check_modal", "apply_tuning")
+
+
 func _set_mythos(v: float, field: String) -> void:
 	match field:
 		"PANEL_W":
