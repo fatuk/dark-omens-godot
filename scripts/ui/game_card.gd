@@ -7,10 +7,13 @@ extends Control
 ## в одном месте, и обе колоды обновятся.
 ##
 ## API: set_card({cost, title, subtitle?, desc, art? : Texture2D, art_color?, glyph?,
-##                frame? : Texture2D, base_frame? : Texture2D, layout? : "clue"})
+##                frame? : Texture2D, base_frame? : Texture2D, zones? : {title?, desc?},
+##                layout? : "clue"})
 ##   frame  — полно-артовая рамка (карта Концентрации, улика);
 ##   base_frame — своя рамка ТОЙ ЖЕ разметки, что у актива (артефакт): арт и зоны как
 ##            обычно, меняется только рисунок рамки;
+##   zones  — у своей рамки плашка/пергамент сдвинуты (заклинание): Rect2-доли для
+##            заголовка (title) и описания (desc) вместо Z_TITLE / Z_DESC;
 ##   layout — "clue": раскладка улики (заголовок, подзаголовок, описание по тёмному
 ##            окну на всю карту) вместо плашек рамки актива.
 
@@ -152,6 +155,7 @@ var _frame: TextureRect
 var _message: Label  # карта-сообщение (chat): одна центрированная фраза в плашке
 var _smoke: ColorRect  # клубящийся дым в окне карты-сообщения (поверх рамки)
 var _desc_zone: Control  # зона описания — у улики переезжает в Z_CLUE_DESC
+var _title_zone: Control  # зона заголовка — у своей рамки (zones.title) переезжает
 var _clue_title: Label  # заголовок улики (имя локации) — своя зона над окном
 var _clue_sub: Label
 
@@ -234,6 +238,7 @@ func _build() -> void:
 
 	# Заголовок + трейт — на синей плашке.
 	var title_zone := _zone("Title", Z_TITLE)
+	_title_zone = title_zone
 	var tvb := VBoxContainer.new()
 	tvb.name = "TitleVB"
 	tvb.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -337,7 +342,10 @@ func set_card(d: Dictionary) -> void:
 	_clue_sub.visible = is_clue and not _clue_sub.text.is_empty()
 	# Описание: у улики — пергамент под шапкой, тёмная тушь и крупнее; у актива —
 	# пергамент рамки, чёрный, базовый размер.
-	_set_zone_rect(_desc_zone, Z_CLUE_DESC if is_clue else Z_DESC)
+	# Зоны своей рамки (заклинание: плашка и пергамент выше, чем у актива).
+	var zones: Dictionary = d.get("zones", {})
+	_set_zone_rect(_title_zone, zones.get("title", Z_TITLE))
+	_set_zone_rect(_desc_zone, Z_CLUE_DESC if is_clue else zones.get("desc", Z_DESC))
 	_desc.add_theme_color_override("font_color", C_CLUE_DESC if is_clue else C_DESC_TXT)
 	# Улика — повествование по пергаменту: ровно слева, как абзац; у актива — по центру.
 	_desc.horizontal_alignment = (

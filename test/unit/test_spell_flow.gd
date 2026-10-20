@@ -590,3 +590,11 @@ func test_poison_mist_emits_monster_discard_by_toughness() -> void:
 			hit = true
 			assert_eq(int(n.get("_successes", 0)), 3, "_successes = результат каста")
 	assert_true(hit, "Poison Mist эмитит discardMonster по стойкости")
+
+
+func test_spell_card_uses_own_frame_and_zones() -> void:
+	# Фиолетовая рамка заклинания: плашка и пергамент выше, чем у актива — свои зоны.
+	var p: Dictionary = SpellCatalog.card_payload(SpellCatalog.by_id("shriveling"))
+	assert_eq(p.get("base_frame"), SpellCatalog.FRAME, "рамка заклинания")
+	assert_eq((p.get("zones", {}) as Dictionary).get("title"), SpellCatalog.Z_TITLE)
+	assert_eq((p.get("zones", {}) as Dictionary).get("desc"), SpellCatalog.Z_DESC)

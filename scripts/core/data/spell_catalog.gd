@@ -9,6 +9,13 @@ extends RefCounted
 ## Заклинание двустороннее: front (каст: trigger/test/modifier/onPass) + backs
 ## (набор рубашек; при касте тянется случайная, каждая — tiers по числу успехов).
 
+## Рамка карты заклинания (фиолетовая): размер как у актива (GameCard.ASPECT), но плашка
+## названия и пергамент выше — свои зоны текста (доли рамки, замерены по картинке:
+## плашка 0.506–0.617, пергамент 0.617–0.92 и уже по ширине).
+const FRAME: Texture2D = preload("res://assets/cards/spell/card-frame.png")
+const Z_TITLE := Rect2(0.110, 0.517, 0.780, 0.090)
+const Z_DESC := Rect2(0.150, 0.645, 0.700, 0.260)
+
 const PATH := "res://data/spells.json"
 
 static var _list: Array = []
@@ -71,6 +78,8 @@ static func card_payload(s: Dictionary) -> Dictionary:
 		"subtitle": "TRAIT_SPELL",
 		"desc": (s.get("front", {}) as Dictionary).get("abilityKey", ""),
 		"id": String(s.get("id", "")),
+		"base_frame": FRAME,
+		"zones": {"title": Z_TITLE, "desc": Z_DESC},
 	}
 	var art: Texture2D = card_art(String(s.get("id", "")))
 	if art != null:
