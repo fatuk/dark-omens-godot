@@ -210,6 +210,7 @@ func _build(cs: Dictionary) -> void:
 		Vector2(_sheet.custom_minimum_size.x * _CARD_CENTER.x, _SHEET_H * _CARD_CENTER.y)
 		- card_size * 0.5
 	)
+	card.set_font_scale(card_size.x / HandCarousel.CARD_W)  # текст в пропорции, как в веере
 	var spell_payload: Dictionary = SpellCatalog.card_payload(spell)
 	card.set_card(spell_payload)
 	_sheet.add_child(card)
