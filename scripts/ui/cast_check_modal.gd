@@ -57,10 +57,10 @@ const _FLAME_COLOR := Color(1.0, 0.68, 0.34)
 const _AURA_SHADER := preload("res://assets/shaders/arcane_aura.gdshader")
 # Крутятся в панели тюнинга (Ctrl+M, секция «ОКНО КАСТА — АУРА»); найденное запекается.
 static var AURA_INTENSITY: float = 0.85
-static var AURA_SPEED: float = 0.55
+static var AURA_SPEED: float = 0.4
 static var AURA_RISE: float = 0.35  # тяга языков вверх
-static var AURA_REACH: float = 150.0  # px: как далеко от края карты достают языки
-static var AURA_DENSITY: float = 0.42  # порог языков: ниже — гуще
+static var AURA_REACH: float = 75.0  # px: как далеко от края карты достают языки
+static var AURA_DENSITY: float = 0.41  # порог языков: ниже — гуще
 static var AURA_SWIRL: float = 2.2  # закрутка
 
 @onready var _root: Control = $Root
