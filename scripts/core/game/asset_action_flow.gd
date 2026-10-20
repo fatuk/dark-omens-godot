@@ -165,19 +165,25 @@ func resolve_decision(pid: String, index: int) -> void:
 	if not _gs.is_host() or _run.is_empty() or String(_run.get("pid", "")) != pid:
 		return
 	var md: Dictionary = _gs.mythos_decision
-	var opts: Array = md.get("options", [])
-	var kind: String = String(md.get("kind", "choice"))
-	var value: Variant = index
-	if index >= 0 and index < (opts as Array).size():
-		var opt: Dictionary = opts[index]
-		match kind:
-			"monster", "space", "destination", "asset":
-				value = String(opt.get("ref", ""))
-			"target":
-				value = String(opt.get("pid", ""))
-	(_run["decisions"] as Dictionary)[String(md.get("path", ""))] = value
+	(_run["decisions"] as Dictionary)[String(md.get("path", ""))] = decision_value(md, index)
 	_gs.mythos_decision = {}
 	_step()
+
+
+## Что записать решением по ответу index на вопрос md (mythos_decision): ref монстра,
+## локации или карты, pid сыщика, иначе — индекс ветки. Общий разбор для всех
+## прогонов, что спрашивают через модалку решения (активы, касты заклинаний).
+static func decision_value(md: Dictionary, index: int) -> Variant:
+	var opts: Array = md.get("options", [])
+	if index < 0 or index >= opts.size():
+		return index
+	var opt: Dictionary = opts[index]
+	match String(md.get("kind", "choice")):
+		"monster", "space", "destination", "asset", "clue":
+			return String(opt.get("ref", ""))
+		"target":
+			return String(opt.get("pid", ""))
+	return index
 
 
 # ── Внутреннее: шаг прогона ───────────────────────────────────────────────────
@@ -237,7 +243,7 @@ func _step() -> void:
 			"path": String(pending.get("path", "")),
 			"options": pending.get("options", []),
 			"title_key": String(asset.get("nameKey", "MYTHOS_DECISION_TITLE")),
-			"prompt_key": _prompt_key(kind, String(pending.get("verb", ""))),
+			"prompt_key": prompt_key_for(kind, String(pending.get("verb", ""))),
 		}
 		_sync()
 		return
@@ -459,7 +465,7 @@ func _on_gain(asset: Dictionary) -> Array:
 
 # Подсказка модалки: по виду выбора и глаголу — «кого сбросить» и «кого ранить»
 # читаются по-разному. Пусто → модалка возьмёт подсказку по умолчанию.
-func _prompt_key(kind: String, verb: String) -> String:
+static func prompt_key_for(kind: String, verb: String) -> String:
 	match [kind, verb]:
 		["monster", "discardMonster"], ["monster", "defeatMonster"]:
 			return "PICK_MONSTER_DISCARD"

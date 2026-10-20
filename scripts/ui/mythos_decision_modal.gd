@@ -181,7 +181,7 @@ func _option_label(opt: Dictionary, kind: String) -> String:
 				tr("SPACE_CHOICE_LABEL")
 				% [tr(String(opt.get("name", "?"))), int(opt.get("count", 0))]
 			)
-		"destination", "asset":
+		"destination", "asset", "clue":
 			return tr(String(opt.get("name", "?")))
 		"target":
 			return String(opt.get("name", "?"))

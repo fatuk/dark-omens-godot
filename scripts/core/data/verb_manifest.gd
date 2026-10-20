@@ -27,6 +27,10 @@ const _SKILL_KEYS := {
 	"observation": "SKILL_OBSERVATION",
 	"strength": "SKILL_STRENGTH",
 	"will": "SKILL_WILL",
+	# improveSkill/impairSkill без конкретного навыка: «на выбор», «все», не указан.
+	"choice": "SKILL_OF_CHOICE",
+	"all": "SKILL_EVERY",
+	"": "SKILL_SOME",
 }
 
 

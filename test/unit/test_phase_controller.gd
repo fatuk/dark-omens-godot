@@ -90,8 +90,12 @@ class StubSpell:
 		prompt_events.append(event)
 		return prompt_returns
 
-	func host_apply_trigger_spells(_pid: String, indices: Array, _flow: Dictionary = {}) -> bool:
+	func host_apply_trigger_spells(
+		_pid: String, indices: Array, _flow: Dictionary = {}, then: Callable = Callable()
+	) -> bool:
 		resolved.append(indices)
+		if then.is_valid():
+			then.call()  # касты без вопросов — продолжение сразу
 		return true
 
 

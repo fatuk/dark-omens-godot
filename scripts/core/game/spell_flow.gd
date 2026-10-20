@@ -22,7 +22,21 @@ extends RefCounted
 
 const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
+# Глаголы фронта, решающие, КАК пройдёт встреча (фаза встреч): «как будто на клетке
+# нет монстров» (Туманы Релеха), «встреча с уликой на её клетке» (Ясновидение).
+const _ENCOUNTER_VERBS := ["ignoreMonsters", "remoteClueEncounter"]
+
+# front.trigger реакций «когда сыщик должен потерять …» → какой стат они бережут.
+const _REACTION_STATS := {"onHealthLoss": "health", "onSanityLoss": "sanity"}
+
 var _gs: Node
+# Каст, ждущий ответа игрока (задание _make_job); пусто — нет. Хост, не синкается:
+# вопрос к игроку уходит синкаемым mythos_decision.
+var _run: Dictionary = {}
+# Касты в очереди за _run (промпт триггер-заклинаний выбрал несколько) и что
+# сделать, когда очередь опустеет (отдых — передать ход, встреча — продолжить её).
+var _queue: Array = []
+var _then: Callable = Callable()
 
 
 func _init(gs: Node) -> void:
@@ -31,34 +45,61 @@ func _init(gs: Node) -> void:
 
 ## Хост: разрешить каст заклинания item_index по результату теста (successes/dice).
 ## passed = successes ≥ 1 → фронт.onPass. Затем рубашка ЭТОЙ копии (item.back) → её
-## tiers по числу успехов → discardCard в эффектах → карта сброшена.
-## flow.backs[i] форсит конкретную рубашку (детерминизм/тесты). true — каст состоялся.
+## ярус по числу успехов → discardCard в эффектах → карта сброшена.
+## flow.backs[i] форсит конкретную рубашку (детерминизм/тесты).
+## flow.interactive — вопросы игроку («X, иначе сбросьте карту», навык на выбор, куда
+## идти, какую вещь с витрины) модалкой решения: прогон встаёт на паузу и доигрывается
+## в resolve_decision. Без interactive (тихие касты, тесты) — первая ветка, сразу.
+## flow.after — что сделать по итогу (apply_cast: моды в боевую проверку, отпустить
+## ход, реакция на потерю). true — каст принят (с interactive может ещё идти).
 func resolve_cast(
 	pid: String, item_index: int, successes: int, dice: Array, flow: Dictionary = {}
 ) -> bool:
+	var job: Dictionary = _make_job(pid, item_index, successes, dice, flow)
+	if job.is_empty():
+		return false
+	if not bool(job.get("interactive", false)):
+		_step(job)  # без вопросов — до конца сразу
+		return true
+	_queue.append(job)
+	_pump()
+	return true
+
+
+## Идёт ли каст, ждущий ответа игрока (или очередь кастов за ним).
+func busy() -> bool:
+	return not _run.is_empty() or not _queue.is_empty()
+
+
+## Хост: ответ на вопрос каста (модалка решения, driver "spell") — записать и доиграть.
+func resolve_decision(pid: String, index: int) -> void:
+	if not _gs.is_host() or _run.is_empty() or String(_run.get("pid", "")) != pid:
+		return
+	var md: Dictionary = _gs.mythos_decision
+	(_run["decisions"] as Dictionary)[String(md.get("path", ""))] = (AssetActionFlow.decision_value(
+		md, index
+	))
+	_gs.mythos_decision = {}
+	if _step(_run):
+		_run = {}
+		_pump()
+	_gs.broadcast_and_emit()
+
+
+# Задание каста: всё, что нужно прогону и его переигровке после каждого решения.
+# Рубашка выбирается ОДИН раз здесь — переигровка обязана перевернуть ту же карту.
+func _make_job(
+	pid: String, item_index: int, successes: int, dice: Array, flow: Dictionary
+) -> Dictionary:
 	if not _gs.is_host() or not _gs.players.has(pid):
-		return false
-	var p: Dictionary = _gs.players[pid]
-	var items: Array = p.get("items", [])
+		return {}
+	var items: Array = (_gs.players[pid] as Dictionary).get("items", [])
 	if item_index < 0 or item_index >= items.size():
-		return false
+		return {}
 	var sid: String = _spell_id(items[item_index])
 	var spell: Dictionary = SpellCatalog.by_id(sid)
 	if spell.is_empty():
-		return false
-
-	var ctx: Dictionary = {"successes": successes, "dice": dice}
-	var consumed: bool = false
-	# Фронт: эффект при успехе теста. Каст поверх боевой проверки (flow.nested):
-	# модификаторы проверки фронта («+3 Силы в этом бою») — НЕ навсегда игроку, а во
-	# временные моды боевой проверки: копим в flow._check_mods, apply_cast кладёт их
-	# в проверку, вернувшуюся из стека.
-	if successes >= 1:
-		var front: Dictionary = spell.get("front", {})
-		var program: Array = front.get("onPass", [])
-		if bool(flow.get("nested", false)):
-			program = _split_check_mods(program, flow)
-		consumed = _apply_effects(pid, program, ctx) or consumed
+		return {}
 	# Рубашка — закреплённая за ЭТОЙ копией (item.back, назначена при выдаче из
 	# колоды): переворачиваем ту же карту, что и в прошлый каст. flow.backs[i] —
 	# форс конкретной рубашки (детерминизм/тесты), как flow.rolls для кубиков.
@@ -66,15 +107,157 @@ func resolve_cast(
 	var forced: String = String((flow.get("backs", {}) as Dictionary).get(str(item_index), ""))
 	if forced.is_empty() and items[item_index] is Dictionary:
 		forced = String((items[item_index] as Dictionary).get("back", ""))
-	var back: Dictionary = SpellCatalog.random_back(spell, forced)
-	# Снимок ДО рубашки (фронт уже применён) — diff даст ЧИСТУЮ расплату оборота.
+	var job: Dictionary = {
+		"pid": pid,
+		"item_index": item_index,
+		"sid": sid,
+		"back": SpellCatalog.random_back(spell, forced),
+		"successes": successes,
+		"dice": dice,
+		"interactive": bool(flow.get("interactive", false)),
+		"nested": bool(flow.get("nested", false)),
+		"after": flow.get("after", {}),
+		"check_mods": [],
+		"prevent": {},
+		"encounter": [],
+		"decisions": {},
+		"rolls": {},
+	}
+	job["program"] = _cast_program(spell, job)
+	return job
+
+
+# Программа каста: фронт (если тест пройден) + выпавший ярус оборота. Узлы, что
+# меняют не сыщика, а обстановку каста, вынимаем сразу (один раз — прогон
+# переигрывается после каждого решения):
+#   • моды проверки поверх боя (nested) — во временные моды боевой проверки
+#     («+3 Силы в этой встрече»), а не жетоном навсегда;
+#   • preventLoss — сколько снять с потери, которую отражает каст-реакция;
+#   • ignoreMonsters / remoteClueEncounter — как пройдёт встреча (фаза встреч).
+# «…вместо этого» на обороте (+5 Силы вместо +3, до 4 вместо 2) — тот же узел
+# сильнее: моды проверки берутся по максимуму, предотвращение тоже.
+# addSuccesses яруса («+2 успеха к результату») встаёт ПЕРЕД фронтом: ярус выбран
+# по броску, а фронт «по стойкости» должен увидеть уже прибавленное.
+func _cast_program(spell: Dictionary, job: Dictionary) -> Array:
+	var successes: int = int(job["successes"])
+	var front: Array = []
+	if successes >= 1:
+		front = (spell.get("front", {}) as Dictionary).get("onPass", [])
+	var tier: Array = _tier_effect(job["back"], successes)
+	var program: Array = []
+	for n_v: Variant in tier:
+		if n_v is Dictionary and String((n_v as Dictionary).get("do", "")) == "addSuccesses":
+			program.append(n_v)
+	for n_v: Variant in front + tier:
+		if not (n_v is Dictionary):
+			program.append(n_v)
+			continue
+		var n: Dictionary = n_v
+		var verb: String = String(n.get("do", ""))
+		if verb == "addSuccesses" and program.has(n_v):
+			continue  # ярусный — уже в начале
+		if verb == "preventLoss":
+			_merge_prevent(job, n)
+		elif _ENCOUNTER_VERBS.has(verb):
+			(job["encounter"] as Array).append(verb)
+		elif bool(job["nested"]) and AssetCatalog._CHECK_MOD_VERBS.has(verb):
+			(job["check_mods"] as Array).append(n.duplicate(true))
+		else:
+			program.append(n)
+	return program
+
+
+# preventLoss каста: сильнейший узел побеждает — «предотвратите до 4 вместо этого».
+func _merge_prevent(job: Dictionary, n: Dictionary) -> void:
+	var cur: Dictionary = job["prevent"]
+	job["prevent"] = {
+		"stat": String(n.get("stat", cur.get("stat", "health"))),
+		"amount": maxi(int(cur.get("amount", 0)), int(n.get("amount", 1))),
+	}
+
+
+# Один проход программы каста на копии сыщика: пауза на вопросе (модалка решения,
+# driver "spell") либо коммит. true — каст доигран.
+func _step(job: Dictionary) -> bool:
+	var pid: String = String(job["pid"])
+	if not _gs.players.has(pid):
+		return true  # сыщик ушёл — каст пропадает
+	var p: Dictionary = _gs.players[pid]
+	var dup: Dictionary = p.duplicate(true)
+	var flow: Dictionary = {
+		"interactive": bool(job["interactive"]),
+		"decisions": job["decisions"],
+		"rolls": job["rolls"],
+		"pending": {},
+		"slot": "",
+	}
+	var res: Dictionary = _EffectRunner.run(job["program"], dup, _cast_ctx(pid, job), flow)
+	job["rolls"] = flow.get("rolls", {})
+	var pending: Dictionary = res.get("pending", {})
+	if not pending.is_empty():
+		_ask(job, pending)
+		return false
+	_commit(job, p, dup, res)
+	return true
+
+
+# Контекст прогона: успехи и кубы каста; в интерактивном — ещё то, из чего игрок
+# выбирает (как у розыгрыша актива): граф локаций, витрина, монстры, сыщики.
+func _cast_ctx(pid: String, job: Dictionary) -> Dictionary:
+	var ctx: Dictionary = {}
+	var aa: Variant = _gs.get("_asset_action")
+	if bool(job["interactive"]) and aa != null:
+		ctx = (aa as AssetActionFlow)._ctx(pid)
+	ctx["successes"] = int(job["successes"])
+	ctx["dice"] = job["dice"]
+	return ctx
+
+
+# Вопрос каста — в общий канал модалки решения; ответ вернётся в resolve_decision.
+func _ask(job: Dictionary, pending: Dictionary) -> void:
+	var spell: Dictionary = SpellCatalog.by_id(String(job["sid"]))
+	var kind: String = String(pending.get("kind", "choice"))
+	_gs.mythos_decision = {
+		"active": true,
+		"pid": String(job["pid"]),
+		"driver": "spell",
+		"kind": kind,
+		"path": String(pending.get("path", "")),
+		"options": pending.get("options", []),
+		"title_key": String(spell.get("name", "MYTHOS_DECISION_TITLE")),
+		"prompt_key": AssetActionFlow.prompt_key_for(kind, String(pending.get("verb", ""))),
+		"subject": SpellCatalog.card_payload(spell),
+	}
+
+
+# Каст доигран: мутации копии — в сыщика (по месту: на словарь игрока держат ссылки
+# зовущие), board-эффекты, окно расплаты, сброс карты, затем flow.after.
+func _commit(job: Dictionary, p: Dictionary, dup: Dictionary, res: Dictionary) -> void:
+	var pid: String = String(job["pid"])
+	var sid: String = String(job["sid"])
+	var back: Dictionary = job["back"]
+	var successes: int = int(job["successes"])
+	# Снимок ДО каста — diff даст итог для окна расплаты.
 	var pre: Dictionary = {
 		"hp": int(p.get("hp", 0)),
 		"sanity": int(p.get("sanity", 0)),
 		"clues": int(p.get("clues", 0)),
 		"conds": (p.get("conditions", []) as Array).duplicate(),
 	}
-	consumed = _apply_effects(pid, [{"resultTiers": back.get("tiers", [])}], ctx) or consumed
+	for k: Variant in p.keys():
+		if not dup.has(k):
+			p.erase(k)
+	p.merge(dup, true)
+	for l_v: Variant in res.get("logs", []):
+		GameConsole.log("[Заклинание] %s · %s" % [_gs.name_of(pid), String(l_v)])
+	var consumed: bool = false
+	for node_v: Variant in res.get("board", []):
+		var node: Dictionary = node_v
+		if String(node.get("do", "")) == "discardCard":
+			consumed = true
+		else:
+			node["_anchor_pid"] = pid  # «на вашей клетке» — от кастующего
+			_gs.apply_board_effect(node)
 	_set_cast_result(pid, sid, back, successes, pre, consumed, _tier_text(back, successes))
 	GameConsole.log(
 		(
@@ -83,10 +266,60 @@ func resolve_cast(
 		)
 	)
 	if consumed:
-		items.remove_at(item_index)
-		p["items"] = items
-		GameConsole.log("[Заклинание] «%s» сброшено" % sid)
-	return true
+		var items: Array = p.get("items", [])
+		var idx: int = _item_index_of(items, job)
+		if idx >= 0:
+			items.remove_at(idx)
+			p["items"] = items
+			GameConsole.log("[Заклинание] «%s» сброшено" % sid)
+	_finish(job)
+
+
+# Где в руке карта задания: по индексу, если там она же; иначе — та же копия по id
+# и рубашке (руку могли поменять, пока игрок думал). -1 — карты нет.
+func _item_index_of(items: Array, job: Dictionary) -> int:
+	var idx: int = int(job["item_index"])
+	if idx >= 0 and idx < items.size() and _spell_id(items[idx]) == String(job["sid"]):
+		return idx
+	var back_id: String = String((job["back"] as Dictionary).get("id", ""))
+	for i in range(items.size()):
+		var it: Variant = items[i]
+		if _spell_id(it) != String(job["sid"]):
+			continue
+		if not (it is Dictionary) or String((it as Dictionary).get("back", "")) == back_id:
+			return i
+	return -1
+
+
+# Итог каста для зовущего (flow.after): моды — в вернувшуюся боевую проверку,
+# предотвращение — в бой, опции встречи — в ход встречи, ход ритуала — отпустить.
+func _finish(job: Dictionary) -> void:
+	var pid: String = String(job["pid"])
+	var after: Dictionary = job["after"]
+	if bool(after.get("add_mods", false)):
+		_gs._check.add_mods(pid, job["check_mods"])  # «+3 Силы в этом бою»
+	var prevent: Dictionary = job["prevent"]
+	if bool(after.get("reaction", false)) and not prevent.is_empty():
+		_gs._encounter.prevent_by_spell(
+			pid, String(prevent.get("stat", "health")), int(prevent.get("amount", 0))
+		)
+	if not (job["encounter"] as Array).is_empty():
+		_gs._encounter.grant_spell_options(pid, job["encounter"])
+	if bool(after.get("release", false)):
+		_gs._phase.release_cast_turn(pid)
+
+
+# Очередь кастов: по одному, пока очередной не встанет на вопрос. Опустела — _then.
+func _pump() -> void:
+	while _run.is_empty() and not _queue.is_empty():
+		var job: Dictionary = _queue.pop_front()
+		if not _step(job):
+			_run = job
+			return
+	if _run.is_empty() and _queue.is_empty() and _then.is_valid():
+		var then: Callable = _then
+		_then = Callable()
+		then.call()
 
 
 # Записать результат каста (для модалки расплаты): какой оборот выпал + flavor-ключ
@@ -169,12 +402,27 @@ func begin_incantation(pid: String, item_index: int) -> bool:
 	var spell: Dictionary = _validate_cast(pid, item_index, "incantation")
 	if spell.is_empty():
 		return false
-	var front: Dictionary = spell.get("front", {})
-	if String(front.get("trigger", "")) == "combatEncounter":
+	var trigger: String = String((spell.get("front", {}) as Dictionary).get("trigger", ""))
+	var stat: String = String(_REACTION_STATS.get(trigger, ""))
+	if trigger == "combatEncounter":
 		if String((_gs.active_check as Dictionary).get("context", "")) != "combatEncounter":
 			return false  # вне боя не кастуется
+	elif not stat.is_empty():
+		# Реакция «когда сыщик должен потерять здоровье/рассудок» (Защита плоти, Вселить
+		# отвагу): окно — бой, где потеря уже видна, но не списана (то же, что у бинтов).
+		# Раз в раунд — карта истощается до Refresh.
+		var it_v: Variant = (_gs.players[pid] as Dictionary).get("items", [])[item_index]
+		if not (it_v is Dictionary) or bool((it_v as Dictionary).get("exhausted", false)):
+			return false
+		if not _gs._encounter.spell_loss_window(stat):
+			return false
+		(it_v as Dictionary)["exhausted"] = true
+	else:
+		return false  # onRest / encounterPhase — из своих промптов, не с руки
 	_gs._check.push()  # сохранить боевую проверку под spell-проверкой
 	_begin_check(pid, item_index, spell, "incantation", true)
+	if not stat.is_empty():
+		(_gs.casting_spell as Dictionary)["reaction"] = stat
 	return true
 
 
@@ -204,6 +452,8 @@ func _begin_check(
 func _validate_cast(pid: String, item_index: int, subtype: String) -> Dictionary:
 	if not _gs.is_host() or not _gs.players.has(pid):
 		return {}
+	if not (_gs.casting_spell as Dictionary).is_empty() or busy():
+		return {}  # другой каст ещё идёт (проверка или вопрос игроку)
 	var items: Array = (_gs.players[pid] as Dictionary).get("items", [])
 	if item_index < 0 or item_index >= items.size():
 		return {}
@@ -236,17 +486,24 @@ func apply_cast(pid: String, flow: Dictionary = {}) -> bool:
 		c = _gs.active_check
 	var item_index: int = int(cs.get("item_index", -1))
 	var dice: Array = c.get("dice", c.get("base", []))
-	var f: Dictionary = flow.duplicate()
-	f["nested"] = bool(cs.get("nested", false))
-	resolve_cast(pid, item_index, int(c.get("successes", 0)), dice, f)
-	if bool(cs.get("nested", false)):
+	var successes: int = int(c.get("successes", 0))
+	var nested: bool = bool(cs.get("nested", false))
+	# Проверку каста снимаем сразу: дальнейшие вопросы (ветка оборота, куда идти) —
+	# модалкой решения поверх вернувшейся боевой проверки / карты.
+	if nested:
 		_gs._check.pop()  # вернуть боевую проверку
-		_gs._check.add_mods(pid, f.get("_check_mods", []))  # «+3 Силы в этом бою»
 	else:
 		_gs._check.clear()
 	_gs.casting_spell = {}
-	if String(cs.get("subtype", "")) == "ritual":
-		_gs._phase.release_cast_turn(pid)
+	var f: Dictionary = flow.duplicate()
+	f["nested"] = nested
+	f["interactive"] = bool(flow.get("interactive", true))
+	f["after"] = {
+		"add_mods": nested,
+		"release": String(cs.get("subtype", "")) == "ritual",
+		"reaction": cs.has("reaction"),
+	}
+	resolve_cast(pid, item_index, successes, dice, f)
 	return true
 
 
@@ -331,7 +588,9 @@ func prompt_trigger(pid: String, event: String) -> bool:
 ## выбранные (входящие в options — защита от произвольного ввода клиента) по
 ## убыванию индекса (сброс рубашкой не сдвинет необработанные нижние) и чистит
 ## промпт. flow — детерминизм/тесты. true — промпт был для pid и закрыт.
-func host_apply_trigger_spells(pid: String, indices: Array, flow: Dictionary = {}) -> bool:
+func host_apply_trigger_spells(
+	pid: String, indices: Array, flow: Dictionary = {}, then: Callable = Callable()
+) -> bool:
 	if not _gs.is_host():
 		return false
 	var prompt: Dictionary = _gs.pending_spell_cast
@@ -348,15 +607,31 @@ func host_apply_trigger_spells(pid: String, indices: Array, flow: Dictionary = {
 	chosen.sort()
 	chosen.reverse()  # по убыванию
 	var p: Dictionary = _gs.players[pid]
+	var f: Dictionary = flow.duplicate()
+	f["interactive"] = bool(flow.get("interactive", true))
+	# Касты встают в очередь (каждый может спросить игрока); then — когда доиграют все.
 	for idx: int in chosen:
 		var items: Array = p.get("items", [])
 		if idx < 0 or idx >= items.size():
 			continue
 		var front: Dictionary = SpellCatalog.by_id(_spell_id(items[idx])).get("front", {})
 		var r: Dictionary = _lore_roll(p, int(front.get("modifier", 0)), flow)
-		resolve_cast(pid, idx, int(r["successes"]), r["dice"], flow)
+		var job: Dictionary = _make_job(pid, idx, int(r["successes"]), r["dice"], f)
+		if not job.is_empty():
+			_queue.append(job)
 	_gs.pending_spell_cast = {}
+	if then.is_valid():
+		var prev: Callable = _then
+		_then = then if not prev.is_valid() else _chain(prev, then)
+	_pump()
 	return true
+
+
+# Два продолжения подряд (очередь кастов опустеет одна на оба промпта).
+static func _chain(first: Callable, second: Callable) -> Callable:
+	return func() -> void:
+		first.call()
+		second.call()
 
 
 ## Хост: выдать заклинание сыщику (board-verb gainSpell). spell_id пустой →
@@ -510,46 +785,24 @@ func _discarded_copies() -> Array:
 	return out
 
 
-# Прогон Effect-программы каста: мутирует игрока; discardCard → consumed (сброс
-# карты); прочий board — обычным эффектом. Возвращает, был ли discardCard.
-func _apply_effects(pid: String, program: Array, ctx: Dictionary) -> bool:
-	var p: Dictionary = _gs.players[pid]
-	var res: Dictionary = _EffectRunner.run(program, p, ctx)
-	for l_v: Variant in res.get("logs", []):
-		GameConsole.log("[Заклинание] %s · %s" % [_gs.name_of(pid), String(l_v)])
-	var consumed: bool = false
-	for node_v: Variant in res.get("board", []):
-		if String((node_v as Dictionary).get("do", "")) == "discardCard":
-			consumed = true
-		else:
-			_gs.apply_board_effect(node_v as Dictionary)
-	return consumed
+# Выпавший ярус оборота по числу успехов ({} — ни один не подошёл).
+static func _tier_of(back: Dictionary, successes: int) -> Dictionary:
+	for t_v: Variant in back.get("tiers", []):
+		var t: Dictionary = t_v
+		if _EffectRunner._tier_match(successes, String(t.get("on", ""))):
+			return t
+	return {}
 
 
-# Модификаторы проверки из программы фронта — в flow._check_mods (во временные моды
-# вернувшейся проверки), остальное — обычной программой. Возвращает остальное.
-func _split_check_mods(program: Array, flow: Dictionary) -> Array:
-	var rest: Array = []
-	var mods: Array = flow.get("_check_mods", [])
-	for n_v: Variant in program:
-		if (
-			n_v is Dictionary
-			and AssetCatalog._CHECK_MOD_VERBS.has(String((n_v as Dictionary).get("do", "")))
-		):
-			mods.append((n_v as Dictionary).duplicate(true))
-		else:
-			rest.append(n_v)
-	flow["_check_mods"] = mods
-	return rest
+# Эффекты выпавшего яруса.
+static func _tier_effect(back: Dictionary, successes: int) -> Array:
+	var t: Dictionary = _tier_of(back, successes)
+	return t.get("effect", t.get("then", []))
 
 
 # Текст выпавшего яруса оборота (у каждого яруса свой флейвор в EH); нет — "".
 static func _tier_text(back: Dictionary, successes: int) -> String:
-	for t_v: Variant in back.get("tiers", []):
-		var t: Dictionary = t_v
-		if _EffectRunner._tier_match(successes, String(t.get("on", ""))):
-			return String(t.get("text", ""))
-	return ""
+	return String(_tier_of(back, successes).get("text", ""))
 
 
 # id заклинания из элемента инвентаря ({id} | {id, kind} | строка).

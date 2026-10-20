@@ -55,6 +55,23 @@ class StubPhase:
 		released.append(pid)
 
 
+# Стаб EncounterFlow: окно реакции на потерю и итоги кастов фазы встреч.
+class StubEncounter:
+	extends RefCounted
+	var window: bool = true
+	var prevented: Array = []  # [[caster, stat, amount]]
+	var options: Dictionary = {}  # pid → verbs
+
+	func spell_loss_window(_stat: String) -> bool:
+		return window
+
+	func prevent_by_spell(caster: String, stat: String, amount: int) -> void:
+		prevented.append([caster, stat, amount])
+
+	func grant_spell_options(pid: String, verbs: Array) -> void:
+		options[pid] = verbs
+
+
 class MockGameState:
 	extends Node
 	var host: bool = true
@@ -68,12 +85,18 @@ class MockGameState:
 	var roll_successes: int = 0
 	var roll_dice: Array = []
 	var spell_deck: Array = []  # колода копий {id, back}; пустая → grant замешает «сброс»
+	var mythos_decision: Dictionary = {}
 	var _check: StubCheck
 	var _phase: StubPhase
+	var _encounter: StubEncounter
 
 	func _init() -> void:
 		_check = StubCheck.new(self)
 		_phase = StubPhase.new()
+		_encounter = StubEncounter.new()
+
+	func broadcast_and_emit() -> void:
+		pass
 
 	func is_host() -> bool:
 		return host
@@ -648,3 +671,158 @@ func test_content_every_tier_resolves_with_own_text() -> void:
 				# Ярусы с текстом (новые обороты) — ключ должен быть переведён.
 				if key.begins_with("RECK_") and key.contains("_T"):
 					assert_ne(tr(key), key, "%s: нет перевода %s" % [sid, key])
+
+
+# ── Вопросы каста игроку (interactive): «X, иначе сбросьте карту», навык на выбор ──
+
+
+# Ритуал брошен с successes и применён (каст через модалку — interactive).
+func _apply_ritual(spell_id: String, successes: int) -> void:
+	_player([{"id": spell_id}])
+	_gs.players["p"]["casting"] = true
+	assert_true(_sf.begin_ritual("p", 0))
+	_gs.roll_successes = successes
+	_gs.roll_dice = [1, 2, 3]
+	assert_true(_sf.apply_cast("p"))
+
+
+func test_unless_discard_asks_player() -> void:
+	_apply_ritual("fx_unless", 0)
+	var md: Dictionary = _gs.mythos_decision
+	assert_eq(String(md.get("driver", "")), "spell", "вопрос каста — в модалку решения")
+	assert_eq((md.get("options", []) as Array).size(), 2, "−2 рассудка / сбросить карту")
+	assert_true(_sf.busy())
+	assert_eq(_gs._phase.released, [], "ход ритуала держится до ответа")
+	_sf.resolve_decision("p", 1)  # сбросить карту
+	assert_eq(int(_gs.players["p"]["sanity"]), 5, "рассудок цел")
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 0, "карта сброшена")
+	assert_true(_gs.mythos_decision.is_empty())
+	assert_eq(_gs._phase.released, ["p"], "ответ получен — ход отпущен")
+	assert_false(_sf.busy())
+
+
+func test_unless_discard_keep_card() -> void:
+	_apply_ritual("fx_unless", 0)
+	_sf.resolve_decision("p", 0)  # заплатить рассудком
+	assert_eq(int(_gs.players["p"]["sanity"]), 3)
+	assert_eq((_gs.players["p"]["items"] as Array).size(), 1, "карта осталась")
+
+
+func test_skill_of_choice() -> void:
+	_apply_ritual("fx_feed", 1)
+	assert_eq((_gs.mythos_decision.get("options", []) as Array).size(), 5, "пять навыков")
+	_sf.resolve_decision("p", 2)
+	var mods: Dictionary = _gs.players["p"]["skill_mods"]
+	assert_eq(mods.size(), 1, "улучшен ровно один навык")
+
+
+func test_new_cast_blocked_while_asking() -> void:
+	_apply_ritual("fx_unless", 0)
+	(_gs.players["p"]["items"] as Array).append({"id": "fx_feed"})
+	assert_false(_sf.begin_ritual("p", 1), "пока каст ждёт ответа — новый не начать")
+
+
+# ── Ярус оборота меняет обстановку каста ────────────────────────────────────
+
+
+func test_tier_check_mods_go_to_combat() -> void:
+	_player([{"id": "fx_wither"}])
+	_gs.active_check = {"owner": "combat", "context": "combatEncounter", "rolled": true}
+	assert_true(_sf.begin_incantation("p", 0))
+	_gs.roll_successes = 2
+	_gs.roll_dice = [5, 6]
+	assert_true(_sf.apply_cast("p"))
+	var verbs: Array = []
+	for m_v: Variant in _gs.active_check.get("active_mods", []):
+		verbs.append(
+			(
+				"%s:%d"
+				% [
+					(m_v as Dictionary).get("do", ""),
+					int((m_v as Dictionary).get("amount", (m_v as Dictionary).get("count", 0)))
+				]
+			)
+		)
+	assert_eq(
+		verbs, ["improveSkill:3", "improveSkill:5", "rerollDice:1"], "+3 и «+5 вместо» + переброс"
+	)
+	assert_eq(int((_gs.players["p"]["skill_mods"] as Dictionary).get("strength", 0)), 0)
+
+
+func test_tier_add_successes_seen_by_front() -> void:
+	_player([{"id": "fx_mist_succ"}])
+	_sf.resolve_cast("p", 0, 3, [5, 5, 6])
+	var n: Dictionary = _gs.board_effects[0]
+	assert_eq(String(n.get("do", "")), "discardMonster")
+	assert_eq(int(n.get("_successes", 0)), 5, "3 успеха + 2 с оборота")
+
+
+# ── Реакция на потерю (Защита плоти / Вселить отвагу) ───────────────────────
+
+
+func _cast_ward(successes: int) -> void:
+	_player([{"id": "fx_ward"}])
+	_gs.active_check = {"owner": "combat", "context": "combatEncounter", "rolled": true}
+	assert_true(_sf.begin_incantation("p", 0))
+	assert_eq(String(_gs.casting_spell.get("reaction", "")), "health")
+	assert_true(bool(_gs.players["p"]["items"][0]["exhausted"]), "раз в раунд")
+	_gs.roll_successes = successes
+	_gs.roll_dice = [5, 5, 5]
+	assert_true(_sf.apply_cast("p"))
+
+
+func test_reaction_prevents_loss() -> void:
+	_cast_ward(1)
+	assert_eq(_gs._encounter.prevented, [["p", "health", 2]])
+	assert_eq(String(_gs.active_check.get("owner", "")), "combat", "бой вернулся")
+
+
+func test_reaction_stronger_on_good_roll() -> void:
+	_cast_ward(3)
+	assert_eq(_gs._encounter.prevented, [["p", "health", 4]], "«до 4 вместо этого»")
+
+
+func test_reaction_needs_open_window() -> void:
+	_player([{"id": "fx_ward"}])
+	_gs._encounter.window = false
+	assert_false(_sf.begin_incantation("p", 0), "потери не видно — каст не начать")
+
+
+func test_reaction_once_per_round() -> void:
+	_cast_ward(1)
+	assert_false(_sf.begin_incantation("p", 0), "истощена до Refresh")
+
+
+func test_prompt_spells_not_cast_from_hand() -> void:
+	_player([{"id": "healing_words"}, {"id": "fx_mists"}])
+	_gs.active_check = {"owner": "combat", "context": "combatEncounter", "rolled": true}
+	assert_false(_sf.begin_incantation("p", 0), "onRest — только из промпта отдыха")
+	assert_false(_sf.begin_incantation("p", 1), "фаза встреч — только из её промпта")
+
+
+# ── Фаза встреч и очередь триггер-кастов ────────────────────────────────────
+
+
+func test_encounter_spell_grants_options_then_continues() -> void:
+	_player([{"id": "fx_mists"}])
+	assert_true(_sf.prompt_trigger("p", "encounterPhase"))
+	var done: Array = []
+	_sf.host_apply_trigger_spells(
+		"p", [0], {"cast": {"successes": 1, "dice": [5]}}, func() -> void: done.append(true)
+	)
+	assert_eq(_gs._encounter.options.get("p", []), ["ignoreMonsters"])
+	assert_eq(done, [true], "касты доиграны — продолжение хода")
+
+
+func test_trigger_queue_waits_for_answer() -> void:
+	_player([{"id": "fx_unless"}])
+	_gs.pending_spell_cast = {
+		"pid": "p", "event": "x", "options": [{"index": 0, "id": "fx_unless"}]
+	}
+	var done: Array = []
+	_sf.host_apply_trigger_spells(
+		"p", [0], {"cast": {"successes": 0, "dice": [2]}}, func() -> void: done.append(true)
+	)
+	assert_eq(done, [], "ждём ответа на вопрос оборота")
+	_sf.resolve_decision("p", 0)
+	assert_eq(done, [true])

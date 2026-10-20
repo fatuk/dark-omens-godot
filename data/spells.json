@@ -200,6 +200,11 @@
 							{
 								"do": "loseSanity",
 								"amount": 1
+							},
+							{
+								"do": "improveSkill",
+								"skill": "strength",
+								"amount": 5
 							}
 						]
 					}
@@ -238,7 +243,13 @@
 					{
 						"on": "2+",
 						"text": "RECK_WITHER_B2_T3",
-						"effect": []
+						"effect": [
+							{
+								"do": "rerollDice",
+								"count": 1,
+								"skill": "strength"
+							}
+						]
 					}
 				]
 			},
@@ -946,7 +957,12 @@
 					{
 						"on": "3+",
 						"text": "RECK_POISON_MIST_B1_T3",
-						"effect": []
+						"effect": [
+							{
+								"do": "addSuccesses",
+								"amount": 2
+							}
+						]
 					}
 				]
 			},
@@ -1042,7 +1058,12 @@
 					{
 						"on": "3+",
 						"text": "RECK_POISON_MIST_B4_T3",
-						"effect": []
+						"effect": [
+							{
+								"do": "addSuccesses",
+								"amount": 1
+							}
+						]
 					}
 				]
 			}
@@ -2049,7 +2070,7 @@
 			"onPass": [
 				{
 					"do": "improveSkill",
-					"skill": "lore",
+					"skill": "choice",
 					"amount": 1
 				}
 			]
@@ -2081,7 +2102,7 @@
 						"effect": [
 							{
 								"do": "improveSkill",
-								"skill": "lore",
+								"skill": "choice",
 								"amount": 1
 							}
 						]
@@ -2647,6 +2668,760 @@
 					{
 						"on": "1+",
 						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "plumb_the_void",
+		"name": "SPELL_PLUMB_THE_VOID_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_PLUMB_THE_VOID_ABILITY",
+			"onPass": [
+				{
+					"do": "move"
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "plumb_the_void_b1",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_PLUMB_THE_VOID_B1_T1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 3
+							}
+						]
+					},
+					{
+						"on": "1-2",
+						"text": "RECK_PLUMB_THE_VOID_B1_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"text": "RECK_PLUMB_THE_VOID_B1_T3",
+						"effect": [
+							{
+								"do": "extraAction",
+								"count": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "plumb_the_void_b2",
+				"tiers": [
+					{
+						"on": "0-1",
+						"text": "RECK_PLUMB_THE_VOID_B2_T1",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "gainCondition",
+										"condition": "amnesia"
+									},
+									{
+										"do": "discardCard"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_PLUMB_THE_VOID_B2_T2",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "plumb_the_void_b3",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_PLUMB_THE_VOID_B3_T1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"text": "RECK_PLUMB_THE_VOID_B3_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "plumb_the_void_b4",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_PLUMB_THE_VOID_B4_T1",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "lostInTimeAndSpace"
+							}
+						]
+					},
+					{
+						"on": "1-2",
+						"text": "RECK_PLUMB_THE_VOID_B4_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"text": "RECK_PLUMB_THE_VOID_B4_T3",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "mists_of_releh",
+		"name": "SPELL_MISTS_OF_RELEH_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "encounterPhase",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_MISTS_OF_RELEH_ABILITY",
+			"onPass": [
+				{
+					"do": "ignoreMonsters"
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "mists_of_releh_b1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"text": "RECK_MISTS_OF_RELEH_B1_T1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							},
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_MISTS_OF_RELEH_B1_T2",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "mists_of_releh_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_MISTS_OF_RELEH_B2_T1",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "gainCondition",
+										"condition": "hallucinations"
+									},
+									{
+										"do": "discardCard"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"text": "RECK_MISTS_OF_RELEH_B2_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "mists_of_releh_b3",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_MISTS_OF_RELEH_B3_T1",
+						"effect": [
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"text": "RECK_MISTS_OF_RELEH_B3_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "mists_of_releh_b4",
+				"tiers": [
+					{
+						"on": "0-1",
+						"text": "RECK_MISTS_OF_RELEH_B4_T1",
+						"effect": []
+					},
+					{
+						"on": "2+",
+						"text": "RECK_MISTS_OF_RELEH_B4_T2",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "instill_bravery",
+		"name": "SPELL_INSTILL_BRAVERY_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "onSanityLoss",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_INSTILL_BRAVERY_ABILITY",
+			"onPass": [
+				{
+					"do": "preventLoss",
+					"stat": "sanity",
+					"amount": 2
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "instill_bravery_b1",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_INSTILL_BRAVERY_B1_T1",
+						"effect": [
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 4,
+									"not": true
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"text": "RECK_INSTILL_BRAVERY_B1_T2",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "instill_bravery_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_INSTILL_BRAVERY_B2_T1",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "loseSanity",
+										"amount": 1
+									},
+									{
+										"do": "gainCondition",
+										"condition": "hallucinations"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "1-2",
+						"text": "RECK_INSTILL_BRAVERY_B2_T2",
+						"effect": []
+					},
+					{
+						"on": "3+",
+						"text": "RECK_INSTILL_BRAVERY_B2_T3",
+						"effect": [
+							{
+								"do": "preventLoss",
+								"stat": "sanity",
+								"amount": 3
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "instill_bravery_b3",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_INSTILL_BRAVERY_B3_T1",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"kind": "madness"
+							}
+						]
+					},
+					{
+						"on": "1",
+						"text": "RECK_INSTILL_BRAVERY_B3_T2",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_INSTILL_BRAVERY_B3_T3",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "instill_bravery_b4",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_INSTILL_BRAVERY_B4_T1",
+						"effect": [
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1-2",
+						"text": "RECK_INSTILL_BRAVERY_B4_T2",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"text": "RECK_INSTILL_BRAVERY_B4_T3",
+						"effect": [
+							{
+								"do": "preventLoss",
+								"stat": "sanity",
+								"amount": 4
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "flesh_ward",
+		"name": "SPELL_FLESH_WARD_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "onHealthLoss",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_FLESH_WARD_ABILITY",
+			"onPass": [
+				{
+					"do": "preventLoss",
+					"stat": "health",
+					"amount": 2
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "flesh_ward_b1",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_FLESH_WARD_B1_T1",
+						"effect": [
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 4,
+									"not": true
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"text": "RECK_FLESH_WARD_B1_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "flesh_ward_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_FLESH_WARD_B2_T1",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "loseHealth",
+										"amount": 1
+									},
+									{
+										"do": "gainCondition",
+										"condition": "internalInjury"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "1-2",
+						"text": "RECK_FLESH_WARD_B2_T2",
+						"effect": []
+					},
+					{
+						"on": "3+",
+						"text": "RECK_FLESH_WARD_B2_T3",
+						"effect": [
+							{
+								"do": "preventLoss",
+								"stat": "health",
+								"amount": 3
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "flesh_ward_b3",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_FLESH_WARD_B3_T1",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"kind": "illness"
+							}
+						]
+					},
+					{
+						"on": "1",
+						"text": "RECK_FLESH_WARD_B3_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_FLESH_WARD_B3_T3",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "flesh_ward_b4",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_FLESH_WARD_B4_T1",
+						"effect": [
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1-2",
+						"text": "RECK_FLESH_WARD_B4_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"text": "RECK_FLESH_WARD_B4_T3",
+						"effect": [
+							{
+								"do": "preventLoss",
+								"stat": "health",
+								"amount": 4
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "clairvoyance",
+		"name": "SPELL_CLAIRVOYANCE_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "encounterPhase",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_CLAIRVOYANCE_ABILITY",
+			"onPass": [
+				{
+					"do": "remoteClueEncounter"
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "clairvoyance_b1",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_CLAIRVOYANCE_B1_T1",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "gainCondition",
+										"condition": "paranoia"
+									},
+									{
+										"do": "discardCard"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "1-2",
+						"text": "RECK_CLAIRVOYANCE_B1_T2",
+						"effect": []
+					},
+					{
+						"on": "3+",
+						"text": "RECK_CLAIRVOYANCE_B1_T3",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "clairvoyance_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_CLAIRVOYANCE_B2_T1",
+						"effect": [
+							{
+								"do": "discardBoardClue"
+							}
+						]
+					},
+					{
+						"on": "1-2",
+						"text": "RECK_CLAIRVOYANCE_B2_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"text": "RECK_CLAIRVOYANCE_B2_T3",
+						"effect": [
+							{
+								"do": "gainClue",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "clairvoyance_b3",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_CLAIRVOYANCE_B3_T1",
+						"effect": [
+							{
+								"do": "discardBoardClue",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1-2",
+						"text": "RECK_CLAIRVOYANCE_B3_T2",
+						"effect": []
+					},
+					{
+						"on": "3+",
+						"text": "RECK_CLAIRVOYANCE_B3_T3",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "clairvoyance_b4",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_CLAIRVOYANCE_B4_T1",
+						"effect": [
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1",
+						"text": "RECK_CLAIRVOYANCE_B4_T2",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "loseSanity",
+										"amount": 1
+									},
+									{
+										"do": "gainCondition",
+										"condition": "paranoia"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_CLAIRVOYANCE_B4_T3",
+						"effect": [
+							{
+								"do": "placeClue",
+								"count": 1
+							}
+						]
 					}
 				]
 			}

@@ -863,8 +863,11 @@ VERB_GAIN_SPELL,получает заклинание,gains a Spell
 VERB_GAIN_ARTIFACT,получает артефакт,gains an Artifact
 VERB_LOSE_SPELL,сбрасывает заклинание,loses a Spell
 VERB_LOSE_ALL_POSSESSIONS,сбрасывает всё имущество,discards all possessions
-VERB_IMPROVE_SKILL,улучшить навык +{amount},improve a skill +{amount}
-VERB_IMPAIR_SKILL,ухудшить навык −{amount},impair a skill −{amount}
+VERB_IMPROVE_SKILL,{skill} +{amount},{skill} +{amount}
+VERB_IMPAIR_SKILL,{skill} −{amount},{skill} −{amount}
+SKILL_OF_CHOICE,навык на выбор,a skill of your choice
+SKILL_EVERY,все навыки,each skill
+SKILL_SOME,навык,a skill
 VERB_MOVE,переместиться,move
 VERB_BECOME_DELAYED,становится Задержан,becomes Delayed
 VERB_GAIN_FOCUS,+{amount} концентрации,+{amount} Focus
@@ -916,6 +919,8 @@ VERB_DISCARD_BOARD_CLUE,снять ближайшую улику с поля,dis
 VERB_DISCARD_ALL_GATES,сбросить все врата,discard all Gates
 VERB_DISCARD_ELDRITCH_TOKEN,снять жетоны Знамения ×{amount},discard {amount} Eldritch token(s)
 VERB_PREVENT_LOSS,предотвратить потерю {amount},prevent {amount} loss
+VERB_IGNORE_MONSTERS,встреча как будто на клетке нет монстров,encounter as if there are no Monsters on your space
+VERB_REMOTE_CLUE_ENCOUNTER,исследовать улику на её клетке (не обращая внимания на монстров),encounter a Clue as if on its space (ignoring Monsters)
 VERB_DEFEAT_MONSTER,победить монстра,defeat a Monster
 VERB_GIVE_ASSET,передать актив,give an Asset
 VERB_GIVE_CLUE,передать улику,give a Clue
@@ -1585,7 +1590,7 @@ SPELL_WRACK_ABILITY,В бою: проверьте Знание (−1). При у
 SPELL_POISON_MIST_NAME,Ядовитый туман,Poison Mist
 SPELL_POISON_MIST_ABILITY,Действие: проверьте Знание+1. При успехе сбросьте с вашей клетки монстра со стойкостью не выше результата.,"Action: Test Lore+1. If you pass, discard a Monster from your space with toughness equal to or less than your test result."
 SPELL_CLAIRVOYANCE_NAME,Ясновидение,Clairvoyance
-SPELL_CLAIRVOYANCE_ABILITY,Действие: проверьте Знание. При успехе получите 2 улики.,"Action: test Lore. If you pass, gain 2 Clues."
+SPELL_CLAIRVOYANCE_ABILITY,"В фазе встреч можно проверить Знание. При успехе можно разыграть встречу с уликой так, будто вы на её клетке, не обращая внимания на монстров там.","During the Encounter Phase, you may test Lore. If you pass, you may choose to encounter a Clue as if you are on its space, ignoring Monsters on that space."
 SPELL_STORM_OF_SPIRITS_NAME,Шторм духов,Storm of Spirits
 SPELL_STORM_OF_SPIRITS_ABILITY,Действие: проверьте Знание (−1). При успехе нанесите 3 урона монстру на вашей локации.,"Action: test Lore (−1). If you pass, deal 3 damage to a monster on your space."
 SPELL_SPECTRAL_RAZOR_NAME,Призрачная бритва,Spectral Razor
@@ -1687,7 +1692,7 @@ RECK_ARCANE_INSIGHT_B2,"Строки расплываются — вы забы�
 RECK_ARCANE_INSIGHT_B3,"Озарение гаснет, унося с собой уже добытые догадки","The insight gutters out, taking your hard-won leads with it"
 RECK_ARCANE_INSIGHT_B4,"Бездна мудрости смотрит в ответ, и разум тонет в ней","The abyss of wisdom stares back, and the mind drowns in it"
 SPELL_FEED_THE_MIND_NAME,Пища для разума,Feed the Mind
-SPELL_FEED_THE_MIND_ABILITY,Действие: проверьте Знание-1. При успехе улучшите навык Знание.,"Action: Test Lore-1. If you pass, improve your Lore."
+SPELL_FEED_THE_MIND_ABILITY,Действие: проверьте Знание-1. При успехе улучшите 1 навык на свой выбор.,"Action: Test Lore-1. If you pass, improve 1 skill of your choice."
 RECK_FEED_THE_MIND_B1,Разум переполнен — мысли давят и рвутся наружу,The mind overflows — thoughts press and claw to escape
 RECK_FEED_THE_MIND_B2,"Поток образов захлёбывается, оставляя лишь звон в ушах","The flood of images chokes, leaving only a ringing in the ears"
 RECK_FEED_THE_MIND_B3,Слишком много знания — и вы теряете нить собственной памяти,Too much knowing — and you lose the thread of your own memory
@@ -1927,6 +1932,8 @@ SETTINGS_GUIDE_HINTS,Подсказки профессора Армитеджа,
 SETTINGS_GUIDE_RESET,Показать подсказки заново,Show hints again
 SETTINGS_GUIDE_RESET_DONE,Подсказки будут показаны снова,Hints will be shown again
 PICK_ON_MAP,Выберите подсвеченную локацию на карте,Pick a highlighted location on the map
+PICK_CLUE_SPACE,Улику на какой клетке исследовать?,Research the Clue on which space?
+CLAIRVOYANCE_SKIP,Не надо — обычная встреча здесь,No — a normal encounter here
 TELEGRAM_ENCOUNTER,ВСТРЕЧА,ENCOUNTER
 TELEGRAM_OUTCOME,ИСХОД,OUTCOME
 TELEGRAM_SUCCESS,УСПЕХ:,SUCCESS:
@@ -2009,3 +2016,63 @@ RECK_BLESSING_OF_ISIS_B3_T2,Видения далёких мест и времё
 RECK_BLESSING_OF_ISIS_B4_T1,"Слова ритуала ускользают, и на миг вы не можете их вспомнить.","The words of the ritual escape you, and for a moment, you cannot recall them."
 RECK_BLESSING_OF_ISIS_B4_T2,"Сияющий дух кружит рядом, отводя беду.","A glowing spirit circles you, warding disaster."
 RECK_BLESSING_OF_ISIS_B4_T3,"Тепло наполняет вас, унимая боль и тревоги.",A warmth fills you and eases our pain and worries.
+SPELL_PLUMB_THE_VOID_NAME,Проникнуть в пустоту,Plumb the Void
+SPELL_PLUMB_THE_VOID_ABILITY,Действие: проверьте Знание-1. При успехе выбранный сыщик может переместиться на любую клетку.,"Action: Test Lore-1. If you pass, an investigator of your choice may move to any space."
+RECK_PLUMB_THE_VOID_B1_T1,Портал внезапно схлопывается и едва не рассекает вас надвое.,"The portal closes abruptly, nearly severing you in half."
+RECK_PLUMB_THE_VOID_B1_T2,Ритуал требует изнурительной сосредоточенности.,The ritual requires an exhausting amount of concentration.
+RECK_PLUMB_THE_VOID_B1_T3,"Вы искривляете не только пространство, но и время.","More than just warping space, you also manipulate time."
+RECK_PLUMB_THE_VOID_B2_T1,"Вы помните, как перед вами открылся вихрящийся проход в неведомый мир. Но прошли ли вы через него? И куда?","You remember that a swirling passage to an unknown world opened before you, but did you travel through it? If you did, where did you go?"
+RECK_PLUMB_THE_VOID_B2_T2,Вы сгибаете ткань пространства и переносите цель через весь земной шар.,"You bend the fabric of space to your will, transporting the subject across the globe."
+RECK_PLUMB_THE_VOID_B3_T1,"Вы оговариваетесь, и портал открывается не там.","You misspeak the words, opening the portal in the wrong place."
+RECK_PLUMB_THE_VOID_B3_T2,Путь сквозь пустоту даётся разуму дорогой ценой.,Traveling through the void takes a toll on your mind.
+RECK_PLUMB_THE_VOID_B4_T1,"Портал внезапно схлопывается, и вы застреваете между мирами.","The portal closes abruptly, trapping you in the space between worlds."
+RECK_PLUMB_THE_VOID_B4_T2,"Разум покидает тело, когда портал открывается, и вы боитесь потеряться.","Your mind leaves your body as the portal opens, and you fear you may become lost."
+RECK_PLUMB_THE_VOID_B4_T3,"Магия складывает ткань реальности, и вы с лёгкостью шагаете между континентами.","The magic folds the fabric of reality, allowing you to step between continents with ease."
+SPELL_MISTS_OF_RELEH_NAME,Туманы Релеха,Mists of Releh
+SPELL_MISTS_OF_RELEH_ABILITY,"В фазе встреч можно проверить Знание. При успехе можно выбрать встречу так, будто на вашей клетке нет монстров.","During the Encounter Phase, you may test Lore. If you pass, you may choose an encounter as if there are no Monsters on your space."
+RECK_MISTS_OF_RELEH_B1_T1,"Густой чёрный туман окутывает вас, разъедая лёгкие и глаза.","A thick, black fog engulfs you, choking your lungs and stinging your eyes."
+RECK_MISTS_OF_RELEH_B1_T2,"Вы смело идёте вперёд, зная, что туман скроет вас.","You walk forward boldly, knowing the mists will keep you hidden."
+RECK_MISTS_OF_RELEH_B2_T1,"Чудовищный силуэт растворяется в тумане. Что бы это ни было, оно может вернуться при следующем заклинании.","You see a monstrous form vanish into the fog. Whatever it was, you fear it may return the next time you recite the incantation."
+RECK_MISTS_OF_RELEH_B2_T2,"Тьма скрывает вас, но противоестественные щупальца тумана обвивают тело.","Although you are hidden by the darkness, you feel unnatural tendrils of fog wrapping around your body."
+RECK_MISTS_OF_RELEH_B3_T1,Вы неверно произносите слова.,You utter the words incorrectly.
+RECK_MISTS_OF_RELEH_B3_T2,Туман заполняет воздух и затуманивает разум.,The mist fills the air and clouds your mind.
+RECK_MISTS_OF_RELEH_B4_T1,Туман застилает глаза и сковывает движения.,The mist clouds your vision and hinders your actions.
+RECK_MISTS_OF_RELEH_B4_T2,Туман прячет вас от зорких глаз.,Walking through the mist hides your presence from watchful eyes.
+SPELL_INSTILL_BRAVERY_NAME,Вселить отвагу,Instill Bravery
+SPELL_INSTILL_BRAVERY_ABILITY,"Раз в раунд, когда сыщик должен потерять рассудок, можно проверить Знание. При успехе он теряет на 2 рассудка меньше.","Once per round, when an investigator would lose Sanity, you may test Lore. If you pass, prevent that investigator from losing up to 2 Sanity."
+RECK_INSTILL_BRAVERY_B1_T1,"Искажённая магия бьёт по разуму, и вы боитесь, что ваши воспоминания изменились.","Your malformed magic lashes against your mind, and you fear your memories have been altered."
+RECK_INSTILL_BRAVERY_B1_T2,Заклинание вселяет мужество перед лицом безумия — ценой вашей крови.,"Your incantation inspires courage in the face of madness, but at the cost of your own blood."
+RECK_INSTILL_BRAVERY_B2_T1,"Магия искажает разум, пока вы не перестаёте отличать явь от бреда.",The magic warps your mind and thoughts until you can no longer tell reality from delusion.
+RECK_INSTILL_BRAVERY_B2_T2,Заклинание гасит последствия пережитого ужаса.,The spell prevents any lingering effects of the traumatic experience.
+RECK_INSTILL_BRAVERY_B2_T3,Заклинание вдохновляет и придаёт сил.,The spell inspires and invigorates.
+RECK_INSTILL_BRAVERY_B3_T1,"Вы чувствуете, как ваше сознание что-то меняет.",You feel your consciousness being altered in some way.
+RECK_INSTILL_BRAVERY_B3_T2,Магия требует платы кровью.,Casting the magic requires a payment of blood.
+RECK_INSTILL_BRAVERY_B3_T3,"Напев отзывается в разуме и сердце, пробуждая отвагу.","The chant echoes in your mind and heart, inspiring your courage."
+RECK_INSTILL_BRAVERY_B4_T1,Страх захлёстывает вас и сокрушает слабую магию.,Fear overwhelms you and shatters the weak magic.
+RECK_INSTILL_BRAVERY_B4_T2,"Магия сковывает тело, не давая бежать.","The magic binds itself to your body, preventing you from fleeing."
+RECK_INSTILL_BRAVERY_B4_T3,"Магия меняет разум, позволяя выстоять перед величайшими страхами.","The magic alters your mind, allowing you to stand against your greatest fears."
+SPELL_FLESH_WARD_NAME,Защита плоти,Flesh Ward
+SPELL_FLESH_WARD_ABILITY,"Раз в раунд, когда сыщик должен потерять здоровье, можно проверить Знание. При успехе он теряет на 2 здоровья меньше.","Once per round, when an investigator would lose Health, you may test Lore. If you pass, prevent that investigator from losing up to 2 Health."
+RECK_FLESH_WARD_B1_T1,"Энергия заклинания сжимает вам челюсти, будто запрещая говорить. Позволено ли будет произнести эти слова снова?",The spell's energy twists around you and locks your jaw shut as if it were forbidding you from speaking. You don't know if you will be allowed to speak those words again.
+RECK_FLESH_WARD_B1_T2,"На это превращение неприятно смотреть, даже когда оно удаётся.","It is unpleasant to watch this transformation, even when it succeeds."
+RECK_FLESH_WARD_B2_T1,Что-то в груди болезненно смещается.,Something inside your chest shifts painfully.
+RECK_FLESH_WARD_B2_T2,"Кожа корчится и срастается, словно живое существо.",The spell causes skin to writhe and reform like a living being.
+RECK_FLESH_WARD_B2_T3,Плоть и кости срастаются и твердеют против ударов.,Flesh and bone mend themselves and harden against attack.
+RECK_FLESH_WARD_B3_T1,Искажённая магия наводит страшную болезнь.,The malformed magic inflicts the subject with a terrible illness.
+RECK_FLESH_WARD_B3_T2,Сшивать плоть и кости — тяжкое бремя для хрупкого разума.,Stitching together flesh and bone takes a toll on your fragile mind.
+RECK_FLESH_WARD_B3_T3,Плоть твердеет и с лёгкостью отражает боль и раны.,Your flesh hardens and repels pain and wounds with ease.
+RECK_FLESH_WARD_B4_T1,"Заклинание выскальзывает из памяти, и вы не уверены, что оно вернётся.","The incantation slips from your memory, and you are unsure if it will return."
+RECK_FLESH_WARD_B4_T2,"Плоть и кости корчатся и срастаются, исцеляя раны.",Flesh and bone writhe and reform as your wounds are mended.
+RECK_FLESH_WARD_B4_T3,"Магия хранит вас от телесного вреда, делая почти бессмертным.","The magic wards you from physical harm, rendering you nearly immortal."
+RECK_CLAIRVOYANCE_B1_T1,Раскрытый разум сеет хаос в вашей душе.,Opening your mind wreaks havoc on your psyche.
+RECK_CLAIRVOYANCE_B1_T2,"Ваш разум странствует по миру, и знание становится ясным.","Your mind travels across the world, and the knowledge becomes clear."
+RECK_CLAIRVOYANCE_B1_T3,"Путь открывается вам, и ответ кажется таким простым.","The journey becomes clear to you, and the answer seems so simple."
+RECK_CLAIRVOYANCE_B2_T1,Знание теряется в пустоте.,The knowledge gets lost in the void.
+RECK_CLAIRVOYANCE_B2_T2,Знание слишком велико для одного разума.,The knowledge is too great for one mind to contain.
+RECK_CLAIRVOYANCE_B2_T3,Внезапно образы и мысли складываются в новое озарение.,"Suddenly, the images and ideas coalesce into a new realization."
+RECK_CLAIRVOYANCE_B3_T1,"Вы невольно призываете гневного духа, и тот уничтожает цель вашего видения.",You unknowingly call upon a wrathful spirit that destroys the target of your scrying.
+RECK_CLAIRVOYANCE_B3_T2,Видения мутны и туманны.,The visions are clouded and murky.
+RECK_CLAIRVOYANCE_B3_T3,"Видения ясны, будто вы там во плоти.",The visions become clear as if you are there in the flesh.
+RECK_CLAIRVOYANCE_B4_T1,"Вы не видите ничего, кроме тьмы.",You can see nothing but darkness.
+RECK_CLAIRVOYANCE_B4_T2,"Вы смотрите глазами мстительных духов, и они шепчут вам ужасные тайны.",You peer through the eyes of vengeful spirits that whisper horrible secrets to you.
+RECK_CLAIRVOYANCE_B4_T3,Ваш взор падает на прежде скрытый источник знания.,"As you scry, your sight falls upon a previously hidden source of knowledge."

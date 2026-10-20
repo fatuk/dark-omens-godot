@@ -34,6 +34,14 @@ var _eldritch_card: Dictionary = {}
 # («повтор при провале»). Снимается решением Тайны (clear_sticky). Хост-локально.
 var _sticky: Dictionary = {}
 
+# Заклинания «в фазу встреч» (Туманы Релеха, Ясновидение). Хост-локально:
+#   _spell_turn — «раунд|сыщик», кому в этот ход уже предлагали каст (промпт один раз);
+#   _spell_opts — pid → {ignoreMonsters, remoteClueEncounter}: что дал прошедший каст;
+#   _remote_clue — pid → локация улики: исследование «как будто вы на её клетке».
+var _spell_turn: String = ""
+var _spell_opts: Dictionary = {}
+var _remote_clue: Dictionary = {}
+
 
 func _init(gs: Node) -> void:
 	_gs = gs
@@ -115,17 +123,27 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 	_gs.broadcast_sync()
 	_gs.emit_changed()
 
+	# Ясновидение: исследование «как будто вы на клетке улики» — и запрос, и снятие
+	# улики идут по той клетке.
+	var remote: String = String(_remote_clue.get(pid, ""))
+	_remote_clue.erase(pid)
+	var req_player: Dictionary = _gs.players[pid]
+	if not remote.is_empty():
+		req_player = req_player.duplicate()
+		req_player["location"] = remote
 	var api: Node = _gs.get_node_or_null("/root/ContentApi")
 	if api == null:
 		GameConsole.warn("[Game] ContentApi недоступен — ставим встречу-заглушку")
 		if token == _gen_token:
 			_gs.current_encounter = _fallback_card()
+			if not remote.is_empty():
+				_gs.current_encounter["research_loc"] = remote
 			_start_check_for_encounter(pid)
 			_gs.broadcast_sync()
 			_gs.emit_changed()
 		return
 
-	var req: Dictionary = _build_request(_gs.players[pid], kind, site_specific)
+	var req: Dictionary = _build_request(req_player, kind, site_specific)
 	# Назначенная встреча с тегом (особые карты Тайны) — корпус отдаёт только их.
 	var forced_tag: String = String(forced.get("tag", ""))
 	if not forced_tag.is_empty():
@@ -158,6 +176,8 @@ func generate(kind: String = "general", site_specific: bool = false) -> void:
 	else:
 		_gs.current_encounter = _fallback_card()
 		GameConsole.warn("[Game] Генерация встречи не удалась: %s" % String(res.get("error", "")))
+	if not remote.is_empty():
+		_gs.current_encounter["research_loc"] = remote
 	# Карта встречи на жетоне Тайны: итог карты решит судьбу жетона (см. _commit_outcome).
 	if String(_eldritch_card.get("pid", "")) == pid:
 		_gs.current_encounter["eldritch_hook"] = _eldritch_card.get("hook", {})
@@ -178,13 +198,81 @@ func begin_turn() -> void:
 	var pid: String = _gs.current_pid()
 	if pid.is_empty() or not _gs.players.has(pid):
 		return
+	# Заклинания «в фазу встреч» — до встречи, на выбор игрока (тот же промпт, что у
+	# отдыха). Ответ доиграет касты и вернётся сюда же (PhaseController).
+	var turn: String = "%d|%s" % [_gs.round_num, pid]
+	if _spell_turn != turn:
+		_spell_turn = turn
+		_spell_opts.erase(pid)
+		if _gs._spell.prompt_trigger(pid, "encounterPhase"):
+			_gs.players[pid]["spell_prompt"] = true
+			_gs.broadcast_sync()
+			_gs.emit_changed()
+			return
+	var opts: Dictionary = _spell_opts.get(pid, {})
+	if opts.has("remoteClueEncounter") and _offer_remote_clue(pid):
+		return
 	var loc: String = String(_gs.players[pid].get("location", ""))
-	if not (_gs.monsters.get(loc, []) as Array).is_empty():
+	var monsters_here: bool = not (_gs.monsters.get(loc, []) as Array).is_empty()
+	# Туманы Релеха: встреча «как будто на вашей клетке нет монстров».
+	if monsters_here and not opts.has("ignoreMonsters"):
 		# Монстры на клетке — бой обязателен и с КАЖДЫМ, в порядке сыщика.
 		combat.clear_fought(loc)
 		_next_combat_or_choice(pid)
 		return
 	_begin_noncombat(pid)
+
+
+## Хост: прошедший каст «в фазу встреч» решил, как пройдёт встреча этого хода
+## (verbs — ignoreMonsters / remoteClueEncounter). Действует до конца хода.
+func grant_spell_options(pid: String, verbs: Array) -> void:
+	var opts: Dictionary = _spell_opts.get(pid, {})
+	for v: Variant in verbs:
+		opts[String(v)] = true
+	_spell_opts[pid] = opts
+
+
+# Ясновидение: выбрать улику на поле для исследования «как будто вы на её клетке, не
+# обращая внимания на монстров там». Последний вариант — отказаться (обычная встреча
+# на своей клетке). Спрашиваем один раз; false — улик на поле нет.
+func _offer_remote_clue(pid: String) -> bool:
+	(_spell_opts[pid] as Dictionary).erase("remoteClueEncounter")
+	var options: Array = []
+	for loc_v: Variant in _gs.entities:
+		if (_gs.entities[loc_v] as Array).has("clue"):
+			options.append({"ref": String(loc_v), "name": _gs.map.name_key(String(loc_v))})
+	if options.is_empty():
+		return false
+	options.append({"ref": "", "name": "CLAIRVOYANCE_SKIP"})
+	_gs.mythos_decision = {
+		"active": true,
+		"pid": pid,
+		"driver": "clairvoyance",
+		"kind": "clue",
+		"path": "",
+		"options": options,
+		"title_key": "SPELL_CLAIRVOYANCE_NAME",
+		"prompt_key": "PICK_CLUE_SPACE",
+	}
+	_gs.broadcast_sync()
+	_gs.emit_changed()
+	return true
+
+
+## Хост: ответ на «чью улику исследовать» (Ясновидение). Пустой ref — отказ: обычная
+## встреча на своей клетке.
+func resolve_remote_clue(pid: String, index: int) -> void:
+	if _gs.phase != Phases.ENCOUNTER or _gs.current_pid() != pid:
+		return
+	var loc: String = String(AssetActionFlow.decision_value(_gs.mythos_decision, index))
+	_gs.mythos_decision = {}
+	if loc.is_empty():
+		begin_turn()
+		return
+	_remote_clue[pid] = loc
+	_gs.encounter_choices = []
+	GameConsole.log("[Ясновидение] %s исследует улику на %s" % [_gs.name_of(pid), loc])
+	generate("research")
 
 
 ## Не-боевая встреча: выбор типа (без combat) по содержимому клетки. Один вариант
@@ -814,6 +902,43 @@ func _remaining_loss(enc: Dictionary, stat: String) -> int:
 	return maxi(0, int(r.get("hp_loss", 0)) - int(enc.get("prevented_hp", 0)))
 
 
+## Хост/клиент: открыто ли окно реакции заклинанием на потерю stat (Защита плоти,
+## Вселить отвагу): идёт бой, потеря уже видна и ещё не вся предотвращена — то же
+## окно, что у бинтов. Кастует любой сыщик: «когда сыщик должен потерять …».
+func spell_loss_window(stat: String) -> bool:
+	if _gs.phase != Phases.ENCOUNTER:
+		return false
+	var enc: Dictionary = _gs.current_encounter
+	if String(enc.get("kind", "")) != "combat":
+		return false
+	return _loss_known(enc, stat) and _remaining_loss(enc, stat) > 0
+
+
+## Хост: каст-реакция caster_pid снял до amount потери stat у сыщика текущего боя.
+## Окно закрылось, пока кастовали (бой зафиксирован), — ничего.
+func prevent_by_spell(caster_pid: String, stat: String, amount: int) -> void:
+	if amount <= 0 or not spell_loss_window(stat):
+		return
+	var enc: Dictionary = _gs.current_encounter
+	var n: int = mini(_remaining_loss(enc, stat), amount)
+	var key: String = "prevented_sanity" if stat == "sanity" else "prevented_hp"
+	enc[key] = int(enc.get(key, 0)) + n
+	var spell_name: String = String(
+		SpellCatalog.by_id(String(_gs.last_cast_result.get("spell", ""))).get("name", "")
+	)
+	_gs.announce_action(
+		caster_pid,
+		"prevent_loss",
+		{"card": spell_name, "amount": n, "target": _gs.name_of(_gs.current_pid())}
+	)
+	GameConsole.log(
+		(
+			"[Бой] %s заклинанием: −%d к потере %s у %s"
+			% [_gs.name_of(caster_pid), n, stat, _gs.name_of(_gs.current_pid())]
+		)
+	)
+
+
 ## Узел preventLoss актива ({} — нет такого). Слоты action и whileOwned: бинты и
 ## виски лежат в action (сброс карты), зачарованные украшения — в whileOwned
 ## (плата фокусом, карта остаётся). Для реакции разница только в цене.
@@ -1091,7 +1216,10 @@ func _apply_research_clue_removal(pid: String, kind: String) -> void:
 		return
 	var gained: int = int(enc.get("_clues_gained", 0))
 	if gained > 0:
-		var loc: String = String(_gs.players[pid].get("location", ""))
+		# Улика с той клетки, которую исследовали (Ясновидение — чужая), иначе со своей.
+		var loc: String = String(
+			enc.get("research_loc", String(_gs.players[pid].get("location", "")))
+		)
 		_remove_clues_at(loc, gained)
 		# Идентичность: улика(и) с жетонов этой локации → на руки сыщику (до broadcast_sync).
 		_gs._board.collect_board_clues(pid, loc, gained)

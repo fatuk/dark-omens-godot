@@ -449,15 +449,28 @@ func _cast_key(p: Dictionary, item_index: int) -> String:
 ## pending_spell_cast) и, если отдых был последним действием, передаём отложенный
 ## ход (как закрытие магазина). Зовётся из relay-router (CAST_TRIGGER_SPELLS).
 func host_apply_cast_trigger_spells(pid: String, indices: Array) -> bool:
-	if not _gs._spell.host_apply_trigger_spells(pid, indices):
+	var event: String = String(_gs.pending_spell_cast.get("event", ""))
+	# Касты могут спросить игрока (ветка оборота) — продолжаем, когда доиграют все.
+	var then: Callable = func() -> void: _after_trigger_spells(pid, event)
+	if not _gs._spell.host_apply_trigger_spells(pid, indices, {}, then):
 		return false
-	var p: Dictionary = _gs.players.get(pid, {})
-	p.erase("spell_prompt")
-	if int(p.get("actions_left", 0)) == 0 and not bool(p.get("shopping", false)):
-		_advance_turn_delayed()
 	_gs.broadcast_sync()
 	_gs.emit_changed()
 	return true
+
+
+# Касты из промпта доиграны: отдых — передать ход, если действия кончились; фаза
+# встреч (Туманы Релеха, Ясновидение) — начать саму встречу с их итогом.
+func _after_trigger_spells(pid: String, event: String) -> void:
+	var p: Dictionary = _gs.players.get(pid, {})
+	p.erase("spell_prompt")
+	if event == "encounterPhase":
+		if _gs.phase == Phases.ENCOUNTER and _gs.current_pid() == pid:
+			_gs._encounter.begin_turn()
+	elif int(p.get("actions_left", 0)) == 0 and not bool(p.get("shopping", false)):
+		_advance_turn_delayed()
+	_gs.broadcast_sync()
+	_gs.emit_changed()
 
 
 # Хост: применить «Обмен» — перенос предметов/улик между активным игроком и
@@ -964,9 +977,17 @@ func host_apply_mythos_decision(pid: String, index: int) -> void:
 		return
 	var opts: Array = md.get("options", [])
 	var safe: int = clampi(index, 0, maxi(0, (opts as Array).size() - 1))
-	if String(md.get("driver", "mythos")) == "asset":
-		_gs._asset_action.resolve_decision(pid, safe)  # шаговый прогон, не корутина
-		return
+	# Шаговые прогоны (не корутины): ответ — их владельцу.
+	match String(md.get("driver", "mythos")):
+		"asset":
+			_gs._asset_action.resolve_decision(pid, safe)
+			return
+		"spell":
+			_gs._spell.resolve_decision(pid, safe)  # вопрос каста заклинания
+			return
+		"clairvoyance":
+			_gs._encounter.resolve_remote_clue(pid, safe)  # Ясновидение: чья улика
+			return
 	md["picked"] = safe
 	_gs.mythos_decision = md
 	_gs.mythos_decided.emit(safe)

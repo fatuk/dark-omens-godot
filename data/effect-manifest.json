@@ -1257,6 +1257,18 @@
 	  "targets": null,
 	  "describeKey": "VERB_PREVENT_LOSS"
 	},
+	"ignoreMonsters": {
+	  "kind": "board",
+	  "params": [],
+	  "targets": null,
+	  "describeKey": "VERB_IGNORE_MONSTERS"
+	},
+	"remoteClueEncounter": {
+	  "kind": "board",
+	  "params": [],
+	  "targets": null,
+	  "describeKey": "VERB_REMOTE_CLUE_ENCOUNTER"
+	},
 	"defeatMonster": {
 	  "kind": "board",
 	  "params": [

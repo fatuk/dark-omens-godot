@@ -2436,5 +2436,261 @@
 				]
 			}
 		]
+	},
+	{
+		"id": "fx_unless",
+		"name": "SPELL_FX_UNLESS_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "test",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "",
+			"onPass": []
+		},
+		"backs": [
+			{
+				"id": "fx_unless_b1",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "loseSanity",
+										"amount": 2
+									},
+									{
+										"do": "discardCard"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "fx_wither",
+		"name": "SPELL_FX_WITHER_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "test",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "combatEncounter",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "",
+			"onPass": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 3
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "fx_wither_b1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": []
+					},
+					{
+						"on": "2+",
+						"effect": [
+							{
+								"do": "improveSkill",
+								"skill": "strength",
+								"amount": 5
+							},
+							{
+								"do": "rerollDice",
+								"count": 1,
+								"skill": "strength"
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "fx_ward",
+		"name": "SPELL_FX_WARD_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "test",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "onHealthLoss",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "",
+			"onPass": [
+				{
+					"do": "preventLoss",
+					"stat": "health",
+					"amount": 2
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "fx_ward_b1",
+				"tiers": [
+					{
+						"on": "0-2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"effect": [
+							{
+								"do": "preventLoss",
+								"stat": "health",
+								"amount": 4
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "fx_mists",
+		"name": "SPELL_FX_MISTS_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "test",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "encounterPhase",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "",
+			"onPass": [
+				{
+					"do": "ignoreMonsters"
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "fx_mists_b1",
+				"tiers": [
+					{
+						"on": "0+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "fx_mist_succ",
+		"name": "SPELL_FX_MIST_SUCC_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "test",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "",
+			"onPass": [
+				{
+					"do": "discardMonster",
+					"maxToughness": "testResult"
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "fx_mist_succ_b1",
+				"tiers": [
+					{
+						"on": "0-2",
+						"effect": []
+					},
+					{
+						"on": "3+",
+						"effect": [
+							{
+								"do": "addSuccesses",
+								"amount": 2
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "fx_feed",
+		"name": "SPELL_FX_FEED_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "test",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "",
+			"onPass": [
+				{
+					"do": "improveSkill",
+					"skill": "choice",
+					"amount": 1
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "fx_feed_b1",
+				"tiers": [
+					{
+						"on": "0+",
+						"effect": []
+					}
+				]
+			}
+		]
 	}
 ]

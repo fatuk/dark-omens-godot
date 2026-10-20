@@ -68,6 +68,9 @@ class MockCampaign:
 	func balance_player_count() -> int:
 		return 1
 
+	func current_mystery() -> Dictionary:
+		return {}
+
 
 class MockBoard:
 	extends RefCounted
@@ -85,12 +88,26 @@ class MockBoard:
 	func monster_choices() -> Array:
 		return []
 
+	func has_belongings(_loc: String) -> bool:
+		return false
+
+	var collected: Array = []  # [[pid, loc, n]] — улики с поля на руки
+
+	func collect_board_clues(pid: String, loc: String, n: int) -> void:
+		collected.append([pid, loc, n])
+
 
 class MockRumor:
 	extends RefCounted
 
 	func notify_monster_defeated(_loc: String) -> void:
 		pass
+
+	func encounter_location_for(_pid: String) -> String:
+		return ""
+
+	func research_clue_to_card(_pid: String, _loc: String, _gained: int) -> bool:
+		return false
 
 
 class MockMystery:
@@ -99,10 +116,34 @@ class MockMystery:
 	func notify_monster_defeated(_mid: String, _pid: String) -> void:
 		pass
 
+	func mystery_kind() -> String:
+		return ""
+
+	func mystery_encounter_hook(_loc: String, _pid: String) -> Dictionary:
+		return {}
+
+	func try_mystery_hook(_event: String, _ctx: Dictionary, _pid: String) -> void:
+		pass
+
+
+# Стаб SpellFlow: промпт заклинаний «в фазу встреч» в начале хода встречи.
+class MockSpell:
+	extends RefCounted
+	var prompt: bool = false
+	var prompted: Array = []
+
+	func prompt_trigger(pid: String, event: String) -> bool:
+		prompted.append([pid, event])
+		return prompt
+
 
 class MockGS:
 	extends Node
 	var phase: String = "encounter"
+	var round_num: int = 1
+	var mythos_decision: Dictionary = {}
+	var last_cast_result: Dictionary = {}
+	var _spell := MockSpell.new()
 	var active_mystery: int = 0
 	var _mystery := MockMystery.new()
 	var players: Dictionary = {}
@@ -717,6 +758,9 @@ class MockMap:
 	func type_of(_id: String) -> String:
 		return "city"
 
+	func name_key(id: String) -> String:
+		return "LOC_" + id
+
 
 func _move_ctx() -> EncounterFlow:
 	var gs: MockGS = autofree(MockGS.new())
@@ -876,3 +920,81 @@ func test_branch_without_test_is_test_less_only_on_stage_two() -> void:
 	assert_true(EncounterFlow._is_test_less(enc), "ветка успеха без проверки")
 	enc["branch"] = "failure"
 	assert_false(EncounterFlow._is_test_less(enc), "ветка провала с проверкой")
+
+
+# ── Заклинания в бою и в фазу встреч ─────────────────────────────────────────
+
+
+func test_spell_prevents_loss_from_any_space() -> void:
+	# Защита плоти: «когда сыщик должен потерять здоровье» — кастующий где угодно.
+	var ef: EncounterFlow = _wounded([], [], 3)
+	ef._gs.players["q"] = {"location": "far", "hp": 5, "sanity": 5, "items": []}
+	assert_true(ef.spell_loss_window("health"), "потеря видна — окно открыто")
+	ef.prevent_by_spell("q", "health", 2)
+	assert_eq(int(ef._gs.current_encounter.get("prevented_hp", 0)), 2)
+	ef.combat.commit("p")
+	assert_eq(int(ef._gs.players["p"]["hp"]), 4, "списана только оставшаяся 1")
+
+
+func test_spell_window_closed_without_loss() -> void:
+	var ef: EncounterFlow = _wounded([], [], 0)
+	assert_false(ef.spell_loss_window("health"), "терять нечего — реакции нет")
+
+
+func test_encounter_spells_prompted_once_per_turn() -> void:
+	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 2}])
+	(ef._gs._spell as MockSpell).prompt = true
+	ef.begin_turn()
+	assert_true(bool(ef._gs.players["p"].get("spell_prompt", false)), "сначала — промпт кастов")
+	assert_true(ef._gs.current_encounter.is_empty(), "бой ждёт ответа")
+	ef.begin_turn()  # касты доиграны — продолжение хода
+	assert_eq((ef._gs._spell as MockSpell).prompted.size(), 1, "второй раз не спрашиваем")
+	assert_eq(String(ef._gs.current_encounter.get("kind", "")), "combat")
+
+
+func test_mists_skips_combat() -> void:
+	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 2}])
+	ef._gs.entities = {"loc": ["clue"]}  # своя улика — выбор «общая / исследование»
+	(ef._gs._spell as MockSpell).prompt = true
+	ef.begin_turn()
+	ef.grant_spell_options("p", ["ignoreMonsters"])
+	ef.begin_turn()
+	assert_true(ef._gs.current_encounter.is_empty(), "боя нет — как будто монстров нет")
+	assert_eq(ef._gs.encounter_choices, ["general", "research"], "обычный выбор встречи")
+
+
+func _clairvoyant() -> EncounterFlow:
+	var ef: EncounterFlow = _arena([{"id": "ghoul", "health": 2}])
+	ef._gs.map = MockMap.new()
+	ef._gs.entities = {"B": ["clue"]}
+	(ef._gs._spell as MockSpell).prompt = true
+	ef.begin_turn()
+	ef.grant_spell_options("p", ["remoteClueEncounter"])
+	ef.begin_turn()
+	return ef
+
+
+func test_clairvoyance_offers_board_clues() -> void:
+	var ef: EncounterFlow = _clairvoyant()
+	var md: Dictionary = ef._gs.mythos_decision
+	assert_eq(String(md.get("driver", "")), "clairvoyance")
+	var refs: Array = []
+	for o_v: Variant in md.get("options", []):
+		refs.append(String((o_v as Dictionary).get("ref", "")))
+	assert_eq(refs, ["B", ""], "улики на поле + отказ")
+	assert_true(ef._gs.current_encounter.is_empty(), "бой на своей клетке ждёт ответа")
+
+
+func test_clairvoyance_skip_falls_back_to_combat() -> void:
+	var ef: EncounterFlow = _clairvoyant()
+	ef.resolve_remote_clue("p", 1)  # отказ
+	assert_eq(String(ef._gs.current_encounter.get("kind", "")), "combat", "обычный ход: бой")
+
+
+func test_remote_research_takes_clue_from_that_space() -> void:
+	var ef: EncounterFlow = _arena([])
+	ef._gs.entities = {"B": ["clue"], "loc": ["clue"]}
+	ef._gs.current_encounter = {"kind": "research", "research_loc": "B", "_clues_gained": 1}
+	ef._apply_research_clue_removal("p", "research")
+	assert_eq(ef._gs.entities, {"loc": ["clue"]}, "улика снята с исследованной клетки")
+	assert_eq((ef._gs._board as MockBoard).collected, [["p", "B", 1]])
