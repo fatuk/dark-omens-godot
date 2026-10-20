@@ -750,6 +750,8 @@ COND_KIND_BOON,Благо,Boon
 COND_KIND_RESTRICTION,Ограничение,Restriction
 COND_KIND_EXPOSURE,Стихия,Exposure
 COND_KIND_PURSUIT,Преследование,Pursuit
+COND_ANY_OF_KIND,любое «%s»,any %s
+COND_ANY,любое,any
 TOKEN_CONCENTRATION,Концентрация,Focus
 TOKEN_CLUE,Улика,Clue
 TOKEN_REROLL_HINT,перетащите на куб,drag onto a die

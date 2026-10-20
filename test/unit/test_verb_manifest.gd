@@ -65,3 +65,20 @@ func test_describe_dieroll_lists_faces() -> void:
 func test_describe_non_string_do_is_safe() -> void:
 	# Гард на структурный узел с нестроковым do → "" вместо краша String(Array).
 	assert_eq(EffectManifest.describe({"do": ["x"]}), "")
+
+
+func test_describe_condition_by_kind_names_the_kind() -> void:
+	# «Шкаф без разрешения»: gainCondition kind:madness — карта выпадет при применении,
+	# а до того исход писал «состояние: » с пустым хвостом. Теперь — имя вида.
+	var madness: String = TranslationServer.translate("COND_KIND_MADNESS")
+	var s: String = EffectManifest.describe({"do": "gainCondition", "kind": "madness"})
+	assert_string_contains(s, madness, "вид состояния назван")
+	var many: String = EffectManifest.describe(
+		{"do": "loseCondition", "kind": ["illness", "injury"]}
+	)
+	assert_string_contains(many, String(TranslationServer.translate("COND_KIND_ILLNESS")))
+	assert_string_contains(many, String(TranslationServer.translate("COND_KIND_INJURY")))
+	var any: String = EffectManifest.describe({"do": "gainCondition"})
+	assert_string_contains(
+		any, String(TranslationServer.translate("COND_ANY")), "ни карты, ни вида"
+	)

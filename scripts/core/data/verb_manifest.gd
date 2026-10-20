@@ -151,6 +151,8 @@ static func _render_param(p: Dictionary, node: Dictionary) -> String:
 	if String(ptype.get("t", "")) == "ref":
 		match String(ptype.get("of", "")):
 			"condition":
+				if String(val).is_empty():
+					return _condition_kind_text(node)
 				return _t(Conditions.name_key(String(val)))
 			"skill":
 				return _skill_name(String(val))
@@ -158,6 +160,20 @@ static func _render_param(p: Dictionary, node: Dictionary) -> String:
 	if val is float and val == floor(val):
 		return str(int(val))
 	return str(val)
+
+
+# Состояние задано ВИДОМ, а не картой (gainCondition kind:"madness" — случайное
+# безумие; loseCondition kind:[…] — любое из видов): «любое «Безумие»». Конкретная
+# карта выпадет только при применении. Ни карты, ни вида — просто «любое».
+static func _condition_kind_text(node: Dictionary) -> String:
+	var kinds: Variant = node.get("kind", "")
+	var list: Array = kinds if kinds is Array else ([kinds] if not String(kinds).is_empty() else [])
+	var names := PackedStringArray()
+	for k_v: Variant in list:
+		names.append(_t("COND_KIND_" + String(k_v).to_upper()))
+	if names.is_empty():
+		return _t("COND_ANY")
+	return _t("COND_ANY_OF_KIND") % " / ".join(names)
 
 
 static func _skill_name(s: String) -> String:
