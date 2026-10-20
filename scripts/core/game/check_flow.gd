@@ -108,6 +108,30 @@ func pop() -> void:
 	_gs.active_check = _stack.pop_back() if not _stack.is_empty() else {}
 
 
+## Добавить к активной проверке временные модификаторы (не с карты руки): «+3 Силы
+## в этом бою» из каста заклинания-incantation. Как activate: бонус пула не
+## складывается (максимум), после броска докидываются кубы дельты, перебросы
+## пересчитываются. Проверка не pid — ничего.
+func add_mods(pid: String, mods: Array) -> void:
+	var c: Dictionary = _gs.active_check
+	if mods.is_empty() or c.is_empty() or String(c.get("pid", "")) != pid:
+		return
+	var skill: String = String(c.get("skill", ""))
+	var bonus_before: int = Dice.pre_roll_bonus(c.get("active_mods", []), skill)
+	var active: Array = c.get("active_mods", [])
+	active.append_array(mods)
+	c["active_mods"] = active
+	if bool(c.get("rolled", false)):
+		var base: Array = c.get("base", [])
+		var add: int = Dice.pre_roll_bonus(active, skill) - bonus_before
+		for _i in range(maxi(0, add)):
+			base.append(Dice.roll_one())
+		_set_roll(c, base)
+		c["reroll_allowance"] = _allowance(c)
+		c["reroll_all_allowance"] = _allowance_all(c)
+	_sync()
+
+
 ## Сбросить стек (новая партия). Зовётся из GameState при reset игры.
 func reset_stack() -> void:
 	_stack.clear()

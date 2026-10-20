@@ -49,10 +49,16 @@ func resolve_cast(
 
 	var ctx: Dictionary = {"successes": successes, "dice": dice}
 	var consumed: bool = false
-	# Фронт: эффект при успехе теста.
+	# Фронт: эффект при успехе теста. Каст поверх боевой проверки (flow.nested):
+	# модификаторы проверки фронта («+3 Силы в этом бою») — НЕ навсегда игроку, а во
+	# временные моды боевой проверки: копим в flow._check_mods, apply_cast кладёт их
+	# в проверку, вернувшуюся из стека.
 	if successes >= 1:
 		var front: Dictionary = spell.get("front", {})
-		consumed = _apply_effects(pid, front.get("onPass", []), ctx) or consumed
+		var program: Array = front.get("onPass", [])
+		if bool(flow.get("nested", false)):
+			program = _split_check_mods(program, flow)
+		consumed = _apply_effects(pid, program, ctx) or consumed
 	# Рубашка — закреплённая за ЭТОЙ копией (item.back, назначена при выдаче из
 	# колоды): переворачиваем ту же карту, что и в прошлый каст. flow.backs[i] —
 	# форс конкретной рубашки (детерминизм/тесты), как flow.rolls для кубиков.
@@ -69,7 +75,7 @@ func resolve_cast(
 		"conds": (p.get("conditions", []) as Array).duplicate(),
 	}
 	consumed = _apply_effects(pid, [{"resultTiers": back.get("tiers", [])}], ctx) or consumed
-	_set_cast_result(pid, sid, back, successes, pre, consumed)
+	_set_cast_result(pid, sid, back, successes, pre, consumed, _tier_text(back, successes))
 	GameConsole.log(
 		(
 			"[Заклинание] %s · «%s» (рубашка %s, успехов %d)"
@@ -92,7 +98,8 @@ func _set_cast_result(
 	back: Dictionary,
 	successes: int,
 	pre: Dictionary,
-	discarded: bool
+	discarded: bool,
+	text: String = ""
 ) -> void:
 	var p: Dictionary = _gs.players[pid]
 	var out: Dictionary = {}
@@ -118,7 +125,7 @@ func _set_cast_result(
 		"pid": pid,
 		"spell": spell_id,
 		"back": String(back.get("id", "")),
-		"text": String(back.get("text", "")),
+		"text": text if not text.is_empty() else String(back.get("text", "")),
 		"successes": successes,
 		"outcome": out,
 	}
@@ -229,9 +236,12 @@ func apply_cast(pid: String, flow: Dictionary = {}) -> bool:
 		c = _gs.active_check
 	var item_index: int = int(cs.get("item_index", -1))
 	var dice: Array = c.get("dice", c.get("base", []))
-	resolve_cast(pid, item_index, int(c.get("successes", 0)), dice, flow)
+	var f: Dictionary = flow.duplicate()
+	f["nested"] = bool(cs.get("nested", false))
+	resolve_cast(pid, item_index, int(c.get("successes", 0)), dice, f)
 	if bool(cs.get("nested", false)):
 		_gs._check.pop()  # вернуть боевую проверку
+		_gs._check.add_mods(pid, f.get("_check_mods", []))  # «+3 Силы в этом бою»
 	else:
 		_gs._check.clear()
 	_gs.casting_spell = {}
@@ -514,6 +524,32 @@ func _apply_effects(pid: String, program: Array, ctx: Dictionary) -> bool:
 		else:
 			_gs.apply_board_effect(node_v as Dictionary)
 	return consumed
+
+
+# Модификаторы проверки из программы фронта — в flow._check_mods (во временные моды
+# вернувшейся проверки), остальное — обычной программой. Возвращает остальное.
+func _split_check_mods(program: Array, flow: Dictionary) -> Array:
+	var rest: Array = []
+	var mods: Array = flow.get("_check_mods", [])
+	for n_v: Variant in program:
+		if (
+			n_v is Dictionary
+			and AssetCatalog._CHECK_MOD_VERBS.has(String((n_v as Dictionary).get("do", "")))
+		):
+			mods.append((n_v as Dictionary).duplicate(true))
+		else:
+			rest.append(n_v)
+	flow["_check_mods"] = mods
+	return rest
+
+
+# Текст выпавшего яруса оборота (у каждого яруса свой флейвор в EH); нет — "".
+static func _tier_text(back: Dictionary, successes: int) -> String:
+	for t_v: Variant in back.get("tiers", []):
+		var t: Dictionary = t_v
+		if _EffectRunner._tier_match(successes, String(t.get("on", ""))):
+			return String(t.get("text", ""))
+	return ""
 
 
 # id заклинания из элемента инвентаря ({id} | {id, kind} | строка).

@@ -39,6 +39,12 @@ class StubCheck:
 		var st: Array = _gs._check_stack
 		_gs.active_check = st.pop_back() if not st.is_empty() else {}
 
+	func add_mods(_pid: String, mods: Array) -> void:
+		var c: Dictionary = _gs.active_check
+		var active: Array = c.get("active_mods", [])
+		active.append_array(mods)
+		c["active_mods"] = active
+
 
 # Стаб PhaseController: фиксирует освобождение хода после применения каста (ritual).
 class StubPhase:
@@ -80,8 +86,14 @@ class MockGameState:
 
 
 func before_each() -> void:
+	# Свой каталог: data/spells.json генерится из CMS, обороты там правят авторы.
+	SpellCatalog.use_fixture(DataLoader.load_array("res://test/fixtures/spells.json"))
 	_gs = autofree(MockGameState.new())
 	_sf = SpellFlow.new(_gs)
+
+
+func after_each() -> void:
+	SpellCatalog.use_fixture([])
 
 
 func _player(items: Array = []) -> void:
@@ -401,10 +413,14 @@ func test_apply_incantation_applies_front_and_restores_combat() -> void:
 	assert_true(_sf.apply_cast("p", {"backs": {"0": "wither_b1"}}))
 	assert_eq(
 		int((_gs.players["p"]["skill_mods"] as Dictionary).get("strength", 0)),
-		2,
-		"+3 Силы → кап +2"
+		0,
+		"«+3 Силы в этой встрече» — не жетон навсегда"
 	)
 	assert_eq(String(_gs.active_check.get("owner", "")), "combat", "боевая проверка вернулась")
+	var mods: Array = _gs.active_check.get("active_mods", [])
+	assert_eq(mods.size(), 1, "+3 Силы — временный мод боевой проверки")
+	assert_eq(String((mods[0] as Dictionary).get("skill", "")), "strength")
+	assert_eq(int((mods[0] as Dictionary).get("amount", 0)), 3)
 	assert_eq((_gs._check_stack as Array).size(), 0, "стек пуст")
 	assert_eq(_gs._phase.released, [], "incantation не освобождает ход")
 
@@ -505,11 +521,18 @@ func test_cast_sets_result_with_flavor_and_outcome() -> void:
 	var r: Dictionary = _gs.last_cast_result
 	assert_eq(String(r["spell"]), "shriveling")
 	assert_eq(String(r["back"]), "shriveling_b2", "выпавший оборот")
-	assert_eq(String(r["text"]), "RECK_SHRIVELING_B2", "flavor-ключ расплаты")
+	assert_eq(String(r["text"]), "RECK_SHRIVELING_B2_T1", "флейвор выпавшего яруса")
 	assert_eq(int(r["successes"]), 0)
 	assert_has(
 		(r["outcome"] as Dictionary).get("conditions", []), "poisoned", "итог: новое состояние"
 	)
+
+
+func test_cast_result_text_falls_back_to_back() -> void:
+	_player([{"id": "shriveling"}])
+	# У яруса 1+ своего текста нет — флейвор оборота целиком.
+	_sf.resolve_cast("p", 0, 3, [5, 5, 6], _force("shriveling_b2"))
+	assert_eq(String(_gs.last_cast_result["text"]), "RECK_SHRIVELING_B2")
 
 
 func test_cast_result_averted_on_high_successes() -> void:
@@ -601,3 +624,27 @@ func test_spell_card_uses_own_frame_and_zones() -> void:
 	var tone: Dictionary = p.get("art_tone", {})
 	assert_gt(float(tone.get("amount", 0.0)), 0.0, "арт подгоняется под сиреневый тон рамки")
 	assert_eq(tone.get("mid"), SpellCatalog.TONE_MID)
+
+
+# ── Контент из CMS (data/spells.json): каждый ярус каждого оборота разыгрывается ──
+
+
+func test_content_every_tier_resolves_with_own_text() -> void:
+	SpellCatalog.use_fixture([])  # реальный каталог, не фикстура
+	var spells: Array = SpellCatalog.all()
+	assert_gt(spells.size(), 0, "каталог заклинаний не пуст")
+	for s_v: Variant in spells:
+		var s: Dictionary = s_v
+		var sid: String = String(s.get("id", ""))
+		for b_v: Variant in s.get("backs", []):
+			var back: Dictionary = b_v
+			for succ: int in range(5):
+				_player([{"id": sid}])
+				_gs.board_effects.clear()
+				_sf.resolve_cast("p", 0, succ, [1, 4, 5, 6], _force(String(back.get("id", ""))))
+				var r: Dictionary = _gs.last_cast_result
+				assert_eq(String(r.get("back", "")), String(back.get("id", "")), sid)
+				var key: String = String(r.get("text", ""))
+				# Ярусы с текстом (новые обороты) — ключ должен быть переведён.
+				if key.begins_with("RECK_") and key.contains("_T"):
+					assert_ne(tr(key), key, "%s: нет перевода %s" % [sid, key])

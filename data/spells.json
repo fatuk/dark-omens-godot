@@ -24,79 +24,53 @@
 		"backs": [
 			{
 				"id": "shriveling_b1",
-				"text": "RECK_SHRIVELING_B1",
 				"tiers": [
 					{
 						"on": "0-1",
+						"text": "RECK_SHRIVELING_B1_T1",
 						"effect": [
 							{
-								"do": "loseSanity",
-								"amount": 1
-							},
-							{
-								"do": "discardCard",
-								"when": {
-									"kind": "rolledAny",
-									"face": 1
-								}
+								"choice": [
+									{
+										"do": "loseSanity",
+										"amount": 2
+									},
+									{
+										"do": "discardCard"
+									}
+								]
 							}
 						]
 					},
 					{
-						"on": "2+",
+						"on": "2",
+						"text": "RECK_SHRIVELING_B1_T2",
+						"effect": []
+					},
+					{
+						"on": "3+",
+						"text": "RECK_SHRIVELING_B1_T3",
 						"effect": []
 					}
 				]
 			},
 			{
 				"id": "shriveling_b2",
-				"text": "RECK_SHRIVELING_B2",
 				"tiers": [
 					{
 						"on": "0",
-						"effect": [
-							{
-								"do": "gainCondition",
-								"condition": "poisoned"
-							}
-						]
-					},
-					{
-						"on": "1+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "shriveling_b3",
-				"text": "RECK_SHRIVELING_B3",
-				"tiers": [
-					{
-						"on": "0",
-						"effect": [
-							{
-								"do": "gainCondition",
-								"condition": "hallucinations"
-							}
-						]
-					},
-					{
-						"on": "1+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "shriveling_b4",
-				"text": "RECK_SHRIVELING_B4",
-				"tiers": [
-					{
-						"on": "0",
+						"text": "RECK_SHRIVELING_B2_T1",
 						"effect": [
 							{
 								"do": "loseHealth",
-								"amount": 1
-							},
+								"amount": 2
+							}
+						]
+					},
+					{
+						"on": "1",
+						"text": "RECK_SHRIVELING_B2_T2",
+						"effect": [
 							{
 								"do": "loseSanity",
 								"amount": 1
@@ -104,7 +78,71 @@
 						]
 					},
 					{
-						"on": "1+",
+						"on": "2+",
+						"text": "RECK_SHRIVELING_B2_T3",
+						"effect": [
+							{
+								"do": "damageMonster",
+								"amount": 2,
+								"target": "eachMonsterOnSpace"
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "shriveling_b3",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_SHRIVELING_B3_T1",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "gainCondition",
+										"condition": "poisoned"
+									},
+									{
+										"do": "discardCard"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "1-2",
+						"text": "RECK_SHRIVELING_B3_T2",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"text": "RECK_SHRIVELING_B3_T3",
+						"effect": [
+							{
+								"do": "damageMonster",
+								"amount": 2
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "shriveling_b4",
+				"tiers": [
+					{
+						"on": "0-1",
+						"text": "RECK_SHRIVELING_B4_T1",
+						"effect": []
+					},
+					{
+						"on": "2+",
+						"text": "RECK_SHRIVELING_B4_T2",
 						"effect": []
 					}
 				]
@@ -137,10 +175,92 @@
 		"backs": [
 			{
 				"id": "wither_b1",
-				"text": "RECK_WITHER_B1",
 				"tiers": [
 					{
 						"on": "0-1",
+						"text": "RECK_WITHER_B1_T1",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "loseSanity",
+										"amount": 2
+									},
+									{
+										"do": "discardCard"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_WITHER_B1_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "wither_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_WITHER_B2_T1",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "gainCondition",
+										"condition": "internalInjury"
+									},
+									{
+										"do": "discardCard"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "1",
+						"text": "RECK_WITHER_B2_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_WITHER_B2_T3",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "wither_b3",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_WITHER_B3_T1",
+						"effect": [
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1",
+						"text": "RECK_WITHER_B3_T2",
 						"effect": [
 							{
 								"do": "loseHealth",
@@ -150,66 +270,37 @@
 					},
 					{
 						"on": "2+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "wither_b2",
-				"text": "RECK_WITHER_B2",
-				"tiers": [
-					{
-						"on": "0",
-						"effect": [
-							{
-								"do": "gainCondition",
-								"condition": "internalInjury"
-							},
-							{
-								"do": "discardCard"
-							}
-						]
-					},
-					{
-						"on": "1+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "wither_b3",
-				"text": "RECK_WITHER_B3",
-				"tiers": [
-					{
-						"on": "0",
-						"effect": [
-							{
-								"do": "gainCondition",
-								"condition": "backInjury"
-							}
-						]
-					},
-					{
-						"on": "1+",
+						"text": "RECK_WITHER_B3_T3",
 						"effect": []
 					}
 				]
 			},
 			{
 				"id": "wither_b4",
-				"text": "RECK_WITHER_B4",
 				"tiers": [
 					{
 						"on": "0",
+						"text": "RECK_WITHER_B4_T1",
 						"effect": [
 							{
-								"do": "loseHealth",
-								"amount": 2
+								"do": "gainCondition",
+								"kind": "illness"
 							}
 						]
 					},
 					{
-						"on": "1+",
+						"on": "1",
+						"text": "RECK_WITHER_B4_T2",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_WITHER_B4_T3",
 						"effect": []
 					}
 				]
@@ -220,8 +311,8 @@
 		"id": "mind_s_eye",
 		"name": "SPELL_MINDS_EYE_NAME",
 		"subtype": "glamour",
-		"set": "core",
-		"season": "core",
+		"set": "soc",
+		"season": "soc",
 		"traits": [
 			"magical",
 			"spell"
@@ -332,7 +423,7 @@
 		"id": "healing_words",
 		"name": "SPELL_HEALING_WORDS_NAME",
 		"subtype": "incantation",
-		"set": "core",
+		"set": "fl",
 		"season": "core",
 		"traits": [
 			"magical",
@@ -357,34 +448,11 @@
 		"backs": [
 			{
 				"id": "healing_words_b1",
-				"text": "RECK_HEALING_WORDS_B1",
-				"tiers": [
-					{
-						"on": "0-1",
-						"effect": [
-							{
-								"do": "loseHealth",
-								"amount": 1
-							}
-						]
-					},
-					{
-						"on": "2+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "healing_words_b2",
-				"text": "RECK_HEALING_WORDS_B2",
 				"tiers": [
 					{
 						"on": "0",
+						"text": "RECK_HEALING_WORDS_B1_T1",
 						"effect": [
-							{
-								"do": "loseSanity",
-								"amount": 1
-							},
 							{
 								"do": "discardCard",
 								"when": {
@@ -396,45 +464,105 @@
 					},
 					{
 						"on": "1+",
+						"text": "RECK_HEALING_WORDS_B1_T2",
 						"effect": []
+					}
+				]
+			},
+			{
+				"id": "healing_words_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_HEALING_WORDS_B2_T1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1",
+						"text": "RECK_HEALING_WORDS_B2_T2",
+						"effect": []
+					},
+					{
+						"on": "2+",
+						"text": "RECK_HEALING_WORDS_B2_T3",
+						"effect": [
+							{
+								"do": "loseCondition",
+								"kind": [
+									"illness",
+									"injury"
+								]
+							}
+						]
 					}
 				]
 			},
 			{
 				"id": "healing_words_b3",
-				"text": "RECK_HEALING_WORDS_B3",
 				"tiers": [
 					{
 						"on": "0",
+						"text": "RECK_HEALING_WORDS_B3_T1",
 						"effect": [
 							{
-								"do": "gainCondition",
-								"condition": "diseased"
+								"do": "loseSanity",
+								"amount": 1
 							}
 						]
 					},
 					{
-						"on": "1+",
+						"on": "1",
+						"text": "RECK_HEALING_WORDS_B3_T2",
 						"effect": []
+					},
+					{
+						"on": "2+",
+						"text": "RECK_HEALING_WORDS_B3_T3",
+						"effect": [
+							{
+								"do": "loseCondition",
+								"kind": "madness"
+							}
+						]
 					}
 				]
 			},
 			{
 				"id": "healing_words_b4",
-				"text": "RECK_HEALING_WORDS_B4",
 				"tiers": [
 					{
 						"on": "0",
+						"text": "RECK_HEALING_WORDS_B4_T1",
 						"effect": [
 							{
-								"do": "gainCondition",
-								"condition": "infection"
+								"do": "loseHealth",
+								"amount": 1
+							},
+							{
+								"do": "loseSanity",
+								"amount": 1
 							}
 						]
 					},
 					{
-						"on": "1+",
+						"on": "1-2",
+						"text": "RECK_HEALING_WORDS_B4_T2",
 						"effect": []
+					},
+					{
+						"on": "3+",
+						"text": "RECK_HEALING_WORDS_B4_T3",
+						"effect": [
+							{
+								"do": "loseCondition",
+								"condition": "cursed"
+							}
+						]
 					}
 				]
 			}
@@ -444,8 +572,8 @@
 		"id": "azure_flame",
 		"name": "SPELL_AZURE_FLAME_NAME",
 		"subtype": "glamour",
-		"set": "core",
-		"season": "core",
+		"set": "sr",
+		"season": "sr",
 		"traits": [
 			"magical",
 			"spell"
@@ -556,8 +684,8 @@
 		"id": "enchant_weapon",
 		"name": "SPELL_ENCHANT_WEAPON_NAME",
 		"subtype": "glamour",
-		"set": "core",
-		"season": "core",
+		"set": "utp",
+		"season": "utp",
 		"traits": [
 			"magical",
 			"spell"
@@ -664,8 +792,8 @@
 		"id": "wrack",
 		"name": "SPELL_WRACK_NAME",
 		"subtype": "incantation",
-		"set": "core",
-		"season": "core",
+		"set": "utp",
+		"season": "utp",
 		"traits": [
 			"magical",
 			"spell"
@@ -773,7 +901,7 @@
 		"id": "poison_mist",
 		"name": "SPELL_POISON_MIST_NAME",
 		"subtype": "ritual",
-		"set": "core",
+		"set": "fl",
 		"season": "core",
 		"traits": [
 			"magical",
@@ -794,29 +922,10 @@
 		"backs": [
 			{
 				"id": "poison_mist_b1",
-				"text": "RECK_POISON_MIST_B1",
-				"tiers": [
-					{
-						"on": "0-1",
-						"effect": [
-							{
-								"do": "loseHealth",
-								"amount": 1
-							}
-						]
-					},
-					{
-						"on": "2+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "poison_mist_b2",
-				"text": "RECK_POISON_MIST_B2",
 				"tiers": [
 					{
 						"on": "0",
+						"text": "RECK_POISON_MIST_B1_T1",
 						"effect": [
 							{
 								"do": "gainCondition",
@@ -825,41 +934,29 @@
 						]
 					},
 					{
-						"on": "1+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "poison_mist_b3",
-				"text": "RECK_POISON_MIST_B3",
-				"tiers": [
-					{
-						"on": "0",
-						"effect": [
-							{
-								"do": "gainCondition",
-								"condition": "diseased"
-							}
-						]
-					},
-					{
-						"on": "1+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "poison_mist_b4",
-				"text": "RECK_POISON_MIST_B4",
-				"tiers": [
-					{
-						"on": "0",
+						"on": "1-2",
+						"text": "RECK_POISON_MIST_B1_T2",
 						"effect": [
 							{
 								"do": "loseHealth",
 								"amount": 1
-							},
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"text": "RECK_POISON_MIST_B1_T3",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "poison_mist_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_POISON_MIST_B2_T1",
+						"effect": [
 							{
 								"do": "discardCard",
 								"when": {
@@ -871,114 +968,80 @@
 					},
 					{
 						"on": "1+",
-						"effect": []
-					}
-				]
-			}
-		]
-	},
-	{
-		"id": "clairvoyance",
-		"name": "SPELL_CLAIRVOYANCE_NAME",
-		"subtype": "ritual",
-		"set": "core",
-		"season": "core",
-		"traits": [
-			"magical",
-			"spell"
-		],
-		"front": {
-			"trigger": "action",
-			"test": "lore",
-			"modifier": 0,
-			"abilityKey": "SPELL_CLAIRVOYANCE_ABILITY",
-			"onPass": [
-				{
-					"do": "gainClue",
-					"amount": 2
-				}
-			]
-		},
-		"backs": [
-			{
-				"id": "clairvoyance_b1",
-				"text": "RECK_CLAIRVOYANCE_B1",
-				"tiers": [
-					{
-						"on": "0-1",
+						"text": "RECK_POISON_MIST_B2_T2",
 						"effect": [
 							{
 								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "poison_mist_b3",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_POISON_MIST_B3_T1",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "loseHealth",
+										"amount": 2
+									},
+									{
+										"do": "discardCard"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "1",
+						"text": "RECK_POISON_MIST_B3_T2",
+						"effect": [
+							{
+								"do": "loseHealth",
 								"amount": 1
 							}
 						]
 					},
 					{
 						"on": "2+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "clairvoyance_b2",
-				"text": "RECK_CLAIRVOYANCE_B2",
-				"tiers": [
-					{
-						"on": "0",
+						"text": "RECK_POISON_MIST_B3_T3",
 						"effect": [
 							{
-								"do": "gainCondition",
-								"condition": "paranoia"
+								"do": "damageMonster",
+								"amount": 1,
+								"target": "eachMonsterOnSpace"
 							}
 						]
-					},
-					{
-						"on": "1+",
-						"effect": []
 					}
 				]
 			},
 			{
-				"id": "clairvoyance_b3",
-				"text": "RECK_CLAIRVOYANCE_B3",
+				"id": "poison_mist_b4",
 				"tiers": [
 					{
 						"on": "0",
-						"effect": [
-							{
-								"do": "gainCondition",
-								"condition": "hallucinations"
-							}
-						]
+						"text": "RECK_POISON_MIST_B4_T1",
+						"effect": []
 					},
 					{
-						"on": "1+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "clairvoyance_b4",
-				"text": "RECK_CLAIRVOYANCE_B4",
-				"tiers": [
-					{
-						"on": "0",
+						"on": "1-2",
+						"text": "RECK_POISON_MIST_B4_T2",
 						"effect": [
 							{
 								"do": "loseSanity",
 								"amount": 1
-							},
-							{
-								"do": "discardCard",
-								"when": {
-									"kind": "rolledAny",
-									"face": 1
-								}
 							}
 						]
 					},
 					{
-						"on": "1+",
+						"on": "3+",
+						"text": "RECK_POISON_MIST_B4_T3",
 						"effect": []
 					}
 				]
@@ -989,8 +1052,8 @@
 		"id": "storm_of_spirits",
 		"name": "SPELL_STORM_OF_SPIRITS_NAME",
 		"subtype": "ritual",
-		"set": "core",
-		"season": "core",
+		"set": "mom",
+		"season": "mom",
 		"traits": [
 			"magical",
 			"spell"
@@ -1097,8 +1160,8 @@
 		"id": "spectral_razor",
 		"name": "SPELL_SPECTRAL_RAZOR_NAME",
 		"subtype": "incantation",
-		"set": "core",
-		"season": "core",
+		"set": "cir",
+		"season": "cir",
 		"traits": [
 			"magical",
 			"spell"
@@ -1206,8 +1269,8 @@
 		"id": "banishment",
 		"name": "SPELL_BANISHMENT_NAME",
 		"subtype": "ritual",
-		"set": "core",
-		"season": "core",
+		"set": "mom",
+		"season": "mom",
 		"traits": [
 			"magical",
 			"spell"
@@ -1327,66 +1390,22 @@
 		"front": {
 			"trigger": "action",
 			"test": "lore",
-			"modifier": 0,
+			"modifier": -1,
 			"abilityKey": "SPELL_BLESSING_OF_ISIS_ABILITY",
 			"onPass": [
 				{
-					"do": "improveSkill",
-					"skill": "all",
-					"amount": 1
+					"do": "gainCondition",
+					"condition": "blessed"
 				}
 			]
 		},
 		"backs": [
 			{
 				"id": "blessing_of_isis_b1",
-				"text": "RECK_BLESSING_OF_ISIS_B1",
 				"tiers": [
 					{
 						"on": "0",
-						"effect": [
-							{
-								"do": "loseSanity",
-								"amount": 1
-							}
-						]
-					},
-					{
-						"on": "1+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "blessing_of_isis_b2",
-				"text": "RECK_BLESSING_OF_ISIS_B2",
-				"tiers": [
-					{
-						"on": "0-1",
-						"effect": [
-							{
-								"do": "gainCondition",
-								"condition": "despair"
-							}
-						]
-					},
-					{
-						"on": "2+",
-						"effect": [
-							{
-								"do": "healSanity",
-								"amount": 1
-							}
-						]
-					}
-				]
-			},
-			{
-				"id": "blessing_of_isis_b3",
-				"text": "RECK_BLESSING_OF_ISIS_B3",
-				"tiers": [
-					{
-						"on": "0",
+						"text": "RECK_BLESSING_OF_ISIS_B1_T1",
 						"effect": [
 							{
 								"do": "gainCondition",
@@ -1395,22 +1414,79 @@
 						]
 					},
 					{
-						"on": "1+",
+						"on": "1",
+						"text": "RECK_BLESSING_OF_ISIS_B1_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_BLESSING_OF_ISIS_B1_T3",
 						"effect": []
 					}
 				]
 			},
 			{
-				"id": "blessing_of_isis_b4",
-				"text": "RECK_BLESSING_OF_ISIS_B4",
+				"id": "blessing_of_isis_b2",
 				"tiers": [
 					{
-						"on": "0",
+						"on": "0-2",
+						"text": "RECK_BLESSING_OF_ISIS_B2_T1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"text": "RECK_BLESSING_OF_ISIS_B2_T2",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "blessed"
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "blessing_of_isis_b3",
+				"tiers": [
+					{
+						"on": "0-1",
+						"text": "RECK_BLESSING_OF_ISIS_B3_T1",
 						"effect": [
 							{
 								"do": "loseSanity",
 								"amount": 1
-							},
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_BLESSING_OF_ISIS_B3_T2",
+						"effect": [
+							{
+								"do": "gainClue",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "blessing_of_isis_b4",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_BLESSING_OF_ISIS_B4_T1",
+						"effect": [
 							{
 								"do": "discardCard",
 								"when": {
@@ -1421,8 +1497,28 @@
 						]
 					},
 					{
-						"on": "1+",
-						"effect": []
+						"on": "1",
+						"text": "RECK_BLESSING_OF_ISIS_B4_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_BLESSING_OF_ISIS_B4_T3",
+						"effect": [
+							{
+								"do": "healHealth",
+								"amount": 1
+							},
+							{
+								"do": "healSanity",
+								"amount": 1
+							}
+						]
 					}
 				]
 			}
@@ -1432,8 +1528,8 @@
 		"id": "voice_of_ra",
 		"name": "SPELL_VOICE_OF_RA_NAME",
 		"subtype": "ritual",
-		"set": "core",
-		"season": "core",
+		"set": "sr",
+		"season": "sr",
 		"traits": [
 			"magical",
 			"spell"
@@ -1541,8 +1637,8 @@
 		"id": "call_the_storm",
 		"name": "SPELL_CALL_THE_STORM_NAME",
 		"subtype": "ritual",
-		"set": "core",
-		"season": "core",
+		"set": "mon",
+		"season": "mon",
 		"traits": [
 			"magical",
 			"spell"
@@ -1666,61 +1762,33 @@
 			"abilityKey": "SPELL_CONJURATION_ABILITY",
 			"onPass": [
 				{
-					"do": "gainAsset"
+					"do": "gainAsset",
+					"trait": "item",
+					"from": "reserve"
 				}
 			]
 		},
 		"backs": [
 			{
 				"id": "conjuration_b1",
-				"text": "RECK_CONJURATION_B1",
 				"tiers": [
 					{
 						"on": "0",
+						"text": "RECK_CONJURATION_B1_T1",
 						"effect": [
-							{
-								"do": "loseSanity",
-								"amount": 1
-							},
 							{
 								"do": "discardCard",
 								"when": {
 									"kind": "rolledAny",
-									"face": 1
+									"face": 4,
+									"not": true
 								}
 							}
 						]
 					},
 					{
-						"on": "1+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "conjuration_b2",
-				"text": "RECK_CONJURATION_B2",
-				"tiers": [
-					{
-						"on": "0",
-						"effect": [
-							{
-								"do": "loseAsset"
-							}
-						]
-					},
-					{
-						"on": "1+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "conjuration_b3",
-				"text": "RECK_CONJURATION_B3",
-				"tiers": [
-					{
-						"on": "0",
+						"on": "1-3",
+						"text": "RECK_CONJURATION_B1_T2",
 						"effect": [
 							{
 								"do": "loseSanity",
@@ -1729,17 +1797,123 @@
 						]
 					},
 					{
-						"on": "1+",
-						"effect": []
+						"on": "4+",
+						"text": "RECK_CONJURATION_B1_T3",
+						"effect": [
+							{
+								"do": "gainAsset",
+								"trait": "item",
+								"from": "reserve"
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "conjuration_b2",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_CONJURATION_B2_T1",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "loseAsset",
+										"trait": "item",
+										"count": 1
+									},
+									{
+										"do": "discardCard"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "1",
+						"text": "RECK_CONJURATION_B2_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"text": "RECK_CONJURATION_B2_T3",
+						"effect": [
+							{
+								"do": "gainAsset",
+								"trait": "item",
+								"from": "reserve"
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "conjuration_b3",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_CONJURATION_B3_T1",
+						"effect": [
+							{
+								"do": "discardCard"
+							},
+							{
+								"do": "loseAsset",
+								"trait": "item",
+								"keep": 0
+							}
+						]
+					},
+					{
+						"on": "1-3",
+						"text": "RECK_CONJURATION_B3_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "4+",
+						"text": "RECK_CONJURATION_B3_T3",
+						"effect": [
+							{
+								"do": "gainArtifact"
+							}
+						]
 					}
 				]
 			},
 			{
 				"id": "conjuration_b4",
-				"text": "RECK_CONJURATION_B4",
 				"tiers": [
 					{
 						"on": "0",
+						"text": "RECK_CONJURATION_B4_T1",
+						"effect": [
+							{
+								"choice": [
+									{
+										"do": "loseHealth",
+										"amount": 3
+									},
+									{
+										"do": "discardCard"
+									}
+								]
+							}
+						]
+					},
+					{
+						"on": "1",
+						"text": "RECK_CONJURATION_B4_T2",
 						"effect": [
 							{
 								"do": "loseHealth",
@@ -1748,7 +1922,8 @@
 						]
 					},
 					{
-						"on": "1+",
+						"on": "2+",
+						"text": "RECK_CONJURATION_B4_T3",
 						"effect": []
 					}
 				]
@@ -1759,7 +1934,7 @@
 		"id": "arcane_insight",
 		"name": "SPELL_ARCANE_INSIGHT_NAME",
 		"subtype": "ritual",
-		"set": "mountains_of_madness",
+		"set": "mom",
 		"season": "mom",
 		"traits": [
 			"magical",
@@ -1882,74 +2057,89 @@
 		"backs": [
 			{
 				"id": "feed_the_mind_b1",
-				"text": "RECK_FEED_THE_MIND_B1",
 				"tiers": [
 					{
 						"on": "0-2",
+						"text": "RECK_FEED_THE_MIND_B1_T1",
 						"effect": [
 							{
-								"do": "loseSanity",
-								"amount": 2
+								"choice": [
+									{
+										"do": "loseSanity",
+										"amount": 2
+									},
+									{
+										"do": "discardCard"
+									}
+								]
 							}
 						]
 					},
 					{
 						"on": "3+",
-						"effect": []
+						"text": "RECK_FEED_THE_MIND_B1_T2",
+						"effect": [
+							{
+								"do": "improveSkill",
+								"skill": "lore",
+								"amount": 1
+							}
+						]
 					}
 				]
 			},
 			{
 				"id": "feed_the_mind_b2",
-				"text": "RECK_FEED_THE_MIND_B2",
 				"tiers": [
 					{
 						"on": "0",
+						"text": "RECK_FEED_THE_MIND_B2_T1",
 						"effect": [
-							{
-								"do": "loseSanity",
-								"amount": 1
-							},
 							{
 								"do": "discardCard",
 								"when": {
 									"kind": "rolledAny",
-									"face": 1
+									"face": 4,
+									"not": true
 								}
 							}
 						]
 					},
 					{
 						"on": "1+",
-						"effect": []
+						"text": "RECK_FEED_THE_MIND_B2_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
 					}
 				]
 			},
 			{
 				"id": "feed_the_mind_b3",
-				"text": "RECK_FEED_THE_MIND_B3",
 				"tiers": [
 					{
 						"on": "0",
+						"text": "RECK_FEED_THE_MIND_B3_T1",
 						"effect": [
 							{
-								"do": "gainCondition",
-								"condition": "amnesia"
+								"choice": [
+									{
+										"do": "gainCondition",
+										"condition": "amnesia"
+									},
+									{
+										"do": "discardCard"
+									}
+								]
 							}
 						]
 					},
 					{
-						"on": "1+",
-						"effect": []
-					}
-				]
-			},
-			{
-				"id": "feed_the_mind_b4",
-				"text": "RECK_FEED_THE_MIND_B4",
-				"tiers": [
-					{
-						"on": "0",
+						"on": "1",
+						"text": "RECK_FEED_THE_MIND_B3_T2",
 						"effect": [
 							{
 								"do": "loseSanity",
@@ -1959,6 +2149,32 @@
 					},
 					{
 						"on": "2+",
+						"text": "RECK_FEED_THE_MIND_B3_T3",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "feed_the_mind_b4",
+				"tiers": [
+					{
+						"on": "0",
+						"text": "RECK_FEED_THE_MIND_B4_T1",
+						"effect": []
+					},
+					{
+						"on": "1-2",
+						"text": "RECK_FEED_THE_MIND_B4_T2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"text": "RECK_FEED_THE_MIND_B4_T3",
 						"effect": [
 							{
 								"do": "gainClue",
@@ -1974,8 +2190,8 @@
 		"id": "occult_exaltation",
 		"name": "SPELL_OCCULT_EXALTATION_NAME",
 		"subtype": "ritual",
-		"set": "signs_of_carcosa",
-		"season": "soc",
+		"set": "cir",
+		"season": "cir",
 		"traits": [
 			"magical",
 			"spell"
@@ -2089,7 +2305,7 @@
 		"id": "binding",
 		"name": "SPELL_BINDING_NAME",
 		"subtype": "incantation",
-		"set": "signs_of_carcosa",
+		"set": "soc",
 		"season": "soc",
 		"traits": [
 			"magical",
@@ -2197,8 +2413,8 @@
 		"id": "dread_curse",
 		"name": "SPELL_DREAD_CURSE_NAME",
 		"subtype": "incantation",
-		"set": "core",
-		"season": "core",
+		"set": "td",
+		"season": "td",
 		"traits": [
 			"magical",
 			"spell"
@@ -2306,8 +2522,8 @@
 		"id": "beast_within",
 		"name": "SPELL_BEAST_WITHIN_NAME",
 		"subtype": "glamour",
-		"set": "core",
-		"season": "core",
+		"set": "cir",
+		"season": "cir",
 		"traits": [
 			"magical",
 			"spell"

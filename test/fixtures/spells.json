@@ -1,0 +1,2440 @@
+[
+	{
+		"id": "shriveling",
+		"name": "SPELL_SHRIVELING_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_SHRIVELING_ABILITY",
+			"onPass": [
+				{
+					"do": "damageMonster",
+					"amount": 2
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "shriveling_b1",
+				"text": "RECK_SHRIVELING_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "shriveling_b2",
+				"text": "RECK_SHRIVELING_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "poisoned"
+							}
+						],
+						"text": "RECK_SHRIVELING_B2_T1"
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "shriveling_b3",
+				"text": "RECK_SHRIVELING_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "hallucinations"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "shriveling_b4",
+				"text": "RECK_SHRIVELING_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							},
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "wither",
+		"name": "SPELL_WITHER_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "combatEncounter",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_WITHER_ABILITY",
+			"onPass": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 3
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "wither_b1",
+				"text": "RECK_WITHER_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "wither_b2",
+				"text": "RECK_WITHER_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "internalInjury"
+							},
+							{
+								"do": "discardCard"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "wither_b3",
+				"text": "RECK_WITHER_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "backInjury"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "wither_b4",
+				"text": "RECK_WITHER_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 2
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "mind_s_eye",
+		"name": "SPELL_MINDS_EYE_NAME",
+		"subtype": "glamour",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "exhaust",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_MINDS_EYE_ABILITY",
+			"aura": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"context": "anyTest"
+				}
+			],
+			"onPass": []
+		},
+		"backs": [
+			{
+				"id": "mind_s_eye_b1",
+				"text": "RECK_MIND_S_EYE_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": [
+							{
+								"do": "gainClue"
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "mind_s_eye_b2",
+				"text": "RECK_MIND_S_EYE_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "amnesia"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": [
+							{
+								"do": "healSanity",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "mind_s_eye_b3",
+				"text": "RECK_MIND_S_EYE_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "paranoia"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "mind_s_eye_b4",
+				"text": "RECK_MIND_S_EYE_B4",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "healing_words",
+		"name": "SPELL_HEALING_WORDS_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "onRest",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_HEALING_WORDS_ABILITY",
+			"onPass": [
+				{
+					"do": "healHealth",
+					"amount": 1
+				},
+				{
+					"do": "healSanity",
+					"amount": 1
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "healing_words_b1",
+				"text": "RECK_HEALING_WORDS_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "healing_words_b2",
+				"text": "RECK_HEALING_WORDS_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "healing_words_b3",
+				"text": "RECK_HEALING_WORDS_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "diseased"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "healing_words_b4",
+				"text": "RECK_HEALING_WORDS_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "infection"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "azure_flame",
+		"name": "SPELL_AZURE_FLAME_NAME",
+		"subtype": "glamour",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "exhaust",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_AZURE_FLAME_ABILITY",
+			"aura": [
+				{
+					"do": "convertDie",
+					"on": "6",
+					"successes": 2,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			],
+			"onPass": []
+		},
+		"backs": [
+			{
+				"id": "azure_flame_b1",
+				"text": "RECK_AZURE_FLAME_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "azure_flame_b2",
+				"text": "RECK_AZURE_FLAME_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "internalInjury"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "azure_flame_b3",
+				"text": "RECK_AZURE_FLAME_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "azure_flame_b4",
+				"text": "RECK_AZURE_FLAME_B4",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "enchant_weapon",
+		"name": "SPELL_ENCHANT_WEAPON_NAME",
+		"subtype": "glamour",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "exhaust",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_ENCHANT_WEAPON_ABILITY",
+			"aura": [
+				{
+					"do": "rerollDice",
+					"count": 2,
+					"skill": "strength",
+					"context": "combatEncounter"
+				}
+			],
+			"onPass": []
+		},
+		"backs": [
+			{
+				"id": "enchant_weapon_b1",
+				"text": "RECK_ENCHANT_WEAPON_B1",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "enchant_weapon_b2",
+				"text": "RECK_ENCHANT_WEAPON_B2",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "enchant_weapon_b3",
+				"text": "RECK_ENCHANT_WEAPON_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "backInjury"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "enchant_weapon_b4",
+				"text": "RECK_ENCHANT_WEAPON_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							},
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "wrack",
+		"name": "SPELL_WRACK_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "combatEncounter",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_WRACK_ABILITY",
+			"onPass": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 5
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "wrack_b1",
+				"text": "RECK_WRACK_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "wrack_b2",
+				"text": "RECK_WRACK_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "poisoned"
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "wrack_b3",
+				"text": "RECK_WRACK_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "internalInjury"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "wrack_b4",
+				"text": "RECK_WRACK_B4",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "poison_mist",
+		"name": "SPELL_POISON_MIST_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 1,
+			"abilityKey": "SPELL_POISON_MIST_ABILITY",
+			"onPass": [
+				{
+					"do": "discardMonster",
+					"maxToughness": "testResult"
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "poison_mist_b1",
+				"text": "RECK_POISON_MIST_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "poison_mist_b2",
+				"text": "RECK_POISON_MIST_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "poisoned"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "poison_mist_b3",
+				"text": "RECK_POISON_MIST_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "diseased"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "poison_mist_b4",
+				"text": "RECK_POISON_MIST_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "clairvoyance",
+		"name": "SPELL_CLAIRVOYANCE_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_CLAIRVOYANCE_ABILITY",
+			"onPass": [
+				{
+					"do": "gainClue",
+					"amount": 2
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "clairvoyance_b1",
+				"text": "RECK_CLAIRVOYANCE_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "clairvoyance_b2",
+				"text": "RECK_CLAIRVOYANCE_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "paranoia"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "clairvoyance_b3",
+				"text": "RECK_CLAIRVOYANCE_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "hallucinations"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "clairvoyance_b4",
+				"text": "RECK_CLAIRVOYANCE_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "storm_of_spirits",
+		"name": "SPELL_STORM_OF_SPIRITS_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_STORM_OF_SPIRITS_ABILITY",
+			"onPass": [
+				{
+					"do": "damageMonster",
+					"amount": 3
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "storm_of_spirits_b1",
+				"text": "RECK_STORM_OF_SPIRITS_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "storm_of_spirits_b2",
+				"text": "RECK_STORM_OF_SPIRITS_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "storm_of_spirits_b3",
+				"text": "RECK_STORM_OF_SPIRITS_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "despair"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "storm_of_spirits_b4",
+				"text": "RECK_STORM_OF_SPIRITS_B4",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "spectral_razor",
+		"name": "SPELL_SPECTRAL_RAZOR_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "combatEncounter",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_SPECTRAL_RAZOR_ABILITY",
+			"onPass": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 3
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "spectral_razor_b1",
+				"text": "RECK_SPECTRAL_RAZOR_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "spectral_razor_b2",
+				"text": "RECK_SPECTRAL_RAZOR_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "internalInjury"
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "spectral_razor_b3",
+				"text": "RECK_SPECTRAL_RAZOR_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "headInjury"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "spectral_razor_b4",
+				"text": "RECK_SPECTRAL_RAZOR_B4",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "banishment",
+		"name": "SPELL_BANISHMENT_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_BANISHMENT_ABILITY",
+			"onPass": [
+				{
+					"do": "addSuccesses",
+					"amount": 1
+				},
+				{
+					"do": "defeatMonster",
+					"maxToughness": "testResult"
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "banishment_b1",
+				"text": "RECK_BANISHMENT_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "banishment_b2",
+				"text": "RECK_BANISHMENT_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "cursed"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "banishment_b3",
+				"text": "RECK_BANISHMENT_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "banishment_b4",
+				"text": "RECK_BANISHMENT_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "hallucinations"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "blessing_of_isis",
+		"name": "SPELL_BLESSING_OF_ISIS_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_BLESSING_OF_ISIS_ABILITY",
+			"onPass": [
+				{
+					"do": "improveSkill",
+					"skill": "all",
+					"amount": 1
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "blessing_of_isis_b1",
+				"text": "RECK_BLESSING_OF_ISIS_B1",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "blessing_of_isis_b2",
+				"text": "RECK_BLESSING_OF_ISIS_B2",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "despair"
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": [
+							{
+								"do": "healSanity",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "blessing_of_isis_b3",
+				"text": "RECK_BLESSING_OF_ISIS_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "cursed"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "blessing_of_isis_b4",
+				"text": "RECK_BLESSING_OF_ISIS_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "voice_of_ra",
+		"name": "SPELL_VOICE_OF_RA_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_VOICE_OF_RA_ABILITY",
+			"onPass": [
+				{
+					"do": "improveSkill",
+					"skill": "influence",
+					"amount": 2
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "voice_of_ra_b1",
+				"text": "RECK_VOICE_OF_RA_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "voice_of_ra_b2",
+				"text": "RECK_VOICE_OF_RA_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "voice_of_ra_b3",
+				"text": "RECK_VOICE_OF_RA_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "hallucinations"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "voice_of_ra_b4",
+				"text": "RECK_VOICE_OF_RA_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "call_the_storm",
+		"name": "SPELL_CALL_THE_STORM_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_CALL_THE_STORM_ABILITY",
+			"onPass": [
+				{
+					"do": "damageMonster",
+					"amount": 3
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "call_the_storm_b1",
+				"text": "RECK_CALL_THE_STORM_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "call_the_storm_b2",
+				"text": "RECK_CALL_THE_STORM_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 2
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "call_the_storm_b3",
+				"text": "RECK_CALL_THE_STORM_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							},
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "call_the_storm_b4",
+				"text": "RECK_CALL_THE_STORM_B4",
+				"tiers": [
+					{
+						"on": "0-2",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "conjuration",
+		"name": "SPELL_CONJURATION_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 1,
+			"abilityKey": "SPELL_CONJURATION_ABILITY",
+			"onPass": [
+				{
+					"do": "gainAsset"
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "conjuration_b1",
+				"text": "RECK_CONJURATION_B1",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "conjuration_b2",
+				"text": "RECK_CONJURATION_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseAsset"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "conjuration_b3",
+				"text": "RECK_CONJURATION_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "conjuration_b4",
+				"text": "RECK_CONJURATION_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "arcane_insight",
+		"name": "SPELL_ARCANE_INSIGHT_NAME",
+		"subtype": "ritual",
+		"set": "mountains_of_madness",
+		"season": "mom",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": -2,
+			"abilityKey": "SPELL_ARCANE_INSIGHT_ABILITY",
+			"onPass": [
+				{
+					"do": "gainClue",
+					"amount": 1
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "arcane_insight_b1",
+				"text": "RECK_ARCANE_INSIGHT_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "arcane_insight_b2",
+				"text": "RECK_ARCANE_INSIGHT_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "amnesia"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "arcane_insight_b3",
+				"text": "RECK_ARCANE_INSIGHT_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "spendClue",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "arcane_insight_b4",
+				"text": "RECK_ARCANE_INSIGHT_B4",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 2
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "feed_the_mind",
+		"name": "SPELL_FEED_THE_MIND_NAME",
+		"subtype": "ritual",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": -1,
+			"abilityKey": "SPELL_FEED_THE_MIND_ABILITY",
+			"onPass": [
+				{
+					"do": "improveSkill",
+					"skill": "lore",
+					"amount": 1
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "feed_the_mind_b1",
+				"text": "RECK_FEED_THE_MIND_B1",
+				"tiers": [
+					{
+						"on": "0-2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 2
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "feed_the_mind_b2",
+				"text": "RECK_FEED_THE_MIND_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "feed_the_mind_b3",
+				"text": "RECK_FEED_THE_MIND_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "amnesia"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "feed_the_mind_b4",
+				"text": "RECK_FEED_THE_MIND_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": [
+							{
+								"do": "gainClue",
+								"amount": 1
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "occult_exaltation",
+		"name": "SPELL_OCCULT_EXALTATION_NAME",
+		"subtype": "ritual",
+		"set": "signs_of_carcosa",
+		"season": "soc",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "action",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_OCCULT_EXALTATION_ABILITY",
+			"onPass": [
+				{
+					"do": "improveSkill",
+					"skill": "will",
+					"amount": 1
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "occult_exaltation_b1",
+				"text": "RECK_OCCULT_EXALTATION_B1",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "impairSkill",
+								"skill": "will",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "occult_exaltation_b2",
+				"text": "RECK_OCCULT_EXALTATION_B2",
+				"tiers": [
+					{
+						"on": "0-2",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "3+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "occult_exaltation_b3",
+				"text": "RECK_OCCULT_EXALTATION_B3",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": [
+							{
+								"do": "gainClue",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "occult_exaltation_b4",
+				"text": "RECK_OCCULT_EXALTATION_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "binding",
+		"name": "SPELL_BINDING_NAME",
+		"subtype": "incantation",
+		"set": "signs_of_carcosa",
+		"season": "soc",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "combatEncounter",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_BINDING_ABILITY",
+			"onPass": [
+				{
+					"do": "reduceMonsterDamage",
+					"amount": 2
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "binding_b1",
+				"text": "RECK_BINDING_B1",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "binding_b2",
+				"text": "RECK_BINDING_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "binding_b3",
+				"text": "RECK_BINDING_B3",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "impairSkill",
+								"skill": "strength",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "binding_b4",
+				"text": "RECK_BINDING_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "becomeDelayed"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "dread_curse",
+		"name": "SPELL_DREAD_CURSE_NAME",
+		"subtype": "incantation",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "combatEncounter",
+			"test": "lore",
+			"modifier": -2,
+			"abilityKey": "SPELL_DREAD_CURSE_ABILITY",
+			"onPass": [
+				{
+					"do": "improveSkill",
+					"skill": "strength",
+					"amount": 8
+				}
+			]
+		},
+		"backs": [
+			{
+				"id": "dread_curse_b1",
+				"text": "RECK_DREAD_CURSE_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 2
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "dread_curse_b2",
+				"text": "RECK_DREAD_CURSE_B2",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "dread_curse_b3",
+				"text": "RECK_DREAD_CURSE_B3",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "cursed"
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			},
+			{
+				"id": "dread_curse_b4",
+				"text": "RECK_DREAD_CURSE_B4",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 3
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"id": "beast_within",
+		"name": "SPELL_BEAST_WITHIN_NAME",
+		"subtype": "glamour",
+		"set": "core",
+		"season": "core",
+		"traits": [
+			"magical",
+			"spell"
+		],
+		"front": {
+			"trigger": "exhaust",
+			"test": "lore",
+			"modifier": 0,
+			"abilityKey": "SPELL_BEAST_WITHIN_ABILITY",
+			"aura": [
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "strength",
+					"context": "combatEncounter"
+				},
+				{
+					"do": "rerollDice",
+					"count": 1,
+					"skill": "observation",
+					"context": "researchEncounter"
+				}
+			],
+			"onPass": []
+		},
+		"backs": [
+			{
+				"id": "beast_within_b1",
+				"text": "RECK_BEAST_WITHIN_B1",
+				"tiers": [
+					{
+						"on": "0-1",
+						"effect": [
+							{
+								"do": "loseHealth",
+								"amount": 1
+							}
+						]
+					},
+					{
+						"on": "2+",
+						"effect": [
+							{
+								"do": "healHealth",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "beast_within_b2",
+				"text": "RECK_BEAST_WITHIN_B2",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "loseSanity",
+								"amount": 1
+							},
+							{
+								"do": "discardCard",
+								"when": {
+									"kind": "rolledAny",
+									"face": 1
+								}
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": [
+							{
+								"do": "improveSkill",
+								"skill": "observation",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "beast_within_b3",
+				"text": "RECK_BEAST_WITHIN_B3",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "infection"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": [
+							{
+								"do": "improveSkill",
+								"skill": "strength",
+								"amount": 1
+							}
+						]
+					}
+				]
+			},
+			{
+				"id": "beast_within_b4",
+				"text": "RECK_BEAST_WITHIN_B4",
+				"tiers": [
+					{
+						"on": "0",
+						"effect": [
+							{
+								"do": "gainCondition",
+								"condition": "infection"
+							}
+						]
+					},
+					{
+						"on": "1+",
+						"effect": []
+					}
+				]
+			}
+		]
+	}
+]

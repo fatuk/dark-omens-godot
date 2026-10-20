@@ -1568,14 +1568,14 @@ OUTCOME_TO_MENU,В главное меню,To main menu
 TRAIT_SPELL,Заклинание,Spell
 TRAIT_ARTIFACT,Артефакт,Artifact
 ,,
-SPELL_SHRIVELING_NAME,Иссушение,Shrivelling
-SPELL_SHRIVELING_ABILITY,Действие: проверьте Знание. При успехе нанесите 2 урона монстру на вашей локации.,"Action: test Lore. If you pass, deal 2 damage to a monster on your space."
+SPELL_SHRIVELING_NAME,Иссушение,Shriveling
+SPELL_SHRIVELING_ABILITY,Действие: проверьте Знание. При успехе монстр на вашей клетке теряет 2 здоровья.,"Action: Test Lore. If you pass, choose a Monster on your space to lose 2 Health."
 SPELL_WITHER_NAME,Увядание,Wither
-SPELL_WITHER_ABILITY,В бою: проверьте Знание. При успехе +3 к Силе на этот бой.,"During combat: test Lore. If you pass, gain +3 Strength for this combat."
+SPELL_WITHER_ABILITY,В боевой встрече можно проверить Знание. При успехе получите +3 к Силе в этой встрече.,"When resolving a Combat Encounter, you may test Lore. If you pass, gain +3 Strength during that encounter."
 SPELL_MINDS_EYE_NAME,Внутреннее око,Mind's Eye
 SPELL_MINDS_EYE_ABILITY,Аура: переброс 1 кубика в любой вашей проверке.,Aura: reroll 1 die on any of your tests.
 SPELL_HEALING_WORDS_NAME,Слова исцеления,Healing Words
-SPELL_HEALING_WORDS_ABILITY,При отдыхе: проверьте Знание. При успехе +1 здоровье и +1 рассудок.,"When you rest: test Lore. If you pass, recover 1 Health and 1 Sanity."
+SPELL_HEALING_WORDS_ABILITY,"Когда вы отдыхаете, можно проверить Знание. При успехе восстановите ещё 1 здоровье и 1 рассудок.","When you perform a Rest action, you may test Lore. If you pass, recover 1 additional Health and 1 additional Sanity."
 SPELL_AZURE_FLAME_NAME,Лазурное пламя,Azure Flame
 SPELL_AZURE_FLAME_ABILITY,Аура: в бою каждая «6» в проверке Силы даёт 2 успеха.,"Aura: in combat, each 6 on a Strength test counts as 2 successes."
 SPELL_ENCHANT_WEAPON_NAME,Зачарование оружия,Enchant Weapon
@@ -1583,7 +1583,7 @@ SPELL_ENCHANT_WEAPON_ABILITY,Аура: в бою переброс до 2 куб�
 SPELL_WRACK_NAME,Терзание,Wrack
 SPELL_WRACK_ABILITY,В бою: проверьте Знание (−1). При успехе +5 к Силе на этот бой.,"During combat: test Lore (−1). If you pass, gain +5 Strength for this combat."
 SPELL_POISON_MIST_NAME,Ядовитый туман,Poison Mist
-SPELL_POISON_MIST_ABILITY,Действие: проверьте Знание (+1). При успехе изгоните монстра со стойкостью не выше числа успехов.,"Action: test Lore (+1). If you pass, banish a monster with toughness up to your successes."
+SPELL_POISON_MIST_ABILITY,Действие: проверьте Знание+1. При успехе сбросьте с вашей клетки монстра со стойкостью не выше результата.,"Action: Test Lore+1. If you pass, discard a Monster from your space with toughness equal to or less than your test result."
 SPELL_CLAIRVOYANCE_NAME,Ясновидение,Clairvoyance
 SPELL_CLAIRVOYANCE_ABILITY,Действие: проверьте Знание. При успехе получите 2 улики.,"Action: test Lore. If you pass, gain 2 Clues."
 SPELL_STORM_OF_SPIRITS_NAME,Шторм духов,Storm of Spirits
@@ -1593,7 +1593,7 @@ SPELL_SPECTRAL_RAZOR_ABILITY,В бою: проверьте Знание. При 
 SPELL_BANISHMENT_NAME,Изгнание,Banishment
 SPELL_BANISHMENT_ABILITY,Действие: проверьте Знание (−1). При успехе одолейте монстра со стойкостью не выше числа успехов + 1.,"Action: test Lore (−1). If you pass, defeat a monster with toughness up to your successes + 1."
 SPELL_BLESSING_OF_ISIS_NAME,Благословение Исиды,Blessing of Isis
-SPELL_BLESSING_OF_ISIS_ABILITY,Действие: проверьте Знание. При успехе +1 ко всем навыкам.,"Action: test Lore. If you pass, gain +1 to all skills."
+SPELL_BLESSING_OF_ISIS_ABILITY,"Действие: проверьте Знание-1. При успехе получите состояние «Благословение», если его у вас нет.","Action: Test Lore-1. If you pass, gain a Blessed Condition if you do not have one."
 SPELL_VOICE_OF_RA_NAME,Глас Ра,Voice of Ra
 SPELL_VOICE_OF_RA_ABILITY,Действие: проверьте Знание. При успехе +2 к Влиянию.,"Action: test Lore. If you pass, gain +2 Influence."
 ,,
@@ -1675,7 +1675,7 @@ RECK_CALL_THE_STORM_B2,Молния бьёт слишком близко — б�
 RECK_CALL_THE_STORM_B3,"Вихрь хлещет ледяным дождём, выстужая тело и волю","The gale lashes icy rain, chilling both body and resolve"
 RECK_CALL_THE_STORM_B4,"Стихия рвётся из рук, и удержать её стоит крови","The elements tear free, and holding them costs you blood"
 SPELL_CONJURATION_NAME,Сотворение,Conjuration
-SPELL_CONJURATION_ABILITY,Действие: проверьте Знание+1. При успехе получите предмет.,"Action: test Lore+1. If you pass, gain 1 Item Asset."
+SPELL_CONJURATION_ABILITY,Действие: проверьте Знание+1. При успехе получите 1 Вещь с витрины.,"Action: Test Lore+1. If you pass, gain 1 Item Asset from the reserve."
 RECK_CONJURATION_B1,"Из пустоты приходит дар, но взгляд в неё мутит рассудок","A gift comes from the void, but gazing into it clouds the mind"
 RECK_CONJURATION_B2,Эфир требует платы — одна из ваших вещей растворяется в дымке,The aether demands payment — one of your possessions dissolves into mist
 RECK_CONJURATION_B3,"Сотканное из ничего норовит рассыпаться, и разум вместе с ним","What is woven from nothing strains to unravel, and the mind with it"
@@ -1687,7 +1687,7 @@ RECK_ARCANE_INSIGHT_B2,"Строки расплываются — вы забы�
 RECK_ARCANE_INSIGHT_B3,"Озарение гаснет, унося с собой уже добытые догадки","The insight gutters out, taking your hard-won leads with it"
 RECK_ARCANE_INSIGHT_B4,"Бездна мудрости смотрит в ответ, и разум тонет в ней","The abyss of wisdom stares back, and the mind drowns in it"
 SPELL_FEED_THE_MIND_NAME,Пища для разума,Feed the Mind
-SPELL_FEED_THE_MIND_ABILITY,Действие: проверьте Знание-1. При успехе улучшите навык Знание.,"Action: test Lore-1. If you pass, improve your Lore."
+SPELL_FEED_THE_MIND_ABILITY,Действие: проверьте Знание-1. При успехе улучшите навык Знание.,"Action: Test Lore-1. If you pass, improve your Lore."
 RECK_FEED_THE_MIND_B1,Разум переполнен — мысли давят и рвутся наружу,The mind overflows — thoughts press and claw to escape
 RECK_FEED_THE_MIND_B2,"Поток образов захлёбывается, оставляя лишь звон в ушах","The flood of images chokes, leaving only a ringing in the ears"
 RECK_FEED_THE_MIND_B3,Слишком много знания — и вы теряете нить собственной памяти,Too much knowing — and you lose the thread of your own memory
@@ -1932,3 +1932,80 @@ TELEGRAM_OUTCOME,ИСХОД,OUTCOME
 TELEGRAM_SUCCESS,УСПЕХ:,SUCCESS:
 TELEGRAM_FAILURE,ПРОВАЛ:,FAILURE:
 TELEGRAM_IN_PROGRESS,ВСТРЕЧА В ПРОЦЕССЕ…,ENCOUNTER IN PROGRESS…
+
+RECK_WITHER_B1_T1,"Тёмная энергия заклинания обращается против вас, заливая разум безумием.","The spell's dark energy turns against you, flooding your mind with madness."
+RECK_WITHER_B1_T2,Заклинание действует с ужасающим успехом.,The incantation takes effect with horrifying success.
+RECK_WITHER_B2_T1,"Слова, должно быть, были неверны. Вы получаете тот урон, что хотели нанести.",The words must have been wrong. You suffer the damage you had hoped to inflict.
+RECK_WITHER_B2_T2,Заклинание сжимает и скручивает тело цели.,The spell compacts and twists the target's body.
+RECK_WITHER_B2_T3,Магия вновь прокатывается волной по телу цели.,The magic ripples and surges through the target once more.
+RECK_WITHER_B3_T1,"Вы ошибаетесь в словах, и магия рассеивается.","You misspeak the incantation, causing the magic to dissipate."
+RECK_WITHER_B3_T2,Пагубная магия задерживается в вашем теле.,The harmful magic lingers in your body.
+RECK_WITHER_B3_T3,Магия овладевает телом цели.,The magic takes hold in your target's body.
+RECK_WITHER_B4_T1,"Магия бьёт обратно, проникая в лёгкие и кровь.","The magic backfires, infecting your lungs and invading your blood stream."
+RECK_WITHER_B4_T2,Заклинание требует кровавой жертвы.,Completing the incantation requires a blood sacrifice.
+RECK_WITHER_B4_T3,"Тело цели иссыхает, становясь слабым и уродливым.","Your target's body withers into a weakened, malformed shape."
+RECK_SHRIVELING_B1_T1,"Ритуал отдаётся в голове, пока не превращается в бессмыслицу.",The ritual echoes in your head until it becomes gibberish.
+RECK_SHRIVELING_B1_T2,Плоть врага вскипает и слезает клочьями.,The enemy's flesh boils and peels away.
+RECK_SHRIVELING_B1_T3,Пламя и густой дым окутывают цель.,Flames and thick smoke envelop your target.
+RECK_SHRIVELING_B2_T1,"Заклинание бьёт обратно, обжигая вам руки.","The spell backfires, searing your hands."
+RECK_SHRIVELING_B2_T2,"Отчётливый запах горелой плоти говорит, что заклинание удалось.",The distinct smell of burning flesh lets you know the spell has been cast correctly.
+RECK_SHRIVELING_B2_T3,"Магия расходится, и горящая плоть слезает с тел ваших врагов.","The magic spreads, and the burning flesh peels from your enemies' bodies."
+RECK_SHRIVELING_B3_T1,"Магия бьёт обратно, покрывая вашу плоть волдырями и язвами.","The magic backfires, assailing your flesh with blisters and pox."
+RECK_SHRIVELING_B3_T2,Пагубная магия задерживается в вашем теле.,The harmful magic lingers in your body.
+RECK_SHRIVELING_B3_T3,"Плоть цели корчится и кипит, сходя расплавленной шелухой.","Your target's flesh writhes and boils, shedding off in a molten husk."
+RECK_SHRIVELING_B4_T1,Магия привлекает внимание к вашему месту.,Your magic calls attention to your location.
+RECK_SHRIVELING_B4_T2,"Тварь перед вами съёживается, сжимаясь и слабея.","The beast before you cowers and coils up, shrinking and growing weak."
+RECK_POISON_MIST_B1_T1,"Туман сносит назад, и он окружает вас.",The mist blows back and surrounds you.
+RECK_POISON_MIST_B1_T2,Пагубная магия пронизывает вас во время ритуала.,The harmful magic surges through you during the ritual.
+RECK_POISON_MIST_B1_T3,"Смертоносное облако гасит всякую жизнь, которой касается.",The deadly cloud of gas snuffs out all life it touches.
+RECK_POISON_MIST_B2_T1,"Ритуал кажется вам чуждым, и вы не уверены, что произнесли верные слова.","The ritual seems somehow alien to you, and you are unsure if you have spoken the correct words."
+RECK_POISON_MIST_B2_T2,"Тяжело смотреть, как облако душит живых.",Watching the cloud smother the living is difficult to watch.
+RECK_POISON_MIST_B3_T1,Туман жаждет вашей жизненной силы.,The mist hungers for your life force.
+RECK_POISON_MIST_B3_T2,Кровь течёт из ладоней и обращается ядовитым газом.,"Blood flows from your hands, turning into a noxious gas."
+RECK_POISON_MIST_B3_T3,"Ядовитое облако не рассеивается, разлагая плоть тех, кому не посчастливилось в нём заблудиться.","The poisonous cloud lingers, decaying the flesh of those unfortunate enough to become lost in it."
+RECK_POISON_MIST_B4_T1,"Магия лишь выдаёт, где вы.",The magic only gives away your location.
+RECK_POISON_MIST_B4_T2,Действие тумана страшно видеть.,The mists's effects are horrible to behold.
+RECK_POISON_MIST_B4_T3,"Вы вызываете огромное облако газа, заслоняющее солнце.",You conjure a great cloud of gas that blocks out the sun.
+RECK_HEALING_WORDS_B1_T1,Слова заклинания кажутся вам почему-то чужими.,The words of the incantation seem somehow foreign to you.
+RECK_HEALING_WORDS_B1_T2,Тело и разум вновь обретают цельность.,Your body and mind become whole again.
+RECK_HEALING_WORDS_B2_T1,Магия странна и не даёт ранам затянуться.,The magic is strange and does not allow wounds to heal.
+RECK_HEALING_WORDS_B2_T2,"Магия вплетается в ваши сны, даря спокойный ночной отдых.","The magic weaves itself with your dreams, affording you a restful night's sleep."
+RECK_HEALING_WORDS_B2_T3,Тело очищено и исцелено.,Your body is cleansed and mended.
+RECK_HEALING_WORDS_B3_T1,Вам снятся дикие звери и жуткие кошмары.,You dream of savage beasts and terrible horrors.
+RECK_HEALING_WORDS_B3_T2,"Дух стережёт ваш сон, оберегая от новых бед.","A spirit watches over your sleep, protecting you from further harm."
+RECK_HEALING_WORDS_B3_T3,"Вам снится далёкий рай, где разум обретает покой.",You dream of a faraway paradise where your mind can be at ease.
+RECK_HEALING_WORDS_B4_T1,"Магия лишь мешает отдыху, добавляя усталости и страха.","The magic does nothing but hinder your rest, adding to your fatigue and dread."
+RECK_HEALING_WORDS_B4_T2,Сон ваш глубок и освежает.,Your slumber is deep and refreshing.
+RECK_HEALING_WORDS_B4_T3,"Во сне за вами присматривают бесчисленные кошки, избавляя от последних сомнений.","In your dreams, countless cats watch over you, relieving you of your lingering doubts."
+RECK_FEED_THE_MIND_B1_T1,"Творя заклинание, вы открываетесь ужасному знанию. Разум заполняет бессмыслица, повторяясь без конца.","Casting the spell, you open yourself to terrible knowledge. Your mind is filled with gibberish, repeating endlessly."
+RECK_FEED_THE_MIND_B1_T2,Вы управляете воспоминаниями и знанием с привычной лёгкостью.,You manipulate memories and potential knowledge with a practiced ease.
+RECK_FEED_THE_MIND_B2_T1,"Вам не удалось сосредоточиться. Быть может, вам просто не хватает дисциплины для этого заклинания.",You were unable to sufficiently focus your mind. You wonder if you simply lack the mental discipline this spell requires.
+RECK_FEED_THE_MIND_B2_T2,"Ваша мысль уходит в эфир и возвращается со странным знанием. Возможно, вы уже не совсем тот, кем были.","Casting your thought into the ether, your mind returns with strange knowledge. You may not entirely be the same person you were before."
+RECK_FEED_THE_MIND_B3_T1,"Врата разума открыты в обе стороны, и ваши воспоминания начинают рассыпаться.","The gateway to the mind is a two-way portal, and your memories begin to scatter."
+RECK_FEED_THE_MIND_B3_T2,Лавина знания захлёстывает ваш разум.,A wealth of knowledge overwhelms your mind.
+RECK_FEED_THE_MIND_B3_T3,Прежняя выучка вдруг становится кристально ясной.,Your previous training suddenly becomes clear to you.
+RECK_FEED_THE_MIND_B4_T1,Магия идёт вразнос и опустошает ваш разум.,Your magic goes awry and wreaks havoc on your mind.
+RECK_FEED_THE_MIND_B4_T2,"Чтобы добраться до воспоминаний, разум приходится расшатать.",Accessing one's memories requires unhinging the mind.
+RECK_FEED_THE_MIND_B4_T3,"Внезапно всё, что вы узнали, складывается в единую картину.","Suddenly, everything you've learned has formed a greater picture in your mind's eye."
+RECK_CONJURATION_B1_T1,Что же вы упустили? Почему заклинание не сработало?,What could you have possibly forgotten? Why didn't the spell work?
+RECK_CONJURATION_B1_T2,"На миг ваш разум открыт могучему разуму, обитающему между мирами.","For a moment, your mind is exposed to a powerful intelligence, dwelling between worlds."
+RECK_CONJURATION_B1_T3,"Магия сильнее, чем вы ожидали.",The magic is powerful and beyond your expectations.
+RECK_CONJURATION_B2_T1,"Вы чувствуете: заклинание сработало не так, как вы надеялись.",You can feel that the spell has not worked the way you hoped.
+RECK_CONJURATION_B2_T2,Нечто противоестественное пытается вырвать предмет у вас из рук.,Something unnatural tries to pull the object away from you.
+RECK_CONJURATION_B2_T3,Все ваши желания воплощаются у вас на глазах.,All of your wishes materialize before your eyes.
+RECK_CONJURATION_B3_T1,Магия вскипает и рвёт материю.,The magic surges and tears through solid matter.
+RECK_CONJURATION_B3_T2,На миг ваш разум сливается с желанным предметом.,"For a moment, your mind melds with the object of your desire."
+RECK_CONJURATION_B3_T3,"Ритуал оказался сильнее, чем вы могли вообразить.",The ritual proves stronger than you ever imagined.
+RECK_CONJURATION_B4_T1,"Вы запинаетесь, и предмет формируется из вашей плоти и костей.",Your stutter causes the item to form from your own flesh and bone.
+RECK_CONJURATION_B4_T2,Ритуал требует платы кровью.,A payment of blood is required to complete the ritual.
+RECK_CONJURATION_B4_T3,"Материя покоряется вашей воле и меняет форму, как вы пожелаете.",Matter bends to your will and reshapes itself as you desire.
+RECK_BLESSING_OF_ISIS_B1_T1,"Богиня разгневана, и её гнев страшен.","The goddess has been angered, and her wrath is terrible to behold."
+RECK_BLESSING_OF_ISIS_B1_T2,Вас пронзает всесильная мощь — слишком великая для вашего разума.,You feel an almighty power surge through you and it is too much for your mind to handle.
+RECK_BLESSING_OF_ISIS_B1_T3,Богиня благоволит вашему делу.,The goddess smiles upon your cause.
+RECK_BLESSING_OF_ISIS_B2_T1,"Ваше пение наполняет воздух древними голосами, и вы боитесь, что воззвание отняло часть вашей жизни.","Your chanting fills the air with ancient voices, and you fear the invocation has drained part of your life away."
+RECK_BLESSING_OF_ISIS_B2_T2,Богиня благоволит вашему делу.,The goddess smiles upon your cause.
+RECK_BLESSING_OF_ISIS_B3_T1,Голос великой Исиды эхом звучит в вашем разуме.,The voice of the great being Isis echoes in your mind.
+RECK_BLESSING_OF_ISIS_B3_T2,Видения далёких мест и времён затопляют ваш разум.,Visions of distant places and times flood your mind.
+RECK_BLESSING_OF_ISIS_B4_T1,"Слова ритуала ускользают, и на миг вы не можете их вспомнить.","The words of the ritual escape you, and for a moment, you cannot recall them."
+RECK_BLESSING_OF_ISIS_B4_T2,"Сияющий дух кружит рядом, отводя беду.","A glowing spirit circles you, warding disaster."
+RECK_BLESSING_OF_ISIS_B4_T3,"Тепло наполняет вас, унимая боль и тревоги.",A warmth fills you and eases our pain and worries.

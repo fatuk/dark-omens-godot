@@ -108,6 +108,15 @@ static func card_art(id: String) -> Texture2D:
 	return load(path) if ResourceLoader.exists(path) else null
 
 
+## Тесты: подменить каталог фикстурой, чтобы не зависеть от контента CMS.
+## [] — вернуться к файлу (перечитается при следующем обращении).
+static func use_fixture(list: Array) -> void:
+	_list = list
+	_by_id.clear()
+	for s in _list:
+		_by_id[String((s as Dictionary).get("id", ""))] = s
+
+
 static func _load() -> void:
 	_list = DataLoader.load_array(PATH)
 	_by_id.clear()
