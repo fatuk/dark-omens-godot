@@ -24,6 +24,8 @@ extends RefCounted
 ## видит.
 
 const PATH := "res://data/artifacts.json"
+## Рамка карты артефакта — разметка как у актива (GameCard base_frame).
+const FRAME: Texture2D = preload("res://assets/cards/artifact/card-frame.png")
 
 static var _list: Array = []
 static var _by_id: Dictionary = {}
@@ -102,6 +104,7 @@ static func card_payload(a: Dictionary) -> Dictionary:
 		"subtitle": "TRAIT_ARTIFACT",
 		"desc": a.get("abilityKey", ""),
 		"is_artifact": true,
+		"base_frame": FRAME,  # своя рамка: без герба цены, фиолетовый камень
 	}
 	var art: Texture2D = card_art(String(a.get("id", "")))
 	if art != null:

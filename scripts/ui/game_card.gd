@@ -7,8 +7,10 @@ extends Control
 ## в одном месте, и обе колоды обновятся.
 ##
 ## API: set_card({cost, title, subtitle?, desc, art? : Texture2D, art_color?, glyph?,
-##                frame? : Texture2D, layout? : "clue"})
+##                frame? : Texture2D, base_frame? : Texture2D, layout? : "clue"})
 ##   frame  — полно-артовая рамка (карта Концентрации, улика);
+##   base_frame — своя рамка ТОЙ ЖЕ разметки, что у актива (артефакт): арт и зоны как
+##            обычно, меняется только рисунок рамки;
 ##   layout — "clue": раскладка улики (заголовок, подзаголовок, описание по тёмному
 ##            окну на всю карту) вместо плашек рамки актива.
 
@@ -351,7 +353,10 @@ func set_card(d: Dictionary) -> void:
 	# изображением, напр. карта Концентрации). Тогда своя арт-зона/глиф не нужны —
 	# всё рисует рамка; текст ложится в зоны Title/Desc (совпадают по разметке).
 	var frame_tex: Texture2D = d.get("frame", null)
-	_frame.texture = frame_tex if frame_tex != null else FRAME_TEX
+	var base_tex: Texture2D = d.get("base_frame", null)
+	_frame.texture = (
+		frame_tex if frame_tex != null else (base_tex if base_tex != null else FRAME_TEX)
+	)
 
 	var tex: Texture2D = d.get("art", null)
 	if frame_tex != null:

@@ -169,3 +169,13 @@ func test_artifacts_with_action_text_are_playable_actions() -> void:
 			missing.append(String(a.get("id", "")))
 	assert_eq(missing, [], "артефакты с «Action:» без тега action")
 	assert_true(AssetCatalog.has_standalone_action(ArtifactCatalog.by_id("dragon_idol")))
+
+
+func test_artifact_card_uses_own_frame_via_any_payload() -> void:
+	# Своя рамка артефакта (без герба цены) — и через общий AssetCatalog.card_payload:
+	# окно «вы получили» и веер берут карту оттуда.
+	var a: Dictionary = AssetCatalog.by_id("dragon_idol")
+	var p: Dictionary = AssetCatalog.card_payload(a)
+	assert_eq(p.get("base_frame"), ArtifactCatalog.FRAME, "рамка артефакта")
+	assert_false(p.has("cost"), "артефакт не продаётся — без цены")
+	assert_false(AssetCatalog.card_payload(AssetCatalog.by_id("18_derringer")).has("base_frame"))

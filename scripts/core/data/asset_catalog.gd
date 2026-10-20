@@ -107,6 +107,9 @@ static func with_trait(ids: Array, want: String) -> Array:
 
 
 static func card_payload(a: Dictionary) -> Dictionary:
+	# Артефакт (by_id отдаёт и их) — своя карта: без цены, своя рамка.
+	if ArtifactCatalog.has(String(a.get("id", ""))):
+		return ArtifactCatalog.card_payload(a)
 	var traits: Array = a.get("traits", [])
 	var trait_id: String = String(traits[-1]) if not traits.is_empty() else "item"
 	var payload: Dictionary = {
