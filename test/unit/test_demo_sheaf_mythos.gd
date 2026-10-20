@@ -62,24 +62,24 @@ func test_stage_one_plays_as_scripted() -> void:
 	var names: Array = []
 	for i: int in range(3):
 		names.append(String((deck[i] as Dictionary).get("name", "")))
-	assert_eq(names, ["Круг", "Скот встал", "Письмо"], "стадия 1 — в фиксированном порядке")
+	assert_eq(names, ["Круг", "Зов полей", "Письмо"], "стадия 1 — в фиксированном порядке")
 	# id карточки в CMS доезжает до игры — по нему модалка ищет арт Мифа.
 	assert_eq(String((deck[0] as Dictionary).get("sourceId", "")), "demo-sheaf-mythos-01")
 	assert_true(GameState.gates.is_empty(), "старт без врат: первый круг откроет Миф")
 
-	# 1. «Круг»: врата из закреплённого жетона — Средний Запад, синие; из них культист.
-	# Затем омен зелёный → синий: совпал с только что открытыми синими вратами — Рок +1.
+	# 1. «Круг»: сперва омен зелёный → синий (синих врат ещё нет — Рок не двигается),
+	# затем врата из закреплённого жетона — Средний Запад, синие; из них культист.
 	await GameState._mythos._apply_effects((deck[0] as Dictionary).get("onDraw", []))
 	assert_eq(GameState.gates.get("5", ""), "blue", "первые врата — синие, на поле")
 	assert_eq(_cultists_at("5"), 1, "из врат вышел культист")
 	assert_eq(GameState._board.current_omen_color(), "blue", "омен сдвинут на синий")
-	assert_eq(GameState.doom, 1, "омен совпал с синими вратами «Круга»")
+	assert_eq(GameState.doom, 0, "омен сдвинут ДО врат — совпадать было не с чем")
 
-	# 2. «Скот встал»: Расплата — культист у каждых врат (лист) и на поле (Тайна I);
+	# 2. «Зов полей»: Расплата — культист у каждых врат (лист) и на поле (Тайна I);
 	# культисты Рок не двигают. Сыщиков на поле нет — проверки Воли не будет.
 	await GameState._mythos._apply_effects((deck[1] as Dictionary).get("onDraw", []))
 	assert_eq(_cultists_at("5"), 3, "+1 у врат (лист) +1 на поле (Тайна I)")
-	assert_eq(GameState.doom, 1, "Расплата культистов Рок не двигает")
+	assert_eq(GameState.doom, 0, "Расплата культистов Рок не двигает")
 
 	# 3. «Письмо»: омен синий → красный, красных врат нет — Рок не двигается; улика
 	# самому влиятельному сыщику.
@@ -92,7 +92,7 @@ func test_stage_one_plays_as_scripted() -> void:
 	var other_before: int = int(GameState.players[other].get("clues", 0))
 	await GameState._mythos._apply_effects((deck[2] as Dictionary).get("onDraw", []))
 	assert_eq(GameState._board.current_omen_color(), "red")
-	assert_eq(GameState.doom, 1, "красных врат нет — Рок прежний")
+	assert_eq(GameState.doom, 0, "красных врат нет — Рок прежний")
 	assert_eq(
 		int(GameState.players[lead_by_influence].get("clues", 0)) - lead_before,
 		1,
