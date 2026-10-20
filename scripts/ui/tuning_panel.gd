@@ -1193,6 +1193,61 @@ func _build_specs() -> Array:
 			"default": _CastModal.AURA_SWIRL,
 			"set": _set_cast_aura.bind("AURA_SWIRL")
 		},
+		{"section": "ОКНО КАСТА — ФОН"},
+		{
+			"key": "motes_density",
+			"label": "Пылинки: густота",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.01,
+			"default": _CastModal.MOTES_DENSITY,
+			"set": _set_cast_aura.bind("MOTES_DENSITY")
+		},
+		{
+			"key": "motes_speed",
+			"label": "Пылинки: скорость",
+			"min": 0.0,
+			"max": 2.0,
+			"step": 0.01,
+			"default": _CastModal.MOTES_SPEED,
+			"set": _set_cast_aura.bind("MOTES_SPEED")
+		},
+		{
+			"key": "motes_brightness",
+			"label": "Пылинки: яркость",
+			"min": 0.0,
+			"max": 3.0,
+			"step": 0.05,
+			"default": _CastModal.MOTES_BRIGHTNESS,
+			"set": _set_cast_aura.bind("MOTES_BRIGHTNESS")
+		},
+		{
+			"key": "motes_size",
+			"label": "Пылинки: размер, px",
+			"min": 0.5,
+			"max": 8.0,
+			"step": 0.1,
+			"default": _CastModal.MOTES_SIZE,
+			"set": _set_cast_aura.bind("MOTES_SIZE")
+		},
+		{
+			"key": "ring_brightness",
+			"label": "Круг: яркость блика",
+			"min": 0.0,
+			"max": 3.0,
+			"step": 0.05,
+			"default": _CastModal.RING_BRIGHTNESS,
+			"set": _set_cast_aura.bind("RING_BRIGHTNESS")
+		},
+		{
+			"key": "ring_speed",
+			"label": "Круг: скорость блика",
+			"min": 0.0,
+			"max": 2.0,
+			"step": 0.01,
+			"default": _CastModal.RING_SPEED,
+			"set": _set_cast_aura.bind("RING_SPEED")
+		},
 		{"section": "МИФЫ (модалка карты)"},
 		{
 			"key": "mythos_panel_w",
@@ -2251,7 +2306,7 @@ func _set_modal_pop(v: float) -> void:
 # Модалка Мифов: все параметры — static var скрипта; открытое окно переприменяет их.
 # bind передаёт имя поля последним аргументом (после значения слайдера). Явный match:
 # set() по имени на классе (не экземпляре) GDScript не позволяет.
-# Аура окна каста: пишем static и просим открытое окно переприменить.
+# Аура и живой фон окна каста: пишем static и просим открытое окно переприменить.
 func _set_cast_aura(v: float, field: String) -> void:
 	match field:
 		"AURA_INTENSITY":
@@ -2266,6 +2321,18 @@ func _set_cast_aura(v: float, field: String) -> void:
 			_CastModal.AURA_DENSITY = v
 		"AURA_SWIRL":
 			_CastModal.AURA_SWIRL = v
+		"MOTES_DENSITY":
+			_CastModal.MOTES_DENSITY = v
+		"MOTES_SPEED":
+			_CastModal.MOTES_SPEED = v
+		"MOTES_BRIGHTNESS":
+			_CastModal.MOTES_BRIGHTNESS = v
+		"MOTES_SIZE":
+			_CastModal.MOTES_SIZE = v
+		"RING_BRIGHTNESS":
+			_CastModal.RING_BRIGHTNESS = v
+		"RING_SPEED":
+			_CastModal.RING_SPEED = v
 	if is_inside_tree():
 		get_tree().call_group("cast_check_modal", "apply_tuning")
 

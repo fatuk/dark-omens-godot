@@ -63,11 +63,26 @@ static var AURA_REACH: float = 75.0  # px: как далеко от края к�
 static var AURA_DENSITY: float = 0.41  # порог языков: ниже — гуще
 static var AURA_SWIRL: float = 2.2  # закрутка
 
+# Живой фон листа: всплывающие пылинки и блик по магическому кругу (arcane_motes).
+# Круг на арте: центр и радиусы колец — доли листа (замерены по картинке).
+const _MOTES_SHADER := preload("res://assets/shaders/arcane_motes.gdshader")
+const _RING_CENTER := Vector2(0.495, 0.345)
+const _RING_R_FRAC: float = 0.2266  # внешнее кольцо (доля высоты листа)
+const _RUNE_R_FRAC: float = 0.2085  # полоса рун
+# Крутятся в панели тюнинга (Ctrl+M, секция «ОКНО КАСТА — ФОН»).
+static var MOTES_DENSITY: float = 0.35  # доля ячеек с пылинкой
+static var MOTES_SPEED: float = 0.35
+static var MOTES_BRIGHTNESS: float = 0.9
+static var MOTES_SIZE: float = 2.6  # px
+static var RING_BRIGHTNESS: float = 0.8
+static var RING_SPEED: float = 0.25
+
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
 
 var _sheet: Control  # лист: фон-картинка + зоны контента (пересобираются в _build)
 var _aura: ColorRect  # магическая аура за картой (параметры — static AURA_*)
+var _motes: ColorRect  # пылинки и блик круга (параметры — static MOTES_* / RING_*)
 
 var _sig: String = ""  # подпись текущего каста (перестраиваем карту только при смене)
 var _last_dice: Array = []
@@ -110,7 +125,25 @@ func _build_sheet() -> void:
 	bg.clip_contents = true  # аура не вылезает за лист (на заголовок и рамку — можно)
 	_sheet.add_child(bg)
 	_build_flames(bg, size)
+	_build_motes(bg, size)
 	_build_aura(bg, size)
+
+
+# Живой фон — слой на весь лист поверх арта (под аурой и картой).
+func _build_motes(bg: Control, size: Vector2) -> void:
+	var mat := ShaderMaterial.new()
+	mat.shader = _MOTES_SHADER
+	mat.set_shader_parameter("sheet_px", size)
+	mat.set_shader_parameter("ring_center", _RING_CENTER)
+	mat.set_shader_parameter("ring_radius_px", size.y * _RING_R_FRAC)
+	mat.set_shader_parameter("rune_radius_px", size.y * _RUNE_R_FRAC)
+	_motes = ColorRect.new()
+	_motes.name = "Motes"
+	_motes.color = Color.WHITE  # цвет считает шейдер
+	_motes.material = mat
+	_motes.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_motes.size = size
+	bg.add_child(_motes)
 
 
 # Аура — прямоугольник, центрированный на карте с запасом AURA_REACH; ребёнок фона —
@@ -127,8 +160,17 @@ func _build_aura(bg: Control, _size: Vector2) -> void:
 	apply_tuning()
 
 
-## Переприменить параметры ауры (static AURA_*) — зовёт панель тюнинга.
+## Переприменить параметры ауры и живого фона (static AURA_* / MOTES_* / RING_*) —
+## зовёт панель тюнинга.
 func apply_tuning() -> void:
+	if is_instance_valid(_motes):
+		var mm := _motes.material as ShaderMaterial
+		mm.set_shader_parameter("mote_density", MOTES_DENSITY)
+		mm.set_shader_parameter("mote_speed", MOTES_SPEED)
+		mm.set_shader_parameter("mote_brightness", MOTES_BRIGHTNESS)
+		mm.set_shader_parameter("mote_size_px", MOTES_SIZE)
+		mm.set_shader_parameter("ring_brightness", RING_BRIGHTNESS)
+		mm.set_shader_parameter("ring_speed", RING_SPEED)
 	if not is_instance_valid(_aura):
 		return
 	var card_size: Vector2 = _card_size()
