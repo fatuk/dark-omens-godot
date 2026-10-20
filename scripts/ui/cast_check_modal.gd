@@ -53,6 +53,12 @@ const _FLAMES := [
 ]
 const _FLAME_COLOR := Color(1.0, 0.68, 0.34)
 
+# Магическая аура за картой: фиолетовые языки лижут края карты наружу (arcane_aura).
+const _AURA_SHADER := preload("res://assets/shaders/arcane_aura.gdshader")
+const _AURA_REACH: float = 150.0  # px: как далеко от края карты достают языки
+static var AURA_INTENSITY: float = 0.85
+static var AURA_SPEED: float = 0.55
+
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = %Panel
 
@@ -95,8 +101,38 @@ func _build_sheet() -> void:
 	bg.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.clip_contents = true  # аура не вылезает за лист (на заголовок и рамку — можно)
 	_sheet.add_child(bg)
 	_build_flames(bg, size)
+	_build_aura(bg, size)
+
+
+# Аура — прямоугольник, центрированный на карте с запасом _AURA_REACH; ребёнок фона —
+# под картой (она закрывает середину) и переживает пересборку листа.
+func _build_aura(bg: Control, size: Vector2) -> void:
+	var card_size: Vector2 = _card_size()
+	var rect_size: Vector2 = card_size + Vector2.ONE * _AURA_REACH * 2.0
+	var mat := ShaderMaterial.new()
+	mat.shader = _AURA_SHADER
+	mat.set_shader_parameter("rect_px", rect_size)
+	mat.set_shader_parameter("card_half_px", card_size * 0.5)
+	mat.set_shader_parameter("reach_px", _AURA_REACH)
+	mat.set_shader_parameter("intensity", AURA_INTENSITY)
+	mat.set_shader_parameter("speed", AURA_SPEED)
+	var aura := ColorRect.new()
+	aura.name = "MagicAura"
+	aura.color = Color.WHITE  # цвет считает шейдер
+	aura.material = mat
+	aura.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	aura.size = rect_size
+	aura.position = Vector2(size.x * _CARD_CENTER.x, size.y * _CARD_CENTER.y) - rect_size * 0.5
+	bg.add_child(aura)
+
+
+# Размер карты заклинания в круге (общий для ауры и самой карты).
+func _card_size() -> Vector2:
+	var card_h: float = _SHEET_H * _CARD_H_FRAC
+	return Vector2(card_h * GameCard.ASPECT, card_h)
 
 
 # Мерцающий глоу над каждой свечой арта — дети фона: живут под контентом и
@@ -200,8 +236,7 @@ func _build(cs: Dictionary) -> void:
 	title_zone.add_child(title)
 
 	# Карта заклинания (фронт) — в центре магического круга.
-	var card_h: float = _SHEET_H * _CARD_H_FRAC
-	var card_size := Vector2(card_h * GameCard.ASPECT, card_h)
+	var card_size: Vector2 = _card_size()
 	var card := GameCard.new()
 	card.name = "SpellCard"
 	card.custom_minimum_size = card_size
