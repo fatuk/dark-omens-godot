@@ -466,6 +466,7 @@ func reconcile_backs() -> void:
 				continue  # без оборотов — копии неразличимы, закреплять нечего
 			backs[cid] = _free_back(cid, own, pid)
 			changed = true
+			_foresee(pid, cid, String(backs[cid]))
 		for k_v: Variant in backs.keys():
 			if not conds.has(k_v):
 				backs.erase(k_v)
@@ -473,6 +474,49 @@ func reconcile_backs() -> void:
 		if changed:
 			p[PlayerKeys.CONDITIONS_BACKS] = backs
 			_gs.players[pid] = p
+
+
+# «Предвидение» (Вивьен Маркетти — passive.triggers on:"otherGainsCondition"): раз в
+# раунд, когда ДРУГОЙ сыщик получает не-обычное состояние, она видит его оборот и
+# получает 1 улику. Копия только что закреплена (reconcile_backs) — это и есть момент
+# «получил карту». Обычные (common: Долг) не в счёт.
+func _foresee(gainer: String, cid: String, back_id: String) -> void:
+	if bool(Conditions.get_def(cid).get("common", false)):
+		return
+	for pid_v: Variant in _gs.players:
+		var pid: String = String(pid_v)
+		var p: Dictionary = _gs.players[pid]
+		if pid == gainer or bool(p.get(PlayerKeys.DEAD, false)) or p.has(PlayerKeys.PEEK_USED):
+			continue
+		var inv: String = String(p.get(PlayerKeys.INVESTIGATOR, ""))
+		if Investigators.passive_triggers(inv, "otherGainsCondition").is_empty():
+			continue
+		p[PlayerKeys.PEEK_USED] = true
+		p[PlayerKeys.CLUES] = int(p.get(PlayerKeys.CLUES, 0)) + 1
+		# Окно «вы видите оборот»: карта перевёрнутой стороной + улика. Уже висит другое
+		# окно приобретений — его не затираем, улика всё равно начислена.
+		if not p.has("gains"):
+			p["gains"] = {
+				"card": cid,
+				"card_back": back_id,
+				"clues": 1,
+				"rolls": [],
+				"events": [_foresaw_event(cid, gainer)],
+			}
+		GameConsole.log(
+			(
+				"[Предвидение] %s видит оборот «%s» у %s (+1 улика)"
+				% [_gs.name_of(pid), back_id, _gs.name_of(gainer)]
+			)
+		)
+
+
+# Строка окна «Предвидения»: чьё состояние и какое.
+func _foresaw_event(cid: String, gainer: String) -> Dictionary:
+	return {
+		"id": "foresaw",
+		"params": {"condition": Conditions.name_key(cid), "who": _gs.name_of(gainer)},
+	}
 
 
 # Свободный оборот состояния cid: не закреплённый ни у кого, кроме pid (у самого pid

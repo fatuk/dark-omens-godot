@@ -169,6 +169,7 @@ ABILITY_CONVERT_SAN_TO_HP,Рассудок → Здоровье,Sanity → Healt
 ABILITY_CONFIRM,Применить,Apply
 ABILITY_STRIKE_PROMPT,Какого монстра ударить?,Which monster do you strike?
 ABILITY_GATE_MONSTER_PROMPT,Какого монстра у врат сбросить? (2 улики),Discard which Monster at a Gate? (2 Clues)
+ABILITY_CLUE_TRADE_PROMPT,С кем обменяться уликами?,Trade Clues with whom?
 ABILITY_PAY_SANITY_FOR_CLUE,Заплатить 1 рассудок вместо 1 улики,Spend 1 Sanity in place of 1 Clue
 INV_ABILITY_NONE,У этого сыщика нет особых способностей.,This investigator has no special abilities.
 INV_AL_DOBBS_NAME,Эл Доббс,Al Dobbs
@@ -2374,3 +2375,7 @@ INV_CLIVE_ASHTON_PASSIVE_TEXT,Раз в раунд можно потратить
 INV_AGNES_WHITLOCK_NAME,Агнес Уитлок,Agnes Whitlock
 INV_AGNES_WHITLOCK_OCC,Раскаявшаяся культистка,The Redeemed Cultist
 INV_AGNES_WHITLOCK_QUOTE,"«Ложа не столь невинна, какой притворяется. Я усвоила, что ничто не таково, каким кажется, — включая меня саму.»","«The Lodge is not as innocent as they pretend. I have learned that nothing is ever as it seems, myself included.»"
+INV_VIVIENNE_MARCHETTI_ABILITY_NAME,Мысленная связь,Mind Link
+INV_VIVIENNE_MARCHETTI_ABILITY_TEXT,Действие: обменяйтесь любым числом улик с сыщиком на любой клетке.,Action: You may trade any number of Clues with an investigator on any space.
+INV_VIVIENNE_MARCHETTI_PASSIVE_NAME,Предвидение,Foresight
+INV_VIVIENNE_MARCHETTI_PASSIVE_TEXT,"Раз в раунд, когда другой сыщик получает необычное состояние, вы видите оборот этой карты и получаете 1 улику.","Once per round, when another investigator gains a non-Common Condition, you may look at the back of that card and gain 1 Clue."

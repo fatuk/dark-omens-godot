@@ -57,7 +57,41 @@ static func _activate(parent: Node, inv_name: String) -> void:
 		"discardMonsterAtGate":
 			_open_discard_at_gate(parent, inv_name)
 			return
+		"clueTrade":
+			_open_clue_trade(parent, inv_name)
+			return
 	GameState.perform_action(GameActions.INVESTIGATOR_ABILITY)
+
+
+# «Обменяйтесь уликами с сыщиком на любой клетке» (Вивьен): выбор партнёра. Дальше
+# окно обмена откроется само — по связи (WorldMap._watch_trade_link), только улики.
+static func _open_clue_trade(parent: Node, inv_name: String) -> void:
+	var partners: Array = GameState.clue_trade_partners()
+	if partners.is_empty():
+		return
+	var modal: ModalDialog = _MODAL.instantiate()
+	parent.add_child(modal)
+	modal.set_title(
+		TranslationServer.translate(String(Investigators.ability(inv_name).get("name", "")))
+	)
+	var box := VBoxContainer.new()
+	box.name = "PartnerPick"
+	box.add_theme_constant_override("separation", 10)
+	var hint := UIStyle.label("ABILITY_CLUE_TRADE_PROMPT", UIStyle.MODAL_FS_BODY)
+	hint.name = "Hint"
+	box.add_child(hint)
+	for i in range(partners.size()):
+		var pid: String = String(partners[i])
+		var btn := UIStyle.button(GameState.name_of(pid), UIColors.ACCENT)
+		btn.name = "Partner%d" % i
+		btn.pressed.connect(
+			func() -> void:
+				modal.close()
+				GameState.perform_action(GameActions.INVESTIGATOR_ABILITY, {"partner": pid})
+		)
+		box.add_child(btn)
+	modal.set_content(box)
+	modal.open()
 
 
 # «Потратьте 2 улики: сбросьте монстра с клетки с вратами» (Клайв Эштон): выбор

@@ -137,6 +137,9 @@
 		"startingItems": [
 			{
 				"clue": 1
+			},
+			{
+				"spell": "flesh_ward"
 			}
 		],
 		"displayName": "INV_VIVIENNE_MARCHETTI_NAME",
@@ -157,6 +160,20 @@
 			"observation": 3,
 			"strength": 1,
 			"will": 3
+		},
+		"ability": {
+			"name": "INV_VIVIENNE_MARCHETTI_ABILITY_NAME",
+			"text": "INV_VIVIENNE_MARCHETTI_ABILITY_TEXT",
+			"kind": "clueTrade"
+		},
+		"passive": {
+			"name": "INV_VIVIENNE_MARCHETTI_PASSIVE_NAME",
+			"text": "INV_VIVIENNE_MARCHETTI_PASSIVE_TEXT",
+			"triggers": [
+				{
+					"on": "otherGainsCondition"
+				}
+			]
 		}
 	},
 	{

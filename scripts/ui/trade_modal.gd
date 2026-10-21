@@ -114,8 +114,10 @@ func _build(allies: Array) -> void:
 
 	var me: Dictionary = GameState.my_player()
 	var ally: Dictionary = GameState.players.get(_partner, {})
-	_section("TRADE_GIVE", me.get("items", []), _give, me, true)
-	_section("TRADE_TAKE", ally.get("items", []), _take, ally, false)
+	# Связь «только улики» (способность Вивьен): вещей в окне нет.
+	var clues_only: bool = bool(me.get(PlayerKeys.TRADE_LINK_CLUES, false))
+	_section("TRADE_GIVE", [] if clues_only else me.get("items", []), _give, me, true)
+	_section("TRADE_TAKE", [] if clues_only else ally.get("items", []), _take, ally, false)
 
 	var row := HBoxContainer.new()
 	row.name = "Buttons"

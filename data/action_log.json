@@ -153,6 +153,12 @@
 			"ru": "Раздобыл ресурс."
 		},
 		{
+			"id": "foresaw",
+			"self": true,
+			"en": "Foresees what awaits {who} — {condition}.",
+			"ru": "Провидит, что ждёт: {who}… {condition}."
+		},
+		{
 			"id": "cured",
 			"en": "Freed of an affliction — {condition}.",
 			"ru": "Избавлен от недуга… {condition}."

@@ -105,7 +105,9 @@ func _fill(gains: Dictionary) -> void:
 		var src_row := HBoxContainer.new()
 		src_row.name = "Source"
 		src_row.alignment = BoxContainer.ALIGNMENT_CENTER
-		src_row.add_child(_card_node(src))
+		# card_back — показать оборот состояния (Предвидение Вивьен), а не лицо.
+		var back: String = String(gains.get("card_back", ""))
+		src_row.add_child(_card_node({"id": src, "condition_back": back} if back else src))
 		_box.add_child(src_row)
 	var rolls: Array = gains.get("rolls", [])
 	if not rolls.is_empty():
@@ -215,6 +217,8 @@ func _payload(entry: Variant) -> Dictionary:
 		var d: Dictionary = entry
 		id = String(d.get("id", ""))
 		is_spell = String(d.get("kind", "")) == "spell"
+		if d.has("condition_back"):
+			return Conditions.card_payload(id, String(d["condition_back"]))
 	else:
 		id = String(entry)
 	if is_spell:

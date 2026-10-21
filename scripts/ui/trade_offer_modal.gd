@@ -100,7 +100,7 @@ func _fill(o: Dictionary, role: String) -> void:
 	# «Мозг ми-го в банке»: партнёр может переместиться на клетку инициатора (тот уйдёт
 	# на покинутую) — решение партнёра, независимо от того, принял ли он обмен.
 	_swap = null
-	if role == "to" and bool(o.get("link", false)):
+	if role == "to" and bool(o.get("swap", o.get("link", false))):
 		_swap = CheckBox.new()
 		_swap.name = "SwapPlaces"
 		_swap.text = tr("TRADE_SWAP_PLACES") % GameState.name_of(from)

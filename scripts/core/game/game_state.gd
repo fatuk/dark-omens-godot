@@ -821,6 +821,8 @@ func can_use_ability() -> bool:
 			return has_monster_at(String(me.get("location", "")))  # бить некого — неактивна
 		"discardMonsterAtGate":
 			return not monsters_at_gates().is_empty() and ResourceLedger.can_pay(me, "clue", 2)
+		"clueTrade":
+			return not clue_trade_partners().is_empty()
 	return true
 
 
@@ -870,6 +872,21 @@ func travel_cost_to(dest: String) -> Dictionary:
 ## недоступен — как в EH (Acquire Assets / Rest). Хост валидирует то же самое.
 func has_monster_at(loc_id: String) -> bool:
 	return not (monsters.get(loc_id, []) as Array).is_empty()
+
+
+## С кем можно обменяться уликами на расстоянии (способность Вивьен): другие живые
+## подключённые сыщики, где бы они ни были. Read-only — и для выбора на клиенте.
+func clue_trade_partners() -> Array:
+	var me: String = String(my_player().get(PlayerKeys.USER_ID, ""))
+	var out: Array = []
+	for pid_v: Variant in turn_order:
+		var p: Dictionary = players.get(String(pid_v), {})
+		if String(pid_v) == me or p.is_empty():
+			continue
+		if bool(p.get(PlayerKeys.DEAD, false)) or not bool(p.get(PlayerKeys.CONNECTED, true)):
+			continue
+		out.append(String(pid_v))
+	return out
 
 
 ## Монстры на клетках с вратами, которых можно сбросить эффектом (эпических — нет):

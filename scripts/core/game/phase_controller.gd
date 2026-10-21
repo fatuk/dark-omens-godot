@@ -80,6 +80,8 @@ func _run_investigator_ability(pid: String, p: Dictionary, payload: Dictionary) 
 			ok = _ability_strike_monster(pid, p, payload)
 		"discardMonsterAtGate":
 			ok = _ability_discard_at_gate(pid, p, payload)
+		"clueTrade":
+			ok = _ability_clue_trade(pid, p, payload)
 		_:
 			ok = _ability_run_program(pid, p, inv_id)
 	if ok:
@@ -141,6 +143,22 @@ func _ability_discard_at_gate(pid: String, p: Dictionary, payload: Dictionary) -
 		ResourceLedger.spend(p, "clue", 2)
 	_gs.apply_board_effect({"do": "discardMonster", "_target_monster": ref})
 	GameConsole.log("[Способность] %s: монстр %s сброшен у врат" % [_gs.name_of(pid), ref])
+	return true
+
+
+# «Обменяйтесь любым числом улик с сыщиком на любой клетке» (Вивьен Маркетти).
+# payload: {partner}. Способность — действие; дальше обычный обмен по связи (как у
+# «Мозга ми-го»), но только уликами и без смены мест. Связь живёт до ответа / раунда.
+func _ability_clue_trade(pid: String, p: Dictionary, payload: Dictionary) -> bool:
+	var partner: String = String(payload.get("partner", ""))
+	var ally: Dictionary = _gs.players.get(partner, {})
+	if partner == pid or ally.is_empty() or bool(ally.get(PlayerKeys.DEAD, false)):
+		return false
+	p[PlayerKeys.TRADE_LINK] = partner
+	p[PlayerKeys.TRADE_LINK_CLUES] = true
+	GameConsole.log(
+		"[Способность] %s ↔ %s: обмен уликами" % [_gs.name_of(pid), _gs.name_of(partner)]
+	)
 	return true
 
 
@@ -540,6 +558,9 @@ func _trade_check(pid: String, payload: Dictionary) -> bool:
 	var ally_items: Array = ally.get("items", [])
 	if not _valid_indices(give, my_items.size()) or not _valid_indices(take, ally_items.size()):
 		return false
+	# Связь «только улики» (способность Вивьен): вещи ею не передаются.
+	if linked and bool(me.get(PlayerKeys.TRADE_LINK_CLUES, false)) and not (give + take).is_empty():
+		return false
 	var give_clues: int = maxi(0, int(payload.get("giveClues", 0)))
 	var take_clues: int = maxi(0, int(payload.get("takeClues", 0)))
 	if give_clues > int(me.get("clues", 0)) or take_clues > int(ally.get("clues", 0)):
@@ -631,7 +652,9 @@ func host_apply_trade_offer(pid: String, payload: Dictionary) -> bool:
 		# Что именно лежало по индексам — на момент ответа проверим, что не изменилось.
 		"give_ids": _item_ids(_gs.players[pid].get("items", []), give),
 		"take_ids": _item_ids(_gs.players[partner].get("items", []), take),
-		"link": linked,  # партнёру — галка «поменяться местами»
+		"link": linked,
+		# Партнёру — галка «поменяться местами»: только у «Мозга ми-го», не у улик Вивьен.
+		"swap": linked and not bool(p.get(PlayerKeys.TRADE_LINK_CLUES, false)),
 	}
 	GameConsole.log("[Обмен] %s предлагает обмен %s" % [_gs.name_of(pid), _gs.name_of(partner)])
 	_gs.broadcast_sync()
@@ -690,14 +713,15 @@ func _finish_linked_trade(
 		)
 	elif not accept:
 		GameConsole.log("[Обмен] %s отклонил предложение" % _gs.name_of(to))
-	if swap and _gs.players.has(from) and _gs.players.has(to):
+	if swap and bool(o.get("swap", true)) and _gs.players.has(from) and _gs.players.has(to):
 		var a: String = String(_gs.players[from].get("location", ""))
 		var b: String = String(_gs.players[to].get("location", ""))
 		_gs.players[to]["location"] = a
 		_gs.players[from]["location"] = b
 		GameConsole.log("[Обмен] %s и %s поменялись местами" % [_gs.name_of(to), _gs.name_of(from)])
 	if _gs.players.has(from):
-		(_gs.players[from] as Dictionary).erase("trade_link")
+		(_gs.players[from] as Dictionary).erase(PlayerKeys.TRADE_LINK)
+		(_gs.players[from] as Dictionary).erase(PlayerKeys.TRADE_LINK_CLUES)
 
 
 ## Хост: инициатор отзывает предложение.
@@ -1233,6 +1257,8 @@ func start_new_round() -> void:
 		_gs.players[pid]["actions_left"] = _gs.ACTIONS_PER_ROUND
 		_gs.players[pid]["actions_used"] = []
 		_gs.players[pid].erase("trade_link")  # «Мозг ми-го»: связь живёт до конца раунда
+		_gs.players[pid].erase(PlayerKeys.TRADE_LINK_CLUES)
+		_gs.players[pid].erase(PlayerKeys.PEEK_USED)  # «Предвидение» — снова раз
 		_gs.players[pid]["encounter_done"] = false
 		_gs.players[pid]["ghost_acted_this_round"] = false  # Тень снова может действовать
 		_gs.players[pid].erase(PlayerKeys.RESOURCE_SWAP_USED)  # подмена ресурса — снова раз
