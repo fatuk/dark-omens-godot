@@ -99,9 +99,6 @@ INV_VIVIENNE_MARCHETTI_QUOTE,«Видения — это предостереж�
 INV_MAXWELL_THORNE_NAME,Максвелл Торн,Maxwell Thorne
 INV_MAXWELL_THORNE_OCC,Маг,The Magician
 INV_MAXWELL_THORNE_QUOTE,"«Не бойтесь. Я всю свою жизнь только и делал, что невозможное.»",«Do not be afraid. I have spent my entire life doing the impossible.»
-INV_CLARA_ASHBY_NAME,Агнес Уитлок,Agnes Whitlock
-INV_CLARA_ASHBY_OCC,Раскаявшаяся культистка,The Redeemed Cultist
-INV_CLARA_ASHBY_QUOTE,"«Ложа не столь невинна, какой притворяется. Я усвоила, что ничто не таково, каким кажется, — включая меня саму.»","«The Lodge is not as innocent as they pretend. I have learned that nothing is ever as it seems, myself included.»"
 INV_NORA_QUINN_NAME,Нора Куинн,Nora Quinn
 INV_NORA_QUINN_OCC,Студентка,The Student
 INV_NORA_QUINN_QUOTE,«Истина разума усмиряет даже самые дикие заблуждения. Я не сделаюсь жертвой подобного безумия.»,«The truth of reason tempers even the wildest delusions. I will not fall prey to such madness.»
@@ -2374,3 +2371,6 @@ INV_CLIVE_ASHTON_ABILITY_NAME,Изгнание у врат,Banish at the Gate
 INV_CLIVE_ASHTON_ABILITY_TEXT,"Действие: потратьте 2 улики, чтобы сбросить 1 монстра с клетки, где есть врата.",Action: Spend 2 Clues to discard 1 Monster on a space containing a Gate.
 INV_CLIVE_ASHTON_PASSIVE_NAME,Цена прозрения,The Price of Insight
 INV_CLIVE_ASHTON_PASSIVE_TEXT,Раз в раунд можно потратить 1 рассудок вместо 1 улики.,"Once per round, you may spend 1 Sanity in place of spending 1 Clue."
+INV_AGNES_WHITLOCK_NAME,Агнес Уитлок,Agnes Whitlock
+INV_AGNES_WHITLOCK_OCC,Раскаявшаяся культистка,The Redeemed Cultist
+INV_AGNES_WHITLOCK_QUOTE,"«Ложа не столь невинна, какой притворяется. Я усвоила, что ничто не таково, каким кажется, — включая меня саму.»","«The Lodge is not as innocent as they pretend. I have learned that nothing is ever as it seems, myself included.»"

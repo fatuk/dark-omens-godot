@@ -2,22 +2,22 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://vbihmn3451wl"
-path="res://.godot/imported/Clara Ashby.png-24be719f12e696ffdc080204e7359138.ctex"
+uid="uid://c1doqq1oa10tp"
+path="res://.godot/imported/Agnes Whitlock.png-260ec8765847d1af8d140b7955212ac6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/investigators/Clara Ashby.png"
-dest_files=["res://.godot/imported/Clara Ashby.png-24be719f12e696ffdc080204e7359138.ctex"]
+source_file="res://assets/investigators/Agnes Whitlock.png"
+dest_files=["res://.godot/imported/Agnes Whitlock.png-260ec8765847d1af8d140b7955212ac6.ctex"]
 
 [params]
 
-compress/mode=1
+compress/mode=0
 compress/high_quality=false
-compress/lossy_quality=0.95
+compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

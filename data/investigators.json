@@ -189,7 +189,7 @@
 		}
 	},
 	{
-		"name": "Clara Ashby",
+		"name": "Agnes Whitlock",
 		"startingItems": [
 			{
 				"asset": "arcane_manuscripts"
@@ -198,12 +198,12 @@
 				"spell": "wither"
 			}
 		],
-		"displayName": "INV_CLARA_ASHBY_NAME",
-		"occupation": "INV_CLARA_ASHBY_OCC",
+		"displayName": "INV_AGNES_WHITLOCK_NAME",
+		"occupation": "INV_AGNES_WHITLOCK_OCC",
 		"startingLocation": "7",
 		"set": "INV_SET_CORE",
 		"season": "core",
-		"quote": "INV_CLARA_ASHBY_QUOTE",
+		"quote": "INV_AGNES_WHITLOCK_QUOTE",
 		"role": [
 			"INV_ROLE_MAGIC",
 			"INV_ROLE_COMBAT"
