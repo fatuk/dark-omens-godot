@@ -686,6 +686,9 @@ ENCOUNTER_GENERATING,Готовим встречу…,Preparing an encounter…
 ENCOUNTER_CHOICE_TITLE,Выберите встречу,Choose an encounter
 ENCOUNTER_CHOICE_COMBAT_ORDER,С кем сражаться первым?,Whom to fight first?
 ENCOUNTER_CHOICE_GENERAL,Обычная встреча,Regular encounter
+ENCOUNTER_CHOICE_GENERAL_CITY,Встреча в городе,City encounter
+ENCOUNTER_CHOICE_GENERAL_SEA,Встреча в море,Sea encounter
+ENCOUNTER_CHOICE_GENERAL_WILDERNESS,Встреча в глуши,Wilderness encounter
 ENCOUNTER_CHOICE_LOCAL,Локационная встреча,Location encounter
 ENCOUNTER_CHOICE_RESEARCH,Найти улику,Find a clue
 ENCOUNTER_CHOICE_GATE,Войти во врата,Enter the gate

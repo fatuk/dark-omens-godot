@@ -72,9 +72,12 @@ func _build(choices: Array) -> void:
 		_vbox.add_child(btn)
 
 
-# Подпись вида встречи. Встреча на жетоне Тайны: авторская карта (encounterTag) —
-# «особая встреча», иначе bind-ход с ценой из хука («Связать знамение (−N)»).
+# Подпись вида встречи. Общая — по типу клетки («Встреча в городе/в море/в глуши»).
+# Встреча на жетоне Тайны: авторская карта (encounterTag) — «особая встреча», иначе
+# bind-ход с ценой из хука («Связать знамение (−N)»).
 func _kind_label(kind: String) -> String:
+	if kind == "general":
+		return _general_label()
 	if kind != "eldritch":
 		return String(_KIND_KEYS.get(kind, kind))
 	var me: String = GameState.local_pid()
@@ -86,6 +89,14 @@ func _kind_label(kind: String) -> String:
 	if cost > 0:
 		return tr("ENCOUNTER_CHOICE_ELDRITCH_COST") % cost
 	return tr("ENCOUNTER_CHOICE_ELDRITCH_FREE")
+
+
+# Общая встреча по типу клетки сыщика; неизвестный тип — «Обычная встреча».
+func _general_label() -> String:
+	var loc: String = String(GameState.my_player().get("location", ""))
+	var kind: String = String(GameState.map.by_id(loc).get("type", ""))
+	var key: String = "ENCOUNTER_CHOICE_GENERAL_%s" % kind.to_upper()
+	return key if not kind.is_empty() and tr(key) != key else "ENCOUNTER_CHOICE_GENERAL"
 
 
 # Подпись кнопки порядка боя: имя монстра и здоровье («Гуль · 2/3»). Экземпляр
