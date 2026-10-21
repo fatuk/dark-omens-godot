@@ -169,3 +169,15 @@ func test_opening_location_shows_card_hint_first() -> void:
 	assert_has(_queue(), "location_clue")
 	_d._process(0.0)
 	assert_not_null(_hint_shown(), "поверх панели — сразу")
+
+
+func test_real_sidebar_wakes_location_hint() -> void:
+	# Настоящая панель: директор должен увидеть её открытой уже в момент show_location.
+	GameState.players[ME]["actions_left"] = 0
+	_d.set("_queue", [])
+	var sb: CanvasLayer = load("res://scenes/ui/location_sidebar.tscn").instantiate()
+	sb.name = "LocationSidebar"
+	add_child_autofree(sb)
+	sb.call("show_location", GameState.map.by_id("Arkham"))
+	assert_eq(String(sb.call("shown_location")), "Arkham")
+	assert_has(_queue(), "location_open", "открыли карточку — подсказка в очереди")

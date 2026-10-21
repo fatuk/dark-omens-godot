@@ -401,6 +401,13 @@ func show_location(data: Dictionary) -> void:
 	if not _is_open:
 		_is_open = true
 		_animate(false)
+	_wake_guide()
+
+
+# Армитедж расскажет о месте. Только когда панель уже отмечена открытой: раньше
+# директор спросил бы shown_location() и получил бы «закрыто».
+func _wake_guide() -> void:
+	get_tree().call_group("guide_director", "refresh")
 
 
 # Заполняет контент панели данными локации (name/realWorldLocation/description/
@@ -414,7 +421,6 @@ func _apply_location(data: Dictionary) -> void:
 	_image.texture = _location_art(_loc_id)
 	_populate_items(_loc_id)
 	_refresh_actions()
-	get_tree().call_group("guide_director", "refresh")  # Армитедж расскажет о месте
 
 
 # Прячет панель, по завершении — подставляет _pending_data и открывает снова.
@@ -435,6 +441,7 @@ func _on_transition_hidden() -> void:
 	_apply_location(_pending_data)
 	_pending_data = {}
 	_animate(false)  # открыть заново с новой инфой
+	_wake_guide()
 
 
 func close_panel() -> void:
