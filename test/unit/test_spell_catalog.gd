@@ -43,7 +43,7 @@ func test_card_payload_shape() -> void:
 	var s: Dictionary = SpellCatalog.by_id("shriveling")
 	var p: Dictionary = SpellCatalog.card_payload(s)
 	assert_eq(String(p["id"]), "shriveling")
-	assert_eq(String(p["subtitle"]), "TRAIT_SPELL", "подзаголовок — заклинание")
+	assert_eq(String(p["subtitle"]), "SPELL_KIND_RITUAL", "подзаголовок — вид заклинания")
 	assert_eq(String(p["title"]), "SPELL_SHRIVELING_NAME", "ключ названия")
 
 
