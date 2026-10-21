@@ -3,6 +3,8 @@ extends CanvasLayer
 
 ## Наставник-подсказка: профессор Армитедж выходит справа, стоит на верхнем краю
 ## нижней панели и указывает на рамку с текстом (стандартная рамка модалок).
+## mirrored — зеркально, слева: когда справа открыта панель (карточка локации),
+## он показывает пальцем в её сторону и не закрывает её.
 ## Реплики идут по очереди: клик (или Пробел/Enter) — следующая, после последней
 ## окно гаснет и шлёт finished. Esc — закрыть сразу.
 ##
@@ -42,9 +44,7 @@ const _FADE_OUT: float = 0.2
 
 var _lines: Array = []
 var _over_modals: bool = false
-# Правый край «сцены» профессора: −1 — край экрана (арт уходит за него), иначе он
-# встаёт левее этой линии — например, у открытой панели локации, чтобы её не закрыть.
-var _stand_right: float = -1.0
+var _mirrored: bool = false  # слева, лицом вправо (см. say)
 var _index: int = 0
 var _closing: bool = false
 var _root: Control
@@ -58,13 +58,13 @@ var _more: Label
 ## (его finished — когда игрок прочитал всё). over_modals — поверх открытых окон
 ## (подсказка ПРО это окно: встреча, бой, магазин); иначе — под модалками.
 static func say(
-	parent: Node, lines: Array, over_modals: bool = false, stand_right: float = -1.0
+	parent: Node, lines: Array, over_modals: bool = false, mirrored: bool = false
 ) -> GuideHint:
 	var g := GuideHint.new()
 	g.name = "GuideHint"
 	g._lines = lines.duplicate()
 	g._over_modals = over_modals
-	g._stand_right = stand_right
+	g._mirrored = mirrored
 	parent.add_child(g)
 	return g
 
@@ -123,6 +123,7 @@ func _build() -> void:
 	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_art.stretch_mode = TextureRect.STRETCH_SCALE
 	_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_art.flip_h = _mirrored
 	_root.add_child(_art)
 
 
@@ -142,16 +143,22 @@ func _apply_padding() -> void:
 
 # Раскладка от правого нижнего угла: профессор на верхнем крае HUD, рамка — слева
 # от него на уровне пальца. Ширина экрана при aspect=expand разная — считаем от края.
+# Зеркально — от левого нижнего: арт отражён, палец и рамка — справа от него.
 func _layout() -> void:
 	var vp: Vector2 = get_viewport().get_visible_rect().size
 	var art_size: Vector2 = _ART.get_size() * ART_SCALE
-	var right: float = vp.x + ART_OVERFLOW_X if _stand_right < 0.0 else _stand_right
-	var art_pos := Vector2(right - art_size.x, vp.y - _HUD_H - art_size.y)
+	var y: float = vp.y - _HUD_H - art_size.y
+	var finger_y: float = y + _FINGER.y * ART_SCALE
 	_art.size = art_size
-	_art.position = art_pos
-	var finger: Vector2 = art_pos + _FINGER * ART_SCALE
 	_frame.custom_minimum_size = Vector2(FRAME_W, _FRAME_MIN_H)
-	_frame.position = Vector2(finger.x + FRAME_X - FRAME_W, finger.y + FRAME_Y)
+	if _mirrored:
+		_art.position = Vector2(-ART_OVERFLOW_X, y)
+		var finger_x: float = _art.position.x + art_size.x - _FINGER.x * ART_SCALE
+		_frame.position = Vector2(finger_x - FRAME_X, finger_y + FRAME_Y)
+	else:
+		_art.position = Vector2(vp.x + ART_OVERFLOW_X - art_size.x, y)
+		var finger_xr: float = _art.position.x + _FINGER.x * ART_SCALE
+		_frame.position = Vector2(finger_xr + FRAME_X - FRAME_W, finger_y + FRAME_Y)
 	_fit_frame.call_deferred()
 
 
@@ -173,7 +180,7 @@ func _show_line(i: int) -> void:
 
 func _play_in() -> void:
 	var rest_x: float = _art.position.x
-	_art.position.x = rest_x + _SLIDE_PX
+	_art.position.x = rest_x + (-_SLIDE_PX if _mirrored else _SLIDE_PX)  # въезд из-за края
 	_art.modulate.a = 0.0
 	_frame.modulate.a = 0.0
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(

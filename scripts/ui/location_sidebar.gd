@@ -457,12 +457,6 @@ func is_open() -> bool:
 	return _is_open
 
 
-## Левый край панели, когда она выехала целиком (в координатах экрана) — сюда
-## встаёт Армитедж, рассказывая о месте, чтобы не закрыть саму панель.
-func open_left_edge() -> float:
-	return get_viewport().get_visible_rect().size.x - _panel_width
-
-
 ## Локация, открытая в панели ("" — панель закрыта).
 func shown_location() -> String:
 	return _loc_id if _is_open else ""

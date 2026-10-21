@@ -93,12 +93,12 @@ func _show(h: Dictionary) -> void:
 	elif not _seen.has(id):
 		_seen.append(id)
 	_free_for = 0.0
-	# Про карточку локации — профессор встаёт слева от панели, а не поверх неё.
-	var stand: float = -1.0
-	if String(h.get("on", "")).begins_with("location"):
-		stand = _sidebar_left_edge()
+	# Про карточку локации (панель справа) — профессор слева, лицом к ней.
 	_current = GuideHint.say(
-		self, h.get("lines", []), String(h.get("show", "free")) == "over", stand
+		self,
+		h.get("lines", []),
+		String(h.get("show", "free")) == "over",
+		String(h.get("on", "")).begins_with("location")
 	)
 
 
@@ -183,14 +183,6 @@ func _location_trigger(on: String, me: Dictionary) -> bool:
 				if String(pid_v) != my_id and String(p.get(PlayerKeys.LOCATION, "")) == loc:
 					return not bool(p.get(PlayerKeys.DEAD, false))
 	return false
-
-
-# Левый край открытой панели локации (−1 — панели нет).
-func _sidebar_left_edge() -> float:
-	for n: Node in get_tree().get_nodes_in_group("location_sidebar"):
-		if n.has_method("open_left_edge"):
-			return float(n.call("open_left_edge"))
-	return -1.0
 
 
 # Локация, открытая в панели ("" — закрыта / панели нет).
