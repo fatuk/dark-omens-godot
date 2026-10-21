@@ -819,6 +819,8 @@ func can_use_ability() -> bool:
 			return _convert_vitality_max(me) > 0
 		"strikeMonster":
 			return has_monster_at(String(me.get("location", "")))  # бить некого — неактивна
+		"discardMonsterAtGate":
+			return not monsters_at_gates().is_empty() and ResourceLedger.can_pay(me, "clue", 2)
 	return true
 
 
@@ -868,6 +870,27 @@ func travel_cost_to(dest: String) -> Dictionary:
 ## недоступен — как в EH (Acquire Assets / Rest). Хост валидирует то же самое.
 func has_monster_at(loc_id: String) -> bool:
 	return not (monsters.get(loc_id, []) as Array).is_empty()
+
+
+## Монстры на клетках с вратами, которых можно сбросить эффектом (эпических — нет):
+## [{ref "loc#i", name (ключ), loc}]. Read-only — считается и на клиенте для выбора.
+func monsters_at_gates() -> Array:
+	var out: Array = []
+	for loc_v: Variant in gates:
+		var loc: String = String(loc_v)
+		var here: Array = monsters.get(loc, [])
+		for i in range(here.size()):
+			var inst: Variant = here[i]
+			var mid: String = (
+				String((inst as Dictionary).get("id", "")) if inst is Dictionary else String(inst)
+			)
+			var m: Dictionary = monster_def(mid)
+			if m.is_empty() or bool(m.get("epic", false)):
+				continue
+			out.append(
+				{"ref": "%s#%d" % [loc, i], "name": String(m.get("nameKey", mid)), "loc": loc}
+			)
+	return out
 
 
 ## Доступен ли магазин: мой ход, город, мой сыщик там, есть действие и покупка

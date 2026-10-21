@@ -402,7 +402,7 @@ static func _can_afford(branch: Variant, player: Dictionary) -> bool:
 	var cost: Dictionary = (branch as Dictionary).get("cost", {})
 	var spend: String = String(cost.get("spend", ""))
 	if not spend.is_empty():
-		return _resource_of(player, spend) >= int(cost.get("amount", 1))
+		return ResourceLedger.can_pay(player, spend, int(cost.get("amount", 1)))
 	var dk: String = String(cost.get("discardCondition", ""))
 	if not dk.is_empty():
 		return not _condition_of_kind(player, dk).is_empty()

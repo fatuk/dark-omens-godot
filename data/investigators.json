@@ -1011,6 +1011,24 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 4
+		},
+		"ability": {
+			"name": "INV_CLIVE_ASHTON_ABILITY_NAME",
+			"text": "INV_CLIVE_ASHTON_ABILITY_TEXT",
+			"kind": "discardMonsterAtGate"
+		},
+		"passive": {
+			"name": "INV_CLIVE_ASHTON_PASSIVE_NAME",
+			"text": "INV_CLIVE_ASHTON_PASSIVE_TEXT",
+			"whileOwned": [
+				{
+					"do": "substituteResource",
+					"fromResource": "sanity",
+					"toResource": "clue",
+					"amount": 1,
+					"limit": "oncePerRound"
+				}
+			]
 		}
 	},
 	{

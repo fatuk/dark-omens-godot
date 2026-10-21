@@ -171,6 +171,8 @@ ABILITY_CONVERT_HP_TO_SAN,Здоровье → Рассудок,Health → Sanit
 ABILITY_CONVERT_SAN_TO_HP,Рассудок → Здоровье,Sanity → Health
 ABILITY_CONFIRM,Применить,Apply
 ABILITY_STRIKE_PROMPT,Какого монстра ударить?,Which monster do you strike?
+ABILITY_GATE_MONSTER_PROMPT,Какого монстра у врат сбросить? (2 улики),Discard which Monster at a Gate? (2 Clues)
+ABILITY_PAY_SANITY_FOR_CLUE,Заплатить 1 рассудок вместо 1 улики,Spend 1 Sanity in place of 1 Clue
 INV_ABILITY_NONE,У этого сыщика нет особых способностей.,This investigator has no special abilities.
 INV_AL_DOBBS_NAME,Эл Доббс,Al Dobbs
 INV_AL_DOBBS_OCC,Коммивояжёр,The Salesman
@@ -2079,3 +2081,7 @@ RECK_CLAIRVOYANCE_B3_T3,"Видения ясны, будто вы там во п
 RECK_CLAIRVOYANCE_B4_T1,"Вы не видите ничего, кроме тьмы.",You can see nothing but darkness.
 RECK_CLAIRVOYANCE_B4_T2,"Вы смотрите глазами мстительных духов, и они шепчут вам ужасные тайны.",You peer through the eyes of vengeful spirits that whisper horrible secrets to you.
 RECK_CLAIRVOYANCE_B4_T3,Ваш взор падает на прежде скрытый источник знания.,"As you scry, your sight falls upon a previously hidden source of knowledge."
+INV_CLIVE_ASHTON_ABILITY_NAME,Изгнание у врат,Banish at the Gate
+INV_CLIVE_ASHTON_ABILITY_TEXT,"Действие: потратьте 2 улики, чтобы сбросить 1 монстра с клетки, где есть врата.",Action: Spend 2 Clues to discard 1 Monster on a space containing a Gate.
+INV_CLIVE_ASHTON_PASSIVE_NAME,Цена прозрения,The Price of Insight
+INV_CLIVE_ASHTON_PASSIVE_TEXT,Раз в раунд можно потратить 1 рассудок вместо 1 улики.,"Once per round, you may spend 1 Sanity in place of spending 1 Clue."

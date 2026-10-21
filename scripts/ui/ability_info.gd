@@ -54,7 +54,64 @@ static func _activate(parent: Node, inv_name: String) -> void:
 		"strikeMonster":
 			_open_strike_monster(parent, inv_name)
 			return
+		"discardMonsterAtGate":
+			_open_discard_at_gate(parent, inv_name)
+			return
 	GameState.perform_action(GameActions.INVESTIGATOR_ABILITY)
+
+
+# «Потратьте 2 улики: сбросьте монстра с клетки с вратами» (Клайв Эштон): выбор
+# монстра у любых врат. Хватает улик и доступна подмена — галка «1 рассудок вместо
+# 1 улики»; одной улики не хватает — подмена включается сама (её проверит хост).
+static func _open_discard_at_gate(parent: Node, inv_name: String) -> void:
+	var options: Array = GameState.monsters_at_gates()
+	if options.is_empty():
+		return
+	var me: Dictionary = GameState.my_player()
+	var modal: ModalDialog = _MODAL.instantiate()
+	parent.add_child(modal)
+	modal.set_title(
+		TranslationServer.translate(String(Investigators.ability(inv_name).get("name", "")))
+	)
+	var box := VBoxContainer.new()
+	box.name = "GatePick"
+	box.add_theme_constant_override("separation", 10)
+	var hint := UIStyle.label("ABILITY_GATE_MONSTER_PROMPT", UIStyle.MODAL_FS_BODY)
+	hint.name = "Hint"
+	box.add_child(hint)
+	var swap := CheckBox.new()
+	swap.name = "PaySanity"
+	swap.text = "ABILITY_PAY_SANITY_FOR_CLUE"
+	swap.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+	swap.visible = (
+		int(me.get("clues", 0)) >= 2 and not ResourceLedger.swap_for(me, "clue").is_empty()
+	)
+	for i in range(options.size()):
+		var o: Dictionary = options[i]
+		var btn := UIStyle.button(
+			(
+				"%s · %s"
+				% [
+					TranslationServer.translate(String(o.get("name", ""))),
+					TranslationServer.translate(GameState.map.name_key(String(o.get("loc", ""))))
+				]
+			),
+			UIColors.ACCENT
+		)
+		btn.name = "Monster%d" % i
+		var ref: String = String(o.get("ref", ""))
+		btn.pressed.connect(
+			func() -> void:
+				modal.close()
+				GameState.perform_action(
+					GameActions.INVESTIGATOR_ABILITY,
+					{"monster": ref, "sanity": swap.visible and swap.button_pressed}
+				)
+		)
+		box.add_child(btn)
+	box.add_child(swap)
+	modal.set_content(box)
+	modal.open()
 
 
 # «Вы и 1 монстр на вашей локации теряете по 1 здоровью» (Фрэнк Далтон): монстр

@@ -78,6 +78,8 @@ func _run_investigator_ability(pid: String, p: Dictionary, payload: Dictionary) 
 			ok = _ability_convert_vitality(pid, p, payload)
 		"strikeMonster":
 			ok = _ability_strike_monster(pid, p, payload)
+		"discardMonsterAtGate":
+			ok = _ability_discard_at_gate(pid, p, payload)
 		_:
 			ok = _ability_run_program(pid, p, inv_id)
 	if ok:
@@ -118,6 +120,27 @@ func _ability_strike_monster(pid: String, p: Dictionary, payload: Dictionary) ->
 	p[PlayerKeys.HP] = maxi(0, int(p.get(PlayerKeys.HP, 0)) - 1)
 	_gs._board.damage_monster_ref(ref, 1)
 	GameConsole.log("[Способность] %s: −1 здоровья себе и монстру %s" % [_gs.name_of(pid), ref])
+	return true
+
+
+# «Потратьте 2 улики, чтобы сбросить 1 монстра с клетки с вратами» (Клайв Эштон).
+# payload: {monster: "loc#idx", sanity: bool} — выбранный монстр и «1 рассудок вместо
+# 1 улики» (пассив, раз в раунд). Монстр не у врат / эпический / платить нечем —
+# false (действие не тратим). Не хватает улики — подмена покроет сама, если доступна.
+func _ability_discard_at_gate(pid: String, p: Dictionary, payload: Dictionary) -> bool:
+	var ref: String = String(payload.get("monster", ""))
+	var ok_ref: bool = false
+	for o_v: Variant in _gs.monsters_at_gates():
+		if String((o_v as Dictionary).get("ref", "")) == ref:
+			ok_ref = true
+	if not ok_ref or not ResourceLedger.can_pay(p, "clue", 2):
+		return false
+	if bool(payload.get("sanity", false)):
+		ResourceLedger.pay_with_swap(p, "clue", 2)
+	else:
+		ResourceLedger.spend(p, "clue", 2)
+	_gs.apply_board_effect({"do": "discardMonster", "_target_monster": ref})
+	GameConsole.log("[Способность] %s: монстр %s сброшен у врат" % [_gs.name_of(pid), ref])
 	return true
 
 
@@ -1212,6 +1235,7 @@ func start_new_round() -> void:
 		_gs.players[pid].erase("trade_link")  # «Мозг ми-го»: связь живёт до конца раунда
 		_gs.players[pid]["encounter_done"] = false
 		_gs.players[pid]["ghost_acted_this_round"] = false  # Тень снова может действовать
+		_gs.players[pid].erase(PlayerKeys.RESOURCE_SWAP_USED)  # подмена ресурса — снова раз
 		_refresh_items(_gs.players[pid])  # снять истощение активов (Refresh-шаг)
 	_gs._death.clear_grace()  # новый раунд — снять иммунитет выживших на Пороге
 	skip_disconnected()  # начинаем раунд с первого подключённого игрока
