@@ -654,6 +654,11 @@ func can_play_asset(item_index: int) -> bool:
 	return _asset_action.can_play(_nm.my_user_id, item_index)
 
 
+## Кастуется ли МОЁ заклинание (или ложится аура glamour) прямо сейчас — для веера.
+func can_cast_spell(item_index: int) -> bool:
+	return _spell.can_cast(_nm.my_user_id, item_index)
+
+
 ## UI: каст заклинания из веера. Ritual → действие cast_spell (тратит действие,
 ## обычный action-роутинг); Glamour/Incantation → контекстный каст (CAST_GLAMOUR /
 ## CAST_INCANTATION), без траты действия.

@@ -652,7 +652,8 @@ func _hand_assets_section() -> Array:
 
 
 # Веер «Заклинания»: карты-заклинания ({id, kind:"spell"}); фронт активируем
-# (тап/вытаскивание = каст). Отдельная секция от активов.
+# (тап/вытаскивание = каст). Отдельная секция от активов. Некастуемые сейчас (ритуал
+# не в свой ход, реакция без окна потери, чужая проверка) гасим — как активы.
 func _hand_spells_section() -> Array:
 	var out: Array = []
 	var items: Array = GameState.my_player().get("items", [])
@@ -666,6 +667,8 @@ func _hand_spells_section() -> Array:
 		var sc: Dictionary = SpellCatalog.card_payload(spell)
 		sc["item_index"] = i
 		sc["kind"] = "spell"
+		if not GameState.can_cast_spell(i):
+			sc["exhausted"] = true
 		out.append(sc)
 	return out
 

@@ -426,6 +426,59 @@ func begin_incantation(pid: String, item_index: int) -> bool:
 	return true
 
 
+## Можно ли кастовать заклинание item_index (или приложить ауру glamour) ПРЯМО СЕЙЧАС —
+## для веера: неиграбельные гасим, как активы. Read-only, считается и на клиенте по
+## синкаемому стейту; повторяет гварды begin_* и CheckFlow.activate. Хост всё равно
+## валидирует сам — это только подсказка игроку.
+func can_cast(pid: String, item_index: int) -> bool:
+	var p: Dictionary = _gs.players.get(pid, {})
+	var items: Array = p.get("items", [])
+	if item_index < 0 or item_index >= items.size() or not (items[item_index] is Dictionary):
+		return false
+	if not (_gs.casting_spell as Dictionary).is_empty():
+		return false  # другой каст ещё идёт
+	var it: Dictionary = items[item_index]
+	var spell: Dictionary = SpellCatalog.by_id(_spell_id(it))
+	var trigger: String = String((spell.get("front", {}) as Dictionary).get("trigger", ""))
+	var c: Dictionary = _gs.active_check
+	var exhausted: bool = bool(it.get("exhausted", false))
+	match String(spell.get("subtype", "")):
+		"ritual":
+			# Действие фазы: свой ход, есть действие, поверх не висит проверка.
+			return (
+				trigger == "action"
+				and c.is_empty()
+				and (_gs.pending_check as Dictionary).is_empty()
+				and _gs.phase == Phases.ACTION
+				and _gs.current_pid() == pid
+				and int(p.get("actions_left", 0)) > 0
+			)
+		"glamour":
+			if c.is_empty():
+				return not exhausted  # exhaust-каст (⟳ раз в раунд)
+			return _aura_fits(spell, c, pid, item_index)  # аура к своей проверке
+		"incantation":
+			if trigger == "combatEncounter":
+				return String(c.get("context", "")) == "combatEncounter"
+			var stat: String = String(_REACTION_STATS.get(trigger, ""))
+			if not stat.is_empty():
+				return not exhausted and _gs._encounter.spell_loss_window(stat)
+	return false  # onRest / encounterPhase — из своих промптов, не с руки
+
+
+# Подходит ли аура glamour к проверке c (своей, ещё не применена, мод по навыку и
+# таймингу) — тот же фильтр, что в CheckFlow.activate.
+func _aura_fits(spell: Dictionary, c: Dictionary, pid: String, item_index: int) -> bool:
+	if String(c.get("pid", "")) != pid or (c.get("exhausted_cards", []) as Array).has(item_index):
+		return false
+	var skill: String = String(c.get("skill", ""))
+	var rolled: bool = bool(c.get("rolled", false))
+	for m_v: Variant in SpellCatalog.aura_check_mods(spell, String(c.get("context", ""))):
+		if Dice.mod_skill_ok(m_v, skill) and (not rolled or Dice.mod_usable_after_roll(m_v)):
+			return true
+	return false
+
+
 # Старт spell-проверки + метаданные каста (casting_spell). Без броска и без резолва.
 func _begin_check(
 	pid: String, item_index: int, spell: Dictionary, subtype: String, nested: bool

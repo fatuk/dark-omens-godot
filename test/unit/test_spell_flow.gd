@@ -86,6 +86,9 @@ class MockGameState:
 	var roll_dice: Array = []
 	var spell_deck: Array = []  # колода копий {id, back}; пустая → grant замешает «сброс»
 	var mythos_decision: Dictionary = {}
+	var pending_check: Dictionary = {}
+	var phase: String = ""
+	var turn_pid: String = ""
 	var _check: StubCheck
 	var _phase: StubPhase
 	var _encounter: StubEncounter
@@ -103,6 +106,9 @@ class MockGameState:
 
 	func name_of(pid: String) -> String:
 		return pid
+
+	func current_pid() -> String:
+		return turn_pid
 
 	func apply_board_effect(node: Dictionary) -> void:
 		board_effects.append(node)
@@ -835,3 +841,56 @@ func test_spell_card_subtitle_is_kind() -> void:
 	assert_eq(sub, "SPELL_KIND_RITUAL", "под названием — вид, как трейт на карте EH")
 	assert_eq(SpellCatalog.kind_key({"subtype": "glamour"}), "SPELL_KIND_GLAMOUR")
 	assert_eq(SpellCatalog.kind_key({}), "TRAIT_SPELL", "вид неизвестен — «Заклинание»")
+
+
+# ── Веер: кастуется ли заклинание прямо сейчас (can_cast) ──────────────────────
+
+
+# Ритуал — действие фазы: в свой ход с действием — да; во время проверки состояния
+# (модалка «Проверка состояния» поверх фазы действий) или не в свой ход — нет.
+func test_can_cast_ritual_only_as_free_action() -> void:
+	_player([{"id": "feed_the_mind", "kind": "spell"}])
+	_gs.players["p"]["actions_left"] = 1
+	_gs.phase = Phases.ACTION
+	_gs.turn_pid = "p"
+	assert_true(_sf.can_cast("p", 0), "свой ход, есть действие")
+	_gs.pending_check = {"pid": "p", "subject": {"kind": "condition"}}
+	assert_false(_sf.can_cast("p", 0), "поверх висит проверка состояния")
+	_gs.pending_check = {}
+	_gs.turn_pid = "q"
+	assert_false(_sf.can_cast("p", 0), "чужой ход")
+	_gs.turn_pid = "p"
+	_gs.players["p"]["actions_left"] = 0
+	assert_false(_sf.can_cast("p", 0), "действия кончились")
+
+
+# Реакция на потерю здоровья (Защита плоти) — только в окне потери боя, раз в раунд.
+func test_can_cast_reaction_only_in_loss_window() -> void:
+	_player([{"id": "fx_ward", "kind": "spell"}])
+	_gs._encounter.window = false
+	assert_false(_sf.can_cast("p", 0), "нет окна потери (напр. проверка состояния)")
+	_gs._encounter.window = true
+	assert_true(_sf.can_cast("p", 0), "окно потери в бою")
+	_gs.players["p"]["items"][0]["exhausted"] = true
+	assert_false(_sf.can_cast("p", 0), "уже кастовал в этом раунде")
+
+
+# Боевая инкантация — только в бою; промптовые (encounterPhase/onRest) — не с руки.
+func test_can_cast_incantations_by_trigger() -> void:
+	_player([{"id": "wither", "kind": "spell"}, {"id": "fx_mists", "kind": "spell"}])
+	assert_false(_sf.can_cast("p", 0), "вне боя")
+	_gs.active_check = {"pid": "p", "context": "combatEncounter", "skill": "strength"}
+	assert_true(_sf.can_cast("p", 0), "в бою")
+	assert_false(_sf.can_cast("p", 1), "encounterPhase — из промпта, не с руки")
+
+
+# Glamour: вне проверки — exhaust-каст; в проверке — только если аура ей подходит.
+func test_can_cast_glamour_aura_must_fit_check() -> void:
+	_player([{"id": "azure_flame", "kind": "spell"}])
+	assert_true(_sf.can_cast("p", 0), "вне проверки — каст")
+	_gs.active_check = {"pid": "p", "context": "conditionAction", "skill": "influence"}
+	assert_false(_sf.can_cast("p", 0), "аура боя не к проверке Влияния")
+	_gs.active_check = {"pid": "p", "context": "combatEncounter", "skill": "strength"}
+	assert_true(_sf.can_cast("p", 0), "аура к шагу Силы в бою")
+	_gs.active_check["exhausted_cards"] = [0]
+	assert_false(_sf.can_cast("p", 0), "уже приложена к этой проверке")
