@@ -1571,6 +1571,9 @@ OUTCOME_DEFEAT_BODY,"Часы рока пробили полночь. Печат
 OUTCOME_TO_MENU,В главное меню,To main menu
 ,,
 TRAIT_SPELL,Заклинание,Spell
+SPELL_KIND_RITUAL,Ритуал,Ritual
+SPELL_KIND_INCANTATION,Заклятие,Incantation
+SPELL_KIND_GLAMOUR,Чары,Glamour
 TRAIT_ARTIFACT,Артефакт,Artifact
 ,,
 SPELL_SHRIVELING_NAME,Иссушение,Shriveling

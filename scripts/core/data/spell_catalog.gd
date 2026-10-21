@@ -26,6 +26,7 @@ const TONE_LIGHT := Color(0.95, 0.86, 1.0)
 const Z_DESC := Rect2(0.150, 0.645, 0.700, 0.260)
 
 const PATH := "res://data/spells.json"
+const _KINDS := ["ritual", "incantation", "glamour"]
 
 static var _list: Array = []
 static var _by_id: Dictionary = {}
@@ -81,10 +82,17 @@ static func random_back(spell: Dictionary, forced_id: String = "") -> Dictionary
 
 
 ## Payload карты заклинания для GameCard/веера (название/подтип/способность/арт).
+## Подпись под названием карты — вид заклинания, как строка трейта на карте EH:
+## «Ритуал» / «Заклятие» / «Чары». Вид неизвестен — общее «Заклинание».
+static func kind_key(s: Dictionary) -> String:
+	var subtype: String = String(s.get("subtype", ""))
+	return "SPELL_KIND_" + subtype.to_upper() if _KINDS.has(subtype) else "TRAIT_SPELL"
+
+
 static func card_payload(s: Dictionary) -> Dictionary:
 	var payload: Dictionary = {
 		"title": s.get("name", ""),
-		"subtitle": "TRAIT_SPELL",
+		"subtitle": kind_key(s),
 		"desc": (s.get("front", {}) as Dictionary).get("abilityKey", ""),
 		"id": String(s.get("id", "")),
 		"base_frame": FRAME,

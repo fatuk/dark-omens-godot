@@ -826,3 +826,12 @@ func test_trigger_queue_waits_for_answer() -> void:
 	assert_eq(done, [], "ждём ответа на вопрос оборота")
 	_sf.resolve_decision("p", 0)
 	assert_eq(done, [true])
+
+
+func test_spell_card_subtitle_is_kind() -> void:
+	var sub: String = String(
+		SpellCatalog.card_payload(SpellCatalog.by_id("shriveling"))["subtitle"]
+	)
+	assert_eq(sub, "SPELL_KIND_RITUAL", "под названием — вид, как трейт на карте EH")
+	assert_eq(SpellCatalog.kind_key({"subtype": "glamour"}), "SPELL_KIND_GLAMOUR")
+	assert_eq(SpellCatalog.kind_key({}), "TRAIT_SPELL", "вид неизвестен — «Заклинание»")
