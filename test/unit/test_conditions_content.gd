@@ -154,3 +154,22 @@ func test_detained_with_clue_asks_clue_or_test() -> void:
 func test_detained_without_clue_goes_to_test() -> void:
 	_detained(0)
 	assert_true(GameState.players["a"].has("reckoning_check"), "платить нечем — сразу проверка")
+
+
+func test_rest_roll_shown_to_player() -> void:
+	# «При отдыхе бросьте кубик: на 5–6 сбросьте» — бросок виден в окне результата.
+	_nm.set("_is_host_flag", true)
+	GameState.reset_session()
+	GameState.players = {"a": GameState._make_player_dict("a", "A", "Frank Dalton", "5", 5, 5)}
+	GameState.players["a"]["conditions"] = ["legInjury"]
+	GameState.players["a"]["actions_left"] = 2
+	GameState.turn_order = ["a"]
+	GameState.current_idx = 0
+	GameState.phase = Phases.ACTION
+	GameState.active = true
+	assert_true(GameState._phase.host_apply_action("a", GameActions.REST, {}))
+	var g: Dictionary = GameState.players["a"].get("gains", {})
+	assert_eq(String(g.get("card", "")), "legInjury", "окно результата — карта состояния")
+	assert_eq((g.get("rolls", []) as Array).size(), 1, "выпавший кубик")
+	var cured: bool = not (GameState.players["a"]["conditions"] as Array).has("legInjury")
+	assert_eq(cured, int(g["rolls"][0]) >= 5, "сброс — ровно на 5–6")

@@ -96,9 +96,7 @@ func _fill(gains: Dictionary) -> void:
 		c.queue_free()
 
 	var src: String = String(gains.get("card", ""))  # режим «результат розыгрыша»
-	var title := UIStyle.modal_title(
-		String(AssetCatalog.by_id(src).get("nameKey", src)) if not src.is_empty() else "GAINS_TITLE"
-	)
+	var title := UIStyle.modal_title(_source_title(src) if not src.is_empty() else "GAINS_TITLE")
 	title.name = "Title"
 	_box.add_child(title)
 	UIStyle.separator(_box)
@@ -201,7 +199,15 @@ func _card_node(entry: Variant) -> Control:
 	return slot
 
 
-# Payload карты: заклинание берём из SpellCatalog, актив — из AssetCatalog.
+# Название карты-источника розыгрыша: состояние (бросок при отдыхе) или актив.
+func _source_title(src: String) -> String:
+	if not Conditions.get_def(src).is_empty():
+		return Conditions.name_key(src)
+	return String(AssetCatalog.by_id(src).get("nameKey", src))
+
+
+# Payload карты: заклинание берём из SpellCatalog, актив — из AssetCatalog, состояние —
+# из Conditions (результат броска «на 5–6 сбросьте эту карту» при отдыхе).
 func _payload(entry: Variant) -> Dictionary:
 	var id: String = ""
 	var is_spell: bool = false
@@ -218,6 +224,8 @@ func _payload(entry: Variant) -> Dictionary:
 	var a: Dictionary = AssetCatalog.by_id(id)
 	if not a.is_empty():
 		return AssetCatalog.card_payload(a)
+	if not Conditions.get_def(id).is_empty():
+		return Conditions.card_payload(id)
 	return {"cost": "", "title": id, "subtitle": "", "desc": ""}
 
 

@@ -581,6 +581,9 @@ func fire_triggered(pid: String, event: String, flow: Dictionary = {}) -> Array:
 	var p: Dictionary = _gs.players.get(pid, {})
 	var conds: Array = (p.get("conditions", []) as Array).duplicate()
 	var ctx: Dictionary = _ctx(pid)
+	var before: Dictionary = p.duplicate(true)
+	var dice: Array = []  # броски d6 триггеров («на 5–6 сбросьте») — показать игроку
+	var shown: String = ""  # чья карта в окне результата
 	for i in range(conds.size()):
 		var cid: String = String(conds[i])
 		if not (p.get("conditions", []) as Array).has(cid):
@@ -597,7 +600,17 @@ func fire_triggered(pid: String, event: String, flow: Dictionary = {}) -> Array:
 					no_recover.append(String(n.get("stat", "health")))
 				else:
 					rest_nodes.append(n)
-			_run_carrier_program(pid, cid, def, rest_nodes, ctx, "Триггер:" + event, flow)
+			var fl: Dictionary = flow.duplicate()
+			fl["rolls"] = (flow.get("rolls", {}) as Dictionary).duplicate()
+			_run_carrier_program(pid, cid, def, rest_nodes, ctx, "Триггер:" + event, fl)
+			for r_v: Variant in (fl["rolls"] as Dictionary).values():
+				if not (r_v as Array).is_empty():
+					dice.append(int((r_v as Array)[0]))
+					shown = cid if shown.is_empty() else shown
+	# Бросок был — окно результата владельцу: карта, кубик, итог («Избавлен от
+	# недуга…» или ничего). Иначе бросок тихий, и неудача выглядит как «не сработало».
+	if not dice.is_empty() and _gs.players.has(pid):
+		ActionFeed.collect_card_result(_gs, pid, shown, before, _gs.players[pid], dice, [])
 	return no_recover
 
 
