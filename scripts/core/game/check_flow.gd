@@ -179,8 +179,10 @@ func roll(pid: String, c: Dictionary = {}) -> bool:
 
 
 ## Хост: переброс выбранного куба. currency — ЯВНАЯ валюта (перетащили жетон:
-## "concentration"/"clue"/"free") или "" = авто-приоритет (тап по кубу: карта →
-## концентрация → улика). Куб должен быть провальным по отображаемому значению.
+## "concentration"/"clue"/"free"/"sanityForClue") или "" = авто-приоритет (тап по кубу:
+## карта → концентрация → улика). Куб должен быть провальным по отображаемому значению.
+## "sanityForClue" — улику платит рассудок (пассив Клайва Эштона, раз в раунд): только
+## явным жетоном, в авто-приоритет не входит — рассудок случайным тапом не тратим.
 func reroll(pid: String, die_index: int, currency: String = "", c: Dictionary = {}) -> bool:
 	if c.is_empty():
 		c = _gs.active_check
@@ -208,6 +210,8 @@ func reroll(pid: String, die_index: int, currency: String = "", c: Dictionary = 
 			pay = "concentration" if foc > 0 else ""
 		"clue":
 			pay = "clue" if clues > 0 else ""
+		"sanityForClue":
+			pay = currency if not ResourceLedger.swap_for(p, "clue").is_empty() else ""
 		_:
 			pay = (
 				"free" if free else ("concentration" if foc > 0 else ("clue" if clues > 0 else ""))
@@ -225,6 +229,8 @@ func reroll(pid: String, die_index: int, currency: String = "", c: Dictionary = 
 		"clue":
 			p["clues"] = clues - 1
 			_gs._asset_action.fire_triggered(pid, "spendClue")  # Фотоаппарат: улика назад
+		"sanityForClue":
+			ResourceLedger.pay_with_swap(p, "clue", 1)  # улика цела, −1 рассудок
 	# Монотонная метка переброса: даёт UI отличить «перебросил, выпало ТО ЖЕ значение»
 	# от «ничего не нажалось». Без неё переброс в ту же грань не анимируется и клик
 	# выглядит смазанным/съеденным (фокус потрачен, куб не дёрнулся).

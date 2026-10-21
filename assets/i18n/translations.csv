@@ -755,6 +755,8 @@ COND_KIND_PURSUIT,Преследование,Pursuit
 COND_ANY,любое,any
 TOKEN_CONCENTRATION,Концентрация,Focus
 TOKEN_CLUE,Улика,Clue
+TOKEN_SANITY_FOR_CLUE,1 рассудок вместо улики · раз в раунд,1 Sanity in place of a Clue · once per round
+TOKEN_SANITY_FOR_CLUE_DESC,"«Звёздные карты не лгут. Но всякий раз, вглядываясь в них, я оставляю там частицу себя — и она уже не возвращается»","«The star charts never lie. But each time I study them, I leave a piece of myself up there — and it never comes back»"
 TOKEN_REROLL_HINT,перетащите на куб,drag onto a die
 ENCOUNTER_DICE,Кубики,Dice
 ENCOUNTER_SUCCESSES,успехов,successes

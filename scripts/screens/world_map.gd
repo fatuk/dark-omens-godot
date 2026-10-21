@@ -729,7 +729,25 @@ func _hand_tokens_section() -> Array:
 	for i in range(int(me.get("clues", 0))):
 		var loc: String = String(clue_ids[i]) if i < clue_ids.size() else ""
 		out.append(_clue_token_payload(loc))
+	# Пассив сыщика «1 рассудок вместо 1 улики» (Клайв Эштон): пока подмена в этом
+	# раунде свободна — отдельный жетон на рамке улики, им перебрасывают как уликой.
+	if not ResourceLedger.swap_for(me, "clue").is_empty():
+		out.append(_sanity_for_clue_payload())
 	return out
+
+
+# Жетон «рассудок вместо улики»: рамка улики, название пассива, свой текст.
+func _sanity_for_clue_payload() -> Dictionary:
+	var inv: String = String(GameState.my_player().get("investigator", ""))
+	return {
+		"kind": "token",
+		"currency": "sanityForClue",
+		"frame": _CLUE_FRAME,
+		"layout": "clue",
+		"title": tr(String(Investigators.passive(inv).get("name", "TOKEN_SANITY_FOR_CLUE"))),
+		"subtitle": tr("TOKEN_SANITY_FOR_CLUE"),
+		"desc": tr("TOKEN_SANITY_FOR_CLUE_DESC"),
+	}
 
 
 # Payload карты-улики: дженерик-жетон переброса (глиф + подсказка «на куб»); при

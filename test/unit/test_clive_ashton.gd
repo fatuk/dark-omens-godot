@@ -87,3 +87,26 @@ func test_swap_never_lethal() -> void:
 func test_others_cannot_swap() -> void:
 	var p: Dictionary = GameState._make_player_dict("b", "B", "Frank Dalton", "5", 5, 5)
 	assert_false(ResourceLedger.can_pay(p, "clue", 1), "пассив только у Клайва")
+
+
+# Брошенная проверка Клайва с двумя провальными кубами, улик нет.
+func _failed_check() -> void:
+	GameState.players["a"]["clues"] = 0
+	GameState._check.start("encounter", "a", "lore", 0, "generalEncounter")
+	GameState._check.roll("a")
+	var c: Dictionary = GameState.active_check
+	c["base"] = [1, 1]
+	c["dice"] = [1, 1]
+
+
+func test_reroll_paid_with_sanity() -> void:
+	_failed_check()
+	assert_true(GameState._check.reroll("a", 0, "sanityForClue"), "жетон «рассудок вместо улики»")
+	assert_eq(int(GameState.players["a"]["sanity"]), 6, "−1 рассудок")
+	assert_false(GameState._check.reroll("a", 1, "sanityForClue"), "второй раз за раунд — нельзя")
+
+
+func test_auto_reroll_never_spends_sanity() -> void:
+	_failed_check()
+	assert_false(GameState._check.reroll("a", 0, ""), "без жетона рассудок не трогаем")
+	assert_eq(int(GameState.players["a"]["sanity"]), 7)
