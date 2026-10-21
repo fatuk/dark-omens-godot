@@ -152,6 +152,14 @@ static func card_payload(cid: String, flipped_outcome_id := "") -> Dictionary:
 # ── Внутренние ────────────────────────────────────────────────────────────────
 
 
+## Тесты: подменить реестр фикстурой (список состояний), чтобы не зависеть от
+## обновлений data/conditions.json. [] — вернуться к файлу (перечитается сам).
+static func use_fixture(conds: Array) -> void:
+	_by_id.clear()
+	_outcome_by_id.clear()
+	_index(conds)
+
+
 static func _ensure_loaded() -> void:
 	if not _by_id.is_empty():
 		return
@@ -163,7 +171,10 @@ static func _ensure_loaded() -> void:
 	file.close()
 	if not (parsed is Dictionary):
 		return
-	var conds: Array = (parsed as Dictionary).get("conditions", [])
+	_index((parsed as Dictionary).get("conditions", []))
+
+
+static func _index(conds: Array) -> void:
 	for i in range(conds.size()):
 		var c: Dictionary = conds[i]
 		var cid: String = String(c.get("id", ""))

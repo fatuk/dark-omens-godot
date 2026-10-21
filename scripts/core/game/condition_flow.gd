@@ -67,8 +67,7 @@ func reckon_condition(
 	var program: Array = def.get("onReckoning", [])
 	if (program as Array).is_empty():
 		return
-	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-	var ctx: Dictionary = {"skills": inv.get("skills", {})}
+	var ctx: Dictionary = _ctx(pid)
 	if not interactive:
 		var recon_before: Dictionary = (p as Dictionary).duplicate(true)
 		var res: Dictionary = _EffectRunner.run(program, p, ctx, flow)
@@ -371,7 +370,55 @@ func flip_held(pid: String, cid: String) -> void:
 	var def: Dictionary = Conditions.get_def(cid)
 	if def.is_empty():
 		return
-	_flip_condition(pid, cid, def, {}, {}, "stay")
+	_flip_condition(pid, cid, def, _ctx(pid), {}, "stay")
+
+
+## Хост: «вместо встречи переверните эту карту» (Задержан, Затерян во времени и
+## пространстве — insteadOfEncounter:"flip"). true — у сыщика такое состояние: его
+## оборот играется вместо встречи (корутина), по итогу ход встреч уходит дальше.
+func flip_instead_of_encounter(pid: String) -> bool:
+	if not _gs.is_host():
+		return false
+	var p: Dictionary = _gs.players.get(pid, {})
+	var flipped: Dictionary = p.get(PlayerKeys.CONDITIONS_FLIPPED, {})
+	for c_v: Variant in p.get(PlayerKeys.CONDITIONS, []):
+		var cid: String = String(c_v)
+		var def: Dictionary = Conditions.get_def(cid)
+		if String(def.get("insteadOfEncounter", "")) == "flip" and not flipped.has(cid):
+			_flip_for_encounter(pid, cid, def)
+			return true
+	return false
+
+
+# Корутина: оборот вместо встречи (проверки — видимые), затем ход встреч дальше.
+func _flip_for_encounter(pid: String, cid: String, def: Dictionary) -> void:
+	GameConsole.log("[Встреча] %s · вместо встречи — оборот «%s»" % [_gs.name_of(pid), cid])
+	await _flip_condition_interactive(pid, cid, def, _ctx(pid))
+	if _gs.players.has(pid):
+		_gs.players[pid]["encounter_done"] = true
+	_gs.broadcast_sync()
+	_gs.emit_changed()
+	if _gs.phase == Phases.ENCOUNTER and _gs.current_pid() == pid:
+		_gs._phase.advance_encounter_turn()
+
+
+# Контекст программ состояния: навыки, а для оборотов ещё то, из чего игрок выбирает
+# (клетка «куда вас вынесет», монстр для Нодена, сыщик для Помазанника), и тип
+# клетки, где он стоит («если вы в городе / на море»).
+func _ctx(pid: String) -> Dictionary:
+	var p: Dictionary = _gs.players.get(pid, {})
+	var ctx: Dictionary = {}
+	var aa: Variant = _gs.get("_asset_action")
+	if aa != null and (aa as Object).has_method("_ctx"):
+		ctx = (aa as Object).call("_ctx", pid)
+	else:
+		var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
+		ctx = {"skills": inv.get("skills", {})}
+	var map: Variant = _gs.get("map")
+	var loc: String = String(p.get(PlayerKeys.LOCATION, ""))
+	if map != null and not loc.is_empty() and (map as Object).has_method("type_of"):
+		ctx["loc_type"] = String((map as Object).call("type_of", loc))
+	return ctx
 
 
 # ── Копии состояний: карта на руках = конкретный оборот ───────────────────────
@@ -515,8 +562,7 @@ func fire_triggered(pid: String, event: String, flow: Dictionary = {}) -> Array:
 		return no_recover
 	var p: Dictionary = _gs.players.get(pid, {})
 	var conds: Array = (p.get("conditions", []) as Array).duplicate()
-	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-	var ctx: Dictionary = {"skills": inv.get("skills", {})}
+	var ctx: Dictionary = _ctx(pid)
 	for i in range(conds.size()):
 		var cid: String = String(conds[i])
 		if not (p.get("conditions", []) as Array).has(cid):

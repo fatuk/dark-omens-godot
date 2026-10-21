@@ -776,8 +776,13 @@ static func _apply_player_verb(
 	var n: int = _amount(node)
 	match verb:
 		"loseHealth":
-			player["hp"] = maxi(0, int(player.get("hp", 0)) - n)
-			logs.append("−%d здоровья" % n)
+			# keep — «потеряйте всё здоровье, кроме N» (Всё потеряно): остаётся не больше N.
+			var hp_now: int = int(player.get("hp", 0))
+			var hp_left: int = (
+				mini(hp_now, int(node["keep"])) if node.has("keep") else maxi(0, hp_now - n)
+			)
+			player["hp"] = hp_left
+			logs.append("−%d здоровья" % (hp_now - hp_left))
 		"healHealth":
 			# all:true — до максимума («полное лечение» в больнице), явно, а не amount 99.
 			var hp_max: int = int(player.get("hp_max", 0))
@@ -789,8 +794,12 @@ static func _apply_player_verb(
 			logs.append("+%d здоровья" % maxi(0, hp_to - int(player.get("hp", 0))))
 			player["hp"] = hp_to
 		"loseSanity":
-			player["sanity"] = maxi(0, int(player.get("sanity", 0)) - n)
-			logs.append("−%d рассудка" % n)
+			var san_now: int = int(player.get("sanity", 0))
+			var san_left: int = (
+				mini(san_now, int(node["keep"])) if node.has("keep") else maxi(0, san_now - n)
+			)
+			player["sanity"] = san_left
+			logs.append("−%d рассудка" % (san_now - san_left))
 		"healSanity":
 			var san_max: int = int(player.get("sanity_max", 0))
 			var san_to: int = (
@@ -881,6 +890,15 @@ static func _apply_player_verb(
 			logs.append("получен предмет (%s)" % verb)
 		"loseArtifact":
 			_drop_items(verb, node, player, logs)
+		"loseImprovement" when bool(node.get("all", false)):
+			# «Сбросьте все жетоны улучшений»: положительные моды навыков обнуляются,
+			# ухудшения (отрицательные) остаются.
+			var imods: Dictionary = player.get("skill_mods", {})
+			for sk_v: Variant in imods.keys():
+				if int(imods[sk_v]) > 0:
+					imods.erase(sk_v)
+			player["skill_mods"] = imods
+			logs.append("улучшения навыков сброшены")
 		"loseAsset", "loseSpell", "loseImprovement":
 			_drop_items(verb, node, player, logs)
 		"loseAllPossessions":
@@ -1020,7 +1038,8 @@ static func _pick_condition(node: Dictionary, player: Dictionary) -> String:
 	var held: Array = player.get("conditions", [])
 	var pool: Array = []
 	for id_v: Variant in Conditions.ids_of_kinds(kinds):
-		if not held.has(String(id_v)):
+		# Случайная карта вида — только из сезонов стола (явный condition:id — любой).
+		if not held.has(String(id_v)) and SeasonGate.room_allows(Conditions.get_def(String(id_v))):
 			pool.append(String(id_v))
 	if pool.is_empty():
 		return ""
@@ -1148,6 +1167,13 @@ static func _count_source(
 	match source:
 		"gatesMatchingOmen":
 			return int(ctx.get("gates_matching_omen", 1))
+		"spellsHeld":
+			# «за каждое ваше заклинание» (Договор с Йог-Сототом).
+			var sp: int = 0
+			for it_v: Variant in player.get("items", []):
+				if it_v is Dictionary and String((it_v as Dictionary).get("kind", "")) == "spell":
+					sp += 1
+			return sp
 		"gatesOnBoard":
 			return int(ctx.get("gates_on_board", 1))
 		"monstersOnBoard":

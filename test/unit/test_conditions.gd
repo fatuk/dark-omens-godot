@@ -5,6 +5,16 @@ extends GutTest
 ## Каталог грузит data/conditions.json (реальные состояния).
 
 
+# Свой реестр: обороты в data/conditions.json правятся по EH, тесты движка от них не зависят.
+func before_all() -> void:
+	var d: Dictionary = DataLoader.load_dict("res://test/fixtures/conditions.json")
+	Conditions.use_fixture(d.get("conditions", []))
+
+
+func after_all() -> void:
+	Conditions.use_fixture([])
+
+
 func test_payload_basic_fields() -> void:
 	var p: Dictionary = Conditions.card_payload("detained")
 	assert_eq(String(p.get("kind", "")), "condition", "вид карты — condition")

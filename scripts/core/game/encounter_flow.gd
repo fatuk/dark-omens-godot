@@ -198,6 +198,14 @@ func begin_turn() -> void:
 	var pid: String = _gs.current_pid()
 	if pid.is_empty() or not _gs.players.has(pid):
 		return
+	# Задержан / Затерян во времени и пространстве: вместо встречи — оборот карты.
+	var cond: Variant = _gs.get("_cond")
+	if (
+		cond != null
+		and (cond as Object).has_method("flip_instead_of_encounter")
+		and bool((cond as Object).call("flip_instead_of_encounter", pid))
+	):
+		return
 	# Заклинания «в фазу встреч» — до встречи, на выбор игрока (тот же промпт, что у
 	# отдыха). Ответ доиграет касты и вернётся сюда же (PhaseController).
 	var turn: String = "%d|%s" % [_gs.round_num, pid]

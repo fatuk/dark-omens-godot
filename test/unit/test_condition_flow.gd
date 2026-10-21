@@ -57,6 +57,16 @@ class Mock:
 	var _phase := StubPhase.new()
 
 
+# Свой реестр: обороты в data/conditions.json правятся по EH, тесты движка от них не зависят.
+func before_all() -> void:
+	var d: Dictionary = DataLoader.load_dict("res://test/fixtures/conditions.json")
+	Conditions.use_fixture(d.get("conditions", []))
+
+
+func after_all() -> void:
+	Conditions.use_fixture([])
+
+
 func before_each() -> void:
 	_gs = autofree(Mock.new())
 	_cond = ConditionFlow.new(_gs)
