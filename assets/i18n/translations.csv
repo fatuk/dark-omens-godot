@@ -1614,6 +1614,7 @@ CAST_TITLE,Чтение заклинания,Casting spell
 CAST_ROLL,Бросить кубы,Roll dice
 CAST_APPLY,Применить,Apply
 CHECK_TITLE,Проверка,Skill check
+CONDITION_CHECK_TITLE,Проверка состояния,Condition check
 CHAT_PICK_TEMPLATE,Выберите фразу,Pick a phrase
 ,,
 RECK_SHRIVELING_B1,"Иссохший разум крошится, и заклинание ускользает из пальцев",Your mind rots away and the spell crumbles from your grip
