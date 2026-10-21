@@ -6,12 +6,32 @@ extends CanvasLayer
 ## reckoning_*-фасады; иначе — единый pending_check/active_check (owner="effectCheck").
 ## Показывает карту-носитель (subject), кубы и «Бросить»/«Применить» — как каст ритуала.
 ## Хост-авторитетно; модалка лишь отражает синк. Код, монтируется из world_map.
+##
+## Проверка СОСТОЯНИЯ (subject — карта состояния: Расплата, «Задержан», оборот) идёт на
+## листе по арту cards/condition/condition-cast.png — как каст заклинания на своём:
+## заголовок сверху, карта в центре, кубы на столе, кнопки у нижнего края, живой огонь
+## в фонаре. Прочие проверки — обычная панель.
 
 const _CARD_MIN := Vector2(290, 459)
+
+const _SHEET_TEX: Texture2D = preload("res://assets/cards/condition/condition-cast.png")
+const _SHEET_H: float = 940.0
+const _CARD_CENTER := Vector2(0.5, 0.372)
+const _CARD_H_FRAC: float = 0.535
+const _Z_TITLE := Rect2(0.12, 0.038, 0.76, 0.06)
+const _Z_DICE := Rect2(0.10, 0.665, 0.80, 0.165)
+const _Z_BUTTONS := Rect2(0.14, 0.86, 0.72, 0.085)
+# Фонарь слева на столе (доли листа, замерены по картинке).
+const _FLAMES := [
+	{"cx": 0.054, "cy": 0.432, "w": 0.06, "h": 0.1, "intensity": 0.85, "speed": 6.5, "seed": 3.0},
+]
 
 var _root: ColorRect
 var _panel: PanelContainer
 var _vbox: VBoxContainer
+var _sheet_panel: PanelContainer  # лист проверки состояния
+var _sheet: Control
+var _sheet_mode: bool = false
 var _dice_box: HBoxContainer
 var _tray: DiceTray
 var _roll_btn: Button
@@ -61,6 +81,14 @@ func _build_frame() -> void:
 	_vbox.name = "VBox"
 	_vbox.add_theme_constant_override("separation", 12)
 	margin.add_child(_vbox)
+
+	_sheet_panel = PanelContainer.new()
+	_sheet_panel.name = "SheetPanel"
+	_sheet_panel.visible = false
+	center.add_child(_sheet_panel)
+	var parts: Dictionary = CardSheet.build(_sheet_panel, _SHEET_TEX, _SHEET_H)
+	_sheet = parts["sheet"]
+	CardSheet.add_flames(parts["bg"], parts["size"], _FLAMES)
 
 
 # ── Доступ к стейту ───────────────────────────────────────────────────────────
@@ -116,7 +144,11 @@ func _reroll_all_available() -> bool:
 func _refresh() -> void:
 	var pc: Dictionary = _pc()
 	var active: bool = not pc.is_empty()
-	UIStyle.modal_set_visible(_root, _panel, active)
+	if active:
+		_sheet_mode = (String((pc.get("subject", {}) as Dictionary).get("kind", "")) == "condition")
+		_panel.visible = not _sheet_mode
+		_sheet_panel.visible = _sheet_mode
+	UIStyle.modal_set_visible(_root, _sheet_panel if _sheet_mode else _panel, active)
 	if not active:
 		_sig = ""
 		_last_dice = []
@@ -133,7 +165,14 @@ func _refresh() -> void:
 func _build(pc: Dictionary) -> void:
 	for c in _vbox.get_children():
 		c.queue_free()
+	for c in _sheet.get_children():
+		if c.name != "Background":
+			_sheet.remove_child(c)
+			c.queue_free()
 	_tray = null
+	if _sheet_mode:
+		_build_sheet_content(pc)
+		return
 
 	_vbox.add_child(UIStyle.modal_title("CHECK_TITLE"))
 
@@ -164,7 +203,54 @@ func _build(pc: Dictionary) -> void:
 	btns.name = "Buttons"
 	btns.add_theme_constant_override("separation", 16)
 	_vbox.add_child(btns)
+	_add_buttons(btns)
 
+
+# Проверка состояния на листе: орнаментальный заголовок, крупная карта по центру,
+# кубы на столе, кнопки у нижнего края (раскладка как у каста заклинания).
+func _build_sheet_content(pc: Dictionary) -> void:
+	var title_zone := CardSheet.zone(_sheet, "TitleZone", _Z_TITLE)
+	var title := UIStyle.ornate_title("CHECK_TITLE", UIStyle.MODAL_FS_TITLE, UIColors.ACCENT)
+	title.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	title_zone.add_child(title)
+
+	var subject: Dictionary = pc.get("subject", {})
+	var card_h: float = _SHEET_H * _CARD_H_FRAC
+	var card_size := Vector2(card_h * GameCard.ASPECT, card_h)
+	var card := GameCard.new()
+	card.name = "SubjectCard"
+	card.custom_minimum_size = card_size
+	card.size = card_size
+	card.position = (
+		Vector2(_sheet.custom_minimum_size.x * _CARD_CENTER.x, _SHEET_H * _CARD_CENTER.y)
+		- card_size * 0.5
+	)
+	card.set_font_scale(card_size.x / HandCarousel.CARD_W)  # текст в пропорции, как в веере
+	card.set_card(subject)
+	_sheet.add_child(card)
+	CardPreview.attach_click(card, subject)
+
+	var dice_zone := CardSheet.zone(_sheet, "DiceZone", _Z_DICE)
+	_dice_box = HBoxContainer.new()
+	_dice_box.name = "DiceBox"
+	_dice_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	_dice_box.add_theme_constant_override("separation", 6)
+	_dice_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dice_zone.add_child(_dice_box)
+
+	var btn_zone := CardSheet.zone(_sheet, "ButtonsZone", _Z_BUTTONS)
+	var btns := HBoxContainer.new()
+	btns.name = "Buttons"
+	btns.add_theme_constant_override("separation", 16)
+	btns.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	btn_zone.add_child(btns)
+	_add_buttons(btns)
+	for b: Button in [_roll_btn, _apply_btn]:
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+
+# Кнопки: бросок · применить.
+func _add_buttons(btns: HBoxContainer) -> void:
 	_roll_btn = UIStyle.button("CAST_ROLL", UIColors.ACCENT)
 	_roll_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_roll_btn.pressed.connect(_on_roll)

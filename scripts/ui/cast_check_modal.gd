@@ -25,8 +25,6 @@ const _Z_TITLE := Rect2(0.12, 0.038, 0.76, 0.06)  # посередине меж�
 const _Z_DICE := Rect2(0.10, 0.665, 0.80, 0.165)  # сразу под картой
 const _Z_BUTTONS := Rect2(0.14, 0.86, 0.72, 0.085)  # у нижнего края
 
-const _FLAME_SHADER := preload("res://assets/shaders/flame_glow.gdshader")
-
 # Живые огни поверх нарисованных свечей (как в лавке): центр/размер — доли листа,
 # тёплый additive-глоу flame_glow мерцает и чуть пляшет; фазы разные — не в такт.
 # Прямоугольник с запасом под пляс (sway); хвост свечения к краям гасит сам шейдер.
@@ -105,26 +103,11 @@ func _ready() -> void:
 
 # Панель без своей рамки — её место занимает лист-картинка в пропорциях арта.
 func _build_sheet() -> void:
-	_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
-	var size: Vector2 = Vector2(
-		_SHEET_H * _SHEET_TEX.get_width() / _SHEET_TEX.get_height(), _SHEET_H
-	)
-	_panel.custom_minimum_size = size
-	_sheet = Control.new()
-	_sheet.name = "Sheet"
-	_sheet.custom_minimum_size = size
-	_panel.add_child(_sheet)
-	var bg := TextureRect.new()
-	bg.name = "Background"
-	bg.texture = _SHEET_TEX
-	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bg.clip_contents = true  # аура не вылезает за лист (на заголовок и рамку — можно)
-	_sheet.add_child(bg)
-	_build_flames(bg, size)
+	var parts: Dictionary = CardSheet.build(_panel, _SHEET_TEX, _SHEET_H)
+	_sheet = parts["sheet"]
+	var bg: Control = parts["bg"]
+	var size: Vector2 = parts["size"]
+	CardSheet.add_flames(bg, size, _FLAMES, _FLAME_COLOR)
 	_build_motes(bg, size)
 	_build_aura(bg, size)
 
@@ -195,39 +178,9 @@ func _card_size() -> Vector2:
 	return Vector2(card_h * GameCard.ASPECT, card_h)
 
 
-# Мерцающий глоу над каждой свечой арта — дети фона: живут под контентом и
-# переживают пересборку листа (_build чистит всё, кроме фона).
-func _build_flames(bg: Control, size: Vector2) -> void:
-	for f_v: Variant in _FLAMES:
-		var f: Dictionary = f_v
-		var mat := ShaderMaterial.new()
-		mat.shader = _FLAME_SHADER
-		mat.set_shader_parameter("glow_color", _FLAME_COLOR)
-		mat.set_shader_parameter("intensity", f.intensity)
-		mat.set_shader_parameter("flicker_speed", f.speed)
-		mat.set_shader_parameter("seed", f.seed)
-		var glow := ColorRect.new()
-		glow.name = "Flame"
-		glow.color = Color.WHITE  # цвет считает шейдер
-		glow.material = mat
-		glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var sz := Vector2(float(f.w) * size.x, float(f.h) * size.y)
-		glow.size = sz
-		glow.position = Vector2(float(f.cx) * size.x, float(f.cy) * size.y) - sz * 0.5
-		bg.add_child(glow)
-
-
 # Зона листа по долям (x, y, w, h ∈ 0..1).
 func _zone(zname: String, r: Rect2) -> Control:
-	var c := Control.new()
-	c.name = zname
-	c.anchor_left = r.position.x
-	c.anchor_top = r.position.y
-	c.anchor_right = r.position.x + r.size.x
-	c.anchor_bottom = r.position.y + r.size.y
-	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_sheet.add_child(c)
-	return c
+	return CardSheet.zone(_sheet, zname, r)
 
 
 # ── Доступ к стейту ───────────────────────────────────────────────────────────

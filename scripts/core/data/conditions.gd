@@ -9,6 +9,8 @@ class_name Conditions
 ##   # при присвоении в Label.text Godot сам вызовет tr()
 
 const DATA_PATH := "res://data/conditions.json"
+## Рамка карты состояния — той же разметки, что у актива (окно арта, плашка, пергамент).
+const FRAME: Texture2D = preload("res://assets/cards/condition/card-frame.png")
 
 static var _by_id: Dictionary = {}
 static var _outcome_by_id: Dictionary = {}  # агрегат backs всех состояний (id → оборот)
@@ -140,6 +142,7 @@ static func card_payload(cid: String, flipped_outcome_id := "") -> Dictionary:
 	return {
 		"kind": "condition",
 		"condition_id": cid,
+		"base_frame": FRAME,
 		"title": name_key(cid),
 		"subtitle": String(KIND_KEY.get(kind, "")),
 		"desc": desc,
