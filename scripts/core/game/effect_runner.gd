@@ -890,12 +890,18 @@ static func _apply_player_verb(
 			logs.append("получен предмет (%s)" % verb)
 		"loseArtifact":
 			_drop_items(verb, node, player, logs)
-		"loseImprovement" when bool(node.get("all", false)):
-			# «Сбросьте все жетоны улучшений»: положительные моды навыков обнуляются,
-			# ухудшения (отрицательные) остаются.
+		"loseImprovement" when bool(node.get("all", false)) or node.has("skill"):
+			# «Сбросьте все жетоны улучшений» (all) или «1 жетон улучшения Воли» (skill):
+			# положительные моды навыков снимаются, ухудшения (отрицательные) остаются.
 			var imods: Dictionary = player.get("skill_mods", {})
+			var only: String = String(node.get("skill", ""))
 			for sk_v: Variant in imods.keys():
-				if int(imods[sk_v]) > 0:
+				if int(imods[sk_v]) <= 0 or (not only.is_empty() and String(sk_v) != only):
+					continue
+				var left: int = 0 if only.is_empty() else int(imods[sk_v]) - n
+				if left > 0:
+					imods[sk_v] = left
+				else:
 					imods.erase(sk_v)
 			player["skill_mods"] = imods
 			logs.append("улучшения навыков сброшены")
@@ -1127,6 +1133,8 @@ static func _drop_items(verb: String, node: Dictionary, player: Dictionary, logs
 		logs.append("нечего сбрасывать")
 		return
 	var drop: int = _amount(node)
+	if bool(node.get("half", false)):
+		drop = (idx as Array).size() / 2  # «сбросьте половину» — с округлением вниз
 	if node.has("keep"):
 		drop = maxi(0, (idx as Array).size() - int(node["keep"]))
 	drop = mini(drop, (idx as Array).size())
@@ -1167,6 +1175,19 @@ static func _count_source(
 	match source:
 		"gatesMatchingOmen":
 			return int(ctx.get("gates_matching_omen", 1))
+		"possessionsWithTrait":
+			# «за каждую Вещь или Безделушку» (Накопительство): активы с любым из traits.
+			var want: Array = spec.get("traits", [])
+			var cnt: int = 0
+			for it_v: Variant in player.get("items", []):
+				var tr_list: Array = AssetCatalog.by_id(AssetCatalog.entry_id(it_v)).get(
+					"traits", []
+				)
+				for t_v: Variant in want:
+					if tr_list.has(t_v):
+						cnt += 1
+						break
+			return cnt
 		"spellsHeld":
 			# «за каждое ваше заклинание» (Договор с Йог-Сототом).
 			var sp: int = 0

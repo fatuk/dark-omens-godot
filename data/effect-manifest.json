@@ -1263,6 +1263,21 @@
 	  "targets": null,
 	  "describeKey": "VERB_IGNORE_MONSTERS"
 	},
+	"flipCondition": {
+	  "kind": "board",
+	  "params": [
+		{
+		  "name": "condition",
+		  "type": {
+			"t": "ref",
+			"of": "condition"
+		  },
+		  "required": true
+		}
+	  ],
+	  "targets": null,
+	  "describeKey": "VERB_FLIP_CONDITION"
+	},
 	"remoteClueEncounter": {
 	  "kind": "board",
 	  "params": [],

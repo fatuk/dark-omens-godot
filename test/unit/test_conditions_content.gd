@@ -21,6 +21,34 @@ const SEASON0 := {
 	"poisoned": 4,
 }
 
+# Все варианты EH (с дополнениями) у состояний, что уже есть в игре.
+const EH_TOTAL := {
+	"agreement": 4,
+	"amnesia": 6,
+	"backInjury": 5,
+	"blessed": 11,
+	"cursed": 11,
+	"darkPact": 9,
+	"debt": 14,
+	"despair": 4,
+	"detained": 5,
+	"diseased": 4,
+	"funding": 4,
+	"hallucinations": 5,
+	"haunted": 4,
+	"headInjury": 4,
+	"hunger": 4,
+	"hunted": 4,
+	"hypothermia": 8,
+	"infection": 4,
+	"internalInjury": 5,
+	"legInjury": 4,
+	"lostInTimeAndSpace": 8,
+	"paranoia": 4,
+	"poisoned": 4,
+	"righteous": 4,
+}
+
 var _nm: Node
 var _was_host: bool
 
@@ -45,11 +73,33 @@ func test_season0_backs_match_eh() -> void:
 	for cid: String in SEASON0:
 		var def: Dictionary = Conditions.get_def(cid)
 		assert_eq(String(def.get("season", "")), "core", "%s — сезон 0" % cid)
-		assert_eq((def.get("backs", []) as Array).size(), int(SEASON0[cid]), "%s: обороты EH" % cid)
+		var core: Array = (def.get("backs", []) as Array).filter(
+			func(b: Variant) -> bool: return String((b as Dictionary).get("season", "")) == "core"
+		)
+		assert_eq(core.size(), int(SEASON0[cid]), "%s: обороты сезона 0" % cid)
+
+
+func test_all_eh_variants_present() -> void:
+	for cid: String in EH_TOTAL:
+		var backs: Array = Conditions.get_def(cid).get("backs", [])
+		assert_eq(backs.size(), int(EH_TOTAL[cid]), "%s: все варианты EH" % cid)
+		for b_v: Variant in backs:
+			assert_false(String((b_v as Dictionary).get("season", "")).is_empty(), "сезон оборота")
+
+
+func test_backs_follow_table_seasons() -> void:
+	# Стол базового сезона: Долг тянет только 8 базовых оборотов из 14.
+	SeasonGate.set_room(["core"])
+	var room: Array = ConditionFlow._room_backs(Conditions.get_def("debt").get("backs", []))
+	assert_eq(room.size(), 8)
+	SeasonGate.set_room(["core", "mom"])
+	room = ConditionFlow._room_backs(Conditions.get_def("debt").get("backs", []))
+	assert_eq(room.size(), 10, "+ 2 варианта Гор Безумия")
+	SeasonGate.set_room(["core"])
 
 
 func test_every_back_resolves_and_is_translated() -> void:
-	for cid: String in SEASON0:
+	for cid: String in EH_TOTAL:
 		for b_v: Variant in Conditions.get_def(cid).get("backs", []):
 			var b: Dictionary = b_v
 			assert_has(["discard", "front"], String(b.get("then", "")), "%s: концовка" % b["id"])

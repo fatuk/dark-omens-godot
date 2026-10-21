@@ -41,7 +41,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "debt_debtCollector",
@@ -61,7 +62,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "debt_hitmen",
@@ -80,7 +82,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "debt_localAuthorities",
@@ -108,7 +111,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "debt_makeADeal",
@@ -128,7 +132,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "debt_unwillingServant",
@@ -147,7 +152,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "debt_bagMan",
@@ -169,7 +175,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "debt_poisonedMeal",
@@ -181,7 +188,113 @@
 							"condition": "poisoned"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
+				},
+				{
+					"id": "debt_debtToTheGhouls",
+					"name": "OUTCOME_DEBT_DEBT_TO_THE_GHOULS_NAME",
+					"text": "OUTCOME_DEBT_DEBT_TO_THE_GHOULS_TEXT",
+					"effect": [
+						{
+							"choice": [
+								{
+									"do": "loseHealth",
+									"amount": 3
+								},
+								{
+									"do": "loseAsset",
+									"trait": "ally",
+									"count": 1
+								}
+							]
+						}
+					],
+					"then": "discard",
+					"season": "mom"
+				},
+				{
+					"id": "debt_unfortunateAccident",
+					"name": "OUTCOME_DEBT_UNFORTUNATE_ACCIDENT_NAME",
+					"text": "OUTCOME_DEBT_UNFORTUNATE_ACCIDENT_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 1
+						},
+						{
+							"do": "gainCondition",
+							"condition": "legInjury"
+						}
+					],
+					"then": "discard",
+					"season": "mom"
+				},
+				{
+					"id": "debt_transferredDebt",
+					"name": "OUTCOME_DEBT_TRANSFERRED_DEBT_NAME",
+					"text": "OUTCOME_DEBT_TRANSFERRED_DEBT_TEXT",
+					"effect": [
+						{
+							"do": "gainCondition",
+							"condition": "agreement"
+						}
+					],
+					"then": "discard",
+					"season": "sr"
+				},
+				{
+					"id": "debt_bounty",
+					"name": "OUTCOME_DEBT_BOUNTY_NAME",
+					"text": "OUTCOME_DEBT_BOUNTY_TEXT",
+					"effect": [
+						{
+							"do": "gainCondition",
+							"kind": "pursuit"
+						}
+					],
+					"then": "discard",
+					"season": "soc"
+				},
+				{
+					"id": "debt_darkSummoning",
+					"name": "OUTCOME_DEBT_DARK_SUMMONING_NAME",
+					"text": "OUTCOME_DEBT_DARK_SUMMONING_TEXT",
+					"effect": [
+						{
+							"choice": [
+								{
+									"group": [
+										{
+											"do": "openGate"
+										}
+									]
+								},
+								{
+									"cost": {
+										"spend": "clue",
+										"amount": 1
+									},
+									"text": "COND_OPT_SPEND_CLUE"
+								}
+							]
+						}
+					],
+					"then": "discard",
+					"season": "td"
+				},
+				{
+					"id": "debt_darkExtraction",
+					"name": "OUTCOME_DEBT_DARK_EXTRACTION_NAME",
+					"text": "OUTCOME_DEBT_DARK_EXTRACTION_TEXT",
+					"effect": [
+						{
+							"do": "resolveReckoning",
+							"scope": "mythosInPlay"
+						}
+					],
+					"then": "discard",
+					"season": "cir"
 				}
 			],
 			"season": "core"
@@ -218,7 +331,8 @@
 							"target": "chosenInvestigator"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "darkPact_pactWithTheDarkMan",
@@ -230,7 +344,8 @@
 							"amount": 99
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "darkPact_pactWithYogsothoth",
@@ -248,7 +363,8 @@
 							"amount": 1
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "darkPact_allIsLost",
@@ -271,7 +387,66 @@
 							"keep": 1
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
+				},
+				{
+					"id": "darkPact_pactWithEibon",
+					"name": "OUTCOME_DARK_PACT_PACT_WITH_EIBON_NAME",
+					"text": "OUTCOME_DARK_PACT_PACT_WITH_EIBON_TEXT",
+					"effect": [],
+					"then": "discard",
+					"season": "mom"
+				},
+				{
+					"id": "darkPact_nightmareMeeting",
+					"name": "OUTCOME_DARK_PACT_NIGHTMARE_MEETING_NAME",
+					"text": "OUTCOME_DARK_PACT_NIGHTMARE_MEETING_TEXT",
+					"effect": [],
+					"then": "discard",
+					"season": "sr"
+				},
+				{
+					"id": "darkPact_unbreakableOath",
+					"name": "OUTCOME_DARK_PACT_UNBREAKABLE_OATH_NAME",
+					"text": "OUTCOME_DARK_PACT_UNBREAKABLE_OATH_TEXT",
+					"effect": [
+						{
+							"do": "impairSkill",
+							"skill": "all",
+							"amount": 2
+						}
+					],
+					"then": "discard",
+					"season": "soc"
+				},
+				{
+					"id": "darkPact_toTheAbyss",
+					"name": "OUTCOME_DARK_PACT_TO_THE_ABYSS_NAME",
+					"text": "OUTCOME_DARK_PACT_TO_THE_ABYSS_TEXT",
+					"effect": [
+						{
+							"choice": [
+								{
+									"do": "gainCondition",
+									"condition": "lostInTimeAndSpace"
+								},
+								{
+									"do": "openGate"
+								}
+							]
+						}
+					],
+					"then": "discard",
+					"season": "td"
+				},
+				{
+					"id": "darkPact_reapTheWhirlwind",
+					"name": "OUTCOME_DARK_PACT_REAP_THE_WHIRLWIND_NAME",
+					"text": "OUTCOME_DARK_PACT_REAP_THE_WHIRLWIND_TEXT",
+					"effect": [],
+					"then": "discard",
+					"season": "cir"
 				}
 			],
 			"season": "core"
@@ -323,7 +498,8 @@
 							"condition": "detained"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "amnesia_theTerribleTruth",
@@ -335,7 +511,8 @@
 							"condition": "darkPact"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "amnesia_unexplainedDebts",
@@ -347,7 +524,8 @@
 							"condition": "debt"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "amnesia_forbiddenWords",
@@ -359,7 +537,49 @@
 							"condition": "cursed"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
+				},
+				{
+					"id": "amnesia_forgottenDanger",
+					"name": "OUTCOME_AMNESIA_FORGOTTEN_DANGER_NAME",
+					"text": "OUTCOME_AMNESIA_FORGOTTEN_DANGER_TEXT",
+					"effect": [
+						{
+							"do": "loseSanity",
+							"amount": 1
+						},
+						{
+							"do": "gainCondition",
+							"kind": "pursuit"
+						}
+					],
+					"then": "discard",
+					"season": "mom"
+				},
+				{
+					"id": "amnesia_forgottenTalents",
+					"name": "OUTCOME_AMNESIA_FORGOTTEN_TALENTS_NAME",
+					"text": "OUTCOME_AMNESIA_FORGOTTEN_TALENTS_TEXT",
+					"effect": [
+						{
+							"do": "impairSkill",
+							"skill": "lore",
+							"amount": 1
+						},
+						{
+							"do": "impairSkill",
+							"skill": "influence",
+							"amount": 1
+						},
+						{
+							"do": "impairSkill",
+							"skill": "will",
+							"amount": 1
+						}
+					],
+					"then": "discard",
+					"season": "utp"
 				}
 			],
 			"season": "core"
@@ -415,7 +635,8 @@
 							}
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "paranoia_kleptomania",
@@ -438,7 +659,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "paranoia_violentOutbursts",
@@ -448,7 +670,8 @@
 						{
 							"do": "loseHealth",
 							"amount": 2,
-							"target": "eachOnSpace"
+							"target": "eachOnSpace",
+							"excludeSelf": true
 						},
 						{
 							"do": "loseAsset",
@@ -456,7 +679,8 @@
 							"count": 1
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "paranoia_selfdoubt",
@@ -468,7 +692,8 @@
 							"all": true
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				}
 			],
 			"season": "core"
@@ -520,7 +745,8 @@
 							"amount": 99
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "hallucinations_swarming",
@@ -532,7 +758,8 @@
 							"amount": 3
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "hallucinations_theVoices",
@@ -544,7 +771,8 @@
 							"amount": 1
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "hallucinations_abducted",
@@ -556,7 +784,21 @@
 							"condition": "lostInTimeAndSpace"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
+				},
+				{
+					"id": "hallucinations_surrealDreams",
+					"name": "OUTCOME_HALLUCINATIONS_SURREAL_DREAMS_NAME",
+					"text": "OUTCOME_HALLUCINATIONS_SURREAL_DREAMS_TEXT",
+					"effect": [
+						{
+							"do": "gainCondition",
+							"condition": "lostInTimeAndSpace"
+						}
+					],
+					"then": "discard",
+					"season": "td"
 				}
 			],
 			"season": "core"
@@ -607,7 +849,8 @@
 							"do": "becomeDelayed"
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "legInjury_strangeRemedy",
@@ -637,7 +880,8 @@
 							]
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "legInjury_twistedKnee",
@@ -656,7 +900,8 @@
 							]
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "legInjury_infectedWound",
@@ -668,7 +913,8 @@
 							"kind": "illness"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				}
 			],
 			"season": "core"
@@ -720,7 +966,8 @@
 							"amount": 1
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "internalInjury_excruciatingPain",
@@ -732,7 +979,8 @@
 							"amount": 3
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "internalInjury_internalBleeding",
@@ -747,7 +995,8 @@
 							"do": "becomeDelayed"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "internalInjury_fadingHealth",
@@ -759,7 +1008,21 @@
 							"kind": "illness"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
+				},
+				{
+					"id": "internalInjury_bloodLoss",
+					"name": "OUTCOME_INTERNAL_INJURY_BLOOD_LOSS_NAME",
+					"text": "OUTCOME_INTERNAL_INJURY_BLOOD_LOSS_TEXT",
+					"effect": [
+						{
+							"do": "gainCondition",
+							"condition": "hypothermia"
+						}
+					],
+					"then": "discard",
+					"season": "mom"
 				}
 			],
 			"season": "core"
@@ -812,7 +1075,8 @@
 							"keep": 1
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "backInjury_muscleSpasms",
@@ -828,7 +1092,8 @@
 							"do": "becomeDelayed"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "backInjury_nerveDamage",
@@ -841,7 +1106,8 @@
 							"count": 1
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "backInjury_unnaturalScars",
@@ -868,7 +1134,32 @@
 							"onFail": []
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
+				},
+				{
+					"id": "backInjury_cripplingInjury",
+					"name": "OUTCOME_BACK_INJURY_CRIPPLING_INJURY_NAME",
+					"text": "OUTCOME_BACK_INJURY_CRIPPLING_INJURY_TEXT",
+					"effect": [
+						{
+							"do": "impairSkill",
+							"skill": "observation",
+							"amount": 1
+						},
+						{
+							"do": "impairSkill",
+							"skill": "strength",
+							"amount": 1
+						},
+						{
+							"do": "impairSkill",
+							"skill": "will",
+							"amount": 1
+						}
+					],
+					"then": "discard",
+					"season": "utp"
 				}
 			],
 			"season": "core"
@@ -925,7 +1216,8 @@
 							]
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "poisoned_feverDreams",
@@ -948,7 +1240,8 @@
 							]
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "poisoned_medicalAssistance",
@@ -990,7 +1283,8 @@
 							}
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "poisoned_persistingIllness",
@@ -1014,7 +1308,8 @@
 							]
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				}
 			],
 			"season": "core"
@@ -1058,14 +1353,16 @@
 							"where": "self"
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "cursed_karmicJustice",
 					"name": "OUTCOME_CURSED_KARMIC_JUSTICE_NAME",
 					"text": "OUTCOME_CURSED_KARMIC_JUSTICE_TEXT",
 					"effect": [],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "cursed_theInnsmouthLook",
@@ -1090,7 +1387,8 @@
 							}
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "cursed_aDarkBetrayal",
@@ -1102,7 +1400,8 @@
 							"monster": "doppelganger"
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "cursed_curseOfTheSerpent",
@@ -1127,7 +1426,8 @@
 							}
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "cursed_tainted",
@@ -1140,7 +1440,104 @@
 							"target": "chosenInvestigator"
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
+				},
+				{
+					"id": "cursed_beastlyHunger",
+					"name": "OUTCOME_CURSED_BEASTLY_HUNGER_NAME",
+					"text": "OUTCOME_CURSED_BEASTLY_HUNGER_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 99,
+							"when": {
+								"kind": "hasCondition",
+								"condition": "hunger"
+							}
+						},
+						{
+							"do": "loseSanity",
+							"amount": 2,
+							"when": {
+								"kind": "hasCondition",
+								"condition": "hunger",
+								"not": true
+							}
+						},
+						{
+							"do": "gainCondition",
+							"condition": "hunger",
+							"when": {
+								"kind": "hasCondition",
+								"condition": "hunger",
+								"not": true
+							}
+						}
+					],
+					"then": "discard",
+					"season": "mom"
+				},
+				{
+					"id": "cursed_cosmicInstability",
+					"name": "OUTCOME_CURSED_COSMIC_INSTABILITY_NAME",
+					"text": "OUTCOME_CURSED_COSMIC_INSTABILITY_TEXT",
+					"effect": [
+						{
+							"do": "openGate",
+							"repeat": 2
+						}
+					],
+					"then": "discard",
+					"season": "sr"
+				},
+				{
+					"id": "cursed_ineptitude",
+					"name": "OUTCOME_CURSED_INEPTITUDE_NAME",
+					"text": "OUTCOME_CURSED_INEPTITUDE_TEXT",
+					"effect": [
+						{
+							"do": "impairSkill",
+							"skill": "all",
+							"amount": 2
+						}
+					],
+					"then": "discard",
+					"season": "utp"
+				},
+				{
+					"id": "cursed_theYellowSign",
+					"name": "OUTCOME_CURSED_THE_YELLOW_SIGN_NAME",
+					"text": "OUTCOME_CURSED_THE_YELLOW_SIGN_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 99,
+							"when": {
+								"kind": "onLocationType",
+								"type": "city"
+							}
+						},
+						{
+							"do": "gainCondition",
+							"kind": "bane",
+							"when": {
+								"kind": "onLocationType",
+								"type": "city",
+								"not": true
+							}
+						}
+					],
+					"then": "discard",
+					"season": "soc"
+				},
+				{
+					"id": "cursed_cosmicEnmity",
+					"name": "OUTCOME_CURSED_COSMIC_ENMITY_NAME",
+					"text": "OUTCOME_CURSED_COSMIC_ENMITY_TEXT",
+					"effect": [],
+					"then": "discard",
+					"season": "cir"
 				}
 			]
 		},
@@ -1187,7 +1584,8 @@
 							"amount": 2
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "blessed_blessingOfNodens",
@@ -1208,7 +1606,8 @@
 							]
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "blessed_visionsOfHypnos",
@@ -1220,7 +1619,8 @@
 							"amount": 2
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "blessed_anointed",
@@ -1233,7 +1633,8 @@
 							"target": "chosenInvestigator"
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "blessed_lightOfKthanid",
@@ -1245,14 +1646,90 @@
 							"amount": 1
 						}
 					],
-					"then": "front"
+					"then": "front",
+					"season": "core"
 				},
 				{
 					"id": "blessed_readingTheStars",
 					"name": "OUTCOME_BLESSED_READING_THE_STARS_NAME",
 					"text": "OUTCOME_BLESSED_READING_THE_STARS_TEXT",
 					"effect": [],
-					"then": "front"
+					"then": "front",
+					"season": "core"
+				},
+				{
+					"id": "blessed_blessedLuck",
+					"name": "OUTCOME_BLESSED_BLESSED_LUCK_NAME",
+					"text": "OUTCOME_BLESSED_BLESSED_LUCK_TEXT",
+					"effect": [
+						{
+							"do": "gainCondition",
+							"condition": "funding"
+						}
+					],
+					"then": "front",
+					"season": "mom"
+				},
+				{
+					"id": "blessed_favored",
+					"name": "OUTCOME_BLESSED_FAVORED_NAME",
+					"text": "OUTCOME_BLESSED_FAVORED_TEXT",
+					"effect": [
+						{
+							"do": "gainCondition",
+							"kind": "boon"
+						}
+					],
+					"then": "front",
+					"season": "sr"
+				},
+				{
+					"id": "blessed_blessedTalent",
+					"name": "OUTCOME_BLESSED_BLESSED_TALENT_NAME",
+					"text": "OUTCOME_BLESSED_BLESSED_TALENT_TEXT",
+					"effect": [
+						{
+							"do": "improveSkill",
+							"skill": "choice",
+							"amount": 1
+						}
+					],
+					"then": "front",
+					"season": "utp"
+				},
+				{
+					"id": "blessed_blessedTalentSoc",
+					"name": "OUTCOME_BLESSED_BLESSED_TALENT_SOC_NAME",
+					"text": "OUTCOME_BLESSED_BLESSED_TALENT_SOC_TEXT",
+					"effect": [
+						{
+							"do": "gainCondition",
+							"kind": "talent"
+						}
+					],
+					"then": "front",
+					"season": "soc"
+				},
+				{
+					"id": "blessed_serenity",
+					"name": "OUTCOME_BLESSED_SERENITY_NAME",
+					"text": "OUTCOME_BLESSED_SERENITY_TEXT",
+					"effect": [
+						{
+							"choice": [
+								{
+									"do": "loseCondition",
+									"choose": true
+								},
+								{
+									"group": [],
+									"text": "COND_OPT_SKIP"
+								}
+							]
+						}
+					],
+					"then": "front",
+					"season": "cir"
 				}
 			]
 		},
@@ -1317,7 +1794,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "detained_holdingCell",
@@ -1351,7 +1829,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "detained_starvation",
@@ -1385,7 +1864,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "detained_contaminatedWater",
@@ -1422,7 +1902,43 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
+				},
+				{
+					"id": "detained_starvedForWeeks",
+					"name": "OUTCOME_DETAINED_STARVED_FOR_WEEKS_NAME",
+					"text": "OUTCOME_DETAINED_STARVED_FOR_WEEKS_TEXT",
+					"effect": [
+						{
+							"choice": [
+								{
+									"test": "strength",
+									"modifier": -1,
+									"onPass": [],
+									"onFail": [
+										{
+											"do": "loseHealth",
+											"amount": 2
+										},
+										{
+											"do": "gainCondition",
+											"condition": "hunger"
+										}
+									]
+								},
+								{
+									"cost": {
+										"spend": "clue",
+										"amount": 1
+									},
+									"text": "COND_OPT_SPEND_CLUE"
+								}
+							]
+						}
+					],
+					"then": "discard",
+					"season": "mom"
 				}
 			]
 		},
@@ -1477,7 +1993,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "lostInTimeAndSpace_strangeWorlds",
@@ -1500,7 +2017,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "lostInTimeAndSpace_replacedByAnother",
@@ -1528,7 +2046,8 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
 				},
 				{
 					"id": "lostInTimeAndSpace_guideFromTheVoid",
@@ -1563,7 +2082,122 @@
 							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "core"
+				},
+				{
+					"id": "lostInTimeAndSpace_againstTheTide",
+					"name": "OUTCOME_LOST_IN_TIME_AND_SPACE_AGAINST_THE_TIDE_NAME",
+					"text": "OUTCOME_LOST_IN_TIME_AND_SPACE_AGAINST_THE_TIDE_TEXT",
+					"effect": [
+						{
+							"test": "strength",
+							"modifier": -1,
+							"onPass": [
+								{
+									"do": "move"
+								}
+							],
+							"onFail": [
+								{
+									"do": "openGate",
+									"where": "self"
+								},
+								{
+									"do": "loseAsset",
+									"trait": "item",
+									"keep": 0
+								},
+								{
+									"do": "loseAsset",
+									"trait": "trinket",
+									"keep": 0
+								}
+							]
+						}
+					],
+					"then": "discard",
+					"season": "td"
+				},
+				{
+					"id": "lostInTimeAndSpace_dreamquest",
+					"name": "OUTCOME_LOST_IN_TIME_AND_SPACE_DREAMQUEST_NAME",
+					"text": "OUTCOME_LOST_IN_TIME_AND_SPACE_DREAMQUEST_TEXT",
+					"effect": [
+						{
+							"test": "will",
+							"modifier": -1,
+							"onPass": [
+								{
+									"do": "move"
+								}
+							],
+							"onFail": [
+								{
+									"do": "openGate",
+									"where": "self"
+								},
+								{
+									"do": "loseClue",
+									"amount": 99
+								}
+							]
+						}
+					],
+					"then": "discard",
+					"season": "td"
+				},
+				{
+					"id": "lostInTimeAndSpace_lostToTime",
+					"name": "OUTCOME_LOST_IN_TIME_AND_SPACE_LOST_TO_TIME_NAME",
+					"text": "OUTCOME_LOST_IN_TIME_AND_SPACE_LOST_TO_TIME_TEXT",
+					"effect": [
+						{
+							"test": "lore",
+							"modifier": -1,
+							"onPass": [
+								{
+									"do": "move"
+								}
+							],
+							"onFail": [
+								{
+									"do": "openGate",
+									"where": "self"
+								}
+							]
+						}
+					],
+					"then": "discard",
+					"season": "td"
+				},
+				{
+					"id": "lostInTimeAndSpace_onward",
+					"name": "OUTCOME_LOST_IN_TIME_AND_SPACE_ONWARD_NAME",
+					"text": "OUTCOME_LOST_IN_TIME_AND_SPACE_ONWARD_TEXT",
+					"effect": [
+						{
+							"test": "will",
+							"modifier": -1,
+							"onPass": [
+								{
+									"do": "move"
+								}
+							],
+							"onFail": [
+								{
+									"do": "openGate",
+									"where": "self"
+								},
+								{
+									"do": "gainCondition",
+									"condition": "cursed"
+								}
+							]
+						}
+					],
+					"then": "discard",
+					"season": "td"
 				}
 			]
 		},
@@ -1609,40 +2243,64 @@
 			],
 			"backs": [
 				{
-					"id": "splittingHeadache",
-					"name": "OUTCOME_SPLITTING_HEADACHE_NAME",
-					"text": "OUTCOME_SPLITTING_HEADACHE_TEXT",
+					"id": "headInjury_brainAneurysm",
+					"name": "OUTCOME_HEAD_INJURY_BRAIN_ANEURYSM_NAME",
+					"text": "OUTCOME_HEAD_INJURY_BRAIN_ANEURYSM_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 3
+						}
+					],
+					"then": "discard",
+					"season": "sr"
+				},
+				{
+					"id": "headInjury_brainDamage",
+					"name": "OUTCOME_HEAD_INJURY_BRAIN_DAMAGE_NAME",
+					"text": "OUTCOME_HEAD_INJURY_BRAIN_DAMAGE_TEXT",
 					"effect": [
 						{
 							"do": "loseSanity",
 							"amount": 1
-						}
-					],
-					"then": "flip"
-				},
-				{
-					"id": "crushedFingers",
-					"name": "OUTCOME_CRUSHED_FINGERS_NAME",
-					"text": "OUTCOME_CRUSHED_FINGERS_TEXT",
-					"effect": [
-						{
-							"do": "loseAsset",
-							"count": 1
-						}
-					],
-					"then": "flip"
-				},
-				{
-					"id": "failingBody",
-					"name": "OUTCOME_FAILING_BODY_NAME",
-					"text": "OUTCOME_FAILING_BODY_TEXT",
-					"effect": [
+						},
 						{
 							"do": "loseImprovement",
-							"count": 1
+							"all": true
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "sr"
+				},
+				{
+					"id": "headInjury_concussion",
+					"name": "OUTCOME_HEAD_INJURY_CONCUSSION_NAME",
+					"text": "OUTCOME_HEAD_INJURY_CONCUSSION_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 1
+						},
+						{
+							"do": "gainCondition",
+							"condition": "amnesia"
+						}
+					],
+					"then": "discard",
+					"season": "sr"
+				},
+				{
+					"id": "headInjury_splittingHeadache",
+					"name": "OUTCOME_HEAD_INJURY_SPLITTING_HEADACHE_NAME",
+					"text": "OUTCOME_HEAD_INJURY_SPLITTING_HEADACHE_TEXT",
+					"effect": [
+						{
+							"do": "loseSanity",
+							"amount": 3
+						}
+					],
+					"then": "discard",
+					"season": "sr"
 				}
 			],
 			"season": "sr"
@@ -1661,58 +2319,90 @@
 			],
 			"backs": [
 				{
-					"id": "blessingOfNodens",
-					"name": "OUTCOME_BLESSING_OF_NODENS_NAME",
-					"text": "OUTCOME_BLESSING_OF_NODENS_TEXT",
+					"id": "righteous_bringTheFightToThem",
+					"name": "OUTCOME_RIGHTEOUS_BRING_THE_FIGHT_TO_THEM_NAME",
+					"text": "OUTCOME_RIGHTEOUS_BRING_THE_FIGHT_TO_THEM_TEXT",
 					"effect": [
 						{
-							"do": "discardMonster",
-							"count": 1,
-							"target": "chosen",
-							"optional": true
+							"choice": [
+								{
+									"do": "placeEldritchToken",
+									"where": "self"
+								},
+								{
+									"do": "gainClue",
+									"amount": 2
+								}
+							]
 						}
 					],
-					"then": "flip"
+					"then": "discard",
+					"season": "sr"
 				},
 				{
-					"id": "guidingLight",
-					"name": "OUTCOME_GUIDING_LIGHT_NAME",
-					"text": "OUTCOME_GUIDING_LIGHT_TEXT",
+					"id": "righteous_daringRescue",
+					"name": "OUTCOME_RIGHTEOUS_DARING_RESCUE_NAME",
+					"text": "OUTCOME_RIGHTEOUS_DARING_RESCUE_TEXT",
 					"effect": [
 						{
-							"do": "healSanity",
-							"amount": 1
+							"do": "damageMonster",
+							"amount": 5,
+							"target": "chosenMonster"
 						}
 					],
-					"then": "flip"
+					"then": "discard",
+					"season": "sr"
 				},
 				{
-					"id": "secondWind",
-					"name": "OUTCOME_SECOND_WIND_NAME",
-					"text": "OUTCOME_SECOND_WIND_TEXT",
+					"id": "righteous_silverTwilightAlliance",
+					"name": "OUTCOME_RIGHTEOUS_SILVER_TWILIGHT_ALLIANCE_NAME",
+					"text": "OUTCOME_RIGHTEOUS_SILVER_TWILIGHT_ALLIANCE_TEXT",
 					"effect": [
 						{
-							"do": "healHealth",
-							"amount": 1
+							"choice": [
+								{
+									"do": "closeGate"
+								},
+								{
+									"do": "retreatDoom",
+									"amount": 1
+								}
+							]
 						}
 					],
-					"then": "flip"
+					"then": "discard",
+					"season": "sr"
 				},
 				{
-					"id": "answeredPrayer",
-					"name": "OUTCOME_ANSWERED_PRAYER_NAME",
-					"text": "OUTCOME_ANSWERED_PRAYER_TEXT",
+					"id": "righteous_thatWhichDoesNotKillUs",
+					"name": "OUTCOME_RIGHTEOUS_THAT_WHICH_DOES_NOT_KILL_US_NAME",
+					"text": "OUTCOME_RIGHTEOUS_THAT_WHICH_DOES_NOT_KILL_US_TEXT",
 					"effect": [
 						{
-							"do": "healHealth",
-							"amount": 1
-						},
-						{
-							"do": "healSanity",
-							"amount": 1
+							"choice": [
+								{
+									"do": "loseCondition",
+									"choose": true
+								},
+								{
+									"group": [
+										{
+											"do": "improveSkill",
+											"skill": "choice",
+											"amount": 1
+										},
+										{
+											"do": "improveSkill",
+											"skill": "choice",
+											"amount": 1
+										}
+									]
+								}
+							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "sr"
 				}
 			],
 			"season": "sr"
@@ -1739,56 +2429,76 @@
 			],
 			"backs": [
 				{
-					"id": "illOmen",
-					"name": "OUTCOME_ILL_OMEN_NAME",
-					"text": "OUTCOME_ILL_OMEN_TEXT",
-					"effect": [
-						{
-							"do": "loseSanity",
-							"amount": 1
-						}
-					],
-					"then": "flip"
-				},
-				{
-					"id": "coldHand",
-					"name": "OUTCOME_COLD_HAND_NAME",
-					"text": "OUTCOME_COLD_HAND_TEXT",
-					"effect": [
-						{
-							"do": "loseSanity",
-							"amount": 1
-						}
-					],
-					"then": "flip"
-				},
-				{
-					"id": "restlessSpirit",
-					"name": "OUTCOME_RESTLESS_SPIRIT_NAME",
-					"text": "OUTCOME_RESTLESS_SPIRIT_TEXT",
-					"effect": [
-						{
-							"do": "loseHealth",
-							"amount": 1
-						}
-					],
-					"then": "flip"
-				},
-				{
-					"id": "deepeningShadow",
-					"name": "OUTCOME_DEEPENING_SHADOW_NAME",
-					"text": "OUTCOME_DEEPENING_SHADOW_TEXT",
+					"id": "haunted_ghastlyFollower",
+					"name": "OUTCOME_HAUNTED_GHASTLY_FOLLOWER_NAME",
+					"text": "OUTCOME_HAUNTED_GHASTLY_FOLLOWER_TEXT",
 					"effect": [
 						{
 							"do": "loseSanity",
 							"amount": 1
 						},
 						{
-							"do": "loseHealth",
+							"do": "impairSkill",
+							"skill": "influence",
 							"amount": 1
 						}
 					],
-					"then": "discard"
+					"then": "front",
+					"season": "utp"
+				},
+				{
+					"id": "haunted_travelingPhantom",
+					"name": "OUTCOME_HAUNTED_TRAVELING_PHANTOM_NAME",
+					"text": "OUTCOME_HAUNTED_TRAVELING_PHANTOM_TEXT",
+					"effect": [
+						{
+							"do": "loseFocus",
+							"amount": 1
+						},
+						{
+							"do": "impairSkill",
+							"skill": "observation",
+							"amount": 1
+						}
+					],
+					"then": "front",
+					"season": "utp"
+				},
+				{
+					"id": "haunted_visitingSpecter",
+					"name": "OUTCOME_HAUNTED_VISITING_SPECTER_NAME",
+					"text": "OUTCOME_HAUNTED_VISITING_SPECTER_TEXT",
+					"effect": [
+						{
+							"do": "loseClue",
+							"amount": 1
+						},
+						{
+							"do": "impairSkill",
+							"skill": "lore",
+							"amount": 1
+						}
+					],
+					"then": "front",
+					"season": "utp"
+				},
+				{
+					"id": "haunted_wailingBanshee",
+					"name": "OUTCOME_HAUNTED_WAILING_BANSHEE_NAME",
+					"text": "OUTCOME_HAUNTED_WAILING_BANSHEE_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 1
+						},
+						{
+							"do": "impairSkill",
+							"skill": "strength",
+							"amount": 1
+						}
+					],
+					"then": "front",
+					"season": "utp"
 				}
 			],
 			"season": "utp"
@@ -1821,39 +2531,129 @@
 			],
 			"backs": [
 				{
-					"id": "selfDoubt",
-					"name": "OUTCOME_SELF_DOUBT_NAME",
-					"text": "OUTCOME_SELF_DOUBT_TEXT",
+					"id": "despair_accursedMemories",
+					"name": "OUTCOME_DESPAIR_ACCURSED_MEMORIES_NAME",
+					"text": "OUTCOME_DESPAIR_ACCURSED_MEMORIES_TEXT",
 					"effect": [
 						{
-							"do": "loseImprovement"
+							"test": "strength",
+							"modifier": 0,
+							"onPass": [
+								{
+									"do": "discardCard"
+								}
+							],
+							"onFail": [
+								{
+									"do": "loseClue",
+									"amount": 2
+								}
+							]
 						}
 					],
-					"then": "discard"
+					"then": "front",
+					"season": "utp"
 				},
 				{
-					"id": "fitOfLaughter",
-					"name": "OUTCOME_FIT_OF_LAUGHTER_NAME",
-					"text": "OUTCOME_FIT_OF_LAUGHTER_TEXT",
+					"id": "despair_horrifyingKnowledge",
+					"name": "OUTCOME_DESPAIR_HORRIFYING_KNOWLEDGE_NAME",
+					"text": "OUTCOME_DESPAIR_HORRIFYING_KNOWLEDGE_TEXT",
 					"effect": [
 						{
-							"do": "loseSanity",
-							"amount": 1
+							"test": "will",
+							"modifier": -1,
+							"onPass": [
+								{
+									"do": "discardCard"
+								}
+							],
+							"onFail": [
+								{
+									"choice": [
+										{
+											"do": "impairSkill",
+											"skill": "lore",
+											"amount": 1
+										},
+										{
+											"do": "impairSkill",
+											"skill": "observation",
+											"amount": 1
+										}
+									]
+								}
+							]
 						}
 					],
-					"then": "flip"
+					"then": "front",
+					"season": "utp"
 				},
 				{
-					"id": "fracturedMind",
-					"name": "OUTCOME_FRACTURED_MIND_NAME",
-					"text": "OUTCOME_FRACTURED_MIND_TEXT",
+					"id": "despair_madhouse",
+					"name": "OUTCOME_DESPAIR_MADHOUSE_NAME",
+					"text": "OUTCOME_DESPAIR_MADHOUSE_TEXT",
 					"effect": [
 						{
-							"do": "gainCondition",
-							"condition": "amnesia"
+							"test": "influence",
+							"modifier": -1,
+							"onPass": [
+								{
+									"do": "discardCard"
+								}
+							],
+							"onFail": [
+								{
+									"choice": [
+										{
+											"group": [
+												{
+													"do": "gainCondition",
+													"condition": "debt"
+												},
+												{
+													"do": "discardCard"
+												}
+											]
+										},
+										{
+											"group": [],
+											"text": "COND_OPT_SKIP"
+										}
+									]
+								}
+							],
+							"when": {
+								"kind": "onLocationType",
+								"type": "city"
+							}
 						}
 					],
-					"then": "discard"
+					"then": "front",
+					"season": "utp"
+				},
+				{
+					"id": "despair_neverendingSuffering",
+					"name": "OUTCOME_DESPAIR_NEVERENDING_SUFFERING_NAME",
+					"text": "OUTCOME_DESPAIR_NEVERENDING_SUFFERING_TEXT",
+					"effect": [
+						{
+							"test": "will",
+							"modifier": -1,
+							"onPass": [
+								{
+									"do": "discardCard"
+								}
+							],
+							"onFail": [
+								{
+									"do": "gainCondition",
+									"kind": "injury"
+								}
+							]
+						}
+					],
+					"then": "front",
+					"season": "utp"
 				}
 			],
 			"season": "utp"
@@ -1897,35 +2697,70 @@
 			],
 			"backs": [
 				{
-					"id": "contagion",
-					"name": "OUTCOME_CONTAGION_NAME",
-					"text": "OUTCOME_CONTAGION_TEXT",
+					"id": "diseased_deformities",
+					"name": "OUTCOME_DISEASED_DEFORMITIES_NAME",
+					"text": "OUTCOME_DISEASED_DEFORMITIES_TEXT",
+					"effect": [
+						{
+							"choice": [
+								{
+									"do": "impairSkill",
+									"skill": "influence",
+									"amount": 1
+								},
+								{
+									"do": "impairSkill",
+									"skill": "strength",
+									"amount": 1
+								}
+							]
+						}
+					],
+					"then": "front",
+					"season": "utp"
+				},
+				{
+					"id": "diseased_feverishDelusions",
+					"name": "OUTCOME_DISEASED_FEVERISH_DELUSIONS_NAME",
+					"text": "OUTCOME_DISEASED_FEVERISH_DELUSIONS_TEXT",
+					"effect": [
+						{
+							"do": "loseSanity",
+							"amount": 1
+						},
+						{
+							"do": "gainCondition",
+							"condition": "hallucinations"
+						}
+					],
+					"then": "discard",
+					"season": "utp"
+				},
+				{
+					"id": "diseased_jaundice",
+					"name": "OUTCOME_DISEASED_JAUNDICE_NAME",
+					"text": "OUTCOME_DISEASED_JAUNDICE_TEXT",
 					"effect": [
 						{
 							"do": "loseHealth",
 							"amount": 1
 						}
 					],
-					"then": "flip"
+					"then": "front",
+					"season": "utp"
 				},
 				{
-					"id": "feverishDelirium",
-					"name": "OUTCOME_FEVERISH_DELIRIUM_NAME",
-					"text": "OUTCOME_FEVERISH_DELIRIUM_TEXT",
+					"id": "diseased_mummification",
+					"name": "OUTCOME_DISEASED_MUMMIFICATION_NAME",
+					"text": "OUTCOME_DISEASED_MUMMIFICATION_TEXT",
 					"effect": [
 						{
-							"do": "gainCondition",
-							"condition": "amnesia"
+							"do": "loseHealth",
+							"amount": 3
 						}
 					],
-					"then": "discard"
-				},
-				{
-					"id": "mendingFlesh",
-					"name": "OUTCOME_MENDING_FLESH_NAME",
-					"text": "OUTCOME_MENDING_FLESH_TEXT",
-					"effect": [],
-					"then": "discard"
+					"then": "discard",
+					"season": "utp"
 				}
 			],
 			"season": "utp"
@@ -1964,7 +2799,148 @@
 				}
 			],
 			"onReckoning": [],
-			"season": "mom"
+			"season": "mom",
+			"backs": [
+				{
+					"id": "hypothermia_caughtInTheCold",
+					"name": "OUTCOME_HYPOTHERMIA_CAUGHT_IN_THE_COLD_NAME",
+					"text": "OUTCOME_HYPOTHERMIA_CAUGHT_IN_THE_COLD_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 1
+						},
+						{
+							"do": "gainCondition",
+							"kind": "madness"
+						}
+					],
+					"then": "front",
+					"season": "mom"
+				},
+				{
+					"id": "hypothermia_chillHaunting",
+					"name": "OUTCOME_HYPOTHERMIA_CHILL_HAUNTING_NAME",
+					"text": "OUTCOME_HYPOTHERMIA_CHILL_HAUNTING_TEXT",
+					"effect": [
+						{
+							"dieRoll": [
+								{
+									"on": "1-2",
+									"then": [
+										{
+											"do": "gainCondition",
+											"kind": "bane"
+										}
+									]
+								}
+							]
+						}
+					],
+					"then": "front",
+					"season": "mom"
+				},
+				{
+					"id": "hypothermia_chilledToTheBone",
+					"name": "OUTCOME_HYPOTHERMIA_CHILLED_TO_THE_BONE_NAME",
+					"text": "OUTCOME_HYPOTHERMIA_CHILLED_TO_THE_BONE_TEXT",
+					"effect": [
+						{
+							"do": "becomeDelayed"
+						}
+					],
+					"then": "front",
+					"season": "mom"
+				},
+				{
+					"id": "hypothermia_chillingBlindness",
+					"name": "OUTCOME_HYPOTHERMIA_CHILLING_BLINDNESS_NAME",
+					"text": "OUTCOME_HYPOTHERMIA_CHILLING_BLINDNESS_TEXT",
+					"effect": [
+						{
+							"do": "loseSanity",
+							"amount": 1
+						},
+						{
+							"do": "loseImprovement",
+							"skill": "will",
+							"amount": 1
+						}
+					],
+					"then": "front",
+					"season": "mom"
+				},
+				{
+					"id": "hypothermia_coldShock",
+					"name": "OUTCOME_HYPOTHERMIA_COLD_SHOCK_NAME",
+					"text": "OUTCOME_HYPOTHERMIA_COLD_SHOCK_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 1
+						},
+						{
+							"do": "loseSanity",
+							"amount": 1
+						}
+					],
+					"then": "front",
+					"season": "mom"
+				},
+				{
+					"id": "hypothermia_frostBite",
+					"name": "OUTCOME_HYPOTHERMIA_FROST_BITE_NAME",
+					"text": "OUTCOME_HYPOTHERMIA_FROST_BITE_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 1
+						},
+						{
+							"do": "loseImprovement",
+							"skill": "strength",
+							"amount": 1
+						}
+					],
+					"then": "front",
+					"season": "mom"
+				},
+				{
+					"id": "hypothermia_numbness",
+					"name": "OUTCOME_HYPOTHERMIA_NUMBNESS_NAME",
+					"text": "OUTCOME_HYPOTHERMIA_NUMBNESS_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 1
+						},
+						{
+							"do": "gainCondition",
+							"kind": "injury"
+						}
+					],
+					"then": "front",
+					"season": "mom"
+				},
+				{
+					"id": "hypothermia_trappedByTheCold",
+					"name": "OUTCOME_HYPOTHERMIA_TRAPPED_BY_THE_COLD_NAME",
+					"text": "OUTCOME_HYPOTHERMIA_TRAPPED_BY_THE_COLD_TEXT",
+					"effect": [
+						{
+							"do": "loseSanity",
+							"amount": 1
+						},
+						{
+							"do": "gainCondition",
+							"kind": "injury"
+						}
+					],
+					"then": "front",
+					"season": "mom"
+				}
+			],
+			"onDuplicate": "flip"
 		},
 		{
 			"id": "funding",
@@ -1980,35 +2956,81 @@
 			],
 			"backs": [
 				{
-					"id": "compoundingDebt",
-					"name": "OUTCOME_COMPOUNDING_DEBT_NAME",
-					"text": "OUTCOME_COMPOUNDING_DEBT_TEXT",
+					"id": "funding_allIn",
+					"name": "OUTCOME_FUNDING_ALL_IN_NAME",
+					"text": "OUTCOME_FUNDING_ALL_IN_TEXT",
 					"effect": [
 						{
-							"do": "loseClue",
-							"count": 2
+							"dieRoll": [
+								{
+									"on": "4-6",
+									"then": [
+										{
+											"do": "gainAsset",
+											"from": "reserve"
+										}
+									]
+								},
+								{
+									"on": "1-3",
+									"then": [
+										{
+											"do": "discardCard"
+										}
+									]
+								}
+							]
 						}
 					],
-					"then": "flip"
+					"then": "front",
+					"season": "mom"
 				},
 				{
-					"id": "favorCalledIn",
-					"name": "OUTCOME_FAVOR_CALLED_IN_NAME",
-					"text": "OUTCOME_FAVOR_CALLED_IN_TEXT",
+					"id": "funding_hiredGun",
+					"name": "OUTCOME_FUNDING_HIRED_GUN_NAME",
+					"text": "OUTCOME_FUNDING_HIRED_GUN_TEXT",
 					"effect": [
 						{
-							"do": "loseAsset",
-							"count": 1
+							"do": "damageMonster",
+							"amount": 3,
+							"target": "chosenMonster"
 						}
 					],
-					"then": "flip"
+					"then": "discard",
+					"season": "mom"
 				},
 				{
-					"id": "debtForgiven",
-					"name": "OUTCOME_DEBT_FORGIVEN_NAME",
-					"text": "OUTCOME_DEBT_FORGIVEN_TEXT",
-					"effect": [],
-					"then": "discard"
+					"id": "funding_mysteriousAuction",
+					"name": "OUTCOME_FUNDING_MYSTERIOUS_AUCTION_NAME",
+					"text": "OUTCOME_FUNDING_MYSTERIOUS_AUCTION_TEXT",
+					"effect": [
+						{
+							"do": "gainArtifact"
+						}
+					],
+					"then": "discard",
+					"season": "mom"
+				},
+				{
+					"id": "funding_payOff",
+					"name": "OUTCOME_FUNDING_PAY_OFF_NAME",
+					"text": "OUTCOME_FUNDING_PAY_OFF_TEXT",
+					"effect": [
+						{
+							"choice": [
+								{
+									"do": "placeEldritchToken",
+									"where": "self"
+								},
+								{
+									"do": "retreatDoom",
+									"amount": 1
+								}
+							]
+						}
+					],
+					"then": "discard",
+					"season": "mom"
 				}
 			],
 			"season": "mom"
@@ -2055,44 +3077,64 @@
 			],
 			"backs": [
 				{
-					"id": "tremblingHands",
-					"name": "OUTCOME_TREMBLING_HANDS_NAME",
-					"text": "OUTCOME_TREMBLING_HANDS_TEXT",
+					"id": "infection_bloodPoisoning",
+					"name": "OUTCOME_INFECTION_BLOOD_POISONING_NAME",
+					"text": "OUTCOME_INFECTION_BLOOD_POISONING_TEXT",
 					"effect": [
 						{
 							"do": "loseHealth",
 							"amount": 1
 						}
 					],
-					"then": "flip"
+					"then": "front",
+					"season": "mom"
 				},
 				{
-					"id": "creepingChills",
-					"name": "OUTCOME_CREEPING_CHILLS_NAME",
-					"text": "OUTCOME_CREEPING_CHILLS_TEXT",
+					"id": "infection_lesionsAndSwelling",
+					"name": "OUTCOME_INFECTION_LESIONS_AND_SWELLING_NAME",
+					"text": "OUTCOME_INFECTION_LESIONS_AND_SWELLING_TEXT",
 					"effect": [
 						{
-							"do": "loseHealth",
-							"amount": 1
+							"do": "loseAsset",
+							"trait": "ally",
+							"half": true
 						}
 					],
-					"then": "flip"
+					"then": "front",
+					"season": "mom"
 				},
 				{
-					"id": "bedridden",
-					"name": "OUTCOME_BEDRIDDEN_NAME",
-					"text": "OUTCOME_BEDRIDDEN_TEXT",
+					"id": "infection_hemorrhagicFever",
+					"name": "OUTCOME_INFECTION_HEMORRHAGIC_FEVER_NAME",
+					"text": "OUTCOME_INFECTION_HEMORRHAGIC_FEVER_TEXT",
 					"effect": [
 						{
 							"do": "loseHealth",
-							"amount": 1
+							"amount": 2
 						},
 						{
 							"do": "loseSanity",
-							"amount": 1
+							"amount": 2
 						}
 					],
-					"then": "flip"
+					"then": "discard",
+					"season": "mom"
+				},
+				{
+					"id": "infection_septicShock",
+					"name": "OUTCOME_INFECTION_SEPTIC_SHOCK_NAME",
+					"text": "OUTCOME_INFECTION_SEPTIC_SHOCK_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 3
+						},
+						{
+							"do": "becomeDelayed"
+						}
+					],
+					"then": "discard",
+					"season": "mom"
 				}
 			],
 			"season": "mom"
@@ -2139,43 +3181,82 @@
 			],
 			"backs": [
 				{
-					"id": "compulsion",
-					"name": "OUTCOME_COMPULSION_NAME",
-					"text": "OUTCOME_COMPULSION_TEXT",
+					"id": "hunger_bloodLust",
+					"name": "OUTCOME_HUNGER_BLOOD_LUST_NAME",
+					"text": "OUTCOME_HUNGER_BLOOD_LUST_TEXT",
 					"effect": [
 						{
-							"do": "loseClue",
-							"count": 1
-						}
-					],
-					"then": "flip"
-				},
-				{
-					"id": "selfDoubt",
-					"name": "OUTCOME_SELF_DOUBT_NAME",
-					"text": "OUTCOME_SELF_DOUBT_TEXT",
-					"effect": [
-						{
-							"do": "loseImprovement"
-						}
-					],
-					"then": "discard"
-				},
-				{
-					"id": "raving",
-					"name": "OUTCOME_RAVING_NAME",
-					"text": "OUTCOME_RAVING_TEXT",
-					"effect": [
+							"do": "loseHealth",
+							"amount": 2,
+							"target": "eachOnSpace",
+							"excludeSelf": true
+						},
 						{
 							"do": "loseSanity",
 							"amount": 1
 						},
 						{
-							"do": "loseClue",
+							"do": "loseAsset",
+							"trait": "ally",
 							"count": 1
 						}
 					],
-					"then": "discard"
+					"then": "front",
+					"season": "mom"
+				},
+				{
+					"id": "hunger_hoarding",
+					"name": "OUTCOME_HUNGER_HOARDING_NAME",
+					"text": "OUTCOME_HUNGER_HOARDING_TEXT",
+					"effect": [
+						{
+							"do": "gainAsset",
+							"trait": "trinket"
+						},
+						{
+							"do": "loseSanity",
+							"amount": 1,
+							"repeat": {
+								"source": "possessionsWithTrait",
+								"traits": [
+									"item",
+									"trinket"
+								]
+							}
+						}
+					],
+					"then": "discard",
+					"season": "mom"
+				},
+				{
+					"id": "hunger_overindulgence",
+					"name": "OUTCOME_HUNGER_OVERINDULGENCE_NAME",
+					"text": "OUTCOME_HUNGER_OVERINDULGENCE_TEXT",
+					"effect": [
+						{
+							"do": "loseHealth",
+							"amount": 1
+						},
+						{
+							"do": "loseSanity",
+							"amount": 1
+						}
+					],
+					"then": "front",
+					"season": "mom"
+				},
+				{
+					"id": "hunger_thirst",
+					"name": "OUTCOME_HUNGER_THIRST_NAME",
+					"text": "OUTCOME_HUNGER_THIRST_TEXT",
+					"effect": [
+						{
+							"do": "loseAsset",
+							"half": true
+						}
+					],
+					"then": "front",
+					"season": "mom"
 				}
 			],
 			"season": "mom"
@@ -2199,33 +3280,22 @@
 			],
 			"backs": [
 				{
-					"id": "theyFoundYou",
-					"name": "OUTCOME_THEY_FOUND_YOU_NAME",
-					"text": "OUTCOME_THEY_FOUND_YOU_TEXT",
+					"id": "hunted_huntingBeasts",
+					"name": "OUTCOME_HUNTED_HUNTING_BEASTS_NAME",
+					"text": "OUTCOME_HUNTED_HUNTING_BEASTS_TEXT",
 					"effect": [
 						{
-							"do": "loseHealth",
-							"amount": 1
+							"do": "spawnMonster",
+							"where": "self"
 						}
 					],
-					"then": "flip"
+					"then": "front",
+					"season": "mom"
 				},
 				{
-					"id": "closingIn",
-					"name": "OUTCOME_CLOSING_IN_NAME",
-					"text": "OUTCOME_CLOSING_IN_TEXT",
-					"effect": [
-						{
-							"do": "loseClue",
-							"count": 1
-						}
-					],
-					"then": "flip"
-				},
-				{
-					"id": "ambush",
-					"name": "OUTCOME_AMBUSH_NAME",
-					"text": "OUTCOME_AMBUSH_TEXT",
+					"id": "hunted_indescribableHorrors",
+					"name": "OUTCOME_HUNTED_INDESCRIBABLE_HORRORS_NAME",
+					"text": "OUTCOME_HUNTED_INDESCRIBABLE_HORRORS_TEXT",
 					"effect": [
 						{
 							"do": "loseHealth",
@@ -2236,38 +3306,46 @@
 							"amount": 1
 						}
 					],
-					"then": "discard"
+					"then": "front",
+					"season": "mom"
 				},
 				{
-					"id": "shelterRevealed",
-					"name": "OUTCOME_SHELTER_REVEALED_NAME",
-					"text": "OUTCOME_SHELTER_REVEALED_TEXT",
+					"id": "hunted_markedByYig",
+					"name": "OUTCOME_HUNTED_MARKED_BY_YIG_NAME",
+					"text": "OUTCOME_HUNTED_MARKED_BY_YIG_TEXT",
 					"effect": [
 						{
-							"do": "loseAsset",
-							"count": 1
+							"do": "loseHealth",
+							"amount": 1
+						},
+						{
+							"do": "loseSanity",
+							"amount": 1
+						},
+						{
+							"do": "gainCondition",
+							"condition": "detained"
 						}
 					],
-					"then": "flip"
+					"then": "discard",
+					"season": "mom"
 				},
 				{
-					"id": "coldTrail",
-					"name": "OUTCOME_COLD_TRAIL_NAME",
-					"text": "OUTCOME_COLD_TRAIL_TEXT",
-					"effect": [],
-					"then": "discard"
-				},
-				{
-					"id": "caughtOffGuard",
-					"name": "OUTCOME_CAUGHT_OFF_GUARD_NAME",
-					"text": "OUTCOME_CAUGHT_OFF_GUARD_TEXT",
+					"id": "hunted_predatorsAtEveryTurn",
+					"name": "OUTCOME_HUNTED_PREDATORS_AT_EVERY_TURN_NAME",
+					"text": "OUTCOME_HUNTED_PREDATORS_AT_EVERY_TURN_TEXT",
 					"effect": [
 						{
-							"do": "loseAsset",
-							"count": 1
+							"do": "loseSanity",
+							"amount": 2
+						},
+						{
+							"do": "gainCondition",
+							"condition": "hallucinations"
 						}
 					],
-					"then": "flip"
+					"then": "discard",
+					"season": "mom"
 				}
 			],
 			"season": "mom"
@@ -2294,44 +3372,78 @@
 			],
 			"backs": [
 				{
-					"id": "partnersBetrayal",
-					"name": "OUTCOME_PARTNERS_BETRAYAL_NAME",
-					"text": "OUTCOME_PARTNERS_BETRAYAL_TEXT",
+					"id": "agreement_brokenDeal",
+					"name": "OUTCOME_AGREEMENT_BROKEN_DEAL_NAME",
+					"text": "OUTCOME_AGREEMENT_BROKEN_DEAL_TEXT",
 					"effect": [
 						{
-							"do": "loseAsset",
-							"count": 1
+							"do": "loseHealth",
+							"amount": 2
 						},
 						{
-							"do": "loseClue",
-							"count": 1
+							"do": "loseSanity",
+							"amount": 2
+						},
+						{
+							"do": "loseAsset",
+							"half": true
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "sr"
 				},
 				{
-					"id": "hiddenClause",
-					"name": "OUTCOME_HIDDEN_CLAUSE_NAME",
-					"text": "OUTCOME_HIDDEN_CLAUSE_TEXT",
+					"id": "agreement_darkContract",
+					"name": "OUTCOME_AGREEMENT_DARK_CONTRACT_NAME",
+					"text": "OUTCOME_AGREEMENT_DARK_CONTRACT_TEXT",
 					"effect": [
 						{
 							"do": "gainCondition",
-							"condition": "agreement"
+							"condition": "darkPact"
+						},
+						{
+							"dieRoll": [
+								{
+									"on": "1",
+									"then": [
+										{
+											"do": "flipCondition",
+											"condition": "darkPact"
+										}
+									]
+								}
+							]
 						}
 					],
-					"then": "discard"
+					"then": "discard",
+					"season": "sr"
 				},
 				{
-					"id": "priceExacted",
-					"name": "OUTCOME_PRICE_EXACTED_NAME",
-					"text": "OUTCOME_PRICE_EXACTED_TEXT",
+					"id": "agreement_grislyDealings",
+					"name": "OUTCOME_AGREEMENT_GRISLY_DEALINGS_NAME",
+					"text": "OUTCOME_AGREEMENT_GRISLY_DEALINGS_TEXT",
 					"effect": [
 						{
-							"do": "loseAsset",
-							"count": 1
+							"do": "loseHealth",
+							"amount": 99,
+							"target": "chosenInvestigator"
 						}
 					],
-					"then": "flip"
+					"then": "discard",
+					"season": "sr"
+				},
+				{
+					"id": "agreement_shatteredConscience",
+					"name": "OUTCOME_AGREEMENT_SHATTERED_CONSCIENCE_NAME",
+					"text": "OUTCOME_AGREEMENT_SHATTERED_CONSCIENCE_TEXT",
+					"effect": [
+						{
+							"do": "loseSanity",
+							"amount": 99
+						}
+					],
+					"then": "discard",
+					"season": "sr"
 				}
 			],
 			"season": "sr"
@@ -2386,7 +3498,8 @@
 						{
 							"do": "discardCard"
 						}
-					]
+					],
+					"season": "core"
 				},
 				{
 					"id": "countingStalks",
@@ -2399,7 +3512,8 @@
 						{
 							"do": "discardCard"
 						}
-					]
+					],
+					"season": "core"
 				},
 				{
 					"id": "theRuleIsWritten",
@@ -2413,7 +3527,8 @@
 						{
 							"do": "discardCard"
 						}
-					]
+					],
+					"season": "core"
 				}
 			],
 			"season": "core"

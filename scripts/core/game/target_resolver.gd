@@ -110,7 +110,10 @@ func _resolve_targets(node: Dictionary) -> Array:
 			var loc: String = String(node.get("location", ""))
 			if loc.is_empty():
 				loc = String(_gs.players.get(_anchor_pid(node), {}).get("location", ""))
-			return _pids_at(loc)
+			var here: Array = _pids_at(loc)
+			if bool(node.get("excludeSelf", false)):
+				here.erase(_anchor_pid(node))  # «каждый ДРУГОЙ сыщик на вашей клетке»
+			return here
 		"chosenInvestigator", "chosen":
 			var pid: String = String(node.get("_target_pid", ""))
 			return [pid] if not pid.is_empty() and _gs.players.has(pid) else []

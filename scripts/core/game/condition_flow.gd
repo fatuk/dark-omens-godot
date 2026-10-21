@@ -100,7 +100,7 @@ func _reckon_condition_interactive(
 			"discardCard":
 				_discard_condition(pid, cid)
 			_:
-				_gs.apply_board_effect(node)
+				_gs.apply_board_effect(_anchored(node, pid))
 	ActionFeed.announce_deltas(_gs, pid, recon_before, _gs.players.get(pid, {}))  # лента Расплаты
 	ActionFeed.collect_gains(_gs, pid, recon_before, _gs.players.get(pid, {}))
 
@@ -237,7 +237,7 @@ func _apply_reckon_board(
 		"discardCard":
 			_discard_condition(pid, cid)
 		_:
-			_gs.apply_board_effect(node)
+			_gs.apply_board_effect(_anchored(node, pid))
 
 
 # ── Переворот: оборот — приключение с (опциональной) проверкой ────────────────
@@ -323,7 +323,7 @@ func _finish_flip(
 			"flipCard":
 				pass  # переворот внутри оборота — карта уже перевёрнута
 			_:
-				_gs.apply_board_effect(node)
+				_gs.apply_board_effect(_anchored(node, pid))
 	if end.is_empty():
 		var legacy := {"discard": "discard", "flip": "stay", "front": "front"}
 		end = String(legacy.get(String(back.get("then", "")), default_end))
@@ -352,7 +352,25 @@ func _pick_back(backs: Array, cid: String, flow: Dictionary, p: Dictionary = {})
 		for b_v: Variant in backs:
 			if String((b_v as Dictionary).get("id", "")) == forced:
 				return b_v
-	return backs[randi() % backs.size()]
+	var pool: Array = _room_backs(backs)
+	return pool[randi() % pool.size()]
+
+
+# Обороты из сезонов стола (варианты из дополнений — только когда стол их играет).
+# Ни одного (данные без сезонов) — все: карта без оборота хуже неточной.
+static func _room_backs(backs: Array) -> Array:
+	var out: Array = backs.filter(
+		func(b: Variant) -> bool: return SeasonGate.room_allows(b as Dictionary)
+	)
+	return out if not out.is_empty() else backs
+
+
+# Board-узел программы состояния — от его владельца: «на вашей клетке», «переверните
+# своё другое состояние» не должны уходить сыщику текущего хода.
+static func _anchored(node: Dictionary, pid: String) -> Dictionary:
+	if not node.has("_anchor_pid"):
+		node["_anchor_pid"] = pid
+	return node
 
 
 ## Хост: перевернуть состояние cid на руках сыщика вне Расплаты (повторное получение
@@ -469,7 +487,7 @@ func _free_back(cid: String, own_backs: Array, pid: String) -> String:
 		if not b.is_empty():
 			taken[b] = true
 	var free: Array = []
-	for b_v: Variant in own_backs:
+	for b_v: Variant in _room_backs(own_backs):
 		var bid: String = String((b_v as Dictionary).get("id", ""))
 		if not taken.has(bid):
 			free.append(bid)
