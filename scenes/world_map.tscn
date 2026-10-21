@@ -7,7 +7,6 @@
 [ext_resource type="PackedScene" uid="uid://3bhtlt42mo4g" path="res://scenes/ui/action_panel.tscn" id="5_action"]
 [ext_resource type="PackedScene" uid="uid://4l4004ynd7km" path="res://scenes/ui/encounter_modal.tscn" id="6_encmod"]
 [ext_resource type="PackedScene" uid="uid://cy2s73u4pffim" path="res://scenes/ui/location_sidebar.tscn" id="7_sidebar"]
-[ext_resource type="PackedScene" path="res://scenes/ui/mystery_sidebar.tscn" id="8_mystery"]
 [ext_resource type="PackedScene" path="res://scenes/ui/mythos_modal.tscn" id="9_mythosmod"]
 [ext_resource type="PackedScene" path="res://scenes/ui/encounter_choice_modal.tscn" id="10_choicemod"]
 [ext_resource type="PackedScene" path="res://scenes/ui/combat_modal.tscn" id="11_combatmod"]
@@ -48,8 +47,6 @@ unique_name_in_owner = true
 [node name="EncounterModal" parent="." unique_id=1267669935 instance=ExtResource("6_encmod")]
 
 [node name="LocationSidebar" parent="." unique_id=1931708197 instance=ExtResource("7_sidebar")]
-
-[node name="MysterySidebar" parent="." unique_id=1511901215 instance=ExtResource("8_mystery")]
 
 [node name="MythosModal" parent="." unique_id=419872754 instance=ExtResource("9_mythosmod")]
 

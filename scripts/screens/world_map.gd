@@ -73,7 +73,6 @@ var _travelling: bool = false  # идёт анимация перемещени�
 @onready var _camera: Camera2D = $Camera2D
 @onready var _game_panel: CanvasLayer = $GamePanel
 @onready var _sidebar: CanvasLayer = $LocationSidebar
-@onready var _mystery: CanvasLayer = $MysterySidebar
 @onready var _mythos_modal: CanvasLayer = $MythosModal
 
 var _map_layer: MapLayer
@@ -89,6 +88,7 @@ var _gate_vbox: VBoxContainer = null
 var _intro_step: int = 0  # 0=загрузка 1=Древний 2=Тайна 3=готово
 var _gate_rendered: int = -1  # последний отрисованный шаг
 var _revealed_mystery: int = -1  # индекс Тайны, чей ревил уже показали
+var _mystery_review: bool = false  # Тайну открыли повторно (клик по раунду), не ревил
 
 
 func _ready() -> void:
@@ -1173,8 +1173,15 @@ func _on_gallery_requested(loc_data: Dictionary) -> void:
 	modal.open(loc_data)
 
 
+# Клик по орбу раунда — повторно показать модалку текущей Тайны (с прогрессом).
+# Пока идёт интро (загрузка, Древний, ревил) — она и так на экране.
 func _on_round_clicked() -> void:
-	_mystery.toggle()
+	if _intro_step < 3 or GameState.current_mystery().is_empty():
+		return
+	_mystery_review = true
+	_intro_step = 2
+	_gate_rendered = -1
+	_refresh_campaign_gate()
 
 
 # ── Интро-гейт: загрузка → Древний → первая Тайна → карта ────────────────────
@@ -1274,7 +1281,11 @@ func _render_gate() -> void:
 			if not flavor.is_empty():
 				_gate_body(flavor)
 			_gate_body(String(m.get("text", "")))
-			_gate_button("INTRO_START", _on_gate_start)
+			if _mystery_review:
+				_gate_subtitle(_mystery_progress_text(m))  # сколько уже сделано
+				_gate_button("BTN_OK", _on_gate_start)
+			else:
+				_gate_button("INTRO_START", _on_gate_start)
 
 
 func _on_gate_next() -> void:
@@ -1284,7 +1295,29 @@ func _on_gate_next() -> void:
 
 func _on_gate_start() -> void:
 	_intro_step = 3
+	_mystery_review = false
 	_refresh_campaign_gate()
+
+
+# Прогресс Тайны одной строкой: жетоны на карте (tokensOnCard) или зачищенные
+# локации из нужных — и рок.
+func _mystery_progress_text(m: Dictionary) -> String:
+	var sc: Dictionary = m.get("solveCondition", {})
+	var target: int = int(sc.get("n", 1))
+	var progress: String = (
+		tr("MYSTERY_TOKENS_FMT") % [GameState.mystery_tokens_on_card, target]
+		if String(sc.get("kind", "")) == "tokensOnCard"
+		else tr("MYSTERY_PROGRESS_FMT") % [GameState.mystery_progress, target]
+	)
+	var doom: String = (
+		tr("MYSTERY_STATUS_FMT")
+		% [
+			GameState.active_mystery + 1,
+			GameState.doom,
+			int(GameState.campaign.get("doomClock", 0)),
+		]
+	)
+	return "%s · %s" % [progress, doom]
 
 
 # ── Хелперы наполнения гейта ──────────────────────────────────────────────────
