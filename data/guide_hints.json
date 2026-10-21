@@ -8,6 +8,11 @@
 		{"id": "combat", "on": "combat", "show": "over", "priority": 9, "lines": ["GUIDE_COMBAT_1", "GUIDE_COMBAT_2"]},
 		{"id": "shop", "on": "shop", "show": "over", "priority": 9, "lines": ["GUIDE_SHOP"]},
 		{"id": "mythos", "on": "mythos", "show": "over", "priority": 9, "lines": ["GUIDE_MYTHOS"]},
-		{"id": "reckoning", "on": "reckoning", "show": "over", "priority": 9, "lines": ["GUIDE_RECKONING"]}
+		{"id": "reckoning", "on": "reckoning", "show": "over", "priority": 9, "lines": ["GUIDE_RECKONING"]},
+		{"id": "location_open", "on": "locationOpen", "show": "over", "priority": 7, "lines": ["GUIDE_LOCATION_1", "GUIDE_LOCATION_2"]},
+		{"id": "location_clue", "on": "locationClue", "show": "over", "priority": 6, "lines": ["GUIDE_LOCATION_CLUE"]},
+		{"id": "location_gate", "on": "locationGate", "show": "over", "priority": 6, "lines": ["GUIDE_LOCATION_GATE"]},
+		{"id": "location_monster", "on": "locationMonster", "show": "over", "priority": 6, "lines": ["GUIDE_LOCATION_MONSTER"]},
+		{"id": "location_ally", "on": "locationAlly", "show": "over", "priority": 5, "lines": ["GUIDE_LOCATION_ALLY"]}
 	]
 }

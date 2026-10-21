@@ -42,6 +42,9 @@ const _FADE_OUT: float = 0.2
 
 var _lines: Array = []
 var _over_modals: bool = false
+# Правый край «сцены» профессора: −1 — край экрана (арт уходит за него), иначе он
+# встаёт левее этой линии — например, у открытой панели локации, чтобы её не закрыть.
+var _stand_right: float = -1.0
 var _index: int = 0
 var _closing: bool = false
 var _root: Control
@@ -54,11 +57,14 @@ var _more: Label
 ## Показать реплики наставника поверх сцены parent. Возвращает узел подсказки
 ## (его finished — когда игрок прочитал всё). over_modals — поверх открытых окон
 ## (подсказка ПРО это окно: встреча, бой, магазин); иначе — под модалками.
-static func say(parent: Node, lines: Array, over_modals: bool = false) -> GuideHint:
+static func say(
+	parent: Node, lines: Array, over_modals: bool = false, stand_right: float = -1.0
+) -> GuideHint:
 	var g := GuideHint.new()
 	g.name = "GuideHint"
 	g._lines = lines.duplicate()
 	g._over_modals = over_modals
+	g._stand_right = stand_right
 	parent.add_child(g)
 	return g
 
@@ -139,7 +145,8 @@ func _apply_padding() -> void:
 func _layout() -> void:
 	var vp: Vector2 = get_viewport().get_visible_rect().size
 	var art_size: Vector2 = _ART.get_size() * ART_SCALE
-	var art_pos := Vector2(vp.x + ART_OVERFLOW_X - art_size.x, vp.y - _HUD_H - art_size.y)
+	var right: float = vp.x + ART_OVERFLOW_X if _stand_right < 0.0 else _stand_right
+	var art_pos := Vector2(right - art_size.x, vp.y - _HUD_H - art_size.y)
 	_art.size = art_size
 	_art.position = art_pos
 	var finger: Vector2 = art_pos + _FINGER * ART_SCALE

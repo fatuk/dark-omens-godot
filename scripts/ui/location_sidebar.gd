@@ -414,6 +414,7 @@ func _apply_location(data: Dictionary) -> void:
 	_image.texture = _location_art(_loc_id)
 	_populate_items(_loc_id)
 	_refresh_actions()
+	get_tree().call_group("guide_director", "refresh")  # Армитедж расскажет о месте
 
 
 # Прячет панель, по завершении — подставляет _pending_data и открывает снова.
@@ -447,6 +448,17 @@ func close_panel() -> void:
 
 func is_open() -> bool:
 	return _is_open
+
+
+## Левый край панели, когда она выехала целиком (в координатах экрана) — сюда
+## встаёт Армитедж, рассказывая о месте, чтобы не закрыть саму панель.
+func open_left_edge() -> float:
+	return get_viewport().get_visible_rect().size.x - _panel_width
+
+
+## Локация, открытая в панели ("" — панель закрыта).
+func shown_location() -> String:
+	return _loc_id if _is_open else ""
 
 
 # ── Картинка локации ──────────────────────────────────────────────────────────

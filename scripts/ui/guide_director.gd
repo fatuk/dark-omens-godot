@@ -33,9 +33,15 @@ var _free_for: float = 0.0
 
 
 func _ready() -> void:
+	add_to_group("guide_director")  # панель локации будит при открытии (refresh)
 	_hints = DataLoader.load_dict(DATA_PATH).get("hints", [])
 	_seen = SettingsStore.guide_seen if persist else []
 	GameState.state_changed.connect(_refresh)
+	_refresh()
+
+
+## Пересмотреть события вне смены стейта игры (открыли панель локации).
+func refresh() -> void:
 	_refresh()
 
 
@@ -87,7 +93,13 @@ func _show(h: Dictionary) -> void:
 	elif not _seen.has(id):
 		_seen.append(id)
 	_free_for = 0.0
-	_current = GuideHint.say(self, h.get("lines", []), String(h.get("show", "free")) == "over")
+	# Про карточку локации — профессор встаёт слева от панели, а не поверх неё.
+	var stand: float = -1.0
+	if String(h.get("on", "")).begins_with("location"):
+		stand = _sidebar_left_edge()
+	_current = GuideHint.say(
+		self, h.get("lines", []), String(h.get("show", "free")) == "over", stand
+	)
 
 
 ## Запись подсказки по id ({} — нет такой).
@@ -144,7 +156,51 @@ func trigger_active(on: String) -> bool:
 			)
 		"reckoning":
 			return me.has("reckoning_check")
+	if on.begins_with("location"):
+		return _location_trigger(on, me)
 	return false
+
+
+# События карточки локации (открыта панель): сама карточка и то, что на клетке —
+# улика, врата, монстры, другой сыщик. Чем это место полезно — расскажет Армитедж.
+func _location_trigger(on: String, me: Dictionary) -> bool:
+	var loc: String = _shown_location()
+	if loc.is_empty():
+		return false
+	match on:
+		"locationOpen":
+			return true
+		"locationClue":
+			return (GameState.entities.get(loc, []) as Array).has("clue")
+		"locationGate":
+			return (GameState.gates as Dictionary).has(loc)
+		"locationMonster":
+			return GameState.has_monster_at(loc)
+		"locationAlly":
+			var my_id: String = String(me.get(PlayerKeys.USER_ID, ""))
+			for pid_v: Variant in GameState.players:
+				var p: Dictionary = GameState.players[pid_v]
+				if String(pid_v) != my_id and String(p.get(PlayerKeys.LOCATION, "")) == loc:
+					return not bool(p.get(PlayerKeys.DEAD, false))
+	return false
+
+
+# Левый край открытой панели локации (−1 — панели нет).
+func _sidebar_left_edge() -> float:
+	for n: Node in get_tree().get_nodes_in_group("location_sidebar"):
+		if n.has_method("open_left_edge"):
+			return float(n.call("open_left_edge"))
+	return -1.0
+
+
+# Локация, открытая в панели ("" — закрыта / панели нет).
+func _shown_location() -> String:
+	for n: Node in get_tree().get_nodes_in_group("location_sidebar"):
+		if n.has_method("shown_location"):
+			var loc: String = String(n.call("shown_location"))
+			if not loc.is_empty():
+				return loc
+	return ""
 
 
 func _enabled() -> bool:

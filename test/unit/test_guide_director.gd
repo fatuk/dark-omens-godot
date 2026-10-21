@@ -53,6 +53,11 @@ func test_data_triggers_are_known() -> void:
 		"shop",
 		"mythos",
 		"reckoning",
+		"locationOpen",
+		"locationClue",
+		"locationGate",
+		"locationMonster",
+		"locationAlly",
 	]
 	for h_v: Variant in DataLoader.load_dict(GuideDirector.DATA_PATH).get("hints", []):
 		var h: Dictionary = h_v
@@ -112,3 +117,55 @@ func test_shadow_gets_no_hints() -> void:
 	GameState.players[ME][PlayerKeys.DEAD] = true
 	assert_false(_d.trigger_active("actionPhase"))
 	assert_false(_d.trigger_active("lowVitality"))
+
+
+# Стаб панели локации: открыта на loc ("" — закрыта).
+class StubSidebar:
+	extends Node
+	var loc: String = ""
+
+	func shown_location() -> String:
+		return loc
+
+
+func _open_location(loc: String) -> StubSidebar:
+	var s := StubSidebar.new()
+	s.name = "LocationSidebar"
+	s.loc = loc
+	s.add_to_group("location_sidebar")
+	add_child_autofree(s)
+	return s
+
+
+func test_location_hints_follow_open_panel() -> void:
+	assert_false(_d.trigger_active("locationOpen"), "панели нет — молчим")
+	var s: StubSidebar = _open_location("Rome")
+	GameState.entities = {"Rome": ["clue"]}
+	GameState.gates = {"Rome": {}}
+	assert_true(_d.trigger_active("locationOpen"))
+	assert_true(_d.trigger_active("locationClue"))
+	assert_true(_d.trigger_active("locationGate"))
+	assert_false(_d.trigger_active("locationMonster"), "монстров в Риме нет")
+	assert_false(_d.trigger_active("locationAlly"), "других сыщиков нет")
+	s.loc = ""
+	assert_false(_d.trigger_active("locationClue"), "панель закрыта")
+
+
+func test_location_ally_and_monster() -> void:
+	_open_location("Rome")
+	GameState.monsters = {"Rome": [{"id": "cultist"}]}
+	GameState.players["ally"] = GameState._make_player_dict("ally", "Ally", "Mei Lin", "Rome", 5, 5)
+	assert_true(_d.trigger_active("locationMonster"))
+	assert_true(_d.trigger_active("locationAlly"))
+
+
+func test_opening_location_shows_card_hint_first() -> void:
+	GameState.players[ME]["actions_left"] = 0  # фаза действий кончилась — без «welcome»
+	_d.set("_queue", [])  # «welcome» встал в очередь ещё в _ready
+	_open_location("Rome")
+	GameState.entities = {"Rome": ["clue"]}
+	_d.refresh()
+	assert_eq(_queue()[0], "location_open", "сначала — про саму карточку")
+	assert_has(_queue(), "location_clue")
+	_d._process(0.0)
+	assert_not_null(_hint_shown(), "поверх панели — сразу")
