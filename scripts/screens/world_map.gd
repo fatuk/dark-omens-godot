@@ -9,6 +9,13 @@ extends Node2D
 
 const _CONCENTRATION_FRAME: Texture2D = preload("res://assets/cards/concentration/card-frame.png")
 const _CLUE_FRAME: Texture2D = preload("res://assets/cards/clue/card-frame.png")
+const _MythosModal := preload("res://scripts/ui/mythos_modal.gd")
+# Интро «Древний» — вертикальный разворот карты Мифов: текст сверху, арт снизу.
+# Арт — res://assets/ancients/<id Древнего>.png; нет файла — тёмная рамка.
+const _ANCIENT_ART_DIR := "res://assets/ancients/"
+const _ANCIENT_PANEL := Vector2(760, 960)
+const _ANCIENT_ART_MIN_H: float = 360.0
+const _GATE_PANEL_W: float = 620.0
 
 # Зум подобран под эталонную карту (MapLayer.REF_TILE_W). Ассет крупнее — те же
 # числа показали бы во столько же раз меньший кусок мира, поэтому делим на
@@ -85,6 +92,7 @@ var _hand_carousel: CanvasLayer = null
 # Тайна → карта), строится в коде.
 var _campaign_gate: CanvasLayer = null
 var _gate_vbox: VBoxContainer = null
+var _gate_panel: PanelContainer = null
 var _intro_step: int = 0  # 0=загрузка 1=Древний 2=Тайна 3=готово
 var _gate_rendered: int = -1  # последний отрисованный шаг
 var _revealed_mystery: int = -1  # индекс Тайны, чей ревил уже показали
@@ -1214,7 +1222,8 @@ func _build_campaign_gate() -> void:
 	var panel := PanelContainer.new()
 	UIStyle.style_modal_panel(panel)
 	panel.name = "Panel"
-	panel.custom_minimum_size = Vector2(620.0, 0.0)
+	panel.custom_minimum_size = Vector2(_GATE_PANEL_W, 0.0)
+	_gate_panel = panel
 	center.add_child(panel)
 
 	_gate_vbox = VBoxContainer.new()
@@ -1254,20 +1263,15 @@ func _refresh_campaign_gate() -> void:
 ## Наполняет панель гейта содержимым текущего шага.
 func _render_gate() -> void:
 	for child in _gate_vbox.get_children():
+		_gate_vbox.remove_child(child)
 		child.queue_free()
+	_gate_panel.custom_minimum_size = Vector2(_GATE_PANEL_W, 0.0)  # Древний растягивает
 	match _intro_step:
 		0:
 			_gate_title("CAMPAIGN_GATE_TITLE")
 			_gate_body("CAMPAIGN_GATE_BODY")
 		1:
-			var ao: Dictionary = GameState.campaign.get("ancientOne", {})
-			_gate_eyebrow("INTRO_ANCIENT_EYEBROW")
-			_gate_title(String(ao.get("name", "")))
-			var epithet: String = String(ao.get("epithet", ""))
-			if not epithet.is_empty():
-				_gate_subtitle(epithet)
-			_gate_body(String(ao.get("description", "")))
-			_gate_button("INTRO_NEXT", _on_gate_next)
+			_render_ancient(GameState.campaign.get("ancientOne", {}))
 		2:
 			var m: Dictionary = GameState.current_mystery()
 			# Запоминаем, чей ревил показан — чтобы не повторять и ловить смену.
@@ -1286,6 +1290,36 @@ func _render_gate() -> void:
 				_gate_button("BTN_OK", _on_gate_start)
 			else:
 				_gate_button("INTRO_START", _on_gate_start)
+
+
+# Древний — вертикальный разворот в стиле карты Мифов: имя, эпитет, разделитель с
+# ромбом и описание сверху, под ними арт в той же рамке с внутренней тенью, кнопка
+# внизу. Окно выше обычного гейта — арт забирает всю оставшуюся высоту.
+func _render_ancient(ao: Dictionary) -> void:
+	_gate_panel.custom_minimum_size = _ANCIENT_PANEL
+	_gate_eyebrow("INTRO_ANCIENT_EYEBROW")
+	_gate_title(String(ao.get("name", "")))
+	var epithet: String = String(ao.get("epithet", ""))
+	if not epithet.is_empty():
+		_gate_subtitle(epithet)
+	var divider: Control = _MythosModal.ornament_divider()
+	_gate_vbox.add_child(divider)
+	_gate_body(String(ao.get("description", "")))
+	var parts: Dictionary = _MythosModal.make_art_pane()
+	var pane: Control = parts["pane"]
+	pane.custom_minimum_size = Vector2(0, _ANCIENT_ART_MIN_H)
+	pane.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	(parts["art"] as TextureRect).texture = _ancient_art(String(ao.get("id", "")))
+	_gate_vbox.add_child(pane)
+	_gate_button("INTRO_NEXT", _on_gate_next)
+
+
+# Арт Древнего по его id (assets/ancients/<id>.png); нет файла — null.
+func _ancient_art(ancient_id: String) -> Texture2D:
+	var path: String = _ANCIENT_ART_DIR + ancient_id + ".png"
+	if ancient_id.is_empty() or not ResourceLoader.exists(path):
+		return null
+	return load(path)
 
 
 func _on_gate_next() -> void:

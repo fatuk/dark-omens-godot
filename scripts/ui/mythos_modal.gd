@@ -107,7 +107,7 @@ func _build() -> void:
 	_flavor_lbl = _centered_label("Flavor", UIStyle.MODAL_FS_BODY, UIColors.TEXT)
 	col.add_child(_flavor_lbl)
 
-	col.add_child(_ornament_divider())
+	col.add_child(ornament_divider())
 
 	_text_lbl = _centered_label("Text", UIStyle.MODAL_FS_BODY, UIColors.TEXT)
 	col.add_child(_text_lbl)
@@ -157,33 +157,40 @@ func apply_tuning() -> void:
 	_title_lbl.add_theme_font_size_override("font_size", int(TITLE_FS))
 	_flavor_lbl.add_theme_font_size_override("font_size", int(FLAVOR_FS))
 	_text_lbl.add_theme_font_size_override("font_size", int(TEXT_FS))
-	_shadow_mat.set_shader_parameter("shadow_color", Color(0, 0, 0, SHADOW_ALPHA))
-	_shadow_mat.set_shader_parameter("size_left", SHADOW_LEFT)
-	_shadow_mat.set_shader_parameter("size_right", SHADOW_RIGHT)
-	_shadow_mat.set_shader_parameter("size_top", SHADOW_TOP)
-	_shadow_mat.set_shader_parameter("size_bottom", SHADOW_BOTTOM)
-	_shadow_mat.set_shader_parameter("curve", SHADOW_CURVE)
+	apply_shadow(_shadow_mat)
 
 
 # Левая половина разворота: арт во всю высоту (обрезка «по покрытию») и поверх —
 # внутренняя тень, чтобы края картинки уходили в рамку и в текстовую панель.
 # Панель со скруглёнными углами — маска: арт и тень обрезаются по её форме.
 func _build_art_pane() -> Control:
+	var parts: Dictionary = make_art_pane()
+	_art_pane = parts["pane"]
+	_art_mask = parts["mask"]
+	_art = parts["art"]
+	_shadow_mat = parts["shadow"]
+	return _art_pane
+
+
+## Рамка арта в стиле карты Мифов — общая для Мифов и Древнего (интро): панель со
+## скруглёнными углами как маска, арт «по покрытию» и внутренняя тень поверх.
+## {pane: Panel, mask: StyleBoxFlat, art: TextureRect, shadow: ShaderMaterial};
+## тень и скругление — текущими значениями тюнинга Мифов.
+static func make_art_pane() -> Dictionary:
 	var pane := Panel.new()
 	pane.name = "ArtPane"
-	_art_pane = pane
 	var mask := StyleBoxFlat.new()
 	mask.bg_color = Color(0.045, 0.045, 0.04)  # в тон фона модалки — видно, пока арта нет
 	mask.anti_aliasing = true
-	_art_mask = mask
+	mask.set_corner_radius_all(int(ART_RADIUS))
 	pane.add_theme_stylebox_override("panel", mask)
 	pane.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
-	_art = TextureRect.new()
-	_art.name = "Art"
-	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	_art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	pane.add_child(_art)
+	var art := TextureRect.new()
+	art.name = "Art"
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	pane.add_child(art)
 	var shadow := ColorRect.new()
 	shadow.name = "InnerShadow"
 	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -191,9 +198,19 @@ func _build_art_pane() -> Control:
 	var mat := ShaderMaterial.new()
 	mat.shader = _INNER_SHADOW
 	shadow.material = mat
-	_shadow_mat = mat
+	apply_shadow(mat)
 	pane.add_child(shadow)
-	return pane
+	return {"pane": pane, "mask": mask, "art": art, "shadow": mat}
+
+
+## Внутренняя тень арта — текущими значениями тюнинга (SHADOW_*).
+static func apply_shadow(mat: ShaderMaterial) -> void:
+	mat.set_shader_parameter("shadow_color", Color(0, 0, 0, SHADOW_ALPHA))
+	mat.set_shader_parameter("size_left", SHADOW_LEFT)
+	mat.set_shader_parameter("size_right", SHADOW_RIGHT)
+	mat.set_shader_parameter("size_top", SHADOW_TOP)
+	mat.set_shader_parameter("size_bottom", SHADOW_BOTTOM)
+	mat.set_shader_parameter("curve", SHADOW_CURVE)
 
 
 func _centered_label(node_name: String, font_size: int, color: Color) -> Label:
@@ -206,8 +223,8 @@ func _centered_label(node_name: String, font_size: int, color: Color) -> Label:
 	return lbl
 
 
-# Разделитель flavor/правила: тонкая линия с ромбом по центру.
-func _ornament_divider() -> Control:
+## Разделитель flavor/правила: тонкая линия с ромбом по центру (общий с интро Древнего).
+static func ornament_divider() -> Control:
 	var row := HBoxContainer.new()
 	row.name = "Divider"
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
