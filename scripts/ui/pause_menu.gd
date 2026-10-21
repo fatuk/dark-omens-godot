@@ -29,6 +29,7 @@ const _BODY_FS: int = 20
 const _MESSAGES_KEPT: int = 1000
 
 var _open: bool = false
+var _fade: Tween  # появление/угасание экрана (Escape, «гамбургер», «Продолжить»)
 var _settings_dialog: Control = null
 var _root: Control
 var _menu_col: Control
@@ -83,14 +84,44 @@ func toggle() -> void:
 	_open = not _open
 	if _open:
 		_update_for_current_scene()
-	visible = _open
 	get_tree().paused = _open
+	_fade_to(_open)
 	if _open:
 		# Фокус на первом видимом пункте — Enter/стрелки работают сразу.
 		for b_v: Node in _items.get_children():
 			if (b_v as Control).visible:
 				(b_v as Control).grab_focus()
 				break
+
+
+# Плавно показать/спрятать экран: fade in / fade out всего содержимого, длительности —
+# как у модалок. Пока гаснет — клики уже уходят в игру (пауза снята сразу).
+func _fade_to(showing: bool) -> void:
+	if _fade != null and _fade.is_valid():
+		_fade.kill()
+	if showing:
+		if not visible:
+			_root.modulate.a = 0.0
+		visible = true
+	else:
+		var focused: Control = _root.get_viewport().gui_get_focus_owner()
+		if focused != null and _root.is_ancestor_of(focused):
+			focused.release_focus()  # Enter после закрытия не нажмёт пункт меню
+	_root.mouse_filter = Control.MOUSE_FILTER_STOP if showing else Control.MOUSE_FILTER_IGNORE
+	_fade = _root.create_tween()
+	(
+		_fade
+		. tween_property(
+			_root,
+			"modulate:a",
+			1.0 if showing else 0.0,
+			UIStyle.MODAL_FADE_IN if showing else UIStyle.MODAL_FADE_OUT
+		)
+		. set_trans(Tween.TRANS_SINE)
+		. set_ease(Tween.EASE_OUT)
+	)
+	if not showing:
+		_fade.tween_callback(func() -> void: visible = false)
 
 
 # ── Построение ────────────────────────────────────────────────────────────────
@@ -508,6 +539,8 @@ func _open_settings() -> void:
 
 func _go_main_menu() -> void:
 	_open = false
+	if _fade != null and _fade.is_valid():
+		_fade.kill()  # сцена сменится — прячем сразу, без угасания
 	visible = false
 	get_tree().paused = false
 	var nm: Node = get_node_or_null("/root/NetworkManager")
