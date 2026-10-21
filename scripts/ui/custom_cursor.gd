@@ -15,6 +15,11 @@ const CURSOR_SIZE: Vector2 = Vector2(97.5, 131.5)
 # Длительность кросс-фейда между обычным и активным курсором.
 const FADE_TIME: float = 0.12
 
+# Подсказки (tooltip) — правее нашего курсора, а не под ним: стандартное смещение
+# Godot (10, 10) кладёт текст прямо под рисунок стрелки. У правого края экрана Godot
+# сам переносит подсказку влево от точки мыши — там курсора нет.
+const TOOLTIP_OFFSET: Vector2 = Vector2(CURSOR_SIZE.x + 8.0, 24.0)
+
 @onready var _icon_default: TextureRect = %IconDefault
 @onready var _icon_active: TextureRect = %IconActive
 
@@ -24,6 +29,8 @@ var _tween: Tween = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Только в памяти (project.godot не трогаем) — движок читает настройку при показе.
+	ProjectSettings.set_setting("display/mouse_cursor/tooltip_position_offset", TOOLTIP_OFFSET)
 	_hide_system_cursor()
 	_icon_default.size = CURSOR_SIZE
 	_icon_active.size = CURSOR_SIZE

@@ -55,7 +55,7 @@ static func fit_grid(grid: HFlowContainer) -> void:
 ## проверки, сопротивление, способность) — во всплывающей подсказке. copies > 1 —
 ## бейдж «×N» справа сверху (колода монстров: одинаковые — одним портретом).
 static func make(m: Dictionary, cur_health: int = -1, copies: int = 1) -> Control:
-	var tile := Control.new()
+	var tile := WrapTooltip.new()  # подсказка со статами длинная — с переносом
 	tile.name = "Monster"
 	tile.custom_minimum_size = Vector2(TILE, TILE)
 	tile.clip_contents = true
