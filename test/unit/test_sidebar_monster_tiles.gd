@@ -4,16 +4,9 @@ extends GutTest
 
 const _SIDEBAR := preload("res://scenes/ui/location_sidebar.tscn")
 
-var _sb: LocationSidebar
-
-
-func before_each() -> void:
-	_sb = LocationSidebar.new()
-	autofree(_sb)
-
 
 func test_tile_is_square_with_two_numbers() -> void:
-	var tile: Control = autofree(_sb._make_monster_tile(MonsterCatalog.by_id("byakhee"), 1))
+	var tile: Control = autofree(MonsterTile.make(MonsterCatalog.by_id("byakhee"), 1))
 	assert_eq(tile.custom_minimum_size.x, tile.custom_minimum_size.y, "квадрат")
 	assert_not_null(tile.get_node_or_null("Art"), "арт монстра")
 	assert_eq((tile.get_node("Horror") as Label).text, "1", "ужас")
@@ -22,7 +15,7 @@ func test_tile_is_square_with_two_numbers() -> void:
 
 
 func test_ancient_dependent_monster_has_no_numbers() -> void:
-	var tile: Control = autofree(_sb._make_monster_tile(MonsterCatalog.by_id("cultist")))
+	var tile: Control = autofree(MonsterTile.make(MonsterCatalog.by_id("cultist")))
 	assert_null(tile.get_node_or_null("Horror"), "статы зависят от Древнего — чисел нет")
 	assert_null(tile.get_node_or_null("Damage"))
 
@@ -41,10 +34,10 @@ func test_items_have_no_separators_and_category_header() -> void:
 
 func test_tiles_fill_row_width() -> void:
 	for w: float in [300.0, 480.0, 560.0, 700.0]:
-		var side: float = LocationSidebar.monster_tile_side(w)
-		var cols: int = int((w + LocationSidebar._MON_GAP) / (side + LocationSidebar._MON_GAP))
-		var used: float = cols * side + (cols - 1) * LocationSidebar._MON_GAP
-		assert_true(side >= LocationSidebar._MON_TILE, "не мельче минимума (%d)" % w)
+		var side: float = MonsterTile.side_for(w)
+		var cols: int = int((w + MonsterTile.GAP) / (side + MonsterTile.GAP))
+		var used: float = cols * side + (cols - 1) * MonsterTile.GAP
+		assert_true(side >= MonsterTile.TILE, "не мельче минимума (%d)" % w)
 		assert_almost_eq(used, w, float(cols), "ряд от края до края (%d)" % w)
 
 
@@ -63,3 +56,10 @@ func test_clues_listed_with_icon_and_name() -> void:
 	assert_eq(rows.size(), 2, "по строке на улику, вертикально")
 	assert_eq((rows[0].get_node("Name") as Label).text, "Сломанный серп", "имя улики")
 	assert_not_null((rows[0].get_node("Icon") as TextureRect).texture, "иконка улики")
+
+
+func test_copies_badge() -> void:
+	var tile: Control = autofree(MonsterTile.make(MonsterCatalog.by_id("byakhee"), -1, 3))
+	assert_eq((tile.get_node("Copies") as Label).text, "×3", "одинаковые — одним портретом")
+	var one: Control = autofree(MonsterTile.make(MonsterCatalog.by_id("byakhee")))
+	assert_null(one.get_node_or_null("Copies"), "один — без бейджа")

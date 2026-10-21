@@ -172,20 +172,21 @@ static func _fill_monsters(body: VBoxContainer) -> void:
 	body.add_child(lbl)
 	body.add_child(_counts(bag.size(), -1))
 
+	# Портреты со статами — как в сайдбаре локации; одинаковые — одним портретом «×N».
 	var counts: Dictionary = {}
 	for m_v: Variant in bag:
 		var mid: String = String(m_v)
 		counts[mid] = int(counts.get(mid, 0)) + 1
-	var list := VBoxContainer.new()
-	list.name = "Monsters"
-	list.add_theme_constant_override("separation", 4)
+	var grid: HFlowContainer = MonsterTile.grid("Monsters")
 	for mid_v: Variant in counts:
 		var mid: String = mid_v
 		var m: Dictionary = GameState.monster_def(mid)
-		var name_key: String = String(m.get("nameKey", mid))
-		var n: int = int(counts[mid])
-		list.add_child(_row(name_key if n <= 1 else "%s  ×%d" % [name_key, n], mid))
-	body.add_child(_scroll(list, bag.is_empty()))
+		if m.is_empty():
+			continue
+		var tile: Control = MonsterTile.make(m, -1, int(counts[mid]))
+		tile.name = "Monster_" + mid
+		grid.add_child(tile)
+	body.add_child(_scroll(grid, bag.is_empty()))
 
 
 # ── Кусочки ───────────────────────────────────────────────────────────────────
