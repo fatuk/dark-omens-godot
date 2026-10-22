@@ -193,6 +193,49 @@ func _build_info_bar() -> Control:
 	return _info_bar
 
 
+# ── Геймпад / клавиатура ─────────────────────────────────────────────────────
+
+
+# Экран выбора без фокуса кнопок: крестовина/стик/L1 R1 (и ← →) листают сыщиков,
+# ✕/A — подтвердить (после «Готов» хосту — начать игру), ○/B — назад, □/X —
+# способности, △/Y — список игроков (← → и Enter работают и с клавиатуры). Пока открыто окно поверх (способности, игроки)
+# — ввод его, не наш. _unhandled_input: кнопка в фокусе (мышью нажали) жмётся сама.
+func _unhandled_input(event: InputEvent) -> void:
+	if not is_visible_in_tree() or UIStyle.any_modal_open():
+		return
+	if event.is_action_pressed(&"ui_left", true) or event.is_action_pressed(GameInput.PAGE_PREV):
+		_carousel.step(-1)
+	elif event.is_action_pressed(&"ui_right", true) or event.is_action_pressed(GameInput.PAGE_NEXT):
+		_carousel.step(1)
+	elif event.is_action_pressed(&"ui_accept"):
+		_accept()
+	elif event is InputEventJoypadButton and event.is_action_pressed(GameInput.BACK):
+		back_pressed.emit()  # только ○/B: Esc на клавиатуре — по-прежнему пауза
+	elif _pad_pressed(event, JOY_BUTTON_X):
+		_on_center_clicked()
+	elif _pad_pressed(event, JOY_BUTTON_Y):
+		_open_player_details_modal()
+	else:
+		return
+	get_viewport().set_input_as_handled()
+
+
+# ✕/A: «Подтвердить выбор», а если он уже нажат (кнопка залочена) — «Начать игру».
+func _accept() -> void:
+	if is_instance_valid(_confirm_btn) and not _confirm_btn.disabled:
+		_on_confirm_pressed()
+	elif is_instance_valid(_start_btn) and _start_btn.visible and not _start_btn.disabled:
+		start_pressed.emit()
+
+
+static func _pad_pressed(event: InputEvent, button: JoyButton) -> bool:
+	return (
+		event is InputEventJoypadButton
+		and (event as InputEventJoypadButton).pressed
+		and (event as InputEventJoypadButton).button_index == button
+	)
+
+
 # ── Кнопки действий ─────────────────────────────────────────────────────────
 
 
@@ -210,7 +253,10 @@ func _build_action_bar() -> HBoxContainer:
 	# высоту нельзя: текст калибруется под неё, рамка разъедется с надписью.
 	_back_btn.custom_minimum_size.x = 160
 	_back_btn.pressed.connect(func() -> void: back_pressed.emit())
+	# Иконки кнопок геймпада — только пока играют с геймпада (○ назад, ✕ подтвердить).
+	hb.add_child(InputGlyph.make(GameInput.BACK, 34.0, false))
 	hb.add_child(_back_btn)
+	hb.add_child(InputGlyph.make(&"ui_accept", 34.0, false))
 
 	_confirm_btn = Button.new()
 	_confirm_btn.name = "ConfirmBtn"

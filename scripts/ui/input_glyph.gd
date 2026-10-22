@@ -50,6 +50,7 @@ static func make(act: StringName, h: float = 30.0, kb: bool = true) -> InputGlyp
 	g.action = act
 	g.glyph_height = h
 	g.keyboard_too = kb
+	g.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # в ряду с кнопкой — по центру
 	return g
 
 

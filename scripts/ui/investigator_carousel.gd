@@ -363,6 +363,11 @@ func _build_arrows() -> void:
 	add_child(_next_btn)
 
 
+## Пролистать на d карточек — как стрелкой (геймпад/клавиатура из пикера).
+func step(d: int) -> void:
+	_animated_shift(d)
+
+
 func _make_arrow_btn(tex: Texture2D) -> TextureButton:
 	var b := TextureButton.new()
 	b.name = "Button"
