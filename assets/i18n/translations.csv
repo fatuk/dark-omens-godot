@@ -63,6 +63,35 @@ CONN_UNCHARTED,путь,uncharted
 ,,
 PAUSE_RESUME,Продолжить,Resume
 PAUSE_SETTINGS,Настройки,Settings
+PAUSE_CONTROLS,Управление,Controls
+CONTROLS_TITLE,Управление,Controls
+CONTROLS_KEYBOARD,Клавиатура и мышь,Keyboard and mouse
+CONTROLS_GAMEPAD,Геймпад,Gamepad
+CONTROLS_FAMILY_PS,PlayStation,PlayStation
+CONTROLS_FAMILY_XBOX,Xbox,Xbox
+CONTROLS_FAMILY_NINTENDO,Nintendo,Nintendo
+CONTROLS_KEY_LMB,ЛКМ,LMB
+CONTROLS_KEY_MMB,СКМ,MMB
+CONTROLS_KEY_WHEEL,Колесо,Wheel
+CONTROLS_KEY_HOVER,Наведение,Hover
+CONTROLS_KB_CLICK,"Выбрать локацию, нажать кнопку, разыграть карту","Select a location, press a button, play a card"
+CONTROLS_KB_DRAG,Зажать и тянуть — двигать карту мира,Hold and drag to move the world map
+CONTROLS_KB_WHEEL,Зум карты; в веере — листать карты,"Zoom the map; in the hand, flip through cards"
+CONTROLS_HAND,"Веер руки: активы, заклинания, жетоны, состояния","Your hand: assets, spells, tokens, conditions"
+CONTROLS_SECTIONS,Разделы веера,Hand sections
+CONTROLS_CHAT,Чат,Chat
+CONTROLS_KB_ESC,Закрыть окно; меню паузы,Close a window; pause menu
+CONTROLS_KB_ENTER,Дальше в подсказках профессора,Next line of the professor's hints
+CONTROLS_KB_PEEK,Наведите на компас — увидите следующее знамение,Hover the compass to see the next omen
+CONTROLS_KB_PANEL,"Компас — последний миф, медальон — запасы, орб раунда — Тайна",Compass: last Mythos; medallion: supply; round orb: Mystery
+CONTROLS_PAD_MOVE,Выбор локации на карте и кнопок в окнах,Pick a location on the map and buttons in windows
+CONTROLS_PAD_ACCEPT,"Выбрать, нажать, разыграть карту","Select, press, play a card"
+CONTROLS_PAD_BACK,"Назад, закрыть окно","Back, close a window"
+CONTROLS_PAD_ACTIONS,"Держать — панель действий: отдых, концентрация, ресурс, пас","Hold for actions: rest, focus, resource, pass"
+CONTROLS_PAD_PANEL,"Держать — следующее знамение и верхняя панель: миф, запасы, Тайна","Hold for the next omen and the top panel: Mythos, supply, Mystery"
+CONTROLS_PAD_RSTICK,Зум карты; прокрутка длинного текста,Zoom the map; scroll long text
+CONTROLS_PAD_PAUSE,Меню паузы,Pause menu
+CONTROLS_PAD_PICKER,Выбор сыщика: способности и список игроков,Investigator pick: abilities and player list
 PAUSE_LEAVE,Выйти из игры,Leave game
 PAUSE_MAIN_MENU,В главное меню,Main menu
 PAUSE_MESSAGES,ПОСЛАНИЯ,MESSAGES

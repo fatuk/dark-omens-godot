@@ -31,6 +31,7 @@ const _MESSAGES_KEPT: int = 1000
 var _open: bool = false
 var _fade: Tween  # появление/угасание экрана (Escape, «гамбургер», «Продолжить»)
 var _settings_dialog: Control = null
+var _controls: ControlsHelp = null  # справочник «Управление»
 var _root: Control
 var _menu_col: Control
 var _side_col: VBoxContainer
@@ -83,19 +84,15 @@ func _process(_delta: float) -> void:
 
 ## Открыть/закрыть паузу (Escape, «гамбургер» на карте, «Продолжить»).
 func toggle() -> void:
-	if is_instance_valid(_settings_dialog):
-		return  # открыты настройки — их закрывает сам диалог
+	if is_instance_valid(_settings_dialog) or is_instance_valid(_controls):
+		return  # открыты настройки / управление — их закрывает само окно
 	_open = not _open
 	if _open:
 		_update_for_current_scene()
 	get_tree().paused = _open
 	_fade_to(_open)
 	if _open:
-		# Фокус на первом видимом пункте — Enter/стрелки работают сразу.
-		for b_v: Node in _items.get_children():
-			if (b_v as Control).visible:
-				(b_v as Control).grab_focus()
-				break
+		_focus_first_item()
 
 
 # Плавно показать/спрятать экран: fade in / fade out всего содержимого, длительности —
@@ -210,6 +207,7 @@ func _build_menu_column() -> void:
 	vb.add_child(_items)
 	_continue_btn = _menu_item("PAUSE_RESUME", toggle)
 	_menu_item("PAUSE_SETTINGS", _open_settings)
+	_menu_item("PAUSE_CONTROLS", _open_controls)
 	_menu_btn = _menu_item("PAUSE_MAIN_MENU", _go_main_menu)
 	_menu_item("PAUSE_LEAVE", _quit_game)
 
@@ -536,6 +534,34 @@ func _open_settings() -> void:
 			_menu_col.visible = true
 			_update_for_current_scene()
 	)
+
+
+# ── Управление (справочник клавиш и кнопок геймпада) ─────────────────────────
+
+
+func _open_controls() -> void:
+	if is_instance_valid(_controls):
+		return
+	_menu_col.visible = false
+	_side_col.visible = false
+	_controls = ControlsHelp.new()
+	_controls.name = "ControlsHelp"
+	_root.add_child(_controls)
+	_controls.closed.connect(
+		func() -> void:
+			_controls = null
+			_menu_col.visible = true
+			_update_for_current_scene()
+			_focus_first_item()
+	)
+
+
+# Фокус на первом видимом пункте — Enter/стрелки/крестовина работают сразу.
+func _focus_first_item() -> void:
+	for b_v: Node in _items.get_children():
+		if (b_v as Control).visible:
+			(b_v as Control).grab_focus()
+			break
 
 
 # ── Прочие кнопки ─────────────────────────────────────────────────────────────

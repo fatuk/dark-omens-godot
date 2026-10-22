@@ -8,6 +8,14 @@ extends Control
 ## (InputDevice.changed). Привязки под текущее устройство нет — иконка скрыта.
 ##
 ##   row.add_child(InputGlyph.make(GameInput.HAND))
+##
+## Справочник управления рисует и вне текущего устройства: InputGlyph.key_text("ЛКМ")
+## — кейкап с надписью, InputGlyph.pad(JOY_BUTTON_A, h, "xbox") — кнопка геймпада
+## заданного рода (STICK_L/STICK_R/DPAD_ANY — стики и крестовина целиком).
+
+const STICK_L: int = 1002  # левый стик (движение), не нажатие L3
+const STICK_R: int = 1003
+const DPAD_ANY: int = 1004  # крестовина целиком
 
 const _BG := Color(0.075, 0.07, 0.06, 0.96)
 const _RING := Color(0.78, 0.66, 0.42, 0.85)
@@ -42,6 +50,32 @@ const _KEY_NAMES := {
 @export var action: StringName = &""
 @export var glyph_height: float = 30.0
 @export var keyboard_too: bool = true  # вне геймпада показывать клавишу
+## Фиксированная иконка (справочник): текст кейкапа / кнопка геймпада и её род.
+var fixed_text: String = ""
+var fixed_button: int = -1
+var family_override: String = ""
+
+
+## Кейкап с произвольной надписью («ЛКМ», «Колесо»), всегда виден.
+static func key_text(text: String, h: float = 30.0) -> InputGlyph:
+	var g := InputGlyph.new()
+	g.name = "Key"
+	g.fixed_text = text
+	g.glyph_height = h
+	g.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	return g
+
+
+## Кнопка геймпада button (или STICK_L / STICK_R / DPAD_ANY) рода fam ("" —
+## текущего), всегда видна.
+static func pad(button: int, h: float = 30.0, fam: String = "") -> InputGlyph:
+	var g := InputGlyph.new()
+	g.name = "Pad_%d" % button
+	g.fixed_button = button
+	g.family_override = fam
+	g.glyph_height = h
+	g.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	return g
 
 
 static func make(act: StringName, h: float = 30.0, kb: bool = true) -> InputGlyph:
@@ -114,24 +148,46 @@ func _ready() -> void:
 
 
 func _refresh() -> void:
-	var pad: bool = InputDevice.using_pad()
-	visible = (
-		GameInput.pad_button(action) >= 0
-		if pad
-		else keyboard_too and GameInput.key(action) != KEY_NONE
-	)
+	var pad_mode: bool = InputDevice.using_pad()
+	if not fixed_text.is_empty() or fixed_button >= 0:
+		visible = true
+	else:
+		visible = (
+			GameInput.pad_button(action) >= 0
+			if pad_mode
+			else keyboard_too and GameInput.key(action) != KEY_NONE
+		)
 	custom_minimum_size = Vector2(_width(), glyph_height)
 	queue_redraw()
 
 
+# Что рисовать: кейкап (текст) или кнопка геймпада (код + род).
+func _is_key() -> bool:
+	if not fixed_text.is_empty():
+		return true
+	return fixed_button < 0 and not InputDevice.using_pad()
+
+
+func _key_text() -> String:
+	return fixed_text if not fixed_text.is_empty() else key_label(GameInput.key(action))
+
+
+func _button() -> int:
+	return fixed_button if fixed_button >= 0 else GameInput.pad_button(action)
+
+
+func _family() -> String:
+	return family_override if not family_override.is_empty() else InputDevice.family()
+
+
 func _width() -> float:
 	var h: float = glyph_height
-	if not InputDevice.using_pad():
-		return _pill_width(key_label(GameInput.key(action)))
-	var b: int = GameInput.pad_button(action)
-	if b in _FACE or b in _DPAD:
+	if _is_key():
+		return _pill_width(_key_text())
+	var b: int = _button()
+	if b in _FACE or b in _DPAD or b in [STICK_L, STICK_R, DPAD_ANY]:
 		return h
-	return _pill_width(pill_label(InputDevice.family(), b))
+	return _pill_width(pill_label(_family(), b))
 
 
 func _pill_width(text: String) -> float:
@@ -147,17 +203,30 @@ func _pill_fs() -> int:
 
 
 func _draw() -> void:
-	if not InputDevice.using_pad():
-		_draw_pill(key_label(GameInput.key(action)), 0.22)
+	if _is_key():
+		_draw_pill(_key_text(), 0.22)
 		return
-	var b: int = GameInput.pad_button(action)
-	var fam: String = InputDevice.family()
+	var b: int = _button()
+	var fam: String = _family()
 	if b in _FACE:
 		_draw_face(fam, b)
-	elif b in _DPAD:
+	elif b in _DPAD or b == DPAD_ANY:
 		_draw_dpad(b)
+	elif b == STICK_L or b == STICK_R:
+		_draw_stick("L" if b == STICK_L else "R")
 	else:
 		_draw_pill(pill_label(fam, b), 0.5)
+
+
+# Стик: шляпка с кольцом и буквой L / R.
+func _draw_stick(letter: String) -> void:
+	var h: float = glyph_height
+	var c := Vector2(h, h) * 0.5
+	var r: float = h * 0.5 - 1.0
+	draw_circle(c, r, _BG)
+	draw_arc(c, r, 0.0, TAU, 40, _RING, maxf(1.0, h * 0.05), true)
+	draw_arc(c, r * 0.62, 0.0, TAU, 32, Color(_INK, 0.45), maxf(1.0, h * 0.04), true)
+	_draw_text_centered(letter, c, int(round(h * 0.42)), _INK)
 
 
 func _draw_face(fam: String, b: int) -> void:
