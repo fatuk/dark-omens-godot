@@ -6,9 +6,10 @@ extends Control
 ## но виден только через круглую маску в шейдере (привязана к canvas-центру
 ## контейнера, не вращается с диском).
 ##
-## current_step — текущее состояние из игры. При наведении мышью диск
-## плавно подкручивается на +0.3 шага, чтобы юзер мог «подсмотреть»
-## следующий омен. Уход мыши — возвращает на current_step.
+## current_step — текущее состояние из игры. При наведении мышью (или пока зажат
+## левый курок геймпада — GameInput.PEEK_OMEN) диск плавно подкручивается на +0.3
+## шага, чтобы юзер мог «подсмотреть» следующий омен. Уход мыши / отпущенный курок —
+## возвращает на current_step.
 
 # Настройки арта круга — финальные (подобраны в дебаг-панели, секция «КРУГ
 # ЗНАМЕНИЙ» из неё убрана в f77a657), поэтому const.
@@ -52,6 +53,7 @@ var _initialized: bool = false
 var _base_pos: Vector2 = Vector2.ZERO  # позиция из раскладки; POS_OFFSET прибавляем к ней
 var _circle_base_pos: Vector2 = Vector2.ZERO  # база позиции внутреннего диска; +DIAL_OFFSET
 var _base_pos_set: bool = false
+var _pad_peek: bool = false  # левый курок зажат — подсматриваем
 
 
 func _ready() -> void:
@@ -70,6 +72,15 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	# Курок — ось: события идут на каждое движение, поэтому смотрим состояние действия
+	# и реагируем только на смену (зажал — подсмотреть, отпустил — вернуть).
+	var peek: bool = Input.is_action_pressed(GameInput.PEEK_OMEN) and is_visible_in_tree()
+	if peek != _pad_peek:
+		_pad_peek = peek
+		if peek:
+			_on_hover()
+		else:
+			_on_unhover()
 	if _base_pos_set:
 		# Сдвиг всего виджета — от базовой позиции раскладки (узел anchor-based, не в
 		# контейнере, position не перетирается).

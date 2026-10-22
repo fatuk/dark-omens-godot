@@ -92,6 +92,8 @@ static func pill_label(fam: String, button: int) -> String:
 		JOY_BUTTON_LEFT_STICK: ["LS", "L3", "LS"],
 		JOY_BUTTON_RIGHT_STICK: ["RS", "R3", "RS"],
 		JOY_BUTTON_TOUCHPAD: ["", "TOUCHPAD", ""],
+		GameInput.TRIGGER_LEFT: ["LT", "L2", "ZL"],
+		GameInput.TRIGGER_RIGHT: ["RT", "R2", "ZR"],
 	}
 	return String((names.get(button, ["?", "?", "?"]) as Array)[i])
 

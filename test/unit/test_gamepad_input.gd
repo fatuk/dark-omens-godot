@@ -218,3 +218,16 @@ func test_pick_falls_back_to_focusable_control() -> void:
 	card.focus_mode = Control.FOCUS_ALL
 	root.add_child(card)
 	assert_eq(PadFocus.pick(root), card, "кнопок нет — карточка")
+
+
+func test_peek_omen_on_left_trigger() -> void:
+	GameInput.register()
+	assert_eq(GameInput.pad_button(GameInput.PEEK_OMEN), GameInput.TRIGGER_LEFT)
+	assert_eq(InputGlyph.pill_label(InputDevice.PLAYSTATION, GameInput.TRIGGER_LEFT), "L2")
+	assert_eq(InputGlyph.pill_label(InputDevice.XBOX, GameInput.TRIGGER_LEFT), "LT")
+	var ev := InputEventJoypadMotion.new()
+	ev.axis = JOY_AXIS_TRIGGER_LEFT
+	ev.axis_value = 0.9
+	assert_true(ev.is_action_pressed(GameInput.PEEK_OMEN), "курок выжат — подсматриваем")
+	ev.axis_value = 0.2
+	assert_false(ev.is_action_pressed(GameInput.PEEK_OMEN), "чуть тронут — нет")

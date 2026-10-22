@@ -14,6 +14,11 @@ const HAND := &"hand"  # веер руки: Tab, △/Y
 const CHAT := &"chat"  # чат: C, Share/View
 const PAGE_PREV := &"page_prev"  # листать влево (секции веера и т.п.): ←, L1/LB
 const PAGE_NEXT := &"page_next"  # листать вправо: →, R1/RB
+const PEEK_OMEN := &"peek_omen"  # подсмотреть следующее знамение (держать): L2/LT
+
+# Курки — оси, не кнопки; для иконок (InputGlyph) pad_button отдаёт им псевдокоды.
+const TRIGGER_LEFT: int = 1000
+const TRIGGER_RIGHT: int = 1001
 
 const STICK_DEADZONE: float = 0.5
 
@@ -25,6 +30,11 @@ const _ACTIONS := {
 	CHAT: [[KEY_C], [JOY_BUTTON_BACK]],
 	PAGE_PREV: [[KEY_LEFT], [JOY_BUTTON_LEFT_SHOULDER]],
 	PAGE_NEXT: [[KEY_RIGHT], [JOY_BUTTON_RIGHT_SHOULDER]],
+}
+
+# Действия на курках: action → ось. Держится, пока курок выжат за мёртвую зону.
+const _TRIGGERS := {
+	PEEK_OMEN: JOY_AXIS_TRIGGER_LEFT,
 }
 
 # Встроенные ui_* (навигация фокусом): кнопки. Левый стик к ui_* НЕ привязан —
@@ -51,6 +61,10 @@ static func register() -> void:
 			_add(action, _key(k))
 		for b: int in buttons:
 			_add(action, _button(b))
+	for action: StringName in _TRIGGERS:
+		if not InputMap.has_action(action):
+			InputMap.add_action(action, STICK_DEADZONE)
+		_add(action, _axis(int(_TRIGGERS[action])))
 	for action: StringName in _UI_BUTTONS:
 		_add(action, _button(int(_UI_BUTTONS[action])))
 	# Оси левого стика из встроенных ui_* (в Godot они там по умолчанию) снимаем.
@@ -60,13 +74,20 @@ static func register() -> void:
 				InputMap.action_erase_event(action, ev)
 
 
-## Кнопка геймпада, назначенная действию (первая), или -1.
+## Кнопка геймпада, назначенная действию (первая), или -1. Курок — псевдокод
+## TRIGGER_LEFT / TRIGGER_RIGHT.
 static func pad_button(action: StringName) -> int:
 	if not InputMap.has_action(action):
 		return -1
 	for ev: InputEvent in InputMap.action_get_events(action):
 		if ev is InputEventJoypadButton:
 			return (ev as InputEventJoypadButton).button_index
+		if ev is InputEventJoypadMotion:
+			match (ev as InputEventJoypadMotion).axis:
+				JOY_AXIS_TRIGGER_LEFT:
+					return TRIGGER_LEFT
+				JOY_AXIS_TRIGGER_RIGHT:
+					return TRIGGER_RIGHT
 	return -1
 
 
@@ -88,6 +109,14 @@ static func _add(action: StringName, ev: InputEvent) -> void:
 static func _key(k: int) -> InputEventKey:
 	var ev := InputEventKey.new()
 	ev.keycode = k as Key
+	return ev
+
+
+static func _axis(axis: int) -> InputEventJoypadMotion:
+	var ev := InputEventJoypadMotion.new()
+	ev.device = -1
+	ev.axis = axis as JoyAxis
+	ev.axis_value = 1.0
 	return ev
 
 
