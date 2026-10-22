@@ -78,6 +78,8 @@ func _build(choices: Array) -> void:
 func _kind_label(kind: String) -> String:
 	if kind == "general":
 		return _general_label()
+	if kind == "local":
+		return _local_label()
 	if kind != "eldritch":
 		return String(_KIND_KEYS.get(kind, kind))
 	var me: String = GameState.local_pid()
@@ -97,6 +99,16 @@ func _general_label() -> String:
 	var kind: String = String(GameState.map.by_id(loc).get("type", ""))
 	var key: String = "ENCOUNTER_CHOICE_GENERAL_%s" % kind.to_upper()
 	return key if not kind.is_empty() and tr(key) != key else "ENCOUNTER_CHOICE_GENERAL"
+
+
+# Локационная встреча по имени клетки: «Встреча в Аркхэме». Предложный оборот с
+# предлогом — свой ключ LOC_*_IN рядом с LOC_*_NAME; нет его — «Локационная встреча».
+func _local_label() -> String:
+	var loc: String = String(GameState.my_player().get("location", ""))
+	var key: String = GameState.map.name_key(loc).trim_suffix("_NAME") + "_IN"
+	if tr(key) == key:
+		return "ENCOUNTER_CHOICE_LOCAL"
+	return tr("ENCOUNTER_CHOICE_LOCAL_AT") % tr(key)
 
 
 # Подпись кнопки порядка боя: имя монстра и здоровье («Гуль · 2/3»). Экземпляр

@@ -330,41 +330,77 @@ LOC_SYDNEY_DESC,"Самый далёкий город империи, куда �
 LOC_TOKYO_REAL,"Токио, Япония","Tokyo, Japan"
 LOC_TOKYO_DESC,"Страна, двести лет запиравшая границы, знает о том, что приходит из-за моря, больше, чем готова рассказать. У храмов в Асакусе до сих пор жгут курения не в дар богам, а для защиты от «гостей», и старые жрецы помнят их истинные имена. В министерствах эти же имена лежат в папках с особым грифом, а в порту стоит крейсер, который однажды уже дал залп туда, по твари, само существование которой отрицает наука","A country that sealed its borders for two hundred years knows more about what comes from the sea than it is willing to tell. The temples in Asakusa still burn incense — not as offerings to gods, but as wards against the ""visitors,"" and the old priests remember their true names. Those same names rest in folders marked with special classifications in the ministries, and in the harbor stands a cruiser that once already fired a broadside out there — at a creature whose very existence science denies."
 LOC_1_NAME,Анкоридж,Anchorage
+LOC_1_IN,в Анкоридже,in Anchorage
 LOC_2_NAME,К северо-востоку от Гавайев,Northeast of Hawaii
+LOC_2_IN,к северо-востоку от Гавайев,northeast of Hawaii
 LOC_3_NAME,Точка Немо,Point Nemo
+LOC_3_IN,в точке Немо,at Point Nemo
 LOC_4_NAME,Форт-Провиденс,Fort Providence
+LOC_4_IN,в Форт-Провиденсе,in Fort Providence
 LOC_5_NAME,Средний Запад,The Midwest
+LOC_5_IN,на Среднем Западе,in the Midwest
 LOC_6_NAME,Даллас,Dallas
+LOC_6_IN,в Далласе,in Dallas
 LOC_7_NAME,Панама,Panama City
+LOC_7_IN,в Панаме,in Panama City
 LOC_8_NAME,Бермудский треугольник,Bermuda Triangle
+LOC_8_IN,в Бермудском треугольнике,in the Bermuda Triangle
 LOC_9_NAME,Остров Диско,Disko Island
+LOC_9_IN,на острове Диско,on Disko Island
 LOC_10_NAME,Дакар,Dakar
+LOC_10_IN,в Дакаре,in Dakar
 LOC_11_NAME,Тристан-да-Кунья,Tristan de Cunha
+LOC_11_IN,на Тристан-да-Кунья,on Tristan de Cunha
 LOC_12_NAME,Южная Георгия,South Georgia
+LOC_12_IN,на Южной Георгии,on South Georgia
 LOC_13_NAME,Земля Франца-Иосифа,Franz Josef Land
+LOC_13_IN,на Земле Франца-Иосифа,on Franz Josef Land
 LOC_14_NAME,Оулу,Oulu
+LOC_14_IN,в Оулу,in Oulu
 LOC_15_NAME,Кейптаун,Cape Town
+LOC_15_IN,в Кейптауне,in Cape Town
 LOC_16_NAME,Красноярск,Krasnoyarsk
+LOC_16_IN,в Красноярске,in Krasnoyarsk
 LOC_17_NAME,Бомбей,Bombay
+LOC_17_IN,в Бомбее,in Bombay
 LOC_18_NAME,Кергелен,Kerguelen
+LOC_18_IN,на Кергелене,on Kerguelen
 LOC_19_NAME,Беринговский,Beringovsky
+LOC_19_IN,в Беринговском,in Beringovsky
 LOC_20_NAME,Макассар,Makassar
+LOC_20_IN,в Макассаре,in Makassar
 LOC_21_NAME,Улуру,Uluru
+LOC_21_IN,у Улуру,at Uluru
 LOC_THE_AMAZON_NAME,Амазония,The Amazon
+LOC_THE_AMAZON_IN,в Амазонии,in the Amazon
 LOC_THE_PYRAMIDS_NAME,Пирамиды,The Pyramids
+LOC_THE_PYRAMIDS_IN,у Пирамид,at the Pyramids
 LOC_THE_HEART_OF_AFRICA_NAME,Сердце Африки,The Heart of Africa
+LOC_THE_HEART_OF_AFRICA_IN,в Сердце Африки,in the Heart of Africa
 LOC_THE_HIMALAYAS_NAME,Гималаи,The Himalayas
+LOC_THE_HIMALAYAS_IN,в Гималаях,in the Himalayas
 LOC_TUNGUSKA_NAME,Тунгуска,Tunguska
+LOC_TUNGUSKA_IN,на Тунгуске,at Tunguska
 LOC_ANTARCTICA_NAME,Антарктида,Antarctica
+LOC_ANTARCTICA_IN,в Антарктиде,in Antarctica
 LOC_SAN_FRANCISCO_NAME,Сан-Франциско,San Francisco
+LOC_SAN_FRANCISCO_IN,в Сан-Франциско,in San Francisco
 LOC_ARKHAM_NAME,Аркхэм,Arkham
+LOC_ARKHAM_IN,в Аркхэме,in Arkham
 LOC_BUENOS_AIRES_NAME,Буэнос-Айрес,Buenos Aires
+LOC_BUENOS_AIRES_IN,в Буэнос-Айресе,in Buenos Aires
 LOC_LONDON_NAME,Лондон,London
+LOC_LONDON_IN,в Лондоне,in London
 LOC_ROME_NAME,Рим,Rome
+LOC_ROME_IN,в Риме,in Rome
 LOC_ISTANBUL_NAME,Стамбул,Istanbul
+LOC_ISTANBUL_IN,в Стамбуле,in Istanbul
 LOC_SHANGHAI_NAME,Шанхай,Shanghai
+LOC_SHANGHAI_IN,в Шанхае,in Shanghai
 LOC_SYDNEY_NAME,Сидней,Sydney
+LOC_SYDNEY_IN,в Сиднее,in Sydney
 LOC_TOKYO_NAME,Токио,Tokyo
+LOC_TOKYO_IN,в Токио,in Tokyo
 ,,
 SKILL_LORE,ЗНАНИЕ,LORE
 SKILL_INFLUENCE,ВЛИЯНИЕ,INFLUENCE
@@ -690,6 +726,7 @@ ENCOUNTER_CHOICE_GENERAL_CITY,Встреча в городе,City encounter
 ENCOUNTER_CHOICE_GENERAL_SEA,Встреча в море,Sea encounter
 ENCOUNTER_CHOICE_GENERAL_WILDERNESS,Встреча в глуши,Wilderness encounter
 ENCOUNTER_CHOICE_LOCAL,Локационная встреча,Location encounter
+ENCOUNTER_CHOICE_LOCAL_AT,Встреча %s,Encounter %s
 ENCOUNTER_CHOICE_RESEARCH,Найти улику,Find a clue
 ENCOUNTER_CHOICE_GATE,Войти во врата,Enter the gate
 ENCOUNTER_CHOICE_COMBAT,Бой,Combat
