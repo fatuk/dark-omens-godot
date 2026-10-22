@@ -15,6 +15,9 @@ const _MythosModal := preload("res://scripts/ui/mythos_modal.gd")
 const _ANCIENT_ART_DIR := "res://assets/ancients/"
 const _ANCIENT_PANEL := Vector2(760, 960)
 const _ANCIENT_ART_MIN_H: float = 360.0
+# Тайна с артом — тот же разворот, что у Древнего. Арт — res://assets/mysteries/
+# <sourceId>.png (id карточки Тайны в CMS); нет файла — прежнее компактное окно.
+const _MYSTERY_ART_DIR := "res://assets/mysteries/"
 const _GATE_PANEL_W: float = 620.0
 
 # Зум подобран под эталонную карту (MapLayer.REF_TILE_W). Ассет крупнее — те же
@@ -1461,12 +1464,19 @@ func _render_gate() -> void:
 			# Eyebrow по порядковому номеру Тайны в последовательности (Первая/Вторая/
 			# Третья), а не по «акту» — актов у Тайн нет.
 			var seq: int = clampi(GameState.active_mystery + 1, 1, 3)
+			var art: Texture2D = _mystery_art(String(m.get("sourceId", "")))
+			if art != null:
+				_gate_panel.custom_minimum_size = _ANCIENT_PANEL
 			_gate_eyebrow("INTRO_MYSTERY_EYEBROW_%d" % seq)
 			_gate_title(String(m.get("title", "")))
+			if art != null:
+				_gate_vbox.add_child(_MythosModal.ornament_divider())
 			var flavor: String = String(m.get("flavorText", ""))
 			if not flavor.is_empty():
 				_gate_body(flavor)
 			_gate_body(String(m.get("text", "")))
+			if art != null:
+				_gate_art_pane(art)
 			if _mystery_review:
 				_gate_subtitle(_mystery_progress_text(m))  # сколько уже сделано
 				_gate_button("BTN_OK", _on_gate_start)
@@ -1487,13 +1497,26 @@ func _render_ancient(ao: Dictionary) -> void:
 	var divider: Control = _MythosModal.ornament_divider()
 	_gate_vbox.add_child(divider)
 	_gate_body(String(ao.get("description", "")))
+	_gate_art_pane(_ancient_art(String(ao.get("id", ""))))
+	_gate_button("INTRO_NEXT", _on_gate_next)
+
+
+# Арт разворота (Древний, Тайна) в рамке карты Мифов: забирает оставшуюся высоту.
+func _gate_art_pane(tex: Texture2D) -> void:
 	var parts: Dictionary = _MythosModal.make_art_pane()
 	var pane: Control = parts["pane"]
 	pane.custom_minimum_size = Vector2(0, _ANCIENT_ART_MIN_H)
 	pane.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	(parts["art"] as TextureRect).texture = _ancient_art(String(ao.get("id", "")))
+	(parts["art"] as TextureRect).texture = tex
 	_gate_vbox.add_child(pane)
-	_gate_button("INTRO_NEXT", _on_gate_next)
+
+
+# Арт Тайны по id её карточки в CMS (assets/mysteries/<sourceId>.png); нет — null.
+func _mystery_art(source_id: String) -> Texture2D:
+	var path: String = _MYSTERY_ART_DIR + source_id + ".png"
+	if source_id.is_empty() or not ResourceLoader.exists(path):
+		return null
+	return load(path)
 
 
 # Арт Древнего по его id (assets/ancients/<id>.png); нет файла — null.

@@ -104,6 +104,7 @@
 				"doomClock": 10,
 				"mysteries": [
 					{
+						"sourceId": "demo-sheaf-mystery-1",
 						"id": "c91a1306-b72b-4c48-a573-6f4cee8e301c",
 						"title": "Первый сноп",
 						"flavorText": "Полоса примятых колосьев уходит от дома в поле и обрывается.",
@@ -147,6 +148,7 @@
 						"locations": []
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-2",
 						"id": "89d1a6b5-01ae-4c48-992f-b2d5e75c5eff",
 						"title": "Книга, которой нет в каталоге",
 						"flavorText": "По уликам видно: сноп перевязан по правилу, и правило где-то записано.",
@@ -212,6 +214,7 @@
 						]
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-3",
 						"id": "a44fccc7-5dc8-4137-b1d0-5674386cf3c7",
 						"title": "Старший",
 						"flavorText": "Тот, на кого записаны все завещания, вышел на поле. Он не спрашивает, где сноп, — он идёт к тому, у кого он.",
@@ -716,6 +719,7 @@
 				"doomClock": 10,
 				"mysteries": [
 					{
+						"sourceId": "demo-sheaf-mystery-1",
 						"id": "ee6af8a2-490b-44f6-bb4a-3dc8e630924d",
 						"title": "Первый сноп",
 						"flavorText": "Полоса примятых колосьев уходит от дома в поле и обрывается.",
@@ -759,6 +763,7 @@
 						"locations": []
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-2",
 						"id": "9e10173b-707a-44ab-81d6-4ee17d2ef553",
 						"title": "Книга, которой нет в каталоге",
 						"flavorText": "По уликам видно: сноп перевязан по правилу, и правило где-то записано.",
@@ -824,6 +829,7 @@
 						]
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-3",
 						"id": "5b42e39a-4968-4c53-a969-7b44dbb02e2f",
 						"title": "Старший",
 						"flavorText": "Тот, на кого записаны все завещания, вышел на поле. Он не спрашивает, где сноп, — он идёт к тому, у кого он.",
@@ -1328,6 +1334,7 @@
 				"doomClock": 10,
 				"mysteries": [
 					{
+						"sourceId": "demo-sheaf-mystery-1",
 						"id": "e9959bb2-ca5f-493e-8afc-2b503e27470c",
 						"title": "Первый сноп",
 						"flavorText": "Полоса примятых колосьев уходит от дома в поле и обрывается.",
@@ -1371,6 +1378,7 @@
 						"locations": []
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-2",
 						"id": "bf0928f7-1294-4611-a310-5e268066d436",
 						"title": "Книга, которой нет в каталоге",
 						"flavorText": "По уликам видно: сноп перевязан по правилу, и правило где-то записано.",
@@ -1436,6 +1444,7 @@
 						]
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-3",
 						"id": "aa72a5d6-d3d9-4034-a124-fbf19d1189f4",
 						"title": "Старший",
 						"flavorText": "Тот, на кого записаны все завещания, вышел на поле. Он не спрашивает, где сноп, — он идёт к тому, у кого он.",
@@ -1940,6 +1949,7 @@
 				"doomClock": 10,
 				"mysteries": [
 					{
+						"sourceId": "demo-sheaf-mystery-1",
 						"id": "1d404de4-46a9-42e8-8925-7ee517fa91e7",
 						"title": "Первый сноп",
 						"flavorText": "Полоса примятых колосьев уходит от дома в поле и обрывается.",
@@ -1983,6 +1993,7 @@
 						"locations": []
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-2",
 						"id": "a4fc8832-5cbb-4ecd-be89-19753ad08dc2",
 						"title": "Книга, которой нет в каталоге",
 						"flavorText": "По уликам видно: сноп перевязан по правилу, и правило где-то записано.",
@@ -2048,6 +2059,7 @@
 						]
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-3",
 						"id": "0fd64820-2ff7-4a4b-94e6-f7a7fb604ab7",
 						"title": "Старший",
 						"flavorText": "Тот, на кого записаны все завещания, вышел на поле. Он не спрашивает, где сноп, — он идёт к тому, у кого он.",
@@ -2554,6 +2566,7 @@
 				"doomClock": 10,
 				"mysteries": [
 					{
+						"sourceId": "demo-sheaf-mystery-1",
 						"id": "b028af75-c1a5-4099-a7e4-d9b0758710ac",
 						"title": "The First Sheaf",
 						"flavorText": "A strip of trampled stalks runs from the house into the field and breaks off.",
@@ -2597,6 +2610,7 @@
 						"locations": []
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-2",
 						"id": "c01f3101-f8be-4415-b6ed-7a83be7c018c",
 						"title": "The Book Not in the Catalogue",
 						"flavorText": "The clues agree: the sheaf is tied by a rule, and the rule is written down somewhere.",
@@ -2662,6 +2676,7 @@
 						]
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-3",
 						"id": "a823ef22-114d-4115-9ca0-47a0623c5a78",
 						"title": "The Elder",
 						"flavorText": "The one every will is made out to has walked onto the field. He does not ask where the sheaf is; he walks to whoever holds it.",
@@ -3166,6 +3181,7 @@
 				"doomClock": 10,
 				"mysteries": [
 					{
+						"sourceId": "demo-sheaf-mystery-1",
 						"id": "3420ca3a-e229-42b1-bc81-507ed5ad0587",
 						"title": "The First Sheaf",
 						"flavorText": "A strip of trampled stalks runs from the house into the field and breaks off.",
@@ -3209,6 +3225,7 @@
 						"locations": []
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-2",
 						"id": "d04ee436-86c0-4108-a33a-0fe15982aaf2",
 						"title": "The Book Not in the Catalogue",
 						"flavorText": "The clues agree: the sheaf is tied by a rule, and the rule is written down somewhere.",
@@ -3274,6 +3291,7 @@
 						]
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-3",
 						"id": "850fc36b-8923-421f-a0a2-48c9becf19cb",
 						"title": "The Elder",
 						"flavorText": "The one every will is made out to has walked onto the field. He does not ask where the sheaf is; he walks to whoever holds it.",
@@ -3778,6 +3796,7 @@
 				"doomClock": 10,
 				"mysteries": [
 					{
+						"sourceId": "demo-sheaf-mystery-1",
 						"id": "4dbfa8a6-6fff-463e-ba5b-dd9c81604cf9",
 						"title": "The First Sheaf",
 						"flavorText": "A strip of trampled stalks runs from the house into the field and breaks off.",
@@ -3821,6 +3840,7 @@
 						"locations": []
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-2",
 						"id": "5414f366-1f09-4a87-bd9b-ab6ffaae1462",
 						"title": "The Book Not in the Catalogue",
 						"flavorText": "The clues agree: the sheaf is tied by a rule, and the rule is written down somewhere.",
@@ -3886,6 +3906,7 @@
 						]
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-3",
 						"id": "40c14a5c-e416-40de-b485-682097ce6c77",
 						"title": "The Elder",
 						"flavorText": "The one every will is made out to has walked onto the field. He does not ask where the sheaf is; he walks to whoever holds it.",
@@ -4390,6 +4411,7 @@
 				"doomClock": 10,
 				"mysteries": [
 					{
+						"sourceId": "demo-sheaf-mystery-1",
 						"id": "154ca698-f294-4a1a-84cc-43f805e50dda",
 						"title": "The First Sheaf",
 						"flavorText": "A strip of trampled stalks runs from the house into the field and breaks off.",
@@ -4433,6 +4455,7 @@
 						"locations": []
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-2",
 						"id": "b756f452-c138-436d-83cd-9e08fad086b1",
 						"title": "The Book Not in the Catalogue",
 						"flavorText": "The clues agree: the sheaf is tied by a rule, and the rule is written down somewhere.",
@@ -4498,6 +4521,7 @@
 						]
 					},
 					{
+						"sourceId": "demo-sheaf-mystery-3",
 						"id": "348322de-d558-4606-bbb0-d1d40b7b8e5d",
 						"title": "The Elder",
 						"flavorText": "The one every will is made out to has walked onto the field. He does not ask where the sheaf is; he walks to whoever holds it.",
