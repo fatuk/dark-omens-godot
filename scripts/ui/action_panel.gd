@@ -9,9 +9,9 @@ extends CanvasLayer
 ##
 ## Всё строится в 2× (ассеты @2×) и ужимается обёрткой scale 0.5 → кант чёткий.
 ##
-## Геймпад: правый курок (GameInput.ACTIONS) переводит фокус на панель — крестовина
-## по действиям, ✕/A выполнить, ○/B или курок ещё раз — обратно на карту. Пока
-## активна, панель — зона фокуса PadFocus (is_open()).
+## Геймпад: пока зажат правый курок (GameInput.ACTIONS), фокус на панели —
+## крестовина по действиям, ✕/A выполнить; отпустил курок (или ○/B) — обратно на
+## карту. Пока активна, панель — зона фокуса PadFocus (is_open()).
 
 const _A := "res://assets/action-panel/"
 const _REST_MODAL := preload("res://scenes/ui/modal_dialog.tscn")
@@ -36,7 +36,7 @@ var _clue_count: Label
 var _last_tickets: int = -1  # без лишних ребилдов стопки
 var _busy: bool = false  # идёт анимация действия (пас/жетон) — держим флоу, блочим клики
 var _pad_active: bool = false  # фокус геймпада на панели (R2)
-var _pad_trigger: bool = false  # курок был зажат в прошлом кадре — ловим только нажатие
+var _pad_trigger: bool = false  # курок был зажат в прошлом кадре — ловим смену состояния
 
 
 func _ready() -> void:
@@ -159,16 +159,16 @@ func is_open() -> bool:
 	return _pad_active and _root.visible
 
 
-# Курок — ось: реагируем на момент нажатия (состояние действия поменялось).
+# Курок — ось: реагируем на смену состояния. Зажал — на панель; отпустил — назад.
+# Выполнил действие, не отпуская, — панель уже отпущена; снова — новым нажатием.
 func _process(_dt: float) -> void:
 	var held: bool = Input.is_action_pressed(GameInput.ACTIONS)
 	if held == _pad_trigger:
 		return
 	_pad_trigger = held
 	if not held:
-		return
-	if _pad_active:
-		_pad_exit()
+		if _pad_active:
+			_pad_exit()
 	elif not UIStyle.any_modal_open() and not _fan_open():
 		_pad_enter()
 
