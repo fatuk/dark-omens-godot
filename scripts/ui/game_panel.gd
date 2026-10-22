@@ -2,6 +2,11 @@ extends CanvasLayer
 
 ## HUD-панель основной игровой информации.
 ## Тонкий API — наружу выставлены простые сеттеры.
+##
+## Геймпад: пока зажат левый курок (GameInput.PEEK_OMEN — он же подсматривает знамение),
+## фокус на панели: крестовина между компасом (Миф), медальоном (Запасы) и орбом
+## раунда (Тайна), ✕/A открывает; отпустил курок (или ○/B) — обратно на карту. Пока
+## активна, панель — зона фокуса PadFocus (is_open()). Зеркально R2 у панели действий.
 
 const _PHASE_RUNES: int = 4  # рун в кадре при смене фазы
 const _PLAYER_RUNES: int = 5  # рун в кадре при смене имени игрока
@@ -32,6 +37,11 @@ signal supply_requested
 # он лежит поверх той же полосы.
 const _SUPPLY_HOTSPOT := Rect2(330.0, 6.0, 108.0, 86.0)
 const _HOVER_ALPHA: float = 0.16  # подсветка медальона под курсором
+const _PAD_FOCUS_TINT := Color(1.35, 1.28, 1.08)  # элемент панели в фокусе с геймпада
+
+var _pad_targets: Array = []  # [Control] — компас, медальон, орб (слева направо)
+var _pad_active: bool = false
+var _pad_trigger: bool = false  # курок был зажат в прошлом кадре
 
 
 func _ready() -> void:
@@ -40,6 +50,87 @@ func _ready() -> void:
 	_info.gui_input.connect(_on_info_gui_input)
 	_omens.clicked.connect(func() -> void: mythos_review_requested.emit())
 	_build_supply_hotspot()
+	add_to_group(PadFocus.ZONE)
+	_add_pad_target(_omens, func() -> void: mythos_review_requested.emit())
+	_add_pad_target(
+		$Root/SupplyHotspot as Control, func() -> void: supply_requested.emit(), "Hover"
+	)
+	_add_pad_target(_info, func() -> void: round_clicked.emit())
+	# Иконка курка (L2/LT) у левого края панели — только при игре с геймпада.
+	var glyph := InputGlyph.make(GameInput.PEEK_OMEN, 30.0, false)
+	glyph.position = Vector2(-112.0, 40.0)
+	($Root as Control).add_child(glyph)
+
+
+# ── Геймпад ──────────────────────────────────────────────────────────────────
+
+
+## Зона фокуса PadFocus открыта, пока панель активна с геймпада.
+func is_open() -> bool:
+	return _pad_active
+
+
+# Элемент панели, доступный с геймпада: фокус только пока панель активна; в фокусе —
+# подсветка (glow_name — свой оверлей подсветки, иначе модуляция), ✕/A — open.
+func _add_pad_target(ctrl: Control, open: Callable, glow_name: String = "") -> void:
+	ctrl.focus_mode = Control.FOCUS_NONE
+	var glow: Control = ctrl.get_node_or_null(glow_name) if glow_name else null
+	ctrl.focus_entered.connect(
+		func() -> void:
+			if glow != null:
+				_fade(glow, 1.0)
+			else:
+				ctrl.modulate = _PAD_FOCUS_TINT
+	)
+	ctrl.focus_exited.connect(
+		func() -> void:
+			if glow != null:
+				_fade(glow, 0.0)
+			else:
+				ctrl.modulate = Color.WHITE
+	)
+	ctrl.gui_input.connect(
+		func(event: InputEvent) -> void:
+			if _pad_active and event.is_action_pressed(&"ui_accept"):
+				ctrl.accept_event()
+				_pad_exit()
+				open.call()
+	)
+	_pad_targets.append(ctrl)
+
+
+# Курок — ось: реагируем на смену состояния. Зажал — на панель; отпустил — назад.
+func _process(_dt: float) -> void:
+	var held: bool = Input.is_action_pressed(GameInput.PEEK_OMEN)
+	if held == _pad_trigger:
+		return
+	_pad_trigger = held
+	if not held:
+		if _pad_active:
+			_pad_exit()
+	elif InputDevice.using_pad() and not UIStyle.any_modal_open():
+		_pad_enter()
+
+
+func _input(event: InputEvent) -> void:
+	if _pad_active and event is InputEventJoypadButton and event.is_action_pressed(GameInput.BACK):
+		_pad_exit()
+		get_viewport().set_input_as_handled()
+
+
+func _pad_enter() -> void:
+	for c: Control in _pad_targets:
+		c.focus_mode = Control.FOCUS_ALL
+	_pad_active = true
+	(_pad_targets[0] as Control).grab_focus()
+
+
+func _pad_exit() -> void:
+	_pad_active = false
+	for c: Control in _pad_targets:
+		if c.has_focus():
+			c.release_focus()
+		c.focus_mode = Control.FOCUS_NONE
 
 
 # «Запасы» открываются кликом по медальону в фоне панели — отдельной кнопки нет.

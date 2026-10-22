@@ -180,8 +180,10 @@ func _input(event: InputEvent) -> void:
 
 
 func _pad_enter() -> void:
+	_set_pad_focusable(true)
 	var first: Control = PadFocus.pick(self)
 	if first == null:
+		_set_pad_focusable(false)
 		return  # не мой ход — все действия недоступны, фокусу некуда встать
 	_pad_active = true
 	first.grab_focus()
@@ -189,9 +191,12 @@ func _pad_enter() -> void:
 
 func _pad_exit() -> void:
 	_pad_active = false
-	var foc: Control = get_viewport().gui_get_focus_owner()
-	if foc != null and is_ancestor_of(foc):
-		foc.release_focus()
+	_set_pad_focusable(false)  # снимает и фокус
+
+
+func _set_pad_focusable(v: bool) -> void:
+	for ab: ActionButton in [_rest_ab, _conc_ab, _res_ab, _pass_ab]:
+		ab.set_pad_focusable(v)
 
 
 func _fan_open() -> bool:

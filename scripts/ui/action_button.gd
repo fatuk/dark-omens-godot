@@ -10,8 +10,9 @@ extends Control
 ##
 ## API: new(icon, title, key, overlay=null, with_badge=false) → эмитит `pressed`;
 ##      set_disabled(b), set_badge(n), spin_overlay(), pop_token().
-## Геймпад: доступная кнопка фокусируема (ActionPanel по R2), в фокусе подсвечена как
-## от наведения, ✕/A — нажатие.
+## Геймпад: доступная кнопка фокусируема, пока панель активна (ActionPanel по R2 —
+## set_pad_focusable), в фокусе подсвечена как от наведения, ✕/A — нажатие. Вне
+## этого фокус не берёт — крестовина с других панелей сюда не уводит.
 
 signal pressed
 
@@ -76,6 +77,7 @@ var _plaque_lbl: Label
 var _key: String = ""
 var _disabled: bool = false
 var _hover: bool = false
+var _pad_focusable: bool = false  # панель действий активна с геймпада
 
 
 func _init(
@@ -88,7 +90,7 @@ func _init(
 	_key = text_key
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	focus_mode = Control.FOCUS_ALL
+	focus_mode = Control.FOCUS_NONE
 	focus_entered.connect(_apply_mod)
 	focus_exited.connect(_apply_mod)
 
@@ -199,10 +201,21 @@ func _gui_input(event: InputEvent) -> void:
 func set_disabled(v: bool) -> void:
 	_disabled = v
 	mouse_default_cursor_shape = (Control.CURSOR_ARROW if v else Control.CURSOR_POINTING_HAND)
-	focus_mode = Control.FOCUS_NONE if v else Control.FOCUS_ALL
-	if v and has_focus():
-		release_focus()
+	_apply_focus_mode()
 	_apply_mod()
+
+
+## Панель действий активна с геймпада — доступная кнопка принимает фокус.
+func set_pad_focusable(v: bool) -> void:
+	_pad_focusable = v
+	_apply_focus_mode()
+
+
+func _apply_focus_mode() -> void:
+	var can: bool = _pad_focusable and not _disabled
+	focus_mode = Control.FOCUS_ALL if can else Control.FOCUS_NONE
+	if not can and has_focus():
+		release_focus()
 
 
 func set_badge(n: int) -> void:

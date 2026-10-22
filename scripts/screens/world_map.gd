@@ -1176,8 +1176,8 @@ func _input(event: InputEvent) -> void:
 func _pad_map_input(event: InputEvent) -> bool:
 	if _fan_open() or event is InputEventMouse or event is InputEventJoypadMotion:
 		return false
-	if get_viewport().gui_get_focus_owner() is ActionButton:
-		return false  # фокус на панели действий (R2) — крестовина/✕ её
+	if _focus_in_hud_zone():
+		return false  # фокус на панели действий (R2) / верхней панели (L2) — крестовина её
 	var dir := Vector2.ZERO
 	if event.is_action_pressed(&"ui_left", true):
 		dir = Vector2.LEFT
@@ -1251,6 +1251,17 @@ func _pad_accept() -> void:
 		return
 	if not _sidebar.is_open():
 		_open_location(loc)
+
+
+# Фокус в открытой зоне фокуса HUD (панель действий, верхняя панель), не в сайдбаре.
+func _focus_in_hud_zone() -> bool:
+	var foc: Control = get_viewport().gui_get_focus_owner()
+	if foc == null or _sidebar.is_ancestor_of(foc):
+		return false
+	for z: Node in get_tree().get_nodes_in_group(PadFocus.ZONE):
+		if z.has_method("is_open") and bool(z.call("is_open")) and z.is_ancestor_of(foc):
+			return true
+	return false
 
 
 func _sidebar_has_focus() -> bool:
