@@ -23,14 +23,36 @@ func test_register_is_idempotent() -> void:
 	assert_eq(InputMap.action_get_events(&"ui_left").size(), m)
 
 
-func test_left_stick_moves_ui_focus() -> void:
+func test_raw_stick_not_bound_to_ui() -> void:
 	GameInput.register()
 	var ev := InputEventJoypadMotion.new()
 	ev.axis = JOY_AXIS_LEFT_X
 	ev.axis_value = -0.9
-	assert_true(ev.is_action(&"ui_left"), "стик влево — ui_left")
-	ev.axis_value = 0.2
-	assert_false(ev.is_action_pressed(&"ui_left"), "в мёртвой зоне — нет")
+	assert_false(ev.is_action(&"ui_left"), "сырая ось не листает — шаги шлёт InputDevice")
+
+
+func test_stick_hysteresis() -> void:
+	assert_eq(InputDevice.stick_dir(0, -0.9), -1, "толчок влево")
+	assert_eq(InputDevice.stick_dir(-1, -0.5), -1, "между порогами — держим")
+	assert_eq(InputDevice.stick_dir(0, -0.5), 0, "между порогами — не включаем")
+	assert_eq(InputDevice.stick_dir(-1, -0.1), 0, "отпустили")
+	assert_eq(InputDevice.stick_dir(-1, 0.8), 1, "перекинули вправо")
+
+
+func test_stick_push_is_one_step() -> void:
+	var dev := InputDevice.new()
+	dev.name = "TestDevice"
+	add_child_autofree(dev)
+	dev.stick(JOY_AXIS_LEFT_X, -0.9)
+	Input.flush_buffered_events()  # синтезированное нажатие применяется на флаше
+	assert_true(Input.is_action_pressed(&"ui_left"), "толчок — ui_left нажат")
+	dev.stick(JOY_AXIS_LEFT_X, -0.95)
+	dev.stick(JOY_AXIS_LEFT_X, -0.7)
+	assert_eq(dev._held, &"ui_left", "дрожание в наклоне не шлёт новых шагов")
+	dev.stick(JOY_AXIS_LEFT_X, 0.0)
+	Input.flush_buffered_events()
+	assert_false(Input.is_action_pressed(&"ui_left"), "отпустили — отпущен")
+	assert_eq(dev._held, &"", "автоповтор снят")
 
 
 func test_family_by_vendor_and_name() -> void:
@@ -109,3 +131,36 @@ func _btn(parent: Control, text: String) -> Button:
 	b.text = text
 	parent.add_child(b)
 	return b
+
+
+# ── Карта: шаг курсора по направлению ─────────────────────────────────────────
+
+
+func test_pick_direction_prefers_aligned_and_wraps() -> void:
+	var c := {"me": Vector2(500, 500), "east": Vector2(700, 520), "ne": Vector2(600, 380)}
+	c["far_e"] = Vector2(1500, 500)
+	assert_eq(MapLayer.pick_direction(c["me"], Vector2.RIGHT, c, 2000.0, "me"), "east")
+	assert_eq(MapLayer.pick_direction(c["me"], Vector2.UP, c, 2000.0, "me"), "ne")
+	assert_eq(MapLayer.pick_direction(c["me"], Vector2.DOWN, c, 2000.0, "me"), "", "вниз — пусто")
+	# Через шов: от x=1900 вправо ближайшая — x=100 (копия справа).
+	var w := {"edge": Vector2(1900, 500), "wrap": Vector2(100, 500), "back": Vector2(1500, 500)}
+	assert_eq(MapLayer.pick_direction(w["edge"], Vector2.RIGHT, w, 2000.0, "edge"), "wrap")
+
+
+# ── ○/B: чем закрыть модалку ──────────────────────────────────────────────────
+
+
+func test_find_dismiss_close_meta_then_text() -> void:
+	var root: Control = autofree(Control.new())
+	root.name = "Modal"
+	add_child(root)
+	var roll := _btn(root, "CAST_ROLL")
+	var ok := _btn(root, "GAINS_OK")
+	assert_eq(PadFocus.find_dismiss(root), ok, "кнопка «ок» — закрывает")
+	var x := _btn(root, "")
+	x.set_meta(PadFocus.CLOSE, true)
+	assert_eq(PadFocus.find_dismiss(root), x, "крестик — первым")
+	x.visible = false
+	ok.disabled = true
+	assert_null(PadFocus.find_dismiss(root), "решающие кнопки (бросок) «назад» не жмёт")
+	assert_not_null(roll)

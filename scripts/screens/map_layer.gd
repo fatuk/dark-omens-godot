@@ -622,6 +622,43 @@ func _conn_color(ctype: String) -> Color:
 	return COLOR_SHIP
 
 
+## Соседняя по направлению dir (крестовина/стик) локация от from_id — навигация
+## геймпадом по карте. "" — в ту сторону ничего нет.
+func neighbor_in_direction(from_id: String, dir: Vector2) -> String:
+	if not _locs.has(from_id):
+		return ""
+	var cands: Dictionary = {}
+	for id_v: Variant in _locs:
+		cands[String(id_v)] = _locs[id_v].pos
+	return pick_direction(_locs[from_id].pos, dir, cands, TILE_W, from_id)
+
+
+## Ближайший к from кандидат в секторе ±70° от dir; ровно по направлению — лучше
+## (штраф за угол). Карта закольцована по X — смещение до ближайшей копии.
+static func pick_direction(
+	from: Vector2, dir: Vector2, cands: Dictionary, tile_w: float, skip: String = ""
+) -> String:
+	var best: String = ""
+	var best_score: float = INF
+	for id_v: Variant in cands:
+		var id: String = String(id_v)
+		if id == skip:
+			continue
+		var d: Vector2 = (cands[id_v] as Vector2) - from
+		d.x = wrapf(d.x, -tile_w * 0.5, tile_w * 0.5)
+		var dist: float = d.length()
+		if dist < 1.0:
+			continue
+		var cos_a: float = d.dot(dir.normalized()) / dist
+		if cos_a < 0.34:
+			continue
+		var score: float = dist * (1.0 + 2.5 * (1.0 - cos_a))
+		if score < best_score:
+			best_score = score
+			best = id
+	return best
+
+
 ## Мировая позиция локации (центральный тайл) по id, либо Vector2.INF если нет.
 func loc_world_pos(loc_id: String) -> Vector2:
 	if _locs.has(loc_id):

@@ -620,6 +620,7 @@ static func style_modal_close_button(btn: Button) -> void:
 	btn.flat = true
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	btn.set_meta(PadFocus.CLOSE, true)  # ○/B с геймпада жмёт его (PadFocus)
 	if btn.custom_minimum_size == Vector2.ZERO:
 		btn.custom_minimum_size = Vector2(32, 32)
 	var empty := StyleBoxEmpty.new()

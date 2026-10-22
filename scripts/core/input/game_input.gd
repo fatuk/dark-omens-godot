@@ -27,7 +27,8 @@ const _ACTIONS := {
 	PAGE_NEXT: [[KEY_RIGHT], [JOY_BUTTON_RIGHT_SHOULDER]],
 }
 
-# Встроенные ui_* (навигация фокусом): кнопки и направление левого стика.
+# Встроенные ui_* (навигация фокусом): кнопки. Левый стик к ui_* НЕ привязан —
+# его в шаги переводит InputDevice (сырая ось листала бы на каждое микродвижение).
 const _UI_BUTTONS := {
 	&"ui_accept": JOY_BUTTON_A,
 	&"ui_cancel": JOY_BUTTON_B,
@@ -35,12 +36,6 @@ const _UI_BUTTONS := {
 	&"ui_down": JOY_BUTTON_DPAD_DOWN,
 	&"ui_left": JOY_BUTTON_DPAD_LEFT,
 	&"ui_right": JOY_BUTTON_DPAD_RIGHT,
-}
-const _UI_STICK := {
-	&"ui_up": [JOY_AXIS_LEFT_Y, -1.0],
-	&"ui_down": [JOY_AXIS_LEFT_Y, 1.0],
-	&"ui_left": [JOY_AXIS_LEFT_X, -1.0],
-	&"ui_right": [JOY_AXIS_LEFT_X, 1.0],
 }
 
 
@@ -58,9 +53,11 @@ static func register() -> void:
 			_add(action, _button(b))
 	for action: StringName in _UI_BUTTONS:
 		_add(action, _button(int(_UI_BUTTONS[action])))
-	for action: StringName in _UI_STICK:
-		var axis: Array = _UI_STICK[action]
-		_add(action, _axis(int(axis[0]), float(axis[1])))
+	# Оси левого стика из встроенных ui_* (в Godot они там по умолчанию) снимаем.
+	for action: StringName in _UI_BUTTONS:
+		for ev: InputEvent in InputMap.action_get_events(action):
+			if ev is InputEventJoypadMotion:
+				InputMap.action_erase_event(action, ev)
 
 
 ## Кнопка геймпада, назначенная действию (первая), или -1.
@@ -98,12 +95,4 @@ static func _button(b: int) -> InputEventJoypadButton:
 	var ev := InputEventJoypadButton.new()
 	ev.device = -1  # любой геймпад
 	ev.button_index = b as JoyButton
-	return ev
-
-
-static func _axis(axis: int, dir: float) -> InputEventJoypadMotion:
-	var ev := InputEventJoypadMotion.new()
-	ev.device = -1
-	ev.axis = axis as JoyAxis
-	ev.axis_value = dir
 	return ev

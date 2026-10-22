@@ -101,6 +101,7 @@ const _CLUE_ICON_PX := 36.0
 
 func _ready() -> void:
 	add_to_group("location_sidebar")  # тюнинг тени дёргает группу (call_group)
+	add_to_group(PadFocus.ZONE)  # геймпад: фокус на кнопках открытой панели
 	_build_ui()
 	GameState.state_changed.connect(_refresh_actions)
 	GameState.state_changed.connect(_refresh_items)

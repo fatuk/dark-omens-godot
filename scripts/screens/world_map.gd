@@ -157,7 +157,7 @@ func _ready() -> void:
 		GameState.state_changed.connect(_center_on_me_once)
 
 	# Сайдбар закрылся — снимаем подсветку с карты
-	_sidebar.closed.connect(func() -> void: _map_layer.set_selected(""))
+	_sidebar.closed.connect(_on_sidebar_closed)
 	# Кнопка «Магазин» в сайдбаре — открыть модалку магазина.
 	_sidebar.shop_requested.connect(_on_shop_requested)
 	# Кнопка «Обмен» в сайдбаре — открыть модалку обмена.
@@ -1129,11 +1129,152 @@ func _handle_click(screen_pos: Vector2) -> void:
 	if _sidebar.is_open() and _map_layer.get_selected_name() == loc_name:
 		_sidebar.close_panel()
 		return
+	_open_location(loc_name)
+
+
+# Открыть сайдбар локации и подсветить её на карте.
+func _open_location(loc_name: String) -> void:
 	var data: Dictionary = _map_layer.get_location(loc_name)
 	if data.is_empty():
 		return
 	_sidebar.show_location(data)
 	_map_layer.set_selected(loc_name)
+	_pad_cursor = loc_name
+
+
+# Сайдбар закрылся — снять подсветку; фокус с его кнопок (геймпад) — отпустить.
+func _on_sidebar_closed() -> void:
+	_map_layer.set_selected("")
+	var foc: Control = get_viewport().gui_get_focus_owner()
+	if foc != null and _sidebar.is_ancestor_of(foc):
+		foc.release_focus()
+
+
+# ── Геймпад / клавиатура на карте ─────────────────────────────────────────────
+# Курсор — подсветка выбранной локации: крестовина/стик (и стрелки) ведут его к
+# ближайшей локации в ту сторону, камера плавно следует. ✕/A (Enter) — как клик:
+# сайдбар (или выбор цели, если идёт выбор на карте); при открытом сайдбаре
+# ✕/A жмёт его кнопку в фокусе (вверх/вниз — по кнопкам), влево/вправо — соседняя
+# локация в том же сайдбаре. ○/B — закрыть сайдбар, затем снять курсор.
+
+const _PAD_PAN_TIME: float = 0.35
+
+var _pad_cursor: String = ""  # где курсор, даже когда подсветка снята закрытием
+var _pad_pan: Tween = null
+
+
+# В _input, а не после GUI: иначе фокус, оставшийся на кнопке HUD после клика мышью,
+# забирал бы крестовину себе. Кнопки сайдбара в фокусе GUI жмёт/листает сам.
+func _input(event: InputEvent) -> void:
+	if GameConsole.is_open() or UIStyle.any_modal_open():
+		return
+	if _pad_map_input(event):
+		get_viewport().set_input_as_handled()
+
+
+func _pad_map_input(event: InputEvent) -> bool:
+	if _fan_open() or event is InputEventMouse or event is InputEventJoypadMotion:
+		return false
+	var dir := Vector2.ZERO
+	if event.is_action_pressed(&"ui_left", true):
+		dir = Vector2.LEFT
+	elif event.is_action_pressed(&"ui_right", true):
+		dir = Vector2.RIGHT
+	elif event.is_action_pressed(&"ui_up", true):
+		dir = Vector2.UP
+	elif event.is_action_pressed(&"ui_down", true):
+		dir = Vector2.DOWN
+	if dir != Vector2.ZERO:
+		if _sidebar.is_open() and dir.x == 0.0:
+			return false  # вверх/вниз — кнопки сайдбара (их ведёт GUI)
+		_pad_move(dir)
+		return true
+	if event.is_action_pressed(&"ui_accept"):
+		if _sidebar_has_focus():
+			return false  # ✕/A — кнопке сайдбара в фокусе
+		_pad_accept()
+		return true
+	if event is InputEventJoypadButton and event.is_action_pressed(GameInput.BACK):
+		if _sidebar.is_open():
+			_sidebar.close_panel()
+		elif not _map_layer.get_selected_name().is_empty():
+			_map_layer.set_selected("")
+		else:
+			return false
+		return true
+	return false
+
+
+# Шаг курсора. Подсветки нет — первый шаг только показывает курсор там, где он был
+# (или на своём сыщике), не прыгая.
+func _pad_move(dir: Vector2) -> void:
+	var from: String = _map_layer.get_selected_name()
+	if from.is_empty():
+		_pad_select(_pad_start())
+		return
+	var next: String = _map_layer.neighbor_in_direction(from, dir)
+	if not next.is_empty():
+		_pad_select(next)
+
+
+func _pad_start() -> String:
+	if not _pad_cursor.is_empty():
+		return _pad_cursor
+	return String(GameState.my_player().get(PlayerKeys.LOCATION, ""))
+
+
+func _pad_select(loc: String) -> void:
+	if loc.is_empty():
+		return
+	_pad_cursor = loc
+	if _sidebar.is_open():
+		_sidebar.show_location(_map_layer.get_location(loc))
+	_map_layer.set_selected(loc)
+	_pad_pan_to(loc)
+
+
+# ✕/A на курсоре — как клик по локации. Фокус на кнопках открытого сайдбара держит
+# PadFocus (сайдбар — его зона фокуса).
+func _pad_accept() -> void:
+	var loc: String = _map_layer.get_selected_name()
+	if loc.is_empty():
+		_pad_select(_pad_start())
+		return
+	var pick: Dictionary = MapPickPrompt.decision()
+	if not pick.is_empty():
+		var idx: int = MapPickPrompt.option_index(pick, loc)
+		if idx >= 0:
+			GameState.act(RelayActions.MYTHOS_DECIDE, {"index": idx})
+		return
+	if not _sidebar.is_open():
+		_open_location(loc)
+
+
+func _sidebar_has_focus() -> bool:
+	var foc: Control = get_viewport().gui_get_focus_owner()
+	return (
+		foc != null
+		and not foc.is_queued_for_deletion()  # кнопка прошлой локации, ждёт удаления
+		and _sidebar.is_ancestor_of(foc)
+		and foc.is_visible_in_tree()
+	)
+
+
+# Плавно довести камеру до курсора (ближайшая копия по X, вертикаль в пределах карты).
+func _pad_pan_to(loc: String) -> void:
+	var p: Vector2 = _map_layer.loc_world_pos(loc)
+	if p == Vector2.INF:
+		return
+	_inertia_velocity = Vector2.ZERO
+	var tx: float = (
+		_camera.position.x
+		+ wrapf(p.x - _camera.position.x, -MapLayer.TILE_W * 0.5, MapLayer.TILE_W * 0.5)
+	)
+	if _pad_pan != null and _pad_pan.is_valid():
+		_pad_pan.kill()
+	_pad_pan = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_pad_pan.tween_property(_camera, "position", Vector2(tx, _clamp_cam_y(p.y)), _PAD_PAN_TIME)
+	_pad_pan.finished.connect(_apply_bounds)
 
 
 const _SHOP_MODAL := preload("res://scenes/ui/shop_modal.tscn")
