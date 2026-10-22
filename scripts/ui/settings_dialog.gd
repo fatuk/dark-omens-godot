@@ -276,6 +276,14 @@ func _on_save() -> void:
 	queue_free()
 
 
+# Esc / ○ / B — как крестик (отмена без сохранения). Окно не в реестре модалок
+# (открывается из паузы), поэтому «назад» ловим сами.
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed(GameInput.BACK):
+		get_viewport().set_input_as_handled()
+		_on_cancel()
+
+
 func _on_cancel() -> void:
 	# Откатываем live-preview громкостей. Display/lang/fx ещё не были применены.
 	MusicManager.set_volume(_music_snap)

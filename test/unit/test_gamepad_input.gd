@@ -237,3 +237,14 @@ func test_actions_on_right_trigger() -> void:
 	GameInput.register()
 	assert_eq(GameInput.pad_button(GameInput.ACTIONS), GameInput.TRIGGER_RIGHT)
 	assert_eq(InputGlyph.pill_label(InputDevice.PLAYSTATION, GameInput.TRIGGER_RIGHT), "R2")
+
+
+func test_find_dismiss_by_close_name() -> void:
+	var root: Control = autofree(Control.new())
+	root.name = "Telegram"
+	add_child(root)
+	_btn(root, "CAST_ROLL")
+	var x := Button.new()
+	x.name = "Close"  # крестик на арте окна, без меты
+	root.add_child(x)
+	assert_eq(PadFocus.find_dismiss(root), x)

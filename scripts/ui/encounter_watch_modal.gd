@@ -251,6 +251,7 @@ func _build_footer() -> void:
 func _build_close() -> void:
 	var btn := Button.new()
 	btn.name = "Close"
+	btn.set_meta(PadFocus.CLOSE, true)  # ○/B с геймпада жмёт его (PadFocus)
 	btn.flat = true
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND

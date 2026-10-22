@@ -8,8 +8,9 @@ extends Node
 ## умолчанию (мета DEFAULT) или первую доступную, не «×». Фокус в окне ВЫШЕ модалки
 ## (меню паузы, консоль) не трогаем. Без модалки — то же в открытой «зоне фокуса»
 ## (группа ZONE, напр. сайдбар локации; открыта — is_open()), иначе не трогаем.
-## ○/B закрывает верхнюю модалку её же кнопкой: крестиком (CLOSE) или кнопкой
-## «закрыть / ок / отмена / продолжить» (DISMISS_KEYS). Окна со своим «назад»
+## ○/B закрывает верхнюю модалку её же кнопкой: крестиком (мета CLOSE или кнопка
+## с именем Close/CloseBtn) или кнопкой «закрыть / ок / отмена / продолжить»
+## (DISMISS_KEYS). Окна со своим «назад»
 ## (ModalDialog, просмотр карты, галерея) ловят его раньше, в _input.
 ## Живёт под CustomCursor рядом с InputDevice.
 
@@ -85,15 +86,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-## Кнопка, закрывающая окно root: видимый доступный крестик (CLOSE), иначе кнопка
-## с текстом из DISMISS_KEYS (ключ или его перевод). null — закрыть нечем.
+## Кнопка, закрывающая окно root: видимый доступный крестик (мета CLOSE или имя
+## Close/CloseBtn — крестик, нарисованный на арте окна), иначе кнопка с текстом из
+## DISMISS_KEYS (ключ или его перевод). null — закрыть нечем.
 static func find_dismiss(root: Node) -> BaseButton:
 	var labelled: BaseButton = null
 	for n: Node in root.find_children("*", "BaseButton", true, false):
 		var b := n as BaseButton
 		if not b.is_visible_in_tree() or b.disabled:
 			continue
-		if b.has_meta(CLOSE):
+		if b.has_meta(CLOSE) or String(b.name).to_lower() in ["close", "closebtn"]:
 			return b
 		if labelled == null and b is Button and _is_dismiss_text((b as Button).text):
 			labelled = b
