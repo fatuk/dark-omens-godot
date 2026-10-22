@@ -24,6 +24,13 @@ func test_text_scales_display_capped() -> void:
 	assert_eq(UIFonts.px(UIFonts.TITLE), 30)
 
 
+func test_art_scales_at_half_gain() -> void:
+	SettingsStore.text_scale = 1.3
+	assert_eq(UIFonts.px(UIFonts.art(20)), 23, "подпись на арте — вполсилы (+15 %)")
+	SettingsStore.text_scale = 1.0
+	assert_eq(UIFonts.px(UIFonts.art(20)), 20)
+
+
 func test_number_is_fixed_and_token_is_live() -> void:
 	SettingsStore.text_scale = 1.0
 	var fixed := Label.new()

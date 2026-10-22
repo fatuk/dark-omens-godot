@@ -361,7 +361,7 @@ func _make_hud_stat_row(
 	info.add_theme_constant_override("separation", 3)
 	content.add_child(info)
 
-	var caption := UIStyle.label(label_key, 13, UIColors.ACCENT)
+	var caption := UIStyle.label(label_key, UIFonts.art(13), UIColors.ACCENT)
 	caption.name = "Caption"
 	info.add_child(caption)
 
@@ -373,7 +373,7 @@ func _make_hud_stat_row(
 
 	# Значение прижато влево — цифры держатся вплотную к концу бара, а не
 	# улетают к правому краю строки.
-	var val := UIStyle.label("—", 13, UIColors.VALUE, HORIZONTAL_ALIGNMENT_LEFT)
+	var val := UIStyle.label("—", UIFonts.art(13), UIColors.VALUE, HORIZONTAL_ALIGNMENT_LEFT)
 	val.name = "Value"
 	val.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	# Фикс. ширина — при scramble'е на месте «NN / NN» мелькает одна руна;
@@ -541,7 +541,9 @@ func _build_attributes_panel() -> Control:
 	panel.add_child(bg)
 
 	# Заголовок в верхней полосе PNG.
-	var hdr := UIStyle.label("SECTION_ATTRIBUTES", 14, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	var hdr := UIStyle.label(
+		"SECTION_ATTRIBUTES", UIFonts.art(14), UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	hdr.name = "Header"
 	hdr.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	hdr.offset_top = _TITLE_Y
@@ -575,7 +577,9 @@ func _make_attr_box(label_key: String, field: String) -> Control:
 	# элементами и снизу) распределяют название/иконку/число с равными отступами.
 	col.add_child(_attr_spacer("SpacerTop"))
 
-	var name_lbl := UIStyle.label(label_key, 13, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	var name_lbl := UIStyle.label(
+		label_key, UIFonts.art(13), UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	name_lbl.name = "Label"
 	col.add_child(name_lbl)
 
@@ -674,7 +678,7 @@ func _build_items_panel() -> PanelContainer:
 	hdr_row.add_theme_constant_override("separation", 8)
 	vb.add_child(hdr_row)
 	var hdr := UIStyle.label(
-		"SECTION_STARTING_ITEMS", 11, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+		"SECTION_STARTING_ITEMS", UIFonts.art(11), UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
 	)
 	hdr.name = "Header"
 	hdr_row.add_child(hdr)

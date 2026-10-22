@@ -8,6 +8,8 @@ extends RefCounted
 ##     Растёт целиком по настройке (100 / 115 / 130 %);
 ##   • ЗАГОЛОВКИ (BUTTON, TITLE, HERO) — растут не больше чем на DISPLAY_CAP (10 %):
 ##     кнопки и заголовки сидят в рамках арта, им тесно;
+##   • ПОДПИСИ НА АРТЕ — art(n): своя база px, растёт вполсилы (ART_GAIN): имя и
+##     навыки в листе сыщика, подписи здоровья/рассудка — рамки арта тесные;
 ##   • ЧИСЛО вместо токена — фиксированный размер, НЕ масштабируется: HUD, цифры и
 ##     подписи на арте (карта монстра, плашки действий, подписи карты мира), а также
 ##     составные виджеты со своей типографикой (GameCard держит шрифт сам).
@@ -19,6 +21,7 @@ extends RefCounted
 ##   UIStyle.label("TEXT", UIFonts.BODY)            # токен — масштабируется
 ##   UIFonts.apply(rich_label, UIFonts.HINT)         # уже созданный узел
 ##   UIFonts.apply(title, UIFonts.TITLE, 540.0)      # + вписать в 540 px (рамка)
+##   UIStyle.label("STATS_HEALTH", UIFonts.art(13))  # подпись на арте — вполсилы
 
 ## Подписи мельче подсказок: сноски, теги, мелкие строки списков.
 const CAPTION := &"caption"
@@ -59,12 +62,20 @@ const _DISPLAY := [BUTTON, TITLE, HERO]
 const SCALES := [1.0, 1.15, 1.3]
 ## Заголовки и кнопки растут не больше этого.
 const DISPLAY_CAP: float = 1.1
+## Подписи на арте (art) берут эту долю прироста: 130 % → 115 %.
+const ART_GAIN: float = 0.5
 ## Вписывание: меньше этого не ужимаем (читаемость важнее рамки).
 const FIT_MIN_PX: int = 12
 
 const GROUP := &"ui_font_token"
 const _META_TOKEN := &"font_token"
 const _META_FIT := &"font_fit"
+const _ART_PREFIX := "art:"
+
+
+## Токен подписи на арте с базой base px: растёт с настройкой вполсилы (ART_GAIN).
+static func art(base: int) -> StringName:
+	return StringName("%s%d" % [_ART_PREFIX, base])
 
 
 ## Текущий множитель «Размера текста» (SettingsStore.text_scale).
@@ -77,8 +88,11 @@ static func scale() -> float:
 
 ## Размер токена в пикселях с учётом настройки.
 static func px(token: StringName) -> int:
-	var base: int = int(_BASE.get(token, 22))
 	var k: float = scale()
+	if String(token).begins_with(_ART_PREFIX):
+		var art_base: int = String(token).substr(_ART_PREFIX.length()).to_int()
+		return int(round(art_base * (1.0 + (k - 1.0) * ART_GAIN)))
+	var base: int = int(_BASE.get(token, 22))
 	if token in _DISPLAY:
 		k = minf(k, DISPLAY_CAP)
 	return int(round(base * k))

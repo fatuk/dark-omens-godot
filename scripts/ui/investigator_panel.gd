@@ -290,12 +290,12 @@ func _build_avatar() -> Control:
 	caption.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	_name_label = UIStyle.label("", 20, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_name_label = UIStyle.label("", UIFonts.art(20), UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	_name_label.name = "NameLabel"
 	_caption_shadow(_name_label)
 	caption.add_child(_name_label)
 
-	_occ_label = UIStyle.label("", 14, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	_occ_label = UIStyle.label("", UIFonts.art(14), UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	_occ_label.name = "OccLabel"
 	_caption_shadow(_occ_label)
 	caption.add_child(_occ_label)
