@@ -226,6 +226,8 @@ func _summary(full: Dictionary, ancient_id: String = "") -> Dictionary:
 			# onReckoning — Расплата Тайны, пока она активна (тир ReckoningFlow).
 			"onReckoning": m.get("onReckoning", []),
 		}
+		if m.has("sourceId"):
+			msum["sourceId"] = String(m.get("sourceId", ""))  # id карточки CMS — арт Тайны
 		if m.has("afterDefeat"):
 			msum["afterDefeat"] = m.get("afterDefeat", {})  # epicDefeated: особая встреча
 		# progress-хуки набора жетонов (реакции gateClosed/... + встречи-хуки

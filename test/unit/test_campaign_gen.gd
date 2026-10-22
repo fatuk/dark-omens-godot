@@ -54,3 +54,16 @@ func test_summary_stamps_ancient_id() -> void:
 	assert_eq(
 		String((s2["ancientOne"] as Dictionary).get("id", "")), "dagon", "существующий id цел"
 	)
+
+
+# sourceId (id карточки Тайны в CMS) едет в сводку — по нему окно Тайны берёт арт.
+func test_summary_preserves_mystery_source_id() -> void:
+	var cg := CampaignGen.new(autofree(Node.new()))
+	var full := {
+		"id": "c1",
+		"ancientOne": {},
+		"mysteries": [{"title": "A", "sourceId": "demo-sheaf-mystery-1"}, {"title": "B"}],
+	}
+	var ms: Array = cg._summary(full)["mysteries"]
+	assert_eq(String((ms[0] as Dictionary).get("sourceId", "")), "demo-sheaf-mystery-1")
+	assert_false((ms[1] as Dictionary).has("sourceId"), "нет id — поля нет")
