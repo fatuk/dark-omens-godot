@@ -275,6 +275,10 @@ func _build_avatar() -> Control:
 	ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.add_child(ring)
+	# Геймпад: □/X открывает способности (WorldMap) — иконка у аватара, только на геймпаде.
+	var glyph := InputGlyph.make(GameInput.INFO, 30.0, false)
+	glyph.position = Vector2(_AVATAR_D - 30.0, 4.0)
+	holder.add_child(glyph)
 	col.add_child(holder)
 
 	# Подпись как на карточке сыщика: имя золотом (ACCENT) + род занятий ниже
@@ -329,6 +333,11 @@ func _on_avatar_input(event: InputEvent) -> void:
 	var mb := event as InputEventMouseButton
 	if mb == null or not mb.pressed or mb.button_index != MOUSE_BUTTON_LEFT:
 		return
+	open_abilities()
+
+
+## Карточка способностей своего сыщика (клик по аватару, □/X с геймпада на карте).
+func open_abilities() -> void:
 	if _inv_name.is_empty():
 		return
 	AbilityInfo.open(self, _inv_name)

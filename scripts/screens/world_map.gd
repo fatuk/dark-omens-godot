@@ -1159,8 +1159,8 @@ func _on_sidebar_closed() -> void:
 # ближайшей локации в ту сторону, камера плавно следует. ✕/A (Enter) — как клик:
 # сайдбар (или выбор цели, если идёт выбор на карте); при открытом сайдбаре
 # ✕/A жмёт его кнопку в фокусе (вверх/вниз — по кнопкам и картинке), влево/вправо —
-# соседняя локация в том же сайдбаре, □/X — галерея места. ○/B — закрыть сайдбар,
-# затем снять курсор.
+# соседняя локация в том же сайдбаре, □/X — галерея места (без сайдбара — карточка
+# способностей своего сыщика). ○/B — закрыть сайдбар, затем снять курсор.
 
 const _PAD_PAN_TIME: float = 0.35
 
@@ -1196,13 +1196,12 @@ func _pad_map_input(event: InputEvent) -> bool:
 			return false  # вверх/вниз — кнопки сайдбара (их ведёт GUI)
 		_pad_move(dir)
 		return true
-	if (
-		_sidebar.is_open()
-		and event is InputEventJoypadButton
-		and (event as InputEventJoypadButton).pressed
-		and (event as InputEventJoypadButton).button_index == JOY_BUTTON_X
-	):
-		_sidebar.open_gallery()  # □/X — галерея места (картина и рассказ)
+	if event.is_action_pressed(GameInput.INFO):
+		# □/X: открыта карточка места — её галерея; иначе — способности своего сыщика.
+		if _sidebar.is_open():
+			_sidebar.open_gallery()
+		else:
+			($InvestigatorPanel as Node).call("open_abilities")
 		return true
 	if event.is_action_pressed(&"ui_accept"):
 		if _sidebar_has_focus():

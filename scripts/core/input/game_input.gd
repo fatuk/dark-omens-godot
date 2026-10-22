@@ -14,6 +14,7 @@ const HAND := &"hand"  # веер руки: Tab, △/Y
 const CHAT := &"chat"  # чат: C, Share/View
 const PAGE_PREV := &"page_prev"  # листать влево (секции веера и т.п.): ←, L1/LB
 const PAGE_NEXT := &"page_next"  # листать вправо: →, R1/RB
+const INFO := &"info"  # карточка: способности сыщика / галерея места: □/X
 const PEEK_OMEN := &"peek_omen"  # подсмотреть следующее знамение (держать): L2/LT
 const ACTIONS := &"actions"  # фокус на панель действий (Отдых, Концентрация…): R2/RT
 
@@ -31,6 +32,7 @@ const _ACTIONS := {
 	CHAT: [[KEY_C], [JOY_BUTTON_BACK]],
 	PAGE_PREV: [[KEY_LEFT], [JOY_BUTTON_LEFT_SHOULDER]],
 	PAGE_NEXT: [[KEY_RIGHT], [JOY_BUTTON_RIGHT_SHOULDER]],
+	INFO: [[], [JOY_BUTTON_X]],
 }
 
 # Действия на курках: action → ось. Держится, пока курок выжат за мёртвую зону.
