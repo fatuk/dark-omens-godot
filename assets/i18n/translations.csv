@@ -92,7 +92,7 @@ CONTROLS_PAD_PANEL,"Держать — следующее знамение и в
 CONTROLS_PAD_RSTICK,Зум карты; прокрутка длинного текста,Zoom the map; scroll long text
 CONTROLS_PAD_PAUSE,Меню паузы,Pause menu
 CONTROLS_PAD_GALLERY,"В карточке места — галерея; в ней вверх/вниз — картина и табличка, ○ — общий план","In a location card, the gallery; inside, up/down zoom to the picture or the plaque, back returns to the full view"
-CONTROLS_PAD_PICKER,"Выбор сыщика: способности и список игроков; R2 — к стартовым предметам","Investigator pick: abilities and player list; R2 — to starting items"
+CONTROLS_PAD_PICKER,"Выбор сыщика: способности и список игроков; R2 — стартовые карты","Investigator pick: abilities and player list; R2 — starting cards"
 PAUSE_LEAVE,Выйти из игры,Leave game
 PAUSE_MAIN_MENU,В главное меню,Main menu
 PAUSE_MESSAGES,ПОСЛАНИЯ,MESSAGES

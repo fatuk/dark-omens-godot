@@ -753,22 +753,7 @@ func _make_card_node(payload: Dictionary = {}, clickable: bool = false) -> Contr
 	if clickable:
 		slot.mouse_filter = Control.MOUSE_FILTER_STOP
 		slot.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		slot.gui_input.connect(_on_item_clicked.bind(slot))
-		slot.set_meta(&"item_slot", true)  # для фокуса с геймпада (имена повторяются)
-		# Геймпад (pad_focus_items): рамка в фокусе.
-		var ring := Panel.new()
-		ring.name = "FocusRing"
-		ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		var rsb := StyleBoxFlat.new()
-		rsb.draw_center = false
-		rsb.border_color = UIColors.ACCENT
-		rsb.set_border_width_all(2)
-		rsb.set_corner_radius_all(4)
-		ring.add_theme_stylebox_override("panel", rsb)
-		ring.visible = false
-		slot.focus_entered.connect(func() -> void: ring.visible = true)
-		slot.focus_exited.connect(func() -> void: ring.visible = false)
+		slot.gui_input.connect(_on_item_clicked)
 	else:
 		slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
@@ -785,20 +770,13 @@ func _make_card_node(payload: Dictionary = {}, clickable: bool = false) -> Contr
 		card.set_card({"cost": "", "title": "", "subtitle": "", "desc": ""})
 	else:
 		card.set_card(payload)
-	var ring_node: Node = slot.get_node_or_null("FocusRing")
-	if ring_node != null:
-		slot.move_child(ring_node, -1)  # рамка поверх карты
 	return slot
 
 
-# Клик по карте имущества (или ✕/A на ней с геймпада) — открыть веер со ВСЕМИ
-# картами сыщика для просмотра; с геймпада — сразу на этой карте.
-func _on_item_clicked(event: InputEvent, slot: Control) -> void:
+# Клик по карте имущества — открыть веер со ВСЕМИ картами сыщика для просмотра.
+func _on_item_clicked(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		_open_items_fan()
-	elif event.is_action_pressed(&"ui_accept"):
-		slot.accept_event()
-		_open_items_fan(slot.get_index())
 
 
 func _open_items_fan(at: int = -1) -> void:
@@ -815,49 +793,17 @@ func _open_items_fan(at: int = -1) -> void:
 		_fan.set_active(at)
 
 
-# ── Геймпад: фокус на картах имущества (пикер, R2) ──────────────────────────
+# ── Геймпад (пикер, R2) ──────────────────────────────────────────────────────
 
 
-## Сделать карты имущества фокусируемыми и встать на первую. false — карт нет.
-func pad_focus_items() -> bool:
-	var slots: Array = _item_slots()
-	if slots.is_empty():
-		return false
-	# Соседи — только внутри ряда (на краях — сама карта): иначе крестовина уходила
-	# на стрелки карусели и кнопки экрана.
-	for i: int in range(slots.size()):
-		var c: Control = slots[i]
-		c.focus_mode = Control.FOCUS_ALL
-		var me: NodePath = c.get_path()
-		c.focus_neighbor_left = (slots[i - 1] as Control).get_path() if i > 0 else me
-		c.focus_neighbor_right = (
-			(slots[i + 1] as Control).get_path() if i < slots.size() - 1 else me
-		)
-		c.focus_neighbor_top = me
-		c.focus_neighbor_bottom = me
-		c.focus_next = c.focus_neighbor_right
-		c.focus_previous = c.focus_neighbor_left
-	(slots[0] as Control).grab_focus()
-	return true
-
-
-## Убрать фокус с карт имущества (обратно к выбору сыщика).
-func pad_release_items() -> void:
-	for s: Control in _item_slots():
-		if s.has_focus():
-			s.release_focus()
-		s.focus_mode = Control.FOCUS_NONE
+## R2 в пикере: открыть веер стартовых карт, а если открыт — закрыть.
+func toggle_items_fan() -> void:
+	if items_fan_open():
+		_fan.close()
+	else:
+		_open_items_fan(0)
 
 
 ## Открыт ли веер просмотра карт имущества.
 func items_fan_open() -> bool:
 	return is_instance_valid(_fan) and _fan.is_open()
-
-
-func _item_slots() -> Array:
-	var out: Array = []
-	if is_instance_valid(_items_row):
-		for c: Node in _items_row.get_children():
-			if c.has_meta(&"item_slot") and not c.is_queued_for_deletion():
-				out.append(c)
-	return out

@@ -38,7 +38,6 @@ var _start_btn: Button  # видна только хосту
 var _nm: Node = null  # NetworkManager (читаем напрямую для room+players)
 var _player_details_modal: ModalDialog = null  # guard от двойного клика по «Подробнее»
 var _ready_locked: bool = false  # игрок нажал «Готов» — кнопка держится залоченной
-var _items_mode: bool = false  # геймпад: фокус на картах имущества (R2)
 var _r2_held: bool = false  # курок R2 в прошлом кадре — ловим нажатие
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -198,8 +197,8 @@ func _build_info_bar() -> Control:
 # ── Геймпад / клавиатура ─────────────────────────────────────────────────────
 
 
-# R2/RT — к картам стартового имущества (InfoBar): крестовина по ним, ✕/A — веер
-# с картой, ○/B или R2 ещё раз — обратно к сыщикам.
+# R2/RT — веер карт стартового имущества (InfoBar): листать крестовиной, ○/B или
+# R2 ещё раз — закрыть.
 #
 # Экран выбора без фокуса кнопок: крестовина/стик/L1 R1 (и ← →) листают сыщиков,
 # ✕/A — подтвердить (после «Готов» хосту — начать игру), ○/B — назад, □/X —
@@ -208,21 +207,8 @@ func _build_info_bar() -> Control:
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_visible_in_tree() or UIStyle.any_modal_open():
 		return
-	if _items_mode:
-		# Фокус на картах имущества: навигацию и ✕ ведёт GUI (карты фокусируемы),
-		# веер — сам; здесь только выход. Остальное до сыщиков не доходит.
-		if _info_bar.items_fan_open():
-			return
-		if event is InputEventJoypadButton and event.is_action_pressed(GameInput.BACK):
-			_items_exit()
-			get_viewport().set_input_as_handled()
-		elif (
-			event.is_action_pressed(&"ui_left", true)
-			or event.is_action_pressed(&"ui_right", true)
-			or event.is_action_pressed(&"ui_accept")
-		):
-			get_viewport().set_input_as_handled()  # край ряда — не листать сыщиков
-		return
+	if is_instance_valid(_info_bar) and _info_bar.items_fan_open():
+		return  # открыт веер имущества — ввод его
 	if event.is_action_pressed(&"ui_left", true) or event.is_action_pressed(GameInput.PAGE_PREV):
 		_carousel.step(-1)
 	elif event.is_action_pressed(&"ui_right", true) or event.is_action_pressed(GameInput.PAGE_NEXT):
@@ -240,7 +226,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-# R2/RT — ось: ловим момент нажатия. Переключает фокус сыщики ↔ карты имущества.
+# R2/RT — ось: ловим момент нажатия. Открывает / закрывает веер стартовых карт.
 func _process(_dt: float) -> void:
 	var held: bool = Input.is_action_pressed(GameInput.ACTIONS)
 	if held == _r2_held:
@@ -248,15 +234,8 @@ func _process(_dt: float) -> void:
 	_r2_held = held
 	if not held or not is_visible_in_tree() or UIStyle.any_modal_open():
 		return
-	if _items_mode:
-		_items_exit()
-	elif is_instance_valid(_info_bar) and _info_bar.pad_focus_items():
-		_items_mode = true
-
-
-func _items_exit() -> void:
-	_items_mode = false
-	_info_bar.pad_release_items()
+	if is_instance_valid(_info_bar):
+		_info_bar.toggle_items_fan()
 
 
 # ✕/A: «Подтвердить выбор», а если он уже нажат (кнопка залочена) — «Начать игру».
