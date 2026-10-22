@@ -91,7 +91,7 @@ CONTROLS_PAD_ACTIONS,"Держать — панель действий: отды
 CONTROLS_PAD_PANEL,"Держать — следующее знамение и верхняя панель: миф, запасы, Тайна","Hold for the next omen and the top panel: Mythos, supply, Mystery"
 CONTROLS_PAD_RSTICK,Зум карты; прокрутка длинного текста,Zoom the map; scroll long text
 CONTROLS_PAD_PAUSE,Меню паузы,Pause menu
-CONTROLS_PAD_GALLERY,В карточке места — галерея: картина и рассказ о месте,"In a location card, the gallery: the picture and the story of the place"
+CONTROLS_PAD_GALLERY,"В карточке места — галерея; в ней вверх/вниз — картина и табличка, ○ — общий план","In a location card, the gallery; inside, up/down zoom to the picture or the plaque, back returns to the full view"
 CONTROLS_PAD_PICKER,Выбор сыщика: способности и список игроков,Investigator pick: abilities and player list
 PAUSE_LEAVE,Выйти из игры,Leave game
 PAUSE_MAIN_MENU,В главное меню,Main menu

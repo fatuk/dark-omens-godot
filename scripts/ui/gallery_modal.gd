@@ -538,18 +538,22 @@ func _on_root_input(event: InputEvent) -> void:
 		hit = "painting"
 	elif _zone_rect(PLATE_OFF, PLATE_SIZE, PLATE_DEPTH, base, center).has_point(m):
 		hit = "plate"
-	if hit.is_empty() or hit == _focused:
-		_focused = ""
-		_focus_target = CANVAS * 0.5
-		_zoom_target = ZOOM_IDLE
-	elif hit == "painting":
-		_focused = hit
-		_focus_target = PAINTING_OFF + PAINTING_SIZE * 0.5
-		_zoom_target = ZOOM_FOCUS
-	else:
-		_focused = hit
-		_focus_target = _text_center() - Vector2(0.0, PLATE_FOCUS_UP)  # стенд ниже на экране
-		_zoom_target = ZOOM_FOCUS
+	_focus_on("" if hit == _focused else hit)
+
+
+# Наезд на зону: "painting" — картина, "plate" — стенд с текстом, "" — общий план.
+func _focus_on(zone: String) -> void:
+	_focused = zone
+	match zone:
+		"painting":
+			_focus_target = PAINTING_OFF + PAINTING_SIZE * 0.5
+			_zoom_target = ZOOM_FOCUS
+		"plate":
+			_focus_target = _text_center() - Vector2(0.0, PLATE_FOCUS_UP)  # стенд ниже на экране
+			_zoom_target = ZOOM_FOCUS
+		_:
+			_focus_target = CANVAS * 0.5
+			_zoom_target = ZOOM_IDLE
 
 
 func _zone_rect(off: Vector2, size: Vector2, depth: float, base: float, center: Vector2) -> Rect2:
@@ -567,10 +571,26 @@ func _location_art(loc_id: String) -> Texture2D:
 	return load(path) if ResourceLoader.exists(path) else null
 
 
-func _unhandled_input(event: InputEvent) -> void:
+# В _input (до GUI): фокус может остаться на кнопке/картинке сайдбара под галереей,
+# и крестовина ушла бы туда, а не на наезд.
+func _input(event: InputEvent) -> void:
 	if not visible:
 		return
-	if event.is_action_pressed(GameInput.BACK):  # Esc / ○ / B
-		close()
+	# Esc / ○ / B: с наезда — на общий план, с общего плана — закрыть.
+	if event.is_action_pressed(GameInput.BACK):
+		if _focused.is_empty() or _intro or _closing:
+			close()
+		else:
+			_focus_on("")
 		get_viewport().set_input_as_handled()
 		return
+	# Крестовина / стик / стрелки: вверх — к картине, вниз — к стенду с текстом.
+	if not (_intro or _closing):
+		if event.is_action_pressed(&"ui_up"):
+			_focus_on("painting")
+			get_viewport().set_input_as_handled()
+			return
+		if event.is_action_pressed(&"ui_down"):
+			_focus_on("plate")
+			get_viewport().set_input_as_handled()
+			return
