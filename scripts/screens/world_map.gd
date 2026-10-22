@@ -995,6 +995,7 @@ func _process(delta: float) -> void:
 		if _inertia_velocity.length() < INERTIA_MIN_SPEED:
 			_inertia_velocity = Vector2.ZERO
 
+	_pad_zoom(delta)
 	# Плавная интерполяция зума
 	var current: float = _camera.zoom.x
 	if not is_equal_approx(current, _zoom_target):
@@ -1258,6 +1259,21 @@ func _sidebar_has_focus() -> bool:
 		and _sidebar.is_ancestor_of(foc)
 		and foc.is_visible_in_tree()
 	)
+
+
+# Правый стик — зум карты (вверх — ближе), когда ему нечего крутить: ни окна, ни
+# сайдбара, ни веера (там он листает текст — PadFocus).
+const _PAD_ZOOM_RATE: float = 0.9  # доля диапазона зума в секунду на полном отклонении
+
+
+func _pad_zoom(delta: float) -> void:
+	var v: float = PadFocus.right_stick_y()
+	if v == 0.0 or not InputDevice.using_pad():
+		return
+	if UIStyle.any_modal_open() or _sidebar.is_open() or _fan_open() or GameConsole.is_open():
+		return
+	var step: float = -signf(v) * v * v * _PAD_ZOOM_RATE * (_zoom_max - _zoom_min) * delta
+	_zoom_target = clampf(_zoom_target + step, _zoom_min, _zoom_max)
 
 
 # Плавно довести камеру до курсора (ближайшая копия по X, вертикаль в пределах карты).

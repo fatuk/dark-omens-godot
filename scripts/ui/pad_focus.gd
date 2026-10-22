@@ -37,12 +37,15 @@ const DISMISS_KEYS := [
 	"ENCOUNTER_CONTINUE",
 ]
 
+static var _inst: PadFocus = null
+
 var _last_text: String = ""
 var _right_y: float = 0.0  # последнее отклонение правого стика по вертикали
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_inst = self
 	var dev: InputDevice = InputDevice.get_instance()
 	if dev != null:
 		dev.changed.connect(_on_device_changed)
@@ -105,6 +108,14 @@ static func _is_dismiss_text(text: String) -> bool:
 
 
 # ── Правый стик: прокрутка ────────────────────────────────────────────────────
+
+
+## Правый стик по вертикали (−1 вверх … 1 вниз), 0 — в мёртвой зоне. Для тех, кто
+## крутит им не текст (зум карты).
+static func right_stick_y() -> float:
+	if _inst == null or absf(_inst._right_y) < SCROLL_DEADZONE:
+		return 0.0
+	return _inst._right_y
 
 
 # Правый стик по вертикали — из событий (держим последнее значение).

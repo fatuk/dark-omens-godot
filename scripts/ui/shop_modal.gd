@@ -989,7 +989,25 @@ func _toggle_card(aid: String, cost: int) -> void:
 		_selected.erase(aid)
 	elif cost <= _coins() - _spent():
 		_selected[aid] = cost
+	else:
+		_deny(aid)  # не хватает монет — раньше отказ был молчаливым, казалось «не выбирается»
 	_refresh()
+
+
+# Отказ в выборе: карточка вздрагивает, счётчик монет мигает красным.
+func _deny(aid: String) -> void:
+	for e_v: Variant in _cards:
+		var e: Dictionary = e_v
+		if e.id != aid or bool(e.get("buying", false)):
+			continue
+		var mesh: MeshInstance3D = e.mesh
+		var x0: float = mesh.position.x
+		var tw := create_tween()
+		for dx: float in [0.06, -0.06, 0.04, -0.02, 0.0]:
+			tw.tween_property(mesh, "position:x", x0 + dx, 0.05)
+	if is_instance_valid(_coins_lbl):
+		_coins_lbl.modulate = UIColors.DANGER
+		create_tween().tween_property(_coins_lbl, "modulate", Color.WHITE, 0.6)
 
 
 func _on_buy() -> void:
