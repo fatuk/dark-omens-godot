@@ -37,7 +37,7 @@ signal supply_requested
 # он лежит поверх той же полосы.
 const _SUPPLY_HOTSPOT := Rect2(330.0, 6.0, 108.0, 86.0)
 const _HOVER_ALPHA: float = 0.16  # подсветка медальона под курсором
-const _PAD_FOCUS_TINT := Color(1.35, 1.28, 1.08)  # элемент панели в фокусе с геймпада
+const _PAD_FOCUS_TINT := Color(1.14, 1.11, 1.04)  # элемент панели в фокусе с геймпада (мягко)
 
 var _pad_targets: Array = []  # [Control] — компас, медальон, орб (слева направо)
 var _pad_active: bool = false
