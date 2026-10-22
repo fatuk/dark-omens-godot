@@ -231,3 +231,9 @@ func test_peek_omen_on_left_trigger() -> void:
 	assert_true(ev.is_action_pressed(GameInput.PEEK_OMEN), "курок выжат — подсматриваем")
 	ev.axis_value = 0.2
 	assert_false(ev.is_action_pressed(GameInput.PEEK_OMEN), "чуть тронут — нет")
+
+
+func test_actions_on_right_trigger() -> void:
+	GameInput.register()
+	assert_eq(GameInput.pad_button(GameInput.ACTIONS), GameInput.TRIGGER_RIGHT)
+	assert_eq(InputGlyph.pill_label(InputDevice.PLAYSTATION, GameInput.TRIGGER_RIGHT), "R2")

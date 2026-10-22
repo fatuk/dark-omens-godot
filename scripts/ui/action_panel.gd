@@ -8,6 +8,10 @@ extends CanvasLayer
 ## билетов нет — «Нет билетов».
 ##
 ## Всё строится в 2× (ассеты @2×) и ужимается обёрткой scale 0.5 → кант чёткий.
+##
+## Геймпад: правый курок (GameInput.ACTIONS) переводит фокус на панель — крестовина
+## по действиям, ✕/A выполнить, ○/B или курок ещё раз — обратно на карту. Пока
+## активна, панель — зона фокуса PadFocus (is_open()).
 
 const _A := "res://assets/action-panel/"
 const _REST_MODAL := preload("res://scenes/ui/modal_dialog.tscn")
@@ -31,9 +35,12 @@ var _clue: HBoxContainer  # индикатор улик [иконка ×N] св�
 var _clue_count: Label
 var _last_tickets: int = -1  # без лишних ребилдов стопки
 var _busy: bool = false  # идёт анимация действия (пас/жетон) — держим флоу, блочим клики
+var _pad_active: bool = false  # фокус геймпада на панели (R2)
+var _pad_trigger: bool = false  # курок был зажат в прошлом кадре — ловим только нажатие
 
 
 func _ready() -> void:
+	add_to_group(PadFocus.ZONE)
 	_build()
 	GameState.state_changed.connect(_refresh)
 	get_viewport().size_changed.connect(_reposition)
@@ -72,8 +79,15 @@ func _build() -> void:
 	_pass_ab = ActionButton.new(
 		_tex("pass-icon"), _tex("pass-title"), "ACTION_PASS_TITLE", _tex("hourglass")
 	)
+	_rest_ab.name = "Rest"
+	_conc_ab.name = "Concentration"
+	_res_ab.name = "Resource"
+	_pass_ab.name = "Pass"
+	# Иконка курка (R2/RT) — только при игре с геймпада: подсказка, как сюда попасть.
+	row.add_child(InputGlyph.make(GameInput.ACTIONS, 64.0, false))
 	for ab: ActionButton in [_rest_ab, _conc_ab, _res_ab, _pass_ab]:
 		row.add_child(ab)
+		ab.pressed.connect(_pad_exit)  # выполнили действие — обратно на карту
 
 	_rest_ab.pressed.connect(_on_rest)
 	_conc_ab.pressed.connect(_on_concentration)
@@ -135,6 +149,56 @@ func _build() -> void:
 	# Позиция блока (bottom-right) — пересчёт при смене размера содержимого/окна.
 	_col.resized.connect(_reposition)
 	_reposition()
+
+
+# ── Геймпад ──────────────────────────────────────────────────────────────────
+
+
+## Зона фокуса PadFocus открыта, пока панель активна с геймпада.
+func is_open() -> bool:
+	return _pad_active and _root.visible
+
+
+# Курок — ось: реагируем на момент нажатия (состояние действия поменялось).
+func _process(_dt: float) -> void:
+	var held: bool = Input.is_action_pressed(GameInput.ACTIONS)
+	if held == _pad_trigger:
+		return
+	_pad_trigger = held
+	if not held:
+		return
+	if _pad_active:
+		_pad_exit()
+	elif not UIStyle.any_modal_open() and not _fan_open():
+		_pad_enter()
+
+
+func _input(event: InputEvent) -> void:
+	if _pad_active and event is InputEventJoypadButton and event.is_action_pressed(GameInput.BACK):
+		_pad_exit()
+		get_viewport().set_input_as_handled()
+
+
+func _pad_enter() -> void:
+	var first: Control = PadFocus.pick(self)
+	if first == null:
+		return  # не мой ход — все действия недоступны, фокусу некуда встать
+	_pad_active = true
+	first.grab_focus()
+
+
+func _pad_exit() -> void:
+	_pad_active = false
+	var foc: Control = get_viewport().gui_get_focus_owner()
+	if foc != null and is_ancestor_of(foc):
+		foc.release_focus()
+
+
+func _fan_open() -> bool:
+	for fan: Node in get_tree().get_nodes_in_group("hand_carousel"):
+		if fan.has_method("is_open") and fan.is_open():
+			return true
+	return false
 
 
 func _tex(file: String) -> Texture2D:
@@ -325,6 +389,8 @@ func _refresh() -> void:
 		)
 	)
 	_pass_ab.set_disabled(not my_turn)
+	if _pad_active and PadFocus.pick(self) == null:
+		_pad_exit()  # действия кончились (ход ушёл) — фокусу на панели делать нечего
 	_conc_ab.set_badge(int(me.get("concentration", 0)))
 	_res_ab.set_badge(int(me.get("resources", 0)))
 	# Инфо-колонка (улика + билеты) гаснет вместе с кнопками, когда не мой ход.

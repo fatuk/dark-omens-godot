@@ -10,6 +10,8 @@ extends Control
 ##
 ## API: new(icon, title, key, overlay=null, with_badge=false) → эмитит `pressed`;
 ##      set_disabled(b), set_badge(n), spin_overlay(), pop_token().
+## Геймпад: доступная кнопка фокусируема (ActionPanel по R2), в фокусе подсвечена как
+## от наведения, ✕/A — нажатие.
 
 signal pressed
 
@@ -86,6 +88,9 @@ func _init(
 	_key = text_key
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	focus_mode = Control.FOCUS_ALL
+	focus_entered.connect(_apply_mod)
+	focus_exited.connect(_apply_mod)
 
 	var vb := VBoxContainer.new()
 	vb.name = "VB"
@@ -186,11 +191,17 @@ func _gui_input(event: InputEvent) -> void:
 		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
 			pressed.emit()
 			accept_event()
+	elif event.is_action_pressed(&"ui_accept"):
+		pressed.emit()
+		accept_event()
 
 
 func set_disabled(v: bool) -> void:
 	_disabled = v
 	mouse_default_cursor_shape = (Control.CURSOR_ARROW if v else Control.CURSOR_POINTING_HAND)
+	focus_mode = Control.FOCUS_NONE if v else Control.FOCUS_ALL
+	if v and has_focus():
+		release_focus()
 	_apply_mod()
 
 
@@ -208,7 +219,7 @@ func _apply_mod() -> void:
 	var mod: Color = Color.WHITE
 	if _disabled:
 		mod = _DISABLED_MOD
-	elif _hover:
+	elif _hover or (has_focus() and InputDevice.using_pad()):
 		mod = UIColors.HIGHLIGHT
 	modulate = mod
 	# Часы под шейдером не читают modulate (шейдер перезаписывает COLOR) — дублируем

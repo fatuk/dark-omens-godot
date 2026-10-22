@@ -1176,6 +1176,8 @@ func _input(event: InputEvent) -> void:
 func _pad_map_input(event: InputEvent) -> bool:
 	if _fan_open() or event is InputEventMouse or event is InputEventJoypadMotion:
 		return false
+	if get_viewport().gui_get_focus_owner() is ActionButton:
+		return false  # фокус на панели действий (R2) — крестовина/✕ её
 	var dir := Vector2.ZERO
 	if event.is_action_pressed(&"ui_left", true):
 		dir = Vector2.LEFT

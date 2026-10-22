@@ -15,6 +15,7 @@ const CHAT := &"chat"  # чат: C, Share/View
 const PAGE_PREV := &"page_prev"  # листать влево (секции веера и т.п.): ←, L1/LB
 const PAGE_NEXT := &"page_next"  # листать вправо: →, R1/RB
 const PEEK_OMEN := &"peek_omen"  # подсмотреть следующее знамение (держать): L2/LT
+const ACTIONS := &"actions"  # фокус на панель действий (Отдых, Концентрация…): R2/RT
 
 # Курки — оси, не кнопки; для иконок (InputGlyph) pad_button отдаёт им псевдокоды.
 const TRIGGER_LEFT: int = 1000
@@ -35,6 +36,7 @@ const _ACTIONS := {
 # Действия на курках: action → ось. Держится, пока курок выжат за мёртвую зону.
 const _TRIGGERS := {
 	PEEK_OMEN: JOY_AXIS_TRIGGER_LEFT,
+	ACTIONS: JOY_AXIS_TRIGGER_RIGHT,
 }
 
 # Встроенные ui_* (навигация фокусом): кнопки. Левый стик к ui_* НЕ привязан —

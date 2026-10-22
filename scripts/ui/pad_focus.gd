@@ -185,15 +185,21 @@ func _open_fan_card() -> Control:
 	return null
 
 
-# Открытая зона фокуса (без модалок): видима и, если умеет, is_open().
+# Открытая зона фокуса (без модалок): видима и, если умеет, is_open(). Открыто
+# несколько (сайдбар и панель действий) — та, где сейчас фокус.
 func _open_zone() -> Node:
+	var foc: Control = get_viewport().gui_get_focus_owner()
+	var first: Node = null
 	for n: Node in get_tree().get_nodes_in_group(ZONE):
 		if n is CanvasItem and not (n as CanvasItem).is_visible_in_tree():
 			continue
 		if n.has_method("is_open") and not bool(n.call("is_open")):
 			continue
-		return n
-	return null
+		if foc != null and n.is_ancestor_of(foc):
+			return n
+		if first == null:
+			first = n
+	return first
 
 
 ## Куда поставить фокус в окне root: кнопка с текстом prefer (пересобранная та же),
