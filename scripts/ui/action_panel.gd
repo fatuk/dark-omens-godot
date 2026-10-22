@@ -110,7 +110,7 @@ func _build() -> void:
 	_no_tickets = Label.new()
 	_no_tickets.name = "NoTickets"
 	_no_tickets.text = "ACTION_NO_TICKETS"
-	_no_tickets.add_theme_font_size_override("font_size", 13)
+	UIFonts.apply(_no_tickets, UIFonts.CAPTION)  # переносится — растёт целиком
 	_no_tickets.add_theme_color_override("font_color", UIColors.MUTED)
 	_no_tickets.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_no_tickets.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
