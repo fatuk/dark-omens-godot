@@ -15,6 +15,12 @@ extends Node
 
 const DEFAULT := &"pad_default"  # мета кнопки: фокус сюда при открытии окна
 const ZONE := &"pad_zone"  # группа панелей не-модалок, где тоже держим фокус
+const SCROLL_CARD := &"pad_scroll_card"  # мета контрола: его карта (GameCard) — для стика
+
+# Правый стик — прокрутка длинного текста: скорость px/с на полном отклонении,
+# мёртвая зона; квадратичная кривая — у центра медленно, читать удобно.
+const SCROLL_SPEED: float = 600.0
+const SCROLL_DEADZONE: float = 0.2
 const SKIP := &"pad_skip_default"  # мета: не брать по умолчанию (крестик «закрыть»)
 const CLOSE := &"pad_close"  # мета крестика окна (UIStyle.style_modal_close_button)
 # Кнопки, которые закрывают окно без решения — их жмёт ○/B. «Завершить» бой и пр.
@@ -32,6 +38,7 @@ const DISMISS_KEYS := [
 ]
 
 var _last_text: String = ""
+var _right_y: float = 0.0  # последнее отклонение правого стика по вертикали
 
 
 func _ready() -> void:
@@ -41,12 +48,13 @@ func _ready() -> void:
 		dev.changed.connect(_on_device_changed)
 
 
-func _process(_dt: float) -> void:
+func _process(dt: float) -> void:
 	if not InputDevice.using_pad():
 		return
 	var top: Node = UIStyle.top_modal()
 	if top == null:
 		top = _open_zone()
+	_scroll_with_stick(top, dt)
 	if top == null:
 		return
 	var foc: Control = get_viewport().gui_get_focus_owner()
@@ -94,6 +102,76 @@ static func _is_dismiss_text(text: String) -> bool:
 		if text == k or text == TranslationServer.translate(k):
 			return true
 	return false
+
+
+# ── Правый стик: прокрутка ────────────────────────────────────────────────────
+
+
+# Правый стик по вертикали — из событий (держим последнее значение).
+func _input(event: InputEvent) -> void:
+	if (
+		event is InputEventJoypadMotion
+		and (event as InputEventJoypadMotion).axis == JOY_AXIS_RIGHT_Y
+	):
+		_right_y = (event as InputEventJoypadMotion).axis_value
+
+
+func _scroll_with_stick(scope: Node, dt: float) -> void:
+	var v: float = _right_y
+	if absf(v) < SCROLL_DEADZONE:
+		return
+	var px: float = signf(v) * v * v * SCROLL_SPEED * dt
+	var fan: Control = _open_fan_card()
+	if fan != null:
+		scope = null  # открытый веер — поверх всего, крутим его активную карту
+	for t: Object in scroll_targets(scope, get_viewport().gui_get_focus_owner(), fan):
+		if scroll_by(t, px):
+			return
+
+
+## Чем крутить, по приоритету: карта веера; карта/прокрутка того, что в фокусе;
+## затем всё в окне scope — карты с длинным описанием и ScrollContainer'ы.
+static func scroll_targets(scope: Node, foc: Control, fan: Control = null) -> Array:
+	var out: Array = []
+	if fan != null:
+		out.append(fan)
+	if foc != null:
+		if foc.has_meta(SCROLL_CARD):
+			out.append(foc.get_meta(SCROLL_CARD))
+		var p: Node = foc
+		while p != null:
+			if p is ScrollContainer or p is GameCard:
+				out.append(p)
+				break
+			p = p.get_parent()
+	if scope != null:
+		for n: Node in scope.find_children("*", "", true, false):
+			if (n is GameCard or n is ScrollContainer) and (n as Control).is_visible_in_tree():
+				out.append(n)
+	return out
+
+
+## Прокрутить цель на px (+ вниз). false — нечего (влезает / у края).
+static func scroll_by(t: Object, px: float) -> bool:
+	if t is GameCard:
+		return (t as GameCard).scroll_desc_by(px)
+	if t is ScrollContainer:
+		var sc := t as ScrollContainer
+		var before: int = sc.scroll_vertical
+		sc.scroll_vertical = (
+			before + int(roundf(px)) if absf(px) >= 1.0 else before + int(signf(px))
+		)
+		return sc.scroll_vertical != before
+	return false
+
+
+func _open_fan_card() -> Control:
+	for fan: Node in get_tree().get_nodes_in_group("hand_carousel"):
+		if fan.has_method("active_card"):
+			var c: Control = fan.call("active_card")
+			if c != null:
+				return c
+	return null
 
 
 # Открытая зона фокуса (без модалок): видима и, если умеет, is_open().

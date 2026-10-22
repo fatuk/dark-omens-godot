@@ -459,13 +459,7 @@ func _process(delta: float) -> void:
 	var zh: float = zone.size.y
 	if zh <= 0.0:
 		return
-	# Высота текста: строки × (высота строки + межстрочный интервал) + нижний запас.
-	# get_line_height() НЕ включает line_spacing — без него низ подрезался.
-	var lines: int = _desc.get_line_count()
-	var line_h: float = float(_desc.get_line_height())
-	var spacing: float = float(_desc.get_theme_constant("line_spacing"))
-	var content_h: float = float(lines) * (line_h + spacing) + _DESC_BOTTOM_PAD
-	var overflow: float = content_h - zh
+	var overflow: float = desc_overflow()
 	if overflow <= 0.0:
 		if _desc_offset != 0.0:
 			_desc_offset = 0.0
@@ -481,6 +475,35 @@ func _process(delta: float) -> void:
 		return  # около центра — стоп
 	_desc_offset = clampf(_desc_offset + dir * _DESC_SCROLL_MAX_SPEED * delta, 0.0, overflow)
 	_apply_desc_offset()
+
+
+## Насколько описание выше своей зоны (px); ≤ 0 — влезает, крутить нечего.
+## Высота текста: строки × (высота строки + межстрочный интервал) + нижний запас —
+## get_line_height() НЕ включает line_spacing, без него низ подрезался.
+func desc_overflow() -> float:
+	if not is_instance_valid(_desc) or not _desc.is_visible_in_tree():
+		return 0.0
+	var zh: float = (_desc.get_parent() as Control).size.y
+	if zh <= 0.0:
+		return 0.0
+	var lines: int = _desc.get_line_count()
+	var line_h: float = float(_desc.get_line_height())
+	var spacing: float = float(_desc.get_theme_constant("line_spacing"))
+	return float(lines) * (line_h + spacing) + _DESC_BOTTOM_PAD - zh
+
+
+## Прокрутить описание на px (+ вниз) — правый стик геймпада (PadFocus). false —
+## прокручивать нечего (влезает или уже у края).
+func scroll_desc_by(px: float) -> bool:
+	var overflow: float = desc_overflow()
+	if overflow <= 0.0:
+		return false
+	var next: float = clampf(_desc_offset + px, 0.0, overflow)
+	if is_equal_approx(next, _desc_offset):
+		return false
+	_desc_offset = next
+	_apply_desc_offset()
+	return true
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────

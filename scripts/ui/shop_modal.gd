@@ -612,8 +612,10 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 
 	hit.mouse_entered.connect(func() -> void: _hover_card(entry, true))
 	hit.mouse_exited.connect(func() -> void: _hover_card(entry, false))
-	# Геймпад: карточка в фокусе (крестовина) — как наведение, ✕/A — как клик.
+	# Геймпад: карточка в фокусе (крестовина) — как наведение, ✕/A — как клик;
+	# правый стик крутит её описание (карта в SubViewport — связь через мету).
 	hit.focus_mode = Control.FOCUS_ALL
+	hit.set_meta(PadFocus.SCROLL_CARD, card)
 	hit.focus_entered.connect(func() -> void: _hover_card(entry, true))
 	hit.focus_exited.connect(func() -> void: _hover_card(entry, false))
 	hit.gui_input.connect(

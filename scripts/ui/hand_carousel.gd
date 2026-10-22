@@ -530,6 +530,14 @@ func toggle() -> void:
 
 
 ## Открыт ли веер (для гарда зума карты при открытом вевере).
+## Активная (выдвинутая) карта открытого веера, null — нет. Правый стик крутит
+## её описание (PadFocus).
+func active_card() -> Control:
+	if not _open or _active < 0 or _active >= _els.size():
+		return null
+	return _els[_active]
+
+
 func is_open() -> bool:
 	return _open
 

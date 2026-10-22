@@ -164,3 +164,44 @@ func test_find_dismiss_close_meta_then_text() -> void:
 	ok.disabled = true
 	assert_null(PadFocus.find_dismiss(root), "решающие кнопки (бросок) «назад» не жмёт")
 	assert_not_null(roll)
+
+
+# ── Правый стик: прокрутка ────────────────────────────────────────────────────
+
+
+func test_scroll_by_moves_scroll_container_until_edge() -> void:
+	var sc := ScrollContainer.new()
+	sc.name = "Scroll"
+	sc.size = Vector2(200, 100)
+	add_child_autofree(sc)
+	var tall := Control.new()
+	tall.name = "Tall"
+	tall.custom_minimum_size = Vector2(180, 400)
+	sc.add_child(tall)
+	await wait_physics_frames(2)
+	assert_true(PadFocus.scroll_by(sc, 50.0), "есть куда крутить")
+	assert_eq(sc.scroll_vertical, 50)
+	assert_true(PadFocus.scroll_by(sc, -500.0), "назад к верху")
+	assert_eq(sc.scroll_vertical, 0)
+	assert_false(PadFocus.scroll_by(sc, -10.0), "у верха — стоп")
+
+
+func test_scroll_targets_priority() -> void:
+	var scope: Control = autofree(Control.new())
+	scope.name = "Modal"
+	add_child(scope)
+	var sc := ScrollContainer.new()
+	sc.name = "Scroll"
+	scope.add_child(sc)
+	var foc := Button.new()
+	foc.name = "Focused"
+	scope.add_child(foc)
+	var card: Control = autofree(Control.new())
+	card.name = "LinkedCard"
+	foc.set_meta(PadFocus.SCROLL_CARD, card)
+	var fan: Control = autofree(Control.new())
+	fan.name = "FanCard"
+	var t: Array = PadFocus.scroll_targets(scope, foc, fan)
+	assert_eq(t[0], fan, "веер — первым")
+	assert_eq(t[1], card, "затем карта контрола в фокусе")
+	assert_true(t.has(sc), "и прокрутки окна")
