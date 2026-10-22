@@ -197,7 +197,8 @@ func _open_zone() -> Node:
 
 
 ## Куда поставить фокус в окне root: кнопка с текстом prefer (пересобранная та же),
-## иначе помеченная DEFAULT, иначе первая доступная не-SKIP, иначе любая доступная.
+## иначе помеченная DEFAULT, иначе первая доступная не-SKIP, иначе любая доступная;
+## кнопок нет — любой фокусируемый элемент (карточка лавки, куб).
 static func pick(root: Node, prefer: String = "") -> Control:
 	var buttons: Array = []
 	for n: Node in root.find_children("*", "BaseButton", true, false):
@@ -205,6 +206,13 @@ static func pick(root: Node, prefer: String = "") -> Control:
 		if b.is_visible_in_tree() and not b.disabled and b.focus_mode != Control.FOCUS_NONE:
 			buttons.append(b)
 	if buttons.is_empty():
+		# Доступных кнопок нет (в лавке после долга: «Купить» ждёт выбора, прочие
+		# скрыты) — фокус на любой фокусируемый элемент окна (карточку, куб), иначе
+		# крестовине не от чего двигаться.
+		for n: Node in root.find_children("*", "Control", true, false):
+			var c := n as Control
+			if c.focus_mode == Control.FOCUS_ALL and c.is_visible_in_tree():
+				return c
 		return null
 	if not prefer.is_empty():
 		for b: BaseButton in buttons:

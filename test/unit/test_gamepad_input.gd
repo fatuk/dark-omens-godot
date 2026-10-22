@@ -205,3 +205,16 @@ func test_scroll_targets_priority() -> void:
 	assert_eq(t[0], fan, "веер — первым")
 	assert_eq(t[1], card, "затем карта контрола в фокусе")
 	assert_true(t.has(sc), "и прокрутки окна")
+
+
+func test_pick_falls_back_to_focusable_control() -> void:
+	var root: Control = autofree(Control.new())
+	root.name = "Shop"
+	add_child(root)
+	var buy := _btn(root, "SHOP_BUY")
+	buy.disabled = true  # ждёт выбора
+	var card := Control.new()
+	card.name = "Hit_0"
+	card.focus_mode = Control.FOCUS_ALL
+	root.add_child(card)
+	assert_eq(PadFocus.pick(root), card, "кнопок нет — карточка")
