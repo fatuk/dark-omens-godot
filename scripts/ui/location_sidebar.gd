@@ -275,6 +275,8 @@ func _build_image_box() -> void:
 	_image.mouse_filter = Control.MOUSE_FILTER_STOP
 	_image.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_image.gui_input.connect(_on_image_input)
+	# Геймпад: картинка фокусируема (крестовиной вверх с кнопок), ✕/A — галерея.
+	_image.focus_mode = Control.FOCUS_ALL
 	box.add_child(_image)
 
 	# Рамка окна (image-frame.png, прозрачный центр) заполняет бокс целиком —
@@ -303,6 +305,8 @@ func _build_image_box() -> void:
 	box.add_child(_image_hover)
 	_image.mouse_entered.connect(func() -> void: _fade_image_hover(_image.texture != null))
 	_image.mouse_exited.connect(func() -> void: _fade_image_hover(false))
+	_image.focus_entered.connect(func() -> void: _fade_image_hover(_image.texture != null))
+	_image.focus_exited.connect(func() -> void: _fade_image_hover(false))
 
 	_vbox.add_child(box)
 
@@ -759,8 +763,17 @@ func _on_image_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
-			if _location_art(_loc_id) != null and not _data.is_empty():
-				gallery_requested.emit(_data)  # галерея сама проявляется с масштабом
+			open_gallery()
+	elif event.is_action_pressed(&"ui_accept"):
+		_image.accept_event()
+		open_gallery()
+
+
+## Открыть галерею показанной локации (картина и рассказ о месте), если есть арт.
+## Клик / ✕ по картинке, □/X с геймпада при открытой панели (WorldMap).
+func open_gallery() -> void:
+	if _location_art(_loc_id) != null and not _data.is_empty():
+		gallery_requested.emit(_data)  # галерея сама проявляется с масштабом
 
 
 # Слайд-звук с разной высотой для открытия и закрытия (+лёгкий джиттер).

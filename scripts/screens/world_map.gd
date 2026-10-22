@@ -1155,8 +1155,9 @@ func _on_sidebar_closed() -> void:
 # Курсор — подсветка выбранной локации: крестовина/стик (и стрелки) ведут его к
 # ближайшей локации в ту сторону, камера плавно следует. ✕/A (Enter) — как клик:
 # сайдбар (или выбор цели, если идёт выбор на карте); при открытом сайдбаре
-# ✕/A жмёт его кнопку в фокусе (вверх/вниз — по кнопкам), влево/вправо — соседняя
-# локация в том же сайдбаре. ○/B — закрыть сайдбар, затем снять курсор.
+# ✕/A жмёт его кнопку в фокусе (вверх/вниз — по кнопкам и картинке), влево/вправо —
+# соседняя локация в том же сайдбаре, □/X — галерея места. ○/B — закрыть сайдбар,
+# затем снять курсор.
 
 const _PAD_PAN_TIME: float = 0.35
 
@@ -1191,6 +1192,14 @@ func _pad_map_input(event: InputEvent) -> bool:
 		if _sidebar.is_open() and dir.x == 0.0:
 			return false  # вверх/вниз — кнопки сайдбара (их ведёт GUI)
 		_pad_move(dir)
+		return true
+	if (
+		_sidebar.is_open()
+		and event is InputEventJoypadButton
+		and (event as InputEventJoypadButton).pressed
+		and (event as InputEventJoypadButton).button_index == JOY_BUTTON_X
+	):
+		_sidebar.open_gallery()  # □/X — галерея места (картина и рассказ)
 		return true
 	if event.is_action_pressed(&"ui_accept"):
 		if _sidebar_has_focus():
