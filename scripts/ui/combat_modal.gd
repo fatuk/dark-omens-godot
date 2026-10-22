@@ -24,7 +24,6 @@ const _FS_HP := 40  # здоровье/стойкость
 const _FS_HITS := 20  # успехи
 const _FS_ABILITY := 15
 const _FS_LOSS := 22  # «−2 Рассудок» под лотком
-const _OUTCOME_LINES := 2  # строк исхода под лотком: потери + кубик способности
 const _PULSE_PERIOD := 0.9  # сек на полупериод пульса
 const _REVEAL_FADE := 0.25  # проявление итога, когда кубы осели
 
@@ -49,9 +48,8 @@ var _pulse_on: Label = null  # какое число пульсирует сей
 func _ready() -> void:
 	UIStyle.style_modal_panel(_panel)
 	_panel.custom_minimum_size.x = _ART_SIZE.x + 160.0
-	# Ширина окна плавно подстраивается под пул кубов (шире арта монстра). Высота
-	# постоянна: под исход боя зарезервирован блок фиксированной высоты (_loss_lines),
-	# иначе окно подпрыгивало на каждом броске.
+	# Окно меняет размер плавно, а не скачком: по высоте (исход боя, второй шаг
+	# проверки) и по ширине (пул кубов шире арта монстра).
 	SmoothSize.wrap(_panel)
 	GameState.state_changed.connect(_refresh)
 	_refresh()
@@ -82,7 +80,10 @@ func _build(card: Dictionary) -> void:
 	for t in [_will_tray, _str_tray, _art]:
 		if is_instance_valid(t) and t.get_parent() != null:
 			t.get_parent().remove_child(t)
+	# Убрать из окна сразу, не только queue_free: иначе кадр старое и новое содержимое
+	# стоят вместе, SmoothSize ловит двойную высоту — и окно подпрыгивает на броске.
 	for c in _vbox.get_children():
+		_vbox.remove_child(c)
 		c.queue_free()
 
 	var c: Dictionary = _chk()  # активная проверка боя (Воля или Сила)
@@ -399,9 +400,9 @@ func _on_roll_settled() -> void:
 		return
 	_build(GameState.current_encounter)
 	var reveal: Array = [_art.get_node("Horror/Hits"), _art.get_node("Damage/Hits")]
-	var outcome: Node = _vbox.get_node_or_null("Outcome")
-	if outcome != null:
-		reveal.append_array(outcome.get_children())
+	for n in _vbox.get_children():
+		if String(n.name).begins_with("Loss"):
+			reveal.append(n)
 	for n_v: Variant in reveal:
 		var n: CanvasItem = n_v
 		n.modulate.a = 0.0
@@ -502,23 +503,8 @@ func _reroll_all_available() -> bool:
 
 # Только последствия для сыщика при принятии текущего расклада: −N рассудка после
 # броска Воли (и дальше, пока бой не закрыт), −N здоровья после броска Силы. За
-# вычетом уже предотвращённого картами (бинты/виски). Блок исхода — фиксированной
-# высоты (_OUTCOME_LINES строк) и есть всегда, даже пустой: высота окна не скачет.
+# вычетом уже предотвращённого картами (бинты/виски). Без потерь — строки нет.
 func _loss_lines(card: Dictionary, str_step: bool, done: bool, masked: bool = false) -> void:
-	var outcome := VBoxContainer.new()
-	outcome.name = "Outcome"
-	outcome.add_theme_constant_override("separation", 4)
-	var probe: Label = _lbl("−0", _FS_LOSS, _C_WILL)
-	outcome.custom_minimum_size.y = (
-		probe.get_combined_minimum_size().y * _OUTCOME_LINES + 4.0 * (_OUTCOME_LINES - 1)
-	)
-	probe.free()
-	_vbox.add_child(outcome)
-	# Потери рассудка и здоровья — одной строкой.
-	var losses := HBoxContainer.new()
-	losses.name = "Losses"
-	losses.alignment = BoxContainer.ALIGNMENT_CENTER
-	losses.add_theme_constant_override("separation", 28)
 	var c: Dictionary = _chk()
 	var rolled: bool = bool(c.get("rolled", false)) and not masked
 	var sanity_loss: int = -1
@@ -540,19 +526,15 @@ func _loss_lines(card: Dictionary, str_step: bool, done: bool, masked: bool = fa
 	if sanity_loss > 0:
 		var ls: Label = _lbl("−%d %s" % [sanity_loss, tr("COMBAT_SANITY")], _FS_LOSS, _C_WILL)
 		ls.name = "LossSanity"
-		losses.add_child(ls)
+		_vbox.add_child(ls)
 	if hp_loss > 0:
 		var lh: Label = _lbl("−%d %s" % [hp_loss, tr("COMBAT_HEALTH")], _FS_LOSS, _C_STR)
 		lh.name = "LossHealth"
-		losses.add_child(lh)
-	if losses.get_child_count() > 0:
-		outcome.add_child(losses)
-	else:
-		losses.free()
+		_vbox.add_child(lh)
 	# Кубик способности (defeatOnDie): что выпало и чем кончилось.
 	if card.has("ability_die"):
 		var won: bool = bool(card.get("defeated_on_horror", false))
-		outcome.add_child(
+		_vbox.add_child(
 			_lbl(
 				(
 					tr("COMBAT_ABILITY_DIE_WON" if won else "COMBAT_ABILITY_DIE_LOST")
