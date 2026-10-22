@@ -98,12 +98,10 @@ func _make_frame_style() -> StyleBoxTexture:
 
 
 func _input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo):
-		return
-	if (event as InputEventKey).keycode != KEY_C:
+	if not event.is_action_pressed(GameInput.CHAT):  # C / Share-View
 		return
 	var foc: Control = get_viewport().gui_get_focus_owner()
-	if foc is LineEdit or foc is TextEdit:
+	if event is InputEventKey and (foc is LineEdit or foc is TextEdit):
 		return  # не воровать 'c' у текстовых полей (консоль/лобби)
 	if _open:
 		close()

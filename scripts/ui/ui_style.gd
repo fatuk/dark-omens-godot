@@ -6,6 +6,8 @@ class_name UIStyle
 const _BTN_BG := Color(0.12, 0.10, 0.20)  # обычный фон кнопки
 const _BTN_BG_HOVER := Color(0.20, 0.16, 0.30)  # фон при наведении
 const _HOVER_BRIGHTEN := Color(1.20, 1.18, 1.10, 1.00)  # тёплый брайтенинг (modulate hover)
+# Фокус с геймпада — ярче наведения: курсора нет, кнопка в фокусе должна читаться сразу.
+const _FOCUS_BRIGHTEN := Color(1.45, 1.36, 1.12, 1.00)
 const _DISABLED_TINT := Color(0.45, 0.45, 0.48, 1.00)  # десатурация disabled
 
 # ── Фон сцены ──────────────────────────────────────────────────────────────────
@@ -225,8 +227,16 @@ static func _wire_button_hover(btn: Button, bg: Control) -> void:
 	var c_disabled := _DISABLED_TINT  # десатурация без прозрачности
 
 	var apply_color := func() -> void:
+		var pad_focus: bool = pad_focused(btn)
+		# Белый текст фокуса — только с геймпада: мышиный клик тоже даёт фокус, и
+		# кнопка оставалась бы «нажатой на вид». Ставим лишь при смене (без цикла redraw).
+		var font_focus: Color = Color.WHITE if pad_focus else UIColors.ACCENT
+		if btn.get_theme_color("font_focus_color") != font_focus:
+			btn.add_theme_color_override("font_focus_color", font_focus)
 		if btn.disabled:
 			bg.modulate = c_disabled
+		elif pad_focus:
+			bg.modulate = _FOCUS_BRIGHTEN
 		elif Rect2(Vector2.ZERO, btn.size).has_point(btn.get_local_mouse_position()):
 			bg.modulate = c_hover
 		else:
@@ -234,6 +244,8 @@ static func _wire_button_hover(btn: Button, bg: Control) -> void:
 
 	btn.mouse_entered.connect(apply_color)
 	btn.mouse_exited.connect(apply_color)
+	btn.focus_entered.connect(apply_color)
+	btn.focus_exited.connect(apply_color)
 	btn.draw.connect(apply_color)  # cheap: ловит изменения .disabled извне
 
 	btn.button_down.connect(func() -> void: _animate_press(btn, true))
@@ -312,6 +324,8 @@ static func _wire_texture_button_hover(btn: BaseButton) -> void:
 	var apply_color := func() -> void:
 		if btn.disabled:
 			btn.modulate = c_disabled
+		elif pad_focused(btn):
+			btn.modulate = _FOCUS_BRIGHTEN
 		elif Rect2(Vector2.ZERO, btn.size).has_point(btn.get_local_mouse_position()):
 			btn.modulate = c_hover
 		else:
@@ -319,6 +333,8 @@ static func _wire_texture_button_hover(btn: BaseButton) -> void:
 
 	btn.mouse_entered.connect(apply_color)
 	btn.mouse_exited.connect(apply_color)
+	btn.focus_entered.connect(apply_color)
+	btn.focus_exited.connect(apply_color)
 	btn.draw.connect(apply_color)
 	btn.button_down.connect(func() -> void: _animate_press(btn, true))
 	btn.button_up.connect(func() -> void: _animate_press(btn, false))
@@ -484,6 +500,46 @@ static func refresh_backdrops() -> void:
 		var n: Variant = _open_modals[id_v]
 		if is_instance_valid(n) and n is Control:
 			apply_backdrop_alpha(n as Control)
+
+
+## Верхняя открытая модалка — куда геймпад ставит фокус (PadFocus): из видимых в
+## реестре — на самом высоком CanvasLayer, при равенстве — открытая позже (словарь
+## хранит порядок вставки, переоткрытие переносит запись в конец). null — окон нет.
+static func top_modal() -> Node:
+	var best: Node = null
+	var best_layer: int = -(1 << 30)
+	for id_v: Variant in _open_modals.keys():
+		var n: Variant = _open_modals[id_v]
+		if not is_instance_valid(n):
+			continue
+		var node: Node = n
+		var shown: bool = (
+			(node as CanvasItem).is_visible_in_tree()
+			if node is CanvasItem
+			else bool(node.get("visible"))
+		)
+		if not shown:
+			continue
+		var layer: int = canvas_layer_of(node)
+		if layer >= best_layer:
+			best = node
+			best_layer = layer
+	return best
+
+
+## Номер CanvasLayer, в котором рисуется узел (0 — основной холст).
+static func canvas_layer_of(node: Node) -> int:
+	if node is CanvasLayer:
+		return (node as CanvasLayer).layer
+	var cl: CanvasLayer = (
+		(node as CanvasItem).get_canvas_layer_node() if node is CanvasItem else null
+	)
+	return cl.layer if cl != null else 0
+
+
+## Кнопка в фокусе С ГЕЙМПАДА — подсветить сильнее наведения (PadFocus).
+static func pad_focused(btn: Control) -> bool:
+	return btn.has_focus() and InputDevice.using_pad()
 
 
 ## Проигрывает переход модалки. root — слой целиком (вместе с затемнением),

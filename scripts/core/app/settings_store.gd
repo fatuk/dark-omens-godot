@@ -41,6 +41,9 @@ var show_fps: bool = false
 var guide_hints: bool = true
 # id уже показанных подсказок — каждая показывается один раз на профиль.
 var guide_seen: Array = []
+# Иконки кнопок геймпада: "auto" — по подключённому контроллеру, либо принудительно
+# xbox | playstation | nintendo (см. InputDevice.family).
+var pad_glyphs: String = "auto"
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -140,6 +143,7 @@ func save() -> void:
 	cfg.set_value("game", "turn_notify", turn_notify)
 	cfg.set_value("game", "show_fps", show_fps)
 	cfg.set_value("game", "guide_hints", guide_hints)
+	cfg.set_value("game", "pad_glyphs", pad_glyphs)
 	cfg.set_value("guide", "seen", guide_seen)
 	music_volume = MusicManager.volume
 	sfx_volume = SfxManager.volume
@@ -189,4 +193,5 @@ func _load() -> void:
 	turn_notify = bool(cfg.get_value("game", "turn_notify", true))
 	show_fps = bool(cfg.get_value("game", "show_fps", false))
 	guide_hints = bool(cfg.get_value("game", "guide_hints", true))
+	pad_glyphs = String(cfg.get_value("game", "pad_glyphs", "auto"))
 	guide_seen = (cfg.get_value("guide", "seen", []) as Array).duplicate()

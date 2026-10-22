@@ -541,14 +541,7 @@ func _input(event: InputEvent) -> void:
 	# Tab — открыть/закрыть (перехватываем до ui_focus_next). Только если включено
 	# (рука в игре); в пикере веер открывают кликом по карте, Tab не трогаем.
 	# При открытой debug-консоли Tab отдаём ей (автодополнение) — веер не трогаем.
-	if (
-		tab_enabled
-		and not GameConsole.is_open()
-		and event is InputEventKey
-		and event.pressed
-		and not event.echo
-		and event.keycode == KEY_TAB
-	):
+	if tab_enabled and not GameConsole.is_open() and event.is_action_pressed(GameInput.HAND):
 		toggle()
 		get_viewport().set_input_as_handled()
 		return
@@ -568,17 +561,10 @@ func _input(event: InputEvent) -> void:
 			_end_drag()
 			get_viewport().set_input_as_handled()
 		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
-			KEY_LEFT:
-				_switch_section(-1)  # ← → листают СЕКЦИИ (карты — колесом/наведением)
-				get_viewport().set_input_as_handled()
-			KEY_RIGHT:
-				_switch_section(1)
-				get_viewport().set_input_as_handled()
-			KEY_ESCAPE:
-				close()
-				get_viewport().set_input_as_handled()
+	# ← → / L1 R1 листают СЕКЦИИ; крестовина/стик — карты (мышью — колесом/наведением);
+	# ✕/A — разыграть активную; Esc/○/B — закрыть. Порядок важен: ← есть и в ui_left.
+	if _nav_action(event):
+		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_step(1)
@@ -586,6 +572,34 @@ func _input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_step(-1)
 			get_viewport().set_input_as_handled()
+
+
+# Действие навигации по открытому вееру; true — обработано (событие гасим).
+func _nav_action(event: InputEvent) -> bool:
+	if event.is_action_pressed(GameInput.PAGE_PREV):
+		_switch_section(-1)
+	elif event.is_action_pressed(GameInput.PAGE_NEXT):
+		_switch_section(1)
+	elif event.is_action_pressed(GameInput.BACK):
+		close()
+	elif event.is_action_pressed(&"ui_left", true):
+		_step(-1)
+	elif event.is_action_pressed(&"ui_right", true):
+		_step(1)
+	elif event.is_action_pressed(&"ui_accept"):
+		_play_active()
+	else:
+		return false
+	return true
+
+
+# Разыграть активную карту с геймпада/клавиатуры — как клик по ней.
+func _play_active() -> void:
+	if _active < 0 or _active >= _els.size():
+		return
+	if _active < _exhausted.size() and bool(_exhausted[_active]):
+		return  # истощённую не разыгрываем
+	_play_and_close(_active, _deck[_active] if _active < _deck.size() else {})
 
 
 func _on_card_enter(idx: int) -> void:

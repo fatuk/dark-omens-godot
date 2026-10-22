@@ -78,10 +78,9 @@ func _install_ornate_title() -> Label:
 func _input(event: InputEvent) -> void:
 	if not _is_open or not close_on_esc:
 		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		if (event as InputEventKey).keycode == KEY_ESCAPE:
-			close()
-			get_viewport().set_input_as_handled()
+	if event.is_action_pressed(GameInput.BACK):  # Esc / ○ / B
+		close()
+		get_viewport().set_input_as_handled()
 
 
 # ── Public API ────────────────────────────────────────────────────────────────

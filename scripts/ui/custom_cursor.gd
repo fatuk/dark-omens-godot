@@ -8,6 +8,10 @@ extends CanvasLayer
 ## вариант — со светящимся зелёным глазом, плавно перетекая.
 ##
 ## Хотспот — верхний-левый угол текстуры (там кончик стрелки на PNG).
+##
+## Здесь же поднимается поддержка геймпада (курсор — тот, кто первым узнаёт, чем
+## управляют): действия InputMap (GameInput.register), трекер устройства
+## (InputDevice) и фокус модалок (PadFocus). На геймпаде курсор прячется.
 
 # Ассеты под 2x — на экране рисуем в половину от исходных 195×263.
 const CURSOR_SIZE: Vector2 = Vector2(97.5, 131.5)
@@ -34,6 +38,21 @@ func _ready() -> void:
 	_hide_system_cursor()
 	_icon_default.size = CURSOR_SIZE
 	_icon_active.size = CURSOR_SIZE
+	GameInput.register()
+	var dev := InputDevice.new()
+	dev.name = "InputDevice"
+	add_child(dev)
+	dev.changed.connect(_on_device_changed)
+	var pf := PadFocus.new()
+	pf.name = "PadFocus"
+	add_child(pf)
+
+
+# Геймпад — курсор прячем (фокус и так показывает, где мы); мышь — возвращаем.
+func _on_device_changed() -> void:
+	var pad: bool = InputDevice.using_pad()
+	_icon_default.visible = not pad
+	_icon_active.visible = not pad
 
 
 ## macOS прячет курсор только для окна в фокусе, а autoload зовёт set_mouse_mode

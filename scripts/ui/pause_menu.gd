@@ -65,11 +65,15 @@ func _connect_game_state() -> void:
 	gs.connect("state_changed", _on_state_changed)
 
 
+# Esc / Options-Menu — открыть/закрыть; ○/B — только закрыть (открывать паузу
+# кнопкой «назад» с геймпада неожиданно — B закрывает окна).
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed("ui_cancel"):
-		return
-	toggle()
-	get_viewport().set_input_as_handled()
+	if (
+		event.is_action_pressed(GameInput.PAUSE)
+		or (_open and event.is_action_pressed(GameInput.BACK))
+	):
+		toggle()
+		get_viewport().set_input_as_handled()
 
 
 func _process(_delta: float) -> void:

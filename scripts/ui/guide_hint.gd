@@ -5,8 +5,8 @@ extends CanvasLayer
 ## нижней панели и указывает на рамку с текстом (стандартная рамка модалок).
 ## mirrored — зеркально, слева: когда справа открыта панель (карточка локации),
 ## он показывает пальцем в её сторону и не закрывает её.
-## Реплики идут по очереди: клик (или Пробел/Enter) — следующая, после последней
-## окно гаснет и шлёт finished. Esc — закрыть сразу.
+## Реплики идут по очереди: клик (или Пробел/Enter/✕/A) — следующая, после
+## последней окно гаснет и шлёт finished. Esc/○/B — закрыть сразу.
 ##
 ##   GuideHint.say(self, ["GUIDE_WELCOME", "GUIDE_ACTIONS"])
 ##
@@ -201,16 +201,15 @@ func _on_root_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-func _unhandled_key_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and (event as InputEventKey).pressed):
+# В _input (до GUI), а не после: с геймпада фокус стоит на кнопке окна под
+# подсказкой, и ✕/A иначе нажал бы её вместо «дальше».
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed(GameInput.BACK):
+		_close()
+	elif event.is_action_pressed(&"ui_accept"):
+		_advance()
+	else:
 		return
-	match (event as InputEventKey).keycode:
-		KEY_ESCAPE:
-			_close()
-		KEY_SPACE, KEY_ENTER, KEY_KP_ENTER:
-			_advance()
-		_:
-			return
 	get_viewport().set_input_as_handled()
 
 

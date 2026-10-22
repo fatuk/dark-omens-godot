@@ -311,6 +311,7 @@ const _COMMANDS := [
 	{"text": "who", "hint": "игроки"},
 	{"text": "offline", "hint": "офлайн-режим on|off (реле в процессе)"},
 	{"text": "guide", "hint": "подсказка Армитеджа: [текст | ключ …]"},
+	{"text": "pad", "hint": "иконки геймпада: auto|xbox|playstation|nintendo"},
 	{"text": "clear", "hint": "очистить консоль"},
 	{"text": "help", "hint": "справка"},
 ]
@@ -538,6 +539,8 @@ func _on_command_submitted(text: String) -> void:
 			_cmd_enc(args)
 		"guide":
 			_cmd_guide(args)
+		"pad":
+			_cmd_pad(args)
 		_:
 			err("неизвестная команда «%s» — введите `help`" % cmd)
 	_scroll_bottom_deferred()  # вывод команды мог добавить строки — промотать вниз
@@ -573,6 +576,7 @@ func _cmd_help() -> void:
 	self.log("  list assets|spells|monsters|conditions|locations [фильтр]")
 	self.log("  who                         — игроки и их id/локации")
 	self.log("  offline [on|off]            — офлайн-режим: реле в процессе, без сервера")
+	self.log("  pad [auto|xbox|playstation|nintendo] — иконки кнопок геймпада")
 	self.log("  clear                       — очистить консоль")
 	self.log(
 		"Игрок: me · часть имени/сыщика · номер из `who`. Карта/монстр: id или часть названия."
@@ -595,6 +599,27 @@ func _cmd_offline(args: Array) -> void:
 		pname = String(AuthManager.current_user.get("name", "Player"))
 	nm.connect_to_relay(pname, SettingsStore.relay_url)
 	self.log("офлайн-режим %s — переподключаюсь" % ("включён" if want else "выключен"))
+
+
+# Принудительный род иконок геймпада (проверить подсказки без нужного контроллера).
+# Без аргумента — что сейчас: настройка, определённый контроллер, активен ли геймпад.
+func _cmd_pad(args: Array) -> void:
+	if not args.is_empty():
+		var want: String = String(args[0]).to_lower()
+		if want != "auto" and not InputDevice.FAMILIES.has(want):
+			err("pad: auto | %s" % " | ".join(PackedStringArray(InputDevice.FAMILIES)))
+			return
+		SettingsStore.pad_glyphs = want
+		SettingsStore.save()
+		var dev: InputDevice = InputDevice.get_instance()
+		if dev != null:
+			dev.changed.emit()  # иконки перерисуются сразу
+	self.log(
+		(
+			"иконки: %s → %s · геймпад активен: %s"
+			% [SettingsStore.pad_glyphs, InputDevice.family(), InputDevice.using_pad()]
+		)
+	)
 
 
 # Показать подсказку Армитеджа поверх текущей сцены. Без аргументов — приветствие;
