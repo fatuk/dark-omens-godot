@@ -9,6 +9,8 @@ extends Control
 ##     растягивается до экрана — буквы мылятся;
 ##   • плотный фон — сквозь стандартную просвечивало то, что под ней.
 ## Встаёт правее курсора (его ширина), у краёв экрана переносится внутрь.
+## Геймпад: если контрол фокусируем (focus_mode) — в фокусе с геймпада подсказка
+## встаёт рядом с ним (курсора нет), а сам он обводится рамкой.
 ##
 ##   var tile := WrapTooltip.new()
 ##   tile.tooltip_text = "…"   # текст храним там же, стандартная подсказка подавлена
@@ -24,11 +26,14 @@ static var _panel: PanelContainer = null
 static var _owner_id: int = 0  # чья подсказка сейчас на экране
 
 var _timer: SceneTreeTimer = null
+var _ring: Panel = null  # рамка фокуса с геймпада (поверх детей)
 
 
 func _ready() -> void:
 	mouse_entered.connect(_on_enter)
 	mouse_exited.connect(_hide)
+	focus_entered.connect(_on_focus)
+	focus_exited.connect(_on_unfocus)
 	visibility_changed.connect(_on_visibility)
 	tree_exiting.connect(_hide)
 
@@ -62,7 +67,7 @@ func _on_delay(t: SceneTreeTimer) -> void:
 		_show()
 
 
-func _show() -> void:
+func _show(beside: bool = false) -> void:
 	var panel: PanelContainer = _ensure_layer(get_tree())
 	var lbl: Label = panel.get_child(0)
 	lbl.text = tooltip_text
@@ -70,7 +75,53 @@ func _show() -> void:
 	panel.reset_size()
 	panel.visible = true
 	_owner_id = get_instance_id()
-	_place.call_deferred(panel)  # размер с переносом строк известен после раскладки
+	# Размер с переносом строк известен после раскладки.
+	if beside:
+		_place_beside.call_deferred(panel)
+	else:
+		_place.call_deferred(panel)
+
+
+# Фокус с геймпада: рамка и подсказка сразу (без задержки — курсора нет).
+func _on_focus() -> void:
+	if not InputDevice.using_pad():
+		return
+	if _ring == null:
+		_ring = Panel.new()
+		_ring.name = "FocusRing"
+		_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		var sb := StyleBoxFlat.new()
+		sb.draw_center = false
+		sb.border_color = UIColors.ACCENT
+		sb.set_border_width_all(3)
+		_ring.add_theme_stylebox_override("panel", sb)
+		add_child(_ring)
+	move_child(_ring, -1)  # поверх арта и чисел
+	_ring.visible = true
+	if not tooltip_text.is_empty():
+		_show(true)
+
+
+func _on_unfocus() -> void:
+	if _ring != null:
+		_ring.visible = false
+	_hide()
+
+
+# Рядом с контролом: справа от него, не влезает — слева; по вертикали — вровень с
+# его верхом, в пределах экрана.
+func _place_beside(panel: PanelContainer) -> void:
+	if not is_instance_valid(panel) or not panel.visible:
+		return
+	panel.reset_size()
+	var vp: Vector2 = get_viewport_rect().size
+	var r: Rect2 = get_global_rect()
+	var pos := Vector2(r.end.x + 10.0, r.position.y)
+	if pos.x + panel.size.x > vp.x:
+		pos.x = r.position.x - panel.size.x - 10.0
+	pos.y = clampf(pos.y, 4.0, maxf(4.0, vp.y - panel.size.y - 4.0))
+	panel.position = Vector2(maxf(4.0, pos.x), pos.y)
 
 
 func _hide() -> void:

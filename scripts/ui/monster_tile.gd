@@ -61,6 +61,7 @@ static func make(m: Dictionary, cur_health: int = -1, copies: int = 1) -> Contro
 	tile.clip_contents = true
 	tile.mouse_filter = Control.MOUSE_FILTER_PASS  # подсказка; колесо — скроллу
 	tile.tooltip_text = tooltip(m, cur_health)
+	tile.focus_mode = Control.FOCUS_ALL  # геймпад: ходить по монстрам, статы — в подсказке
 
 	var bg := ColorRect.new()  # подложка: под артом с прозрачностью и вместо него
 	bg.name = "ArtBg"

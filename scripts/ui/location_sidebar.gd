@@ -369,6 +369,7 @@ func _make_buy_ticket_btn(label_key: String, ticket_type: String) -> Button:
 func _build_content() -> void:
 	var scroll := ScrollContainer.new()
 	scroll.name = "Scroll"
+	scroll.follow_focus = true  # геймпад: прокрутка за кнопкой / монстром в фокусе
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_vbox.add_child(scroll)

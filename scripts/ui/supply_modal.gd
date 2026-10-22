@@ -226,6 +226,7 @@ static func _scroll(content: Control, empty: bool) -> Control:
 		return lbl
 	var sc := ScrollContainer.new()
 	sc.name = "Scroll"
+	sc.follow_focus = true  # геймпад: прокрутка за плиткой в фокусе
 	sc.custom_minimum_size = Vector2(_LIST_W, _LIST_H)
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
