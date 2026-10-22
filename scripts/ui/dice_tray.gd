@@ -17,6 +17,8 @@ extends HBoxContainer
 ## Успех/провал/переброс показываем свечением за рамкой (_style_glow).
 
 signal die_selected(index: int)
+
+const _FOCUS_TINT := Color(1.45, 1.36, 1.12)  # куб в фокусе с геймпада
 ## Все кубы броска осели (последний доиграл спин со вспышкой). Кто показывает исход
 ## проверки — ждёт этого, иначе «успех» проявляется поверх ещё крутящихся кубов.
 signal roll_settled
@@ -348,20 +350,28 @@ func _make_die(
 		"pending": is_pending,
 	}
 
-	# Клик по кубу → переброс (только если провал и есть право).
+	# Клик по кубу → переброс (только если провал и есть право). С геймпада — тот же
+	# куб в фокусе (крестовина) и ✕/A: кликабельный куб фокусируем, фокус подсвечиваем.
 	root.mouse_filter = Control.MOUSE_FILTER_STOP if clickable else Control.MOUSE_FILTER_IGNORE
+	root.focus_mode = Control.FOCUS_ALL if clickable else Control.FOCUS_NONE
 	if clickable:
 		root.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		var idx: int = index
-		root.gui_input.connect(
-			func(ev: InputEvent) -> void:
-				if (
-					ev is InputEventMouseButton
-					and (ev as InputEventMouseButton).pressed
-					and (ev as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT
-				):
-					die_selected.emit(idx)
-		)
+	var idx: int = index
+	root.gui_input.connect(
+		func(ev: InputEvent) -> void:
+			if not bool(die.get("clickable", false)):
+				return
+			var click: bool = (
+				ev is InputEventMouseButton
+				and (ev as InputEventMouseButton).pressed
+				and (ev as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT
+			)
+			if click or ev.is_action_pressed(&"ui_accept"):
+				die_selected.emit(idx)
+				root.accept_event()
+	)
+	root.focus_entered.connect(func() -> void: content.modulate = _FOCUS_TINT)
+	root.focus_exited.connect(func() -> void: content.modulate = Color.WHITE)
 
 	add_child(root)
 	# Стартово — одна финальная грань (статика); спин перезаполнит ленту сам.
@@ -586,6 +596,9 @@ func _apply_click(die: Dictionary) -> void:
 	var c: bool = die["clickable"]
 	var root: Control = die["root"]
 	root.mouse_filter = Control.MOUSE_FILTER_STOP if c else Control.MOUSE_FILTER_IGNORE
+	root.focus_mode = Control.FOCUS_ALL if c else Control.FOCUS_NONE
+	if not c and root.has_focus():
+		root.release_focus()  # переброс иссяк — фокус вернёт PadFocus на кнопку
 	root.mouse_default_cursor_shape = (Control.CURSOR_POINTING_HAND if c else Control.CURSOR_ARROW)
 
 

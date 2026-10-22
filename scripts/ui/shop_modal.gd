@@ -213,6 +213,17 @@ func open() -> void:
 	visible = true
 
 
+# Esc / ○ / B: сперва закрыть выбор «что продать», затем — лавку (как медальон ✕).
+func _input(event: InputEvent) -> void:
+	if not visible or not event.is_action_pressed(GameInput.BACK):
+		return
+	if is_instance_valid(_sell_panel) and _sell_panel.visible:
+		_sell_panel.visible = false
+	else:
+		_close()
+	get_viewport().set_input_as_handled()
+
+
 func _close() -> void:
 	GameState.act(RelayActions.SHOP_CLOSE)
 	queue_free()
@@ -601,14 +612,20 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 
 	hit.mouse_entered.connect(func() -> void: _hover_card(entry, true))
 	hit.mouse_exited.connect(func() -> void: _hover_card(entry, false))
+	# Геймпад: карточка в фокусе (крестовина) — как наведение, ✕/A — как клик.
+	hit.focus_mode = Control.FOCUS_ALL
+	hit.focus_entered.connect(func() -> void: _hover_card(entry, true))
+	hit.focus_exited.connect(func() -> void: _hover_card(entry, false))
 	hit.gui_input.connect(
 		func(ev: InputEvent) -> void:
-			if (
+			var click: bool = (
 				ev is InputEventMouseButton
 				and (ev as InputEventMouseButton).pressed
 				and (ev as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT
-			):
+			)
+			if click or ev.is_action_pressed(&"ui_accept"):
 				_toggle_card(aid, cost)
+				hit.accept_event()
 	)
 
 
