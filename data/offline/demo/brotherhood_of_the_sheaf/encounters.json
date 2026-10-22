@@ -1,5 +1,166 @@
 [
 	{
+		"id": "ow-future-07",
+		"kind": "gate",
+		"tags": [
+			"world:The Future",
+			"season:core"
+		],
+		"data": {
+			"stage1": {
+				"test": {
+					"skill": "will",
+					"modifier": 0
+				}
+			},
+			"successBranch": {
+				"test": {
+					"skill": "lore",
+					"modifier": -1
+				},
+				"onSuccess": [
+					{
+						"do": "gainClue",
+						"count": 2
+					},
+					{
+						"do": "retreatDoom",
+						"amount": 1
+					},
+					{
+						"do": "closeGate"
+					}
+				],
+				"onFailure": [
+					{
+						"do": "gainClue",
+						"count": 1
+					},
+					{
+						"do": "loseSanity",
+						"amount": 2
+					}
+				]
+			},
+			"failureBranch": {
+				"test": {
+					"skill": "will",
+					"modifier": -1
+				},
+				"onSuccess": [
+					{
+						"do": "loseSanity",
+						"amount": 2
+					},
+					{
+						"do": "gainCondition",
+						"condition": "paranoia"
+					}
+				],
+				"onFailure": [
+					{
+						"do": "loseSanity",
+						"amount": 2
+					},
+					{
+						"do": "gainCondition",
+						"kind": "madness"
+					}
+				]
+			}
+		},
+		"i18n": {
+			"en": {
+				"name": "The Slab of Names",
+				"otherWorld": "The Future",
+				"stage1": {
+					"mainText": "The slab stretches along the wall three meters to the right and left — solid columns of names, carved in small type. You find your own. It appears in the third column, and you know enough not to try to translate the heading above it.",
+					"successText": "You look at your name for exactly as long as it takes to memorize the ones beside it — and force yourself to look away.",
+					"failureText": "Your gaze slides upward on its own, toward the column's heading, and you manage to read two words before you snap your eyes away."
+				},
+				"successBranch": {
+					"mainText": "Beside the names are dates, coordinates, codes. Some of them you have seen before: in newspaper obituaries, on the doors of sealed houses. There is a system here — you try to work it out.",
+					"successText": "You manage to copy twelve lines onto your cuff before the portal closes behind you. You now have enough data to understand who is next.",
+					"failureText": "The connection between the names keeps slipping away: the longer you look, the less you understand. You carry only one lead with you, yet the logic of the list seems to go on living inside your head."
+				},
+				"failureBranch": {
+					"mainText": "The two words from the heading hang before your eyes even when you stare at the floor. You cannot recall exactly how they read, but the words seem to have been burned onto your eyelids.",
+					"successText": "You count the floor tiles — seventeen, eighteen… — until the words stop pulsing beneath your eyelids. Your mind goes empty and quiet, the way it does after a long illness.",
+					"failureText": "The two words unfold into a sentence, the sentence into a paragraph. You did not read this — you simply know it. Someone else's understanding settles into your mind like a heavy cold, and you sense that you are no longer alone inside your own body."
+				}
+			},
+			"ru": {
+				"name": "Плита с именами",
+				"otherWorld": "Будущее",
+				"stage1": {
+					"mainText": "Плита тянется вдоль стены на три метра вправо и влево — сплошные колонки имён, высеченные мелким шрифтом. Вы находите своё. Оно значится в третьем столбце, и вы знаете достаточно, чтобы не пытаться перевести заголовок над ним.",
+					"successText": "Вы смотрите на своё имя ровно столько, сколько нужно, чтобы запомнить соседние, — и заставляете себя отвести взгляд.",
+					"failureText": "Взгляд сам скользит вверх, к заголовку столбца, и вы успеваете прочитать два слова, прежде чем резко отвернуться."
+				},
+				"successBranch": {
+					"mainText": "Рядом с именами — даты, координаты, коды. Часть из них вы уже видели: в газетных некрологах, на дверях опечатанных домов. Здесь есть система, вы пытаетесь разобраться.",
+					"successText": "Вы успеваете выписать на манжету двенадцать строк, прежде чем портал за вами закрывается. Теперь у вас на руках достаточно данных, чтобы понять, кто следующий.",
+					"failureText": "Связь между именами ускользает: чем дольше вы смотрите, тем меньше понимаете. Вы уносите с собой лишь одну зацепку, но логика списка словно продолжает жить в вашей голове."
+				},
+				"failureBranch": {
+					"mainText": "Два слова из заголовка стоят перед глазами, даже когда вы смотрите в пол. Вы не можете вспомнить, как именно они читались, но слова словно отпечатались на веках.",
+					"successText": "Вы считаете плитки на полу — семнадцать, восемнадцать... — пока слова не перестают пульсировать под веками. В голове становится пусто и тихо, как после долгой болезни.",
+					"failureText": "Два слова разворачиваются в предложение, предложение — в абзац. Вы не читали этого, вы просто знаете. Чужое понимание оседает в голове тяжелым холодом, и вы чувствуете, что больше не одни в собственном теле."
+				}
+			}
+		}
+	},
+	{
+		"id": "gen-wild-01",
+		"kind": "general",
+		"tags": [
+			"ancient:any",
+			"loc:wilderness",
+			"season:core"
+		],
+		"data": {
+			"onSuccess": [
+				{
+					"do": "gainAsset",
+					"trait": "item"
+				},
+				{
+					"do": "loseSanity",
+					"amount": 1
+				}
+			],
+			"onFailure": [
+				{
+					"do": "gainCondition",
+					"condition": "despair"
+				},
+				{
+					"do": "loseSanity",
+					"amount": 2
+				}
+			],
+			"test": {
+				"skill": "will",
+				"modifier": -1
+			},
+			"isReady": true
+		},
+		"i18n": {
+			"en": {
+				"name": "Mail Plane",
+				"mainText": "A mail plane lies in the spruce thicket: one wing sheared off, the pilot still strapped into the cockpit. The mail sacks have been torn apart — not by any beast — something was searching through them for a specific letter.",
+				"successText": "You retrieve useful gear from the cargo hold. The pilot's glassy stare lingers in your mind long after you leave.",
+				"failureText": "The mangled metal of the fuselage and the frozen grimace of primal terror on the pilot's face shatter your resolve completely. You flee in panic into the depths of the forest, crushed by the understanding of how pitiful and insignificant humanity is in the face of this threat."
+			},
+			"ru": {
+				"name": "Почтовый самолёт",
+				"mainText": "В ельнике лежит почтовый самолёт: крыло снесено, пилот так и остался пристёгнутым в кабине. Мешки с почтой растерзаны не зверем — что-то искало в них определённое письмо.",
+				"successText": "Вы забираете из багажного отсека полезное снаряжение. Остекленевший взгляд пилота ещё долго стоит перед глазами.",
+				"failureText": "Изувеченный металл фюзеляжа и застывшая гримаса первобытного ужаса на лице пилота окончательно ломают вашу решимость. Вы в панике отступаете в чащу, раздавленные пониманием того, насколько жалки и ничтожны люди перед лицом этой угрозы."
+			}
+		}
+	},
+	{
 		"id": "loc-arkham-04",
 		"kind": "general",
 		"tags": [
@@ -5575,40 +5736,6 @@
 				"mainText": "On the hill stand stones where birds never land. The locals advise steering clear, but to understand this place you have to spend a night among the stones.",
 				"successText": "By dawn you hear an order in the whisper of the wind, and you carry knowledge down the hill, not fear.",
 				"failureText": "Toward morning you fall asleep. When you wake, there is a mark on your palm that was not there yesterday."
-			}
-		}
-	},
-	{
-		"id": "gen-wild-01",
-		"kind": "general",
-		"tags": [
-			"ancient:any",
-			"loc:wilderness",
-			"season:core"
-		],
-		"data": {
-			"onSuccess": [
-				{
-					"do": "gainAsset",
-					"trait": "item"
-				},
-				{
-					"do": "loseSanity",
-					"amount": 1
-				}
-			],
-			"onFailure": []
-		},
-		"i18n": {
-			"ru": {
-				"name": "Почтовый самолёт",
-				"mainText": "В ельнике лежит почтовый самолёт: крыло снесено, пилот так и остался пристёгнутым в кабине. Мешки с почтой растерзаны не зверем — что-то искало в них определённое письмо.",
-				"successText": "Вы забираете из багажного отсека полезное снаряжение. Остекленевший взгляд пилота ещё долго стоит перед глазами."
-			},
-			"en": {
-				"name": "The Mail Plane",
-				"mainText": "A mail plane lies in the spruce wood: one wing torn off, the pilot still strapped into the cockpit. The mail sacks have been ripped open, and not by an animal. Something was looking for one particular letter.",
-				"successText": "You take useful gear from the cargo hold. The pilot's glassy stare stays with you for a long time."
 			}
 		}
 	},
@@ -16331,117 +16458,6 @@
 					"failureText": "Слова путаются, послушники переглядываются. Старший снимает с вас маску и указывает на выход в сторону, где нет никакой двери. Вы приходите в себя на полу пустой комнаты — сколько времени прошло, неизвестно."
 				},
 				"otherWorld": "Утраченная Каркоза"
-			}
-		}
-	},
-	{
-		"id": "ow-future-07",
-		"kind": "gate",
-		"tags": [
-			"world:The Future",
-			"season:core"
-		],
-		"data": {
-			"stage1": {
-				"test": {
-					"skill": "will",
-					"modifier": 0
-				}
-			},
-			"successBranch": {
-				"test": {
-					"skill": "lore",
-					"modifier": -1
-				},
-				"onSuccess": [
-					{
-						"do": "gainClue",
-						"count": 2
-					},
-					{
-						"do": "retreatDoom",
-						"amount": 1
-					},
-					{
-						"do": "closeGate"
-					}
-				],
-				"onFailure": [
-					{
-						"do": "gainClue",
-						"count": 1
-					},
-					{
-						"do": "loseSanity",
-						"amount": 2
-					}
-				]
-			},
-			"failureBranch": {
-				"test": {
-					"skill": "will",
-					"modifier": -1
-				},
-				"onSuccess": [
-					{
-						"do": "loseSanity",
-						"amount": 2
-					},
-					{
-						"do": "gainCondition",
-						"condition": "paranoia"
-					}
-				],
-				"onFailure": [
-					{
-						"do": "loseSanity",
-						"amount": 2
-					},
-					{
-						"do": "gainCondition",
-						"kind": "madness"
-					}
-				]
-			}
-		},
-		"i18n": {
-			"en": {
-				"name": "The Slab of Names",
-				"otherWorld": "The Future",
-				"stage1": {
-					"mainText": "The slab stretches along the wall three meters to the right and left — solid columns of names, carved in small type. You find your own. It appears in the third column, and you know enough not to try to translate the heading above it.",
-					"successText": "You look at your name for exactly as long as it takes to memorize the ones beside it — and force yourself to look away.",
-					"failureText": "Your gaze slides upward on its own, toward the column's heading, and you manage to read two words before you snap your eyes away."
-				},
-				"successBranch": {
-					"mainText": "Beside the names are dates, coordinates, codes. Some of them you have seen before: in newspaper obituaries, on the doors of sealed houses. There is a system here — you try to work it out.",
-					"successText": "You manage to copy twelve lines onto your cuff before the portal closes behind you. You now have enough data to understand who is next.",
-					"failureText": "The connection between the names keeps slipping away: the longer you look, the less you understand. You carry only one lead with you, yet the logic of the list seems to go on living inside your head."
-				},
-				"failureBranch": {
-					"mainText": "The two words from the heading hang before your eyes even when you stare at the floor. You cannot recall exactly how they read, but the words seem to have been burned onto your eyelids.",
-					"successText": "You count the floor tiles — seventeen, eighteen… — until the words stop pulsing beneath your eyelids. Your mind goes empty and quiet, the way it does after a long illness.",
-					"failureText": "The two words unfold into a sentence, the sentence into a paragraph. You did not read this — you simply know it. Someone else's understanding settles into your mind like a heavy cold, and you sense that you are no longer alone inside your own body."
-				}
-			},
-			"ru": {
-				"name": "Плита с именами",
-				"otherWorld": "Будущее",
-				"stage1": {
-					"mainText": "Плита тянется вдоль стены на три метра вправо и влево — сплошные колонки имён, высеченные мелким шрифтом. Вы находите своё. Оно значится в третьем столбце, и вы знаете достаточно, чтобы не пытаться перевести заголовок над ним.",
-					"successText": "Вы смотрите на своё имя ровно столько, сколько нужно, чтобы запомнить соседние, — и заставляете себя отвести взгляд.",
-					"failureText": "Взгляд сам скользит вверх, к заголовку столбца, и вы успеваете прочитать два слова, прежде чем резко отвернуться."
-				},
-				"successBranch": {
-					"mainText": "Рядом с именами — даты, координаты, коды. Часть из них вы уже видели: в газетных некрологах, на дверях опечатанных домов. Здесь есть система, вы пытаетесь разобраться.",
-					"successText": "Вы успеваете выписать на манжету двенадцать строк, прежде чем портал за вами закрывается. Теперь у вас на руках достаточно данных, чтобы понять, кто следующий.",
-					"failureText": "Связь между именами ускользает: чем дольше вы смотрите, тем меньше понимаете. Вы уносите с собой лишь одну зацепку, но логика списка словно продолжает жить в вашей голове."
-				},
-				"failureBranch": {
-					"mainText": "Два слова из заголовка стоят перед глазами, даже когда вы смотрите в пол. Вы не можете вспомнить, как именно они читались, но слова словно отпечатались на веках.",
-					"successText": "Вы считаете плитки на полу — семнадцать, восемнадцать... — пока слова не перестают пульсировать под веками. В голове становится пусто и тихо, как после долгой болезни.",
-					"failureText": "Два слова разворачиваются в предложение, предложение — в абзац. Вы не читали этого, вы просто знаете. Чужое понимание оседает в голове тяжелым холодом, и вы чувствуете, что больше не одни в собственном теле."
-				}
 			}
 		}
 	},
