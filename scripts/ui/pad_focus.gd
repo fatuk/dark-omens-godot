@@ -211,6 +211,8 @@ static func pick(root: Node, prefer: String = "") -> Control:
 		# крестовине не от чего двигаться.
 		for n: Node in root.find_children("*", "Control", true, false):
 			var c := n as Control
+			if c is BaseButton:
+				continue  # кнопки уже перебраны: остались только недоступные
 			if c.focus_mode == Control.FOCUS_ALL and c.is_visible_in_tree():
 				return c
 		return null
