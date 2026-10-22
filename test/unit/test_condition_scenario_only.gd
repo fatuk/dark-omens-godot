@@ -56,3 +56,14 @@ func test_explicit_id_still_grants_obsession() -> void:
 	EffectRunner.run([{"do": "gainCondition", "condition": "obsession"}], p)
 	assert_has(p["conditions"], "obsession", "явный id сценария выдаёт состояние")
 	assert_eq(Conditions.kind_of("obsession"), "madness", "вид не тронут")
+
+
+# Карта-фантом: id, которого нет в библиотеке (вид «madness» вместо kind, «blight»
+# из дополнения), в руку не попадает; «delayed» — статус Задержки, проходит.
+func test_unknown_condition_id_is_not_granted() -> void:
+	var p: Dictionary = _player()
+	EffectRunner.run([{"do": "gainCondition", "condition": "madness"}], p)
+	EffectRunner.run([{"do": "gainCondition", "condition": "blight"}], p)
+	assert_eq(p["conditions"], [], "фантомы не выданы")
+	EffectRunner.run([{"do": "gainCondition", "condition": "delayed"}], p)
+	assert_has(p["conditions"], "delayed", "Задержка — статус, выдаётся")

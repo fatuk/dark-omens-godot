@@ -16399,7 +16399,7 @@
 					},
 					{
 						"do": "gainCondition",
-						"condition": "madness"
+						"kind": "madness"
 					}
 				]
 			}

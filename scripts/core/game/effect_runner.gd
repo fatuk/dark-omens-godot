@@ -833,6 +833,13 @@ static func _apply_player_verb(
 			var cid: String = String(node.get("condition", ""))
 			if cid.is_empty():
 				cid = _pick_condition(node, player)
+			# Неизвестный id (вид вместо id — «madness», карта не из библиотеки — «blight»)
+			# в руку не кладём: иначе карта-фантом без лица и оборотов. "delayed" —
+			# статус Задержки, не карта (как becomeDelayed).
+			if not cid.is_empty() and cid != "delayed" and Conditions.get_def(cid).is_empty():
+				GameConsole.warn("[Effect] gainCondition: нет состояния «%s» — пропуск" % cid)
+				logs.append("нет состояния «%s»" % cid)
+				cid = ""
 			if not cid.is_empty() and _owns_immunity(player, cid):
 				logs.append("иммунитет к состоянию «%s»" % cid)  # Солдат: Detained
 			elif not cid.is_empty():

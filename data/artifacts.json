@@ -24,36 +24,6 @@
 		}
 	},
 	{
-		"id": "king_in_yellow",
-		"nameKey": "ARTIFACT_KING_IN_YELLOW_NAME",
-		"abilityKey": "ARTIFACT_KING_IN_YELLOW_ABILITY",
-		"season": "core",
-		"unique": true,
-		"traits": [
-			"item",
-			"tome"
-		],
-		"effect": {
-			"whileOwned": [
-				{
-					"do": "improveSkill",
-					"skill": "all",
-					"amount": 2,
-					"when": {
-						"kind": "hasCondition",
-						"condition": "blight"
-					}
-				}
-			],
-			"onReckoning": [
-				{
-					"do": "gainCondition",
-					"condition": "blight"
-				}
-			]
-		}
-	},
-	{
 		"id": "tattered_cloak",
 		"nameKey": "ARTIFACT_TATTERED_CLOAK_NAME",
 		"abilityKey": "ARTIFACT_TATTERED_CLOAK_ABILITY",
