@@ -50,7 +50,7 @@ func _build() -> void:
 	_body = Label.new()
 	_body.name = "Body"
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_body.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+	UIFonts.apply(_body, UIFonts.BODY)
 	_body.add_theme_color_override("font_color", UIColors.TEXT)
 	vbox.add_child(_body)
 

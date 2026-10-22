@@ -48,8 +48,8 @@ static var SHADOW_SPREAD: float = 1.11  # во сколько раз тень ш
 
 # ── Цвета связей ──────────────────────────────────────────────────────────────
 
-const COLOR_SHIP: Color = Color(0.275, 0.510, 0.706, 0.90)  # #4682B4
-const COLOR_TRAIN: Color = Color(0.627, 0.322, 0.176, 0.90)  # #A0522D
+const COLOR_SHIP: Color = Color(UIColors.ROUTE_SHIP, 0.90)
+const COLOR_TRAIN: Color = Color(UIColors.ROUTE_TRAIN, 0.90)
 const COLOR_UNCHARTED: Color = Color(1.000, 0.843, 0.000, 0.90)  # #FFD700
 
 # ── Параметры отрисовки ───────────────────────────────────────────────────────
@@ -1416,7 +1416,7 @@ func _make_chat_bubble(text: String) -> Node2D:
 	lbl.name = "Text"
 	lbl.text = text
 	lbl.add_theme_font_size_override("font_size", _CHAT_FONT)
-	lbl.add_theme_color_override("font_color", Color(0.93, 0.90, 0.82))
+	lbl.add_theme_color_override("font_color", UIColors.TEXT_BRIGHT)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE

@@ -51,13 +51,11 @@ func _ready() -> void:
 	box.add_theme_constant_override("separation", 6)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(box)
-	_title = UIStyle.label("", UIStyle.MODAL_FS_LEAD, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_title = UIStyle.label("", UIFonts.LEAD, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	_title.name = "Title"
 	_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(_title)
-	_prompt = UIStyle.label(
-		"PICK_ON_MAP", UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER
-	)
+	_prompt = UIStyle.label("PICK_ON_MAP", UIFonts.BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	_prompt.name = "Prompt"
 	_prompt.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(_prompt)

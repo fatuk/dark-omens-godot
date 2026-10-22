@@ -248,7 +248,7 @@ func _on_rooms_updated(rooms: Array) -> void:
 		empty_lbl.text = "MENU_STATUS_NO_ROOMS"
 		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty_lbl.add_theme_color_override("font_color", UIColors.MUTED)
-		empty_lbl.add_theme_font_size_override("font_size", 13)
+		UIFonts.apply(empty_lbl, UIFonts.CAPTION)
 		_rooms_list.add_child(empty_lbl)
 		_show_status("MENU_STATUS_NO_ROOMS_HINT", UIColors.MUTED)
 		return
@@ -357,7 +357,7 @@ func _make_room_row(room: Dictionary) -> Control:
 	room_btn.add_theme_stylebox_override("hover", style_h)
 	room_btn.add_theme_stylebox_override("pressed", style_h)
 	room_btn.add_theme_color_override("font_color", UIColors.TEXT)
-	room_btn.add_theme_font_size_override("font_size", 14)
+	UIFonts.apply(room_btn, UIFonts.SMALL)
 	room_btn.pressed.connect(_on_room_selected.bind(rid, room_btn))
 	UIStyle.attach_click_sfx(room_btn)
 	row.add_child(room_btn)

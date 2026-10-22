@@ -44,6 +44,8 @@ var guide_seen: Array = []
 # Иконки кнопок геймпада: "auto" — по подключённому контроллеру, либо принудительно
 # xbox | playstation | nintendo (см. InputDevice.family).
 var pad_glyphs: String = "auto"
+# «Размер текста»: множитель читаемого текста (UIFonts.SCALES — 1.0 / 1.15 / 1.3).
+var text_scale: float = 1.0
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -144,10 +146,17 @@ func save() -> void:
 	cfg.set_value("game", "show_fps", show_fps)
 	cfg.set_value("game", "guide_hints", guide_hints)
 	cfg.set_value("game", "pad_glyphs", pad_glyphs)
+	cfg.set_value("display", "text_scale", text_scale)
 	cfg.set_value("guide", "seen", guide_seen)
 	music_volume = MusicManager.volume
 	sfx_volume = SfxManager.volume
 	cfg.save(SETTINGS_FILE)
+
+
+## «Размер текста»: запомнить и сразу пересчитать открытые окна (UIFonts).
+func set_text_scale(k: float) -> void:
+	text_scale = k
+	UIFonts.refresh_all(get_tree())
 
 
 ## Подсказка показана — больше не повторять. Пишем сразу (только свою секцию):
@@ -194,4 +203,5 @@ func _load() -> void:
 	show_fps = bool(cfg.get_value("game", "show_fps", false))
 	guide_hints = bool(cfg.get_value("game", "guide_hints", true))
 	pad_glyphs = String(cfg.get_value("game", "pad_glyphs", "auto"))
+	text_scale = float(cfg.get_value("display", "text_scale", 1.0))
 	guide_seen = (cfg.get_value("guide", "seen", []) as Array).duplicate()

@@ -111,7 +111,7 @@ func _build() -> void:
 
 	_vbox.add_child(UIStyle.modal_title(tr("DEATH_TITLE"), UIColors.DANGER))
 
-	_sub = UIStyle.label("", UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	_sub = UIStyle.label("", UIFonts.BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	_sub.name = "Subtitle"
 	_vbox.add_child(_sub)
 
@@ -121,7 +121,7 @@ func _build() -> void:
 	_dice_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_vbox.add_child(_dice_box)
 
-	_status = UIStyle.label("", UIStyle.MODAL_FS_BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	_status = UIStyle.label("", UIFonts.BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	_status.name = "Status"
 	_vbox.add_child(_status)
 

@@ -8,8 +8,8 @@ extends ColorRect
 
 signal closed
 
-const _ROW_FS: int = 18
-const _HEAD_FS: int = 22
+const _ROW_FS := UIFonts.HINT
+const _HEAD_FS := UIFonts.BODY
 const _GLYPH_H: float = 34.0
 const _GLYPH_COL_W: float = 150.0  # колонка иконок — описания встают ровно
 const _COL_W: float = 600.0

@@ -97,7 +97,7 @@ func _build_authors_content(vbox: VBoxContainer) -> void:
 	body.text = "HOME_AUTHORS_BODY"
 	body.custom_minimum_size.x = 400
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body.add_theme_font_size_override("font_size", 14)
+	UIFonts.apply(body, UIFonts.SMALL)
 	body.add_theme_color_override("font_color", UIColors.TEXT)
 	vbox.add_child(body)
 	# Закрытие — крестиком в шапке (см. UIStyle.modal).

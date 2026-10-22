@@ -64,14 +64,12 @@ func _build() -> void:
 	panel.add_child(vb)
 
 	var title := UIStyle.label(
-		tr("GHOST_TITLE"), UIStyle.MODAL_FS_TITLE, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
+		tr("GHOST_TITLE"), UIFonts.TITLE, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
 	)
 	title.name = "Title"
 	vb.add_child(title)
 
-	_budget_lbl = UIStyle.label(
-		"", UIStyle.MODAL_FS_BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
-	)
+	_budget_lbl = UIStyle.label("", UIFonts.BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	_budget_lbl.name = "Budget"
 	vb.add_child(_budget_lbl)
 
@@ -97,7 +95,7 @@ func _build() -> void:
 	row.add_child(mythos_btn)
 
 	var hint := UIStyle.label(
-		tr("GHOST_HINT"), UIStyle.MODAL_FS_HINT, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+		tr("GHOST_HINT"), UIFonts.HINT, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
 	)
 	hint.name = "Hint"
 	vb.add_child(hint)
@@ -171,7 +169,7 @@ func _add_list_entry(list: VBoxContainer, head: String, body_text: String, head_
 	# Крупнее самой верхней ступени лесенки: это не заголовок окна, а название
 	# ближайшего Мифа во весь бок панели Тени — единственное исключение.
 	list.add_child(UIStyle.label(head, _HEAD_FS, head_col, HORIZONTAL_ALIGNMENT_LEFT))
-	var body := UIStyle.label(body_text, UIStyle.MODAL_FS_HERO, UIColors.TEXT)
+	var body := UIStyle.label(body_text, UIFonts.HERO, UIColors.TEXT)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	list.add_child(body)
 
@@ -236,9 +234,7 @@ func _populate_mythos() -> void:
 		c.queue_free()
 	var upcoming: Array = GameState.ghost_upcoming
 	if upcoming.is_empty():
-		_mythos_list.add_child(
-			UIStyle.label(tr("GHOST_NO_MYTHOS"), UIStyle.MODAL_FS_HERO, UIColors.MUTED)
-		)
+		_mythos_list.add_child(UIStyle.label(tr("GHOST_NO_MYTHOS"), UIFonts.HERO, UIColors.MUTED))
 		return
 	for i in range(upcoming.size()):
 		var card: Dictionary = upcoming[i]

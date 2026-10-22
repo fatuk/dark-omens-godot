@@ -105,9 +105,7 @@ func _fill(ev: Dictionary) -> void:
 	var who: String = (
 		String(ev.get("nameKey", ev.get("id", ""))) if is_monster else String(ev.get("name", ""))
 	)
-	var name_lbl := UIStyle.label(
-		who, UIStyle.MODAL_FS_LEAD, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
-	)
+	var name_lbl := UIStyle.label(who, UIFonts.LEAD, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	name_lbl.name = "Who"
 	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name_lbl.custom_minimum_size.x = _TEXT_W
@@ -125,7 +123,7 @@ func _fill(ev: Dictionary) -> void:
 		text = text.left(1).to_upper() + text.substr(1)
 	var outcome := UIStyle.label(
 		text if not text.is_empty() else "RECKONING_ROLL_NONE",
-		UIStyle.MODAL_FS_BODY,
+		UIFonts.BODY,
 		UIColors.DANGER if not effects.is_empty() else UIColors.MUTED,
 		HORIZONTAL_ALIGNMENT_CENTER
 	)

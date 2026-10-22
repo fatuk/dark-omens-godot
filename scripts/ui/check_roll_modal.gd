@@ -210,9 +210,7 @@ func _build(pc: Dictionary) -> void:
 # кубы на столе, кнопки у нижнего края (раскладка как у каста заклинания).
 func _build_sheet_content(pc: Dictionary) -> void:
 	var title_zone := CardSheet.zone(_sheet, "TitleZone", _Z_TITLE)
-	var title := UIStyle.ornate_title(
-		"CONDITION_CHECK_TITLE", UIStyle.MODAL_FS_TITLE, UIColors.ACCENT
-	)
+	var title := UIStyle.ornate_title("CONDITION_CHECK_TITLE", UIFonts.TITLE, UIColors.ACCENT)
 	title.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	title_zone.add_child(title)
 

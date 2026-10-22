@@ -85,7 +85,7 @@ func _fill(o: Dictionary, role: String) -> void:
 		if role == "to"
 		else tr("TRADE_OFFER_WAITING") % GameState.name_of(to)
 	)
-	_box.add_child(_label(lead, UIStyle.MODAL_FS_LEAD, UIColors.TEXT))
+	_box.add_child(_label(lead, UIFonts.LEAD, UIColors.TEXT))
 
 	# С точки зрения партнёра: получает то, что отдаёт инициатор, и наоборот.
 	var from_items: Array = GameState.players.get(from, {}).get("items", [])
@@ -105,7 +105,7 @@ func _fill(o: Dictionary, role: String) -> void:
 		_swap.name = "SwapPlaces"
 		_swap.text = tr("TRADE_SWAP_PLACES") % GameState.name_of(from)
 		_swap.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		_swap.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+		UIFonts.apply(_swap, UIFonts.BODY)
 		_box.add_child(_swap)
 
 	var row := HBoxContainer.new()
@@ -126,14 +126,12 @@ func _fill(o: Dictionary, role: String) -> void:
 
 
 func _section(title_key: String, lines: Array) -> void:
-	_box.add_child(_label(tr(title_key), UIStyle.MODAL_FS_BODY, UIColors.ACCENT))
+	_box.add_child(_label(tr(title_key), UIFonts.BODY, UIColors.ACCENT))
 	if lines.is_empty():
-		_box.add_child(
-			_label("— " + tr("TRADE_OFFER_NOTHING"), UIStyle.MODAL_FS_BODY, UIColors.MUTED)
-		)
+		_box.add_child(_label("— " + tr("TRADE_OFFER_NOTHING"), UIFonts.BODY, UIColors.MUTED))
 		return
 	for l_v: Variant in lines:
-		_box.add_child(_label("• " + String(l_v), UIStyle.MODAL_FS_BODY, UIColors.TEXT))
+		_box.add_child(_label("• " + String(l_v), UIFonts.BODY, UIColors.TEXT))
 
 
 # Строки предметов по индексам + улики.
@@ -163,12 +161,12 @@ func _item_label(it: Variant) -> String:
 	return id
 
 
-func _label(text: String, size: int, color: Color) -> Label:
+func _label(text: String, size: Variant, color: Color) -> Label:
 	var l := Label.new()
 	l.name = "Line"
 	l.text = text
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l.add_theme_font_size_override("font_size", size)
+	UIFonts.apply(l, size)
 	l.add_theme_color_override("font_color", color)
 	return l
 

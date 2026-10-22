@@ -17,9 +17,9 @@ const STICK_L: int = 1002  # левый стик (движение), не наж
 const STICK_R: int = 1003
 const DPAD_ANY: int = 1004  # крестовина целиком
 
-const _BG := Color(0.075, 0.07, 0.06, 0.96)
-const _RING := Color(0.78, 0.66, 0.42, 0.85)
-const _INK := Color(0.93, 0.88, 0.78)
+const _BG := UIColors.PLAQUE_BG
+const _RING := Color(UIColors.ACCENT, 0.85)
+const _INK := UIColors.TEXT_BRIGHT
 
 # Цвета символов PlayStation и букв Xbox (как на самих контроллерах, приглушённо).
 const _PS_COLORS := {

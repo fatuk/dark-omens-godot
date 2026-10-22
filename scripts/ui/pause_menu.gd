@@ -22,8 +22,8 @@ const _MENU_W: float = 520.0  # ширина левой колонки
 const _SIDE_W: float = 560.0  # ширина правой колонки сводки
 const _ITEM_FS: int = 34
 const _ITEM_H: float = 72.0
-const _HEAD_FS: int = 26
-const _BODY_FS: int = 20
+const _HEAD_FS := UIFonts.LEAD
+const _BODY_FS := UIFonts.NOTE
 # Сколько посланий копим (история транзиентна — с начала сессии у этого клиента);
 # в рамке — все, с прокруткой. Потолок — только от бесконечного роста за долгую партию.
 const _MESSAGES_KEPT: int = 1000
@@ -347,7 +347,7 @@ func _body(box: VBoxContainer) -> VBoxContainer:
 	return body
 
 
-func _text(text: String, size: int, color: Color) -> Label:
+func _text(text: String, size: Variant, color: Color) -> Label:
 	var l := UIStyle.label(text, size, color)
 	l.name = "Line"
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -373,12 +373,12 @@ func _fill_messages() -> void:
 		var head := HBoxContainer.new()
 		head.name = "MessageHead"
 		var who := UIStyle.label(
-			GameState.name_of(String(m.get("pid", ""))), _BODY_FS + 2, UIColors.ACCENT
+			GameState.name_of(String(m.get("pid", ""))), UIFonts.BODY, UIColors.ACCENT
 		)
 		who.name = "Who"
 		who.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		head.add_child(who)
-		var at := UIStyle.label(String(m.get("time", "")), _BODY_FS - 2, UIColors.MUTED)
+		var at := UIStyle.label(String(m.get("time", "")), UIFonts.HINT, UIColors.MUTED)
 		at.name = "At"
 		head.add_child(at)
 		body.add_child(head)
@@ -394,12 +394,12 @@ func _fill_tasks() -> void:
 	var body: VBoxContainer = _body(_tasks_box)
 	var m: Dictionary = GameState.current_mystery()
 	if m.is_empty():
-		body.add_child(_text(tr("MYSTERY_NONE_TITLE"), _BODY_FS + 2, UIColors.TEXT))
+		body.add_child(_text(tr("MYSTERY_NONE_TITLE"), UIFonts.BODY, UIColors.TEXT))
 	else:
-		body.add_child(_text("○  " + String(m.get("title", "")), _BODY_FS + 4, UIColors.TEXT))
+		body.add_child(_text("○  " + String(m.get("title", "")), UIFonts.LEAD, UIColors.TEXT))
 		var goal: String = String(m.get("text", ""))
 		if not goal.is_empty():
-			body.add_child(_text(goal, _BODY_FS - 2, UIColors.MUTED))
+			body.add_child(_text(goal, UIFonts.HINT, UIColors.MUTED))
 		var sc: Dictionary = m.get("solveCondition", {})
 		var target: int = int(sc.get("n", 1))
 		if String(sc.get("kind", "")) == "tokensOnCard":
@@ -457,7 +457,7 @@ func _fill_time() -> void:
 	body.add_child(
 		_text(
 			tr("PAUSE_ROUND_FMT") % [int(GameState.round_num), tr(_phase_key())],
-			_BODY_FS + 2,
+			UIFonts.BODY,
 			UIColors.TEXT
 		)
 	)

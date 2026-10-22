@@ -192,7 +192,7 @@ static func style_button(btn: Button, _legacy_color: Color = UIColors.BORDER) ->
 	btn.add_theme_color_override("font_hover_color", Color.WHITE)
 	btn.add_theme_color_override("font_pressed_color", UIColors.ACCENT)
 	btn.add_theme_color_override("font_disabled_color", UIColors.MUTED)
-	btn.add_theme_font_size_override("font_size", 16)
+	UIFonts.apply(btn, UIFonts.BUTTON)
 
 	# Защита от повторного вызова: если фон уже привинчен — не дублируем.
 	if btn.get_node_or_null("__TexturedBg") == null:
@@ -654,7 +654,7 @@ static func style_input(le: LineEdit) -> void:
 	le.add_theme_stylebox_override("focus", style_f)
 	le.add_theme_color_override("font_color", UIColors.TEXT)
 	le.add_theme_color_override("font_placeholder_color", UIColors.MUTED)
-	le.add_theme_font_size_override("font_size", 14)
+	UIFonts.apply(le, UIFonts.SMALL)
 
 
 ## Создаёт стилизованный LineEdit (legacy API).
@@ -682,7 +682,7 @@ static func labeled_input(
 	lbl.name = "Label"
 	lbl.text = label_text
 	lbl.custom_minimum_size.x = label_w
-	lbl.add_theme_font_size_override("font_size", 14)
+	UIFonts.apply(lbl, UIFonts.SMALL)
 	lbl.add_theme_color_override("font_color", UIColors.TEXT)
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hbox.add_child(lbl)
@@ -718,7 +718,7 @@ static func style_option_button(ob: OptionButton) -> void:
 	ob.add_theme_stylebox_override("focus", style_h)
 	ob.add_theme_color_override("font_color", UIColors.TEXT)
 	ob.add_theme_color_override("font_hover_color", Color.WHITE)
-	ob.add_theme_font_size_override("font_size", 14)
+	UIFonts.apply(ob, UIFonts.SMALL)
 
 
 ## Создаёт стилизованный OptionButton (legacy API).
@@ -753,7 +753,7 @@ static func volume_slider_row(
 	lbl.name = "Label"
 	lbl.text = label_key
 	lbl.custom_minimum_size.x = 200
-	lbl.add_theme_font_size_override("font_size", MODAL_FS_BODY)
+	UIFonts.apply(lbl, UIFonts.BODY)
 	lbl.add_theme_color_override("font_color", UIColors.TEXT)
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(lbl)
@@ -773,7 +773,7 @@ static func volume_slider_row(
 	pct.text = "%d%%" % roundi(initial * 100.0)
 	pct.custom_minimum_size.x = 64
 	pct.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	pct.add_theme_font_size_override("font_size", MODAL_FS_HINT)
+	UIFonts.apply(pct, UIFonts.HINT)
 	pct.add_theme_color_override("font_color", UIColors.MUTED)
 	pct.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(pct)
@@ -791,16 +791,18 @@ static func volume_slider_row(
 
 ## Однострочная фабрика стилизованного Label'а — заменяет 4-строчный паттерн
 ## (Label.new + text + font_size + font_color) на один вызов.
+## size — токен UIFonts (масштабируется настройкой «Размер текста») или число
+## (фиксированный размер: HUD, подписи на арте).
 static func label(
 	text: String,
-	size: int,
+	size: Variant,
 	color: Color = UIColors.TEXT,
 	align: int = HORIZONTAL_ALIGNMENT_LEFT,
 ) -> Label:
 	var lbl := Label.new()
 	lbl.text = text
 	lbl.horizontal_alignment = align as HorizontalAlignment
-	lbl.add_theme_font_size_override("font_size", size)
+	UIFonts.apply(lbl, size)
 	lbl.add_theme_color_override("font_color", color)
 	return lbl
 
@@ -808,7 +810,7 @@ static func label(
 ## Единый заголовок модалки: размер 22, по центру, перенос по словам.
 ## color — обычно ACCENT (янтарь), у мифа DANGER (красный).
 static func modal_title(text: String, color: Color = UIColors.ACCENT) -> Label:
-	var lbl := label(text, MODAL_FS_TITLE, color, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := label(text, UIFonts.TITLE, color, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Title"
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return lbl
@@ -821,8 +823,10 @@ const _ORNATE_CHEVRON_R: Texture2D = preload("res://assets/ui/nav/R_chevron.png"
 ## Орнаментальный заголовок секции: декор-шеврон · подпись · шеврон (как «ВЫБЕРИТЕ
 ## СЫЩИКА» в пикере). text — i18n-ключ (Label авто-переводит). Тянется по ширине,
 ## подпись по центру. Переиспользуемо на любом экране/секции.
+## max_w > 0 — вписать заголовок в рамку этой ширины (без шевронов): заголовок
+## в зоне арта фиксированного размера не вылезет за неё при крупном тексте.
 static func ornate_title(
-	text: String, size: int = 28, color: Color = UIColors.ACCENT
+	text: String, size: Variant = 28, color: Color = UIColors.ACCENT, max_w: float = 0.0
 ) -> HBoxContainer:
 	var hb := HBoxContainer.new()
 	hb.name = "OrnateTitle"
@@ -832,6 +836,8 @@ static func ornate_title(
 	hb.add_child(_ornate_chevron(_ORNATE_CHEVRON_L, "ChevronL"))
 	var lbl := label(text, size, color, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Title"
+	if max_w > 0.0:
+		UIFonts.apply(lbl, size, max_w)
 	hb.add_child(lbl)
 	hb.add_child(_ornate_chevron(_ORNATE_CHEVRON_R, "ChevronR"))
 	return hb
@@ -883,27 +889,10 @@ static func modal_header(
 	return header
 
 
-# ── Шрифт в модалках ──────────────────────────────────────────────────────────
+# ── Шрифт ─────────────────────────────────────────────────────────────────────
 #
-# Лесенка размеров вместо прежнего рекурсивного скейла (×1.5 поверх всего дерева).
-# Тот был удобен ровно один раз — когда решили «сделать текст крупнее», — а платить
-# за него приходилось постоянно: числа в коде не совпадали с экраном, повторный
-# вызов удваивал масштаб, и прибавка протекала в составные виджеты, которые держат
-# типографику сами (карта в «Запасах» раздувалась именно из-за этого).
-#
-# Ступени подобраны по фактическим размерам, которые были на экране, поэтому
-# перевод почти нигде не сдвинул текст больше чем на 3 px.
-
-## Подсказки, сноски, мелкие пояснения.
-const MODAL_FS_HINT: int = 18
-## Основной текст окна.
-const MODAL_FS_BODY: int = 22
-## Акцентная строка: подзаголовок, крупное значение, шаг проверки.
-const MODAL_FS_LEAD: int = 26
-## Заголовок окна.
-const MODAL_FS_TITLE: int = 30
-## Самое крупное — там, где заголовок и есть всё содержимое.
-const MODAL_FS_HERO: int = 39
+# Размеры — токены UIFonts (лесенка CAPTION…HERO + настройка «Размер текста»). Число
+# вместо токена — фиксированный размер (HUD, арт). См. scripts/ui/ui_fonts.gd.
 
 # ── Разделитель ────────────────────────────────────────────────────────────────
 
@@ -922,12 +911,12 @@ static func stepper_row(
 	var row := HBoxContainer.new()
 	row.name = "Row_%s" % key
 	row.add_theme_constant_override("separation", 10)
-	var lbl := label(label_key, MODAL_FS_BODY)
+	var lbl := label(label_key, UIFonts.BODY)
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(lbl)
 	var minus := button("−")
 	minus.name = "Minus"
-	var count := label("0", MODAL_FS_LEAD, UIColors.VALUE, HORIZONTAL_ALIGNMENT_CENTER)
+	var count := label("0", UIFonts.LEAD, UIColors.VALUE, HORIZONTAL_ALIGNMENT_CENTER)
 	count.name = "Count"
 	count.custom_minimum_size.x = 32
 	var plus := button("+")
@@ -1026,7 +1015,7 @@ static func reconnect_overlay(parent: Control, text: String) -> ColorRect:
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	lbl.add_theme_font_size_override("font_size", 22)
+	UIFonts.apply(lbl, UIFonts.BODY)
 	lbl.add_theme_color_override("font_color", UIColors.WARNING)
 	overlay.add_child(lbl)
 

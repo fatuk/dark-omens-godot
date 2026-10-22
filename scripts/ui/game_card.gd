@@ -118,7 +118,7 @@ const C_COST_TXT := UIColors.ACCENT  # янтарь — как заголово�
 const C_TITLE_TXT := UIColors.ACCENT  # янтарь на синей плашке
 const C_SUB_TXT := Color(0.62, 0.72, 0.82)  # приглушённый голубой — трейт
 const C_DESC_TXT := Color(0, 0, 0)  # чёрный — на пергаменте
-const C_MSG_TXT := Color(0.12, 0.09, 0.06)  # тёмная тушь — фраза на пергаменте карты-сообщения
+const C_MSG_TXT := UIColors.INK  # тёмная тушь — фраза на пергаменте карты-сообщения
 # Цвета текста улики — те же, что у карт актива (напр. Концентрации): янтарный
 # заголовок, бледный подзаголовок, чёрное описание на пергаменте.
 const C_CLUE_TITLE := C_TITLE_TXT
@@ -280,7 +280,7 @@ func _build() -> void:
 	_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_desc.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_desc.add_theme_font_size_override("font_size", _fs(FS_DESC))
+	_desc.add_theme_font_size_override("font_size", _fs_desc(FS_DESC))
 	_desc.add_theme_color_override("font_color", C_DESC_TXT)
 	_desc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Ширина = зоне (anchor 0..1), верх у зоны; высота заведомо большая — текст
@@ -369,7 +369,7 @@ func set_card(d: Dictionary) -> void:
 	_desc.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_LEFT if is_clue else HORIZONTAL_ALIGNMENT_CENTER
 	)
-	_desc.add_theme_font_size_override("font_size", _fs(FS_CLUE_DESC if is_clue else FS_DESC))
+	_desc.add_theme_font_size_override("font_size", _fs_desc(FS_CLUE_DESC if is_clue else FS_DESC))
 	_desc.text = String(d.get("desc", ""))
 	_desc.visible = not is_msg
 	_fit_clue()
@@ -585,6 +585,12 @@ func _fit_title() -> void:
 
 
 # Размер шрифта = база × текущий масштаб контента (округлённо).
+# Описание — читаемый текст: растёт с «Размером текста» (UIFonts), не влезает —
+# прокручивается. Название/подзаголовок/цена — на арте, фиксированы.
+func _fs_desc(base: int) -> int:
+	return int(round(_fs(base) * UIFonts.scale()))
+
+
 func _fs(base: int) -> int:
 	return int(round(float(base) * _font_scale))
 
@@ -601,7 +607,7 @@ func set_font_scale(s: float) -> void:
 	_fit_title()
 	_sub.add_theme_font_size_override("font_size", _fs(FS_SUB))
 	_desc.add_theme_font_size_override(
-		"font_size", _fs(FS_CLUE_DESC if _layout == "clue" else FS_DESC)
+		"font_size", _fs_desc(FS_CLUE_DESC if _layout == "clue" else FS_DESC)
 	)
 	_glyph.add_theme_font_size_override("font_size", _fs(FS_GLYPH))
 	_message.add_theme_font_size_override("font_size", _fs(FS_MSG))

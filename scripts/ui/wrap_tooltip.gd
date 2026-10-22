@@ -16,7 +16,7 @@ extends Control
 ##   tile.tooltip_text = "…"   # текст храним там же, стандартная подсказка подавлена
 
 const MAX_W: float = 460.0
-const _FS: int = 18
+const _FS := UIFonts.HINT  # подсказка — читаемый текст, растёт с «Размером текста»
 const _PAD := Vector2(14, 10)
 const _CURSOR := preload("res://scripts/ui/custom_cursor.gd")
 
@@ -150,7 +150,9 @@ func _place(panel: PanelContainer) -> void:
 ## Ширина текста подсказки: своя, но не больше MAX_W (дальше — перенос по словам).
 static func text_width(text: String, lbl: Label) -> float:
 	var font: Font = lbl.get_theme_font("font")
-	var natural: float = font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, _FS).x
+	var natural: float = (
+		font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, UIFonts.px(_FS)).x
+	)
 	return minf(ceilf(natural) + 2.0, MAX_W)
 
 
@@ -166,7 +168,7 @@ static func _ensure_layer(tree: SceneTree) -> PanelContainer:
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.visible = false
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.055, 0.052, 0.045, 0.97)
+	sb.bg_color = UIColors.PLAQUE_BG
 	sb.border_color = UIColors.BORDER
 	sb.set_border_width_all(1)
 	sb.set_corner_radius_all(6)
@@ -180,7 +182,7 @@ static func _ensure_layer(tree: SceneTree) -> PanelContainer:
 	lbl.name = "Text"
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	lbl.add_theme_font_size_override("font_size", _FS)
+	UIFonts.apply(lbl, _FS)
 	lbl.add_theme_color_override("font_color", UIColors.TEXT)
 	_panel.add_child(lbl)
 	return _panel

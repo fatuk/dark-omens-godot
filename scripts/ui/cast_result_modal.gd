@@ -46,7 +46,7 @@ func _build(r: Dictionary) -> void:
 	_vbox.add_child(UIStyle.modal_title(String(spell.get("name", ""))))
 
 	var flavor := Label.new()
-	flavor.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+	UIFonts.apply(flavor, UIFonts.BODY)
 	flavor.name = "Flavor"
 	flavor.text = String(r.get("text", ""))  # ключ RECK_<id> (авто-перевод)
 	flavor.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -55,7 +55,7 @@ func _build(r: Dictionary) -> void:
 
 	for ln_v: Variant in _outcome_lines(r.get("outcome", {})):
 		var lbl := Label.new()
-		lbl.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+		UIFonts.apply(lbl, UIFonts.BODY)
 		lbl.name = "Outcome"
 		lbl.text = String(ln_v)
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

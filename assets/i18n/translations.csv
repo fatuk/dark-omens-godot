@@ -476,6 +476,10 @@ LOBBY_TAG_WAITING,Ожидает...,Waiting...
 MENU_BTN_SETTINGS,НАСТРОЙКИ,SETTINGS
 MENU_GAME_NAME_PLACEHOLDER,Моя игра...,My game...
 FORM_RESOLUTION,Разрешение:,Resolution:
+FORM_TEXT_SIZE,Размер текста:,Text size:
+TEXT_SIZE_NORMAL,Обычный,Normal
+TEXT_SIZE_LARGE,Крупный,Large
+TEXT_SIZE_XL,Очень крупный,Extra large
 LOBBY_BTN_START_GAME,НАЧАТЬ ИГРУ,START GAME
 LOGIN_BTN_SEND_CODE,ОТПРАВИТЬ КОД,SEND CODE
 PAUSE_BTN_SETTINGS,⚙   НАСТРОЙКИ,⚙   SETTINGS

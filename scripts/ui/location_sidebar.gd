@@ -58,8 +58,8 @@ const _IMAGE_FRAME := preload("res://assets/location-sidebar/image-frame.png")
 
 # Цвета типов дорог — для кнопок покупки билетов (соответствуют MapLayer.COLOR_*).
 const CONN_COLORS: Dictionary = {
-	"ship": Color(0.275, 0.510, 0.706),
-	"train": Color(0.627, 0.322, 0.176),
+	"ship": UIColors.ROUTE_SHIP,
+	"train": UIColors.ROUTE_TRAIN,
 }
 
 @onready var _panel: Control = %Panel
@@ -245,7 +245,7 @@ func _build_caption() -> void:
 	_caption.name = "Caption"
 	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART  # длинный прообраз — в 2 строки
-	_caption.add_theme_font_size_override("font_size", 18)
+	UIFonts.apply(_caption, UIFonts.HINT)
 	_caption.add_theme_color_override("font_color", UIColors.MUTED)
 	_vbox.add_child(_caption)
 
@@ -260,7 +260,7 @@ func _build_image_box() -> void:
 
 	var bg := ColorRect.new()
 	bg.name = "Bg"
-	bg.color = Color(0.06, 0.06, 0.05, 0.85)
+	bg.color = Color(UIColors.PLAQUE_BG, 0.85)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(bg)
@@ -697,14 +697,14 @@ func _make_investigator_row(pid: String) -> HBoxContainer:
 	inv_lbl.name = "Investigator"
 	inv_lbl.text = Investigators.display_name(inv)
 	inv_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	inv_lbl.add_theme_font_size_override("font_size", 19)
+	UIFonts.apply(inv_lbl, UIFonts.NOTE)
 	inv_lbl.add_theme_color_override("font_color", UIColors.ACCENT)
 	text.add_child(inv_lbl)
 	var nick := Label.new()
 	nick.name = "Player"
 	nick.text = String(p.get("name", pid))
 	nick.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED  # ник — не ключ перевода
-	nick.add_theme_font_size_override("font_size", 15)
+	UIFonts.apply(nick, UIFonts.SMALL)
 	nick.add_theme_color_override("font_color", UIColors.MUTED)
 	text.add_child(nick)
 	return row
@@ -726,7 +726,7 @@ func _make_clue_row(clue_name: String, index: int) -> HBoxContainer:
 	l.text = clue_name
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l.add_theme_font_size_override("font_size", 19)
+	UIFonts.apply(l, UIFonts.NOTE)
 	l.add_theme_color_override("font_color", UIColors.TEXT)
 	row.add_child(l)
 	return row
@@ -743,7 +743,7 @@ func _add_section(key: String, count: int = -1) -> void:
 	var l := Label.new()
 	l.name = "Section_" + key.trim_prefix("SIDEBAR_CAT_").to_lower()
 	l.text = tr(key).to_upper() + (" · %d" % count if count >= 0 else "")
-	l.add_theme_font_size_override("font_size", 15)
+	UIFonts.apply(l, UIFonts.SMALL)
 	l.add_theme_color_override("font_color", UIColors.MUTED)
 	_items_list.add_child(l)
 

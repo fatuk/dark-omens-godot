@@ -165,7 +165,7 @@ static func _fill_clues(body: VBoxContainer) -> void:
 # У монстров сброса нет: побеждённый сразу возвращается в мешок. Показываем мешок.
 static func _fill_monsters(body: VBoxContainer) -> void:
 	var bag: Array = GameState.monster_bag
-	var lbl := UIStyle.label("SUPPLY_MONSTERS_HINT", UIStyle.MODAL_FS_BODY, UIColors.MUTED)
+	var lbl := UIStyle.label("SUPPLY_MONSTERS_HINT", UIFonts.BODY, UIColors.MUTED)
 	lbl.name = "Hint"
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl.custom_minimum_size.x = 640
@@ -199,15 +199,13 @@ static func _counts(deck: int, discard: int) -> Control:
 	hb.add_theme_constant_override("separation", 18)
 	hb.alignment = BoxContainer.ALIGNMENT_CENTER
 	var d := UIStyle.label(
-		TranslationServer.translate("SUPPLY_IN_DECK") % deck, UIStyle.MODAL_FS_LEAD, UIColors.VALUE
+		TranslationServer.translate("SUPPLY_IN_DECK") % deck, UIFonts.LEAD, UIColors.VALUE
 	)
 	d.name = "DeckCount"
 	hb.add_child(d)
 	if discard >= 0:
 		var s := UIStyle.label(
-			TranslationServer.translate("SUPPLY_IN_DISCARD") % discard,
-			UIStyle.MODAL_FS_LEAD,
-			UIColors.MUTED
+			TranslationServer.translate("SUPPLY_IN_DISCARD") % discard, UIFonts.LEAD, UIColors.MUTED
 		)
 		s.name = "DiscardCount"
 		hb.add_child(s)
@@ -218,7 +216,7 @@ static func _counts(deck: int, discard: int) -> Control:
 static func _scroll(content: Control, empty: bool) -> Control:
 	if empty:
 		var lbl := UIStyle.label(
-			"SUPPLY_EMPTY", UIStyle.MODAL_FS_BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+			"SUPPLY_EMPTY", UIFonts.BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
 		)
 		lbl.name = "Empty"
 		lbl.custom_minimum_size = Vector2(640, _LIST_H)
@@ -237,7 +235,7 @@ static func _scroll(content: Control, empty: bool) -> Control:
 # Имя узла делаем УНИКАЛЬНЫМ: одинаковые имена Godot переименовывает в @Label@N,
 # и в дереве сцены строки становится не отличить друг от друга.
 static func _row(text: String, node_name: String) -> Label:
-	var lbl := UIStyle.label(text, UIStyle.MODAL_FS_BODY)
+	var lbl := UIStyle.label(text, UIFonts.BODY)
 	lbl.name = "Row_" + node_name
 	return lbl
 

@@ -69,7 +69,7 @@ func _install_ornate_title() -> Label:
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE  # клики уходят кнопке закрытия
 	_header.add_child(holder)
 	_header.move_child(holder, 0)  # под кнопкой закрытия, иначе она перекрыта
-	var ot: HBoxContainer = UIStyle.ornate_title("", UIStyle.MODAL_FS_TITLE, UIColors.ACCENT)
+	var ot: HBoxContainer = UIStyle.ornate_title("", UIFonts.TITLE, UIColors.ACCENT)
 	ot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.add_child(ot)
 	return ot.get_node("Title") as Label

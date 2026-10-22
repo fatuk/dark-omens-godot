@@ -88,7 +88,7 @@ func _build() -> void:
 	# Строка ошибки — скрыта, пока ввод корректен
 	_error_label = Label.new()
 	_error_label.name = "ErrorLabel"
-	_error_label.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
+	UIFonts.apply(_error_label, UIFonts.HINT)
 	_error_label.add_theme_color_override("font_color", UIColors.ERROR)
 	_error_label.visible = false
 	_vbox.add_child(_error_label)
@@ -105,7 +105,7 @@ func _labeled_row(label_key: String, control: Control, node_name: String) -> HBo
 	lbl.name = "Label"
 	lbl.text = label_key
 	lbl.custom_minimum_size.x = 110
-	lbl.add_theme_font_size_override("font_size", 14)
+	UIFonts.apply(lbl, UIFonts.SMALL)
 	lbl.add_theme_color_override("font_color", UIColors.TEXT)
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(lbl)

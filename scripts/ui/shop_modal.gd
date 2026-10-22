@@ -301,7 +301,9 @@ func _build() -> void:
 	_stage.add_child(title)
 	_chrome.append({"node": title, "fx": 0.2, "fy": 0.045, "fw": 0.6, "fh": 0.06})
 
-	var sub := UIStyle.label("SHOP_SUBTITLE", 15, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	var sub := UIStyle.label(
+		"SHOP_SUBTITLE", UIFonts.SMALL, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	sub.name = "Subtitle"
 	_stage.add_child(sub)
 	_chrome.append({"node": sub, "fx": 0.2, "fy": 0.100, "fw": 0.6, "fh": 0.04})
@@ -1175,7 +1177,7 @@ func _fill_sell_panel() -> void:
 	for c in _sell_box.get_children():
 		_sell_box.remove_child(c)
 		c.queue_free()
-	var title := UIStyle.label("SHOP_SELL_PICK", UIStyle.MODAL_FS_HINT, UIColors.MUTED)
+	var title := UIStyle.label("SHOP_SELL_PICK", UIFonts.HINT, UIColors.MUTED)
 	title.name = "Title"
 	_sell_box.add_child(title)
 	for e_v: Variant in _my_assets():

@@ -89,7 +89,7 @@ func _build(options: Array) -> void:
 	)
 
 	var prompt := Label.new()
-	prompt.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+	UIFonts.apply(prompt, UIFonts.BODY)
 	prompt.name = "Prompt"
 	var prompt_key: String = String(d.get("prompt_key", ""))
 	if prompt_key.is_empty():

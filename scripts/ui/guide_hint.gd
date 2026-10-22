@@ -106,12 +106,12 @@ func _build() -> void:
 	box.add_theme_constant_override("separation", 8)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_frame.add_child(box)
-	_text = UIStyle.label("", UIStyle.MODAL_FS_LEAD)
+	_text = UIStyle.label("", UIFonts.LEAD)
 	_text.name = "Text"
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(_text)
-	_more = UIStyle.label("GUIDE_CONTINUE", UIStyle.MODAL_FS_HINT, UIColors.MUTED)
+	_more = UIStyle.label("GUIDE_CONTINUE", UIFonts.HINT, UIColors.MUTED)
 	_more.name = "Continue"
 	_more.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_more.mouse_filter = Control.MOUSE_FILTER_IGNORE

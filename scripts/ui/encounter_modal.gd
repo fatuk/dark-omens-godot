@@ -115,9 +115,9 @@ func _ready() -> void:
 	# группа стоит на ступень ВЫШЕ обычной модалки: повествование и исход как LEAD,
 	# строка успехов как BODY. Заголовок остаётся TITLE — над ним ещё имя мира (HERO),
 	# и поднимать его некуда без слипания верхушки.
-	_main_text.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_LEAD)
-	_outcome.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_LEAD)
-	_dice.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+	UIFonts.apply(_main_text, UIFonts.LEAD)
+	UIFonts.apply(_outcome, UIFonts.LEAD)
+	UIFonts.apply(_dice, UIFonts.BODY)
 	_main_text.add_theme_color_override("font_color", UIColors.TEXT)
 	# Текст (основной + исход) — узкой колонкой по центру, не на всю ширину карточки.
 	# Ширина задаётся в _resize_card; SHRINK_CENTER центрирует колонку, автоперенос — по ней.
@@ -127,7 +127,7 @@ func _ready() -> void:
 	_setup_text = Label.new()
 	_setup_text.name = "SetupText"
 	_setup_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_setup_text.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+	UIFonts.apply(_setup_text, UIFonts.BODY)
 	_setup_text.add_theme_color_override("font_color", UIColors.MUTED)
 	_setup_text.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_setup_text.visible = false
@@ -185,7 +185,7 @@ func _ready() -> void:
 	# рамки. Живёт НЕ в VBox, а прямо на карточке по якорям: у VBox свой верхний
 	# отступ под контент, и внутри него подпись не поднять выше, чем он начинается.
 	# Точная высота — _PLACE_TOP_FRAC в _resize_card.
-	_place = UIStyle.label("", UIStyle.MODAL_FS_HERO, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_place = UIStyle.label("", UIFonts.HERO, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	_place.name = "Place"
 	_place.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	_place.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -211,7 +211,7 @@ func _ready() -> void:
 # Возвращает внутренний Label — в него пишем текст встречи (_title.text = …).
 func _install_ornate_title() -> Label:
 	var placeholder: Label = %Title
-	var ot: HBoxContainer = UIStyle.ornate_title("", UIStyle.MODAL_FS_TITLE, UIColors.ACCENT)
+	var ot: HBoxContainer = UIStyle.ornate_title("", UIFonts.TITLE, UIColors.ACCENT)
 	var vbox: Node = placeholder.get_parent()
 	var at: int = placeholder.get_index()
 	vbox.add_child(ot)

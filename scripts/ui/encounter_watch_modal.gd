@@ -76,7 +76,7 @@ const _CLOCK_FLIP: float = 0.6
 const _GROW_TIME: float = 0.4
 const _REVEAL_TIME: float = 0.35
 
-const _INK := Color(0.17, 0.12, 0.08)  # чернила на бланке
+const _INK := UIColors.INK  # чернила на бланке
 const _INK_SUCCESS := Color(0.2, 0.36, 0.18)
 const _INK_FAILURE := Color(0.55, 0.14, 0.11)
 

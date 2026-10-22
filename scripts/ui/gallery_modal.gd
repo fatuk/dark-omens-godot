@@ -309,7 +309,7 @@ func _build_text_plate() -> void:
 	_plate_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_plate_text.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	_plate_text.add_theme_font_size_override("font_size", int(TEXT_FONT_SIZE))
-	_plate_text.add_theme_color_override("font_color", Color(0.16, 0.11, 0.06))
+	_plate_text.add_theme_color_override("font_color", UIColors.INK)
 	_plate_text.position = TEXT_MARGIN
 	_plate_text.size = Vector2(TEXT_VP_SIZE) - TEXT_MARGIN * 2.0
 	_text_vp.add_child(_plate_text)
@@ -404,7 +404,7 @@ func _build_title() -> void:
 	_name_lbl.name = "NameLabel"
 	_name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_name_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_name_lbl.add_theme_color_override("font_color", Color(0.20, 0.15, 0.08))
+	_name_lbl.add_theme_color_override("font_color", UIColors.INK.lightened(0.04))
 	_name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_title_ctrl.add_child(_name_lbl)
 

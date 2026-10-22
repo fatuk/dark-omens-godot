@@ -36,7 +36,7 @@ const _T_PAD_LR: int = 80  # воздух слева/справа от текс�
 const _T_PAD_T: int = 24
 const _T_PAD_B: int = 24
 
-const _C_TEXT := Color(0.91, 0.86, 0.75)  # тёплый пергамент — текст плашки
+const _C_TEXT := UIColors.TEXT_BRIGHT  # тёплый пергамент — текст плашки
 const _DISABLED_MOD := UIColors.DISABLED
 
 const _SPIN_DUR: float = 0.5  # длительность проворота часов

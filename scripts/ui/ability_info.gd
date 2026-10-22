@@ -77,7 +77,7 @@ static func _open_clue_trade(parent: Node, inv_name: String) -> void:
 	var box := VBoxContainer.new()
 	box.name = "PartnerPick"
 	box.add_theme_constant_override("separation", 10)
-	var hint := UIStyle.label("ABILITY_CLUE_TRADE_PROMPT", UIStyle.MODAL_FS_BODY)
+	var hint := UIStyle.label("ABILITY_CLUE_TRADE_PROMPT", UIFonts.BODY)
 	hint.name = "Hint"
 	box.add_child(hint)
 	for i in range(partners.size()):
@@ -110,13 +110,13 @@ static func _open_discard_at_gate(parent: Node, inv_name: String) -> void:
 	var box := VBoxContainer.new()
 	box.name = "GatePick"
 	box.add_theme_constant_override("separation", 10)
-	var hint := UIStyle.label("ABILITY_GATE_MONSTER_PROMPT", UIStyle.MODAL_FS_BODY)
+	var hint := UIStyle.label("ABILITY_GATE_MONSTER_PROMPT", UIFonts.BODY)
 	hint.name = "Hint"
 	box.add_child(hint)
 	var swap := CheckBox.new()
 	swap.name = "PaySanity"
 	swap.text = "ABILITY_PAY_SANITY_FOR_CLUE"
-	swap.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+	UIFonts.apply(swap, UIFonts.BODY)
 	swap.visible = (
 		int(me.get("clues", 0)) >= 2 and not ResourceLedger.swap_for(me, "clue").is_empty()
 	)
@@ -166,7 +166,7 @@ static func _open_strike_monster(parent: Node, inv_name: String) -> void:
 	var box := VBoxContainer.new()
 	box.name = "StrikePick"
 	box.add_theme_constant_override("separation", 10)
-	var hint := UIStyle.label("ABILITY_STRIKE_PROMPT", UIStyle.MODAL_FS_BODY)
+	var hint := UIStyle.label("ABILITY_STRIKE_PROMPT", UIFonts.BODY)
 	hint.name = "Hint"
 	box.add_child(hint)
 	for i in range(here.size()):
@@ -207,7 +207,7 @@ static func _open_convert_vitality(parent: Node) -> void:
 	var box := VBoxContainer.new()
 	box.name = "ConvertAlloc"
 	box.add_theme_constant_override("separation", 12)
-	var hint := UIStyle.label("ABILITY_CONVERT_PROMPT", UIStyle.MODAL_FS_BODY)
+	var hint := UIStyle.label("ABILITY_CONVERT_PROMPT", UIFonts.BODY)
 	hint.name = "Hint"
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.custom_minimum_size.x = 360
@@ -286,9 +286,7 @@ static func _section(box: VBoxContainer, data: Dictionary, btn: Button = null) -
 	if btn != null:
 		box.add_child(btn)
 	elif not nm.is_empty():
-		var title := UIStyle.label(
-			nm, UIStyle.MODAL_FS_TITLE, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
-		)
+		var title := UIStyle.label(nm, UIFonts.TITLE, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 		title.name = "Name"
 		box.add_child(title)
 
@@ -296,7 +294,7 @@ static func _section(box: VBoxContainer, data: Dictionary, btn: Button = null) -
 
 
 static func _body(key: String) -> Label:
-	var lbl := UIStyle.label(key, UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := UIStyle.label(key, UIFonts.BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Text"
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl.custom_minimum_size.x = 420

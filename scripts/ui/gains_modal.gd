@@ -150,9 +150,7 @@ func _fill(gains: Dictionary) -> void:
 		)
 		if text.is_empty():
 			continue
-		var line := UIStyle.label(
-			text, UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER
-		)
+		var line := UIStyle.label(text, UIFonts.BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 		line.name = "Event"
 		line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_box.add_child(line)
@@ -164,7 +162,7 @@ func _fill(gains: Dictionary) -> void:
 		and events.is_empty()
 	):
 		var none := UIStyle.label(
-			"GAINS_NOTHING", UIStyle.MODAL_FS_BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+			"GAINS_NOTHING", UIFonts.BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
 		)
 		none.name = "Nothing"
 		_box.add_child(none)
@@ -251,7 +249,7 @@ func _token(field: String, n: int) -> Control:
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hb.add_child(icon)
 
-	var lbl := UIStyle.label("×%d" % n, UIStyle.MODAL_FS_TITLE, UIColors.VALUE)
+	var lbl := UIStyle.label("×%d" % n, UIFonts.TITLE, UIColors.VALUE)
 	lbl.name = "Count"
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hb.add_child(lbl)

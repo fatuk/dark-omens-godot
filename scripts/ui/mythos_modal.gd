@@ -30,9 +30,11 @@ static var TEXT_PAD_X: float = 40.0  # поля текстовой колонк�
 static var TEXT_PAD_TOP: float = 34.0
 static var TEXT_PAD_BOTTOM: float = 20.0
 static var TEXT_SEP: float = 22.0  # интервал между блоками колонки
-static var TITLE_FS: float = UIStyle.MODAL_FS_HERO
-static var FLAVOR_FS: float = UIStyle.MODAL_FS_BODY
-static var TEXT_FS: float = UIStyle.MODAL_FS_BODY
+# Базовые размеры (100 %) — тюнинг-панель правит их вживую; на экран идут через
+# UIFonts.scaled(): заголовок как HERO (рост ≤ 10 %), тексты — по «Размеру текста».
+static var TITLE_FS: float = 39.0
+static var FLAVOR_FS: float = 22.0
+static var TEXT_FS: float = 22.0
 # Внутренняя тень арта (uniform'ы inner_shadow.gdshader): доли стороны + плотность.
 static var SHADOW_ALPHA: float = 0.51
 static var SHADOW_LEFT: float = 0.15
@@ -104,12 +106,12 @@ func _build() -> void:
 	_title_lbl = UIStyle.modal_title("", UIColors.DANGER)
 	col.add_child(_title_lbl)
 
-	_flavor_lbl = _centered_label("Flavor", UIStyle.MODAL_FS_BODY, UIColors.TEXT)
+	_flavor_lbl = _centered_label("Flavor", UIFonts.BODY, UIColors.TEXT)
 	col.add_child(_flavor_lbl)
 
 	col.add_child(ornament_divider())
 
-	_text_lbl = _centered_label("Text", UIStyle.MODAL_FS_BODY, UIColors.TEXT)
+	_text_lbl = _centered_label("Text", UIFonts.BODY, UIColors.TEXT)
 	col.add_child(_text_lbl)
 
 	# Запасной список эффектов — только у карт без текста правил (см. _show_card).
@@ -119,7 +121,7 @@ func _build() -> void:
 	_eff_header = Label.new()
 	_eff_header.name = "EffectsHeader"
 	_eff_header.text = tr("MYTHOS_EFFECTS_HEADER")
-	_eff_header.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
+	UIFonts.apply(_eff_header, UIFonts.HINT)
 	_eff_header.add_theme_color_override("font_color", UIColors.MUTED)
 	col.add_child(_eff_header)
 
@@ -154,9 +156,9 @@ func apply_tuning() -> void:
 	_text_margin.add_theme_constant_override("margin_top", int(TEXT_PAD_TOP))
 	_text_margin.add_theme_constant_override("margin_bottom", int(TEXT_PAD_BOTTOM))
 	_text_col.add_theme_constant_override("separation", int(TEXT_SEP))
-	_title_lbl.add_theme_font_size_override("font_size", int(TITLE_FS))
-	_flavor_lbl.add_theme_font_size_override("font_size", int(FLAVOR_FS))
-	_text_lbl.add_theme_font_size_override("font_size", int(TEXT_FS))
+	_title_lbl.add_theme_font_size_override("font_size", UIFonts.scaled(TITLE_FS, true))
+	_flavor_lbl.add_theme_font_size_override("font_size", UIFonts.scaled(FLAVOR_FS))
+	_text_lbl.add_theme_font_size_override("font_size", UIFonts.scaled(TEXT_FS))
 	apply_shadow(_shadow_mat)
 
 
@@ -213,10 +215,10 @@ static func apply_shadow(mat: ShaderMaterial) -> void:
 	mat.set_shader_parameter("curve", SHADOW_CURVE)
 
 
-func _centered_label(node_name: String, font_size: int, color: Color) -> Label:
+func _centered_label(node_name: String, font_size: Variant, color: Color) -> Label:
 	var lbl := Label.new()
 	lbl.name = node_name
-	lbl.add_theme_font_size_override("font_size", font_size)
+	UIFonts.apply(lbl, font_size)
 	lbl.add_theme_color_override("font_color", color)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -234,7 +236,7 @@ static func ornament_divider() -> Control:
 			var gem := Label.new()
 			gem.name = "Gem"
 			gem.text = "◇"
-			gem.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
+			UIFonts.apply(gem, UIFonts.HINT)
 			gem.add_theme_color_override("font_color", UIColors.ACCENT)
 			row.add_child(gem)
 			continue
@@ -341,7 +343,7 @@ func _render_effects(effects: Array) -> void:
 		var lbl := Label.new()
 		lbl.text = tr("MYTHOS_NO_EFFECTS")
 		lbl.add_theme_color_override("font_color", UIColors.MUTED)
-		lbl.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
+		UIFonts.apply(lbl, UIFonts.HINT)
 		_eff_box.add_child(lbl)
 		_eff_header.visible = false
 		return
@@ -350,7 +352,7 @@ func _render_effects(effects: Array) -> void:
 		var lbl := Label.new()
 		lbl.name = "Label"
 		lbl.text = "• " + EffectManifest.describe(effects[i])
-		lbl.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_HINT)
+		UIFonts.apply(lbl, UIFonts.HINT)
 		lbl.add_theme_color_override("font_color", UIColors.TEXT)
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_eff_box.add_child(lbl)

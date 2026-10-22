@@ -46,7 +46,7 @@ func _build(r: Dictionary) -> void:
 
 	# Имя выпавшего оборота (подзаголовок).
 	var oname := Label.new()
-	oname.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_LEAD)
+	UIFonts.apply(oname, UIFonts.LEAD)
 	oname.name = "OutcomeName"
 	oname.text = String(r.get("name", ""))  # ключ i18n → авто-перевод
 	oname.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -55,7 +55,7 @@ func _build(r: Dictionary) -> void:
 
 	# Художественный текст оборота (включает механический эффект).
 	var flavor := Label.new()
-	flavor.add_theme_font_size_override("font_size", UIStyle.MODAL_FS_BODY)
+	UIFonts.apply(flavor, UIFonts.BODY)
 	flavor.name = "Flavor"
 	flavor.text = String(r.get("text", ""))  # ключ i18n → авто-перевод
 	flavor.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

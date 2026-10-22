@@ -23,7 +23,7 @@ const _FS_BIG := 44  # ужас/урон
 const _FS_HP := 40  # здоровье/стойкость
 const _FS_HITS := 20  # успехи
 const _FS_ABILITY := 15
-const _FS_LOSS := 22  # «−2 Рассудок» под лотком
+const _FS_LOSS := UIFonts.BODY  # «−2 Рассудок» под лотком — читаемый текст
 const _PULSE_PERIOD := 0.9  # сек на полупериод пульса
 const _REVEAL_FADE := 0.25  # проявление итога, когда кубы осели
 
@@ -108,9 +108,7 @@ func _build(card: Dictionary) -> void:
 	var masked: bool = false
 
 	_vbox.add_child(
-		UIStyle.ornate_title(
-			String(card.get("monsterName", "ENCOUNTER_TITLE")), UIStyle.MODAL_FS_TITLE
-		)
+		UIStyle.ornate_title(String(card.get("monsterName", "ENCOUNTER_TITLE")), UIFonts.TITLE)
 	)
 	_vbox.add_child(_ensure_art(card))
 
@@ -549,13 +547,17 @@ func _loss_lines(card: Dictionary, str_step: bool, done: bool, masked: bool = fa
 # ── Хелперы ───────────────────────────────────────────────────────────────────
 
 
+# size — токен UIFonts (строки исхода — читаемый текст) или число (цифры на арте).
 func _lbl(
-	text: String, size: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_CENTER
+	text: String,
+	size: Variant,
+	color: Color,
+	align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_CENTER
 ) -> Label:
 	var l := Label.new()
 	l.name = "Label"
 	l.text = text
-	l.add_theme_font_size_override("font_size", size)
+	UIFonts.apply(l, size)
 	l.add_theme_color_override("font_color", color)
 	l.horizontal_alignment = align
 	return l

@@ -1562,33 +1562,25 @@ func _mystery_progress_text(m: Dictionary) -> String:
 
 
 func _gate_eyebrow(text: String) -> void:
-	var lbl := UIStyle.label(
-		text, UIStyle.MODAL_FS_HINT, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
-	)
+	var lbl := UIStyle.label(text, UIFonts.HINT, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Eyebrow"
 	_gate_vbox.add_child(lbl)
 
 
 func _gate_title(text: String) -> void:
-	var lbl := UIStyle.label(
-		text, UIStyle.MODAL_FS_HERO, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
-	)
+	var lbl := UIStyle.label(text, UIFonts.HERO, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Title"
 	_gate_vbox.add_child(lbl)
 
 
 func _gate_subtitle(text: String) -> void:
-	var lbl := UIStyle.label(
-		text, UIStyle.MODAL_FS_BODY, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER
-	)
+	var lbl := UIStyle.label(text, UIFonts.BODY, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Subtitle"
 	_gate_vbox.add_child(lbl)
 
 
 func _gate_body(text: String) -> void:
-	var lbl := UIStyle.label(
-		text, UIStyle.MODAL_FS_BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER
-	)
+	var lbl := UIStyle.label(text, UIFonts.BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Body"
 	lbl.custom_minimum_size = Vector2(540.0, 0.0)
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

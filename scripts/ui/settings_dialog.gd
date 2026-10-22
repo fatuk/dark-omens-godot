@@ -19,8 +19,8 @@ signal saved
 signal cancelled
 
 # Размеры — ступени лесенки модалок UIStyle (как у прочих окон), а не россыпь 12–14 px.
-const _FS: int = UIStyle.MODAL_FS_BODY  # подписи, галки, выпадающие списки
-const _FS_SECTION: int = UIStyle.MODAL_FS_HINT  # шапки секций («ДИСПЛЕЙ», «ЗВУК»)
+const _FS := UIFonts.BODY  # подписи, галки, выпадающие списки
+const _FS_SECTION := UIFonts.HINT  # шапки секций («ДИСПЛЕЙ», «ЗВУК»)
 const _LABEL_W: float = 200.0  # колонка подписей «Разрешение:», «Язык:»
 const _ROW_H: float = 44.0  # высота выпадающих списков
 
@@ -33,6 +33,8 @@ var show_server_url: bool = true
 
 var _url_input: LineEdit
 var _res_option: OptionButton
+var _text_option: OptionButton  # «Размер текста» (UIFonts.SCALES)
+var _text_snap: float = 1.0  # до правки — откат по крестику
 var _fs_check: CheckBox
 var _fx_check: CheckBox
 var _turn_check: CheckBox
@@ -53,6 +55,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP  # клики мимо панели не падают вниз
 	UIStyle.style_modal_panel(_panel)
 	_music_snap = MusicManager.volume
+	_text_snap = SettingsStore.text_scale
 	_sfx_snap = SfxManager.volume
 	_build()
 
@@ -115,6 +118,8 @@ func _build_display_section() -> void:
 	_res_option.disabled = SettingsStore.fullscreen
 	res_row.add_child(_res_option)
 
+	_build_text_size_row()
+
 	var fs_row := HBoxContainer.new()
 	fs_row.name = "FullscreenRow"
 	fs_row.add_theme_constant_override("separation", 10)
@@ -124,7 +129,7 @@ func _build_display_section() -> void:
 	_fs_check.name = "FullscreenCheck"
 	_fs_check.button_pressed = SettingsStore.fullscreen
 	_fs_check.add_theme_color_override("font_color", UIColors.TEXT)
-	_fs_check.add_theme_font_size_override("font_size", _FS)
+	UIFonts.apply(_fs_check, _FS)
 	_fs_check.toggled.connect(func(on: bool) -> void: _res_option.disabled = on)
 	fs_row.add_child(_fs_check)
 	var fs_lbl := _plain_label("SETTINGS_FULLSCREEN")
@@ -140,7 +145,7 @@ func _build_display_section() -> void:
 	_fx_check.name = "FxCheck"
 	_fx_check.button_pressed = PostFx.is_enabled()
 	_fx_check.add_theme_color_override("font_color", UIColors.TEXT)
-	_fx_check.add_theme_font_size_override("font_size", _FS)
+	UIFonts.apply(_fx_check, _FS)
 	fx_row.add_child(_fx_check)
 	var fx_lbl := _plain_label("SETTINGS_FX_OLD_FILM")
 	fx_lbl.name = "FxLabel"
@@ -155,7 +160,7 @@ func _build_display_section() -> void:
 	_turn_check.name = "TurnNotifyCheck"
 	_turn_check.button_pressed = SettingsStore.turn_notify
 	_turn_check.add_theme_color_override("font_color", UIColors.TEXT)
-	_turn_check.add_theme_font_size_override("font_size", _FS)
+	UIFonts.apply(_turn_check, _FS)
 	turn_row.add_child(_turn_check)
 	var turn_lbl := _plain_label("SETTINGS_TURN_NOTIFY")
 	turn_lbl.name = "TurnNotifyLabel"
@@ -170,7 +175,7 @@ func _build_display_section() -> void:
 	_fps_check.name = "ShowFpsCheck"
 	_fps_check.button_pressed = SettingsStore.show_fps
 	_fps_check.add_theme_color_override("font_color", UIColors.TEXT)
-	_fps_check.add_theme_font_size_override("font_size", _FS)
+	UIFonts.apply(_fps_check, _FS)
 	fps_row.add_child(_fps_check)
 	var fps_lbl := _plain_label("SETTINGS_SHOW_FPS")
 	fps_lbl.name = "ShowFpsLabel"
@@ -186,7 +191,7 @@ func _build_display_section() -> void:
 	_guide_check.name = "GuideHintsCheck"
 	_guide_check.button_pressed = SettingsStore.guide_hints
 	_guide_check.add_theme_color_override("font_color", UIColors.TEXT)
-	_guide_check.add_theme_font_size_override("font_size", _FS)
+	UIFonts.apply(_guide_check, _FS)
 	guide_row.add_child(_guide_check)
 	var guide_lbl := _plain_label("SETTINGS_GUIDE_HINTS")
 	guide_lbl.name = "GuideHintsLabel"
@@ -233,6 +238,33 @@ func _build_language_section() -> void:
 	_size_option(_lang_option)
 	_lang_option.selected = I18n.SUPPORTED.find(I18n.get_locale())
 	row.add_child(_lang_option)
+
+
+# «Размер текста»: читаемый текст окон растёт ступенями (UIFonts). Применяется сразу —
+# видно на самом окне настроек; крестик откатывает.
+func _build_text_size_row() -> void:
+	var row := HBoxContainer.new()
+	row.name = "TextSizeRow"
+	row.add_theme_constant_override("separation", 8)
+	_vbox.add_child(row)
+	var lbl := _form_label("FORM_TEXT_SIZE")
+	lbl.name = "TextSizeLabel"
+	row.add_child(lbl)
+	var names: Array[String] = ["TEXT_SIZE_NORMAL", "TEXT_SIZE_LARGE", "TEXT_SIZE_XL"]
+	_text_option = UIStyle.option_button(names)
+	_text_option.name = "TextSizeOption"
+	_size_option(_text_option)
+	var cur: int = 0
+	for i: int in range(UIFonts.SCALES.size()):
+		if is_equal_approx(float(UIFonts.SCALES[i]), SettingsStore.text_scale):
+			cur = i
+	_text_option.selected = cur
+	_text_option.item_selected.connect(
+		func(i: int) -> void:
+			SettingsStore.set_text_scale(float(UIFonts.SCALES[i]))
+			_text_option.get_popup().add_theme_font_size_override("font_size", UIFonts.px(_FS))
+	)
+	row.add_child(_text_option)
 
 
 func _build_buttons() -> void:
@@ -288,6 +320,8 @@ func _on_cancel() -> void:
 	# Откатываем live-preview громкостей. Display/lang/fx ещё не были применены.
 	MusicManager.set_volume(_music_snap)
 	SfxManager.set_volume(_sfx_snap)
+	if not is_equal_approx(SettingsStore.text_scale, _text_snap):
+		SettingsStore.set_text_scale(_text_snap)
 	cancelled.emit()
 	queue_free()
 
@@ -300,7 +334,7 @@ func _section_header(key: String, node_name: String = "") -> void:
 	if not node_name.is_empty():
 		lbl.name = node_name
 	lbl.text = key
-	lbl.add_theme_font_size_override("font_size", _FS_SECTION)
+	UIFonts.apply(lbl, _FS_SECTION)
 	lbl.add_theme_color_override("font_color", UIColors.MUTED)
 	_vbox.add_child(lbl)
 
@@ -310,7 +344,7 @@ func _form_label(text: String) -> Label:
 	lbl.name = "Label"
 	lbl.text = text
 	lbl.custom_minimum_size.x = _LABEL_W
-	lbl.add_theme_font_size_override("font_size", _FS)
+	UIFonts.apply(lbl, _FS)
 	lbl.add_theme_color_override("font_color", UIColors.TEXT)
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	return lbl
@@ -320,14 +354,14 @@ func _form_label(text: String) -> Label:
 func _size_option(ob: OptionButton) -> void:
 	ob.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ob.custom_minimum_size.y = _ROW_H
-	ob.add_theme_font_size_override("font_size", _FS)
-	ob.get_popup().add_theme_font_size_override("font_size", _FS)
+	UIFonts.apply(ob, _FS)
+	ob.get_popup().add_theme_font_size_override("font_size", UIFonts.px(_FS))
 
 
 func _plain_label(key: String) -> Label:
 	var lbl := Label.new()
 	lbl.name = "Label"
 	lbl.text = key
-	lbl.add_theme_font_size_override("font_size", _FS)
+	UIFonts.apply(lbl, _FS)
 	lbl.add_theme_color_override("font_color", UIColors.TEXT)
 	return lbl
