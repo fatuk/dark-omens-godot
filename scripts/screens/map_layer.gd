@@ -479,8 +479,10 @@ func _spawn_markers() -> void:
 			# Fallback на id (loc_name) — на случай отсутствия ключа в JSON.
 			lbl.text = String(loc.get("name", loc_name))
 			UIFonts.apply(lbl, UIFonts.art(LABEL_FONT, LABEL_FONT_GAIN))
-			# Смена «Размера текста» меняет ширину — перецентрировать под маркером.
+			# Смена «Размера текста» меняет ширину — перецентрировать под маркером. Вне
+			# контейнера Label сам не сжимается: меньший шрифт оставил бы широкую плашку.
 			lbl.resized.connect(func() -> void: _layout_dirty = true)
+			lbl.minimum_size_changed.connect(lbl.reset_size)
 			lbl.add_theme_color_override("font_color", Color.WHITE)
 			lbl.add_theme_stylebox_override("normal", _make_label_bg(_LABEL_BG_DEFAULT))
 			lbl.z_index = 2  # подпись читаема поверх колоды сущностей
