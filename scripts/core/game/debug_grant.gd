@@ -46,6 +46,16 @@ static func spawn_monster(gs: Node, loc_id: String, monster_id: String) -> Strin
 
 
 # Пустая loc → случайный свободный гейт-спейс; явная → форсит на любой локации.
+# Финал партии в обход условий — проверить экраны победы/поражения. "" — снять
+# (модалка скрывается, партия продолжается).
+static func set_outcome(gs: Node, outcome: String) -> String:
+	if not outcome in ["", "victory", "defeat"]:
+		return 'исход: victory | defeat | ""'
+	gs.set("outcome", outcome)
+	gs.broadcast_and_emit()
+	return "исход партии: %s" % (outcome if not outcome.is_empty() else "снят")
+
+
 static func open_gate(gs: Node, loc_id: String, color: String) -> String:
 	var opened: String = (gs.get("_board") as BoardState).open_gate(loc_id, color)  # сам спаунит монстра
 	if opened.is_empty():

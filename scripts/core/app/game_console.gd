@@ -307,6 +307,9 @@ const _COMMANDS := [
 	{"text": "gate", "hint": "открыть врата"},
 	{"text": "cond", "hint": "наложить состояние"},
 	{"text": "enc", "hint": "назначить встречу игроку"},
+	{"text": "win", "hint": "экран победы партии"},
+	{"text": "lose", "hint": "экран поражения партии"},
+	{"text": "outcome", "hint": "исход: win|lose|clear"},
 	{"text": "list", "hint": "список каталога"},
 	{"text": "who", "hint": "игроки"},
 	{"text": "offline", "hint": "офлайн-режим on|off (реле в процессе)"},
@@ -368,6 +371,14 @@ func _candidates(toks: Array, arg_index: int, editing: String) -> Array:
 			return _location_cands() if editing.begins_with("@") else _colors_cands()
 		"list", "ls":
 			return _category_cands() if arg_index == 1 else _as_cands(_entries_for(String(toks[1])))
+		"outcome", "end":
+			if arg_index != 1:
+				return []
+			return [
+				{"text": "win", "hint": "победа"},
+				{"text": "lose", "hint": "поражение"},
+				{"text": "clear", "hint": "снять исход"},
+			]
 		_:
 			return []
 
@@ -537,6 +548,12 @@ func _on_command_submitted(text: String) -> void:
 			_cmd_cond(args)
 		"enc", "encounter":
 			_cmd_enc(args)
+		"win", "victory":
+			_cmd_outcome(["win"])
+		"lose", "defeat":
+			_cmd_outcome(["lose"])
+		"outcome", "end":
+			_cmd_outcome(args)
 		"guide":
 			_cmd_guide(args)
 		"pad":
@@ -573,6 +590,8 @@ func _cmd_help() -> void:
 	self.log("  gate [@локация] [цвет]      — открыть врата (+1 монстр)")
 	self.log("  cond <игрок> <состояние>    — наложить состояние")
 	self.log("  enc <игрок> <вид> [мир]     — назначить встречу на следующий ход")
+	self.log("  win | lose                  — экран победы / поражения партии")
+	self.log("  outcome clear               — снять исход (модалка скроется)")
 	self.log("  list assets|spells|monsters|conditions|locations [фильтр]")
 	self.log("  who                         — игроки и их id/локации")
 	self.log("  offline [on|off]            — офлайн-режим: реле в процессе, без сервера")
@@ -638,6 +657,24 @@ func _cmd_guide(args: Array) -> void:
 		return
 	GuideHint.say(scene, lines)
 	self.log("подсказка: %d реплик(и)" % lines.size())
+
+
+# Финал партии: win/lose — показать экран победы/поражения, clear — снять.
+func _cmd_outcome(args: Array) -> void:
+	var a: String = String(args[0]).to_lower() if not args.is_empty() else ""
+	var map := {
+		"win": "victory",
+		"victory": "victory",
+		"lose": "defeat",
+		"defeat": "defeat",
+		"clear": "",
+		"reset": "",
+		"off": ""
+	}
+	if not map.has(a):
+		err("outcome win | lose | clear")
+		return
+	self.log(GameState.debug_exec("outcome", String(map[a])))
 
 
 func _cmd_who() -> void:
