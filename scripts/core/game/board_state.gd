@@ -1089,8 +1089,7 @@ func apply_verb(node: Dictionary, verb: String) -> void:
 			_gs._mystery.check_defeat()
 		"loseGame":
 			# Партия проигрывает (эффект Слуха «investigators lose the game»).
-			if _gs.outcome.is_empty():
-				_gs.outcome = "defeat"
+			if GameOutcome.finish(_gs, GameOutcome.DEFEAT, GameOutcome.EFFECT):
 				GameConsole.log("[Финал] поражение партии (эффект)")
 		"discardAllClues":
 			discard_all_clues()

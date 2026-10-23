@@ -316,8 +316,8 @@ func _solve_active_mystery() -> void:
 	_gs._board.clear_eldritch_tokens()  # доска чистится — следующая Тайна разложит свои
 	var total: int = (_gs.campaign.get("mysteries", []) as Array).size()
 	if _gs.active_mystery >= total:
-		_gs.outcome = "victory"
-		GameConsole.log("[Финал] все Тайны решены — победа партии")
+		if GameOutcome.finish(_gs, GameOutcome.VICTORY, GameOutcome.MYSTERIES):
+			GameConsole.log("[Финал] все Тайны решены — победа партии")
 	else:
 		apply_mystery_on_enter()  # активировалась следующая Тайна
 
@@ -331,6 +331,5 @@ func check_defeat() -> void:
 	if clock <= 0 or _gs.doom < clock:
 		return
 	_gs.doom = clock  # дум не превышает Часы Рока (кламп для трека и повторных прибавок)
-	if _gs.outcome.is_empty():
-		_gs.outcome = "defeat"
+	if GameOutcome.finish(_gs, GameOutcome.DEFEAT, GameOutcome.DOOM):
 		GameConsole.log("[Финал] doom достиг %d — Древний пробуждается" % clock)

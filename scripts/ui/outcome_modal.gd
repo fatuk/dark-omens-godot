@@ -1,7 +1,8 @@
 extends CanvasLayer
 
-## Финальная модалка партии — победа (все Тайны решены) или поражение (doom достиг
-## doomClock). Показывается ВСЕМ игрокам по синкнутому GameState.outcome.
+## Финальная модалка партии — победа (все Тайны решены) или поражение по причине
+## (GameState.outcome_reason: Рок / колода Мифов / все погибли / эффект). Текст —
+## концовка Древнего из CMS (GameOutcome). Показывается ВСЕМ по синкнутому outcome.
 ## Строится кодом (без .tscn), добавляется из world_map._build_outcome_modal.
 
 var _backdrop: ColorRect
@@ -9,7 +10,7 @@ var _panel: PanelContainer
 var _title: Label
 var _body: Label
 var _btn: Button
-var _shown_for: String = ""  # за какой outcome модалка уже показана (без пересборки)
+var _shown_for: String = ""  # за какой outcome:причина модалка уже показана
 
 
 func _ready() -> void:
@@ -70,21 +71,18 @@ func _refresh() -> void:
 		UIStyle.modal_set_visible(_backdrop, _panel, false)
 		_shown_for = ""
 		return
-	if o == _shown_for:
+	var reason: String = GameState.outcome_reason
+	var key: String = "%s:%s" % [o, reason]  # другая причина — другая концовка
+	if key == _shown_for:
 		return
-	_shown_for = o
-	if o == "victory":
-		_title.text = "OUTCOME_VICTORY_TITLE"
-		_title.add_theme_color_override("font_color", UIColors.SUCCESS)
-		_body.text = "OUTCOME_VICTORY_BODY"
-	else:
-		_title.text = "OUTCOME_DEFEAT_TITLE"
-		_title.add_theme_color_override("font_color", UIColors.DANGER)
-		# Текст пробуждения Древнего из библии (CMS ancientOne.awakening). Пусто
-		# (нет карточки/поля) → общий фолбэк OUTCOME_DEFEAT_BODY.
-		var ao: Dictionary = GameState.campaign.get("ancientOne", {})
-		var awakening: String = String(ao.get("awakening", "")).strip_edges()
-		_body.text = awakening if not awakening.is_empty() else tr("OUTCOME_DEFEAT_BODY")
+	_shown_for = key
+	_title.text = GameOutcome.title_key(o, reason)
+	var won: bool = o == GameOutcome.VICTORY
+	_title.add_theme_color_override("font_color", UIColors.SUCCESS if won else UIColors.DANGER)
+	# Концовка Древнего из библии (CMS: victory / awakening / timeUp / allFallen) по
+	# причине; нет поля — общий текст причины.
+	var ao: Dictionary = GameState.campaign.get("ancientOne", {})
+	_body.text = tr(GameOutcome.body_text(ao, o, reason))
 	SfxManager.play(SfxManager.SFX_MYTHOS_START)  # тревожный аккорд финала
 	UIStyle.modal_set_visible(_backdrop, _panel, true)
 

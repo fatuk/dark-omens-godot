@@ -242,6 +242,9 @@ var mystery_tokens_on_card: int = 0
 # Финал партии: "" — ещё идёт; "victory" — все 3 Тайны решены; "defeat" — doom
 # достиг doomClock. Клиент по этому полю показывает финальные модалки.
 var outcome: String = ""
+# Почему финал (GameOutcome.MYSTERIES/DOOM/MYTHOS/DEAD/EFFECT) — выбирает концовку
+# Древнего в модалке. Ставится вместе с outcome через GameOutcome.finish.
+var outcome_reason: String = ""
 
 # Подсистемы. GameState — фасад и хранитель синкаемого state; подмодули —
 # host-only логика и owned state (колода мифов, эпоха генерации кампании,
@@ -373,6 +376,7 @@ const _SYNC_FIELDS: Array[String] = [
 	"mystery_claimed",
 	"mystery_tokens_on_card",
 	"outcome",
+	"outcome_reason",
 ]
 
 
@@ -1299,8 +1303,8 @@ func debug_exec(op: String, a: String = "", b: String = "", c: String = "") -> S
 			return DebugGrant.give_clue(self, a, b, maxi(1, int(c)))
 		"encounter":  # a=игрок, b=вид, c=мир (для gate)
 			return DebugGrant.assign_encounter(self, a, b, c)
-		"outcome":  # a=victory|defeat|"" (снять)
-			return DebugGrant.set_outcome(self, a)
+		"outcome":  # a=victory|defeat|"" (снять), b=причина
+			return DebugGrant.set_outcome(self, a, b)
 		_:
 			return "неизвестная debug-операция «%s»" % op
 

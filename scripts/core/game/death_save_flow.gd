@@ -169,7 +169,7 @@ func _die(pid: String) -> void:
 	p[PlayerKeys.CLUE_IDS] = []
 	p[PlayerKeys.RESOURCES] = 0
 	if _all_dead() and String(_gs.outcome).is_empty():
-		_gs.outcome = "defeat"
+		GameOutcome.finish(_gs, GameOutcome.DEFEAT, GameOutcome.DEAD)
 		GameConsole.log("[Смерть] Все сыщики погибли — поражение")
 	elif _gs.current_pid() == pid:
 		# Погиб в СВОЙ ход — прокручиваем ход дальше, иначе застрянет на Тени

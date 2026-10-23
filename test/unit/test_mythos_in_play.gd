@@ -35,6 +35,7 @@ class MockGS:
 	var current_encounter: Dictionary = {}
 	var last_mythos: Dictionary = {}
 	var outcome: String = ""
+	var outcome_reason: String = ""
 	var campaign: Dictionary = {}
 	var campaign_pending: bool = false
 	var _campaign: StubCampaignGen = StubCampaignGen.new()

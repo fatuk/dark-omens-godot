@@ -64,6 +64,7 @@ class MockGameState:
 	var mystery_tokens_on_card: int = 0
 	var _on_enter_applied_idx: int = -1
 	var outcome: String = ""
+	var outcome_reason: String = ""
 	var board_effects: Array = []
 	var _campaign: StubCampaign
 	var _board: StubBoard
@@ -157,6 +158,7 @@ func test_solving_last_mystery_is_victory() -> void:
 	_at("locA")
 	_m.apply_mystery_progress()
 	assert_eq(_gs.outcome, "victory", "решена последняя Тайна → победа")
+	assert_eq(_gs.outcome_reason, GameOutcome.MYSTERIES, "причина — Тайны")
 
 
 # ── Хуки: нормализация / поиск ────────────────────────────────────────────────
@@ -353,6 +355,7 @@ func test_check_defeat_at_doom_clock() -> void:
 	_gs.doom = 10
 	_m.check_defeat()
 	assert_eq(_gs.outcome, "defeat", "doom достиг clock → поражение")
+	assert_eq(_gs.outcome_reason, GameOutcome.DOOM, "причина — Рок")
 
 
 func test_check_defeat_below_clock() -> void:

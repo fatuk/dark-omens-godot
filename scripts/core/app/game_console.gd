@@ -48,6 +48,8 @@ const _WORLDS := [
 	"The Future",
 ]
 const _WORLD_UNKNOWN := "?"  # _resolve_world: токен задан, но ни на что не похож
+# Причины поражения для `lose` (GameOutcome.*): выбирают концовку Древнего.
+const _LOSE_REASONS := [GameOutcome.DOOM, GameOutcome.MYTHOS, GameOutcome.DEAD, GameOutcome.EFFECT]
 
 # ── Публичный API ─────────────────────────────────────────────────────────────
 
@@ -371,12 +373,16 @@ func _candidates(toks: Array, arg_index: int, editing: String) -> Array:
 			return _location_cands() if editing.begins_with("@") else _colors_cands()
 		"list", "ls":
 			return _category_cands() if arg_index == 1 else _as_cands(_entries_for(String(toks[1])))
+		"lose", "defeat":
+			return _lose_reason_cands() if arg_index == 1 else []
 		"outcome", "end":
+			if arg_index == 2 and String(toks[1]).to_lower() in ["lose", "defeat"]:
+				return _lose_reason_cands()
 			if arg_index != 1:
 				return []
 			return [
 				{"text": "win", "hint": "победа"},
-				{"text": "lose", "hint": "поражение"},
+				{"text": "lose", "hint": "поражение [причина]"},
 				{"text": "clear", "hint": "снять исход"},
 			]
 		_:
@@ -551,7 +557,7 @@ func _on_command_submitted(text: String) -> void:
 		"win", "victory":
 			_cmd_outcome(["win"])
 		"lose", "defeat":
-			_cmd_outcome(["lose"])
+			_cmd_outcome(["lose"] + args)
 		"outcome", "end":
 			_cmd_outcome(args)
 		"guide":
@@ -590,7 +596,8 @@ func _cmd_help() -> void:
 	self.log("  gate [@локация] [цвет]      — открыть врата (+1 монстр)")
 	self.log("  cond <игрок> <состояние>    — наложить состояние")
 	self.log("  enc <игрок> <вид> [мир]     — назначить встречу на следующий ход")
-	self.log("  win | lose                  — экран победы / поражения партии")
+	self.log("  win                         — экран победы партии")
+	self.log("  lose [doom|mythos|dead|effect] — экран поражения по причине")
 	self.log("  outcome clear               — снять исход (модалка скроется)")
 	self.log("  list assets|spells|monsters|conditions|locations [фильтр]")
 	self.log("  who                         — игроки и их id/локации")
@@ -660,21 +667,37 @@ func _cmd_guide(args: Array) -> void:
 
 
 # Финал партии: win/lose — показать экран победы/поражения, clear — снять.
+# lose [причина] — doom (по умолч.) | mythos | dead | effect: концовка по причине.
 func _cmd_outcome(args: Array) -> void:
 	var a: String = String(args[0]).to_lower() if not args.is_empty() else ""
 	var map := {
-		"win": "victory",
-		"victory": "victory",
-		"lose": "defeat",
-		"defeat": "defeat",
+		"win": GameOutcome.VICTORY,
+		"victory": GameOutcome.VICTORY,
+		"lose": GameOutcome.DEFEAT,
+		"defeat": GameOutcome.DEFEAT,
 		"clear": "",
 		"reset": "",
 		"off": ""
 	}
 	if not map.has(a):
-		err("outcome win | lose | clear")
+		err("outcome win | lose [%s] | clear" % "|".join(_LOSE_REASONS))
 		return
-	self.log(GameState.debug_exec("outcome", String(map[a])))
+	var reason: String = ""
+	if String(map[a]) == GameOutcome.DEFEAT and args.size() > 1:
+		reason = String(args[1]).to_lower()
+		if not reason in _LOSE_REASONS:
+			err("lose %s" % " | ".join(_LOSE_REASONS))
+			return
+	self.log(GameState.debug_exec("outcome", String(map[a]), reason))
+
+
+func _lose_reason_cands() -> Array:
+	return [
+		{"text": GameOutcome.DOOM, "hint": "Рок дошёл до конца — пробуждение"},
+		{"text": GameOutcome.MYTHOS, "hint": "колода Мифов исчерпана — время вышло"},
+		{"text": GameOutcome.DEAD, "hint": "все сыщики погибли"},
+		{"text": GameOutcome.EFFECT, "hint": "карта велела проиграть"},
+	]
 
 
 func _cmd_who() -> void:

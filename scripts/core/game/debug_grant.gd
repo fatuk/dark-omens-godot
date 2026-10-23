@@ -45,17 +45,25 @@ static func spawn_monster(gs: Node, loc_id: String, monster_id: String) -> Strin
 	return "монстр «%s» (стойк. %d) на %s" % [monster_id, hp, loc_id]
 
 
-# Пустая loc → случайный свободный гейт-спейс; явная → форсит на любой локации.
 # Финал партии в обход условий — проверить экраны победы/поражения. "" — снять
-# (модалка скрывается, партия продолжается).
-static func set_outcome(gs: Node, outcome: String) -> String:
-	if not outcome in ["", "victory", "defeat"]:
+# (модалка скрывается, партия продолжается). reason — причина (GameOutcome.*):
+# выбирает концовку Древнего; пусто — по умолчанию (победа — Тайны, поражение — Рок).
+static func set_outcome(gs: Node, outcome: String, reason: String = "") -> String:
+	if not outcome in ["", GameOutcome.VICTORY, GameOutcome.DEFEAT]:
 		return 'исход: victory | defeat | ""'
+	if reason.is_empty() and not outcome.is_empty():
+		reason = GameOutcome.MYSTERIES if outcome == GameOutcome.VICTORY else GameOutcome.DOOM
+	if outcome == GameOutcome.DEFEAT and not reason in GameOutcome.DEFEAT_REASONS:
+		return "причина поражения: %s" % " | ".join(PackedStringArray(GameOutcome.DEFEAT_REASONS))
 	gs.set("outcome", outcome)
+	gs.set("outcome_reason", "" if outcome.is_empty() else reason)
 	gs.broadcast_and_emit()
-	return "исход партии: %s" % (outcome if not outcome.is_empty() else "снят")
+	if outcome.is_empty():
+		return "исход партии: снят"
+	return "исход партии: %s (%s)" % [outcome, reason]
 
 
+# Пустая loc → случайный свободный гейт-спейс; явная → форсит на любой локации.
 static func open_gate(gs: Node, loc_id: String, color: String) -> String:
 	var opened: String = (gs.get("_board") as BoardState).open_gate(loc_id, color)  # сам спаунит монстра
 	if opened.is_empty():

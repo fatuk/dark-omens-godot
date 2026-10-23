@@ -124,6 +124,7 @@ func _start_generation(player_count: int, ancient_one: String) -> void:
 	_gs.mystery_progress = 0
 	_gs.mystery_claimed = []
 	_gs.outcome = ""
+	_gs.outcome_reason = ""
 	_gs.emit_changed()
 
 	var api: Node = _gs.get_node_or_null("/root/ContentApi")

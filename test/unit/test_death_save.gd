@@ -15,6 +15,7 @@ var _ds: DeathSaveFlow
 class Mock:
 	extends "res://test/unit/helpers/mock_game_state.gd"
 	var outcome: String = ""
+	var outcome_reason: String = ""
 	var _check: CheckFlow
 	var _board: StubBoard
 
@@ -259,6 +260,7 @@ func test_death_of_last_investigator_is_defeat() -> void:
 	_save_slot("hp", false)
 	_ds.apply("p")  # провал → смерть; единственный сыщик → поражение
 	assert_eq(_gs.outcome, "defeat")
+	assert_eq(_gs.outcome_reason, GameOutcome.DEAD, "причина — все погибли")
 
 
 func test_death_not_defeat_while_someone_alive() -> void:

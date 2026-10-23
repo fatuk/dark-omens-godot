@@ -142,8 +142,7 @@ func _draw_card() -> void:
 	# загрузки (deck пуст при index==0 — карта-заглушка, не финал).
 	if not deck.is_empty() and index >= deck.size():
 		_gs.current_mythos = {}
-		if _gs.outcome.is_empty():
-			_gs.outcome = "defeat"
+		if GameOutcome.finish(_gs, GameOutcome.DEFEAT, GameOutcome.MYTHOS):
 			GameConsole.warn(
 				"[Финал] Колода Мифов исчерпана — Древний пробуждается, поражение партии"
 			)
