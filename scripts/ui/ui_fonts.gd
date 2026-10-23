@@ -74,8 +74,9 @@ const _ART_PREFIX := "art:"
 
 
 ## Токен подписи на арте с базой base px: растёт с настройкой вполсилы (ART_GAIN).
-static func art(base: int) -> StringName:
-	return StringName("%s%d" % [_ART_PREFIX, base])
+## gain — своя доля прироста (1.0 — как текст), где подпись важнее тесноты.
+static func art(base: int, gain: float = ART_GAIN) -> StringName:
+	return StringName("%s%d:%d" % [_ART_PREFIX, base, int(round(gain * 100.0))])
 
 
 ## Текущий множитель «Размера текста» (SettingsStore.text_scale).
@@ -90,8 +91,9 @@ static func scale() -> float:
 static func px(token: StringName) -> int:
 	var k: float = scale()
 	if String(token).begins_with(_ART_PREFIX):
-		var art_base: int = String(token).substr(_ART_PREFIX.length()).to_int()
-		return int(round(art_base * (1.0 + (k - 1.0) * ART_GAIN)))
+		var parts: PackedStringArray = String(token).substr(_ART_PREFIX.length()).split(":")
+		var gain: float = parts[1].to_int() / 100.0 if parts.size() > 1 else ART_GAIN
+		return int(round(parts[0].to_int() * (1.0 + (k - 1.0) * gain)))
 	var base: int = int(_BASE.get(token, 22))
 	if token in _DISPLAY:
 		k = minf(k, DISPLAY_CAP)

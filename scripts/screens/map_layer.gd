@@ -67,8 +67,9 @@ const SELECTION_Y_OFFSET: float = 2.0
 ## чтобы подпись не отрывалась/не наезжала при изменении масштаба.
 const LABEL_SCREEN_Y_FAR: float = 33.0
 const LABEL_SCREEN_Y_NEAR: float = 50.0
-# Шрифт в экранных пикселях: подпись на арте — растёт с «Размером текста» вполсилы.
+# Шрифт в экранных пикселях; растёт с «Размером текста» (UIFonts.art).
 const LABEL_FONT: int = 14
+const LABEL_FONT_GAIN: float = 1.0  # растёт как текст: на «Очень крупном» 14 → 18
 const _LABEL_BG_DEFAULT: Color = Color(0.05, 0.05, 0.08, 0.82)  # плашка имени по умолчанию
 const _LABEL_BG_PICK: Color = Color(0.62, 0.47, 0.13, 0.92)  # цель выбора на карте (золото)
 ## Фото-карточка сыщика (avatar-pin): целевая экранная высота, подъём над
@@ -477,7 +478,7 @@ func _spawn_markers() -> void:
 			# Godot вызывает tr() при рендере и сам обновит текст при смене локали.
 			# Fallback на id (loc_name) — на случай отсутствия ключа в JSON.
 			lbl.text = String(loc.get("name", loc_name))
-			UIFonts.apply(lbl, UIFonts.art(LABEL_FONT))
+			UIFonts.apply(lbl, UIFonts.art(LABEL_FONT, LABEL_FONT_GAIN))
 			# Смена «Размера текста» меняет ширину — перецентрировать под маркером.
 			lbl.resized.connect(func() -> void: _layout_dirty = true)
 			lbl.add_theme_color_override("font_color", Color.WHITE)

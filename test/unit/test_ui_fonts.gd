@@ -27,6 +27,7 @@ func test_text_scales_display_capped() -> void:
 func test_art_scales_at_half_gain() -> void:
 	SettingsStore.text_scale = 1.3
 	assert_eq(UIFonts.px(UIFonts.art(20)), 23, "подпись на арте — вполсилы (+15 %)")
+	assert_eq(UIFonts.px(UIFonts.art(14, 1.0)), 18, "своя доля прироста — как текст")
 	SettingsStore.text_scale = 1.0
 	assert_eq(UIFonts.px(UIFonts.art(20)), 20)
 
