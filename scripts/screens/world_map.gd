@@ -106,7 +106,7 @@ func _ready() -> void:
 	# Игровая музыка — основной трек, общий для всех экранов, кроме выбора
 	# сыщика (там picker сам ставит TRACK_NO_CHOICE). Придя из лобби, где
 	# играл NO_CHOICE, MusicManager переключит трек обратно на основной.
-	MusicManager.play(MusicManager.TRACK_ELDER_SIGN)
+	MusicManager.play(MusicManager.TRACK_MAIN_THEME)
 
 	# На карте мира декоративная рамка лишняя (карта — основная игровая сцена,
 	# UI поверх неё в виде GamePanel/LocationSidebar). Возвращаем при выходе.

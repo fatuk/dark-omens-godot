@@ -8,10 +8,11 @@ extends Node
 ## создаёт шину (если ещё нет) и подтягивает значение из settings.cfg.
 ##
 ## Использование:
-##   MusicManager.play(MusicManager.TRACK_ELDER_SIGN)
+##   MusicManager.play(MusicManager.TRACK_MAIN_THEME)
 ##   MusicManager.set_volume(0.7)
 
-const TRACK_ELDER_SIGN: AudioStream = preload("res://assets/audio/music/Elder  sign.ogg")
+# Основная тема: меню и карта мира. Прежняя («Elder  sign.ogg») пока не используется.
+const TRACK_MAIN_THEME: AudioStream = preload("res://assets/audio/music/dark-omens-main-theme.ogg")
 const TRACK_NO_CHOICE: AudioStream = preload("res://assets/audio/music/No choice.ogg")
 
 const BUS_NAME := "Music"
@@ -34,7 +35,7 @@ func _ready() -> void:
 	_player.name = "Player"
 	_player.bus = BUS_NAME
 	add_child(_player)
-	_ensure_loop(TRACK_ELDER_SIGN)
+	_ensure_loop(TRACK_MAIN_THEME)
 	_ensure_loop(TRACK_NO_CHOICE)
 	# SettingsStore зарегистрирован раньше нас в [autoload], так что его поля
 	# уже загружены из cfg к моменту нашего _ready.

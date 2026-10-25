@@ -29,7 +29,7 @@ var _current_email: String = ""
 
 
 func _ready() -> void:
-	MusicManager.play(MusicManager.TRACK_ELDER_SIGN)
+	MusicManager.play(MusicManager.TRACK_MAIN_THEME)
 	_apply_styles()
 	_wire_handlers()
 

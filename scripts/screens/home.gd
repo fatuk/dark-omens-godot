@@ -24,7 +24,7 @@ var _authors_modal: Control = null
 
 
 func _ready() -> void:
-	MusicManager.play(MusicManager.TRACK_ELDER_SIGN)
+	MusicManager.play(MusicManager.TRACK_MAIN_THEME)
 	_apply_styles()
 
 	_play_btn.pressed.connect(_on_play_pressed)

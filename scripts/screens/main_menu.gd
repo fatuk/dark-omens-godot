@@ -38,7 +38,7 @@ var _create_dialog: Control = null
 
 
 func _ready() -> void:
-	MusicManager.play(MusicManager.TRACK_ELDER_SIGN)
+	MusicManager.play(MusicManager.TRACK_MAIN_THEME)
 	# Вернулись в меню — чистим стейт прошлой партии (players/campaign/мифос…),
 	# иначе рудимент всплывает в новом лобби (сыщик «занято» и т.п.).
 	GameState.reset_session()
