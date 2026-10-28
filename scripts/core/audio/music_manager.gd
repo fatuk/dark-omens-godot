@@ -17,7 +17,7 @@ const TRACK_MAIN_THEME: AudioStream = preload("res://assets/audio/music/dark-ome
 const TRACK_NO_CHOICE: AudioStream = preload("res://assets/audio/music/No choice.ogg")
 
 const BUS_NAME := "Music"
-const FADE_SEC := 1.5  # кроссфейд при смене трека (и проявление из тишины)
+const FADE_SEC := 1.0  # кроссфейд при смене трека (и проявление из тишины)
 const _SILENT := 0.0001  # «ноль» линейной громкости плеера (−80 дБ)
 
 var volume: float = 0.5  # 0.0..1.0, линейная шкала (default override: SettingsStore.music_volume)
