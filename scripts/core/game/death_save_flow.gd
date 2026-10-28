@@ -14,10 +14,10 @@ extends RefCounted
 ##  - уже на −2 по нужному навыку → новый Порог = смерть без броска;
 ##  - провал → смерть.
 ##
-## Chunk 1: смерть помечается флагом players[pid].dead. Переход в Тень (оракул),
-## сброс состояний, +дум, кэш вещей, бюджет шёпотов — отдельные куски (§11 доки).
+## Смерть помечается флагом players[pid].dead (Тень-оракул) и двигает Рок на DEATH_DOOM.
 
 const SCAR_CAP := 2  # шрам навыка клампится в [−SCAR_CAP, +SCAR_CAP] (как SKILL_MOD_CAP)
+const DEATH_DOOM := 1  # смерть сыщика = +Рок (успешный спас дум не двигает)
 
 var _gs: Node
 var _pending_ghost_clues: int = 0  # host-only: улики Теней, ждущие ближайшего Мифа
@@ -168,7 +168,14 @@ func _die(pid: String) -> void:
 	p[PlayerKeys.CLUES] = 0
 	p[PlayerKeys.CLUE_IDS] = []
 	p[PlayerKeys.RESOURCES] = 0
-	if _all_dead() and String(_gs.outcome).is_empty():
+	# Смерть двигает Рок — общий кост гибели (docs/death-design.md §7). Дотянули до
+	# Часов Рока — поражение по думу (check_defeat ставит outcome один раз).
+	_gs.doom += DEATH_DOOM
+	GameConsole.log("[Смерть] Рок +%d" % DEATH_DOOM)
+	_gs._mystery.check_defeat()
+	if not String(_gs.outcome).is_empty():
+		pass  # партия уже окончена (Рок) — ход не крутим
+	elif _all_dead():
 		GameOutcome.finish(_gs, GameOutcome.DEFEAT, GameOutcome.DEAD)
 		GameConsole.log("[Смерть] Все сыщики погибли — поражение")
 	elif _gs.current_pid() == pid:

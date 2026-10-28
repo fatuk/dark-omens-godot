@@ -16,12 +16,15 @@ class Mock:
 	extends "res://test/unit/helpers/mock_game_state.gd"
 	var outcome: String = ""
 	var outcome_reason: String = ""
+	var doom: int = 0
 	var _check: CheckFlow
 	var _board: StubBoard
+	var _mystery: MysteryFlow
 
 	func _init() -> void:
 		_check = CheckFlow.new(self)
 		_board = StubBoard.new()
+		_mystery = MysteryFlow.new(self)
 
 
 # Заглушка BoardState: считает вызовы place_clue (для flush_ghost_clues).
@@ -269,6 +272,34 @@ func test_death_not_defeat_while_someone_alive() -> void:
 	_gs.players["ally"] = {"investigator": "", "skill_mods": {}, "hp": 6, "sanity": 6}
 	_ds.apply("p")  # p погиб, ally жив → не поражение
 	assert_eq(_gs.outcome, "", "жив хотя бы один сыщик — не поражение")
+
+
+func test_death_advances_doom() -> void:
+	_player({"hp": 0})
+	_save_slot("hp", false)
+	_gs.players["ally"] = {"investigator": "", "skill_mods": {}, "hp": 6, "sanity": 6}
+	_gs.doom = 3
+	_ds.apply("p")
+	assert_eq(_gs.doom, 3 + DeathSaveFlow.DEATH_DOOM, "смерть двигает Рок")
+
+
+func test_survive_does_not_advance_doom() -> void:
+	_player({"hp": 0})
+	_save_slot("hp", true)
+	_gs.doom = 3
+	_ds.apply("p")
+	assert_eq(_gs.doom, 3, "успешный спас Рок не двигает")
+
+
+func test_death_doom_reaching_clock_is_doom_defeat() -> void:
+	_player({"hp": 0})
+	_save_slot("hp", false)
+	_gs.players["ally"] = {"investigator": "", "skill_mods": {}, "hp": 6, "sanity": 6}
+	_gs.campaign = {"doomClock": 5}
+	_gs.doom = 4
+	_ds.apply("p")
+	assert_eq(_gs.outcome, "defeat")
+	assert_eq(_gs.outcome_reason, GameOutcome.DOOM, "причина — Рок дошёл до Часов")
 
 
 # ── смерть → состояние Тени (бюджет, сброс вещей) ─────────────────────────────
