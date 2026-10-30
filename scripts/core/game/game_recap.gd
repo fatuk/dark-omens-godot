@@ -134,7 +134,7 @@ func summary(gs: Object, now_ms: int = -1) -> Dictionary:
 		"rounds": int(gs.get("round_num")),
 		"doom": int(gs.get("doom")),
 		"doom_clock": int(campaign.get("doomClock", 0)),
-		"minutes": maxi(0, (end - _started_ms) / 60000) if _tracking else 0,
+		"minutes": maxi(0, floori((end - _started_ms) / 60000.0)) if _tracking else 0,
 		"mysteries_solved": mini(int(gs.get("active_mystery")), total),
 		"mysteries_total": total,
 		"players": rows,
