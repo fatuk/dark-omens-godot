@@ -10,6 +10,18 @@ extends RefCounted
 ## пользовательских аргументах командной строки — для локальной проверки).
 
 const GUEST_ID := "guest"
+const BOT_PREFIX := "bot-"  # id ботов за офлайн-столом: bot-1, bot-2…
+## Имена ботов (ключи перевода): «говорящие» — заводные механизмы эпохи, без слова «бот».
+const BOT_NAMES := [
+	"OFFLINE_BOT_TURK",
+	"OFFLINE_BOT_OSWALD",
+	"OFFLINE_BOT_AGATHA",
+	"OFFLINE_BOT_HECTOR",
+	"OFFLINE_BOT_ADA",
+	"OFFLINE_BOT_JACK",
+	"OFFLINE_BOT_PERCIVAL",
+	"OFFLINE_BOT_SPROCKET",
+]
 
 
 ## Идёт ли офлайн-сессия (транспорт локальный).
@@ -94,9 +106,11 @@ static func _seat_bots(nm: Node, count: int) -> void:
 	if transport == null:
 		return
 	var ids: Array = []
+	var names: Array = BOT_NAMES.duplicate()
+	names.shuffle()
 	for i: int in range(count):
-		var bid: String = "bot-%d" % (i + 1)
-		var bname: String = TranslationServer.translate("OFFLINE_BOT_NAME") % (i + 1)
+		var bid: String = BOT_PREFIX + str(i + 1)
+		var bname: String = TranslationServer.translate(String(names[i % names.size()]))
 		transport.call("add_virtual_player", bid, bname)
 		ids.append(bid)
 	var driver := BotDriver.new()

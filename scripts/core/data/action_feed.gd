@@ -42,7 +42,7 @@ static func delta_events(before: Dictionary, after: Dictionary) -> Array:
 		var tok: Array = tok_v
 		var d: int = int(after.get(tok[0], 0)) - int(before.get(tok[0], 0))
 		if d > 0:
-			out.append({"id": String(tok[1]), "params": {}})
+			out.append({"id": String(tok[1]), "params": {"amount": str(d)}})
 		elif d < 0:
 			out.append({"id": String(tok[2]), "params": {"amount": str(-d)}})
 	return out

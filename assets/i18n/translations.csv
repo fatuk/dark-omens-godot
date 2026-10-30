@@ -1653,6 +1653,32 @@ OUTCOME_FALLEN_BODY,"Последний сыщик пал. Некому боль
 OUTCOME_LOST_TITLE,Всё потеряно,All Is Lost
 OUTCOME_LOST_BODY,"Тьма взяла своё. Этот мир уже не спасти.","The darkness has claimed its due. This world can no longer be saved."
 OUTCOME_TO_MENU,В главное меню,To main menu
+OUTCOME_RECAP,Итоги партии,Game summary
+RECAP_HEADER,Итоги партии,Game summary
+RECAP_TILE_ROUNDS,раундов,rounds
+RECAP_TILE_DOOM,Рок,Doom
+RECAP_TILE_MYSTERIES,Тайн раскрыто,Mysteries solved
+RECAP_TILE_TIME,в игре,played
+RECAP_MINUTES_FMT,%d мин,%d min
+RECAP_STAT_KILLS,Повержено тварей,Monsters slain
+RECAP_STAT_CLUES,Найдено улик,Clues found
+RECAP_STAT_WOUNDS,Урона и ужаса,Damage and horror
+RECAP_STAT_ENCOUNTERS,Встреч,Encounters
+RECAP_STAT_SPELLS,Заклинаний,Spells cast
+RECAP_STAT_TRAVELS,Переходов,Journeys
+RECAP_SURVIVED,В строю до финала,Saw it through
+RECAP_FELL,Гибель в раунде %d,Fell in round %d
+RECAP_TITLE_HUNTER,Гроза чудовищ,Monster Bane
+RECAP_TITLE_SCHOLAR,Ищейка,Bloodhound
+RECAP_TITLE_MARTYR,Живой щит,Living Shield
+RECAP_TITLE_MYSTIC,Глас заклятий,Voice of Spells
+RECAP_TITLE_WANDERER,Перекати-поле,Tumbleweed
+RECAP_MOMENTS,Ключевые моменты,Key moments
+RECAP_MOMENT_MYSTERY,Раунд %d — раскрыта Тайна «%s»,Round %d — the Mystery “%s” is solved
+RECAP_MOMENT_FALLEN,Раунд %d — %s покидает мир живых,Round %d — %s leaves the world of the living
+RECAP_DEMO_TITLE,Это была демо-версия,That was the demo
+RECAP_DEMO_BODY,"Полная версия Dark Omens уже в работе: больше Древних и Тайн, весь отряд из 55 сыщиков и игра с друзьями по сети. Её можно будет купить — следите за новостями на сайте игры.","The full version of Dark Omens is in the works: more Ancient Ones and Mysteries, all 55 investigators, and online play with friends. It will be available to buy — follow the news on the game's website."
+RECAP_DEMO_SITE,Сайт игры,Game website
 ,,
 TRAIT_SPELL,Заклинание,Spell
 SPELL_KIND_RITUAL,Ритуал,Ritual
@@ -2263,7 +2289,14 @@ LOGIN_ERR_OFFLINE_UNAVAILABLE,Офлайн-режим недоступен: не
 OFFLINE_GUEST_NAME,Гость,Guest
 OFFLINE_ROOM_NAME,Офлайн-партия,Offline game
 OFFLINE_LABEL,офлайн,offline
-OFFLINE_BOT_NAME,Бот %d,Bot %d
+OFFLINE_BOT_TURK,Механический Турок,The Mechanical Turk
+OFFLINE_BOT_OSWALD,Заводной Освальд,Clockwork Oswald
+OFFLINE_BOT_AGATHA,Латунная Агата,Brass Agatha
+OFFLINE_BOT_HECTOR,Граммофон Гектор,Gramophone Hector
+OFFLINE_BOT_ADA,Арифмометр Ада,Ada the Arithmometer
+OFFLINE_BOT_JACK,Пружинный Джек,Spring-heeled Jack
+OFFLINE_BOT_PERCIVAL,Медный Персиваль,Copper Percival
+OFFLINE_BOT_SPROCKET,Мистер Шестерёнкин,Mr. Sprocket
 VERB_RESTORE_MONSTER,монстр восстанавливает здоровье,the Monster recovers all Health
 VERB_TOUGHEN_MONSTER,монстр: стойкость +{amount} до конца партии,Monster: +{amount} Toughness for the rest of the game
 VERB_CHECK_MODIFIER,все проверки {amount},all tests {amount}

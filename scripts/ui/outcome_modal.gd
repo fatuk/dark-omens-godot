@@ -4,12 +4,15 @@ extends CanvasLayer
 ## (GameState.outcome_reason: Рок / колода Мифов / все погибли / эффект). Текст —
 ## концовка Древнего из CMS (GameOutcome). Показывается ВСЕМ по синкнутому outcome.
 ## Строится кодом (без .tscn), добавляется из world_map._build_outcome_modal.
+## «Итоги партии» открывают экран статистики (GameRecapModal) поверх.
 
 var _backdrop: ColorRect
 var _panel: PanelContainer
 var _title: Label
 var _body: Label
 var _btn: Button
+var _recap_btn: Button
+var _recap: CanvasLayer
 var _shown_for: String = ""  # за какой outcome:причина модалка уже показана
 
 
@@ -56,11 +59,25 @@ func _build() -> void:
 	vbox.add_child(_body)
 
 	UIStyle.separator(vbox)
-	_btn = UIStyle.button("OUTCOME_TO_MENU", UIColors.ACCENT)
+	var buttons := HBoxContainer.new()
+	buttons.name = "Buttons"
+	buttons.add_theme_constant_override("separation", 12)
+	vbox.add_child(buttons)
+	_recap_btn = UIStyle.button("OUTCOME_RECAP", UIColors.ACCENT)
+	_recap_btn.name = "RecapBtn"
+	_recap_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_recap_btn.pressed.connect(_open_recap)
+	buttons.add_child(_recap_btn)
+	_btn = UIStyle.button("OUTCOME_TO_MENU")
 	_btn.name = "MenuBtn"
 	_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_btn.pressed.connect(_go_menu)
-	vbox.add_child(_btn)
+	buttons.add_child(_btn)
+
+	_recap = load("res://scripts/ui/game_recap_modal.gd").new()
+	_recap.name = "GameRecapModal"
+	_recap.connect("menu_requested", _go_menu)
+	add_child(_recap)
 
 	_backdrop.visible = false
 
@@ -85,6 +102,10 @@ func _refresh() -> void:
 	_body.text = tr(GameOutcome.body_text(ao, o, reason))
 	SfxManager.play(SfxManager.SFX_MYTHOS_START)  # тревожный аккорд финала
 	UIStyle.modal_set_visible(_backdrop, _panel, true)
+
+
+func _open_recap() -> void:
+	_recap.call("open")
 
 
 func _go_menu() -> void:

@@ -263,6 +263,8 @@ var _cond: ConditionFlow
 var _reckoning: ReckoningFlow
 var _board: BoardState
 var _mystery: MysteryFlow
+## Итоги партии (лента + вехи) для экрана «Итоги» — копятся на любом клиенте.
+var recap := GameRecap.new()
 var _rumor: RumorFlow
 var _target: TargetResolver
 var _spell: SpellFlow
@@ -310,6 +312,8 @@ func _ready() -> void:
 	_spell = SpellFlow.new(self)
 	_death = DeathSaveFlow.new(self)
 	_asset_action = AssetActionFlow.new(self)
+	action_announced.connect(recap.on_action)
+	state_changed.connect(func() -> void: recap.observe(self))
 	_build_action_registry()  # реестр relay-действий (модули уже созданы выше)
 	_nm.relay_received.connect(_on_relay_received)
 	_nm.player_left.connect(_on_player_left)
@@ -1484,6 +1488,7 @@ func reset_session() -> void:
 	campaign = {}
 	campaign_pending = false
 	_board.reset_clue_deck()  # чистит пул улик и вещи павших (наследство Теней)
+	recap.reset()
 	emit_changed()
 
 
