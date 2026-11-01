@@ -140,7 +140,7 @@ const C_GLYPH := Color(0.55, 0.48, 0.35)
 ## Описание крутится колесом/стиком только у карты не ниже стольких px на экране.
 const DESC_SCROLL_MIN_H := 400.0
 const DESC_WHEEL_STEP := 40.0  # px описания за щелчок колеса
-const _DESC_EASE := 14.0  # плавность колеса: доля пути к цели за секунду (экспонента)
+const _DESC_SMOOTH_TIME := 0.12  # плавность колеса: время доезда пружины, сек
 const _DESC_LABEL_H := 2000.0  # заведомо большая высота лейбла (любое описание влезет)
 const _DESC_BOTTOM_PAD := 4.0  # нижний запас, чтобы последняя строка не подрезалась
 
@@ -166,6 +166,7 @@ var _sub: Label
 var _desc: Label
 var _desc_offset: float = 0.0  # текущий сдвиг описания вверх (px), 0..overflow
 var _desc_target: float = 0.0  # куда плавно едет сдвиг (колесо); стик двигает сразу
+var _desc_vel: float = 0.0  # скорость доезда (px/сек) — переживает щелчки подряд
 var _art: TextureRect
 var _art_fill: ColorRect
 var _glyph: Label
@@ -443,6 +444,7 @@ func _reset_desc_scroll() -> void:
 	set_process(false)
 	_desc_offset = 0.0
 	_desc_target = 0.0
+	_desc_vel = 0.0
 	_apply_desc_offset()
 
 
@@ -481,6 +483,7 @@ func scroll_desc_by(px: float) -> bool:
 	set_process(false)  # стик ведёт сам — плавный доезд колеса не спорит с ним
 	_desc_offset = next
 	_desc_target = next
+	_desc_vel = 0.0
 	_apply_desc_offset()
 	return true
 
@@ -500,12 +503,21 @@ func scroll_desc_smooth(px: float) -> bool:
 	return true
 
 
-# Доезд описания к цели колеса (экспоненциальное сглаживание, не зависит от FPS).
+# Доезд описания к цели колеса — критически демпфированная пружина (SmoothDamp): скорость
+# сохраняется между щелчками, поэтому серия щелчков — одно непрерывное движение без
+# рывков. Последний пиксель добиваем сразу: элементы выравниваются по целым пикселям,
+# и ползущий субпиксельный хвост выглядел бы как «стоит — прыгнул».
 func _process(delta: float) -> void:
-	var k: float = 1.0 - exp(-_DESC_EASE * delta)
-	_desc_offset = lerpf(_desc_offset, _desc_target, k)
-	if absf(_desc_target - _desc_offset) < 0.5:
+	var omega: float = 2.0 / _DESC_SMOOTH_TIME
+	var x: float = omega * delta
+	var decay: float = 1.0 / (1.0 + x + 0.48 * x * x + 0.235 * x * x * x)
+	var change: float = _desc_offset - _desc_target
+	var temp: float = (_desc_vel + omega * change) * delta
+	_desc_vel = (_desc_vel - omega * temp) * decay
+	_desc_offset = _desc_target + (change + temp) * decay
+	if absf(_desc_target - _desc_offset) < 1.0 and absf(_desc_vel) < 20.0:
 		_desc_offset = _desc_target
+		_desc_vel = 0.0
 		set_process(false)
 	_apply_desc_offset()
 
