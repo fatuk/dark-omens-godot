@@ -22,7 +22,6 @@ const STAGE := Vector2(1920, 1080)
 
 const _BG: Texture2D = preload("res://assets/game-stats/bg.png")
 const _BORDER: Texture2D = preload("res://assets/game-stats/investigator-border.png")
-const _DIVIDER: Texture2D = preload("res://assets/virtues-panel/divider.png")
 
 # Зоны фона в координатах STAGE (замерены по bg.png, рисуемому в 1920×1080).
 const _TILES := [
@@ -40,8 +39,9 @@ const _CARDS := [
 const _MOMENTS := Rect2(233, 735, 778, 201)
 const _MOMENTS_TEXT_W := 520.0  # правее — нарисованная сцена с культистами
 const _PROMO := Rect2(1028, 735, 660, 201)
-const _PROMO_TEXT_W := 420.0  # правее — нарисованный замок под луной
+const _PROMO_TEXT_W := 450.0  # правее — нарисованный замок под луной
 const _BUTTON := Rect2(730, 958, 460, 52)
+const _BUTTONS_DEMO := [Rect2(600, 958, 350, 52), Rect2(970, 958, 350, 52)]  # меню · сайт
 const _MAX_MOMENTS := 4
 
 const _PLATE := Color(0.06, 0.05, 0.04, 0.88)  # тёмная плашка шапки карточки
@@ -106,8 +106,19 @@ func _rebuild(s: Dictionary) -> void:
 		_ending()
 	var btn: Button = UIStyle.button("OUTCOME_TO_MENU", UIColors.ACCENT)
 	btn.name = "MenuBtn"
-	_place(btn, _BUTTON)
 	btn.pressed.connect(func() -> void: menu_requested.emit())
+	if not Demo.active():
+		_place(btn, _BUTTON)
+		return
+	# Демо: рядом — переход на сайт игры, главный призыв промо: золотой и крупнее,
+	# «В главное меню» рядом приглушена.
+	btn.add_theme_color_override("font_color", UIColors.TEXT)
+	_place(btn, _BUTTONS_DEMO[0])
+	var site: Button = UIStyle.button("RECAP_DEMO_SITE", UIColors.ACCENT)
+	site.name = "SiteBtn"
+	UIFonts.apply(site, UIFonts.art(20))
+	site.pressed.connect(func() -> void: OS.shell_open(SITE_URL))
+	_place(site, _BUTTONS_DEMO[1])
 
 
 # Заголовок и «Древний · исход» в цвет результата — в тёмном проёме вверху фона.
@@ -211,25 +222,44 @@ func _card(p: Dictionary, r: Rect2, node_name: String) -> void:
 	root.add_child(v)
 	v.add_child(_card_plate(p))
 
-	var grid := GridContainer.new()
-	grid.name = "Stats"
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 10)
-	grid.add_theme_constant_override("v_separation", 5)
-	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	v.add_child(grid)
+	var list := VBoxContainer.new()
+	list.name = "Stats"
+	list.add_theme_constant_override("separation", 5)
+	list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	v.add_child(list)
 	var stats: Dictionary = p["stats"]
 	for c: String in GameRecap.COUNTERS:
+		# «Повержено тварей ........ 2» — название, точечное отточие, число.
+		var row := HBoxContainer.new()
+		row.name = "Row_" + c
+		row.add_theme_constant_override("separation", 6)
+		list.add_child(row)
 		var k: Label = UIStyle.label("RECAP_STAT_" + c.to_upper(), UIFonts.art(22), _INK)
-		k.name = "Key_" + c
-		k.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		k.clip_text = true
-		grid.add_child(k)
+		k.name = "Key"
+		row.add_child(k)
+		row.add_child(_leader())
 		var n: Label = UIStyle.label(
 			str(int(stats.get(c, 0))), UIFonts.art(22), _INK, HORIZONTAL_ALIGNMENT_RIGHT
 		)
-		n.name = "Val_" + c
-		grid.add_child(n)
+		n.name = "Val"
+		row.add_child(n)
+
+
+# Точечное отточие между названием строки и числом: тянется на всю свободную ширину,
+# точки — по базовой линии текста.
+func _leader() -> Control:
+	var dots := Control.new()
+	dots.name = "Leader"
+	dots.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dots.draw.connect(
+		func() -> void:
+			var y: float = dots.size.y * 0.72
+			var x: float = 2.0
+			while x < dots.size.x - 2.0:
+				dots.draw_circle(Vector2(x, y), 1.3, Color(_INK, 0.7))
+				x += 7.0
+	)
+	return dots
 
 
 # Тёмная плашка шапки: портрет в рамке, сыщик, игрок, судьба; снизу титул.
@@ -277,18 +307,16 @@ func _card_plate(p: Dictionary) -> PanelContainer:
 	fate.name = "Fate"
 	who.add_child(fate)
 
-	# Строка титула есть всегда (без титула — одни разделители): шапки карточек
-	# одной высоты, строки статистики на одном уровне.
-	var row := HBoxContainer.new()
+	# Титул между орнаментальными шевронами. Строка есть всегда (без титула — одни
+	# шевроны): шапки карточек одной высоты, строки статистики на одном уровне.
+	var row: HBoxContainer = UIStyle.ornate_title(String(p["title"]), UIFonts.art(15))
 	row.name = "TitleRow"
-	row.add_theme_constant_override("separation", 8)
+	row.add_theme_constant_override("separation", 10)
+	(row.get_node("Title") as Label).uppercase = true
+	for ch: String in ["ChevronL", "ChevronR"]:
+		var chev: TextureRect = row.get_node(ch)
+		chev.custom_minimum_size = chev.texture.get_size() * 0.4
 	v.add_child(row)
-	row.add_child(_divider("DividerL"))
-	var badge: Label = UIStyle.label(String(p["title"]), UIFonts.art(15), UIColors.ACCENT)
-	badge.name = "Title"
-	badge.uppercase = true
-	row.add_child(badge)
-	row.add_child(_divider("DividerR"))
 	return plate
 
 
@@ -313,18 +341,6 @@ func _portrait_frame(inv_name: String) -> Control:
 	border.size = _PORTRAIT
 	frame.add_child(border)
 	return frame
-
-
-func _divider(node_name: String) -> TextureRect:
-	var d := TextureRect.new()
-	d.name = node_name
-	d.texture = _DIVIDER
-	d.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	d.stretch_mode = TextureRect.STRETCH_SCALE
-	d.custom_minimum_size = Vector2(0, 3)
-	d.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	d.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	return d
 
 
 func _empty_seat(r: Rect2, node_name: String) -> void:
@@ -358,39 +374,56 @@ func _moments(moments: Array) -> void:
 			var p: Dictionary = GameState.players.get(m["pid"], {})
 			var inv: String = tr(Investigators.display_name(String(p.get("investigator", ""))))
 			text = tr("RECAP_MOMENT_FALLEN") % [int(m["round"]), inv]
+		var row := HBoxContainer.new()
+		row.name = "Moment"
+		row.add_theme_constant_override("separation", 10)
+		box.add_child(row)
+		row.add_child(_bullet())
 		var lbl: Label = UIStyle.label(text, UIFonts.art(20), UIColors.TEXT)
-		lbl.name = "Moment"
+		lbl.name = "Text"
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		lbl.clip_text = true
 		lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-		box.add_child(lbl)
+		row.add_child(lbl)
 	if moments.is_empty():
 		var none: Label = UIStyle.label("—", UIFonts.BODY, UIColors.MUTED)
 		none.name = "None"
 		box.add_child(none)
 
 
-# Демо: полная версия в работе — ссылка на сайт игры.
+# Булет строки момента — золотой ромбик (глиф «•» в шрифте карточек слишком мелкий).
+func _bullet() -> Control:
+	var dot := Control.new()
+	dot.name = "Bullet"
+	dot.custom_minimum_size = Vector2(10, 10)
+	dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	dot.draw.connect(
+		func() -> void:
+			var c: Vector2 = dot.size / 2
+			var r: float = 4.5
+			dot.draw_colored_polygon(
+				PackedVector2Array(
+					[c + Vector2(0, -r), c + Vector2(r, 0), c + Vector2(0, r), c + Vector2(-r, 0)]
+				),
+				UIColors.ACCENT
+			)
+	)
+	return dot
+
+
+# Демо: полная версия в работе (кнопка «Сайт игры» — рядом с «В главное меню»).
 func _promo() -> void:
 	var box := VBoxContainer.new()
 	box.name = "Promo"
 	box.add_theme_constant_override("separation", 4)
-	_place(box, Rect2(_PROMO.position + Vector2(26, 14), Vector2(_PROMO_TEXT_W, 176)))
-	var head: Label = UIStyle.label("RECAP_DEMO_TITLE", UIFonts.art(20), UIColors.ACCENT)
+	_place(box, Rect2(_PROMO.position + Vector2(26, 14), Vector2(_PROMO_TEXT_W, 180)))
+	var head: Label = UIStyle.label("RECAP_DEMO_TITLE", UIFonts.art(24), UIColors.ACCENT)
 	head.name = "PromoTitle"
 	box.add_child(head)
-	var body: Label = UIStyle.label("RECAP_DEMO_BODY", UIFonts.art(18), UIColors.TEXT)
+	var body: Label = UIStyle.label("RECAP_DEMO_BODY", UIFonts.art(21), UIColors.TEXT)
 	body.name = "PromoBody"
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(body)
-	var site := LinkButton.new()
-	site.name = "SiteLink"
-	site.text = "RECAP_DEMO_SITE"
-	site.underline = LinkButton.UNDERLINE_MODE_ALWAYS
-	site.add_theme_color_override("font_color", UIColors.ACCENT)
-	site.add_theme_color_override("font_hover_color", UIColors.TEXT_BRIGHT)
-	UIFonts.apply(site, UIFonts.art(18))
-	site.pressed.connect(func() -> void: OS.shell_open(SITE_URL))
-	box.add_child(site)
 
 
 # Вне демо: на месте промо — концовка Древнего (тот же текст, что в финальной модалке).
@@ -398,14 +431,14 @@ func _ending() -> void:
 	var box := VBoxContainer.new()
 	box.name = "Ending"
 	box.add_theme_constant_override("separation", 4)
-	_place(box, Rect2(_PROMO.position + Vector2(26, 14), Vector2(_PROMO_TEXT_W, 176)))
-	var head: Label = UIStyle.label("RECAP_ENDING", UIFonts.art(20), UIColors.ACCENT)
+	_place(box, Rect2(_PROMO.position + Vector2(26, 14), Vector2(_PROMO_TEXT_W, 180)))
+	var head: Label = UIStyle.label("RECAP_ENDING", UIFonts.art(24), UIColors.ACCENT)
 	head.name = "EndingTitle"
 	box.add_child(head)
 	var ao: Dictionary = GameState.campaign.get("ancientOne", {})
 	var body: Label = UIStyle.label(
 		tr(GameOutcome.body_text(ao, GameState.outcome, GameState.outcome_reason)),
-		UIFonts.art(18),
+		UIFonts.art(21),
 		UIColors.TEXT
 	)
 	body.name = "EndingBody"
