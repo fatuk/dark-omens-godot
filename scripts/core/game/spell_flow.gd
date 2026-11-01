@@ -690,15 +690,23 @@ static func _chain(first: Callable, second: Callable) -> Callable:
 ## Хост: выдать заклинание сыщику (board-verb gainSpell). spell_id пустой →
 ## случайная копия из колоды; иначе — копия ИМЕННО этого заклинания (любой из его
 ## оборотов). Копий не осталось (все в руках) — карта не выдаётся, как в настолке.
-func grant_spell(pid: String, spell_id: String = "", want_type: String = "") -> void:
+## force (консоль) — нет копии → лишняя копия мимо колоды. true — карта выдана.
+func grant_spell(
+	pid: String, spell_id: String = "", want_type: String = "", force: bool = false
+) -> bool:
 	if not _gs.is_host() or not _gs.players.has(pid):
-		return
-	if not spell_id.is_empty() and SpellCatalog.by_id(spell_id).is_empty():
-		return
+		return false
+	var spell: Dictionary = SpellCatalog.by_id(spell_id)
+	if not spell_id.is_empty() and spell.is_empty():
+		return false
 	var copy: Dictionary = _take_copy(spell_id, want_type)
+	if copy.is_empty() and force and not spell_id.is_empty():
+		# Консоль: заклинания нет в пуле стола (чужой сезон) или все копии на руках —
+		# выдаём лишнюю копию со случайным оборотом мимо колоды.
+		copy = {"id": spell_id, "back": String(SpellCatalog.random_back(spell).get("id", ""))}
 	if copy.is_empty():
 		GameConsole.log("[Заклинание] копий «%s» не осталось" % (spell_id if spell_id else "?"))
-		return
+		return false
 	var p: Dictionary = _gs.players[pid]
 	var items: Array = p.get("items", [])
 	items.append({"id": String(copy["id"]), "kind": "spell", "back": String(copy["back"])})
@@ -706,6 +714,7 @@ func grant_spell(pid: String, spell_id: String = "", want_type: String = "") -> 
 	GameConsole.log(
 		"[Заклинание] %s получил «%s» (%s)" % [_gs.name_of(pid), copy["id"], copy["back"]]
 	)
+	return true
 
 
 # ── Колода копий ─────────────────────────────────────────────────────────────

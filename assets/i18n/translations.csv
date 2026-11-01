@@ -1853,12 +1853,16 @@ RECKONING_ROLL_TITLE,Бросок в Расплате,Reckoning Roll
 RECKONING_ROLL_NONE,Без последствий.,No effect.
 SUPPLY_TITLE,Запасы,Supplies
 SUPPLY_TAB_ASSETS,Активы,Assets
+SUPPLY_TAB_SPELLS,Заклинания,Spells
 SUPPLY_TAB_GATES,Врата,Gates
 SUPPLY_TAB_CLUES,Улики,Clues
 SUPPLY_TAB_MONSTERS,Монстры,Monsters
-SUPPLY_IN_DECK,В колоде: %d,In deck: %d
-SUPPLY_IN_DISCARD,В сбросе: %d,In discard: %d
-SUPPLY_EMPTY,Сброс пуст,Discard is empty
+SUPPLY_SEC_DECK,В колоде · %d,In deck · %d
+SUPPLY_SEC_PLAY,В игре · %d,In play · %d
+SUPPLY_SEC_DISCARD,Сброс · %d,Discard · %d
+SUPPLY_SEC_BAG,В мешке · %d,In the cup · %d
+SUPPLY_SEC_BOARD,На поле · %d,On the board · %d
+SUPPLY_EMPTY,Здесь пусто,Nothing here
 SUPPLY_MONSTERS_HINT,У монстров сброса нет: побеждённый сразу возвращается в мешок.,Monsters have no discard: a defeated monster goes straight back to the cup.
 SUPPLY_BTN,Запасы,Supplies
 MONSTER_CHOICE_AT,%s · %s · здоровье %d/%d,%s · %s · health %d/%d

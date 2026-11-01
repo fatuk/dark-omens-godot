@@ -22,7 +22,9 @@ static func give_spell(gs: Node, pid: String, spell_id: String) -> String:
 		return "нет игрока «%s»" % pid
 	if SpellCatalog.by_id(spell_id).is_empty():
 		return "нет заклинания «%s»" % spell_id
-	(gs.get("_spell") as SpellFlow).grant_spell(pid, spell_id)
+	# force: в обход колоды и сезонов стола — консоль выдаёт любое заклинание.
+	if not (gs.get("_spell") as SpellFlow).grant_spell(pid, spell_id, "", true):
+		return "заклинание «%s» не выдано" % spell_id
 	gs.broadcast_and_emit()
 	return "заклинание «%s» → %s" % [spell_id, String(gs.name_of(pid))]
 

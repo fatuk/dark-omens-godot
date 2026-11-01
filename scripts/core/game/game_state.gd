@@ -964,6 +964,11 @@ func asset_discard_ids() -> Array:
 	return _shop.discard_ids()
 
 
+## Сброс заклинаний (копии {id, back}): все копии минус руки минус колода. Делегат.
+func spell_discard_copies() -> Array:
+	return _spell._discarded_copies()
+
+
 ## Дотянуть витрину магазина, если она пуста (партии до появления резерва). Делегат.
 func ensure_shop_reserve() -> void:
 	_shop.ensure()
