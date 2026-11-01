@@ -23,6 +23,7 @@ const SITE_URL := "https://dark-omens.world"
 const STAGE := Vector2(1920, 1080)
 
 const _BG: Texture2D = preload("res://assets/game-stats/bg.png")
+const _EMBER_SHADER: Shader = preload("res://assets/shaders/ember_heat.gdshader")
 const _BORDER: Texture2D = preload("res://assets/game-stats/investigator-border.png")
 
 # Зоны фона в координатах STAGE (замерены по bg.png, рисуемому в 1920×1080).
@@ -125,6 +126,7 @@ func _rebuild(s: Dictionary) -> void:
 
 
 # Искры костра: поднимаются от низа экрана, медленно гаснут из жёлтого в багровый.
+# Шейдер ember_heat: вокруг каждой искры фон дрожит, как раскалённый воздух.
 func _embers() -> CPUParticles2D:
 	var p := CPUParticles2D.new()
 	p.name = "Embers"
@@ -156,14 +158,14 @@ func _embers() -> CPUParticles2D:
 	ramp.add_point(0.08, Color(1.0, 0.75, 0.3, 1.0))
 	ramp.add_point(0.55, Color(0.95, 0.35, 0.08, 0.8))
 	p.color_ramp = ramp
-	p.texture = _ember_texture()
-	var mat := CanvasItemMaterial.new()
-	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	p.texture = _ember_texture()  # задаёт размер квада: ядро + зона марева вокруг
+	var mat := ShaderMaterial.new()
+	mat.shader = _EMBER_SHADER
 	p.material = mat
 	return p
 
 
-# Мягкая круглая искра: яркое ядро и тёплое гало.
+# Квад искры (содержимое не важно — шейдер рисует ядро и марево сам, по UV).
 static func _ember_texture() -> GradientTexture2D:
 	var g := Gradient.new()
 	g.set_color(0, Color(1, 1, 1, 1))
@@ -174,8 +176,8 @@ static func _ember_texture() -> GradientTexture2D:
 	t.fill = GradientTexture2D.FILL_RADIAL
 	t.fill_from = Vector2(0.5, 0.5)
 	t.fill_to = Vector2(1.0, 0.5)
-	t.width = 20
-	t.height = 20
+	t.width = 48
+	t.height = 48
 	return t
 
 
