@@ -583,7 +583,7 @@ func _input(event: InputEvent) -> void:
 		if dir != 0.0:
 			var card := active_card() as GameCard
 			if card != null:
-				card.scroll_desc_by(dir * GameCard.DESC_WHEEL_STEP)
+				card.scroll_desc_smooth(dir * GameCard.DESC_WHEEL_STEP)
 			get_viewport().set_input_as_handled()  # колесо под веером карту не зумит
 
 

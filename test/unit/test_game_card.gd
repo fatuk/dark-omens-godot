@@ -64,8 +64,14 @@ func test_wheel_scrolls_desc_of_large_card() -> void:
 	await get_tree().process_frame
 	assert_true(card.is_desc_scrollable(), "крупная карта крутится")
 	_wheel(card, true)
-	assert_gt(card._desc_offset, 0.0, "колесо вниз сдвинуло описание")
+	assert_gt(card._desc_target, 0.0, "колесо вниз задало цель прокрутки")
+	card._process(0.016)
+	assert_gt(card._desc_offset, 0.0, "описание поехало к цели")
+	assert_lt(card._desc_offset, card._desc_target, "плавно, а не прыжком")
+	card._process(2.0)
+	assert_almost_eq(card._desc_offset, card._desc_target, 0.01, "доехало до цели")
 	_wheel(card, false)
+	card._process(2.0)
 	assert_almost_eq(card._desc_offset, 0.0, 0.01, "колесо вверх вернуло к началу")
 
 

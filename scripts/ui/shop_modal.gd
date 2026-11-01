@@ -636,10 +636,10 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 			var mb := ev as InputEventMouseButton
 			if mb != null and mb.pressed:
 				if mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-					card.scroll_desc_by(GameCard.DESC_WHEEL_STEP)
+					card.scroll_desc_smooth(GameCard.DESC_WHEEL_STEP)
 					hit.accept_event()
 				elif mb.button_index == MOUSE_BUTTON_WHEEL_UP:
-					card.scroll_desc_by(-GameCard.DESC_WHEEL_STEP)
+					card.scroll_desc_smooth(-GameCard.DESC_WHEEL_STEP)
 					hit.accept_event()
 	)
 

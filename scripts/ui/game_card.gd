@@ -139,7 +139,8 @@ const C_GLYPH := Color(0.55, 0.48, 0.35)
 # выше центра скроллит вверх, ниже вниз, по центру стоит; линейно к краям.
 ## Описание крутится колесом/стиком только у карты не ниже стольких px на экране.
 const DESC_SCROLL_MIN_H := 400.0
-const DESC_WHEEL_STEP := 28.0  # px описания за щелчок колеса
+const DESC_WHEEL_STEP := 40.0  # px описания за щелчок колеса
+const _DESC_EASE := 14.0  # плавность колеса: доля пути к цели за секунду (экспонента)
 const _DESC_LABEL_H := 2000.0  # заведомо большая высота лейбла (любое описание влезет)
 const _DESC_BOTTOM_PAD := 4.0  # нижний запас, чтобы последняя строка не подрезалась
 
@@ -164,6 +165,7 @@ var _title: Label
 var _sub: Label
 var _desc: Label
 var _desc_offset: float = 0.0  # текущий сдвиг описания вверх (px), 0..overflow
+var _desc_target: float = 0.0  # куда плавно едет сдвиг (колесо); стик двигает сразу
 var _art: TextureRect
 var _art_fill: ColorRect
 var _glyph: Label
@@ -323,6 +325,7 @@ func _build() -> void:
 	_clue_sub.visible = false
 	cs_zone.add_child(_clue_sub)
 	resized.connect(_fit_clue)
+	set_process(false)  # покадрово — только пока описание доезжает за колесом
 
 
 ## Заполнить карту. Поля: cost, title, subtitle?, desc, art? (Texture2D),
@@ -430,13 +433,15 @@ func _gui_input(event: InputEvent) -> void:
 		dir = 1.0
 	elif mb.button_index == MOUSE_BUTTON_WHEEL_UP:
 		dir = -1.0
-	if dir != 0.0 and is_desc_scrollable() and scroll_desc_by(dir * DESC_WHEEL_STEP):
+	if dir != 0.0 and is_desc_scrollable() and scroll_desc_smooth(dir * DESC_WHEEL_STEP):
 		accept_event()
 
 
 # Новый текст — описание к началу.
 func _reset_desc_scroll() -> void:
+	set_process(false)
 	_desc_offset = 0.0
+	_desc_target = 0.0
 	_apply_desc_offset()
 
 
@@ -472,9 +477,36 @@ func scroll_desc_by(px: float) -> bool:
 	var next: float = clampf(_desc_offset + px, 0.0, overflow)
 	if is_equal_approx(next, _desc_offset):
 		return false
+	set_process(false)  # стик ведёт сам — плавный доезд колеса не спорит с ним
 	_desc_offset = next
+	_desc_target = next
 	_apply_desc_offset()
 	return true
+
+
+## Плавно прокрутить описание на px (+ вниз) — колесо мыши: сдвигаем цель, а сам текст
+## доезжает до неё в _process. Щелчки подряд копятся в одну плавную прокрутку.
+## false — ехать некуда (влезает или цель уже у края).
+func scroll_desc_smooth(px: float) -> bool:
+	var overflow: float = desc_overflow()
+	if overflow <= 0.0:
+		return false
+	var next: float = clampf(_desc_target + px, 0.0, overflow)
+	if is_equal_approx(next, _desc_target):
+		return false
+	_desc_target = next
+	set_process(true)
+	return true
+
+
+# Доезд описания к цели колеса (экспоненциальное сглаживание, не зависит от FPS).
+func _process(delta: float) -> void:
+	var k: float = 1.0 - exp(-_DESC_EASE * delta)
+	_desc_offset = lerpf(_desc_offset, _desc_target, k)
+	if absf(_desc_target - _desc_offset) < 0.5:
+		_desc_offset = _desc_target
+		set_process(false)
+	_apply_desc_offset()
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
