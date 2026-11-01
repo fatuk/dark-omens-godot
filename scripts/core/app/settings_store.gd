@@ -44,7 +44,7 @@ var guide_seen: Array = []
 # Иконки кнопок геймпада: "auto" — по подключённому контроллеру, либо принудительно
 # xbox | playstation | nintendo (см. InputDevice.family).
 var pad_glyphs: String = "auto"
-# «Размер текста»: множитель читаемого текста (UIFonts.SCALES — 1.0 / 1.15 / 1.3).
+# «Размер текста»: множитель читаемого текста (UIFonts.SCALES — 1.0 / 1.3).
 var text_scale: float = 1.0
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
@@ -203,5 +203,7 @@ func _load() -> void:
 	show_fps = bool(cfg.get_value("game", "show_fps", false))
 	guide_hints = bool(cfg.get_value("game", "guide_hints", true))
 	pad_glyphs = String(cfg.get_value("game", "pad_glyphs", "auto"))
-	text_scale = float(cfg.get_value("display", "text_scale", 1.0))
+	# Ступени было три (1.0 / 1.15 / 1.3): любое «крупнее обычного» — теперь крупный.
+	var ts: float = float(cfg.get_value("display", "text_scale", 1.0))
+	text_scale = 1.0 if ts <= 1.0 else float(UIFonts.SCALES[-1])
 	guide_seen = (cfg.get_value("guide", "seen", []) as Array).duplicate()

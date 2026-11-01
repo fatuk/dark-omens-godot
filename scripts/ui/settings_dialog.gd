@@ -250,7 +250,7 @@ func _build_text_size_row() -> void:
 	var lbl := _form_label("FORM_TEXT_SIZE")
 	lbl.name = "TextSizeLabel"
 	row.add_child(lbl)
-	var names: Array[String] = ["TEXT_SIZE_NORMAL", "TEXT_SIZE_LARGE", "TEXT_SIZE_XL"]
+	var names: Array[String] = ["TEXT_SIZE_NORMAL", "TEXT_SIZE_LARGE"]
 	_text_option = UIStyle.option_button(names)
 	_text_option.name = "TextSizeOption"
 	_size_option(_text_option)
