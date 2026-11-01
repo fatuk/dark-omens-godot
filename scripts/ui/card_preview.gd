@@ -126,8 +126,8 @@ func _rebuild() -> void:
 	card.size = Vector2(full_w, _BUILD_H)
 	card.pivot_offset = Vector2.ZERO
 	card.scale = Vector2(scale_f, scale_f)
-	# PASS: клик по карте уходит в Root (закрытие), а наведение на неё крутит длинное
-	# описание своим скроллом GameCard.
+	# PASS: клик по карте уходит в Root (закрытие), а колесо над ней крутит длинное
+	# описание (GameCard._gui_input).
 	card.mouse_filter = Control.MOUSE_FILTER_PASS
 	# Размеры шрифтов в GameCard откалиброваны под карту веера (CARD_W). Строим шире
 	# эталона — значит и шрифт тянем во столько же раз, иначе текст на крупной карте
@@ -145,6 +145,11 @@ func close() -> void:
 	tw.chain().tween_callback(queue_free)
 
 
+# Закрываем кликом (левой/правой кнопкой) — НЕ колесом: колесо крутит длинное описание,
+# а у его края карта отпускает событие сюда, и просмотр закрывался посреди чтения.
 func _on_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and (event as InputEventMouseButton).pressed:
+	var mb := event as InputEventMouseButton
+	if mb == null or not mb.pressed:
+		return
+	if mb.button_index == MOUSE_BUTTON_LEFT or mb.button_index == MOUSE_BUTTON_RIGHT:
 		close()
