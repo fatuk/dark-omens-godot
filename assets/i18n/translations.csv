@@ -1668,11 +1668,6 @@ RECAP_STAT_SPELLS,Заклинаний,Spells cast
 RECAP_STAT_TRAVELS,Переходов,Journeys
 RECAP_SURVIVED,В строю до финала,Saw it through
 RECAP_FELL,Гибель в раунде %d,Fell in round %d
-RECAP_TITLE_HUNTER,Гроза чудовищ,Monster Bane
-RECAP_TITLE_SCHOLAR,Ищейка,Bloodhound
-RECAP_TITLE_MARTYR,Живой щит,Living Shield
-RECAP_TITLE_MYSTIC,Глас заклятий,Voice of Spells
-RECAP_TITLE_WANDERER,Перекати-поле,Tumbleweed
 RECAP_MOMENTS,Ключевые моменты,Key moments
 RECAP_MOMENT_MYSTERY,Раунд %d — раскрыта Тайна «%s»,Round %d — the Mystery “%s” is solved
 RECAP_MOMENT_FALLEN,Раунд %d — %s покидает мир живых,Round %d — %s leaves the world of the living

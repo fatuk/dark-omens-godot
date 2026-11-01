@@ -8,7 +8,7 @@ extends CanvasLayer
 ## контейнерами, а прямоугольниками в координатах сцены 1920×1080 (STAGE), которые
 ## совпадают с нарисованными зонами; сцена центрируется на экране.
 ##   • плитки: Рок · раунды · Тайны · время;
-##   • пергаменты: карточка сыщика (тёмная плашка с портретом, титул, счётчики);
+##   • пергаменты: карточка сыщика (тёмная плашка с портретом, счётчики);
 ##     пустой пергамент — «Свободное место»; больше трёх сыщиков — свой ряд карточек
 ##     поверх всех трёх пергаментов (фон рассчитан на трёх);
 ##   • слева внизу — ключевые моменты; справа — промо полной версии (демо) или
@@ -110,9 +110,7 @@ func _rebuild(s: Dictionary) -> void:
 	if not Demo.active():
 		_place(btn, _BUTTON)
 		return
-	# Демо: рядом — переход на сайт игры, главный призыв промо: золотой и крупнее,
-	# «В главное меню» рядом приглушена.
-	btn.add_theme_color_override("font_color", UIColors.TEXT)
+	# Демо: рядом — переход на сайт игры, главный призыв промо: текст крупнее.
 	_place(btn, _BUTTONS_DEMO[0])
 	var site: Button = UIStyle.button("RECAP_DEMO_SITE", UIColors.ACCENT)
 	site.name = "SiteBtn"
@@ -262,7 +260,7 @@ func _leader() -> Control:
 	return dots
 
 
-# Тёмная плашка шапки: портрет в рамке, сыщик, игрок, судьба; снизу титул.
+# Тёмная плашка шапки: портрет в рамке, сыщик, игрок, судьба.
 func _card_plate(p: Dictionary) -> PanelContainer:
 	var plate := PanelContainer.new()
 	plate.name = "Plate"
@@ -307,16 +305,6 @@ func _card_plate(p: Dictionary) -> PanelContainer:
 	fate.name = "Fate"
 	who.add_child(fate)
 
-	# Титул между орнаментальными шевронами. Строка есть всегда (без титула — одни
-	# шевроны): шапки карточек одной высоты, строки статистики на одном уровне.
-	var row: HBoxContainer = UIStyle.ornate_title(String(p["title"]), UIFonts.art(15))
-	row.name = "TitleRow"
-	row.add_theme_constant_override("separation", 10)
-	(row.get_node("Title") as Label).uppercase = true
-	for ch: String in ["ChevronL", "ChevronR"]:
-		var chev: TextureRect = row.get_node(ch)
-		chev.custom_minimum_size = chev.texture.get_size() * 0.4
-	v.add_child(row)
 	return plate
 
 

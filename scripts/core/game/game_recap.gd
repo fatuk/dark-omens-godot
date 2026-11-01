@@ -7,17 +7,6 @@ extends RefCounted
 ## получают через реле), поэтому итоги одинаково работают онлайн, офлайн и в демо,
 ## без сервера. Транзиентно: на диск не пишем, сброс — со стартом новой партии.
 
-## Титулы: [ключ перевода, счётчик]. Каждый титул — одному сыщику (максимум > 0,
-## при равенстве — кто раньше в очереди хода), у сыщика не больше одного титула.
-## Порядок = приоритет.
-const TITLES := [
-	["RECAP_TITLE_HUNTER", "kills"],
-	["RECAP_TITLE_SCHOLAR", "clues"],
-	["RECAP_TITLE_MARTYR", "wounds"],
-	["RECAP_TITLE_MYSTIC", "spells"],
-	["RECAP_TITLE_WANDERER", "travels"],
-]
-
 ## Счётчики сыщика (порядок = порядок строк на карточке итогов).
 const COUNTERS := ["kills", "clues", "wounds", "encounters", "spells", "travels"]
 
@@ -95,7 +84,7 @@ func observe(gs: Object, now_ms: int = -1) -> void:
 
 ## Сводка для экрана итогов:
 ##   {rounds, doom, doom_clock, minutes, mysteries_solved, mysteries_total,
-##    players: [{pid, name, investigator, bot, dead, fell_round, stats, title}],
+##    players: [{pid, name, investigator, bot, dead, fell_round, stats}],
 ##    moments: [{round, kind: "mystery"|"fallen", index?, pid?}]}
 func summary(gs: Object, now_ms: int = -1) -> Dictionary:
 	var now: int = Time.get_ticks_msec() if now_ms < 0 else now_ms
@@ -118,11 +107,9 @@ func summary(gs: Object, now_ms: int = -1) -> Dictionary:
 					"dead": bool(p.get(PlayerKeys.DEAD, false)),
 					"fell_round": int(_fell.get(pid, 0)),
 					"stats": _stats_of(pid).duplicate(),
-					"title": "",
 				}
 			)
 		)
-	_assign_titles(rows)
 	var moments: Array = []
 	for s_v: Variant in _solved:
 		var s: Dictionary = s_v
@@ -158,18 +145,3 @@ func _order(gs: Object) -> Array:
 		if not out.has(pid_v):
 			out.append(pid_v)
 	return out
-
-
-static func _assign_titles(rows: Array) -> void:
-	for t_v: Variant in TITLES:
-		var t: Array = t_v
-		var best: Dictionary = {}
-		var best_n: int = 0
-		for r_v: Variant in rows:
-			var r: Dictionary = r_v
-			var n: int = int((r["stats"] as Dictionary).get(t[1], 0))
-			if String(r["title"]).is_empty() and n > best_n:
-				best = r
-				best_n = n
-		if not best.is_empty():
-			best["title"] = t[0]

@@ -1,7 +1,7 @@
 extends GutTest
 
 ## Итоги партии (scripts/core/game/game_recap.gd): счётчики из ленты действий,
-## вехи из стейта (гибель, решённые Тайны), титулы и сброс между партиями.
+## вехи из стейта (гибель, решённые Тайны) и сброс между партиями.
 
 var _gs: Mock
 var _r: GameRecap
@@ -93,20 +93,6 @@ func test_minutes_freeze_at_outcome() -> void:
 		_r.summary(_gs, 90 * 60000)["minutes"], 25, "время — до финала, а не до открытия итогов"
 	)
 	assert_eq(_r.summary(_gs, 0)["doom_clock"], 15)
-
-
-func test_titles_one_per_investigator() -> void:
-	_r.on_action("me", "combat_won", {})
-	_r.on_action("me", "got_clue", {"amount": "5"})
-	_r.on_action("bot-1", "got_clue", {"amount": "1"})
-	var s: Dictionary = _r.summary(_gs, 0)
-	assert_eq(_row(s, "me")["title"], "RECAP_TITLE_HUNTER")
-	assert_eq(_row(s, "bot-1")["title"], "RECAP_TITLE_SCHOLAR", "второй титул — следующему")
-
-
-func test_no_title_for_zero() -> void:
-	var s: Dictionary = _r.summary(_gs, 0)
-	assert_eq(_row(s, "me")["title"], "")
 
 
 func test_new_game_resets() -> void:
