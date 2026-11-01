@@ -8,7 +8,7 @@ extends CanvasLayer
 ## контейнерами, а прямоугольниками в координатах сцены 1920×1080 (STAGE), которые
 ## совпадают с нарисованными зонами; сцена центрируется на экране.
 ##   • плитки: Рок · раунды · Тайны · время;
-##   • пергаменты: карточка сыщика (портрет, сыщик, игрок, судьба, титул, счётчики);
+##   • пергаменты: карточка сыщика (тёмная плашка с портретом, титул, счётчики);
 ##     пустой пергамент — «Свободное место»; больше трёх сыщиков — свой ряд карточек
 ##     поверх всех трёх пергаментов (фон рассчитан на трёх);
 ##   • слева внизу — ключевые моменты; справа — промо полной версии (демо) или
@@ -23,8 +23,6 @@ const STAGE := Vector2(1920, 1080)
 const _BG: Texture2D = preload("res://assets/game-stats/bg.png")
 const _BORDER: Texture2D = preload("res://assets/game-stats/investigator-border.png")
 const _DIVIDER: Texture2D = preload("res://assets/virtues-panel/divider.png")
-const _ICON_MYSTERY: Texture2D = preload("res://assets/map/mystery-icon.png")
-const _ICON_FALLEN: Texture2D = preload("res://assets/player-hud/health-icon.png")
 
 # Зоны фона в координатах STAGE (замерены по bg.png, рисуемому в 1920×1080).
 const _TILES := [
@@ -46,11 +44,8 @@ const _PROMO_TEXT_W := 420.0  # правее — нарисованный зам
 const _BUTTON := Rect2(730, 958, 460, 52)
 const _MAX_MOMENTS := 4
 
-# Чернила шапки карточки на пергаменте.
-const _INK_NAME := Color(0.38, 0.16, 0.07)  # имя сыщика и титул — бурая киноварь
-const _INK_SOFT := Color(UIColors.INK, 0.8)
-const _INK_ALIVE := Color(0.13, 0.38, 0.16)
-const _INK_DEAD := Color(0.55, 0.09, 0.07)
+const _PLATE := Color(0.06, 0.05, 0.04, 0.88)  # тёмная плашка шапки карточки
+const _INK := Color(0.07, 0.05, 0.03)  # строки статистики — чёрные чернила на пергаменте
 const _PORTRAIT := Vector2(117, 113)  # рамка портрета @2× — в половину натурального
 
 var _backdrop: ColorRect
@@ -214,7 +209,7 @@ func _card(p: Dictionary, r: Rect2, node_name: String) -> void:
 	v.name = "VBox"
 	v.add_theme_constant_override("separation", 6)
 	root.add_child(v)
-	v.add_child(_card_head(p))
+	v.add_child(_card_plate(p))
 
 	var grid := GridContainer.new()
 	grid.name = "Stats"
@@ -225,23 +220,31 @@ func _card(p: Dictionary, r: Rect2, node_name: String) -> void:
 	v.add_child(grid)
 	var stats: Dictionary = p["stats"]
 	for c: String in GameRecap.COUNTERS:
-		var k: Label = UIStyle.label("RECAP_STAT_" + c.to_upper(), UIFonts.art(19), UIColors.INK)
+		var k: Label = UIStyle.label("RECAP_STAT_" + c.to_upper(), UIFonts.art(22), _INK)
 		k.name = "Key_" + c
 		k.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		k.clip_text = true
 		grid.add_child(k)
 		var n: Label = UIStyle.label(
-			str(int(stats.get(c, 0))), UIFonts.art(19), UIColors.INK, HORIZONTAL_ALIGNMENT_RIGHT
+			str(int(stats.get(c, 0))), UIFonts.art(22), _INK, HORIZONTAL_ALIGNMENT_RIGHT
 		)
 		n.name = "Val_" + c
 		grid.add_child(n)
 
 
-# Шапка карточки прямо на пергаменте: портрет в рамке, сыщик, игрок, судьба; снизу титул.
-func _card_head(p: Dictionary) -> VBoxContainer:
+# Тёмная плашка шапки: портрет в рамке, сыщик, игрок, судьба; снизу титул.
+func _card_plate(p: Dictionary) -> PanelContainer:
+	var plate := PanelContainer.new()
+	plate.name = "Plate"
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = _PLATE
+	sb.set_corner_radius_all(2)
+	sb.set_content_margin_all(8)
+	plate.add_theme_stylebox_override("panel", sb)
 	var v := VBoxContainer.new()
-	v.name = "Head"
-	v.add_theme_constant_override("separation", 6)
+	v.name = "VBox"
+	v.add_theme_constant_override("separation", 4)
+	plate.add_child(v)
 
 	var head := HBoxContainer.new()
 	head.name = "Row"
@@ -255,12 +258,12 @@ func _card_head(p: Dictionary) -> VBoxContainer:
 	who.add_theme_constant_override("separation", 0)
 	head.add_child(who)
 	var inv: Label = UIStyle.label(
-		tr(Investigators.display_name(String(p["investigator"]))), UIFonts.art(22), _INK_NAME
+		tr(Investigators.display_name(String(p["investigator"]))), UIFonts.art(22), UIColors.ACCENT
 	)
 	inv.name = "Investigator"
 	inv.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	who.add_child(inv)
-	var player: Label = UIStyle.label(String(p["name"]), UIFonts.art(18), _INK_SOFT)
+	var player: Label = UIStyle.label(String(p["name"]), UIFonts.art(18), UIColors.TEXT)
 	player.name = "Player"
 	player.clip_text = true
 	who.add_child(player)
@@ -268,7 +271,9 @@ func _card_head(p: Dictionary) -> VBoxContainer:
 	var fate_txt: String = tr("RECAP_SURVIVED")
 	if dead:
 		fate_txt = tr("RECAP_FELL") % maxi(1, int(p["fell_round"]))
-	var fate: Label = UIStyle.label(fate_txt, UIFonts.art(18), _INK_DEAD if dead else _INK_ALIVE)
+	var fate: Label = UIStyle.label(
+		fate_txt, UIFonts.art(18), UIColors.ERROR if dead else UIColors.SUCCESS
+	)
 	fate.name = "Fate"
 	who.add_child(fate)
 
@@ -279,12 +284,12 @@ func _card_head(p: Dictionary) -> VBoxContainer:
 	row.add_theme_constant_override("separation", 8)
 	v.add_child(row)
 	row.add_child(_divider("DividerL"))
-	var badge: Label = UIStyle.label(String(p["title"]), UIFonts.art(15), _INK_NAME)
+	var badge: Label = UIStyle.label(String(p["title"]), UIFonts.art(15), UIColors.ACCENT)
 	badge.name = "Title"
 	badge.uppercase = true
 	row.add_child(badge)
 	row.add_child(_divider("DividerR"))
-	return v
+	return plate
 
 
 func _portrait_frame(inv_name: String) -> Control:
@@ -343,7 +348,6 @@ func _moments(moments: Array) -> void:
 	for m_v: Variant in moments.slice(0, _MAX_MOMENTS):
 		var m: Dictionary = m_v
 		var text: String
-		var icon_tex: Texture2D = _ICON_MYSTERY
 		if m["kind"] == "mystery":
 			var idx: int = int(m["index"])
 			var mt: String = ""
@@ -351,27 +355,14 @@ func _moments(moments: Array) -> void:
 				mt = String((mysteries[idx] as Dictionary).get("title", ""))
 			text = tr("RECAP_MOMENT_MYSTERY") % [int(m["round"]), mt]
 		else:
-			icon_tex = _ICON_FALLEN
 			var p: Dictionary = GameState.players.get(m["pid"], {})
 			var inv: String = tr(Investigators.display_name(String(p.get("investigator", ""))))
 			text = tr("RECAP_MOMENT_FALLEN") % [int(m["round"]), inv]
-		var row := HBoxContainer.new()
-		row.name = "Moment"
-		row.add_theme_constant_override("separation", 10)
-		box.add_child(row)
-		var icon := TextureRect.new()
-		icon.name = "Icon"
-		icon.texture = icon_tex
-		icon.custom_minimum_size = Vector2(28, 28)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		row.add_child(icon)
 		var lbl: Label = UIStyle.label(text, UIFonts.art(20), UIColors.TEXT)
-		lbl.name = "Text"
-		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lbl.name = "Moment"
 		lbl.clip_text = true
 		lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-		row.add_child(lbl)
+		box.add_child(lbl)
 	if moments.is_empty():
 		var none: Label = UIStyle.label("—", UIFonts.BODY, UIColors.MUTED)
 		none.name = "None"
