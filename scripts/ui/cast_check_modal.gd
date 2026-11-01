@@ -346,23 +346,31 @@ func _build_choices(dec: Dictionary) -> void:
 	prompt.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_zone("PromptZone", _Z_PROMPT).add_child(prompt)
 
-	var grid := GridContainer.new()
-	grid.name = "Choices"
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 12)
-	grid.add_theme_constant_override("v_separation", 6)
-	grid.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_zone("ChoicesZone", _Z_CHOICES).add_child(grid)
+	# Ряды по две кнопки; нечётный последний вариант — по центру, той же ширины.
+	var gap := 12.0
+	var col_w: float = (_sheet.custom_minimum_size.x * _Z_CHOICES.size.x - gap) / 2.0
+	var rows := VBoxContainer.new()
+	rows.name = "Choices"
+	rows.add_theme_constant_override("separation", 6)
+	rows.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_zone("ChoicesZone", _Z_CHOICES).add_child(rows)
 	var options: Array = dec.get("options", [])
+	var row: HBoxContainer = null
 	for i in range(options.size()):
+		if i % 2 == 0:
+			row = HBoxContainer.new()
+			row.name = "Row%d" % floori(i / 2.0)
+			row.alignment = BoxContainer.ALIGNMENT_CENTER
+			row.add_theme_constant_override("separation", int(gap))
+			rows.add_child(row)
 		var opt: Dictionary = options[i] if options[i] is Dictionary else {}
 		var btn: Button = UIStyle.button(_DecisionModal.option_label(opt, kind), UIColors.ACCENT)
 		btn.name = "ChoiceBtn%d" % i
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.custom_minimum_size.x = col_w
 		btn.disabled = not bool(opt.get("_affordable", true))  # ветка не по карману
 		var idx: int = i
 		btn.pressed.connect(func() -> void: _on_pick(idx))
-		grid.add_child(btn)
+		row.add_child(btn)
 
 
 func _on_pick(index: int) -> void:
