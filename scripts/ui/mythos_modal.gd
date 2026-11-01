@@ -68,6 +68,7 @@ var _review: bool = false
 
 
 func _ready() -> void:
+	add_to_group(UIFonts.SCALE_LISTENERS)  # «Размер текста» — шрифты на месте
 	add_to_group("mythos_modal")  # панель тюнинга переприменяет раскладку на лету
 	UIStyle.style_modal_panel(_panel)
 	_build()
@@ -145,6 +146,11 @@ func _build() -> void:
 
 ## Применить настраиваемые размеры/тень к собранному окну. Зовёт и панель тюнинга
 ## (группа "mythos_modal") — правка видна сразу, без пересборки.
+## Сменили «Размер текста» — пересчитать шрифты открытого окна.
+func refresh_text_scale() -> void:
+	apply_tuning()
+
+
 func apply_tuning() -> void:
 	if not is_instance_valid(_art_pane):
 		return

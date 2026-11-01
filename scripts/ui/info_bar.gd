@@ -506,7 +506,7 @@ func _make_token(icon_tex: Texture2D, count: int) -> Control:
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hb.add_child(icon)
 
-	var lbl := UIStyle.label("×%d" % count, 20, UIColors.VALUE)
+	var lbl := UIStyle.label("×%d" % count, UIFonts.art(20), UIColors.VALUE)
 	lbl.name = "Count"
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hb.add_child(lbl)
@@ -608,13 +608,13 @@ func _make_attr_box(label_key: String, field: String) -> Control:
 	val_row.custom_minimum_size.y = 36
 	col.add_child(val_row)
 
-	var val := UIStyle.label("—", 26, UIColors.VALUE, HORIZONTAL_ALIGNMENT_CENTER)
+	var val := UIStyle.label("—", UIFonts.art(26), UIColors.VALUE, HORIZONTAL_ALIGNMENT_CENTER)
 	val.name = "Num"
 	val.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	val_row.add_child(val)
 	_attr_value_lbls[field] = val
 
-	var mod := UIStyle.label("", 14, UIColors.SUCCESS, HORIZONTAL_ALIGNMENT_LEFT)
+	var mod := UIStyle.label("", UIFonts.art(14), UIColors.SUCCESS, HORIZONTAL_ALIGNMENT_LEFT)
 	mod.name = "Mod"
 	mod.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	mod.visible = false

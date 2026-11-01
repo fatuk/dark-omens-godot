@@ -222,7 +222,7 @@ func _menu_item(key: String, on_press: Callable) -> Button:
 	b.custom_minimum_size = Vector2(_MENU_W - 40.0, _ITEM_H)
 	b.focus_mode = Control.FOCUS_ALL
 	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	b.add_theme_font_size_override("font_size", _ITEM_FS)
+	UIFonts.apply(b, UIFonts.art(_ITEM_FS))
 	b.add_theme_color_override("font_color", UIColors.TEXT)
 	for st: String in ["font_hover_color", "font_focus_color", "font_pressed_color"]:
 		b.add_theme_color_override(st, UIColors.ACCENT)

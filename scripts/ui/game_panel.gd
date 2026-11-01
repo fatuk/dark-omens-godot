@@ -45,6 +45,7 @@ var _pad_trigger: bool = false  # курок был зажат в прошлом
 
 
 func _ready() -> void:
+	UIFonts.adopt_scene_sizes(self, UIFonts.ART_GAIN)  # размеры из сцены — на «Размер текста»: фаза и имя на арте панели — вполсилы
 	_info.mouse_filter = Control.MOUSE_FILTER_STOP
 	_info.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_info.gui_input.connect(_on_info_gui_input)

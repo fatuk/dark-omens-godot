@@ -327,6 +327,7 @@ func _build() -> void:
 	_clue_sub.visible = false
 	cs_zone.add_child(_clue_sub)
 	resized.connect(_fit_clue)
+	_apply_font_sizes()  # с учётом «Размера текста» с самого начала
 	set_process(false)  # покадрово — только пока описание доезжает за колесом
 
 
@@ -589,7 +590,7 @@ func _fit_title() -> void:
 	if avail <= 0.0:
 		return
 	var font: Font = _title.get_theme_font("font")
-	var fs_max: int = _fs(FS_TITLE)
+	var fs_max: int = _fs_art(FS_TITLE)
 	var fs_min: int = maxi(1, int(round(float(fs_max) * FS_TITLE_MIN_RATIO)))
 	var fs: int = fs_max
 	while (
@@ -602,9 +603,14 @@ func _fit_title() -> void:
 
 # Размер шрифта = база × текущий масштаб контента (округлённо).
 # Описание — читаемый текст: растёт с «Размером текста» (UIFonts), не влезает —
-# прокручивается. Название/подзаголовок/цена — на арте, фиксированы.
+# прокручивается. Название/подзаголовок/цена — на арте: растут вполсилы (узкие
+# полосы рамки), длинное название ещё и ужимается (_fit_title).
 func _fs_desc(base: int) -> int:
 	return int(round(_fs(base) * UIFonts.scale()))
+
+
+func _fs_art(base: int) -> int:
+	return int(round(_fs(base) * UIFonts.art_scale()))
 
 
 func _fs(base: int) -> int:
@@ -630,17 +636,17 @@ func refresh_text_scale() -> void:
 
 
 func _apply_font_sizes() -> void:
-	_cost.add_theme_font_size_override("font_size", _fs(FS_COST))
-	_title.add_theme_font_size_override("font_size", _fs(FS_TITLE))
+	_cost.add_theme_font_size_override("font_size", _fs_art(FS_COST))
+	_title.add_theme_font_size_override("font_size", _fs_art(FS_TITLE))
 	_fit_title()
-	_sub.add_theme_font_size_override("font_size", _fs(FS_SUB))
+	_sub.add_theme_font_size_override("font_size", _fs_art(FS_SUB))
 	_desc.add_theme_font_size_override(
 		"font_size", _fs_desc(FS_CLUE_DESC if _layout == "clue" else FS_DESC)
 	)
 	_glyph.add_theme_font_size_override("font_size", _fs(FS_GLYPH))
 	_message.add_theme_font_size_override("font_size", _fs(FS_MSG))
-	_clue_title.add_theme_font_size_override("font_size", _fs(FS_CLUE_TITLE))
-	_clue_sub.add_theme_font_size_override("font_size", _fs(FS_CLUE_SUB))
+	_clue_title.add_theme_font_size_override("font_size", _fs_art(FS_CLUE_TITLE))
+	_clue_sub.add_theme_font_size_override("font_size", _fs_art(FS_CLUE_SUB))
 	_fit_clue()
 
 

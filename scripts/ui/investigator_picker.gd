@@ -127,7 +127,7 @@ func _load_investigators() -> void:
 
 
 func _build_ui() -> void:
-	var title := UIStyle.ornate_title("LOBBY_PICK_HEADER", 28, UIColors.ACCENT)
+	var title := UIStyle.ornate_title("LOBBY_PICK_HEADER", UIFonts.art(28), UIColors.ACCENT)
 	title.name = "TitleRow"
 	_root.add_child(title)
 	_carousel = InvestigatorCarousel.new()

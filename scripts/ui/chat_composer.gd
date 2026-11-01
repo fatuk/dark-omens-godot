@@ -63,7 +63,7 @@ func _build_preview() -> void:
 	_preview_panel.scale = Vector2(0.5, 0.5)
 	_preview_panel.resized.connect(_recenter_preview)
 	add_child(_preview_panel)
-	_preview = UIStyle.label("…", 84, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_preview = UIStyle.label("…", UIFonts.art(84), UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	_preview.name = "Preview"
 	_preview.custom_minimum_size = Vector2(1040, 0)
 	_preview.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

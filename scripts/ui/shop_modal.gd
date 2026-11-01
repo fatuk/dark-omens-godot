@@ -296,7 +296,7 @@ func _build() -> void:
 	_build_3d_scene()
 
 	# ── Шапка ── орнаментальный заголовок (шеврон · МАГАЗИН · шеврон) + подпись.
-	var title := UIStyle.ornate_title("SHOP_TITLE", 34, UIColors.ACCENT)
+	var title := UIStyle.ornate_title("SHOP_TITLE", UIFonts.art(34), UIColors.ACCENT)
 	title.name = "Title"
 	_stage.add_child(title)
 	_chrome.append({"node": title, "fx": 0.2, "fy": 0.045, "fw": 0.6, "fh": 0.06})
@@ -363,7 +363,7 @@ func _build() -> void:
 		_build_asset_card(offer[i], i, offer.size())
 
 	# ── Низ прилавка: монеты ──
-	_coins_lbl = UIStyle.label("", 17, UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
+	_coins_lbl = UIStyle.label("", UIFonts.art(17), UIColors.WARNING, HORIZONTAL_ALIGNMENT_CENTER)
 	_coins_lbl.name = "Coins"
 	_stage.add_child(_coins_lbl)
 	_chrome.append({"node": _coins_lbl, "fx": 0.25, "fy": 0.715, "fw": 0.5, "fh": 0.04})

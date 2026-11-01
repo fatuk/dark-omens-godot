@@ -29,6 +29,7 @@ var _current_email: String = ""
 
 
 func _ready() -> void:
+	UIFonts.adopt_scene_sizes(self, 1.0)  # размеры из сцены — на «Размер текста»: поля и подписи — как обычный текст
 	MusicManager.play(MusicManager.TRACK_MAIN_THEME)
 	_apply_styles()
 	_wire_handlers()

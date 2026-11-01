@@ -106,7 +106,7 @@ func _init(
 	# вертикальное выравнивание иконок в ряду) ──
 	_badge = Label.new()
 	_badge.name = "Badge"
-	_badge.add_theme_font_size_override("font_size", _BADGE_FONT)
+	UIFonts.apply(_badge, UIFonts.art(_BADGE_FONT))
 	_badge.add_theme_color_override("font_color", UIColors.VALUE)
 	_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_badge.custom_minimum_size = Vector2(0, _BADGE_FONT + 8)
@@ -160,7 +160,7 @@ func _init(
 	vb.add_child(pc)
 	_plaque_lbl = Label.new()
 	_plaque_lbl.name = "Title"
-	_plaque_lbl.add_theme_font_size_override("font_size", _PLAQUE_FONT)
+	UIFonts.apply(_plaque_lbl, UIFonts.art(_PLAQUE_FONT))
 	_plaque_lbl.add_theme_color_override("font_color", _C_TEXT)
 	_plaque_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_plaque_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE

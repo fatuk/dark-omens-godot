@@ -138,7 +138,7 @@ func _build() -> void:
 	_clue.add_child(ci)
 	_clue_count = Label.new()
 	_clue_count.name = "ClueCount"
-	_clue_count.add_theme_font_size_override("font_size", 26)
+	UIFonts.apply(_clue_count, UIFonts.art(26))
 	_clue_count.add_theme_color_override("font_color", UIColors.VALUE)
 	_clue_count.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_clue_count.mouse_filter = Control.MOUSE_FILTER_IGNORE

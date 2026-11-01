@@ -22,6 +22,7 @@ const _SCRAMBLE_RUNES: int = 2  # сколько рун мелькает в ка
 
 
 func _ready() -> void:
+	UIFonts.adopt_scene_sizes(self, UIFonts.ART_GAIN)  # размеры из сцены — на «Размер текста»: номер раунда на арте — вполсилы
 	_apply_bold()
 	_label.text = label_text  # первый показ — мгновенно, без скрэмбла
 

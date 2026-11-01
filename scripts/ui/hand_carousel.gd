@@ -197,7 +197,7 @@ func _build_chrome() -> void:
 	_section_title = Label.new()
 	_section_title.name = "SectionTitle"
 	_section_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_section_title.add_theme_font_size_override("font_size", 28)
+	UIFonts.apply(_section_title, UIFonts.art(28))
 	_section_title.add_theme_color_override("font_color", UIColors.ACCENT)
 	_section_title.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	_section_title.mouse_filter = Control.MOUSE_FILTER_IGNORE

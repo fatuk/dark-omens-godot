@@ -68,7 +68,9 @@ func _build() -> void:
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bar.add_child(margin)
 
-	_label = UIStyle.label("TURN_BANNER_YOURS", 60, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_label = UIStyle.label(
+		"TURN_BANNER_YOURS", UIFonts.art(60), UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	_label.name = "Label"
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(_label)

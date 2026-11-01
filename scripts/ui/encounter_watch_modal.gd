@@ -106,6 +106,7 @@ var _dismissed: String = ""  # закрыта крестиком — до сле
 
 
 func _ready() -> void:
+	add_to_group(UIFonts.SCALE_LISTENERS)  # «Размер текста» — бланк пересчитывается
 	layer = 79  # под модалками проверок/Порога (86/87) и оверлеями Тени
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build()
@@ -294,8 +295,9 @@ func _bold_font() -> FontVariation:
 	return f
 
 
+# Надпись бланка: на арте — растёт с «Размером текста» вполсилы.
 func _ink_label(node_name: String, fs: int, align: int) -> Label:
-	var l := UIStyle.label("", fs, _INK, align)
+	var l := UIStyle.label("", UIFonts.art(fs), _INK, align)
 	l.name = node_name
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return l
@@ -523,15 +525,23 @@ func _outcome_bbcode(key: String, col: Color, text: String) -> String:
 	)
 
 
+## Сменили «Размер текста»: надписи бланка уже пересчитаны (токены), тело — вписать заново.
+func refresh_text_scale() -> void:
+	if is_instance_valid(_body) and _body.is_visible_in_tree():
+		_fit_text()
+
+
 # Высота бланка — по тексту; не влезает и в полный бланк — ужимаем шрифты тела.
 # reveal — исход только что появился: бланк растёт плавно, исход проявляется после.
 func _fit_text(reveal: bool = false) -> void:
-	var fs: int = _FS_BODY
+	var k: float = UIFonts.art_scale()
+	var fs: int = int(round(_FS_BODY * k))
+	var fs_min: int = int(round(_FS_MIN * k))
 	while true:
 		_text.add_theme_font_size_override("font_size", fs)
 		_setup.add_theme_font_size_override("font_size", fs)
 		_outcome_text.add_theme_font_size_override("normal_font_size", fs)
-		if _body.get_combined_minimum_size().y <= _BODY_RECT.size.y or fs <= _FS_MIN:
+		if _body.get_combined_minimum_size().y <= _BODY_RECT.size.y or fs <= fs_min:
 			break
 		fs -= 2
 	var target: float = sheet_height(_body.get_combined_minimum_size().y)

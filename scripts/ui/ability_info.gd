@@ -26,7 +26,7 @@ static func open(parent: Node, inv_name: String) -> void:
 			String(Investigators.ability(inv_name).get("name", "")), UIColors.ACCENT
 		)
 		use.name = "UseAbility"
-		use.add_theme_font_size_override("font_size", 19)  # читается как заголовок
+		UIFonts.apply(use, UIFonts.art(19))  # читается как заголовок
 		use.pressed.connect(
 			func() -> void:
 				modal.close()

@@ -160,12 +160,12 @@ func _build_badge() -> Control:
 	name_vb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(name_vb)
 
-	_name_lbl = UIStyle.label("", 26, UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	_name_lbl = UIStyle.label("", UIFonts.art(26), UIColors.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	_name_lbl.name = "Name"
 	_apply_card_text_shadow(_name_lbl)
 	name_vb.add_child(_name_lbl)
 
-	_occ_lbl = UIStyle.label("", 14, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	_occ_lbl = UIStyle.label("", UIFonts.art(14), UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	_occ_lbl.name = "Occupation"
 	_apply_card_text_shadow(_occ_lbl)
 	name_vb.add_child(_occ_lbl)
@@ -174,7 +174,7 @@ func _build_badge() -> Control:
 
 
 func _build_quote_label() -> Label:
-	var lbl := UIStyle.label("", 14, _QUOTE_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := UIStyle.label("", UIFonts.art(14), _QUOTE_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	lbl.name = "Quote"
 	lbl.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	lbl.offset_left = _QUOTE_OFFSET_X
@@ -197,7 +197,9 @@ func _build_taken_overlay() -> Control:
 	ov.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ov.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var lbl := UIStyle.label("PICKER_TAKEN", 32, UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
+	var lbl := UIStyle.label(
+		"PICKER_TAKEN", UIFonts.art(32), UIColors.DANGER, HORIZONTAL_ALIGNMENT_CENTER
+	)
 	lbl.name = "TakenLabel"
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

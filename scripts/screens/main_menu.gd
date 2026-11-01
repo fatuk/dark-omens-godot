@@ -38,6 +38,7 @@ var _create_dialog: Control = null
 
 
 func _ready() -> void:
+	UIFonts.adopt_scene_sizes(self, 1.0)  # размеры из сцены — на «Размер текста»: поля и подписи — как обычный текст
 	MusicManager.play(MusicManager.TRACK_MAIN_THEME)
 	# Вернулись в меню — чистим стейт прошлой партии (players/campaign/мифос…),
 	# иначе рудимент всплывает в новом лобби (сыщик «занято» и т.п.).

@@ -135,6 +135,23 @@ static func apply(ctrl: Control, size: Variant, max_w: float = 0.0) -> void:
 		_set_px(ctrl, int(size))
 
 
+## Множитель настройки для текста на арте: растёт вполсилы (gain), как UIFonts.art.
+## Для узлов, что считают размер сами (вписывание в рамку, ужатие по высоте).
+static func art_scale(gain: float = ART_GAIN) -> float:
+	return 1.0 + (scale() - 1.0) * gain
+
+
+## Размеры шрифта, заданные прямо в сцене (theme_override font_size), — на настройку
+## «Размер текста»: каждый такой узел под root получает токен art(свой размер, gain).
+## gain 1.0 — обычный текст (растёт как всё окно), меньше — подпись на арте.
+static func adopt_scene_sizes(root: Node, gain: float = 1.0) -> void:
+	for n: Node in root.find_children("*", "Control", true, false):
+		var c := n as Control
+		if c.is_in_group(GROUP) or not c.has_theme_font_size_override("font_size"):
+			continue
+		apply(c, art(c.get_theme_font_size("font_size"), gain))
+
+
 ## Пересчитать все узлы с токенами (смена настройки) — окна обновляются на месте.
 static func refresh_all(tree: SceneTree) -> void:
 	for n: Node in tree.get_nodes_in_group(GROUP):
