@@ -13,8 +13,6 @@ extends CanvasLayer
 ##     поверх всех трёх пергаментов (фон рассчитан на трёх);
 ##   • слева внизу — ключевые моменты; справа — промо полной версии (демо) или
 ##     концовка Древнего.
-## Между фоном и панелями летят искры костра: фон → искры → те же панели, вырезанные
-## из фона (AtlasTexture) поверх, → данные. Так искры уходят ЗА нарисованные панели.
 ## Строится кодом (без .tscn); содержимое пересобирается на каждый open().
 
 signal menu_requested
@@ -23,7 +21,6 @@ const SITE_URL := "https://dark-omens.world"
 const STAGE := Vector2(1920, 1080)
 
 const _BG: Texture2D = preload("res://assets/game-stats/bg.png")
-const _EMBER_SHADER: Shader = preload("res://assets/shaders/ember_heat.gdshader")
 const _BORDER: Texture2D = preload("res://assets/game-stats/investigator-border.png")
 
 # Зоны фона в координатах STAGE (замерены по bg.png, рисуемому в 1920×1080).
@@ -46,7 +43,6 @@ const _PROMO_TEXT_W := 450.0  # правее — нарисованный зам
 const _BUTTON := Rect2(730, 958, 460, 52)
 const _BUTTONS_DEMO := [Rect2(600, 958, 350, 52), Rect2(970, 958, 350, 52)]  # меню · сайт
 const _MAX_MOMENTS := 4
-const _EMBERS := 160  # искр одновременно
 
 const _PLATE := Color(0.06, 0.05, 0.04, 0.88)  # тёмная плашка шапки карточки
 const _INK := Color(0.07, 0.05, 0.03)  # строки статистики — чёрные чернила на пергаменте
@@ -99,8 +95,6 @@ func _rebuild(s: Dictionary) -> void:
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg.size = STAGE
 	_stage.add_child(bg)
-	_stage.add_child(_embers())
-	_panel_overlays()
 
 	_header()
 	_tiles(s)
@@ -123,83 +117,6 @@ func _rebuild(s: Dictionary) -> void:
 	UIFonts.apply(site, UIFonts.art(20))
 	site.pressed.connect(func() -> void: OS.shell_open(SITE_URL))
 	_place(site, _BUTTONS_DEMO[1])
-
-
-# Искры костра: поднимаются от низа экрана, медленно гаснут из жёлтого в багровый.
-# Шейдер ember_heat: вокруг каждой искры фон дрожит, как раскалённый воздух.
-func _embers() -> CPUParticles2D:
-	var p := CPUParticles2D.new()
-	p.name = "Embers"
-	p.amount = _EMBERS
-	p.lifetime = 9.0
-	p.preprocess = 9.0  # экран открывается уже с летящими искрами
-	p.position = Vector2(STAGE.x / 2, STAGE.y + 20)
-	p.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
-	p.emission_rect_extents = Vector2(STAGE.x / 2 + 60, 30)
-	p.direction = Vector2(0, -1)
-	p.spread = 22.0
-	p.gravity = Vector2(0, -12)
-	p.initial_velocity_min = 70.0
-	p.initial_velocity_max = 150.0
-	p.angular_velocity_min = -90.0
-	p.angular_velocity_max = 90.0
-	p.scale_amount_min = 0.4
-	p.scale_amount_max = 1.0
-	var curve := Curve.new()
-	curve.add_point(Vector2(0.0, 0.6))
-	curve.add_point(Vector2(0.15, 1.0))
-	curve.add_point(Vector2(1.0, 0.2))
-	p.scale_amount_curve = curve
-	var ramp := Gradient.new()
-	ramp.set_offset(0, 0.0)
-	ramp.set_color(0, Color(1.0, 0.85, 0.45, 0.0))
-	ramp.set_offset(1, 1.0)
-	ramp.set_color(1, Color(0.5, 0.08, 0.02, 0.0))
-	ramp.add_point(0.08, Color(1.0, 0.75, 0.3, 1.0))
-	ramp.add_point(0.55, Color(0.95, 0.35, 0.08, 0.8))
-	p.color_ramp = ramp
-	p.texture = _ember_texture()  # задаёт размер квада: ядро + зона марева вокруг
-	var mat := ShaderMaterial.new()
-	mat.shader = _EMBER_SHADER
-	p.material = mat
-	return p
-
-
-# Квад искры (содержимое не важно — шейдер рисует ядро и марево сам, по UV).
-static func _ember_texture() -> GradientTexture2D:
-	var g := Gradient.new()
-	g.set_color(0, Color(1, 1, 1, 1))
-	g.set_color(1, Color(1, 1, 1, 0))
-	g.add_point(0.3, Color(1, 1, 1, 1))
-	var t := GradientTexture2D.new()
-	t.gradient = g
-	t.fill = GradientTexture2D.FILL_RADIAL
-	t.fill_from = Vector2(0.5, 0.5)
-	t.fill_to = Vector2(1.0, 0.5)
-	t.width = 48
-	t.height = 48
-	return t
-
-
-# Нарисованные панели ещё раз поверх искр — вырезками того же фона.
-func _panel_overlays() -> void:
-	var k: float = _BG.get_size().x / STAGE.x
-	var zones: Array = []
-	zones.append_array(_TILES)
-	zones.append_array(_CARDS)
-	zones.append_array([_MOMENTS, _PROMO])
-	for i: int in zones.size():
-		var r: Rect2 = zones[i]
-		var atlas := AtlasTexture.new()
-		atlas.atlas = _BG
-		atlas.region = Rect2(r.position * k, r.size * k)
-		var piece := TextureRect.new()
-		piece.name = "PanelOverlay%d" % (i + 1)
-		piece.texture = atlas
-		piece.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		piece.stretch_mode = TextureRect.STRETCH_SCALE
-		piece.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_place(piece, r)
 
 
 # Заголовок и «Древний · исход» в цвет результата — в тёмном проёме вверху фона.
