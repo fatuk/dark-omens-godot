@@ -83,3 +83,20 @@ func test_wheel_ignores_small_card() -> void:
 	assert_false(card.is_desc_scrollable(), "мелкую карту не крутим")
 	_wheel(card, true)
 	assert_almost_eq(card._desc_offset, 0.0, 0.01, "колесо мелкую карту не сдвинуло")
+
+
+# Смена «Размера текста» в настройках пересчитывает описание уже построенной карты.
+func test_text_scale_setting_resizes_built_card() -> void:
+	var card: GameCard = _make_card("word ".repeat(40))
+	var lbl: Label = card.find_child("DescLabel", true, false)
+	var store: Node = get_tree().root.get_node("SettingsStore")
+	var was: float = float(store.get("text_scale"))
+	store.set("text_scale", 1.0)
+	UIFonts.refresh_all(get_tree())
+	var base_px: int = lbl.get_theme_font_size("font_size")
+	store.set("text_scale", 1.3)
+	UIFonts.refresh_all(get_tree())
+	var big_px: int = lbl.get_theme_font_size("font_size")
+	store.set("text_scale", was)
+	UIFonts.refresh_all(get_tree())
+	assert_gt(big_px, base_px, "крупнее в настройках — крупнее описание на карте")

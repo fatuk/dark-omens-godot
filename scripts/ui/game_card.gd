@@ -247,6 +247,7 @@ func _build() -> void:
 	_smoke.visible = false
 	smoke_zone.add_child(_smoke)
 	add_to_group("smoke_card")  # панель тюнинга пушит сюда uniform'ы
+	add_to_group(UIFonts.SCALE_LISTENERS)  # «Размер текста» — описание растёт на месте
 	refresh_smoke()
 
 	# Стоимость — в гербе сверху-слева.
@@ -605,6 +606,18 @@ func set_font_scale(s: float) -> void:
 	if is_equal_approx(_font_scale, s):
 		return
 	_font_scale = s
+	_apply_font_sizes()
+
+
+## Сменили «Размер текста» в настройках — пересчитать шрифты уже построенной карты
+## (зовёт UIFonts.refresh_all по группе UIFonts.SCALE_LISTENERS). Описание — к началу:
+## переполнение после смены размера другое.
+func refresh_text_scale() -> void:
+	_apply_font_sizes()
+	_reset_desc_scroll()
+
+
+func _apply_font_sizes() -> void:
 	_cost.add_theme_font_size_override("font_size", _fs(FS_COST))
 	_title.add_theme_font_size_override("font_size", _fs(FS_TITLE))
 	_fit_title()

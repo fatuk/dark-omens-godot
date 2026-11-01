@@ -68,6 +68,9 @@ const ART_GAIN: float = 0.5
 const FIT_MIN_PX: int = 12
 
 const GROUP := &"ui_font_token"
+## Узлы, что считают свои размеры сами (карты GameCard): на смену настройки им зовётся
+## refresh_text_scale().
+const SCALE_LISTENERS := &"ui_font_scale_listener"
 const _META_TOKEN := &"font_token"
 const _META_FIT := &"font_fit"
 const _ART_PREFIX := "art:"
@@ -141,6 +144,7 @@ static func refresh_all(tree: SceneTree) -> void:
 		_set_px(c, px(StringName(c.get_meta(_META_TOKEN))))
 		if c.has_meta(_META_FIT):
 			_refit(c)
+	tree.call_group(SCALE_LISTENERS, "refresh_text_scale")
 
 
 static func _set_px(ctrl: Control, n: int) -> void:
