@@ -13,6 +13,10 @@ extends CanvasLayer
 ## Бросок/перебросы — хост-авторитетны в active_check (owner="spell"); модалка лишь
 ## отражает синкнутое состояние (реактивно по state_changed).
 ##
+## Вопрос каста (driver "spell" в mythos_decision: навык на выбор, «X, иначе сбросьте
+## карту»…) задаётся здесь же, на листе: та же карта на круге, под ней — кнопки
+## вариантов вместо кубов. Ответ — MYTHOS_DECIDE, как в общей модалке решений.
+##
 ## Вид — «лист» по арту cards/spell/spell-cast.png (рамка, магический круг, стол со
 ## свечами): окно в пропорциях картинки, контент по её зонам (доли листа): заголовок
 ## наверху, крупная карта на круге, под ней кубы, у нижнего края кнопки.
@@ -24,6 +28,9 @@ const _CARD_H_FRAC: float = 0.535  # высота карты — доля выс
 const _Z_TITLE := Rect2(0.12, 0.038, 0.76, 0.06)  # посередине между орнаментом рамки и картой
 const _Z_DICE := Rect2(0.10, 0.665, 0.80, 0.165)  # сразу под картой
 const _Z_BUTTONS := Rect2(0.14, 0.86, 0.72, 0.085)  # у нижнего края
+const _Z_PROMPT := Rect2(0.12, 0.655, 0.76, 0.05)  # подсказка выбора — сразу под картой
+const _Z_CHOICES := Rect2(0.12, 0.71, 0.76, 0.235)  # варианты — на месте кубов и кнопок
+const _DecisionModal := preload("res://scripts/ui/mythos_decision_modal.gd")
 
 # Живые огни поверх нарисованных свечей (как в лавке): центр/размер — доли листа,
 # тёплый additive-глоу flame_glow мерцает и чуть пляшет; фазы разные — не в такт.
@@ -202,6 +209,16 @@ func _my_id() -> String:
 	return String(GameState.my_player().get("user_id", ""))
 
 
+# Вопрос каста этому игроку (иначе {}). Выбор клетки на карте — не здесь (MapPickPrompt).
+func _decision() -> Dictionary:
+	var d: Dictionary = GameState.mythos_decision
+	if not bool(d.get("active", false)) or String(d.get("driver", "")) != "spell":
+		return {}
+	if String(d.get("pid", "")) != _my_id() or not MapPickPrompt.decision().is_empty():
+		return {}
+	return d
+
+
 func _rolled() -> bool:
 	return bool(_chk().get("rolled", false))
 
@@ -219,29 +236,47 @@ func _reroll_all_available() -> bool:
 
 func _refresh() -> void:
 	var cs: Dictionary = _cast()
-	var casting: bool = not cs.is_empty()
-	UIStyle.modal_set_visible(_root, _panel, casting)
-	if not casting:
+	var dec: Dictionary = _decision()
+	var shown: bool = not cs.is_empty() or not dec.is_empty()
+	UIStyle.modal_set_visible(_root, _panel, shown)
+	if not shown:
 		_sig = ""
 		_last_dice = []
+		return
+	if not dec.is_empty():
+		# Каст уже применён и ждёт ответа: карта та же, вместо кубов — варианты.
+		var subject: Dictionary = dec.get("subject", {})
+		var dsig: String = (
+			"dec|"
+			+ JSON.stringify([subject.get("id", ""), dec.get("path", ""), dec.get("options", [])])
+		)
+		if dsig != _sig:
+			_sig = dsig
+			_build(String(subject.get("id", "")))
+			_build_choices(dec)
 		return
 	var sig: String = "%s|%d" % [String(cs.get("spell_id", "")), int(cs.get("item_index", -1))]
 	if sig != _sig:
 		_sig = sig
 		_last_dice = []
-		_build(cs)
+		_build(String(cs.get("spell_id", "")))
+		_build_roll_controls()
 	_render_dice()
 	_update_buttons()
 
 
-func _build(cs: Dictionary) -> void:
+# Общая часть листа: заголовок и карта заклинания на круге.
+func _build(spell_id: String) -> void:
 	for c in _sheet.get_children():
 		if c.name != "Background":
 			_sheet.remove_child(c)
 			c.queue_free()
 	_tray = null
+	_dice_box = null
+	_roll_btn = null
+	_apply_btn = null
 
-	var spell: Dictionary = SpellCatalog.by_id(String(cs.get("spell_id", "")))
+	var spell: Dictionary = SpellCatalog.by_id(spell_id)
 	var title_zone := _zone("TitleZone", _Z_TITLE)
 	# Стандартный орнаментальный заголовок: шеврон · «Чтение заклинания» · шеврон.
 	var title := UIStyle.ornate_title("CAST_TITLE", UIFonts.TITLE, UIColors.ACCENT)
@@ -264,6 +299,9 @@ func _build(cs: Dictionary) -> void:
 	_sheet.add_child(card)
 	CardPreview.attach_click(card, spell_payload)
 
+
+# Бросок: кубы spell-проверки и кнопки «Бросить кубы» · «Применить».
+func _build_roll_controls() -> void:
 	# Кубы spell-проверки — на столе под кругом.
 	var dice_zone := _zone("DiceZone", _Z_DICE)
 	_dice_box = HBoxContainer.new()
@@ -292,6 +330,45 @@ func _build(cs: Dictionary) -> void:
 	_apply_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # родная высота: зона выше кнопки
 	_apply_btn.pressed.connect(_on_apply)
 	btns.add_child(_apply_btn)
+
+
+# Вопрос каста: подсказка и кнопки вариантов (по два в ряд) на месте кубов и кнопок.
+func _build_choices(dec: Dictionary) -> void:
+	var kind: String = String(dec.get("kind", "choice"))
+	var prompt_key: String = String(dec.get("prompt_key", ""))
+	if prompt_key.is_empty():
+		prompt_key = _DecisionModal.default_prompt_key(kind)
+	var prompt: Label = UIStyle.label(
+		prompt_key, UIFonts.BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER
+	)
+	prompt.name = "Prompt"
+	prompt.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	prompt.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_zone("PromptZone", _Z_PROMPT).add_child(prompt)
+
+	var grid := GridContainer.new()
+	grid.name = "Choices"
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 6)
+	grid.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_zone("ChoicesZone", _Z_CHOICES).add_child(grid)
+	var options: Array = dec.get("options", [])
+	for i in range(options.size()):
+		var opt: Dictionary = options[i] if options[i] is Dictionary else {}
+		var btn: Button = UIStyle.button(_DecisionModal.option_label(opt, kind), UIColors.ACCENT)
+		btn.name = "ChoiceBtn%d" % i
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.disabled = not bool(opt.get("_affordable", true))  # ветка не по карману
+		var idx: int = i
+		btn.pressed.connect(func() -> void: _on_pick(idx))
+		grid.add_child(btn)
+
+
+func _on_pick(index: int) -> void:
+	UIStyle.modal_set_visible(_root, _panel, false)  # скрыть сразу, не ждать синка
+	_sig = ""
+	GameState.act(RelayActions.MYTHOS_DECIDE, {"index": index})
 
 
 # ── Кубы (переиспользуемый лоток, рендер из active_check) ──────────────────────

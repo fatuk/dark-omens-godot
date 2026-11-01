@@ -8,6 +8,8 @@ extends CanvasLayer
 ## Мифов (будит корутину MythosFlow), и программа актива (AssetActionFlow) —
 ## разводит их driver. Виды выбора (kind): choice — ветка эффектов, target — сыщик,
 ## monster — монстр на поле, space — локация с монстрами.
+## Вопросы каста заклинания (driver "spell") показывает не она, а лист каста
+## (cast_check_modal) — тем же арт-оформлением; подписи вариантов берёт отсюда.
 ##
 ## Контент строится кодом (паттерн cast_result_modal).
 
@@ -46,6 +48,8 @@ func _refresh() -> void:
 	# список здесь закрыл бы карту.
 	if mine and not MapPickPrompt.decision().is_empty():
 		mine = false
+	if mine and String(d.get("driver", "")) == "spell":
+		mine = false  # вопрос каста — на листе заклинания (cast_check_modal)
 	UIStyle.modal_set_visible(_root, _panel, mine)
 	if not mine:
 		_sig = ""
@@ -93,7 +97,7 @@ func _build(options: Array) -> void:
 	prompt.name = "Prompt"
 	var prompt_key: String = String(d.get("prompt_key", ""))
 	if prompt_key.is_empty():
-		prompt_key = _default_prompt_key(kind)
+		prompt_key = default_prompt_key(kind)
 	prompt.text = tr(prompt_key)
 	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -124,7 +128,7 @@ func _build(options: Array) -> void:
 		var opt: Dictionary = options[i] if options[i] is Dictionary else {}
 		var btn := Button.new()
 		btn.name = "ChoiceBtn%d" % i
-		btn.text = _option_label(opt, kind)
+		btn.text = option_label(opt, kind)
 		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		UIStyle.style_button(btn)
@@ -144,8 +148,8 @@ func _build(options: Array) -> void:
 		_vbox.add_child(scroll)
 
 
-# Подсказка по умолчанию — зависит от вида выбора (ветка / сыщик / монстр / локация).
-func _default_prompt_key(kind: String) -> String:
+## Подсказка по умолчанию — зависит от вида выбора (ветка / сыщик / монстр / локация).
+static func default_prompt_key(kind: String) -> String:
 	match kind:
 		"monster":
 			return "MYTHOS_CHOOSE_MONSTER"
@@ -161,32 +165,36 @@ func _default_prompt_key(kind: String) -> String:
 			return "MYTHOS_DECISION_PROMPT"
 
 
-# Метка опции: монстр — имя, локация и здоровье; локация — имя и число монстров;
-# цель — имя сыщика; ветка — описание эффектов.
-func _option_label(opt: Dictionary, kind: String) -> String:
+## Метка опции: монстр — имя, локация и здоровье; локация — имя и число монстров;
+## цель — имя сыщика; ветка — описание эффектов.
+static func option_label(opt: Dictionary, kind: String) -> String:
 	match kind:
 		"monster":
-			var nm: String = tr(String(opt.get("name", "?")))
+			var nm: String = _t(String(opt.get("name", "?")))
 			var tough: int = int(opt.get("toughness", 1))
 			# Локация в опции есть не всегда (мифы зовут выбор без неё) — тогда
 			# показываем короткую метку «имя · стойкость».
 			if not opt.has("loc_name"):
-				return tr("MONSTER_CHOICE_LABEL") % [nm, tough]
+				return _t("MONSTER_CHOICE_LABEL") % [nm, tough]
 			return (
-				tr("MONSTER_CHOICE_AT")
-				% [nm, tr(String(opt.get("loc_name", ""))), int(opt.get("health", tough)), tough]
+				_t("MONSTER_CHOICE_AT")
+				% [nm, _t(String(opt.get("loc_name", ""))), int(opt.get("health", tough)), tough]
 			)
 		"space":
 			return (
-				tr("SPACE_CHOICE_LABEL")
-				% [tr(String(opt.get("name", "?"))), int(opt.get("count", 0))]
+				_t("SPACE_CHOICE_LABEL")
+				% [_t(String(opt.get("name", "?"))), int(opt.get("count", 0))]
 			)
 		"destination", "asset", "clue":
-			return tr(String(opt.get("name", "?")))
+			return _t(String(opt.get("name", "?")))
 		"target":
 			return String(opt.get("name", "?"))
 		_:
 			return EffectManifest.describe(opt)
+
+
+static func _t(key: String) -> String:
+	return TranslationServer.translate(key)
 
 
 func _on_pick(index: int) -> void:
