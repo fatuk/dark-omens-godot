@@ -137,8 +137,9 @@ const C_GLYPH := Color(0.55, 0.48, 0.35)
 # Скролл описания курсором (когда текст не влезает в зону пергамента): позиция
 # курсора по вертикали (клампится к высоте блока) задаёт направление и скорость —
 # выше центра скроллит вверх, ниже вниз, по центру стоит; линейно к краям.
-const _DESC_SCROLL_MAX_SPEED := 75.0  # px/сек на краях (вдвое медленнее прежнего)
-const _DESC_SCROLL_DEADZONE := 0.04  # доля высоты от центра, где скролл стоит
+## Описание крутится колесом/стиком только у карты не ниже стольких px на экране.
+const DESC_SCROLL_MIN_H := 400.0
+const DESC_WHEEL_STEP := 28.0  # px описания за щелчок колеса
 const _DESC_LABEL_H := 2000.0  # заведомо большая высота лейбла (любое описание влезет)
 const _DESC_BOTTOM_PAD := 4.0  # нижний запас, чтобы последняя строка не подрезалась
 
@@ -154,7 +155,7 @@ const FS_GLYPH := 40
 const FS_MSG := 21
 const FS_CLUE_TITLE := 18
 const FS_CLUE_SUB := 12
-const FS_CLUE_DESC := 13  # описание улики; не влезает — прокрутка курсором (_process)
+const FS_CLUE_DESC := 13  # описание улики; не влезает — прокрутка колесом/стиком
 var _font_scale: float = 1.0
 var _layout: String = ""  # "" — карта актива/жетона; "clue" — улика
 
@@ -163,7 +164,6 @@ var _title: Label
 var _sub: Label
 var _desc: Label
 var _desc_offset: float = 0.0  # текущий сдвиг описания вверх (px), 0..overflow
-var _scroll_src: Control = null  # чужой контрол, чьё наведение крутит описание (просмотр)
 var _art: TextureRect
 var _art_fill: ColorRect
 var _glyph: Label
@@ -270,7 +270,7 @@ func _build() -> void:
 	tvb.add_child(_sub)
 
 	# Описание — на пергаменте. Чёрный текст; не влезает → desc_zone клипует, а сам
-	# текст (заведомо высокий Label) сдвигается курсором при наведении (_process).
+	# текст (заведомо высокий Label) сдвигается колесом мыши или правым стиком (scroll_desc_by).
 	# Зона/лейбл — IGNORE, чтобы наведение ловила сама карта (self).
 	var desc_zone := _zone("Desc", Z_DESC)
 	desc_zone.clip_contents = true
@@ -324,10 +324,6 @@ func _build() -> void:
 	cs_zone.add_child(_clue_sub)
 	resized.connect(_fit_clue)
 
-	mouse_entered.connect(_on_desc_hover_start)
-	mouse_exited.connect(_on_desc_hover_end)
-	set_process(false)  # покадровый скролл включается только под курсором
-
 
 ## Заполнить карту. Поля: cost, title, subtitle?, desc, art? (Texture2D),
 ## art_color? (Color заглушки), glyph? (символ-заглушка).
@@ -373,7 +369,7 @@ func set_card(d: Dictionary) -> void:
 	_desc.text = String(d.get("desc", ""))
 	_desc.visible = not is_msg
 	_fit_clue()
-	_on_desc_hover_end()  # новый текст — гасим скролл и возвращаем к началу
+	_reset_desc_scroll()  # новый текст — описание к началу
 
 	# Кастомная рамка (frame): ПОЛНО-артовая карта (арт+рамка+пергамент единым
 	# изображением, напр. карта Концентрации). Тогда своя арт-зона/глиф не нужны —
@@ -412,17 +408,34 @@ func refresh_smoke() -> void:
 	m.set_shader_parameter("tint", SMOKE_TINT)
 
 
-# ── скролл описания курсором ───────────────────────────────────────────────────
+# ── прокрутка описания (колесо мыши / правый стик) ─────────────────────────────
 
 
-# Наведение на карту — включаем покадровый скролл (если есть переполнение, оно
-# проверяется в _process). Уход курсора / новый текст — выключаем и в начало.
-func _on_desc_hover_start() -> void:
-	set_process(true)
+## Крупная ли карта на экране: длинный текст крутится только у неё (активная карта
+## веера, крупный просмотр, карта каста). Мелкие миниатюры не крутим — текст на них
+## всё равно не прочитать, а колесо нужно списку вокруг них.
+func is_desc_scrollable() -> bool:
+	var h: float = size.y * absf(get_global_transform().get_scale().y)
+	return h >= DESC_SCROLL_MIN_H
 
 
-func _on_desc_hover_end() -> void:
-	set_process(false)
+# Колесо над крупной картой крутит её описание (событие гасим, только если сдвинулись —
+# у края колесо уходит дальше, к прокрутке вокруг).
+func _gui_input(event: InputEvent) -> void:
+	var mb := event as InputEventMouseButton
+	if mb == null or not mb.pressed:
+		return
+	var dir: float = 0.0
+	if mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+		dir = 1.0
+	elif mb.button_index == MOUSE_BUTTON_WHEEL_UP:
+		dir = -1.0
+	if dir != 0.0 and is_desc_scrollable() and scroll_desc_by(dir * DESC_WHEEL_STEP):
+		accept_event()
+
+
+# Новый текст — описание к началу.
+func _reset_desc_scroll() -> void:
 	_desc_offset = 0.0
 	_apply_desc_offset()
 
@@ -433,48 +446,6 @@ func _apply_desc_offset() -> void:
 		return
 	_desc.offset_top = -_desc_offset
 	_desc.offset_bottom = _DESC_LABEL_H - _desc_offset
-
-
-## Крутить описание по наведению на ДРУГОЙ контрол (миниатюру, с которой открыт
-## крупный просмотр): курсор над миниатюрой, а читают крупную копию, — вертикаль
-## курсора в миниатюре и задаёт направление, тем же законом, что на самой карте.
-func drive_desc_scroll_from(src: Control) -> void:
-	_scroll_src = src
-	set_process(true)
-
-
-## Остановить прокрутку от чужого контрола и вернуть описание к началу.
-func stop_desc_scroll() -> void:
-	_scroll_src = null
-	_on_desc_hover_end()
-
-
-# Позиция курсора по вертикали в зоне (клампится к её высоте): t=0 (верх) → вверх,
-# t=0.5 (центр) → стоп, t=1 (низ) → вниз. Скорость линейна по отклонению от центра.
-# Высоту текста берём по числу перенесённых строк (ScrollContainer её не считал).
-func _process(delta: float) -> void:
-	if not is_instance_valid(_desc):
-		return
-	var zone: Control = _desc.get_parent()
-	var zh: float = zone.size.y
-	if zh <= 0.0:
-		return
-	var overflow: float = desc_overflow()
-	if overflow <= 0.0:
-		if _desc_offset != 0.0:
-			_desc_offset = 0.0
-			_apply_desc_offset()
-		return  # текст влезает — скроллить нечего
-	var t: float
-	if is_instance_valid(_scroll_src) and _scroll_src.size.y > 0.0:
-		t = clampf(_scroll_src.get_local_mouse_position().y / _scroll_src.size.y, 0.0, 1.0)
-	else:
-		t = clampf(zone.get_local_mouse_position().y / zh, 0.0, 1.0)
-	var dir: float = (t - 0.5) * 2.0  # [-1..1]: <0 вверх, >0 вниз; линейно к краям
-	if absf(dir) < _DESC_SCROLL_DEADZONE:
-		return  # около центра — стоп
-	_desc_offset = clampf(_desc_offset + dir * _DESC_SCROLL_MAX_SPEED * delta, 0.0, overflow)
-	_apply_desc_offset()
 
 
 ## Насколько описание выше своей зоны (px); ≤ 0 — влезает, крутить нечего.
@@ -492,7 +463,7 @@ func desc_overflow() -> float:
 	return float(lines) * (line_h + spacing) + _DESC_BOTTOM_PAD - zh
 
 
-## Прокрутить описание на px (+ вниз) — правый стик геймпада (PadFocus). false —
+## Прокрутить описание на px (+ вниз) — колесо мыши, правый стик (PadFocus). false —
 ## прокручивать нечего (влезает или уже у края).
 func scroll_desc_by(px: float) -> bool:
 	var overflow: float = desc_overflow()

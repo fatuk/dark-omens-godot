@@ -48,3 +48,32 @@ func test_short_desc_no_overflow() -> void:
 	var lbl: Label = card.find_child("DescLabel", true, false)
 	var zone: Control = lbl.get_parent()
 	assert_lt(_content_h(lbl), zone.size.y, "короткий текст влезает — скроллить нечего")
+
+
+func _wheel(card: GameCard, down: bool) -> void:
+	var ev := InputEventMouseButton.new()
+	ev.button_index = MOUSE_BUTTON_WHEEL_DOWN if down else MOUSE_BUTTON_WHEEL_UP
+	ev.pressed = true
+	card._gui_input(ev)
+
+
+func test_wheel_scrolls_desc_of_large_card() -> void:
+	var card: GameCard = _make_card("word ".repeat(140))
+	card.size = Vector2(300.0, 300.0 / GameCard.ASPECT)  # крупная: выше порога
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_true(card.is_desc_scrollable(), "крупная карта крутится")
+	_wheel(card, true)
+	assert_gt(card._desc_offset, 0.0, "колесо вниз сдвинуло описание")
+	_wheel(card, false)
+	assert_almost_eq(card._desc_offset, 0.0, 0.01, "колесо вверх вернуло к началу")
+
+
+func test_wheel_ignores_small_card() -> void:
+	var card: GameCard = _make_card("word ".repeat(140))
+	card.size = Vector2(150.0, 150.0 / GameCard.ASPECT)  # миниатюра: ниже порога
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_false(card.is_desc_scrollable(), "мелкую карту не крутим")
+	_wheel(card, true)
+	assert_almost_eq(card._desc_offset, 0.0, 0.01, "колесо мелкую карту не сдвинуло")

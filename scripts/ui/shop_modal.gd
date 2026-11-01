@@ -630,6 +630,17 @@ func _build_asset_card(a: Dictionary, idx: int, total: int) -> void:
 			if click or ev.is_action_pressed(&"ui_accept"):
 				_toggle_card(aid, cost)
 				hit.accept_event()
+				return
+			# Колесо — длинный текст карточки: она в off-screen SubViewport и мыши
+			# не видит, поэтому прокрутку передаём ей отсюда.
+			var mb := ev as InputEventMouseButton
+			if mb != null and mb.pressed:
+				if mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+					card.scroll_desc_by(GameCard.DESC_WHEEL_STEP)
+					hit.accept_event()
+				elif mb.button_index == MOUSE_BUTTON_WHEEL_UP:
+					card.scroll_desc_by(-GameCard.DESC_WHEEL_STEP)
+					hit.accept_event()
 	)
 
 
@@ -814,11 +825,6 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 	var card: GameCard = entry.card
 	if on:
 		_play_hover_sfx()  # шуршание карты — как в веере
-		# Карта живёт в off-screen SubViewport и мыши не видит — описание крутит
-		# вертикаль курсора над хит-контролом (верх → вверх, низ → вниз, как в веере).
-		card.drive_desc_scroll_from(entry.hit)
-	else:
-		card.stop_desc_scroll()
 	var mesh: MeshInstance3D = entry.mesh
 	var rest_pos: Vector3 = entry.get("rest_pos", mesh.position)
 	var tw := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(

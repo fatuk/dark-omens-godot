@@ -569,17 +569,22 @@ func _input(event: InputEvent) -> void:
 			_end_drag()
 			get_viewport().set_input_as_handled()
 		return
-	# ← → / L1 R1 листают СЕКЦИИ; крестовина/стик — карты (мышью — колесом/наведением);
+	# ← → / L1 R1 листают СЕКЦИИ; крестовина/стик — карты (мышью — наведением); колесо
+	# крутит длинный текст активной карты (правый стик — то же, через PadFocus);
 	# ✕/A — разыграть активную; Esc/○/B — закрыть. Порядок важен: ← есть и в ui_left.
 	if _nav_action(event):
 		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseButton and event.pressed:
+		var dir: float = 0.0
 		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_step(1)
-			get_viewport().set_input_as_handled()
+			dir = 1.0
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_step(-1)
-			get_viewport().set_input_as_handled()
+			dir = -1.0
+		if dir != 0.0:
+			var card := active_card() as GameCard
+			if card != null:
+				card.scroll_desc_by(dir * GameCard.DESC_WHEEL_STEP)
+			get_viewport().set_input_as_handled()  # колесо под веером карту не зумит
 
 
 # Действие навигации по открытому вееру; true — обработано (событие гасим).

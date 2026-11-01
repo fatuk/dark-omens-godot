@@ -167,7 +167,8 @@ static func scroll_targets(scope: Node, foc: Control, fan: Control = null) -> Ar
 ## Прокрутить цель на px (+ вниз). false — нечего (влезает / у края).
 static func scroll_by(t: Object, px: float) -> bool:
 	if t is GameCard:
-		return (t as GameCard).scroll_desc_by(px)
+		var card := t as GameCard
+		return card.is_desc_scrollable() and card.scroll_desc_by(px)
 	if t is ScrollContainer:
 		var sc := t as ScrollContainer
 		var before: int = sc.scroll_vertical
