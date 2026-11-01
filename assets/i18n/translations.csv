@@ -1679,6 +1679,8 @@ RECAP_MOMENT_FALLEN,Раунд %d — %s покидает мир живых,Roun
 RECAP_DEMO_TITLE,Это была демо-версия,That was the demo
 RECAP_DEMO_BODY,"Полная версия Dark Omens уже в работе: больше Древних и Тайн, весь отряд из 55 сыщиков и игра с друзьями по сети. Её можно будет купить — следите за новостями на сайте игры.","The full version of Dark Omens is in the works: more Ancient Ones and Mysteries, all 55 investigators, and online play with friends. It will be available to buy — follow the news on the game's website."
 RECAP_DEMO_SITE,Сайт игры,Game website
+RECAP_EMPTY_SEAT,Свободное место,Empty seat
+RECAP_ENDING,Финал,The ending
 ,,
 TRAIT_SPELL,Заклинание,Spell
 SPELL_KIND_RITUAL,Ритуал,Ritual
