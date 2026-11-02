@@ -104,10 +104,8 @@ func _reck_mode() -> bool:
 	return not _reck().is_empty()
 
 
-# Ожидающая видимая проверка этого игрока: сначала параллельная Расплата (per-player
-# слот), иначе одиночный pending_check (фаза действий/встреча). {} — нет.
 # Подпись под заголовком: что привело к проверке (встреча / карта Мифа — у них нет
-# карты-носителя на экране) и какой навык с каким модификатором проверяется.
+# карты-носителя на экране).
 func _add_check_caption(pc: Dictionary) -> void:
 	var src: Dictionary = pc.get("source", {})
 	var src_name: String = String(src.get("name", "")).strip_edges()
@@ -121,21 +119,10 @@ func _add_check_caption(pc: Dictionary) -> void:
 		lbl.name = "Source"
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_vbox.add_child(lbl)
-	var c: Dictionary = _chk()
-	var skill: String = String(c.get("skill", ""))
-	if skill.is_empty():
-		return
-	var line: String = tr("SKILL_" + skill.to_upper())
-	var mod: int = int(c.get("modifier", 0))
-	if mod != 0:
-		line += " %s%d" % ["+" if mod > 0 else "−", absi(mod)]
-	var sk: Label = UIStyle.label(
-		tr("CHECK_SKILL_LINE") % line, UIFonts.BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
-	)
-	sk.name = "SkillLine"
-	_vbox.add_child(sk)
 
 
+# Ожидающая видимая проверка этого игрока: сначала параллельная Расплата (per-player
+# слот), иначе одиночный pending_check (фаза действий/встреча). {} — нет.
 func _pc() -> Dictionary:
 	var r: Dictionary = _reck()
 	if not r.is_empty():
