@@ -106,6 +106,36 @@ func _reck_mode() -> bool:
 
 # Ожидающая видимая проверка этого игрока: сначала параллельная Расплата (per-player
 # слот), иначе одиночный pending_check (фаза действий/встреча). {} — нет.
+# Подпись под заголовком: что привело к проверке (встреча / карта Мифа — у них нет
+# карты-носителя на экране) и какой навык с каким модификатором проверяется.
+func _add_check_caption(pc: Dictionary) -> void:
+	var src: Dictionary = pc.get("source", {})
+	var src_name: String = String(src.get("name", "")).strip_edges()
+	var key: String = {"encounter": "CHECK_SOURCE_ENCOUNTER", "mythos": "CHECK_SOURCE_MYTHOS"}.get(
+		String(src.get("kind", "")), ""
+	)
+	if not key.is_empty() and not src_name.is_empty():
+		var lbl: Label = UIStyle.label(
+			tr(key) % tr(src_name), UIFonts.LEAD, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER
+		)
+		lbl.name = "Source"
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_vbox.add_child(lbl)
+	var c: Dictionary = _chk()
+	var skill: String = String(c.get("skill", ""))
+	if skill.is_empty():
+		return
+	var line: String = tr("SKILL_" + skill.to_upper())
+	var mod: int = int(c.get("modifier", 0))
+	if mod != 0:
+		line += " %s%d" % ["+" if mod > 0 else "−", absi(mod)]
+	var sk: Label = UIStyle.label(
+		tr("CHECK_SKILL_LINE") % line, UIFonts.BODY, UIColors.MUTED, HORIZONTAL_ALIGNMENT_CENTER
+	)
+	sk.name = "SkillLine"
+	_vbox.add_child(sk)
+
+
 func _pc() -> Dictionary:
 	var r: Dictionary = _reck()
 	if not r.is_empty():
@@ -175,6 +205,7 @@ func _build(pc: Dictionary) -> void:
 		return
 
 	_vbox.add_child(UIStyle.modal_title("CHECK_TITLE"))
+	_add_check_caption(pc)
 
 	# Карта-носитель (subject) по центру, если передана.
 	var subject: Dictionary = pc.get("subject", {})

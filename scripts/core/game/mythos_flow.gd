@@ -462,6 +462,8 @@ func _run_player_subprogram(pid: String, sub: Array) -> void:
 				"driver": "mythos",
 				"path": String(pending.get("path", "")),
 				"subject": {},
+				# Откуда проверка — подпись в модалке («Миф «…»»).
+				"source": {"kind": "mythos", "name": String(_gs.current_mythos.get("name", ""))},
 			}
 			_gs.broadcast_sync()
 			_gs.emit_changed()

@@ -1717,6 +1717,9 @@ CAST_TITLE,Чтение заклинания,Casting spell
 CAST_ROLL,Бросить кубы,Roll dice
 CAST_APPLY,Применить,Apply
 CHECK_TITLE,Проверка,Skill check
+CHECK_SOURCE_ENCOUNTER,Встреча «%s»,Encounter “%s”
+CHECK_SOURCE_MYTHOS,Миф «%s»,Mythos “%s”
+CHECK_SKILL_LINE,Проверка: %s,Test: %s
 CONDITION_CHECK_TITLE,Проверка состояния,Condition check
 CHAT_PICK_TEMPLATE,Выберите фразу,Pick a phrase
 ,,

@@ -1190,6 +1190,8 @@ func _run_effect_slot(effects: Array, pid: String, slot: String) -> bool:
 				"driver": "encounter",
 				"path": String(pending.get("path", "")),
 				"subject": {},
+				# Откуда проверка — подпись в модалке («Встреча «…»»).
+				"source": {"kind": "encounter", "name": String(enc.get("name", ""))},
 			}
 		else:
 			enc["pending_choice"] = pending  # модалка покажет выбор; ход замирает
