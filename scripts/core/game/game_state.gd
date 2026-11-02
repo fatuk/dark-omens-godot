@@ -1302,6 +1302,8 @@ func debug_exec(op: String, a: String = "", b: String = "", c: String = "") -> S
 			return DebugGrant.give_asset(self, a, b)
 		"give_spell":
 			return DebugGrant.give_spell(self, a, b)
+		"give_spells":  # все заклинания каталога, которых у игрока нет
+			return DebugGrant.give_all_spells(self, a)
 		"spawn":  # a=локация, b=монстр
 			return DebugGrant.spawn_monster(self, a, b)
 		"gate":  # a=локация, b=цвет

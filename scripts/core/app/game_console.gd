@@ -355,7 +355,10 @@ func _candidates(toks: Array, arg_index: int, editing: String) -> Array:
 			return (
 				_players_cands()
 				if arg_index == 1
-				else _as_cands(_asset_entries() + _spell_entries())
+				else (
+					[{"text": _ALL_SPELLS, "hint": "все заклинания, которых у игрока нет"}]
+					+ _as_cands(_asset_entries() + _spell_entries())
+				)
 			)
 		"cond", "condition":
 			return _players_cands() if arg_index == 1 else _as_cands(_condition_entries())
@@ -591,6 +594,7 @@ func _grab_input_focus() -> void:
 func _cmd_help() -> void:
 	self.log("Команды debug-консоли (только хост, dev-сборка):")
 	self.log("  give <игрок> <карта>        — актив или заклинание в руку")
+	self.log("  give <игрок> spells         — все заклинания, которых у игрока нет")
 	self.log("  clue <игрок> [@локация] [n] — улика в руку: конкретная (@) или n случайных")
 	self.log("  spawn <монстр> [@локация]   — монстр на локации (по умолч. — твоя)")
 	self.log("  gate [@локация] [цвет]      — открыть врата (+1 монстр)")
@@ -739,6 +743,10 @@ func _cmd_list(args: Array) -> void:
 		self.log("  … ещё %d (уточните фильтр)" % (hits.size() - 40))
 
 
+# give <игрок> spells — вся пачка заклинаний разом (ключевое слово, не поиск по имени).
+const _ALL_SPELLS := "spells"
+
+
 func _cmd_give(args: Array) -> void:
 	if args.size() < 2:
 		err("give <игрок> <карта>")
@@ -748,6 +756,9 @@ func _cmd_give(args: Array) -> void:
 		err("не нашёл игрока «%s» (см. `who`)" % args[0])
 		return
 	var query: String = _join(args.slice(1))
+	if query.to_lower() == _ALL_SPELLS:
+		self.log(GameState.debug_exec("give_spells", pid))
+		return
 	var hit: Dictionary = _resolve_one(query, _asset_entries() + _spell_entries())
 	if hit.is_empty():
 		return

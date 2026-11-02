@@ -29,6 +29,25 @@ static func give_spell(gs: Node, pid: String, spell_id: String) -> String:
 	return "заклинание «%s» → %s" % [spell_id, String(gs.name_of(pid))]
 
 
+# Все заклинания каталога, которых у сыщика ещё нет, — по копии, мимо колоды и сезонов
+# стола (как give_spell). Один синк на всю пачку.
+static func give_all_spells(gs: Node, pid: String) -> String:
+	if not (gs.get("players") as Dictionary).has(pid):
+		return "нет игрока «%s»" % pid
+	var have: Dictionary = {}
+	for it_v: Variant in (gs.get("players")[pid] as Dictionary).get("items", []):
+		if it_v is Dictionary and String((it_v as Dictionary).get("kind", "")) == "spell":
+			have[String((it_v as Dictionary).get("id", ""))] = true
+	var flow := gs.get("_spell") as SpellFlow
+	var n: int = 0
+	for s_v: Variant in SpellCatalog.all():
+		var sid: String = String((s_v as Dictionary).get("id", ""))
+		if not sid.is_empty() and not have.has(sid) and flow.grant_spell(pid, sid, "", true):
+			n += 1
+	gs.broadcast_and_emit()
+	return "заклинаний выдано: %d → %s" % [n, String(gs.name_of(pid))]
+
+
 # Конкретный монстр на локации — в обход мешка (нужен именно этот id). Стойкость по
 # размеру партии, как штатный спаун.
 static func spawn_monster(gs: Node, loc_id: String, monster_id: String) -> String:
