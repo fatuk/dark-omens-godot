@@ -834,6 +834,30 @@ func test_trigger_queue_waits_for_answer() -> void:
 	assert_eq(done, [true])
 
 
+# Живая игра (без заданного броска): выбранные в промпте заклинания — видимые касты на
+# листе по одному; продолжение (отдых/встреча) — когда сыграет последнее.
+func test_trigger_spells_cast_visibly_one_by_one() -> void:
+	_player([{"id": "healing_words"}, {"id": "healing_words"}])
+	_gs.players["p"]["hp"] = 3
+	_sf.prompt_trigger("p", "onRest")
+	var done: Array = []
+	assert_true(_sf.host_apply_trigger_spells("p", [0, 1], {}, func() -> void: done.append(1)))
+	assert_true((_gs.pending_spell_cast as Dictionary).is_empty(), "промпт закрыт")
+	var cs: Dictionary = _gs.casting_spell
+	assert_eq(String(cs.get("spell_id", "")), "healing_words", "первый каст — на листе")
+	assert_true(bool(cs.get("trigger", false)))
+	assert_eq(int(cs.get("item_index", -1)), 1, "по убыванию индекса")
+	assert_eq(done, [], "пока касты идут — продолжения нет")
+	_gs.roll_successes = 2
+	_gs.roll_dice = [5, 5]
+	assert_true(_sf.apply_cast("p"))
+	assert_eq(int((_gs.casting_spell as Dictionary).get("item_index", -1)), 0, "второй каст")
+	assert_eq(done, [], "ещё один каст впереди")
+	assert_true(_sf.apply_cast("p"))
+	assert_true((_gs.casting_spell as Dictionary).is_empty(), "касты доиграны")
+	assert_eq(done, [1], "продолжение после последнего")
+
+
 func test_spell_card_subtitle_is_kind() -> void:
 	var sub: String = String(
 		SpellCatalog.card_payload(SpellCatalog.by_id("shriveling"))["subtitle"]

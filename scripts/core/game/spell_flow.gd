@@ -37,6 +37,12 @@ var _run: Dictionary = {}
 # сделать, когда очередь опустеет (отдых — передать ход, встреча — продолжить её).
 var _queue: Array = []
 var _then: Callable = Callable()
+# Видимые триггер-касты (отдых, фаза встреч): выбранные в промпте заклинания идут по
+# одному через обычный лист каста (бросок, перебросы, «Применить»). Хост, не синкается:
+# очередь [{index, id}], чей ход и что сделать, когда сыграет последнее.
+var _trig_left: Array = []
+var _trig_pid: String = ""
+var _trig_then: Callable = Callable()
 
 
 func _init(gs: Node) -> void:
@@ -307,6 +313,8 @@ func _finish(job: Dictionary) -> void:
 		_gs._encounter.grant_spell_options(pid, job["encounter"])
 	if bool(after.get("release", false)):
 		_gs._phase.release_cast_turn(pid)
+	if bool(after.get("trigger", false)):
+		_begin_next_trigger()
 
 
 # Очередь кастов: по одному, пока очередной не встанет на вопрос. Опустела — _then.
@@ -555,6 +563,7 @@ func apply_cast(pid: String, flow: Dictionary = {}) -> bool:
 		"add_mods": nested,
 		"release": String(cs.get("subtype", "")) == "ritual",
 		"reaction": cs.has("reaction"),
+		"trigger": cs.has("trigger"),  # каст из промпта отдыха/встреч — затем следующий
 	}
 	resolve_cast(pid, item_index, successes, dice, f)
 	return true
@@ -660,6 +669,20 @@ func host_apply_trigger_spells(
 	chosen.sort()
 	chosen.reverse()  # по убыванию
 	var p: Dictionary = _gs.players[pid]
+	if not flow.has("cast"):
+		# Живая игра: каждое выбранное заклинание — видимый каст на листе (кубы,
+		# перебросы, «Применить»), по одному; then — когда сыграет последнее.
+		_gs.pending_spell_cast = {}
+		_trig_pid = pid
+		_trig_left = []
+		for idx: int in chosen:
+			var items_now: Array = p.get("items", [])
+			if idx >= 0 and idx < items_now.size():
+				_trig_left.append({"index": idx, "id": _spell_id(items_now[idx])})
+		if then.is_valid():
+			_trig_then = then if not _trig_then.is_valid() else _chain(_trig_then, then)
+		_begin_next_trigger()
+		return true
 	var f: Dictionary = flow.duplicate()
 	f["interactive"] = bool(flow.get("interactive", true))
 	# Касты встают в очередь (каждый может спросить игрока); then — когда доиграют все.
@@ -678,6 +701,33 @@ func host_apply_trigger_spells(
 		_then = then if not prev.is_valid() else _chain(prev, then)
 	_pump()
 	return true
+
+
+# Следующий видимый триггер-каст из очереди: открыть spell-проверку на листе каста.
+# Карту ищем по индексу, а если рука сдвинулась — по id. Очередь пуста — продолжение
+# (отдых / начало встречи). Синк — у зовущего (relay-роутер / резолв решения).
+func _begin_next_trigger() -> void:
+	while not _trig_left.is_empty():
+		var t: Dictionary = _trig_left.pop_front()
+		var items: Array = (_gs.players.get(_trig_pid, {}) as Dictionary).get("items", [])
+		var sid: String = String(t["id"])
+		var idx: int = int(t["index"])
+		if idx >= items.size() or _spell_id(items[idx]) != sid:
+			idx = -1
+			for i in range(items.size()):
+				if _spell_id(items[i]) == sid:
+					idx = i
+					break
+		var spell: Dictionary = SpellCatalog.by_id(sid)
+		if idx < 0 or spell.is_empty():
+			continue  # карту уже сбросили — дальше
+		_begin_check(_trig_pid, idx, spell, String(spell.get("subtype", "")), false)
+		(_gs.casting_spell as Dictionary)["trigger"] = true
+		return
+	var then: Callable = _trig_then
+	_trig_then = Callable()
+	if then.is_valid():
+		then.call()
 
 
 # Два продолжения подряд (очередь кастов опустеет одна на оба промпта).
