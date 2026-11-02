@@ -294,11 +294,15 @@ func test_test_on_fail_with_skills() -> void:
 	assert_eq(int(p["clues"]), 1, "onPass не сработал")
 
 
-func test_test_auto_passes_without_skills() -> void:
-	var p: Dictionary = _player()
+# Без навыков (ни в ctx, ни сыщика) — не автопроход, а честный бросок 1 кубика.
+func test_test_without_skills_rolls_one_die() -> void:
 	var node: Dictionary = {"test": "lore", "onPass": [{"do": "gainClue"}], "onFail": []}
-	EffectRunner.run([node], p, {}, {})
-	assert_eq(int(p["clues"]), 2, "без навыков в ctx проверка считается пройденной")
+	var p: Dictionary = _player()
+	EffectRunner.run([node], p, {}, {"rolls": {"0": [6]}})
+	assert_eq(int(p["clues"]), 2, "успех на кубике → onPass")
+	var q: Dictionary = _player()
+	EffectRunner.run([node], q, {}, {"rolls": {"0": [2]}})
+	assert_eq(int(q["clues"]), 1, "провал на кубике — проверку не засчитали молча")
 
 
 # ── when (предикаты) ──────────────────────────────────────────────────────────

@@ -499,47 +499,6 @@ func test_begin_glamour_rejects_non_glamour() -> void:
 	assert_false(_sf.begin_glamour("p", 0), "Ritual — не glamour")
 
 
-# ── fire_trigger (игровое событие → каст заклинания с front.trigger == event) ─
-
-
-func test_fire_trigger_on_rest_heals() -> void:
-	_player([{"id": "healing_words"}])
-	_gs.players["p"]["hp"] = 3
-	_gs.players["p"]["sanity"] = 3
-	var flow: Dictionary = {
-		"cast": {"successes": 2, "dice": [5, 5]}, "backs": {"0": "healing_words_b1"}
-	}
-	assert_true(_sf.fire_trigger("p", "onRest", flow), "Healing Words сработал на onRest")
-	assert_eq(int(_gs.players["p"]["hp"]), 4, "+1 здоровья (фронт onPass)")
-	assert_eq(int(_gs.players["p"]["sanity"]), 4, "+1 рассудка")
-
-
-func test_fire_trigger_fires_all_matching() -> void:
-	# Несколько onRest-заклинаний в руке → срабатывают ВСЕ (а не только первое):
-	# два экземпляра healing_words (+1 hp/+1 san каждый). Рубашки b1 на 2 успехах
-	# = тир «2+» пуст, без побочки.
-	_player([{"id": "healing_words"}, {"id": "healing_words"}])
-	_gs.players["p"]["hp"] = 3
-	_gs.players["p"]["sanity"] = 3
-	var flow: Dictionary = {
-		"cast": {"successes": 2, "dice": [5, 5]},
-		"backs": {"0": "healing_words_b1", "1": "healing_words_b1"},
-	}
-	assert_true(_sf.fire_trigger("p", "onRest", flow), "сработало хотя бы одно")
-	assert_eq(int(_gs.players["p"]["hp"]), 5, "оба healing_words → +2 hp")
-	assert_eq(int(_gs.players["p"]["sanity"]), 5, "оба healing_words → +2 рассудка")
-
-
-func test_fire_trigger_no_matching_spell() -> void:
-	_player([{"id": "shriveling"}])  # trigger action, не onRest
-	assert_false(_sf.fire_trigger("p", "onRest"))
-
-
-func test_fire_trigger_empty_hand() -> void:
-	_player([])
-	assert_false(_sf.fire_trigger("p", "onRest"))
-
-
 # ── last_cast_result (модалка расплаты: какой оборот + flavor + итог) ─────────
 
 

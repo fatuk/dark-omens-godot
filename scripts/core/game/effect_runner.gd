@@ -542,16 +542,28 @@ static func _spend_resource(player: Dictionary, res: String, amt: int) -> void:
 	ResourceLedger.spend(player, res, amt)
 
 
-## Вложенная проверка. Есть навыки в ctx → реальный бросок (как CheckFlow.pool):
-## pool = базовый навык + skill_mods + modifier, успех при ≥1 успехе. Нет навыков
-## (нет контекста) → считаем пройденной. Бросок пишется/переигрывается через flow.
+## Вложенная проверка в ТИХОМ прогоне (драйвер не включил checks_visible): бросок как
+## CheckFlow.pool — базовый навык + skill_mods + modifier, успех при ≥1 успехе. Навыки —
+## из ctx, иначе по сыщику игрока. Нет и сыщика (глобальный прогон: Расплата Мифов/
+## Древнего) — ошибка контента: предупреждаем и бросаем 1 кубик, а не засчитываем
+## проверку молча. Бросок пишется/переигрывается через flow.
 static func _roll_test(
 	node: Dictionary, player: Dictionary, ctx: Dictionary, flow: Dictionary, path: String
 ) -> bool:
 	var skills: Dictionary = ctx.get("skills", {})
 	if (skills as Dictionary).is_empty():
-		return true
+		var inv: String = String(player.get("investigator", ""))
+		if not inv.is_empty():
+			skills = Investigators.get_data(inv).get("skills", {})
 	var skill: String = String(node["test"])
+	if (skills as Dictionary).is_empty():
+		GameConsole.warn(
+			(
+				"[DSL] test «%s» вне видимой проверки и без сыщика (%s) — бросаю 1 кубик"
+				% [skill, path]
+			)
+		)
+		skills = {skill: 1}
 	var mods: Dictionary = player.get("skill_mods", {})
 	var pool: int = maxi(
 		1, int(skills.get(skill, 1)) + int(mods.get(skill, 0)) + int(node.get("modifier", 0))

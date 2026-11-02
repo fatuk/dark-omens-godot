@@ -368,15 +368,15 @@ func test_rest_poisoned_blocks_both_and_flips() -> void:
 
 
 # ── host_run_condition_action (Detained escape) ───────────────────────────────
-# action = [ test influence → onPass [ discardCard ] ]. Без навыков в ctx проверка
-# авто-проходит (см. EffectRunner) → escape срабатывает детерминированно.
+# action = [ test influence → onPass [ discardCard ] ]. Бросок задан (flow.rolls) —
+# escape срабатывает детерминированно.
 
 
 func test_condition_action_detained_escapes() -> void:
 	_add_player("p", {"conditions": ["detained"]})
-	var ok: bool = _cond.host_run_condition_action("p", "detained")
+	var ok: bool = _cond.host_run_condition_action("p", "detained", {"rolls": {"0": [6]}})
 	assert_true(ok, "у detained есть action")
-	assert_false((_gs.players["p"]["conditions"] as Array).has("detained"), "auto-pass → сброс")
+	assert_false((_gs.players["p"]["conditions"] as Array).has("detained"), "успех → сброс")
 
 
 func test_condition_action_absent_returns_false() -> void:

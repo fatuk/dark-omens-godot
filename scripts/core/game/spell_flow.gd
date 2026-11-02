@@ -569,54 +569,11 @@ func apply_cast(pid: String, flow: Dictionary = {}) -> bool:
 	return true
 
 
-# Транзиентный тест Lore (для триггер-кастов onRest/onTravel/…, когда CheckFlow занят).
-# flow.cast={successes,dice} переопределяет бросок (тесты/replay).
-func _lore_roll(p: Dictionary, modifier: int, flow: Dictionary) -> Dictionary:
+# Заданный бросок каста (flow.cast={successes,dice}) — тесты/повтор. Живая игра кастует
+# видимо, через лист каста (_begin_next_trigger): тихо кубы здесь не бросаются никогда.
+static func _forced_roll(flow: Dictionary) -> Dictionary:
 	var roll: Dictionary = flow.get("cast", {})
-	if roll.has("successes"):
-		return {"successes": int(roll["successes"]), "dice": roll.get("dice", [])}
-	var inv: Dictionary = Investigators.get_data(String(p.get("investigator", "")))
-	var lore: int = int((inv.get("skills", {}) as Dictionary).get("lore", 1))
-	var mods: int = int((p.get("skill_mods", {}) as Dictionary).get("lore", 0))
-	var dice: Array = Dice.roll(maxi(1, lore + mods + modifier))
-	# Порог Blessed/Cursed действует и в тихих кастах (как в видимом CheckFlow).
-	var threshold: int = Conditions.success_threshold(
-		p.get("conditions", []), p.get("conditions_flipped", {})
-	)
-	return {"successes": int(Dice.result(dice, threshold).get("successes", 0)), "dice": dice}
-
-
-## Хост: сработавший spell-триггер по игровому событию (onRest/onTravel/…). Кастует
-## ВСЕ заклинания сыщика с front.trigger == event (а не только первое — игрок может
-## держать несколько, напр. три onRest-лечилки). Для каждого: тест Lore → фронт
-## onPass к себе → рубашка. true — сработало хотя бы одно. Зовётся из игровых хуков
-## (phase_controller.rest и т.п.). flow.cast/backs — детерминизм/тесты.
-func fire_trigger(pid: String, event: String, flow: Dictionary = {}) -> bool:
-	if not _gs.is_host() or not _gs.players.has(pid):
-		return false
-	var p: Dictionary = _gs.players[pid]
-	var items: Array = p.get("items", [])
-	# Собираем индексы ВСЕХ совпавших заклинаний, потом кастуем.
-	var matches: Array[int] = []
-	for i in range(items.size()):
-		var it: Variant = items[i]
-		if not (it is Dictionary):
-			continue
-		var spell: Dictionary = SpellCatalog.by_id(_spell_id(it))
-		if spell.is_empty():
-			continue
-		if String((spell.get("front", {}) as Dictionary).get("trigger", "")) == event:
-			matches.append(i)
-	if matches.is_empty():
-		return false
-	# Кастуем по УБЫВАНИЮ индекса: если рубашка сбросит карту (resolve_cast удалит
-	# элемент), индексы НИЖЕ не сдвинутся — обработка остальных не поедет.
-	matches.reverse()
-	for idx: int in matches:
-		var front: Dictionary = SpellCatalog.by_id(_spell_id(items[idx])).get("front", {})
-		var r: Dictionary = _lore_roll(p, int(front.get("modifier", 0)), flow)
-		resolve_cast(pid, idx, int(r["successes"]), r["dice"], flow)
-	return true
+	return {"successes": int(roll.get("successes", 0)), "dice": roll.get("dice", [])}
 
 
 ## Хост: выставить ПРОМПТ выбора триггер-заклинаний (НЕ кастуя). Собирает все
@@ -690,8 +647,7 @@ func host_apply_trigger_spells(
 		var items: Array = p.get("items", [])
 		if idx < 0 or idx >= items.size():
 			continue
-		var front: Dictionary = SpellCatalog.by_id(_spell_id(items[idx])).get("front", {})
-		var r: Dictionary = _lore_roll(p, int(front.get("modifier", 0)), flow)
+		var r: Dictionary = _forced_roll(flow)
 		var job: Dictionary = _make_job(pid, idx, int(r["successes"]), r["dice"], f)
 		if not job.is_empty():
 			_queue.append(job)

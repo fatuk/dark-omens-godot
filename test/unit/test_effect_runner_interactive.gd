@@ -399,16 +399,16 @@ func test_interactive_test_failed_decision_runs_onfail() -> void:
 
 
 func test_test_silent_without_checks_visible_flag() -> void:
-	# Без флага checks_visible test кидает тихо (seeded). Пустой ctx.skills → auto-pass.
+	# Без флага checks_visible test кидает тихо (seeded бросок через flow.rolls).
 	var p: Dictionary = _player()
 	var res: Dictionary = EffectRunner.run(
 		[{"test": "influence", "onPass": [{"do": "gainClue"}], "onFail": []}],
 		p,
 		{},
-		{"interactive": true}
+		{"interactive": true, "rolls": {"0": [6]}}
 	)
 	assert_eq((res["pending"] as Dictionary).size(), 0, "без checks_visible проверка не пендит")
-	assert_eq(int(p["clues"]), 2, "тихий auto-pass (нет skills) → onPass")
+	assert_eq(int(p["clues"]), 2, "тихий бросок прошёл → onPass")
 
 
 func test_gate_at_predicates_read_ctx_gates() -> void:
