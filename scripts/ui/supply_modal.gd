@@ -62,12 +62,8 @@ const _TABS: Array = [
 	["monsters", "SUPPLY_TAB_MONSTERS"],
 ]
 
-# Цвет точки-метки врат по цвету омена.
-const _GATE_DOT := {
-	"red": Color(0.72, 0.18, 0.16),
-	"blue": Color(0.20, 0.45, 0.75),
-	"green": Color(0.25, 0.62, 0.35),
-}
+const _GATE_TILE := 96.0  # сторона жетона врат в списке
+const _GATE_TILE_W := 150.0  # ширина плитки (под имя локации)
 
 
 ## Открыть окно. parent — узел, к которому цеплять модалку.
@@ -287,12 +283,13 @@ static func _spell_cards(ids: Array) -> Control:
 
 
 static func _gate_rows(locs: Array) -> Control:
-	var list := VBoxContainer.new()
-	list.name = "Gates"
-	list.add_theme_constant_override("separation", 4)
+	var flow := HFlowContainer.new()
+	flow.name = "Gates"
+	flow.add_theme_constant_override("h_separation", 8)
+	flow.add_theme_constant_override("v_separation", 10)
 	for loc_v: Variant in _sorted_by_name(locs):
-		list.add_child(_gate_row(String(loc_v)))
-	return list
+		flow.add_child(_gate_tile(String(loc_v)))
+	return flow
 
 
 static func _clue_rows(locs: Array) -> Control:
@@ -336,9 +333,10 @@ static func _sorted_by_name(locs: Array) -> Array:
 	var out: Array = locs.duplicate()
 	out.sort_custom(
 		func(a: Variant, b: Variant) -> bool:
+			# String(): translate отдаёт StringName, а его «<» сравнивает не по буквам.
 			return (
-				TranslationServer.translate(_loc_name(String(a)))
-				< TranslationServer.translate(_loc_name(String(b)))
+				String(TranslationServer.translate(_loc_name(String(a))))
+				< String(TranslationServer.translate(_loc_name(String(b))))
 			)
 	)
 	return out
@@ -382,23 +380,45 @@ static func _row(text: String, node_name: String) -> Label:
 	return lbl
 
 
-# Строка врат: точка цвета омена + имя локации.
-static func _gate_row(loc_id: String) -> Control:
-	var hb := HBoxContainer.new()
-	hb.name = "GateRow_" + loc_id
-	hb.add_theme_constant_override("separation", 8)
-	var dot := ColorRect.new()
-	dot.name = "Dot"
-	dot.color = _GATE_DOT.get(_gate_color(loc_id), UIColors.MUTED)
-	dot.custom_minimum_size = Vector2(14, 14)
-	dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	hb.add_child(dot)
-	hb.add_child(_row(_loc_name(loc_id), loc_id))
-	return hb
+# Плитка врат: жетон тех же ассетов, что на карте (внешнее и внутреннее кольца
+# цвета омена), под ним — имя локации.
+static func _gate_tile(loc_id: String) -> Control:
+	var box := VBoxContainer.new()
+	box.name = "Gate_" + loc_id
+	box.custom_minimum_size.x = _GATE_TILE_W
+	box.add_theme_constant_override("separation", 4)
+	var token := Control.new()
+	token.name = "Token"
+	token.custom_minimum_size = Vector2(_GATE_TILE, _GATE_TILE)
+	token.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	token.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(token)
+	var color: String = _gate_color(loc_id)
+	for layer: Array in [["Outer", MapLayer.GATE_OUTER_TEX], ["Inner", MapLayer.GATE_INNER_TEX]]:
+		var r := TextureRect.new()
+		r.name = String(layer[0])
+		r.texture = (layer[1] as Dictionary).get(color)
+		r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		token.add_child(r)
+	var lbl := UIStyle.label(
+		_loc_name(loc_id), UIFonts.BODY, UIColors.TEXT, HORIZONTAL_ALIGNMENT_CENTER
+	)
+	lbl.name = "Name"
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(lbl)
+	return box
 
 
+# Цвет врат: открытые — каким открылись; в колоде/сбросе — каноничный цвет спейса.
+# Нет цвета в данных — зелёный, как при выкладке (BoardState.open_gate).
 static func _gate_color(loc_id: String) -> String:
-	return GameState.map.gate_color(loc_id)
+	var c: String = String(GameState.gates.get(loc_id, ""))
+	if c.is_empty():
+		c = GameState.map.gate_color(loc_id)
+	return c if MapLayer.GATE_OUTER_TEX.has(c) else "green"
 
 
 # Ключ перевода имени локации; нет в данных (номерной спейс без записи) — сам id.
