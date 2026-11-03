@@ -139,7 +139,7 @@ static func card_payload(cid: String, flipped_outcome_id := "") -> Dictionary:
 	var desc: String = String(def.get("front", ""))
 	if not flipped_outcome_id.is_empty():
 		desc = String(outcome_def(flipped_outcome_id).get("text", desc))
-	return {
+	var payload: Dictionary = {
 		"kind": "condition",
 		"condition_id": cid,
 		"base_frame": FRAME,
@@ -150,6 +150,19 @@ static func card_payload(cid: String, flipped_outcome_id := "") -> Dictionary:
 		"art_color": KIND_COLOR.get(kind, UIColors.ART_BG),
 		"has_action": not (def.get("action", []) as Array).is_empty(),
 	}
+	var art: Texture2D = card_art(cid)
+	if art != null:
+		payload["art"] = art  # есть арт — глиф и цветная заливка вида не нужны
+	return payload
+
+
+## Арт карты состояния: assets/cards/condition/<Имя Состояния>.png по id
+## (amnesia → «Amnesia», legInjury → «Leg Injury»), как у заклинаний. Нет — null.
+static func card_art(cid: String) -> Texture2D:
+	if cid.is_empty():
+		return null
+	var path: String = "res://assets/cards/condition/%s.png" % cid.capitalize()
+	return load(path) if ResourceLoader.exists(path) else null
 
 
 # ── Внутренние ────────────────────────────────────────────────────────────────
