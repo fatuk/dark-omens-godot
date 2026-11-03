@@ -1396,8 +1396,9 @@ func apply_board_effect(node: Dictionary) -> void:
 	if _target.is_targeted_effect(node):
 		_target.apply_targeted_effect(node)
 		return
-	# Повтор уровня поля (repeat по источнику разрешён интерпретатором в _times).
-	var times: int = maxi(1, int(node.get("_times", 1)))
+	# Повтор уровня поля (repeat по источнику разрешён интерпретатором в _times). 0 —
+	# «за каждое из нуля» (+1 Рок за каждые врата, а врат нет): ничего не делаем.
+	var times: int = int(node.get("_times", 1))
 	for _t in range(times):
 		_board.apply_verb(node, verb)
 

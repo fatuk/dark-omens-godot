@@ -39,6 +39,7 @@ class MockGS:
 
 	var mythos_in_play: Array = []
 	var monsters: Dictionary = {}
+	var gates: Dictionary = {}
 	var players: Dictionary = {}
 	var turn_order: Array = []
 	var doom: int = 0
@@ -86,7 +87,8 @@ class MockGS:
 		if _target.is_targeted_effect(node):
 			_target.apply_targeted_effect(node)
 		elif String(node.get("do", "")) == "advanceDoom":
-			doom += int(node.get("amount", node.get("count", 1)))
+			var times: int = int(node.get("_times", 1))  # как GameState: repeat поля
+			doom += int(node.get("amount", node.get("count", 1))) * times
 
 
 func before_each() -> void:
@@ -129,6 +131,19 @@ func test_run_reckoning_global_tiers() -> void:
 	assert_eq(_gs.doom, 2, "Древний (+1) + карта Мифов в игре (+1)")
 	assert_eq(int(_gs.players["p1"]["sanity"]), 4, "монстр: −1 рассудок каждому")
 	assert_eq(int(_gs.players["p2"]["sanity"]), 4)
+
+
+# Расплата Древнего «+1 Рок за каждые открытые врата» (repeat gatesOnBoard): счётчик
+# поля доходит до глобальной Расплаты; нет врат — Рок не растёт.
+func test_ancient_reckoning_doom_per_open_gate() -> void:
+	var prog: Array = [{"do": "advanceDoom", "amount": 1, "repeat": {"source": "gatesOnBoard"}}]
+	_gs.campaign = {"ancientOne": {"id": "sheaf", "onReckoning": prog}}
+	_gs.gates = {"5": "green", "Arkham": "red"}
+	await _r.run_reckoning("")
+	assert_eq(_gs.doom, 2, "двое врат — Рок +2")
+	_gs.gates = {}
+	await _r.run_reckoning("")
+	assert_eq(_gs.doom, 2, "врат нет — Рок не двигается")
 
 
 func test_run_reckoning_scope_mythos_only() -> void:

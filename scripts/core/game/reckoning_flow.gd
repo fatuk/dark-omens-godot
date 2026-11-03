@@ -143,8 +143,10 @@ func _apply_global(prog: Array, label: String, source: Dictionary = {}) -> void:
 	var flow: Dictionary = {
 		"interactive": true, "decisions": {}, "rolls": {}, "pending": {}, "slot": ""
 	}
-	# Контекст предикатов поля: noInvestigatorsAt {location} (Расплата листа Древнего).
+	# Контекст предикатов поля: noInvestigatorsAt {location} (Расплата листа Древнего) и
+	# счётчики «для каждого» (repeat): «+1 Рок за каждые открытые врата» и т.п.
 	var ctx: Dictionary = {"investigators_at": _investigators_at()}
+	ctx.merge(_board_counts())
 	var res: Dictionary = _EffectRunner.run(prog, {}, ctx, flow)
 	if not (res.get("pending", {}) as Dictionary).is_empty():
 		GameConsole.warn("[Расплата:%s] выбор в глобальной Расплате не поддержан — пропуск" % label)
@@ -155,6 +157,25 @@ func _apply_global(prog: Array, label: String, source: Dictionary = {}) -> void:
 		_gs.apply_board_effect(node_v as Dictionary)
 	for l_v: Variant in res.get("logs", []):
 		GameConsole.log("[Расплата:%s] %s" % [label, String(l_v)])
+
+
+# Счётчики поля для repeat в глобальной Расплате (EffectRunner._count_source).
+# Чего нет у стейта (моки тестов) — не кладём: счётчик тогда мягко = 1.
+func _board_counts() -> Dictionary:
+	var out: Dictionary = {}
+	var gates: Variant = _gs.get("gates")
+	if gates is Dictionary:
+		out["gates_on_board"] = (gates as Dictionary).size()
+	var mons: Variant = _gs.get("monsters")
+	if mons is Dictionary:
+		var n: int = 0
+		for loc_v: Variant in mons as Dictionary:
+			n += ((mons as Dictionary)[loc_v] as Array).size()
+		out["monsters_on_board"] = n
+	var board: BoardState = _gs.get("_board") as BoardState
+	if board != null:
+		out["gates_matching_omen"] = board.count_gates_of_color(board.current_omen_color())
+	return out
 
 
 # Показать всем бросок глобальной Расплаты (были кубы в flow.rolls) и подержать ROLL_SHOW:

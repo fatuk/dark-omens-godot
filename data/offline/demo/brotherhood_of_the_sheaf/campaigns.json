@@ -20,6 +20,13 @@
 							"do": "spawnMonster",
 							"monster": "cultist",
 							"where": "gates"
+						},
+						{
+							"do": "advanceDoom",
+							"amount": 1,
+							"repeat": {
+								"source": "gatesOnBoard"
+							}
 						}
 					],
 					"cultist": {
@@ -638,6 +645,13 @@
 							"do": "spawnMonster",
 							"monster": "cultist",
 							"where": "gates"
+						},
+						{
+							"do": "advanceDoom",
+							"amount": 1,
+							"repeat": {
+								"source": "gatesOnBoard"
+							}
 						}
 					],
 					"cultist": {
@@ -1256,6 +1270,13 @@
 							"do": "spawnMonster",
 							"monster": "cultist",
 							"where": "gates"
+						},
+						{
+							"do": "advanceDoom",
+							"amount": 1,
+							"repeat": {
+								"source": "gatesOnBoard"
+							}
 						}
 					],
 					"cultist": {
@@ -1874,6 +1895,13 @@
 							"do": "spawnMonster",
 							"monster": "cultist",
 							"where": "gates"
+						},
+						{
+							"do": "advanceDoom",
+							"amount": 1,
+							"repeat": {
+								"source": "gatesOnBoard"
+							}
 						}
 					],
 					"cultist": {
@@ -2494,6 +2522,13 @@
 							"do": "spawnMonster",
 							"monster": "cultist",
 							"where": "gates"
+						},
+						{
+							"do": "advanceDoom",
+							"amount": 1,
+							"repeat": {
+								"source": "gatesOnBoard"
+							}
 						}
 					],
 					"cultist": {
@@ -3112,6 +3147,13 @@
 							"do": "spawnMonster",
 							"monster": "cultist",
 							"where": "gates"
+						},
+						{
+							"do": "advanceDoom",
+							"amount": 1,
+							"repeat": {
+								"source": "gatesOnBoard"
+							}
 						}
 					],
 					"cultist": {
@@ -3730,6 +3772,13 @@
 							"do": "spawnMonster",
 							"monster": "cultist",
 							"where": "gates"
+						},
+						{
+							"do": "advanceDoom",
+							"amount": 1,
+							"repeat": {
+								"source": "gatesOnBoard"
+							}
 						}
 					],
 					"cultist": {
@@ -4348,6 +4397,13 @@
 							"do": "spawnMonster",
 							"monster": "cultist",
 							"where": "gates"
+						},
+						{
+							"do": "advanceDoom",
+							"amount": 1,
+							"repeat": {
+								"source": "gatesOnBoard"
+							}
 						}
 					],
 					"cultist": {

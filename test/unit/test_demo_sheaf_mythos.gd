@@ -1,9 +1,10 @@
 ## Демо «Братство Колоса»: стадия 1 колоды Мифов на настоящих GameState / MythosFlow /
-## ReckoningFlow и запечённой офлайн-библии (data/offline/demo). Сторожит сценарий:
-## старт без врат → «Круг» (синие врата на поле + культист, омен на синий — совпал
-## с этими вратами, Рок +1) → «Скот встал» (Расплата: культист у каждых врат,
-## культисты Рок не двигают) → «Письмо» (омен на красный — красных врат нет, Рок
-## прежний; улика самому влиятельному).
+## ReckoningFlow и запечённой офлайн-библии (data/offline/demo). Сторожит сценарий —
+## Рок растёт от врат, чтобы игрок учился их закрывать:
+## старт без врат → «Круг» (омен на синий — врат ещё нет; открылись синие врата +
+## культист) → «Зов полей» (Расплата: культист у каждых врат и Рок +1 за каждые
+## открытые) → «Письмо» (омен на красный — красных врат нет, Рок прежний; улика
+## самому влиятельному).
 extends GutTest
 
 const ANCIENT := "brotherhood_of_the_sheaf"
@@ -76,10 +77,10 @@ func test_stage_one_plays_as_scripted() -> void:
 	assert_eq(GameState.doom, 0, "омен сдвинут ДО врат — совпадать было не с чем")
 
 	# 2. «Зов полей»: Расплата — культист у каждых врат (лист) и на поле (Тайна I);
-	# культисты Рок не двигают. Сыщиков на поле нет — проверки Воли не будет.
+	# Рок +1 за каждые открытые врата. Сыщиков на поле нет — проверки Воли не будет.
 	await GameState._mythos._apply_effects((deck[1] as Dictionary).get("onDraw", []))
 	assert_eq(_cultists_at("5"), 3, "+1 у врат (лист) +1 на поле (Тайна I)")
-	assert_eq(GameState.doom, 0, "Расплата культистов Рок не двигает")
+	assert_eq(GameState.doom, 1, "Расплата: Рок +1 за открытые врата (одни)")
 
 	# 3. «Письмо»: омен синий → красный, красных врат нет — Рок не двигается; улика
 	# самому влиятельному сыщику.
@@ -92,7 +93,7 @@ func test_stage_one_plays_as_scripted() -> void:
 	var other_before: int = int(GameState.players[other].get("clues", 0))
 	await GameState._mythos._apply_effects((deck[2] as Dictionary).get("onDraw", []))
 	assert_eq(GameState._board.current_omen_color(), "red")
-	assert_eq(GameState.doom, 0, "красных врат нет — Рок прежний")
+	assert_eq(GameState.doom, 1, "красных врат нет — Рок прежний")
 	assert_eq(
 		int(GameState.players[lead_by_influence].get("clues", 0)) - lead_before,
 		1,
