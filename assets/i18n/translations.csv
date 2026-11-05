@@ -1694,7 +1694,7 @@ SPELL_AZURE_FLAME_NAME,Лазурное пламя,Azure Flame
 SPELL_AZURE_FLAME_ABILITY,Аура: в бою каждая «6» в проверке Силы даёт 2 успеха.,"Aura: in combat, each 6 on a Strength test counts as 2 successes."
 SPELL_ENCHANT_WEAPON_NAME,Зачарование оружия,Enchant Weapon
 SPELL_ENCHANT_WEAPON_ABILITY,Аура: в бою переброс до 2 кубиков в проверке Силы.,"Aura: in combat, reroll up to 2 dice on a Strength test."
-SPELL_WRACK_NAME,Терзание,Wrack
+SPELL_WRACK_NAME,Разрушение,Wrack
 SPELL_WRACK_ABILITY,В бою: проверьте Знание (−1). При успехе +5 к Силе на этот бой.,"During combat: test Lore (−1). If you pass, gain +5 Strength for this combat."
 SPELL_POISON_MIST_NAME,Ядовитый туман,Poison Mist
 SPELL_POISON_MIST_ABILITY,Действие: проверьте Знание+1. При успехе сбросьте с вашей клетки монстра со стойкостью не выше результата.,"Action: Test Lore+1. If you pass, discard a Monster from your space with toughness equal to or less than your test result."

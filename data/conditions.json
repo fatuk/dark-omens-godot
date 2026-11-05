@@ -583,7 +583,8 @@
 					"season": "utp"
 				}
 			],
-			"season": "core"
+			"season": "core",
+			"isReady": true
 		},
 		{
 			"id": "paranoia",
@@ -1732,7 +1733,8 @@
 					"then": "front",
 					"season": "cir"
 				}
-			]
+			],
+			"isReady": true
 		},
 		{
 			"id": "detained",

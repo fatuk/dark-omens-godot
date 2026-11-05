@@ -147,7 +147,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "wither",
@@ -316,7 +317,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "mind_s_eye",
@@ -428,7 +430,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "healing_words",
@@ -577,7 +580,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "azure_flame",
@@ -689,7 +693,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "enchant_weapon",
@@ -797,7 +802,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "wrack",
@@ -906,7 +912,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "poison_mist",
@@ -1067,7 +1074,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "storm_of_spirits",
@@ -1175,7 +1183,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "spectral_razor",
@@ -1284,7 +1293,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "banishment",
@@ -1396,7 +1406,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "blessing_of_isis",
@@ -1543,7 +1554,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "voice_of_ra",
@@ -1652,7 +1664,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "call_the_storm",
@@ -1764,7 +1777,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "conjuration",
@@ -1949,7 +1963,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "arcane_insight",
@@ -2050,7 +2065,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "feed_the_mind",
@@ -2205,7 +2221,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "occult_exaltation",
@@ -2320,7 +2337,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "binding",
@@ -2428,7 +2446,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "dread_curse",
@@ -2537,7 +2556,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "beast_within",
@@ -2671,7 +2691,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "plumb_the_void",
@@ -2812,7 +2833,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "mists_of_releh",
@@ -2935,7 +2957,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "instill_bravery",
@@ -3098,7 +3121,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "flesh_ward",
@@ -3261,7 +3285,8 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	},
 	{
 		"id": "clairvoyance",
@@ -3425,6 +3450,7 @@
 					}
 				]
 			}
-		]
+		],
+		"isReady": true
 	}
 ]
