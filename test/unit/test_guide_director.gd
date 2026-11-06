@@ -60,6 +60,8 @@ func test_data_triggers_are_known() -> void:
 		"locationAlly",
 		"diceBonus",
 		"diceBlocked",
+		"rerollTokens",
+		"focusGained",
 	]
 	for h_v: Variant in DataLoader.load_dict(GuideDirector.DATA_PATH).get("hints", []):
 		var h: Dictionary = h_v
@@ -198,3 +200,26 @@ func test_dice_marks_trigger_hints() -> void:
 	assert_true(_d.trigger_active("diceBlocked"), "красные кубы на экране")
 	tray.visible = false
 	assert_false(_d.trigger_active("diceBlocked"), "скрытый лоток не считается")
+
+
+# Концентрация на руках — подсказка, зачем она.
+func test_focus_gained_trigger() -> void:
+	assert_false(_d.trigger_active("focusGained"), "концентрации нет")
+	GameState.players[ME]["concentration"] = 1
+	assert_true(_d.trigger_active("focusGained"), "взяли концентрацию")
+
+
+# Проваленный кубик + концентрация/улика на руках — подсказка про переброс; без
+# жетонов, без провала или с уже разыгранным жетоном — нет.
+func test_reroll_tokens_trigger() -> void:
+	GameState.active_check = {"pid": ME, "rolled": true, "base": [6, 2], "dice": [6, 2]}
+	assert_false(_d.trigger_active("rerollTokens"), "нечем перебрасывать")
+	GameState.players[ME]["clues"] = 1
+	assert_true(_d.trigger_active("rerollTokens"), "улика на руках, кубик провален")
+	GameState.dice.pending_currency = "clue"
+	assert_false(_d.trigger_active("rerollTokens"), "жетон уже разыгран — знает как")
+	GameState.dice.pending_currency = ""
+	GameState.active_check = {"pid": ME, "rolled": true, "base": [6, 5], "dice": [6, 5]}
+	assert_false(_d.trigger_active("rerollTokens"), "провалов нет")
+	GameState.active_check = {"pid": ME, "rolled": false, "base": [], "dice": []}
+	assert_false(_d.trigger_active("rerollTokens"), "ещё не бросали")

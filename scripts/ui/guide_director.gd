@@ -103,15 +103,22 @@ func _show(h: Dictionary) -> void:
 	)
 
 
-# Что подсказка не должна закрывать (поле avoid в данных): "diceTray" — лоток кубов
-# с зелёными/красными отметками, о котором она рассказывает. null — ничего.
+# Что подсказка не должна закрывать (поле avoid в данных): "diceTray" — видимый лоток
+# кубов, о котором она рассказывает (с зелёными/красными отметками — он в первую
+# очередь). null — ничего.
 func _avoid_target(avoid: String) -> Control:
 	if avoid != "diceTray":
 		return null
+	var shown: Control = null
 	for t: Node in get_tree().get_nodes_in_group(DiceTray.GROUP):
+		var tray := t as Control
+		if tray == null or not tray.is_visible_in_tree():
+			continue
 		if int(t.call("bonus_count")) > 0 or int(t.call("blocked_count")) > 0:
-			return t as Control
-	return null
+			return tray
+		if shown == null:
+			shown = tray
+	return shown
 
 
 ## Запись подсказки по id ({} — нет такой).
@@ -175,6 +182,16 @@ func trigger_active(on: String) -> bool:
 				if n > 0:
 					return true
 			return false
+		"rerollTokens":
+			# Бросок сделан, есть проваленный кубик, а на руках — концентрация или улика
+			# (и ещё не разыграна: заряженный жетон — уже знает, как).
+			return (
+				(int(me.get("concentration", 0)) > 0 or int(me.get("clues", 0)) > 0)
+				and GameState.dice.pending_currency.is_empty()
+				and GameState.dice.has_failed_die()
+			)
+		"focusGained":
+			return int(me.get("concentration", 0)) > 0
 	if on.begins_with("location"):
 		return _location_trigger(on, me)
 	return false

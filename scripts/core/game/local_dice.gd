@@ -57,6 +57,17 @@ func has_resource() -> bool:
 	)
 
 
+## Есть ли в текущей проверке локального игрока проваленный кубик (бросок сделан) —
+## для обучения: повод рассказать о перебросе концентрацией/уликой.
+func has_failed_die() -> bool:
+	var c: Dictionary = current_check()
+	var pid: String = _gs._nm.my_user_id
+	for i in range((c.get("dice", c.get("base", [])) as Array).size()):
+		if _check.die_is_rerollable(pid, i, c):
+			return true
+	return false
+
+
 ## «Зарядить» валюту переброса (закинули жетон на проверку) и перерисовать — чтобы
 ## кубы стали кликабельны.
 func charge(currency: String) -> void:

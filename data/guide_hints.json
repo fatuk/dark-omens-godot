@@ -11,6 +11,8 @@
 		{"id": "reckoning", "on": "reckoning", "show": "over", "priority": 9, "lines": ["GUIDE_RECKONING"]},
 		{"id": "dice_bonus", "on": "diceBonus", "show": "over", "priority": 8, "avoid": "diceTray", "lines": ["GUIDE_DICE_BONUS"]},
 		{"id": "dice_blocked", "on": "diceBlocked", "show": "over", "priority": 8, "avoid": "diceTray", "lines": ["GUIDE_DICE_BLOCKED"]},
+		{"id": "reroll_tokens", "on": "rerollTokens", "show": "over", "priority": 8, "avoid": "diceTray", "lines": ["GUIDE_REROLL_TOKENS"]},
+		{"id": "focus_gained", "on": "focusGained", "show": "free", "priority": 7, "lines": ["GUIDE_FOCUS"]},
 		{"id": "location_open", "on": "locationOpen", "show": "over", "priority": 7, "lines": ["GUIDE_LOCATION_1", "GUIDE_LOCATION_2", "GUIDE_LOCATION_3"]},
 		{"id": "location_clue", "on": "locationClue", "show": "over", "priority": 6, "lines": ["GUIDE_LOCATION_CLUE"]},
 		{"id": "location_gate", "on": "locationGate", "show": "over", "priority": 6, "lines": ["GUIDE_LOCATION_GATE"]},

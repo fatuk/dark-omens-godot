@@ -829,7 +829,7 @@ TOKEN_CONCENTRATION,Концентрация,Focus
 TOKEN_CLUE,Улика,Clue
 TOKEN_SANITY_FOR_CLUE,Личная способность,Personal ability
 TOKEN_SANITY_FOR_CLUE_DESC,"«Звёздные карты не лгут. Но всякий раз, вглядываясь в них, я оставляю там частицу себя — и она уже не возвращается»","«The star charts never lie. But each time I study them, I leave a piece of myself up there — and it never comes back»"
-TOKEN_REROLL_HINT,перетащите на куб,drag onto a die
+TOKEN_REROLL_HINT,"разыграйте, затем нажмите на проваленный кубик","play it, then click a failed die"
 ENCOUNTER_DICE,Кубики,Dice
 ENCOUNTER_SUCCESSES,успехов,successes
 ENCOUNTER_DEFAULT_BG,"сыщик, идущий по следу кошмара",an investigator on the trail of a nightmare
@@ -2333,6 +2333,8 @@ GUIDE_MYTHOS,"Фаза Мифов. Древний делает свой ход: 
 GUIDE_RECKONING,"Расплата. Всё, что отмечено символом Расплаты — состояния, монстры, слухи, — срабатывает сейчас.","Reckoning. Everything marked with the Reckoning symbol, conditions, monsters, rumors, resolves now."
 GUIDE_DICE_BONUS,"Зелёные кубики — дополнительные. Их приносят улучшенный навык, оружие, заклинания и прочие карты: вы бросаете их вместе с остальными, и чем их больше, тем вернее успех.","Green dice are extra dice. They come from an improved skill, weapons, spells and other cards: you roll them along with the rest, and the more you have, the surer your success."
 GUIDE_DICE_BLOCKED,"Красные кубики — отнятые. Их забрали ослабленный навык, штраф проверки или состояние: эти кубики вы не бросаете. Но хотя бы один кубик у вас остаётся всегда.","Red dice are dice taken away. An impaired skill, a test penalty or a condition has claimed them: you do not roll these. Still, you always keep at least one die."
+GUIDE_REROLL_TOKENS,"Не повезло с кубиком? Его можно перебросить. Откройте карты на руках, разыграйте концентрацию или улику из раздела «Концентрация и улики» — и нажмите на проваленный кубик.","Unlucky die? You can reroll it. Open your cards in hand, play a Focus or a Clue from the “Focus and Clues” section, then click the failed die."
+GUIDE_FOCUS,"Концентрация — запас перебросов на будущее, держать можно до двух жетонов. В любой проверке разыграйте жетон с руки и нажмите на проваленный кубик — он перебросится.","Focus is a store of rerolls for later; you can hold up to two tokens. In any test, play a token from your hand and click a failed die to reroll it."
 GUIDE_LOCATION_1,"Это карточка места. Здесь видно, кто и что сейчас на этой клетке: сыщики, монстры, улики, слухи — и что вы можете сделать, если окажетесь тут.","This is the location card. It shows who and what is on this space right now: investigators, Monsters, Clues, Rumors, and what you can do if you are here."
 GUIDE_LOCATION_2,"Тип места решает, какие встречи вас ждут: город, глушь или море. В городах работают магазины и продают билеты на поезд и пароход — с ними дальняя дорога короче.","The type of place decides which encounters await you: city, wilderness or sea. Cities have shops and sell train and ship tickets, which make long journeys shorter."
 GUIDE_LOCATION_3,"Нажмите на картину — она откроется в галерее, крупно и с табличкой о месте. Табличку стоит прочесть: здешние встречи вырастают из истории места, и подробности подскажут, что искать и чего остерегаться.","Click the picture to open it in the gallery, full size, with a plaque about the place. The plaque is worth reading: encounters here grow out of the place's history, and the details hint at what to look for and what to beware of."
