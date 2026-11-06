@@ -77,7 +77,7 @@ CONTROLS_KEY_HOVER,Наведение,Hover
 CONTROLS_KB_CLICK,"Выбрать локацию, нажать кнопку, разыграть карту","Select a location, press a button, play a card"
 CONTROLS_KB_DRAG,Зажать и тянуть — двигать карту мира,Hold and drag to move the world map
 CONTROLS_KB_WHEEL,Масштаб карты мира; на увеличенной карте — прокрутка текста,Zoom the world map; scroll the text of an enlarged card
-CONTROLS_HAND,"Карты на руках: активы, заклинания, жетоны, состояния","Cards in hand: assets, spells, tokens, conditions"
+CONTROLS_HAND,"Карты на руках: активы, заклинания, концентрация и улики, состояния","Cards in hand: assets, spells, focus and clues, conditions"
 CONTROLS_SECTIONS,Карты на руках — соседний раздел,Cards in hand: next or previous section
 CONTROLS_CHAT,Чат,Chat
 CONTROLS_KB_ESC,Закрыть окно; меню паузы,Close a window; pause menu
@@ -813,7 +813,7 @@ ENCOUNTER_REROLL_TAP,нажмите кубик для переброса,tap a d
 ENCOUNTER_REROLL_DRAG,перетащите жетон на проверку для переброса,drag a token onto the test to reroll
 HAND_ASSETS,Активы,Assets
 HAND_SPELLS,Заклинания,Spells
-HAND_TOKENS,Жетоны,Tokens
+HAND_TOKENS,Концентрация и улики,Focus and Clues
 HAND_CONDITIONS,Состояния,Conditions
 COND_KIND_DEAL,Сделка,Deal
 COND_KIND_MADNESS,Безумие,Madness
