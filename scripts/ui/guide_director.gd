@@ -98,8 +98,20 @@ func _show(h: Dictionary) -> void:
 		self,
 		h.get("lines", []),
 		String(h.get("show", "free")) == "over",
-		String(h.get("on", "")).begins_with("location")
+		String(h.get("on", "")).begins_with("location"),
+		_avoid_target(String(h.get("avoid", "")))
 	)
+
+
+# Что подсказка не должна закрывать (поле avoid в данных): "diceTray" — лоток кубов
+# с зелёными/красными отметками, о котором она рассказывает. null — ничего.
+func _avoid_target(avoid: String) -> Control:
+	if avoid != "diceTray":
+		return null
+	for t: Node in get_tree().get_nodes_in_group(DiceTray.GROUP):
+		if int(t.call("bonus_count")) > 0 or int(t.call("blocked_count")) > 0:
+			return t as Control
+	return null
 
 
 ## Запись подсказки по id ({} — нет такой).
@@ -156,6 +168,13 @@ func trigger_active(on: String) -> bool:
 			)
 		"reckoning":
 			return me.has("reckoning_check")
+		"diceBonus", "diceBlocked":
+			# В окне броска игрока есть зелёные (добавленные) / красные (отнятые) кубы.
+			for t: Node in get_tree().get_nodes_in_group(DiceTray.GROUP):
+				var n: int = int(t.call("bonus_count" if on == "diceBonus" else "blocked_count"))
+				if n > 0:
+					return true
+			return false
 	if on.begins_with("location"):
 		return _location_trigger(on, me)
 	return false

@@ -1,5 +1,5 @@
 {
-	"_comment": "Подсказки профессора Армитеджа (GuideDirector). on — событие игры (список в GuideDirector.trigger_active); lines — ключи перевода реплик; show: free — ждать, пока экран свободен от окон, over — сразу поверх открытого окна (встреча, бой, магазин…); priority — больше = раньше в очереди. Каждая подсказка показывается один раз на профиль (SettingsStore.guide_seen), выключаются в настройках.",
+	"_comment": "Подсказки профессора Армитеджа (GuideDirector). on — событие игры (список в GuideDirector.trigger_active); lines — ключи перевода реплик; show: free — ждать, пока экран свободен от окон, over — сразу поверх открытого окна (встреча, бой, магазин…); priority — больше = раньше в очереди; avoid — что рамка не должна закрывать (diceTray — лоток кубов, о котором речь). Каждая подсказка показывается один раз на профиль (SettingsStore.guide_seen), выключаются в настройках.",
 	"hints": [
 		{"id": "welcome", "on": "actionPhase", "show": "free", "priority": 10, "lines": ["GUIDE_HELLO", "GUIDE_ACTIONS_1", "GUIDE_ACTIONS_2", "GUIDE_ACTIONS_3"]},
 		{"id": "monster_here", "on": "monsterHere", "show": "free", "priority": 8, "lines": ["GUIDE_MONSTER_HERE"]},
@@ -9,6 +9,8 @@
 		{"id": "shop", "on": "shop", "show": "over", "priority": 9, "lines": ["GUIDE_SHOP"]},
 		{"id": "mythos", "on": "mythos", "show": "over", "priority": 9, "lines": ["GUIDE_MYTHOS"]},
 		{"id": "reckoning", "on": "reckoning", "show": "over", "priority": 9, "lines": ["GUIDE_RECKONING"]},
+		{"id": "dice_bonus", "on": "diceBonus", "show": "over", "priority": 8, "avoid": "diceTray", "lines": ["GUIDE_DICE_BONUS"]},
+		{"id": "dice_blocked", "on": "diceBlocked", "show": "over", "priority": 8, "avoid": "diceTray", "lines": ["GUIDE_DICE_BLOCKED"]},
 		{"id": "location_open", "on": "locationOpen", "show": "over", "priority": 7, "lines": ["GUIDE_LOCATION_1", "GUIDE_LOCATION_2", "GUIDE_LOCATION_3"]},
 		{"id": "location_clue", "on": "locationClue", "show": "over", "priority": 6, "lines": ["GUIDE_LOCATION_CLUE"]},
 		{"id": "location_gate", "on": "locationGate", "show": "over", "priority": 6, "lines": ["GUIDE_LOCATION_GATE"]},

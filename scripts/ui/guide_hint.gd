@@ -41,10 +41,15 @@ static var FRAME_PAD_Y: float = 42.0
 const _SLIDE_PX: float = 90.0  # въезд профессора справа
 const _FADE_IN: float = 0.35
 const _FADE_OUT: float = 0.2
+const _DODGE_GAP: float = 14.0  # зазор между рамкой и тем, что она не должна закрывать
+const _DODGE_RECHECK: float = 0.4  # пересчёт после появления окна (оно въезжает с масштабом)
 
 var _lines: Array = []
 var _over_modals: bool = false
 var _mirrored: bool = false  # слева, лицом вправо (см. say)
+var _avoid: Control = null  # что не закрывать (лоток кубов, о котором подсказка)
+var _base_frame_y: float = 0.0  # верх рамки и арта по раскладке — до увода от _avoid
+var _base_art_y: float = 0.0
 var _index: int = 0
 var _closing: bool = false
 var _root: Control
@@ -57,14 +62,21 @@ var _more: Label
 ## Показать реплики наставника поверх сцены parent. Возвращает узел подсказки
 ## (его finished — когда игрок прочитал всё). over_modals — поверх открытых окон
 ## (подсказка ПРО это окно: встреча, бой, магазин); иначе — под модалками.
+## avoid — контрол, который рамка не должна закрывать (напр. лоток кубов, о котором
+## речь): профессор с рамкой уходят ниже него, а не влезает — выше.
 static func say(
-	parent: Node, lines: Array, over_modals: bool = false, mirrored: bool = false
+	parent: Node,
+	lines: Array,
+	over_modals: bool = false,
+	mirrored: bool = false,
+	avoid: Control = null
 ) -> GuideHint:
 	var g := GuideHint.new()
 	g.name = "GuideHint"
 	g._lines = lines.duplicate()
 	g._over_modals = over_modals
 	g._mirrored = mirrored
+	g._avoid = avoid
 	parent.add_child(g)
 	return g
 
@@ -83,6 +95,8 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout)
 	UIStyle.mark_modal(self, true)
 	_play_in()
+	if _avoid != null:
+		get_tree().create_timer(_DODGE_RECHECK).timeout.connect(_fit_frame)
 
 
 func _build() -> void:
@@ -159,6 +173,8 @@ func _layout() -> void:
 		_art.position = Vector2(vp.x + ART_OVERFLOW_X - art_size.x, y)
 		var finger_xr: float = _art.position.x + _FINGER.x * ART_SCALE
 		_frame.position = Vector2(finger_xr + FRAME_X - FRAME_W, finger_y + FRAME_Y)
+	_base_frame_y = _frame.position.y
+	_base_art_y = _art.position.y
 	_fit_frame.call_deferred()
 
 
@@ -168,6 +184,26 @@ func _layout() -> void:
 func _fit_frame() -> void:
 	if is_instance_valid(_frame):
 		_frame.size = Vector2(FRAME_W, 0.0)  # 0 → ужмётся до минимума содержимого
+		_dodge()
+
+
+# Рамка закрывает _avoid — сдвигаем профессора с рамкой по вертикали: под него, а если
+# снизу не влезает — над ним. Палец остаётся у рамки (двигаются вместе).
+func _dodge() -> void:
+	_frame.position.y = _base_frame_y
+	_art.position.y = _base_art_y
+	if not is_instance_valid(_avoid) or not _avoid.is_visible_in_tree():
+		return
+	var r: Rect2 = _avoid.get_global_rect().grow(_DODGE_GAP)
+	var h: float = _frame.size.y
+	if not Rect2(_frame.position, Vector2(FRAME_W, h)).intersects(r):
+		return
+	var vp_h: float = get_viewport().get_visible_rect().size.y
+	var dy: float = r.end.y - _base_frame_y
+	if r.end.y + h > vp_h:
+		dy = r.position.y - h - _base_frame_y
+	_frame.position.y = _base_frame_y + dy
+	_art.position.y = _base_art_y + dy
 
 
 func _show_line(i: int) -> void:

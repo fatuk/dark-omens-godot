@@ -58,6 +58,8 @@ func test_data_triggers_are_known() -> void:
 		"locationGate",
 		"locationMonster",
 		"locationAlly",
+		"diceBonus",
+		"diceBlocked",
 	]
 	for h_v: Variant in DataLoader.load_dict(GuideDirector.DATA_PATH).get("hints", []):
 		var h: Dictionary = h_v
@@ -181,3 +183,18 @@ func test_real_sidebar_wakes_location_hint() -> void:
 	sb.call("show_location", GameState.map.by_id("Arkham"))
 	assert_eq(String(sb.call("shown_location")), "Arkham")
 	assert_has(_queue(), "location_open", "открыли карточку — подсказка в очереди")
+
+
+# Зелёные/красные кубы в окне броска — подсказки про них; скрытый лоток не в счёт.
+func test_dice_marks_trigger_hints() -> void:
+	var tray := DiceTray.new()
+	tray.name = "DiceTray"
+	add_child_autofree(tray)
+	assert_false(_d.trigger_active("diceBonus"), "отметок нет")
+	tray.set_pool_marks(2, 0)
+	assert_true(_d.trigger_active("diceBonus"), "зелёные кубы на экране")
+	assert_false(_d.trigger_active("diceBlocked"), "красных нет")
+	tray.set_pool_marks(0, 1)
+	assert_true(_d.trigger_active("diceBlocked"), "красные кубы на экране")
+	tray.visible = false
+	assert_false(_d.trigger_active("diceBlocked"), "скрытый лоток не считается")

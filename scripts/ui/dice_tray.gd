@@ -110,6 +110,9 @@ void fragment() {
 var _dice: Array = []  # [{root, glow, reel, blur_mat, value, index, clickable, pending}]
 var _pending_skill: String = ""  # какой навык показывать в пустых кубах (см. show_pending)
 var _settle_tw: Tween = null  # ожидание конца броска (см. roll_settled)
+## Группа живых лотков (обучение: зелёные/красные кубы на экране).
+const GROUP := &"dice_tray"
+
 var _bonus_n: int = 0  # сколько ПЕРВЫХ кубов помечены как добавленные (зелёные)
 var _blocked_n: int = 0  # сколько холостых рамок дорисовать в хвосте (красные)
 ## Порог успеха для подсветки: Blessed → 4, Cursed → 6, иначе 5. Ставит модалка
@@ -120,6 +123,7 @@ var threshold: int = Dice.SUCCESS_MIN
 func _init() -> void:
 	name = "DiceTray"
 	add_to_group(GAP_GROUP)  # чтобы панель тюнинга дотянулась до живых лотков
+	add_to_group(GROUP)  # обучение (GuideDirector) смотрит, есть ли зелёные/красные кубы
 	refresh_gap()
 	alignment = BoxContainer.ALIGNMENT_CENTER
 
@@ -201,6 +205,19 @@ func _arm_settled(dur: float) -> void:
 func set_pool_marks(bonus: int, blocked: int) -> void:
 	_bonus_n = maxi(0, bonus)
 	_blocked_n = maxi(0, blocked)
+	if (_bonus_n > 0 or _blocked_n > 0) and is_inside_tree():
+		# Первые зелёные/красные кубы — повод для подсказки профессора про них.
+		get_tree().call_group.call_deferred("guide_director", "refresh")
+
+
+## Зелёных (добавленных) кубов в видимом лотке — для обучения; скрытый лоток — 0.
+func bonus_count() -> int:
+	return _bonus_n if is_visible_in_tree() else 0
+
+
+## Красных (отнятых) кубов в видимом лотке — для обучения; скрытый лоток — 0.
+func blocked_count() -> int:
+	return _blocked_n if is_visible_in_tree() else 0
 
 
 ## Перечитать DIE_GAP в отступ контейнера (панель тюнинга дёргает у живых лотков).
