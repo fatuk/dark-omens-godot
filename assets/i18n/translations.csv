@@ -76,24 +76,24 @@ CONTROLS_KEY_WHEEL,Колесо,Wheel
 CONTROLS_KEY_HOVER,Наведение,Hover
 CONTROLS_KB_CLICK,"Выбрать локацию, нажать кнопку, разыграть карту","Select a location, press a button, play a card"
 CONTROLS_KB_DRAG,Зажать и тянуть — двигать карту мира,Hold and drag to move the world map
-CONTROLS_KB_WHEEL,Зум карты; в веере — листать карты,"Zoom the map; in the hand, flip through cards"
-CONTROLS_HAND,"Веер руки: активы, заклинания, жетоны, состояния","Your hand: assets, spells, tokens, conditions"
-CONTROLS_SECTIONS,Разделы веера,Hand sections
+CONTROLS_KB_WHEEL,Масштаб карты мира; на увеличенной карте — прокрутка текста,Zoom the world map; scroll the text of an enlarged card
+CONTROLS_HAND,"Карты на руках: активы, заклинания, жетоны, состояния","Cards in hand: assets, spells, tokens, conditions"
+CONTROLS_SECTIONS,Карты на руках — соседний раздел,Cards in hand: next or previous section
 CONTROLS_CHAT,Чат,Chat
 CONTROLS_KB_ESC,Закрыть окно; меню паузы,Close a window; pause menu
-CONTROLS_KB_ENTER,Дальше в подсказках профессора,Next line of the professor's hints
-CONTROLS_KB_PEEK,Наведите на компас — увидите следующее знамение,Hover the compass to see the next omen
-CONTROLS_KB_PANEL,"Компас — последний миф, медальон — запасы, орб раунда — Тайна",Compass: last Mythos; medallion: supply; round orb: Mystery
+CONTROLS_KB_ENTER,Следующая реплика профессора; разыграть карту,The professor's next line; play the selected card
+CONTROLS_KB_PEEK,Навести на компас — следующее знамение,Hover the compass to see the next omen
+CONTROLS_KB_PANEL,"Компас — последний Миф, медальон — запасы, счётчик раундов — Тайна",Compass: last Mythos; medallion: supplies; round counter: Mystery
 CONTROLS_PAD_MOVE,Выбор локации на карте и кнопок в окнах,Pick a location on the map and buttons in windows
 CONTROLS_PAD_ACCEPT,"Выбрать, нажать, разыграть карту","Select, press, play a card"
 CONTROLS_PAD_BACK,"Назад, закрыть окно","Back, close a window"
 CONTROLS_PAD_ACTIONS,"Держать — панель действий: отдых, концентрация, ресурс, пас","Hold for actions: rest, focus, resource, pass"
-CONTROLS_PAD_PANEL,"Держать — следующее знамение и верхняя панель: миф, запасы, Тайна","Hold for the next omen and the top panel: Mythos, supply, Mystery"
-CONTROLS_PAD_RSTICK,Зум карты; прокрутка длинного текста,Zoom the map; scroll long text
+CONTROLS_PAD_PANEL,"Держать — следующее знамение и верхняя панель: Миф, запасы, Тайна","Hold for the next omen and the top panel: Mythos, supplies, Mystery"
+CONTROLS_PAD_RSTICK,Масштаб карты мира; прокрутка длинного текста карты,Zoom the world map; scroll a card's long text
 CONTROLS_PAD_PAUSE,Меню паузы,Pause menu
 CONTROLS_PAD_ABILITIES,На карте — способности вашего сыщика,"On the map, your investigator's abilities"
-CONTROLS_PAD_GALLERY,"В карточке места — галерея; в ней вверх/вниз — картина и табличка, ○ — общий план","In a location card, the gallery; inside, up/down zoom to the picture or the plaque, back returns to the full view"
-CONTROLS_PAD_PICKER,"Выбор сыщика: способности и список игроков; R2 — стартовые карты","Investigator pick: abilities and player list; R2 — starting cards"
+CONTROLS_PAD_GALLERY,"В карточке места — галерея; в ней вверх/вниз — картина и табличка, «назад» — общий план","In a location card, the gallery; inside, up/down zoom to the picture or the plaque, back returns to the full view"
+CONTROLS_PAD_PICKER,Выбор сыщика: способности и список игроков; правый курок — стартовые карты,Investigator pick: abilities and player list; right trigger: starting cards
 PAUSE_LEAVE,Выйти из игры,Leave game
 PAUSE_MAIN_MENU,В главное меню,Main menu
 PAUSE_MESSAGES,ПОСЛАНИЯ,MESSAGES
