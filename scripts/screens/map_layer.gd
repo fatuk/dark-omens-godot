@@ -1131,7 +1131,7 @@ func set_investigators(list: Array) -> void:
 			pin.setup(tex)
 			pin.set_dead(bool(entry.get("dead", false)))
 			pin.set_away(not bool(entry.get("connected", true)))
-			# Задержан — лежит; только что задержали / встал — с анимацией падения.
+			# Задержан — портрет красным; только что задержали / встал — плавно.
 			var delayed: bool = bool(entry.get("delayed", false))
 			pin.set_delayed(
 				delayed, not was.is_empty() and bool(was.get("delayed", false)) != delayed
