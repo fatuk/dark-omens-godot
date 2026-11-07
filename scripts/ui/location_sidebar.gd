@@ -91,6 +91,14 @@ var _items_list: VBoxContainer = null
 # Улика на локации — строка «иконка + имя улики».
 const _CLUE_ICON: Texture2D = preload("res://assets/map/clue-icon.png")
 const _ELDRITCH_ICON: Texture2D = preload("res://assets/map/mystery-icon.png")  # как на карте
+const _RUMOR_ICON: Texture2D = preload("res://assets/map/rumor-icon.png")  # как на карте
+## Способ развеять Слух (rumor.solve.kind) → строка «Развеять: …».
+const _RUMOR_SOLVE_KEYS := {
+	"encounter": "SIDEBAR_RUMOR_SOLVE_ENCOUNTER",
+	"researchClue": "SIDEBAR_RUMOR_SOLVE_RESEARCH",
+	"gateClose": "SIDEBAR_RUMOR_SOLVE_GATE",
+	"monsterDefeated": "SIDEBAR_RUMOR_SOLVE_MONSTER",
+}
 ## Ресурс цены особой встречи → ключ его названия (иначе — сам id).
 const _COST_NAMES := {
 	"clue": "SIDEBAR_CAT_CLUES", "sanity": "COMBAT_SANITY", "health": "COMBAT_HEALTH"
@@ -593,13 +601,17 @@ func _populate_items(loc_id: String) -> void:
 	var ents: Array = GameState.entities.get(loc_id, [])
 	var mons: Array = GameState.monsters.get(loc_id, [])
 	var clues: int = (ents as Array).count("clue")
-	var rumors: int = (ents as Array).count("rumor")
+	var rumors: Array = GameState._rumor.cards_at(loc_id)
 
 	var invs: Array = _investigators_at(loc_id)
 	var eldritch: Dictionary = GameState._mystery.eldritch_hook_at(loc_id)
 
 	var empty: bool = (
-		invs.is_empty() and mons.is_empty() and clues == 0 and rumors == 0 and eldritch.is_empty()
+		invs.is_empty()
+		and mons.is_empty()
+		and clues == 0
+		and rumors.is_empty()
+		and eldritch.is_empty()
 	)
 	_items_list.visible = not empty
 	if empty:
@@ -637,8 +649,10 @@ func _populate_items(loc_id: String) -> void:
 		_add_section("SIDEBAR_CAT_CLUES")
 		for i: int in range(clues):
 			_items_list.add_child(_make_clue_row(clue_name, i))
-	if rumors > 0:
-		_add_section("SIDEBAR_CAT_RUMORS", rumors)  # своего списка у слухов нет — число
+	if not rumors.is_empty():
+		_add_section("SIDEBAR_CAT_RUMORS")
+		for card_v: Variant in rumors:
+			_items_list.add_child(_make_rumor_row(card_v as Dictionary))
 	if not eldritch.is_empty():
 		_add_section("SIDEBAR_CAT_ELDRITCH")
 		_items_list.add_child(_make_eldritch_row(eldritch))
@@ -659,7 +673,42 @@ func _make_eldritch_row(hook: Dictionary) -> HBoxContainer:
 	icon.custom_minimum_size = Vector2(_CLUE_ICON_PX, _CLUE_ICON_PX)
 	row.add_child(icon)
 	var lines: PackedStringArray = [tr("SIDEBAR_ELDRITCH_DESC")]
-	var cost: Dictionary = hook.get("cost", {})
+	_append_cost_test(lines, hook.get("cost", {}), hook.get("test", {}))
+	row.add_child(_note_label(lines))
+	return row
+
+
+# Слух на клетке: имя, как развеять (встреча / исследование / портал / монстр; цена,
+# проверка, прогресс) и таймер — жетоны на карте Слуха, что снимает каждая Расплата.
+func _make_rumor_row(card: Dictionary) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.name = "Rumor"
+	row.add_theme_constant_override("separation", 10)
+	var icon := TextureRect.new()
+	icon.name = "Icon"
+	icon.texture = _RUMOR_ICON
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	icon.custom_minimum_size = Vector2(_CLUE_ICON_PX, _CLUE_ICON_PX)
+	row.add_child(icon)
+	var lines: PackedStringArray = [tr("SIDEBAR_RUMOR_NAME") % tr(String(card.get("name", "")))]
+	var kind: String = GameState._rumor.solve_kind(card)
+	var solve: Dictionary = GameState._rumor.solve_of(card)
+	if _RUMOR_SOLVE_KEYS.has(kind):
+		lines.append(tr(_RUMOR_SOLVE_KEYS[kind]))
+	if kind == "encounter":
+		_append_cost_test(lines, solve.get("cost", {}), solve.get("test", {"skill": "lore"}))
+	var need: int = int(solve.get("progress", 1))
+	if kind in ["encounter", "researchClue"] and need > 1:
+		lines.append(tr("SIDEBAR_RUMOR_PROGRESS") % [int(card.get("progress", 0)), need])
+	lines.append(tr("SIDEBAR_RUMOR_TIMER") % int(card.get("tokens", 0)))
+	row.add_child(_note_label(lines))
+	return row
+
+
+# Строки «Цена: …» / «Проверка: …» особой встречи (пустые cost/test — без строки).
+func _append_cost_test(lines: PackedStringArray, cost: Dictionary, test: Dictionary) -> void:
 	if not cost.is_empty():
 		var res: String = String(cost.get("spend", ""))
 		lines.append(
@@ -668,7 +717,6 @@ func _make_eldritch_row(hook: Dictionary) -> HBoxContainer:
 				% [tr(_COST_NAMES.get(res, res)), int(cost.get("amount", 1))]
 			)
 		)
-	var test: Dictionary = hook.get("test", {})
 	if not test.is_empty():
 		var mod: int = int(test.get("modifier", 0))
 		var skill: String = tr("SKILL_" + String(test.get("skill", "lore")).to_upper())
@@ -678,6 +726,10 @@ func _make_eldritch_row(hook: Dictionary) -> HBoxContainer:
 				% (skill + (" %+d" % mod if mod != 0 else "")).replace("-", "−")
 			)
 		)
+
+
+# Текст описания рядом с иконкой (жетон Древнего, слух): строки через перевод строки.
+func _note_label(lines: PackedStringArray) -> Label:
 	var l := Label.new()
 	l.name = "Text"
 	l.text = "\n".join(lines)
@@ -685,8 +737,7 @@ func _make_eldritch_row(hook: Dictionary) -> HBoxContainer:
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	UIFonts.apply(l, UIFonts.NOTE)
 	l.add_theme_color_override("font_color", UIColors.TEXT)
-	row.add_child(l)
-	return row
+	return l
 
 
 # Сыщики на клетке (id игроков в порядке хода). Тень (погибший) тоже стоит на поле —

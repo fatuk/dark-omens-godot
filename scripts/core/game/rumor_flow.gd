@@ -35,6 +35,24 @@ func is_rumor(card: Dictionary) -> bool:
 	return not (card.get("rumor", {}) as Dictionary).is_empty()
 
 
+## Слухи в игре, привязанные к локации loc (метка, портал, монстр) — для описания в
+## карточке локации. Читает синкнутый mythos_in_play — работает и на клиенте.
+func cards_at(loc: String) -> Array:
+	var out: Array = []
+	if loc.is_empty():
+		return out
+	for c_v: Variant in _gs.mythos_in_play as Array:
+		var card: Dictionary = c_v
+		if is_rumor(card) and String(card.get("rumorLocation", "")) == loc:
+			out.append(card)
+	return out
+
+
+## Условие решения Слуха (rumor.solve: kind/test/cost/progress). {} — дефолт.
+func solve_of(card: Dictionary) -> Dictionary:
+	return _solve_of(card)
+
+
 ## Способ решения Слуха ("gateClose" по умолчанию).
 func solve_kind(card: Dictionary) -> String:
 	var solve: Dictionary = (card.get("rumor", {}) as Dictionary).get("solve", {})

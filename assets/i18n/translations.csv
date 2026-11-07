@@ -44,6 +44,13 @@ SIDEBAR_CAT_ELDRITCH,Жетон Древнего,Ancient One token
 SIDEBAR_ELDRITCH_DESC,Здесь можно выбрать особую встречу. При успехе жетон уходит на карту Тайны и приближает её разгадку.,"You may choose a special encounter here. On a success the token moves onto the Mystery card, bringing its solution closer."
 SIDEBAR_ELDRITCH_COST,Цена: %s ×%d,Cost: %s ×%d
 SIDEBAR_ELDRITCH_TEST,Проверка: %s,Test: %s
+SIDEBAR_RUMOR_NAME,Слух «%s»,Rumor “%s”
+SIDEBAR_RUMOR_SOLVE_ENCOUNTER,Развеять: выберите здесь встречу-решение.,To dispel: choose the solving encounter here.
+SIDEBAR_RUMOR_SOLVE_RESEARCH,Развеять: проводите здесь исследования — найденные улики уходят на карту слуха.,To dispel: research here; the Clues you find go onto the Rumor card.
+SIDEBAR_RUMOR_SOLVE_GATE,Развеять: закройте врата-портал на этой клетке.,To dispel: close the portal Gate on this space.
+SIDEBAR_RUMOR_SOLVE_MONSTER,Развеять: победите монстра слуха.,To dispel: defeat the Rumor's monster.
+SIDEBAR_RUMOR_PROGRESS,Прогресс: %d/%d,Progress: %d/%d
+SIDEBAR_RUMOR_TIMER,"Каждая Расплата снимает жетон с карты слуха. Осталось жетонов: %d — когда они кончатся, сработает развязка слуха.","Each Reckoning removes a token from the Rumor card. Tokens left: %d; when they run out, the Rumor comes to a head."
 SIDEBAR_TOUGHNESS,Стойкость,Toughness
 SIDEBAR_HORROR,Ужас,Horror
 SIDEBAR_COMBAT,Бой,Combat
