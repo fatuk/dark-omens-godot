@@ -860,7 +860,7 @@ func play_prevent_loss(helper_pid: String, item_index: int) -> bool:
 	_gs.announce_action(
 		helper_pid,
 		"prevent_loss",
-		{"card": card_name, "amount": amount, "target": _gs.name_of(_gs.current_pid())}
+		{"card": card_name, "amount": str(amount), "target": _gs.name_of(_gs.current_pid())}
 	)
 	GameConsole.log(
 		(
@@ -937,7 +937,7 @@ func prevent_by_spell(caster_pid: String, stat: String, amount: int) -> void:
 	_gs.announce_action(
 		caster_pid,
 		"prevent_loss",
-		{"card": spell_name, "amount": n, "target": _gs.name_of(_gs.current_pid())}
+		{"card": spell_name, "amount": str(n), "target": _gs.name_of(_gs.current_pid())}
 	)
 	GameConsole.log(
 		(

@@ -40,7 +40,8 @@ static func render(action_id: String, params: Dictionary, locale: String) -> Str
 	for key_v: Variant in params.keys():
 		var token: String = "{%s}" % String(key_v)
 		# tr() значения: i18n-ключ → перевод в текущей локали; не-ключ → строка без изменений.
-		text = text.replace(token, TranslationServer.translate(String(params[key_v])))
+		# str(), не String(): значение может прийти числом — String(int) в Godot падает.
+		text = text.replace(token, TranslationServer.translate(str(params[key_v])))
 	return text
 
 
