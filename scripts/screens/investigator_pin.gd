@@ -26,9 +26,9 @@ const GROUP := "investigator_pins"
 
 ## Задержанный сыщик (becomeDelayed) пропускает ход: портрет и рамка — красным, тем же
 ## тоном, что отнятые кубики в лотке (DiceTray.C_MARK_BLOCKED).
-## Тон — на полпути от DANGER к белому: в полную силу портрет слишком темнел.
+## Тон — 0.8 пути от белого к DANGER: в полную силу портрет слишком темнел.
 ## static var — тюнинг-панель (КАРТА · ЗАДЕРЖАННЫЙ) крутит вживую.
-static var DELAY_TINT_STRENGTH: float = 0.5
+static var DELAY_TINT_STRENGTH: float = 0.8
 static var DELAY_FADE: float = 0.35  # сек, как наливается/сходит красный
 
 ## Прозрачность карточки вышедшего игрока.
