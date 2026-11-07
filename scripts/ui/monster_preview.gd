@@ -198,13 +198,22 @@ func _overlay(node_name: String, fs: int, color: Color, align: HorizontalAlignme
 	return l
 
 
-# Под картой: проверки боя («Ужас: Воля −1 · урон 2») и сопротивление; эпический
-# без своих статов — «как у Древнего».
+# Под картой: штрафы проверок боя одной строкой — только ненулевые («Воля −1 · Сила −2»;
+# урон уже на арте), и сопротивление; эпический без своих статов — «как у Древнего».
 func _stats_text() -> String:
 	var lines: PackedStringArray = []
 	if _m.has("horror"):
-		lines.append(MonsterTile.stat_line("SIDEBAR_HORROR", _m.get("horror", {})))
-		lines.append(MonsterTile.stat_line("SIDEBAR_COMBAT", _m.get("combat", {})))
+		var mods: PackedStringArray = []
+		for key: String in ["horror", "combat"]:
+			var stat: Dictionary = _m.get(key, {})
+			var mod: int = int(stat.get("modifier", 0))
+			var skill: String = String(stat.get("skill", "none"))
+			if mod != 0 and skill != "none":
+				mods.append(
+					"%s %s" % [tr("SKILL_" + skill.to_upper()), ("%+d" % mod).replace("-", "−")]
+				)
+		if not mods.is_empty():
+			lines.append(" · ".join(mods))
 		if _m.has("resist"):
 			lines.append(
 				"%s: %s" % [tr("SIDEBAR_RESIST"), MonsterTile.resist_text(_m.get("resist"))]
