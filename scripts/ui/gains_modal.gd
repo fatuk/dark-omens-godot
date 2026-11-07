@@ -107,7 +107,10 @@ func _fill(gains: Dictionary) -> void:
 		src_row.alignment = BoxContainer.ALIGNMENT_CENTER
 		# card_back — показать оборот состояния (Предвидение Вивьен), а не лицо.
 		var back: String = String(gains.get("card_back", ""))
-		src_row.add_child(_card_node({"id": src, "condition_back": back} if back else src))
+		var src_payload: Variant = src
+		if not back.is_empty():
+			src_payload = {"id": src, "condition_back": back}
+		src_row.add_child(_card_node(src_payload))
 		_box.add_child(src_row)
 	var rolls: Array = gains.get("rolls", [])
 	if not rolls.is_empty():

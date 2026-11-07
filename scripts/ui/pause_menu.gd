@@ -152,7 +152,7 @@ func _build_menu_column() -> void:
 	_menu_col.name = "MenuColumn"
 	_menu_col.set_anchors_preset(Control.PRESET_LEFT_WIDE)
 	_menu_col.custom_minimum_size.x = _MENU_W
-	_menu_col.size.x = _MENU_W
+	_menu_col.offset_right = _MENU_W  # не size: при растянутых якорях Godot его перетрёт
 	_menu_col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(_menu_col)
 
@@ -482,8 +482,8 @@ func _phase_key() -> String:
 func _elapsed_text() -> String:
 	if _session_msec < 0:
 		return "—"
-	var s: int = int((Time.get_ticks_msec() - _session_msec) / 1000)
-	return "%02d:%02d:%02d" % [s / 3600, (s / 60) % 60, s % 60]
+	var s: int = floori((Time.get_ticks_msec() - _session_msec) / 1000.0)
+	return "%02d:%02d:%02d" % [floori(s / 3600.0), floori(s / 60.0) % 60, s % 60]
 
 
 # ── История посланий и сессия ─────────────────────────────────────────────────

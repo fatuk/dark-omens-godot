@@ -822,7 +822,6 @@ func _hover_card(entry: Dictionary, on: bool) -> void:
 	if bool(entry.get("buying", false)):
 		return
 	entry["hovering"] = on
-	var card: GameCard = entry.card
 	if on:
 		_play_hover_sfx()  # шуршание карты — как в веере
 	var mesh: MeshInstance3D = entry.mesh

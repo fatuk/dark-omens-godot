@@ -32,10 +32,10 @@ static func side_for(width: float) -> float:
 
 
 ## Подогнать портреты под ширину ряда: сторона, кегль и инсет чисел — пропорционально.
-static func fit_grid(grid: HFlowContainer) -> void:
-	var side: float = side_for(grid.size.x)
+static func fit_grid(flow: HFlowContainer) -> void:
+	var side: float = side_for(flow.size.x)
 	var k: float = side / TILE
-	for tile: Node in grid.get_children():
+	for tile: Node in flow.get_children():
 		(tile as Control).custom_minimum_size = Vector2(side, side)
 		for num_name: String in ["Horror", "Damage"]:
 			var l: Label = tile.get_node_or_null(num_name)

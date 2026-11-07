@@ -1153,7 +1153,7 @@ static func _drop_items(verb: String, node: Dictionary, player: Dictionary, logs
 		return
 	var drop: int = _amount(node)
 	if bool(node.get("half", false)):
-		drop = (idx as Array).size() / 2  # «сбросьте половину» — с округлением вниз
+		drop = floori((idx as Array).size() / 2.0)  # «сбросьте половину» — с округлением вниз
 	if node.has("keep"):
 		drop = maxi(0, (idx as Array).size() - int(node["keep"]))
 	drop = mini(drop, (idx as Array).size())

@@ -593,14 +593,14 @@ func _animated_shift(delta: int) -> void:
 		_kill_mesh_tween(_card_meshes[i], i)
 
 	var n: int = _investigators.size()
-	var step: int = delta  # знаковая величина (±1, ±2, …)
-	var step_sign: int = 1 if step > 0 else -1
-	_index = ((_index + step) % n + n) % n
+	var shift: int = delta  # знаковая величина (±1, ±2, …)
+	var step_sign: int = 1 if shift > 0 else -1
+	_index = ((_index + shift) % n + n) % n
 
 	for i: int in range(_card_meshes.size()):
 		var mesh: MeshInstance3D = _card_meshes[i]
 		var current_slot: int = int(mesh.get_meta("logical_slot", i))
-		var new_slot: int = current_slot - step
+		var new_slot: int = current_slot - shift
 		if new_slot >= 0 and new_slot < VISIBLE_SLOTS:
 			_animate_mesh_to_slot(mesh, new_slot)
 			mesh.set_meta("logical_slot", new_slot)
