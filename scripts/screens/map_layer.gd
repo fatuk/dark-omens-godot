@@ -1012,6 +1012,15 @@ func refresh_away() -> void:
 		(pin as InvestigatorPin).set_away(not bool(p.get("connected", true)))
 
 
+## Тюнинг-панель подвинула красный задержанного — переприменяем сразу (без фейда).
+func refresh_delayed() -> void:
+	for e_v: Variant in _inv_markers:
+		var e: Dictionary = e_v
+		var pin: Variant = e.get("sprite")
+		if pin is InvestigatorPin:
+			(pin as InvestigatorPin).set_delayed(bool(e.get("delayed", false)))
+
+
 ## Помечает ореолом пин того, чей сейчас ход (пусто — снять со всех). Отдельно от
 ## set_investigators намеренно: смена хода не меняет ни состав, ни локации, и
 ## пересобирать из-за неё все пины (а с ними — веер и анимации) незачем.

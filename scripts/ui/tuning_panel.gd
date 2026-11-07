@@ -1000,6 +1000,25 @@ func _build_specs() -> Array:
 			"default": InvestigatorPin.AWAY_ALPHA,
 			"set": _set_pin_away_alpha
 		},
+		{"section": "КАРТА · ЗАДЕРЖАННЫЙ"},
+		{
+			"key": "pin_delay_tint",
+			"label": "Сила красного",
+			"min": 0.0,
+			"max": 1.0,
+			"step": 0.05,
+			"default": InvestigatorPin.DELAY_TINT_STRENGTH,
+			"set": _set_pin_delay_tint
+		},
+		{
+			"key": "pin_delay_fade",
+			"label": "Время перехода, с",
+			"min": 0.0,
+			"max": 1.5,
+			"step": 0.05,
+			"default": InvestigatorPin.DELAY_FADE,
+			"set": _set_pin_delay_fade
+		},
 		{"section": "ПАНЕЛЬ СЫЩИКА · ОРЕОЛ ХОДА"},
 		{
 			"key": "ipanel_glow_alpha",
@@ -2468,6 +2487,18 @@ func _set_pin_away_alpha(v: float) -> void:
 	InvestigatorPin.AWAY_ALPHA = v
 	for m: Node in get_tree().get_nodes_in_group("map_layer"):
 		m.refresh_away()
+
+
+# Красный задержанного сыщика: сила тона переприменяется к пинам сразу; время
+# перехода скажется на следующем задержании/подъёме.
+func _set_pin_delay_tint(v: float) -> void:
+	InvestigatorPin.DELAY_TINT_STRENGTH = v
+	for m: Node in get_tree().get_nodes_in_group("map_layer"):
+		m.refresh_delayed()
+
+
+func _set_pin_delay_fade(v: float) -> void:
+	InvestigatorPin.DELAY_FADE = v
 
 
 # Ореол хода на панели сыщика: один сеттер-фабрика на все static-поля
