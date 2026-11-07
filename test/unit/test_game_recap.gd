@@ -55,6 +55,15 @@ func test_counts_feed_actions() -> void:
 	assert_eq(st["spells"], 1)
 
 
+# amount в ленте бывает и числом (не только строкой) — не падаем, считаем как есть.
+func test_numeric_amount_in_feed() -> void:
+	_r.on_action("me", "hurt", {"amount": 2})
+	_r.on_action("me", "got_clue", {"amount": 3.0})
+	var st: Dictionary = _row(_r.summary(_gs, 0), "me")["stats"]
+	assert_eq(st["wounds"], 2)
+	assert_eq(st["clues"], 3)
+
+
 func test_marks_bots_and_order() -> void:
 	var rows: Array = _r.summary(_gs, 0)["players"]
 	assert_eq(rows.map(func(r: Dictionary) -> String: return r["pid"]), ["me", "bot-1"])

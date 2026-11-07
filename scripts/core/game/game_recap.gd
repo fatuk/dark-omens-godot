@@ -35,7 +35,10 @@ func reset() -> void:
 ## Действие из ленты (pid, id ActionLog, params — плейсхолдер → значение).
 func on_action(pid: String, action_id: String, params: Dictionary) -> void:
 	var s: Dictionary = _stats_of(pid)
-	var amount: int = maxi(1, int(String(params.get("amount", "1"))))
+	# amount приходит и строкой (плейсхолдер ленты), и числом — String(int) в Godot
+	# падает («Nonexistent 'String' constructor»), поэтому разбираем по типу.
+	var raw: Variant = params.get("amount", 1)
+	var amount: int = maxi(1, int(raw) if (raw is int or raw is float) else str(raw).to_int())
 	match action_id:
 		"combat_won":
 			s["kills"] += 1
