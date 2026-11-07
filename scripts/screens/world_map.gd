@@ -297,6 +297,7 @@ func _refresh_investigators() -> void:
 					"location": loc,
 					"dead": bool(p.get("dead", false)),
 					"connected": bool(p.get("connected", true)),
+					"delayed": PhaseController.is_delayed(p),
 				}
 			)
 		)

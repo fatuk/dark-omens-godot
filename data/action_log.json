@@ -38,6 +38,12 @@
 			"ru": "Собирается с мыслями."
 		},
 		{
+			"id": "delayed_stand",
+			"self": true,
+			"en": "Back on their feet after the delay — this turn is lost.",
+			"ru": "Поднимается после задержки — ход потерян."
+		},
+		{
 			"id": "rest",
 			"en": "Stops to rest.",
 			"ru": "Переводит дух."

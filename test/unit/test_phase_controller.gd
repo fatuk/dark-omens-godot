@@ -188,8 +188,10 @@ class MockGameState:
 	func emit_changed() -> void:
 		pass
 
-	func announce_action(_pid: String, _action_id: String, _params: Dictionary = {}) -> void:
-		pass
+	var feed: Array = []  # announce_action → id (лента действий)
+
+	func announce_action(_pid: String, action_id: String, _params: Dictionary = {}) -> void:
+		feed.append(action_id)
 
 
 func before_each() -> void:
@@ -924,3 +926,50 @@ func test_turn_change_drops_trade_offer() -> void:
 	_pc.host_apply_trade_offer("p", _OFFER)
 	_pc.advance_action_turn()
 	assert_true(_gs.trade_offer.is_empty())
+
+
+# ── Задержка (becomeDelayed) ──────────────────────────────────────────────────
+
+
+# Задержанный в начале раунда не действует: встаёт (статус снят), ход — следующему.
+func test_delayed_stands_up_instead_of_acting() -> void:
+	_gs.turn_order = ["p", "q"]
+	_add_player("p", {"conditions": ["delayed"]})
+	_add_player("q")
+	_pc.start_new_round()
+	assert_eq(_gs.current_pid(), "q", "ход у незадержанного")
+	var p: Dictionary = _gs.players["p"]
+	assert_eq(int(p["actions_left"]), 0, "действий нет — он поднимался")
+	assert_false((p["conditions"] as Array).has("delayed"), "встал — статус снят")
+	assert_has(_gs.feed, "delayed_stand", "в ленте — «поднимается после задержки»")
+
+
+# Задержан тот, кому передают ход посреди фазы: пропускаем и его.
+func test_advance_skips_delayed_player() -> void:
+	_gs.turn_order = ["p", "q", "r"]
+	_add_player("p", {"actions_left": 0})
+	_add_player("q", {"conditions": ["delayed"]})
+	_add_player("r")
+	_pc.advance_action_turn()
+	assert_eq(_gs.current_pid(), "r")
+	assert_false((_gs.players["q"]["conditions"] as Array).has("delayed"))
+
+
+# Задержаны все — действовать некому: сразу фаза встреч.
+func test_all_delayed_go_to_encounters() -> void:
+	_gs.turn_order = ["p"]
+	_add_player("p", {"conditions": ["delayed"]})
+	_pc.start_new_round()
+	assert_eq(_gs.phase, "encounter")
+
+
+# Задержали посреди своего хода: оставшиеся действия сгорают, статус остаётся до
+# следующей фазы действий.
+func test_delayed_mid_turn_loses_remaining_actions() -> void:
+	_gs.turn_order = ["p", "q"]
+	_add_player("p", {"conditions": ["delayed"]})
+	_add_player("q")
+	assert_true(_pc.host_apply_action("p", "take_concentration"))
+	assert_eq(int(_gs.players["p"]["actions_left"]), 0, "второе действие сгорело")
+	assert_true((_gs.players["p"]["conditions"] as Array).has("delayed"), "лежит до раунда")
+	assert_eq(_gs.current_pid(), "q", "ход ушёл дальше")

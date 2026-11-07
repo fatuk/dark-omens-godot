@@ -814,6 +814,14 @@ func _make_investigator_row(pid: String) -> HBoxContainer:
 	UIFonts.apply(nick, UIFonts.SMALL)
 	nick.add_theme_color_override("font_color", UIColors.MUTED)
 	text.add_child(nick)
+	if PhaseController.is_delayed(p):
+		var delayed := Label.new()
+		delayed.name = "Delayed"
+		delayed.text = tr("SIDEBAR_INV_DELAYED")
+		delayed.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		UIFonts.apply(delayed, UIFonts.SMALL)
+		delayed.add_theme_color_override("font_color", UIColors.TEXT)
+		text.add_child(delayed)
 	return row
 
 

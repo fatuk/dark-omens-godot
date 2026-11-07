@@ -1035,12 +1035,13 @@ func set_investigators(list: Array) -> void:
 		# dead/connected в сигнатуре — иначе пин не пересоберётся, когда сыщик стал
 		# Тенью или игрок вышел из комнаты.
 		sig += (
-			"%s@%s#%d%d;"
+			"%s@%s#%d%d%d;"
 			% [
 				String(e.get("pid", "")),
 				String(e.get("location", "")),
 				int(bool(e.get("dead", false))),
-				int(bool(e.get("connected", true)))
+				int(bool(e.get("connected", true))),
+				int(bool(e.get("delayed", false)))
 			]
 		)
 	if sig == _inv_signature:
@@ -1059,6 +1060,7 @@ func set_investigators(list: Array) -> void:
 				"loc": String(old_e.get("loc", "")),
 				"off": old_e.get("screen_off", Vector2.ZERO),
 				"rot": old_sp.rotation,
+				"delayed": bool(old_e.get("delayed", false)),
 			}
 			old_sp.queue_free()
 	_inv_markers.clear()
@@ -1129,6 +1131,11 @@ func set_investigators(list: Array) -> void:
 			pin.setup(tex)
 			pin.set_dead(bool(entry.get("dead", false)))
 			pin.set_away(not bool(entry.get("connected", true)))
+			# Задержан — лежит; только что задержали / встал — с анимацией падения.
+			var delayed: bool = bool(entry.get("delayed", false))
+			pin.set_delayed(
+				delayed, not was.is_empty() and bool(was.get("delayed", false)) != delayed
+			)
 			var im: Dictionary = {
 				"sprite": pin,
 				"pid": pid_s,  # для hide_investigator (имя ноды санитизируется — матчить нельзя)
@@ -1136,6 +1143,7 @@ func set_investigators(list: Array) -> void:
 				"base": base,
 				"screen_off": start_off,
 				"base_scale": base_scale,
+				"delayed": delayed,
 			}
 			_inv_markers.append(im)
 			if animate:

@@ -34,6 +34,9 @@ const _EffectRunner = preload("res://scripts/core/game/effect_runner.gd")
 
 var _gs: Node
 
+## Статус «Задержан» (becomeDelayed) — лежит в player.conditions, карты у него нет.
+const DELAYED := "delayed"
+
 
 func _init(gs: Node) -> void:
 	_gs = gs
@@ -394,6 +397,7 @@ func host_apply_action(pid: String, action_type: String, payload: Dictionary = {
 			% [_gs.name_of(pid), action_type, int(p["actions_left"])]
 		)
 	)
+	_halt_if_delayed(pid, p)  # задержали этим же действием — остальные сгорают
 	# Пока игрок в магазине (модалка открыта) или висит промпт выбора заклинаний
 	# (отдых) — ход не передаём, даже если это было последнее действие. Передача:
 	# host_apply_shop_close / host_apply_cast_trigger_spells.
@@ -826,6 +830,7 @@ func release_cast_turn(pid: String) -> void:
 	var p: Dictionary = _gs.players[pid]
 	var was_casting: bool = bool(p.get("casting", false))
 	p["casting"] = false
+	_halt_if_delayed(pid, p)
 	if was_casting and int(p.get("actions_left", 0)) == 0:
 		_advance_turn_delayed()
 
@@ -844,6 +849,7 @@ func release_asset_turn(pid: String) -> void:
 	if _gs.phase == Phases.ENCOUNTER and _gs.current_pid() == pid:
 		_commit_and_advance(pid)
 		return
+	_halt_if_delayed(pid, p)
 	if int(p.get("actions_left", 0)) == 0:
 		_advance_turn_delayed()
 
@@ -857,6 +863,7 @@ func release_condition_turn(pid: String) -> void:
 	var p: Dictionary = _gs.players[pid]
 	var was_acting: bool = bool(p.get("condition_acting", false))
 	p["condition_acting"] = false
+	_halt_if_delayed(pid, p)
 	if was_acting and int(p.get("actions_left", 0)) == 0:
 		_advance_turn_delayed()
 
@@ -1158,7 +1165,7 @@ func advance_action_turn() -> void:
 	_gs.pending_spell_cast = {}  # абандон висящего spell-промпта при смене хода
 	_gs.trade_offer = {}  # и висящего предложения обмена
 	_gs.current_idx += 1
-	if not skip_disconnected():
+	if not skip_to_action_turn():
 		enter_encounter()
 
 
@@ -1264,9 +1271,41 @@ func start_new_round() -> void:
 		_gs.players[pid].erase(PlayerKeys.RESOURCE_SWAP_USED)  # подмена ресурса — снова раз
 		_refresh_items(_gs.players[pid])  # снять истощение активов (Refresh-шаг)
 	_gs._death.clear_grace()  # новый раунд — снять иммунитет выживших на Пороге
-	skip_disconnected()  # начинаем раунд с первого подключённого игрока
+	# Начинаем раунд с первого подключённого НЕзадержанного (задержанные встают).
+	var someone_acts: bool = skip_to_action_turn()
 	GameConsole.log("[Game] Раунд %d · ход: %s" % [_gs.round_num, _gs.name_of(_gs.current_pid())])
 	_gs.phase_changed.emit(_gs.phase)
+	if not someone_acts:
+		enter_encounter()  # все задержаны/отключены — действовать некому
+
+
+## Задержан ли сыщик (becomeDelayed): фишка «лежит», в фазе действий он вместо
+## действий поднимается — ход пропущен.
+static func is_delayed(p: Dictionary) -> bool:
+	return (p.get(PlayerKeys.CONDITIONS, []) as Array).has(DELAYED)
+
+
+## Как skip_disconnected, но для хода ДЕЙСТВИЙ: задержанный вместо действий встаёт
+## (статус снят, действий 0, в ленте «приходит в себя») — ход идёт дальше.
+func skip_to_action_turn() -> bool:
+	while skip_disconnected():
+		var pid: String = _gs.current_pid()
+		var p: Dictionary = _gs.players[pid]
+		if not is_delayed(p):
+			return true
+		(p[PlayerKeys.CONDITIONS] as Array).erase(DELAYED)
+		p["actions_left"] = 0
+		_gs.announce_action(pid, "delayed_stand")
+		GameConsole.log("[Game] %s задержан — встаёт вместо действий" % _gs.name_of(pid))
+		_gs.current_idx += 1
+	return false
+
+
+# Задержали посреди собственного хода действий — оставшиеся действия сгорают;
+# статус остаётся: в следующей фазе действий сыщик встанет вместо них.
+func _halt_if_delayed(pid: String, p: Dictionary) -> void:
+	if _gs.phase == Phases.ACTION and _gs.current_pid() == pid and is_delayed(p):
+		p["actions_left"] = 0
 
 
 ## Прокрутить current_idx мимо отключённых И погибших (Тень не берёт обычный ход).

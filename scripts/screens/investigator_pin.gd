@@ -24,6 +24,10 @@ const GLOW_FADE: float = 0.45  # сек на плавное появление/�
 ## Группа всех пинов на карте — тюнинг-панель через неё переприменяет параметры.
 const GROUP := "investigator_pins"
 
+## Задержанный сыщик (becomeDelayed): карточка завалена набок, как фишка в настолке.
+static var DELAY_TILT_DEG: float = -68.0
+const DELAY_FALL_TIME: float = 0.35
+
 ## Прозрачность карточки вышедшего игрока.
 static var AWAY_ALPHA: float = 0.4
 
@@ -67,6 +71,8 @@ var _turn_mat: ShaderMaterial
 var _turn_on: bool = false  # ореол включён (цель фейда)
 var _turn_level: float = 0.0  # текущая яркость ореола 0..1 (ведёт твин)
 var _turn_tw: Tween
+var _tilt: float = 0.0  # наклон «лежит» (рад), вокруг основания карточки
+var _tilt_tw: Tween
 
 # Размер карточки (нативный, ассет @2×) и геометрия прозрачного окна под портрет.
 const CARD_W: float = 325.0
@@ -225,6 +231,7 @@ func _build_turn_glow() -> void:
 	_turn_glow.material = _turn_mat
 	_apply_glow_params(hw, hh)
 	add_child(_turn_glow)
+	_set_tilt(_tilt)  # ореол ложится вместе с карточкой
 
 
 # Параметры ореола в материал. Отдельно от сборки — их же переприменяет
@@ -252,6 +259,30 @@ func refresh_glow() -> void:
 ## до возвращения, и по возврату карточка просто снова наливается цветом.
 func set_away(away: bool) -> void:
 	modulate.a = AWAY_ALPHA if away else 1.0
+
+
+## Задержан: карточка падает набок вокруг основания (animate — с анимацией падения/
+## подъёма; иначе сразу). Наклон — у детей-полигонов, rotation самого пина держит веер.
+func set_delayed(delayed: bool, animate: bool = false) -> void:
+	var target: float = deg_to_rad(DELAY_TILT_DEG) if delayed else 0.0
+	if _tilt_tw != null and _tilt_tw.is_valid():
+		_tilt_tw.kill()
+	if not animate or not is_inside_tree():
+		_set_tilt(target)
+		return
+	_tilt_tw = create_tween()
+	_tilt_tw.tween_method(_set_tilt, _tilt, target, DELAY_FALL_TIME).set_trans(
+		Tween.TRANS_BACK if delayed else Tween.TRANS_SINE
+	)
+
+
+func _set_tilt(v: float) -> void:
+	_tilt = v
+	var pivot := Vector2(0.0, CARD_H * 0.5)  # основание карточки — точка опоры
+	for c: Node in get_children():
+		if c is Node2D:
+			(c as Node2D).rotation = v
+			(c as Node2D).position = pivot - pivot.rotated(v)
 
 
 ## Мёртвый сыщик (Тень) — портрет ч/б. Рамка остаётся цветной.
