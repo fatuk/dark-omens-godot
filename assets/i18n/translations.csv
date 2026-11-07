@@ -45,7 +45,7 @@ SIDEBAR_ELDRITCH_DESC,Здесь можно выбрать особую встр
 SIDEBAR_ELDRITCH_COST,Цена: %s ×%d,Cost: %s ×%d
 SIDEBAR_ELDRITCH_TEST,Проверка: %s,Test: %s
 SIDEBAR_RUMOR_NAME,Слух «%s»,Rumor “%s”
-SIDEBAR_RUMOR_SOLVE_ENCOUNTER,Развеять: выберите здесь встречу-решение.,To dispel: choose the solving encounter here.
+SIDEBAR_RUMOR_SOLVE_ENCOUNTER,Развеять: выберите здесь особую встречу.,To dispel: choose the special encounter here.
 SIDEBAR_RUMOR_SOLVE_RESEARCH,Развеять: проводите здесь исследования — найденные улики уходят на карту слуха.,To dispel: research here; the Clues you find go onto the Rumor card.
 SIDEBAR_RUMOR_SOLVE_GATE,Развеять: закройте врата-портал на этой клетке.,To dispel: close the portal Gate on this space.
 SIDEBAR_RUMOR_SOLVE_MONSTER,Развеять: победите монстра слуха.,To dispel: defeat the Rumor's monster.
