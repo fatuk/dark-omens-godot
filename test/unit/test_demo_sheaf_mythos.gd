@@ -194,3 +194,19 @@ func test_demo_clues_only_at_six_spots_each_with_research() -> void:
 		var card: Dictionary = OfflineContent.draw(req)["encounters"][0]
 		assert_false(bool(card.get("mechanical", true)), "%s: настоящая карта, не заглушка" % loc)
 		assert_false(String(card.get("name", "")).is_empty(), "%s: у встречи есть название" % loc)
+
+
+# «Зов полей» с сыщиком в Среднем Западе: проверка Воли подписана картой Мифа. Эффекты
+# идут уже при очищенном current_mythos (модалка карты закрыта) — имя из last_mythos.
+func test_call_of_fields_check_names_its_mythos() -> void:
+	var deck: Array = _start()
+	GameState.players["a"]["location"] = "5"
+	GameState.phase = Phases.MYTHOS
+	GameState.last_mythos = deck[1]
+	GameState.current_mythos = {}
+	var for_each: Array = [((deck[1] as Dictionary).get("onDraw", []) as Array)[1]]
+	GameState._mythos._apply_effects(for_each)  # повиснет на проверке — нам нужен её вид
+	await wait_until(func() -> bool: return not GameState.pending_check.is_empty(), 2.0)
+	var src: Dictionary = GameState.pending_check.get("source", {})
+	assert_eq(String(src.get("kind", "")), "mythos")
+	assert_eq(String(src.get("name", "")), "Зов полей", "подпись «Миф «Зов полей»»")
