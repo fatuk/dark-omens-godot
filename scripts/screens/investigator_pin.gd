@@ -26,7 +26,8 @@ const GROUP := "investigator_pins"
 
 ## Задержанный сыщик (becomeDelayed) пропускает ход: портрет и рамка — красным, тем же
 ## тоном, что отнятые кубики в лотке (DiceTray.C_MARK_BLOCKED).
-const DELAY_TINT: Color = UIColors.DANGER
+## Тон — на полпути от DANGER к белому: в полную силу портрет слишком темнел.
+static var DELAY_TINT_STRENGTH: float = 0.5
 const DELAY_FADE: float = 0.35
 
 ## Прозрачность карточки вышедшего игрока.
@@ -263,7 +264,9 @@ func set_away(away: bool) -> void:
 ## Задержан — пропускает ход: портрет и рамка окрашиваются красным (animate — плавно
 ## наливается/сходит; иначе сразу). Ореол хода не красим — у него своя семантика.
 func set_delayed(delayed: bool, animate: bool = false) -> void:
-	var to: Color = DELAY_TINT if delayed else Color.WHITE
+	var to: Color = (
+		Color.WHITE.lerp(UIColors.DANGER, DELAY_TINT_STRENGTH) if delayed else Color.WHITE
+	)
 	if _delay_tw != null and _delay_tw.is_valid():
 		_delay_tw.kill()
 	var parts: Array = [get_node_or_null("Portrait"), get_node_or_null("Frame")]
