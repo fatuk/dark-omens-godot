@@ -99,6 +99,7 @@ static func make(m: Dictionary, cur_health: int = -1, copies: int = 1) -> Contro
 	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tile.add_child(frame)
+	MonsterPreview.attach_click(tile, m, cur_health)  # клик — крупная карта, как в бою
 	return tile
 
 
@@ -138,10 +139,10 @@ static func tooltip(m: Dictionary, cur_health: int = -1) -> String:
 				else ("%s: %d" % [_t("SIDEBAR_TOUGHNESS"), tough])
 			)
 		)
-		lines.append(_stat_line("SIDEBAR_HORROR", m.get("horror", {})))
-		lines.append(_stat_line("SIDEBAR_COMBAT", m.get("combat", {})))
+		lines.append(stat_line("SIDEBAR_HORROR", m.get("horror", {})))
+		lines.append(stat_line("SIDEBAR_COMBAT", m.get("combat", {})))
 		if m.has("resist"):
-			lines.append("%s: %s" % [_t("SIDEBAR_RESIST"), _resist_text(m.get("resist"))])
+			lines.append("%s: %s" % [_t("SIDEBAR_RESIST"), resist_text(m.get("resist"))])
 	elif bool(m.get("useAncientOne", false)):
 		lines.append(_t("SIDEBAR_USE_ANCIENT_ONE"))
 	var ability: String = String((m.get("ability", {}) as Dictionary).get("textKey", ""))
@@ -151,11 +152,11 @@ static func tooltip(m: Dictionary, cur_health: int = -1) -> String:
 
 
 # Строка проверки: «Ужас: Воля −1 · урон 2».
-static func _stat_line(label_key: String, stat: Dictionary) -> String:
+static func stat_line(label_key: String, stat: Dictionary) -> String:
 	var skill: String = String(stat.get("skill", "none"))
 	var skill_tr: String = _t("SKILL_" + skill.to_upper())
 	var mod: int = int(stat.get("modifier", 0))
-	var mod_s: String = ("%+d" % mod) if mod != 0 else "0"
+	var mod_s: String = ("%+d" % mod).replace("-", "−") if mod != 0 else "0"
 	return (
 		"%s: %s %s · %s %d"
 		% [_t(label_key), skill_tr, mod_s, _t("SIDEBAR_DAMAGE"), int(stat.get("damage", 0))]
@@ -163,7 +164,7 @@ static func _stat_line(label_key: String, stat: Dictionary) -> String:
 
 
 # Текст сопротивления монстра: «физическое»/«магическое» (resist — строка/массив).
-static func _resist_text(r: Variant) -> String:
+static func resist_text(r: Variant) -> String:
 	var types: Array = r if r is Array else [r]
 	var parts: PackedStringArray = []
 	for t: Variant in types:
