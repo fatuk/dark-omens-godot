@@ -111,7 +111,7 @@ MAIN_QUIT,Выйти,Quit
 ,,
 INV_EZRA_GILMAN_NAME,Эзра Гилман,Ezra Gilman
 INV_EZRA_GILMAN_OCC,Моряк,The Sailor
-INV_EZRA_GILMAN_QUOTE,"«Оставьте свои страхи на причале, парни. Я не повезу этот груз. Ветер крепчает — поднять все паруса!»","«Leave your fears on the docks, lads. I'll not carry that cargo. The wind is up! Full sail!»"
+INV_EZRA_GILMAN_QUOTE,"«Я переплыл все океаны, но истинный ужас дремлет там, куда не проникает свет маяков.»","«I have sailed all oceans, but true terror slumbers where the light of lighthouses cannot reach.»"
 INV_COLBY_BANKS_NAME,Колби Бэнкс,Colby Banks
 INV_COLBY_BANKS_OCC,Археолог,The Archaeologist
 INV_COLBY_BANKS_QUOTE,«Ради такого сокровища я готов рискнуть парой отравленных дротиков.»,"«To find a treasure like that, I'll risk a few poison darts.»"
@@ -126,7 +126,7 @@ INV_ELENA_KOSTAS_OCC,Шеф-повар,The Chef
 INV_ELENA_KOSTAS_QUOTE,«Господь сказал своё слово. Я исполню Его волю без колебаний.»,«God has spoken. I will do His work without hesitation.»
 INV_VIVIENNE_MARCHETTI_NAME,Вивьен Маркетти,Vivienne Marchetti
 INV_VIVIENNE_MARCHETTI_OCC,Ясновидящая,The Psychic
-INV_VIVIENNE_MARCHETTI_QUOTE,«Видения — это предостережение. Будущее можно переписать.»,«The visions are a warning. The future can be rewritten.»
+INV_VIVIENNE_MARCHETTI_QUOTE,"«В шепоте теней кроется истина, сводящая с ума.»",«Within the whispers of the shadows lies a truth that shatters the mind.»
 INV_MAXWELL_THORNE_NAME,Максвелл Торн,Maxwell Thorne
 INV_MAXWELL_THORNE_OCC,Маг,The Magician
 INV_MAXWELL_THORNE_QUOTE,"«Не бойтесь. Я всю свою жизнь только и делал, что невозможное.»",«Do not be afraid. I have spent my entire life doing the impossible.»
@@ -138,7 +138,7 @@ INV_RUTH_ADLER_OCC,Писательница,The Author
 INV_RUTH_ADLER_QUOTE,«Никогда не недооценивайте силу написанного слова.»,«Never underestimate the power of the written word.»
 INV_ADA_FAIRFAX_NAME,Ада Фэрфакс,Ada Fairfax
 INV_ADA_FAIRFAX_OCC,Учёная,The Scientist
-INV_ADA_FAIRFAX_QUOTE,"«Профессор Янг учила меня, что всё проще, чем кажется. Связь обнаружится, если её искать.»",«Professor Young taught me that everything is simpler than it seems. The connection is there if you look for it.»
+INV_ADA_FAIRFAX_QUOTE,"«Разум и логика — хрупкие щиты против истины, пульсирующей за пределами нашего понимания.»",«Reason and logic are fragile shields against the truth pulsating beyond our comprehension.»
 INV_MAI_NGUYEN_NAME,Май Нгуен,Mai Nguyen
 INV_MAI_NGUYEN_OCC,Секретарь,The Secretary
 INV_MAI_NGUYEN_QUOTE,«Можете положиться на меня — я проведу вас сквозь неведомое.»,«You can depend on me to guide you through the unknown.»
@@ -171,13 +171,13 @@ INV_TAVITA_LEBEAU_OCC,Художница,The Painter
 INV_TAVITA_LEBEAU_QUOTE,"«Искусство — окно в реальность, нам не ведомую.»",«Art is a window into a reality beyond our knowing.»
 INV_ALFRED_BRAMWELL_NAME,Альфред Брэмвелл,Alfred Bramwell
 INV_ALFRED_BRAMWELL_OCC,Профессор,The Professor
-INV_ALFRED_BRAMWELL_QUOTE,«У меня есть опыт обращения с подобными кошмарами.»,«I have experience dealing with these sorts of horrors.»
+INV_ALFRED_BRAMWELL_QUOTE,"«Мы мним себя венцом творения, но забытые манускрипты доказывают, что мы — лишь мимолетная ошибка эволюции.»","«We fancy ourselves the crown of creation, but forgotten manuscripts prove we are but a fleeting error of evolution.»"
 INV_CELESTE_DUBOIS_NAME,Селеста Дюбуа,Celeste Dubois
 INV_CELESTE_DUBOIS_OCC,Артистка,The Entertainer
 INV_CELESTE_DUBOIS_QUOTE,"«Я певала, когда grand-mère варила зелья и плела заговоры.»",«I used to sing as grand-mère made potions and charms.»
 INV_ARTHUR_PENNINGTON_NAME,Артур Пеннингтон,Arthur Pennington
 INV_ARTHUR_PENNINGTON_OCC,Адвокат,The Lawyer
-INV_ARTHUR_PENNINGTON_QUOTE,«Я верю в высший закон. Я верю в истинное правосудие.»,«I believe in a higher law. I believe in true justice.»
+INV_ARTHUR_PENNINGTON_QUOTE,«Земные законы — лишь хрупкая иллюзия порядка в океане первобытного хаоса.»,«Earthly laws are but a fragile illusion of order in an ocean of primordial chaos.»
 INV_NELLIE_FOX_NAME,Нелли Фокс,Nellie Fox
 INV_NELLIE_FOX_OCC,Беспризорница,The Urchin
 INV_NELLIE_FOX_QUOTE,«Мелочи важны. Взрослые этого не видят.»,«The little things are important. Grown-ups don't see that.»
@@ -189,7 +189,7 @@ INV_NICK_RYAN_OCC,Репортёр,The Reporter
 INV_NICK_RYAN_QUOTE,"«Источники сообщают, что миру конец. Как раз моё везение.»",«My sources tell me that the world is ending. Just my luck.»
 INV_MEI_LIN_NAME,Мэй Линь,Mei Lin
 INV_MEI_LIN_OCC,Мастер боевых искусств,The Martial Artist
-INV_MEI_LIN_QUOTE,«Я готовилась противостоять этому злу всю свою жизнь. Моя сосредоточенность должна быть безупречной.»,«I have been preparing to confront this evil for my entire life. My focus must be absolute.»
+INV_MEI_LIN_QUOTE,"«Тайные манускрипты наших мастеров писались не для войн, а для защиты от того, что скрывается по ту сторону сна.»","«The secret scrolls of our masters were written not for war, but for defense against what lurks on the other side of dreams.»"
 INV_MEI_LIN_ABILITY_NAME,Внутреннее равновесие,Inner Balance
 INV_MEI_LIN_ABILITY_TEXT,Потратьте любое число здоровья или рассудка и восстановите столько же другого.,"Spend any number of Health or Sanity, then recover an equal number of the other."
 INV_MEI_LIN_PASSIVE_NAME,Безупречная сосредоточенность,Absolute Focus
@@ -214,7 +214,7 @@ INV_DAPHNE_VALE_OCC,Дилетантка,The Dilettante
 INV_DAPHNE_VALE_QUOTE,"«Мою сестру забрали. Я заплачу любую сумму, чтобы её спасти.»",«My sister was taken. I will pay any amount to save her.»
 INV_BEATRIX_KINGSLEY_NAME,Беатрикс Кингсли,Beatrix Kingsley
 INV_BEATRIX_KINGSLEY_OCC,Путешественница,The Explorer
-INV_BEATRIX_KINGSLEY_QUOTE,"«Открытие — дело нелёгкое, но это единственный путь, что стоит труда.»","«Discovery isn't easy, but it's the only worthwhile path.»"
+INV_BEATRIX_KINGSLEY_QUOTE,"«Я искала затерянные чудеса света, но нашла лишь циклопические руины тех, кто правил землей до начала времен.»","«I sought lost wonders of the world, only to find the cyclopean ruins of those who ruled the earth before time began.»"
 INV_WALTER_BRIGGS_NAME,Уолтер Бриггз,Walter Briggs
 INV_WALTER_BRIGGS_OCC,Мастер на все руки,The Handyman
 INV_WALTER_BRIGGS_QUOTE,"«Нет ничего, чего не починили бы хороший план да упорный труд.»",«It's nothing a good plan and some hard work can't fix.»
@@ -589,7 +589,7 @@ COND_BLESSED_FRONT,"4, 5 и 6 считаются успехами в ваших 
 COND_DETAINED_FRONT,"Вы не можете двигаться или совершать действия, кроме действия на этой карте. Вместо разрешения встречи переверните эту карту. Локальное действие: проверка Влияния. При успехе сбросьте эту карту.","You cannot move or perform actions other than the action on this card. Instead of resolving an encounter, flip this card. Local action: test Influence. If you pass, discard this card."
 COND_LOST_IN_TIME_FRONT,Уберите фишку сыщика с поля. На вас не действуют другие игровые эффекты; вы не можете двигаться или совершать действия. Вместо разрешения встречи переверните эту карту.,"Remove your investigator token from the board. You are not affected by other game effects; you cannot move or perform actions. Instead of resolving an encounter, flip this card."
 COND_HEAD_INJURY_FRONT,"При действии «Отдых» вы не можете восстанавливать рассудок; бросьте 1 кубик. На 4, 5 или 6 сбросьте эту карту.","When you perform the Rest action, you cannot recover Sanity; roll 1 die. On a 4, 5, or 6, discard this card."
-COND_RIGHTEOUS_FRONT,При действии «Сосредоточение» или «Отдых» получите 1 жетон сосредоточения или восстановите 1 рассудок.,"When you perform the Focus or Rest action, gain 1 focus token or recover 1 Sanity."
+COND_RIGHTEOUS_FRONT,При действии «Концентрация» или «Отдых» получите 1 карту концентрации или восстановите 1 рассудок.,"When you take the Focus or Rest action, gain 1 Focus or recover 1 Sanity."
 COND_HAUNTED_FRONT,"Если вы получаете Благословение или улучшаете Волю, можете сбросить эту карту вместо этого.","If you would gain a Blessed condition or improve Will, you may discard this card instead."
 COND_DESPAIR_FRONT,При действии «Отдых» вы не можете восстанавливать рассудок; переверните эту карту.,"When you perform the Rest action, you cannot recover Sanity; flip this card."
 COND_DISEASED_FRONT,При действии «Отдых» бросьте 1 кубик. На 5 или 6 сбросьте эту карту.,"When you perform the Rest action, roll 1 die. On a 5 or 6, discard this card."
@@ -687,8 +687,8 @@ OUTCOME_CRUSHED_FINGERS_TEXT,Сустав за суставом пальцы п�
 OUTCOME_SPLITTING_HEADACHE_TEXT,"Боль вбивается в висок, как ржавый гвоздь, и мысли расползаются прежде, чем вы успеваете их удержать. Потеряйте 1 рассудок.","Pain drives into your temple like a rusted nail, and your thoughts scatter before you can hold them. Lose 1 Sanity."
 OUTCOME_REOPENED_WOUND_TEXT,"Шов не выдержал движения, и тёплая струйка снова находит дорогу наружу. Потеряйте 1 здоровье.","The stitches gave way under the strain, and a warm trickle finds its way out once more. Lose 1 Health."
 OUTCOME_GANGRENE_TEXT,Кожа вокруг раны почернела и больше ничего не чувствует. Лекарь молча качает головой. Получите состояние «Инфекция».,The skin around the wound has blackened and feels nothing at all. The doctor only shakes his head. Gain an Infection condition.
-OUTCOME_FAILING_BODY_TEXT,"Тело перестаёт слушаться так, как прежде; каждое движение даётся с боем, и привычная сноровка уходит. Сбросьте 1 жетон улучшения.","Your body no longer obeys as it once did; every motion is a fight, and your hard-won skill slips away. Discard 1 improvement token."
-OUTCOME_SELF_DOUBT_TEXT,Ваши друзья и коллеги были правы. Какая надежда хоть что-то изменить? Простым смертным не остановить древних могущественных существ. Сбросьте все жетоны улучшений.,Your friends and colleagues were right. What hope is there to change anything? Mere mortals cannot stop ancient and mighty beings. Discard all improvement tokens.
+OUTCOME_FAILING_BODY_TEXT,"Тело перестаёт слушаться так, как прежде; каждое движение даётся с боем, и привычная сноровка уходит. Сбросьте 1 улучшение навыка.","Your body no longer obeys as it once did; every motion is a fight, and your hard-won skill slips away. Discard 1 skill improvement."
+OUTCOME_SELF_DOUBT_TEXT,Ваши друзья и коллеги были правы. Какая надежда хоть что-то изменить? Простым смертным не остановить древних могущественных существ. Сбросьте все улучшения навыков.,Your friends and colleagues were right. What hope is there to change anything? Mere mortals cannot stop ancient and mighty beings. Discard all skill improvements.
 OUTCOME_RELENTLESS_WHISPERS_TEXT,"Голоса не умолкают даже во сне. Вы исписываете их словами поля своих заметок, пока бумага не темнеет. Сбросьте 1 улику.","The voices will not fall silent, even in sleep. You fill the margins of your notes with their words until the paper turns black. Discard 1 Clue."
 OUTCOME_STRANGER_IN_MIRROR_TEXT,"Из зеркала смотрит кто-то почти знакомый — и улыбается на мгновение позже, чем вы. Потеряйте 1 рассудок.",Someone almost familiar watches from the mirror — and smiles a moment later than you do. Lose 1 Sanity.
 OUTCOME_NIGHT_TERRORS_TEXT,"Сон оборачивается коридорами без дверей и шорохом за спиной; вы просыпаетесь более измотанным, чем легли. Потеряйте 1 рассудок.",Sleep turns to doorless corridors and a rustling at your back; you wake more exhausted than you lay down. Lose 1 Sanity.
@@ -700,7 +700,7 @@ OUTCOME_BURNING_FEVER_TEXT,"Жар поднимается волнами, и в 
 OUTCOME_TREMBLING_HANDS_TEXT,"Озноб не унимается, руки ходят ходуном, и простейшее дело отнимает все силы. Потеряйте 1 здоровье.","The chills will not ease, your hands shake without stop, and the simplest task drains all your strength. Lose 1 Health."
 OUTCOME_CONTAGION_TEXT,"Кашель сопровождает вас повсюду, и те, кто был рядом, теперь сторонятся вас. Болезнь нашла новых хозяев. Потеряйте 1 здоровье.","A cough follows you everywhere, and those who stood near now keep their distance. The sickness has found new hosts. Lose 1 Health."
 OUTCOME_BEDRIDDEN_TEXT,Сил не остаётся даже подняться; мир сужается до сырого потолка над головой. Потеряйте 1 здоровье и 1 рассудок.,You haven't the strength even to rise; the world narrows to a damp ceiling overhead. Lose 1 Health and 1 Sanity.
-OUTCOME_WASTING_SICKNESS_TEXT,"Одежда висит мешком — тело тает день за днём, и вместе с ним уходит сноровка. Сбросьте 1 жетон улучшения.","Your clothes hang loose — your body wastes away day by day, and your skill goes with it. Discard 1 improvement token."
+OUTCOME_WASTING_SICKNESS_TEXT,"Одежда висит мешком — тело тает день за днём, и вместе с ним уходит сноровка. Сбросьте 1 улучшение навыка.","Your clothes hang loose — your body wastes away day by day, and your skill goes with it. Discard 1 skill improvement."
 OUTCOME_CREEPING_CHILLS_TEXT,"Холод пробирает до костей, хотя за окном духота. Зубы стучат сами собой. Потеряйте 1 здоровье.",Cold seeps into your bones though the air outside is stifling. Your teeth chatter on their own. Lose 1 Health.
 OUTCOME_MENDING_FLESH_TEXT,"К утру жар спадает, и впервые за долгие дни вы дышите полной грудью. Тело пошло на поправку.","By morning the fever breaks, and for the first time in days you draw a full breath. Your body is on the mend."
 OUTCOME_FEVERISH_DELIRIUM_TEXT,Лихорадка путает дни и ночи; вы теряете счёт времени и собственным шагам. Получите состояние «Амнезия».,The fever blurs days into nights; you lose count of time and of your own steps. Gain an Amnesia condition.
@@ -724,7 +724,7 @@ OUTCOME_GUIDING_LIGHT_TEXT,"В тумане проступает огонёк �
 OUTCOME_SECOND_WIND_TEXT,"Откуда-то приходят силы, которых уже не должно было остаться. Вы выпрямляетесь и идёте дальше. Восстановите 1 здоровье.",Strength comes from somewhere it should no longer have remained. You straighten up and walk on. Recover 1 Health.
 OUTCOME_QUIET_MOMENT_TEXT,"Впервые за долгое время мир замолкает, и в этой тишине вы наконец слышите собственные мысли. Восстановите 1 рассудок.","For the first time in a long while the world falls quiet, and in that silence you finally hear your own thoughts. Recover 1 Sanity."
 OUTCOME_FORTUNATE_FIND_TEXT,"Под половицей, куда вы оступились, что-то тускло блеснуло. Удача наконец повернулась к вам лицом. Получите 1 улику.","Beneath the floorboard you stumbled on, something glinted dully. Luck has turned to face you at last. Gain 1 Clue."
-OUTCOME_STEADY_HAND_TEXT,"Страх отступает, дыхание выравнивается. Что бы ни ждало впереди, теперь вы готовы это встретить. Получите 1 жетон сосредоточения.","Fear recedes, your breathing steadies. Whatever waits ahead, you are ready to meet it. Gain 1 focus token."
+OUTCOME_STEADY_HAND_TEXT,"Страх отступает, дыхание выравнивается. Что бы ни ждало впереди, теперь вы готовы это встретить. Получите 1 карту концентрации.","Fear recedes, your breathing steadies. Whatever waits ahead, you are ready to meet it. Gain 1 Focus."
 OUTCOME_LINGERING_GRACE_TEXT,Свет не угасает с рассветом — он остаётся с вами и в наступающий день.,The light does not fade with the dawn — it stays with you into the day to come.
 OUTCOME_ANSWERED_PRAYER_TEXT,"Слова, сказанные в отчаянии, были услышаны. Помощь приходит тогда, когда вы уже перестали ждать. Восстановите 1 здоровье и 1 рассудок.",Words spoken in despair were heard. Help arrives just when you had stopped waiting for it. Recover 1 Health and 1 Sanity.
 OUTCOME_THEY_FOUND_YOU_TEXT,Шаги за спиной больше не отстают — они приближаются. Преследователь настигает вас в глухом переулке. Потеряйте 1 здоровье.,The footsteps behind you no longer fall back — they draw closer. Your pursuer catches you in a blind alley. Lose 1 Health.
@@ -810,7 +810,6 @@ ENCOUNTER_REROLL_FREE,нажмите кубик для переброса (бе�
 ENCOUNTER_REROLL_CLUE,нажмите кубик для переброса (улик: %d),tap a die to reroll (clues: %d)
 ENCOUNTER_REROLL_ALL,Перебросить кубы,Reroll dice
 ENCOUNTER_REROLL_TAP,нажмите кубик для переброса,tap a die to reroll
-ENCOUNTER_REROLL_DRAG,перетащите жетон на проверку для переброса,drag a token onto the test to reroll
 HAND_ASSETS,Активы,Assets
 HAND_SPELLS,Заклинания,Spells
 HAND_TOKENS,Концентрация и улики,Focus and Clues
@@ -1003,11 +1002,11 @@ VERB_GIVE_ASSET,передать актив,give an Asset
 VERB_GIVE_CLUE,передать улику,give a Clue
 VERB_TRADE_LINK,обмен с сыщиком на расстоянии,trade with an investigator anywhere
 TRADE_SWAP_PLACES,Поменяться местами с сыщиком %s,Swap places with %s
-SKILL_TOKEN_SPEND_STRENGTH,Потратить жетон Силы,Spend the Strength token
-SKILL_TOKEN_SPEND_LORE,Потратить жетон Знания,Spend the Lore token
-SKILL_TOKEN_SPEND_WILL,Потратить жетон Воли,Spend the Will token
-SKILL_TOKEN_SPEND_INFLUENCE,Потратить жетон Влияния,Spend the Influence token
-SKILL_TOKEN_SPEND_OBSERVATION,Потратить жетон Наблюдения,Spend the Observation token
+SKILL_TOKEN_SPEND_STRENGTH,Сбросить улучшение или ухудшение Силы,Discard a Strength improvement or impairment
+SKILL_TOKEN_SPEND_LORE,Сбросить улучшение или ухудшение Знания,Discard a Lore improvement or impairment
+SKILL_TOKEN_SPEND_WILL,Сбросить улучшение или ухудшение Воли,Discard a Will improvement or impairment
+SKILL_TOKEN_SPEND_INFLUENCE,Сбросить улучшение или ухудшение Влияния,Discard a Influence improvement or impairment
+SKILL_TOKEN_SPEND_OBSERVATION,Сбросить улучшение или ухудшение Наблюдения,Discard a Observation improvement or impairment
 VERB_SUBSTITUTE_SKILL,{toSkill} вместо {fromSkill},{toSkill} instead of {fromSkill}
 VERB_SUBSTITUTE_RESOURCE,{toResource} вместо {fromResource},{toResource} instead of {fromResource}
 VERB_ENHANCE_REROLL,усиленный переброс,enhanced reroll
@@ -1885,7 +1884,7 @@ ARTIFACT_KING_IN_YELLOW_ABILITY,"Получите +2 ко всем навыка�
 ARTIFACT_TATTERED_CLOAK_NAME,Истрёпанный плащ,Tattered Cloak
 ARTIFACT_TATTERED_CLOAK_ABILITY,"Вы можете тратить на 1 рассудок меньше, оплачивая эффект. Если эффект заставляет вас потерять рассудок, потеряйте на 1 рассудок меньше.","You may spend 1 fewer Sanity to pay for an effect. If an effect would cause you to lose Sanity, lose 1 fewer Sanity instead."
 ARTIFACT_MASK_OF_STHENELUS_NAME,Маска Сфенела,Mask of Sthenelus
-ARTIFACT_MASK_OF_STHENELUS_ABILITY,"Действие: Вы можете потратить 1 жетон улучшения или ухудшения, чтобы улучшить 1 навык на свой выбор или получить состояние «Талант».",Action: You may spend 1 Improvement or Impairment token to improve 1 skill of your choice or gain 1 Talent Condition.
+ARTIFACT_MASK_OF_STHENELUS_ABILITY,"Действие: вы можете сбросить 1 улучшение или ухудшение навыка, чтобы улучшить 1 навык на свой выбор или получить состояние «Талант».",Action: You may discard 1 skill improvement or impairment to improve 1 skill of your choice or gain a Talent Condition.
 ARTIFACT_TRUE_MAGICK_NAME,Истинная магия,True Magick
 ARTIFACT_TRUE_MAGICK_ABILITY,"Получите +5 Знания при чтении заклинаний. Если эффект заклинания заставляет вас потратить или потерять рассудок, вы можете потратить или потерять на 1 рассудок меньше.","Gain +5 Lore when resolving Spell effects. If you would spend or lose Sanity as part of a Spell effect, you may spend or lose 1 fewer Sanity as part of that effect."
 ARTIFACT_HEMISPHERE_MAP_NAME,Карта полушария,Hemisphere Map
@@ -2023,7 +2022,7 @@ OUTCOME_DARK_PACT_PACT_WITH_THE_DARK_MAN_TEXT,"Вы знали, что этот 
 OUTCOME_DARK_PACT_PACT_WITH_YOGSOTHOTH_NAME,Договор с Йог-Сототом,Pact with Yog-Sothoth
 OUTCOME_DARK_PACT_PACT_WITH_YOGSOTHOTH_TEXT,"Кощунственная сила овладевает вами и заставляет исполнять волю Таящегося у Порога. Откройте 1 врата за каждое ваше заклинание, затем продвиньте Знамение на 1 и сбросьте эту карту.","The blasphemous power takes hold of you, forcing you to carry out the desires of the Lurker at the Threshold. Spawn 1 Gate for each Spell you have, then advance the Omen by 1. Then discard this card."
 OUTCOME_DARK_PACT_ALL_IS_LOST_NAME,Всё потеряно,All is Lost
-OUTCOME_DARK_PACT_ALL_IS_LOST_TEXT,"Сделка казалась необходимой, но теперь вы жалеете о подписи. Зловещие существа пришли забрать своё: кровь, знание и надежду. Сбросьте всё имущество и жетоны улучшений, потеряйте всё здоровье и рассудок, кроме 1; затем сбросьте эту карту.","The agreement you made seemed necessary at the time, but now you regret signing that pact. The sinister beings have come to claim what is yours: blood, knowledge, and hope. Discard all of your possessions and Improvement tokens and lose all but 1 Health and all but 1 Sanity. Then discard this card."
+OUTCOME_DARK_PACT_ALL_IS_LOST_TEXT,"Сделка казалась необходимой, но теперь вы жалеете о подписи. Зловещие существа пришли забрать своё: кровь, знание и надежду. Сбросьте всё имущество и все улучшения навыков, потеряйте всё здоровье и рассудок, кроме 1; затем сбросьте эту карту.","The pact seemed necessary, but now you regret signing it. Sinister beings have come to claim their due: blood, knowledge and hope. Discard all of your possessions and skill improvements, and lose all but 1 Health and all but 1 Sanity. Then discard this card."
 OUTCOME_AMNESIA_FORGOTTEN_CRIMES_NAME,Забытые преступления,Forgotten Crimes
 OUTCOME_AMNESIA_FORGOTTEN_CRIMES_TEXT,"Не хочется верить, но улики неопровержимы: когда-то, о чём вы уже не помните, вы совершили череду преступлений. Теперь придётся пройти с полицией. Получите состояние «Задержан».","You don't want to believe it's true, but the evidence is irrefutable. At some point that you no longer recall, you went on a crime spree. Now you must accompany the police. Gain a Detained Condition. Then discard this card."
 OUTCOME_AMNESIA_THE_TERRIBLE_TRUTH_NAME,Страшная правда,The Terrible Truth
@@ -2039,7 +2038,7 @@ OUTCOME_PARANOIA_KLEPTOMANIA_TEXT,"Вопреки рассудку вы тащи
 OUTCOME_PARANOIA_VIOLENT_OUTBURSTS_NAME,Вспышки ярости,Violent Outbursts
 OUTCOME_PARANOIA_VIOLENT_OUTBURSTS_TEXT,"Злость копилась слишком долго — вы срываетесь на всех вокруг. Сыщики на вашей клетке теряют по 2 здоровья, а вы сбрасываете 1 Союзника. Затем переверните эту карту.",You've felt the anger coiled up inside of you for such a long time. You just can't control it any longer. You lash out at anyone near you. Each other investigator on your space loses 2 Health and you discard 1 Ally Asset. Then flip this card.
 OUTCOME_PARANOIA_SELFDOUBT_NAME,Неуверенность,Self-Doubt
-OUTCOME_PARANOIA_SELFDOUBT_TEXT,"Друзья были правы: что могут смертные против древних сил? Сбросьте все жетоны улучшений, затем сбросьте эту карту.","Your friends and colleagues were right. What hope do you have of changing anything? Mere mortals couldn't possibly stop ancient, powerful beings. Discard all of your Improvement tokens. Then discard this card.}} Category:Conditions Category:Madness Category:Core Game Category:Forsaken Lore"
+OUTCOME_PARANOIA_SELFDOUBT_TEXT,"Друзья были правы: что могут смертные против древних сил? Сбросьте все улучшения навыков, затем сбросьте эту карту.",Your friends were right: what can mere mortals do against ancient powers? Discard all of your skill improvements. Then discard this card.
 OUTCOME_HALLUCINATIONS_DELUSIONS_NAME,Бред,Delusions
 OUTCOME_HALLUCINATIONS_DELUSIONS_TEXT,"Теперь вы видите: все собранные «улики» — чепуха, монстры и заговоры были плодом воображения. Голова такая ясная! Сбросьте все улики, затем сбросьте эту карту.",You see now that all of this supposed evidence you've been collecting is just nonsense. Your head feels so clear now! All of the monsters and conspiracies you've been hunting were obviously figments of your imagination. Discard all of your [clues]. Then discard this card.
 OUTCOME_HALLUCINATIONS_SWARMING_NAME,Рой,Swarming
@@ -2185,7 +2184,7 @@ OUTCOME_LOST_IN_TIME_AND_SPACE_ONWARD_TEXT,"Вдали встают ониксо
 OUTCOME_HEAD_INJURY_BRAIN_ANEURYSM_NAME,Аневризма,Brain Aneurysm
 OUTCOME_HEAD_INJURY_BRAIN_ANEURYSM_TEXT,"Туман в голове вернулся. Вы трёте виски — и вдруг видите кровь из ушей и глаз; в глазах темнеет. Потеряйте 3 здоровья, затем сбросьте эту карту.","The fog has returned, clouding your mind and memories. You massage your temples, waiting for the headache to pass. You suddenly realize blood is dripping from your ears and eyes. Your vision goes black as you collapse. Lose 3 Health. Then discard this card."
 OUTCOME_HEAD_INJURY_BRAIN_DAMAGE_NAME,Повреждение мозга,Brain Damage
-OUTCOME_HEAD_INJURY_BRAIN_DAMAGE_TEXT,"С того удара по голове вам не даются ни слова, ни ловкость рук, ни воспоминания. Потеряйте 1 рассудок и сбросьте все жетоны улучшений, затем сбросьте эту карту.","Ever since that blow to your head, you have not been able to grasp the words necessary to communicate with others nor have you retained your manual dexterity nor your memories. Lose 1 Sanity and discard all of your Improvement tokens. Then discard this card."
+OUTCOME_HEAD_INJURY_BRAIN_DAMAGE_TEXT,"С того удара по голове вам не даются ни слова, ни ловкость рук, ни воспоминания. Потеряйте 1 рассудок и сбросьте все улучшения навыков, затем сбросьте эту карту.","Since that blow to the head, words, steady hands and memories all fail you. Lose 1 Sanity and discard all of your skill improvements. Then discard this card."
 OUTCOME_HEAD_INJURY_CONCUSSION_NAME,Сотрясение,Concussion
 OUTCOME_HEAD_INJURY_CONCUSSION_TEXT,"Вы лежите на земле и не помните, как здесь оказались; попытки вспомнить лишь усиливают боль. Потеряйте 1 здоровье и получите «Амнезия», затем сбросьте эту карту.",You find yourself lying on the ground unable to recall how you got there. Trying to remember what happened only causes your head to hurt more. Lose 1 Health and gain an Amnesia Condition. Then discard this card.
 OUTCOME_HEAD_INJURY_SPLITTING_HEADACHE_NAME,Раскалывающая боль,Splitting Headache
@@ -2229,11 +2228,11 @@ OUTCOME_HYPOTHERMIA_CHILL_HAUNTING_TEXT,Холод неестественный 
 OUTCOME_HYPOTHERMIA_CHILLED_TO_THE_BONE_NAME,Продрогший до костей,Chilled To The Bone
 OUTCOME_HYPOTHERMIA_CHILLED_TO_THE_BONE_TEXT,"Температура падает, согреться не выходит — нужно укрытие, чтобы пережить ночь. Станьте Задержанным в пути. Затем карта возвращается на лицо (новое «Переохлаждение»).","The temperature has dropped, and you are unable to warm yourself. You must seek shelter if you hope to survive the night. Become Delayed. Then discard this card and gain a Hypothermia Condition."
 OUTCOME_HYPOTHERMIA_CHILLING_BLINDNESS_NAME,Ледяная слепота,Chilling Blindness
-OUTCOME_HYPOTHERMIA_CHILLING_BLINDNESS_TEXT,Холод ослепляет; в пустой белой темнице вы боитесь сойти с ума. Потеряйте 1 рассудок и сбросьте 1 жетон улучшения Воли. Затем карта возвращается на лицо (новое «Переохлаждение»).,"The cold has shocked your system, temporarily rendering you blinded. In this empty, white prison, you fear you will lose your mind. Lose 1 Sanity and discard 1 Will Improvement token. Then discard this card and gain a Hypothermia Condition."
+OUTCOME_HYPOTHERMIA_CHILLING_BLINDNESS_TEXT,Холод ослепляет; в пустой белой темнице вы боитесь сойти с ума. Потеряйте 1 рассудок и сбросьте 1 улучшение Воли. Затем карта возвращается на лицо (новое «Переохлаждение»).,"The cold blinds you; trapped in an empty white prison, you fear for your mind. Lose 1 Sanity and discard 1 Will improvement. Then discard this card and gain a Hypothermia Condition."
 OUTCOME_HYPOTHERMIA_COLD_SHOCK_NAME,Холодовой шок,Cold Shock
 OUTCOME_HYPOTHERMIA_COLD_SHOCK_TEXT,Внезапный холод бьёт по телу и разуму. Потеряйте 1 здоровье и 1 рассудок. Затем карта возвращается на лицо (новое «Переохлаждение»).,The sudden cold chills you to the bone and shocks your body and mind. Lose 1 Health and 1 Sanity. Then discard this card and gain a Hypothermia Condition.
 OUTCOME_HYPOTHERMIA_FROST_BITE_NAME,Обморожение,Frost Bite
-OUTCOME_HYPOTHERMIA_FROST_BITE_TEXT,"Мороз жалит кожу, мышцы немеют. Потеряйте 1 здоровье и сбросьте 1 жетон улучшения Силы. Затем карта возвращается на лицо (новое «Переохлаждение»).","The cold stings your skin, numbing your muscles. Lose 1 Health and discard 1 Strength Improvement token. Then discard this card and gain a Hypothermia Condition."
+OUTCOME_HYPOTHERMIA_FROST_BITE_TEXT,"Мороз жалит кожу, мышцы немеют. Потеряйте 1 здоровье и сбросьте 1 улучшение Силы. Затем карта возвращается на лицо (новое «Переохлаждение»).",The frost bites at your skin and numbs your muscles. Lose 1 Health and discard 1 Strength improvement. Then discard this card and gain a Hypothermia Condition.
 OUTCOME_HYPOTHERMIA_NUMBNESS_NAME,Онемение,Numbness
 OUTCOME_HYPOTHERMIA_NUMBNESS_TEXT,"Тело онемело от холода: двигаться трудно, боли не чувствуешь. Потеряйте 1 здоровье и получите состояние «Травма». Затем карта возвращается на лицо (новое «Переохлаждение»).","Your body has become numb from the cold. It is difficult for you to move, and you cannot feel if you have been hurt. Lose 1 Health and gain 1 Injury Condition. Then discard this card and gain a Hypothermia Condition."
 OUTCOME_HYPOTHERMIA_TRAPPED_BY_THE_COLD_NAME,В плену холода,Trapped By The Cold
@@ -2496,7 +2495,7 @@ INV_CLIVE_ASHTON_PASSIVE_NAME,Цена прозрения,The Price of Insight
 INV_CLIVE_ASHTON_PASSIVE_TEXT,Раз в раунд можно потратить 1 рассудок вместо 1 улики.,"Once per round, you may spend 1 Sanity in place of spending 1 Clue."
 INV_AGNES_WHITLOCK_NAME,Агнес Уитлок,Agnes Whitlock
 INV_AGNES_WHITLOCK_OCC,Раскаявшаяся культистка,The Redeemed Cultist
-INV_AGNES_WHITLOCK_QUOTE,"«Ложа не столь невинна, какой притворяется. Я усвоила, что ничто не таково, каким кажется, — включая меня саму.»","«The Lodge is not as innocent as they pretend. I have learned that nothing is ever as it seems, myself included.»"
+INV_AGNES_WHITLOCK_QUOTE,"«Я служила спящим богам, пока не осознала, что наше поклонение — лишь приправа к их трапезе.»",«I served the slumbering gods until I realized that our worship is but seasoning for their feast.»
 INV_VIVIENNE_MARCHETTI_ABILITY_NAME,Мысленная связь,Mind Link
 INV_VIVIENNE_MARCHETTI_ABILITY_TEXT,Действие: обменяйтесь любым числом улик с сыщиком на любой клетке.,Action: You may trade any number of Clues with an investigator on any space.
 INV_VIVIENNE_MARCHETTI_PASSIVE_NAME,Предвидение,Foresight

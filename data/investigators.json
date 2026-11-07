@@ -23,7 +23,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 3
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Colby Banks",
@@ -174,7 +175,8 @@
 					"on": "otherGainsCondition"
 				}
 			]
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Maxwell Thorne",
@@ -233,7 +235,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 1
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Nora Quinn",
@@ -305,7 +308,8 @@
 			"observation": 4,
 			"strength": 2,
 			"will": 2
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Mai Nguyen",
@@ -598,7 +602,8 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 3
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Celeste Dubois",
@@ -656,7 +661,8 @@
 			"observation": 2,
 			"strength": 1,
 			"will": 3
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Nellie Fox",
@@ -778,7 +784,8 @@
 					"repeat": 1
 				}
 			]
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Al Dobbs",
@@ -895,7 +902,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 2
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Walter Briggs",
@@ -976,7 +984,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 3
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Chester Holloway",
@@ -1002,7 +1011,8 @@
 			"observation": 2,
 			"strength": 3,
 			"will": 1
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Clive Ashton",
@@ -1046,7 +1056,8 @@
 					"limit": "oncePerRound"
 				}
 			]
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Father Ignatius",
@@ -1073,7 +1084,8 @@
 			"observation": 1,
 			"strength": 2,
 			"will": 4
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Frank Delaney",
@@ -1099,7 +1111,8 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 2
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Ngozi Eze",
@@ -1125,7 +1138,8 @@
 			"observation": 2,
 			"strength": 2,
 			"will": 4
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Frank Dalton",
@@ -1173,7 +1187,8 @@
 					"status": "detained"
 				}
 			]
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Marcus Bell",
@@ -1205,7 +1220,8 @@
 			"observation": 3,
 			"strength": 3,
 			"will": 1
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Nora Whitby",
@@ -1231,7 +1247,8 @@
 			"observation": 4,
 			"strength": 1,
 			"will": 2
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Iris Bellamy",
@@ -1257,7 +1274,8 @@
 			"observation": 2,
 			"strength": 1,
 			"will": 3
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Dale Corwin",
@@ -1284,7 +1302,8 @@
 			"observation": 4,
 			"strength": 2,
 			"will": 3
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Buck Tanner",
@@ -1310,7 +1329,8 @@
 			"observation": 3,
 			"strength": 4,
 			"will": 3
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Sly Bracken",
@@ -1336,7 +1356,8 @@
 			"observation": 3,
 			"strength": 4,
 			"will": 3
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Evelyn Hart",
@@ -1362,7 +1383,8 @@
 			"observation": 2,
 			"strength": 2,
 			"will": 4
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Henry Wu",
@@ -1388,7 +1410,8 @@
 			"observation": 3,
 			"strength": 2,
 			"will": 4
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Esther Ravel",
@@ -1417,7 +1440,8 @@
 			"observation": 2,
 			"strength": 2,
 			"will": 2
-		}
+		},
+		"isReady": true
 	},
 	{
 		"name": "Rory Kell",
