@@ -40,6 +40,10 @@ SIDEBAR_CAT_INVESTIGATORS,Сыщики,Investigators
 SIDEBAR_CAT_MONSTERS,Монстры,Monsters
 SIDEBAR_CAT_CLUES,Улики,Clues
 SIDEBAR_CAT_RUMORS,Слухи,Rumors
+SIDEBAR_CAT_ELDRITCH,Жетон Древнего,Ancient One token
+SIDEBAR_ELDRITCH_DESC,Здесь можно выбрать особую встречу. При успехе жетон уходит на карту Тайны и приближает её разгадку.,"You may choose a special encounter here. On a success the token moves onto the Mystery card, bringing its solution closer."
+SIDEBAR_ELDRITCH_COST,Цена: %s ×%d,Cost: %s ×%d
+SIDEBAR_ELDRITCH_TEST,Проверка: %s,Test: %s
 SIDEBAR_TOUGHNESS,Стойкость,Toughness
 SIDEBAR_HORROR,Ужас,Horror
 SIDEBAR_COMBAT,Бой,Combat

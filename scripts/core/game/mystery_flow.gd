@@ -126,6 +126,15 @@ func _eval_hook_when(when_v: Variant, ctx: Dictionary) -> bool:
 ## Повод — клетка с жетоном Знамения ЛИБО помеченная локация Тайны (метка = тот же
 ## жетон Знамения, канон «eldritch»). Триггер хука — encounterAtEldritchToken.
 func mystery_encounter_hook(loc: String, pid: String) -> Dictionary:
+	var hook: Dictionary = eldritch_hook_at(loc)
+	if hook.is_empty() or not mystery_can_pay(hook, pid):
+		return {}
+	return hook
+
+
+## Encounter-хук жетона Древнего на клетке — без проверки оплаты (для описания в
+## карточке локации: что здесь можно сделать и почём). {} — жетона/хука нет.
+func eldritch_hook_at(loc: String) -> Dictionary:
 	if mystery_kind() != "tokensOnCard":
 		return {}
 	var has_token: bool = (_gs.entities.get(loc, []) as Array).has("eldritch_token")
@@ -137,10 +146,7 @@ func mystery_encounter_hook(loc: String, pid: String) -> Dictionary:
 	)
 	if not (has_token or is_marked):
 		return {}
-	var hook: Dictionary = mystery_hook_for("encounterAtEldritchToken", {"loc": loc})
-	if hook.is_empty() or not mystery_can_pay(hook, pid):
-		return {}
-	return hook
+	return mystery_hook_for("encounterAtEldritchToken", {"loc": loc})
 
 
 ## Может ли игрок оплатить cost хука (spend <resource> amount). Без cost → true.

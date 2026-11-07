@@ -90,6 +90,11 @@ var _items_list: VBoxContainer = null
 
 # Улика на локации — строка «иконка + имя улики».
 const _CLUE_ICON: Texture2D = preload("res://assets/map/clue-icon.png")
+const _ELDRITCH_ICON: Texture2D = preload("res://assets/map/mystery-icon.png")  # как на карте
+## Ресурс цены особой встречи → ключ его названия (иначе — сам id).
+const _COST_NAMES := {
+	"clue": "SIDEBAR_CAT_CLUES", "sanity": "COMBAT_SANITY", "health": "COMBAT_HEALTH"
+}
 # Сыщики на локации: круглый портрет в кольце (как аватар в панели сыщика), уменьшенный.
 const _INV_RING: Texture2D = preload("res://assets/investigator-panel/avatar-round-frame.png")
 const _INV_D := 72.0  # диаметр портрета сыщика в списке
@@ -591,8 +596,11 @@ func _populate_items(loc_id: String) -> void:
 	var rumors: int = (ents as Array).count("rumor")
 
 	var invs: Array = _investigators_at(loc_id)
+	var eldritch: Dictionary = GameState._mystery.eldritch_hook_at(loc_id)
 
-	var empty: bool = invs.is_empty() and mons.is_empty() and clues == 0 and rumors == 0
+	var empty: bool = (
+		invs.is_empty() and mons.is_empty() and clues == 0 and rumors == 0 and eldritch.is_empty()
+	)
 	_items_list.visible = not empty
 	if empty:
 		return
@@ -631,6 +639,54 @@ func _populate_items(loc_id: String) -> void:
 			_items_list.add_child(_make_clue_row(clue_name, i))
 	if rumors > 0:
 		_add_section("SIDEBAR_CAT_RUMORS", rumors)  # своего списка у слухов нет — число
+	if not eldritch.is_empty():
+		_add_section("SIDEBAR_CAT_ELDRITCH")
+		_items_list.add_child(_make_eldritch_row(eldritch))
+
+
+# Жетон Древнего: что здесь можно сделать — особая встреча Тайны; цена и проверка —
+# из хука текущей Тайны (у авторской встречи по тегу проверка своя — строки нет).
+func _make_eldritch_row(hook: Dictionary) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.name = "Eldritch"
+	row.add_theme_constant_override("separation", 10)
+	var icon := TextureRect.new()
+	icon.name = "Icon"
+	icon.texture = _ELDRITCH_ICON
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	icon.custom_minimum_size = Vector2(_CLUE_ICON_PX, _CLUE_ICON_PX)
+	row.add_child(icon)
+	var lines: PackedStringArray = [tr("SIDEBAR_ELDRITCH_DESC")]
+	var cost: Dictionary = hook.get("cost", {})
+	if not cost.is_empty():
+		var res: String = String(cost.get("spend", ""))
+		lines.append(
+			(
+				tr("SIDEBAR_ELDRITCH_COST")
+				% [tr(_COST_NAMES.get(res, res)), int(cost.get("amount", 1))]
+			)
+		)
+	var test: Dictionary = hook.get("test", {})
+	if not test.is_empty():
+		var mod: int = int(test.get("modifier", 0))
+		var skill: String = tr("SKILL_" + String(test.get("skill", "lore")).to_upper())
+		lines.append(
+			(
+				tr("SIDEBAR_ELDRITCH_TEST")
+				% (skill + (" %+d" % mod if mod != 0 else "")).replace("-", "−")
+			)
+		)
+	var l := Label.new()
+	l.name = "Text"
+	l.text = "\n".join(lines)
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	UIFonts.apply(l, UIFonts.NOTE)
+	l.add_theme_color_override("font_color", UIColors.TEXT)
+	row.add_child(l)
+	return row
 
 
 # Сыщики на клетке (id игроков в порядке хода). Тень (погибший) тоже стоит на поле —
